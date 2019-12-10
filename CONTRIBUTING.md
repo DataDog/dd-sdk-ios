@@ -1,6 +1,16 @@
 # Contributing
 
-_TBD_
+## Installation
+
+This project uses Swift Package Manager. To generate `Datadog.xcodeproj` simply run:
+```bash
+ swift package generate-xcodeproj
+```
+
+From there, you can use Xcode for development and tests. You can also run tests in command line:
+```swift
+swift test
+```
 
 ## Coding Conventions
 
