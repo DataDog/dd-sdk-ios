@@ -9,6 +9,6 @@ if [ -z "$XCODE_LOCATION" ]; then
 fi
 
 rm -r "$XCODE_TEMPLATES_LOCATION/Datadog" 2> /dev/null
-cp -R "./Datadog" "$XCODE_TEMPLATES_LOCATION"
+cp -R "./tools/xcode-templates/Datadog" "$XCODE_TEMPLATES_LOCATION"
 
 echo "✅ Installed Xcode templates"
