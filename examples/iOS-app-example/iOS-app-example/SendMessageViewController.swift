@@ -1,5 +1,4 @@
 import UIKit
-import Datadog
 
 class SendMessageViewController: UIViewController {
 
@@ -8,32 +7,23 @@ class SendMessageViewController: UIViewController {
     @IBOutlet weak var logServiceNameTextField: UITextField!
     @IBOutlet weak var sendOnceButton: UIButton!
     @IBOutlet weak var send10xButton: UIButton!
-
-    var logger: Logger!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         hideKeyboardWhenTapOutside()
-        
-        do {
-            let configuration = try Datadog(
-                logsEndpoint: "", // specify URL // TODO: improve in RUMM-124
-                clientToken: "" // specify client token
-            )
-            self.logger = Logger(configuration: configuration)
-            logger.info("Test message from ios-app-example")
-        } catch {
-            print("Error when configuring `Datadog` SDK: \(error)")
-            print("💡 Make sure `logsEndpoint` and `clientToken` are specified")
-        }
     }
 
-    @IBAction func didTapSend(_ sender: Any) {
-        print(sender)
+    @IBAction func didTapSendSingleLog(_ sender: Any) {
+        let message: String = logMessageTextField.text ?? ""
+        logger?.info(message)
     }
-
+    
+    @IBAction func didTapSend10Logs(_ sender: Any) {
+        let message: String = logMessageTextField.text ?? ""
+        (0..<10).forEach { _ in logger?.info(message) }
+    }
+    
     @IBAction func didChangeLogLevel(_ sender: Any) {
-        print(sender)
+        // TODO: RUMM-107 Add support to log levels
     }
 }

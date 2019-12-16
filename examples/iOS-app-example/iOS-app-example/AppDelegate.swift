@@ -1,10 +1,24 @@
 import UIKit
+import Datadog
+
+fileprivate(set) var logger: Logger?
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+ 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+
+        do {
+            let configuration = try Datadog(
+                logsEndpoint: "", // specify URL // TODO: RUMM-124 Inject `Datadog` logs endpoint and client token dynamically
+                clientToken: "" // specify client token
+            )
+            logger = Logger(configuration: configuration)
+        } catch {
+            print("Error when configuring `Datadog` SDK: \(error)")
+            print("💡 Make sure `logsEndpoint` and `clientToken` are specified")
+        }
+
         return true
     }
 
