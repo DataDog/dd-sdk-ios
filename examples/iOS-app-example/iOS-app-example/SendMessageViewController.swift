@@ -1,7 +1,7 @@
 import UIKit
 import Datadog
 
-class ViewController: UIViewController {
+class SendMessageViewController: UIViewController {
 
     var logger: Logger!
     
