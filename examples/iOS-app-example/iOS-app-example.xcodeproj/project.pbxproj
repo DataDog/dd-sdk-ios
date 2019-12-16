@@ -14,6 +14,7 @@
 		61B3C87F23A2356E007D500B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61B3C87E23A2356E007D500B /* Assets.xcassets */; };
 		61B3C88223A2356E007D500B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61B3C88023A2356E007D500B /* LaunchScreen.storyboard */; };
 		61B3C88C23A238FF007D500B /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61B3C88B23A238FF007D500B /* Datadog */; };
+		61C0F1B923A7E6620085AD3C /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0F1B823A7E6620085AD3C /* UIViewController+KeyboardControlling.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		61B3C88123A2356E007D500B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		61B3C88323A2356E007D500B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61B3C88923A2389D007D500B /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../..; sourceTree = "<group>"; };
+		61C0F1B823A7E6620085AD3C /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 		61B3C87423A2356D007D500B /* iOS-app-example */ = {
 			isa = PBXGroup;
 			children = (
+				61C0F1B723A7E6480085AD3C /* Utils */,
 				61B3C87523A2356D007D500B /* AppDelegate.swift */,
 				61B3C87723A2356D007D500B /* SceneDelegate.swift */,
 				61B3C87923A2356D007D500B /* SendMessageViewController.swift */,
@@ -77,6 +80,14 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		61C0F1B723A7E6480085AD3C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				61C0F1B823A7E6620085AD3C /* UIViewController+KeyboardControlling.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -154,6 +165,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61B3C87A23A2356D007D500B /* SendMessageViewController.swift in Sources */,
+				61C0F1B923A7E6620085AD3C /* UIViewController+KeyboardControlling.swift in Sources */,
 				61B3C87623A2356D007D500B /* AppDelegate.swift in Sources */,
 				61B3C87823A2356D007D500B /* SceneDelegate.swift in Sources */,
 			);

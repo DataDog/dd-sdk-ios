@@ -14,6 +14,8 @@ class SendMessageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        hideKeyboardWhenTapOutside()
+        
         do {
             let configuration = try Datadog(
                 logsEndpoint: "", // specify URL // TODO: improve in RUMM-124
