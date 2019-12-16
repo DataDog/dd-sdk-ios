@@ -3,6 +3,7 @@ import Foundation
 public class Logger {
     private let uploader: LogsUploader
 
+    // TODO: RUMM-126 Make logger public `init()` not depend on `Datadog` object
     public convenience init(configuration: Datadog) {
         self.init(
             uploader: LogsUploader(
