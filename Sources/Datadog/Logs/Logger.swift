@@ -34,12 +34,3 @@ public class Logger {
         }
     }
 }
-
-//private func createLog() -> Log {
-//    return Log(
-//        date: ISO8601DateFormatter().string(from: Date()),
-//        status: "INFO",
-//        message: "Random value: \(Int.random(in: 100..<200))",
-//        service: "ios-app-example"
-//    )
-//}
