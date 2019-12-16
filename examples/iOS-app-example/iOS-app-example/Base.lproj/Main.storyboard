@@ -52,6 +52,9 @@
                                             <segment title="WARNING"/>
                                             <segment title="ERROR"/>
                                         </segments>
+                                        <connections>
+                                            <action selector="didChangeLogLevel:" destination="BYZ-38-t0r" eventType="valueChanged" id="Had-lQ-X4y"/>
+                                        </connections>
                                     </segmentedControl>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="P9X-Q2-9qd" userLabel="Vertical gap 10">
                                         <rect key="frame" x="0.0" y="81" width="384" height="10"/>
@@ -79,7 +82,7 @@
                                             <constraint firstAttribute="height" constant="44" id="45u-SB-xBU"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits" enablesReturnKeyAutomatically="YES"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="continue" enablesReturnKeyAutomatically="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I51-hP-D8P" userLabel="Vertical gap 10">
                                         <rect key="frame" x="0.0" y="154.5" width="384" height="10"/>
@@ -139,6 +142,9 @@
                                                         <integer key="value" value="7"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <action selector="didTapSend:" destination="BYZ-38-t0r" eventType="touchUpInside" id="rzm-9w-iEd"/>
+                                                </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="u78-T2-8Dx">
                                                 <rect key="frame" x="194.5" y="0.0" width="189.5" height="44"/>
@@ -154,6 +160,9 @@
                                                         <integer key="value" value="7"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <action selector="didTapSend:" destination="BYZ-38-t0r" eventType="touchUpInside" id="WfF-KA-Mgu"/>
+                                                </connections>
                                             </button>
                                         </subviews>
                                         <constraints>
@@ -173,6 +182,13 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" id="7vC-Cy-I7K"/>
+                    <connections>
+                        <outlet property="logLevelSegmentedControl" destination="UdV-tc-uuY" id="EYr-Gl-gxV"/>
+                        <outlet property="logMessageTextField" destination="jxw-Tx-HjK" id="Dxl-Ts-Cgw"/>
+                        <outlet property="logServiceNameTextField" destination="fGc-5E-uEZ" id="15I-2q-gUt"/>
+                        <outlet property="send10xButton" destination="u78-T2-8Dx" id="EK9-y6-WQK"/>
+                        <outlet property="sendOnceButton" destination="gtC-h0-4xC" id="9Cc-de-Und"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

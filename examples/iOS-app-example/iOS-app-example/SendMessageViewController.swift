@@ -3,6 +3,12 @@ import Datadog
 
 class SendMessageViewController: UIViewController {
 
+    @IBOutlet weak var logLevelSegmentedControl: UISegmentedControl!
+    @IBOutlet weak var logMessageTextField: UITextField!
+    @IBOutlet weak var logServiceNameTextField: UITextField!
+    @IBOutlet weak var sendOnceButton: UIButton!
+    @IBOutlet weak var send10xButton: UIButton!
+
     var logger: Logger!
     
     override func viewDidLoad() {
@@ -19,5 +25,13 @@ class SendMessageViewController: UIViewController {
             print("Error when configuring `Datadog` SDK: \(error)")
             print("💡 Make sure `logsEndpoint` and `clientToken` are specified")
         }
+    }
+
+    @IBAction func didTapSend(_ sender: Any) {
+        print(sender)
+    }
+
+    @IBAction func didChangeLogLevel(_ sender: Any) {
+        print(sender)
     }
 }
