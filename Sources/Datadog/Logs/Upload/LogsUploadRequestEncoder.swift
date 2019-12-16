@@ -6,14 +6,18 @@ struct LogsUploadRequestEncoder {
     private let headers = ["Content-Type": "application/json"]
     private let method = "POST"
     private let jsonEncoder: JSONEncoder
-    
+
     init(uploadURL: URL) {
         self.url = uploadURL
         self.jsonEncoder = JSONEncoder()
         jsonEncoder.dateEncodingStrategy = .iso8601
     }
-    
-    func encodeRequest(with logs: [Log]) throws -> HTTPRequest {
-        return HTTPRequest(url: url, headers: headers, method: method, body: try jsonEncoder.encode(logs))
+
+    func encodeRequest(with logs: [Log]) throws -> URLRequest {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.allHTTPHeaderFields = headers
+        request.httpBody = try jsonEncoder.encode(logs)
+        return request
     }
 }

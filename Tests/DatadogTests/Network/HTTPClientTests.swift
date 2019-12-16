@@ -5,15 +5,14 @@ class HTTPClientTests: XCTestCase {
 
     func testWhenRequestIsDelivered_itReturnsHTTPResponse() {
         let expectation = self.expectation(description: "receive response")
-        let succeedingTransport = URLSessionTransport(
+        let client = HTTPClient(
             session: .mockDeliverySuccess(data: .mockAny(), response: .mockResponseWith(statusCode: 200))
         )
-        let client = HTTPClient(transport: succeedingTransport)
         
         client.send(request: .mockAny()) { (result) in
             switch result {
             case .success(let httpResponse):
-                XCTAssertEqual(httpResponse.code, 200)
+                XCTAssertEqual(httpResponse.statusCode, 200)
                 expectation.fulfill()
             case .failure:
                 break
@@ -25,17 +24,16 @@ class HTTPClientTests: XCTestCase {
     
     func testWhenRequestIsNotDelivered_itReturnsHTTPRequestDeliveryError() {
         let expectation = self.expectation(description: "receive response")
-        let succeedingTransport = URLSessionTransport(
+        let client = HTTPClient(
             session: .mockDeliveryFailure(error: ErrorMock("no internet connection"))
         )
-        let client = HTTPClient(transport: succeedingTransport)
         
         client.send(request: .mockAny()) { (result) in
             switch result {
             case .success:
                 break
             case .failure(let error):
-                XCTAssertEqual((error.details as? ErrorMock)?.description, "no internet connection")
+                XCTAssertEqual((error as? ErrorMock)?.description, "no internet connection")
                 expectation.fulfill()
             }
         }

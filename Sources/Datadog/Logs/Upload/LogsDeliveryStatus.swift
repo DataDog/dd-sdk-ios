@@ -14,8 +14,8 @@ enum LogsDeliveryStatus: Equatable {
     /// Corresponds to unknown HTTP response status code.
     case unknown(logs: [Log])
     
-    init(from httpResponse: HTTPResponse, logs: [Log]) {
-        switch httpResponse.code {
+    init(from httpResponse: HTTPURLResponse, logs: [Log]) {
+        switch httpResponse.statusCode {
         case 200...299: self = .success(logs: logs)
         case 300...399: self = .redirection(logs: logs)
         case 400...499: self = .clientError(logs: logs)
@@ -24,7 +24,7 @@ enum LogsDeliveryStatus: Equatable {
         }
     }
     
-    init(from httpRequestDeliveryError: HTTPRequestDeliveryError, logs: [Log]) {
+    init(from httpRequestDeliveryError: Error, logs: [Log]) {
         self = .networkError(logs: logs)
     }
 }

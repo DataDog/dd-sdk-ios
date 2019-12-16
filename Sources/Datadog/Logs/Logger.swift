@@ -7,7 +7,7 @@ public class Logger {
         self.init(
             uploader: LogsUploader(
                 configuration: configuration,
-                httpClient: HTTPClient(transport: URLSessionTransport())
+                httpClient: HTTPClient()
             )
         )
     }
@@ -15,14 +15,14 @@ public class Logger {
     internal init(uploader: LogsUploader) {
         self.uploader = uploader
     }
-    
+
     /// Logs INFO message.
     ///
     /// - Parameter message: the message
     public func info(_ message: String) {
         log(status: "INFO", message: message)
     }
-    
+
     private func log(status: String, message: String) {
         let log = Log(date: Date(), status: status, message: message, service: "ios-sdk-test-service")
         do {

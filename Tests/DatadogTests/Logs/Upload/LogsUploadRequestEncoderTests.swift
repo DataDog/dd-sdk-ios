@@ -13,11 +13,11 @@ class LogsUploadRequestEncoderTests: XCTestCase {
         let log3 = Log(date: .mockRandomInThePast(), status: "INFO", message: .mockRandom(), service: "service-name")
         
         let request = try encoder.encodeRequest(with: [log1, log2, log3])
-        
-        XCTAssertEqual(request.url.absoluteString, logsUploadURL.absoluteString)
-        XCTAssertEqual(request.headers, ["Content-Type": "application/json"])
-        XCTAssertEqual(request.method, "POST")
-        XCTAssertGreaterThan(request.body.count, 0)
+
+        XCTAssertEqual(request.url?.absoluteString, logsUploadURL.absoluteString)
+        XCTAssertEqual(request.allHTTPHeaderFields, ["Content-Type": "application/json"])
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertGreaterThan(request.httpBody?.count ?? .min, 0)
     }
 
     func testItEncodesDatesWithISO8601standard() throws {
@@ -25,7 +25,7 @@ class LogsUploadRequestEncoderTests: XCTestCase {
         let december15th2019At10AMUTC: Date = .mockSpecificUTCGregorianDate(year: 2019, month: 12, day: 15, hour: 10)
         let log = Log(date: december15th2019At10AMUTC, status: "INFO", message: .mockRandom(), service: "service-name")
         
-        let encodedLogData = try encoder.encodeRequest(with: [log]).body
+        let encodedLogData = try encoder.encodeRequest(with: [log]).httpBody ?? Data()
         let encodedLogJSONString = String(data: encodedLogData, encoding: .utf8) ?? ""
         
         let jsonDecoder = JSONDecoder()
