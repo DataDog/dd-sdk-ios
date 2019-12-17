@@ -50,6 +50,10 @@ extension Date {
         dateComponents.calendar = Calendar(identifier: .gregorian)
         return dateComponents.date!
     }
+    
+    static func mockDecember15th2019At10AMUTC() -> Date {
+        return mockSpecificUTCGregorianDate(year: 2019, month: 12, day: 15, hour: 10)
+    }
 }
 
 extension URL {

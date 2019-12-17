@@ -10,7 +10,16 @@ extension Log {
     static func mockRandom() -> Log {
         return Log(
             date: .mockRandomInThePast(),
-            status: "INFO",
+            status: .info,
+            message: .mockRandom(length: 20),
+            service: "ios-sdk-unit-tests"
+        )
+    }
+    
+    static func mockAnyWith(status: Log.Status) -> Log {
+        return Log(
+            date: .mockRandomInThePast(),
+            status: status,
             message: .mockRandom(length: 20),
             service: "ios-sdk-unit-tests"
         )
