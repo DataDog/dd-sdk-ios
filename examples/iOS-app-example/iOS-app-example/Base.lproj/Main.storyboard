@@ -49,12 +49,11 @@
                                         <segments>
                                             <segment title="DEBUG"/>
                                             <segment title="INFO"/>
-                                            <segment title="WARNING"/>
+                                            <segment title="NOTICE"/>
+                                            <segment title="WARN"/>
                                             <segment title="ERROR"/>
+                                            <segment title="CRITICAL"/>
                                         </segments>
-                                        <connections>
-                                            <action selector="didChangeLogLevel:" destination="BYZ-38-t0r" eventType="valueChanged" id="Had-lQ-X4y"/>
-                                        </connections>
                                     </segmentedControl>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="P9X-Q2-9qd" userLabel="Vertical gap 10">
                                         <rect key="frame" x="0.0" y="81" width="384" height="10"/>
