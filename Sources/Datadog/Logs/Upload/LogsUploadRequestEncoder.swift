@@ -1,7 +1,7 @@
 import Foundation
 
 /// Builds `HTTPRequest` for sending logs to the server.
-struct LogsUploadRequestEncoder {
+internal struct LogsUploadRequestEncoder {
     private let url: URL
     private let headers = ["Content-Type": "application/json"]
     private let method = "POST"

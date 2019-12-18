@@ -52,7 +52,7 @@ extension Date {
     }
 
     static func mockDecember15th2019At10AMUTC() -> Date {
-        return mockSpecificUTCGregorianDate(year: 2019, month: 12, day: 15, hour: 10)
+        return mockSpecificUTCGregorianDate(year: 2_019, month: 12, day: 15, hour: 10)
     }
 }
 
@@ -65,7 +65,7 @@ extension URL {
 extension String {
     static func mockRandom(length: Int = 10) -> String {
         let characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
-        return String((0..<length).map{ _ in characters.randomElement()! })
+        return String((0..<length).map { _ in characters.randomElement()! })
     }
 }
 

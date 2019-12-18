@@ -2,7 +2,6 @@ import XCTest
 @testable import Datadog
 
 class LoggerTests: XCTestCase {
-
     func testItSendsLogsWithDifferentStatus() {
         let expectation = self.expectation(description: "send 6 logs of different status")
         expectation.expectedFulfillmentCount = 6
@@ -27,9 +26,9 @@ class LoggerTests: XCTestCase {
             (value: ["CRITICAL"], keyPath: "@unionOfObjects.status"),
         ]
 
-        zip(loggingMethods, expectedRequestBodyMatches).forEach { (method, expectedRequestBodyMatch) in
+        zip(loggingMethods, expectedRequestBodyMatches).forEach { method, expectedRequestBodyMatch in
             let loggerInstance = Logger(
-                uploader: .mockUploaderCapturingRequests(captureBlock: { [unowned self] (request) in
+                uploader: .mockUploaderCapturingRequests(captureBlock: { [unowned self] request in
                     self.assertThat(
                         serializedLogData: request.httpBody ?? Data(),
                         matchesValue: expectedRequestBodyMatch.value,

@@ -2,7 +2,6 @@ import XCTest
 @testable import Datadog
 
 class LogsUploaderTests: XCTestCase {
-
     func testWhenLogsAreSentWith200Code_itReportsLogsDeliveryStatus_success() throws {
         let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
         let uploader = LogsUploader(
@@ -11,7 +10,7 @@ class LogsUploaderTests: XCTestCase {
         )
         let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { (status) in
+        try uploader.upload(logs: logs) { status in
             XCTAssertEqual(status, LogsDeliveryStatus.success(logs: logs))
             expectation.fulfill()
         }
@@ -27,7 +26,7 @@ class LogsUploaderTests: XCTestCase {
         )
         let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { (status) in
+        try uploader.upload(logs: logs) { status in
             XCTAssertEqual(status, LogsDeliveryStatus.redirection(logs: logs))
             expectation.fulfill()
         }
@@ -43,7 +42,7 @@ class LogsUploaderTests: XCTestCase {
         )
         let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { (status) in
+        try uploader.upload(logs: logs) { status in
             XCTAssertEqual(status, LogsDeliveryStatus.clientError(logs: logs))
             expectation.fulfill()
         }
@@ -59,7 +58,7 @@ class LogsUploaderTests: XCTestCase {
         )
         let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { (status) in
+        try uploader.upload(logs: logs) { status in
             XCTAssertEqual(status, LogsDeliveryStatus.serverError(logs: logs))
             expectation.fulfill()
         }
@@ -75,7 +74,7 @@ class LogsUploaderTests: XCTestCase {
         )
         let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { (status) in
+        try uploader.upload(logs: logs) { status in
             XCTAssertEqual(status, LogsDeliveryStatus.networkError(logs: logs))
             expectation.fulfill()
         }
@@ -91,7 +90,7 @@ class LogsUploaderTests: XCTestCase {
         )
         let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { (status) in
+        try uploader.upload(logs: logs) { status in
             XCTAssertEqual(status, LogsDeliveryStatus.unknown(logs: logs))
             expectation.fulfill()
         }

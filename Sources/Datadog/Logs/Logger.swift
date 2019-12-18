@@ -57,7 +57,7 @@ public class Logger {
         // TODO: RUMM-128 Evaluate `message()` only if "datadog" or "console" output is enabled
         let log = Log(date: Date(), status: status, message: message(), service: "ios-sdk-test-service")
         do {
-            try uploader.upload(logs: [log]) { (status) in
+            try uploader.upload(logs: [log]) { status in
                 print("ℹ️ logs delivery status: \(status)")
             }
         } catch {

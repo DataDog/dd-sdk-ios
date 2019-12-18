@@ -2,7 +2,6 @@ import XCTest
 @testable import Datadog
 
 class LogsUploadRequestEncoderTests: XCTestCase {
-
     private let logsUploadURL = URL(string: "https://api.example.com/v1/logs/abcdefghijklm")!
 
     func testItEncodesRequestMetadata() throws {

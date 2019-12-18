@@ -1,6 +1,6 @@
 import Foundation
 
-enum LogsDeliveryStatus: Equatable {
+internal enum LogsDeliveryStatus: Equatable {
     /// Corresponds to HTTP 2xx response status codes.
     case success(logs: [Log])
     /// Corresponds to HTTP 3xx response status codes.
