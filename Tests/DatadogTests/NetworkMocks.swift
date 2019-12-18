@@ -18,4 +18,10 @@ extension HTTPClient {
             session: .mockDeliveryFailure(error: error)
         )
     }
+    
+    static func mockRequestCapture(captureBlock: @escaping (URLRequest) -> Void) -> HTTPClient {
+        return HTTPClient(
+            session: .mockRequestCapture(captureBlock: captureBlock)
+        )
+    }
 }

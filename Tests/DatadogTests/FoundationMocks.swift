@@ -91,6 +91,7 @@ class URLSessionDataTaskMock: URLSessionDataTask {
     }
 }
 
+/// Mocked `URLSession` which returns given `data`, `urlResponse` or `error`.
 class URLSessionMock: URLSession {
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
@@ -104,6 +105,17 @@ class URLSessionMock: URLSession {
         let error = self.error
         
         return URLSessionDataTaskMock { completionHandler(data, urlResponse, error) }
+    }
+}
+
+/// Mocked `URLSession` which notifies sent requests on `requestSent` callback.
+class URLSessionRequestCapturingMock: URLSession {
+    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+
+    var requestSent: ((URLRequest) -> Void)?
+    
+    override func dataTask(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> URLSessionDataTask {
+        return URLSessionDataTaskMock { [unowned self] in self.requestSent?(request) }
     }
 }
 
@@ -121,6 +133,12 @@ extension URLSession {
         session.data = nil
         session.urlResponse = nil
         session.error = error
+        return session
+    }
+    
+    static func mockRequestCapture(captureBlock: @escaping (URLRequest) -> Void) -> URLSessionRequestCapturingMock {
+        let session = URLSessionRequestCapturingMock()
+        session.requestSent = captureBlock
         return session
     }
 }

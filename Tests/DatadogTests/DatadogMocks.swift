@@ -15,3 +15,13 @@ extension Datadog {
         return try! Datadog(logsEndpoint: logsEndpoint, clientToken: clientToken)
     }
 }
+
+extension LogsUploader {
+    /// Mocks `LogsUploader` instance which notifies sent requests on `captureBlock`.
+    static func mockUploaderCapturingRequests(captureBlock: @escaping (URLRequest) -> Void) -> LogsUploader {
+        return LogsUploader(
+            configuration: .mockAny(),
+            httpClient: .mockRequestCapture(captureBlock: captureBlock)
+        )
+    }
+}
