@@ -43,7 +43,7 @@ class LogsUploadRequestEncoderTests: XCTestCase {
         assertThat(serializedLogData: requestBody, fullyMatches: json)
     }
     
-    func testItEncodesDifferentLogStatues() throws {
+    func testItEncodesDifferentLogStatuses() throws {
         let logs: [Log] = [
             .mockAnyWith(status: .debug),
             .mockAnyWith(status: .info),
