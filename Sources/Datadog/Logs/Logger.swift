@@ -12,11 +12,11 @@ public class Logger {
             )
         )
     }
-    
+
     internal init(uploader: LogsUploader) {
         self.uploader = uploader
     }
-    
+
     /// Sends a DEBUG log message.
     /// - Parameter message: the message to be logged
     public func debug(_ message: @autoclosure () -> String) {
@@ -28,25 +28,25 @@ public class Logger {
     public func info(_ message: @autoclosure () -> String) {
         log(status: .info, message: message())
     }
-    
+
     /// Sends a NOTICE log message.
     /// - Parameter message: the message to be logged
     public func notice(_ message: @autoclosure () -> String) {
         log(status: .notice, message: message())
     }
-    
+
     /// Sends a WARN log message.
     /// - Parameter message: the message to be logged
     public func warn(_ message: @autoclosure () -> String) {
         log(status: .warn, message: message())
     }
-    
+
     /// Sends an ERROR log message.
     /// - Parameter message: the message to be logged
     public func error(_ message: @autoclosure () -> String) {
         log(status: .error, message: message())
     }
-    
+
     /// Sends a CRITICAL log message.
     /// - Parameter message: the message to be logged
     public func critical(_ message: @autoclosure () -> String) {

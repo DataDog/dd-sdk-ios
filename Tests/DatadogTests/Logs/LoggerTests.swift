@@ -16,7 +16,7 @@ class LoggerTests: XCTestCase {
             Logger.error,
             Logger.critical,
         ]
-        
+
         // Corresponding collection of matches applied on `.httpData` field of `URLRequest` objects sent by `Logger`
         let expectedRequestBodyMatches = [
             (value: ["DEBUG"],    keyPath: "@unionOfObjects.status"),
@@ -26,7 +26,7 @@ class LoggerTests: XCTestCase {
             (value: ["ERROR"],    keyPath: "@unionOfObjects.status"),
             (value: ["CRITICAL"], keyPath: "@unionOfObjects.status"),
         ]
-        
+
         zip(loggingMethods, expectedRequestBodyMatches).forEach { (method, expectedRequestBodyMatch) in
             let loggerInstance = Logger(
                 uploader: .mockUploaderCapturingRequests(captureBlock: { [unowned self] (request) in
@@ -41,7 +41,7 @@ class LoggerTests: XCTestCase {
             let loggingMethodInvocation = method(loggerInstance)
             loggingMethodInvocation("some message")
         }
-        
+
         waitForExpectations(timeout: 1, handler: nil)
     }
 }

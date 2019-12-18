@@ -3,17 +3,17 @@ import Foundation
 /// Client for sending requests over HTTP.
 final class HTTPClient {
     private let session: URLSession
-    
+
     convenience init() {
         let configuration: URLSessionConfiguration = .ephemeral
         // TODO: RUMM-123 Optimize `URLSessionConfiguration` for good traffic performance
         self.init(session: URLSession(configuration: configuration))
     }
-    
+
     init(session: URLSession) {
         self.session = session
     }
-    
+
     func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
         let task = session.dataTask(with: request) { (data, response, error) in
             completion(httpClientResult(for: (data, response, error)))
@@ -30,14 +30,14 @@ struct URLSessionTransportInconsistencyException: Error {}
 /// it into only two possible states of `HTTPTransportResult`.
 private func httpClientResult(for urlSessionTaskCompletion: (Data?, URLResponse?, Error?)) -> Result<HTTPURLResponse, Error> {
     let (_, response, error) = urlSessionTaskCompletion
-    
+
     if let error = error {
         return .failure(error)
     }
-    
+
     if let httpResponse = response as? HTTPURLResponse {
         return .success(httpResponse)
     }
-    
+
     return .failure(URLSessionTransportInconsistencyException())
 }

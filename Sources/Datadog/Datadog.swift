@@ -10,7 +10,7 @@ public struct DatadogInitializationException: Error {
 public struct Datadog {
     /// URL to upload logs to.
     internal let logsUploadURL: URL
-    
+
     public init(
         logsEndpoint: String,
         clientToken: String
