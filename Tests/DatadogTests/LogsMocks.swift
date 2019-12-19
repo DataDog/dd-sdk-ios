@@ -10,7 +10,7 @@ extension Log {
     static func mockRandom() -> Log {
         return Log(
             date: .mockRandomInThePast(),
-            status: .info,
+            status: .mockRandom(),
             message: .mockRandom(length: 20),
             service: "ios-sdk-unit-tests"
         )
@@ -23,5 +23,12 @@ extension Log {
             message: .mockRandom(length: 20),
             service: "ios-sdk-unit-tests"
         )
+    }
+}
+
+extension Log.Status {
+    static func mockRandom() -> Log.Status {
+        let statuses: [Log.Status] = [.debug, .info, .notice, .warn, .error, .critical]
+        return statuses.randomElement()!
     }
 }
