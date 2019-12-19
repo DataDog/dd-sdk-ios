@@ -9,6 +9,9 @@ fi
 # Generate `Datadog.xcodeproj`
 swift package generate-xcodeproj
 
+# Install `swiftlint`
+brew install swiftlint
+
 # Install Datadog Xcode templates
 ./tools/xcode-templates/install-xcode-templates.sh
 
