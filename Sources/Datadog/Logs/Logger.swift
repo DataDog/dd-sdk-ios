@@ -16,16 +16,46 @@ public class Logger {
     internal init(uploader: LogsUploader) {
         self.uploader = uploader
     }
-
-    /// Logs INFO message.
-    ///
-    /// - Parameter message: the message
-    public func info(_ message: String) {
-        log(status: "INFO", message: message)
+    
+    /// Sends a DEBUG log message.
+    /// - Parameter message: the message to be logged
+    public func debug(_ message: @autoclosure () -> String) {
+        log(status: .debug, message: message())
     }
 
-    private func log(status: String, message: String) {
-        let log = Log(date: Date(), status: status, message: message, service: "ios-sdk-test-service")
+    /// Sends an INFO log message.
+    /// - Parameter message: the message to be logged
+    public func info(_ message: @autoclosure () -> String) {
+        log(status: .info, message: message())
+    }
+    
+    /// Sends a NOTICE log message.
+    /// - Parameter message: the message to be logged
+    public func notice(_ message: @autoclosure () -> String) {
+        log(status: .notice, message: message())
+    }
+    
+    /// Sends a WARN log message.
+    /// - Parameter message: the message to be logged
+    public func warn(_ message: @autoclosure () -> String) {
+        log(status: .warn, message: message())
+    }
+    
+    /// Sends an ERROR log message.
+    /// - Parameter message: the message to be logged
+    public func error(_ message: @autoclosure () -> String) {
+        log(status: .error, message: message())
+    }
+    
+    /// Sends a CRITICAL log message.
+    /// - Parameter message: the message to be logged
+    public func critical(_ message: @autoclosure () -> String) {
+        log(status: .critical, message: message())
+    }
+
+    private func log(status: Log.Status, message: @autoclosure () -> String) {
+        // TODO: RUMM-128 Evaluate `message()` only if "datadog" or "console" output is enabled
+        let log = Log(date: Date(), status: status, message: message(), service: "ios-sdk-test-service")
         do {
             try uploader.upload(logs: [log]) { (status) in
                 print("ℹ️ logs delivery status: \(status)")

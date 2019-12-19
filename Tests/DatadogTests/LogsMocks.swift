@@ -10,9 +10,25 @@ extension Log {
     static func mockRandom() -> Log {
         return Log(
             date: .mockRandomInThePast(),
-            status: "INFO",
+            status: .mockRandom(),
             message: .mockRandom(length: 20),
             service: "ios-sdk-unit-tests"
         )
+    }
+    
+    static func mockAnyWith(status: Log.Status) -> Log {
+        return Log(
+            date: .mockRandomInThePast(),
+            status: status,
+            message: .mockRandom(length: 20),
+            service: "ios-sdk-unit-tests"
+        )
+    }
+}
+
+extension Log.Status {
+    static func mockRandom() -> Log.Status {
+        let statuses: [Log.Status] = [.debug, .info, .notice, .warn, .error, .critical]
+        return statuses.randomElement()!
     }
 }
