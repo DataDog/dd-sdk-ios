@@ -37,7 +37,7 @@ extension Date {
     static func mockRandomInThePast() -> Date {
         return Date(timeIntervalSince1970: TimeInterval.random(in: 0..<Date().timeIntervalSince1970))
     }
-    
+
     static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
         var dateComponents = DateComponents()
         dateComponents.year = year
@@ -50,9 +50,9 @@ extension Date {
         dateComponents.calendar = Calendar(identifier: .gregorian)
         return dateComponents.date!
     }
-    
+
     static func mockDecember15th2019At10AMUTC() -> Date {
-        return mockSpecificUTCGregorianDate(year: 2019, month: 12, day: 15, hour: 10)
+        return mockSpecificUTCGregorianDate(year: 2_019, month: 12, day: 15, hour: 10)
     }
 }
 
@@ -65,13 +65,13 @@ extension URL {
 extension String {
     static func mockRandom(length: Int = 10) -> String {
         let characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
-        return String((0..<length).map{ _ in characters.randomElement()! })
+        return String((0..<length).map { _ in characters.randomElement()! })
     }
 }
 
 struct ErrorMock: Error {
     let description: String
-    
+
     init(_ description: String = "") {
         self.description = description
     }
@@ -81,11 +81,11 @@ struct ErrorMock: Error {
 
 class URLSessionDataTaskMock: URLSessionDataTask {
     private let closure: () -> Void
-    
+
     init(closure: @escaping () -> Void) {
         self.closure = closure
     }
-    
+
     override func resume() {
         closure()
     }
@@ -98,12 +98,12 @@ class URLSessionMock: URLSession {
     var data: Data?
     var urlResponse: URLResponse?
     var error: Error?
-    
+
     override func dataTask(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> URLSessionDataTask {
         let data = self.data
         let urlResponse = self.urlResponse
         let error = self.error
-        
+
         return URLSessionDataTaskMock { completionHandler(data, urlResponse, error) }
     }
 }
@@ -113,7 +113,7 @@ class URLSessionRequestCapturingMock: URLSession {
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
     var requestSent: ((URLRequest) -> Void)?
-    
+
     override func dataTask(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> URLSessionDataTask {
         return URLSessionDataTaskMock { [unowned self] in self.requestSent?(request) }
     }
@@ -127,7 +127,7 @@ extension URLSession {
         session.error = nil
         return session
     }
-    
+
     static func mockDeliveryFailure(error: Error) -> URLSessionMock {
         let session = URLSessionMock()
         session.data = nil
@@ -135,7 +135,7 @@ extension URLSession {
         session.error = error
         return session
     }
-    
+
     static func mockRequestCapture(captureBlock: @escaping (URLRequest) -> Void) -> URLSessionRequestCapturingMock {
         let session = URLSessionRequestCapturingMock()
         session.requestSent = captureBlock
@@ -147,7 +147,7 @@ extension HTTPURLResponse {
     static func mockAny() -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: 1, httpVersion: nil, headerFields: nil)!
     }
-    
+
     static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }

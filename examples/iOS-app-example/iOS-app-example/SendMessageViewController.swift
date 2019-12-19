@@ -7,11 +7,11 @@ class SendMessageViewController: UIViewController {
     @IBOutlet weak var logServiceNameTextField: UITextField!
     @IBOutlet weak var sendOnceButton: UIButton!
     @IBOutlet weak var send10xButton: UIButton!
-    
+
     enum LogLevelSegment: Int {
         case debug = 0, info, notice, warn, error, critical
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         hideKeyboardWhenTapOutside()
@@ -29,7 +29,7 @@ class SendMessageViewController: UIViewController {
         default:        assertionFailure("Unsupported `.selectedSegmentIndex` value: \(logLevelSegmentedControl.selectedSegmentIndex)")
         }
     }
-    
+
     @IBAction func didTapSend10Logs(_ sender: Any) {
         let message = logMessageTextField.text ?? ""
         switch LogLevelSegment(rawValue: logLevelSegmentedControl.selectedSegmentIndex) {
@@ -42,7 +42,7 @@ class SendMessageViewController: UIViewController {
         default:        assertionFailure("Unsupported `.selectedSegmentIndex` value: \(logLevelSegmentedControl.selectedSegmentIndex)")
         }
     }
-    
+
     private func repeat10x(block: () -> Void) {
         (0..<10).forEach { _ in block() }
     }

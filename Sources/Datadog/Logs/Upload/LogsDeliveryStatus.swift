@@ -1,6 +1,6 @@
 import Foundation
 
-enum LogsDeliveryStatus: Equatable {
+internal enum LogsDeliveryStatus: Equatable {
     /// Corresponds to HTTP 2xx response status codes.
     case success(logs: [Log])
     /// Corresponds to HTTP 3xx response status codes.
@@ -13,7 +13,7 @@ enum LogsDeliveryStatus: Equatable {
     case networkError(logs: [Log])
     /// Corresponds to unknown HTTP response status code.
     case unknown(logs: [Log])
-    
+
     init(from httpResponse: HTTPURLResponse, logs: [Log]) {
         switch httpResponse.statusCode {
         case 200...299: self = .success(logs: logs)
@@ -23,7 +23,7 @@ enum LogsDeliveryStatus: Equatable {
         default:        self = .unknown(logs: logs)
         }
     }
-    
+
     init(from httpRequestDeliveryError: Error, logs: [Log]) {
         self = .networkError(logs: logs)
     }

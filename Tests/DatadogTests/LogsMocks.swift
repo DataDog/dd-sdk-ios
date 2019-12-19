@@ -15,7 +15,7 @@ extension Log {
             service: "ios-sdk-unit-tests"
         )
     }
-    
+
     static func mockAnyWith(status: Log.Status) -> Log {
         return Log(
             date: .mockRandomInThePast(),

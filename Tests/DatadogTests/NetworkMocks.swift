@@ -12,13 +12,13 @@ extension HTTPClient {
             session: .mockDeliverySuccess(data: Data(), response: .mockResponseWith(statusCode: responseStatusCode))
         )
     }
-    
+
     static func mockDeliveryFailureWith(error: Error) -> HTTPClient {
         return HTTPClient(
             session: .mockDeliveryFailure(error: error)
         )
     }
-    
+
     static func mockRequestCapture(captureBlock: @escaping (URLRequest) -> Void) -> HTTPClient {
         return HTTPClient(
             session: .mockRequestCapture(captureBlock: captureBlock)

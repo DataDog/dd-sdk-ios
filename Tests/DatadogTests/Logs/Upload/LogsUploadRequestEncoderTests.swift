@@ -2,7 +2,6 @@ import XCTest
 @testable import Datadog
 
 class LogsUploadRequestEncoderTests: XCTestCase {
-
     private let logsUploadURL = URL(string: "https://api.example.com/v1/logs/abcdefghijklm")!
 
     func testItEncodesRequestMetadata() throws {
@@ -14,7 +13,7 @@ class LogsUploadRequestEncoderTests: XCTestCase {
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertGreaterThan(request.httpBody?.count ?? .min, 0)
     }
-    
+
     // MARK: - `Log` tests
 
     func testItEncodesHTTPBodyAsJSONArray() throws {
@@ -39,10 +38,10 @@ class LogsUploadRequestEncoderTests: XCTestCase {
 
         let encoder = LogsUploadRequestEncoder(uploadURL: .mockAny())
         let requestBody = try encoder.encodeRequest(with: logs).httpBody ?? Data()
-        
+
         assertThat(serializedLogData: requestBody, fullyMatches: json)
     }
-    
+
     func testItEncodesDifferentLogStatuses() throws {
         let logs: [Log] = [
             .mockAnyWith(status: .debug),
@@ -52,10 +51,10 @@ class LogsUploadRequestEncoderTests: XCTestCase {
             .mockAnyWith(status: .error),
             .mockAnyWith(status: .critical),
         ]
-        
+
         let encoder = LogsUploadRequestEncoder(uploadURL: .mockAny())
         let requestBody = try encoder.encodeRequest(with: logs).httpBody ?? Data()
-        
+
         assertThat(
             serializedLogData: requestBody,
             matchesValue: ["DEBUG", "INFO", "NOTICE", "WARN", "ERROR", "CRITICAL"],

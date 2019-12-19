@@ -1,7 +1,7 @@
 import Foundation
 
 /// Representation of log uploaded to server.
-struct Log: Codable, Equatable {
+internal struct Log: Codable, Equatable {
     enum Status: String, Codable {
         case debug = "DEBUG"
         case info = "INFO"
