@@ -2,31 +2,57 @@ import XCTest
 @testable import Datadog
 
 class DatadogTests: XCTestCase {
-    func testWhenCorrectEndpointAndClientTokenAreSet_itBuildsLogsUploadURL() throws {
-        let datadog1 = try Datadog(
-            logsEndpoint: "https://api.example.com/v1/logs/",
-            clientToken: "abcdefghi"
-        )
-        XCTAssertEqual(datadog1.logsUploadURL, URL(string: "https://api.example.com/v1/logs/abcdefghi?ddsource=mobile")!)
-        XCTAssertEqual(datadog1.logsUploadURL.query, "ddsource=mobile")
-
-        let datadog2 = try Datadog(
-            logsEndpoint: "https://api.example.com/v1/logs", // not normalized URL
-            clientToken: "abcdefghi"
-        )
-        XCTAssertEqual(datadog2.logsUploadURL, URL(string: "https://api.example.com/v1/logs/abcdefghi?ddsource=mobile")!)
-        XCTAssertEqual(datadog2.logsUploadURL.query, "ddsource=mobile")
+    override func setUp() {
+        super.setUp()
+        XCTAssertNil(Datadog.instance)
     }
 
-    func testWhenEmptyClientTokenIsNotSet_itThrows() {
-        XCTAssertThrowsError(try Datadog(logsEndpoint: "https://api.example.com/v1/logs", clientToken: "")) { error in
-            XCTAssertTrue((error as? DatadogInitializationException)?.description == "`clientToken` cannot be empty.")
+    override func tearDown() {
+        XCTAssertNil(Datadog.instance)
+        super.tearDown()
+    }
+
+    func testItCanBeInitializedWithValidConfiguration() {
+        Datadog.initialize(
+            endpointURL: "https://api.example.com/v1/logs/",
+            clientToken: "abcdefghi"
+        )
+        XCTAssertNotNil(Datadog.instance)
+        Datadog.stop()
+    }
+
+    func testAfterInitialized_itCanBeStopped() {
+        Datadog.initialize(
+            endpointURL: "https://api.example.com/v1/logs/",
+            clientToken: "abcdefghi"
+        )
+        Datadog.stop()
+        XCTAssertNil(Datadog.instance)
+    }
+
+    func testWhenInitializedWithInvalidConfiguration_itThrowsProgrammerError() {
+        XCTAssertThrowsError(try Datadog.initializeOrThrow(endpointURL: "", clientToken: "")) { error in
+            XCTAssertTrue(error is ProgrammerError)
         }
     }
 
-    func testWhenLogsEndpointIsNotSet_itThrows() {
-        XCTAssertThrowsError(try Datadog(logsEndpoint: "", clientToken: "abcdefghi")) { error in
-            XCTAssertTrue((error as? DatadogInitializationException)?.description == "`logsEndpoint` cannot be empty.")
+    func testWhenInitializedMoreThanOnce_itThrowsProgrammerError() throws {
+        let initialize = {
+            try Datadog.initializeOrThrow(
+                endpointURL: "https://api.example.com/v1/logs/",
+                clientToken: "abcdefghi"
+            )
+        }
+        try initialize()
+        XCTAssertThrowsError(try initialize()) { error in
+            XCTAssertTrue((error as? ProgrammerError)?.description == "Datadog SDK is already initialized.")
+        }
+        Datadog.stop()
+    }
+
+    func testWhenStoppedBeforeBeingInitialized_itThrowsProgrammerError() throws {
+        XCTAssertThrowsError(try Datadog.stopOrThrow()) { error in
+            XCTAssertTrue((error as? ProgrammerError)?.description == "Attempted to stop SDK before it was initialized.")
         }
     }
 }
