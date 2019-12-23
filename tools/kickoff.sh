@@ -15,4 +15,7 @@ brew install swiftlint
 # Install Datadog Xcode templates
 ./tools/xcode-templates/install-xcode-templates.sh
 
+echo "💡 If you are running \`kickoff.sh\` for the first time, it will create \`examples/dd-config.plist\` file template for you."
+cp -i ./tools/config/dd-config-template.plist ./examples/dd-config.plist
+
 echo "💪 All good"

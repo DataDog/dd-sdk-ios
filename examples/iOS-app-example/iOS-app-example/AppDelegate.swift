@@ -5,13 +5,14 @@ fileprivate(set) var logger: Logger!
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    private lazy var config = ExampleAppConfig()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         // Initialize Datadog SDK
         Datadog.initialize(
-            endpointURL: "", // TODO: RUMM-124 Inject `Datadog` logs endpoint and client token dynamically
-            clientToken: ""
+            endpointURL: "https://mobile-http-intake.logs.datadoghq.com/v1/input/",
+            clientToken: config.clientToken // use your own client token obtained on Datadog website
         )
 
         // Create logger instance

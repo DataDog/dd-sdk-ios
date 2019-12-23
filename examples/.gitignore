@@ -1,0 +1,2 @@
+# `dd-config.plist` file stores your Datadog secrets and should not be checked in
+dd-config.plist
