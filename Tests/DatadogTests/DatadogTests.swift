@@ -12,22 +12,13 @@ class DatadogTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItCanBeInitializedWithValidConfiguration() {
+    func testItCanBeInitializedWithValidConfiguration() throws {
         Datadog.initialize(
             endpointURL: "https://api.example.com/v1/logs/",
             clientToken: "abcdefghi"
         )
         XCTAssertNotNil(Datadog.instance)
-        Datadog.stop()
-    }
-
-    func testAfterInitialized_itCanBeStopped() {
-        Datadog.initialize(
-            endpointURL: "https://api.example.com/v1/logs/",
-            clientToken: "abcdefghi"
-        )
-        Datadog.stop()
-        XCTAssertNil(Datadog.instance)
+        try Datadog.deinitializeOrThrow()
     }
 
     func testWhenInitializedWithInvalidConfiguration_itThrowsProgrammerError() {
@@ -47,12 +38,6 @@ class DatadogTests: XCTestCase {
         XCTAssertThrowsError(try initialize()) { error in
             XCTAssertTrue((error as? ProgrammerError)?.description == "Datadog SDK is already initialized.")
         }
-        Datadog.stop()
-    }
-
-    func testWhenStoppedBeforeBeingInitialized_itThrowsProgrammerError() throws {
-        XCTAssertThrowsError(try Datadog.stopOrThrow()) { error in
-            XCTAssertTrue((error as? ProgrammerError)?.description == "Attempted to stop SDK before it was initialized.")
-        }
+        try Datadog.deinitializeOrThrow()
     }
 }

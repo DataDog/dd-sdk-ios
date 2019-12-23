@@ -57,7 +57,7 @@ class LoggerBuilderTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItBuildsDefaultLogger() {
+    func testItBuildsDefaultLogger() throws {
         Datadog.initialize(
             endpointURL: "https://api.example.com/v1/logs/",
             clientToken: "abcdefghi"
@@ -66,10 +66,10 @@ class LoggerBuilderTests: XCTestCase {
 
         XCTAssertEqual(logger.serviceName, "ios")
 
-        Datadog.stop()
+        try Datadog.deinitializeOrThrow()
     }
 
-    func testItBuildsParametrizedLogger() {
+    func testItBuildsParametrizedLogger() throws {
         Datadog.initialize(
             endpointURL: "https://api.example.com/v1/logs/",
             clientToken: "abcdefghi"
@@ -80,7 +80,7 @@ class LoggerBuilderTests: XCTestCase {
 
         XCTAssertEqual(logger.serviceName, "abcd")
 
-        Datadog.stop()
+        try Datadog.deinitializeOrThrow()
     }
 
     func testWhenDatadogIsNotInitialized_itThrowsProgrammerError() {

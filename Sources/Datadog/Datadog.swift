@@ -22,12 +22,8 @@ public class Datadog {
 
     // MARK: - Deinitialization
 
-    public static func stop() {
-        do { try stopOrThrow()
-        } catch { fatalError("Programmer error - \(error)") }
-    }
-
-    static func stopOrThrow() throws {
+    /// Internal feature made only for tests purpose.
+    static func deinitializeOrThrow() throws {
         guard Datadog.instance != nil else {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
