@@ -35,12 +35,57 @@ class LoggerTests: XCTestCase {
                         onKeyPath: expectedRequestBodyMatch.keyPath
                     )
                     expectation.fulfill()
-                })
+                }),
+                serviceName: .mockRandom()
             )
             let loggingMethodInvocation = method(loggerInstance)
             loggingMethodInvocation("some message")
         }
 
         waitForExpectations(timeout: 1, handler: nil)
+    }
+}
+
+class LoggerBuilderTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        XCTAssertNil(Datadog.instance)
+    }
+
+    override func tearDown() {
+        XCTAssertNil(Datadog.instance)
+        super.tearDown()
+    }
+
+    func testItBuildsDefaultLogger() throws {
+        Datadog.initialize(
+            endpointURL: "https://api.example.com/v1/logs/",
+            clientToken: "abcdefghi"
+        )
+        let logger = Logger.builder.build()
+
+        XCTAssertEqual(logger.serviceName, "ios")
+
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testItBuildsParametrizedLogger() throws {
+        Datadog.initialize(
+            endpointURL: "https://api.example.com/v1/logs/",
+            clientToken: "abcdefghi"
+        )
+        let logger = Logger.builder
+            .set(serviceName: "abcd")
+            .build()
+
+        XCTAssertEqual(logger.serviceName, "abcd")
+
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testWhenDatadogIsNotInitialized_itThrowsProgrammerError() {
+        XCTAssertThrowsError(try Logger.builder.buildOrThrow()) { error in
+            XCTAssertTrue((error as? ProgrammerError)?.description == "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
+        }
     }
 }

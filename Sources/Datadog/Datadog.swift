@@ -1,36 +1,49 @@
 import Foundation
 
-/// An exception thrown during Datadog SDK initialization if configuration is invalid. Check `description` for details.
-public struct DatadogInitializationException: Error {
-    /// Describes the reason of failed initialization.
-    public let description: String
-}
-
 /// Datadog SDK configuration object.
-public struct Datadog {
-    /// URL to upload logs to.
-    internal let logsUploadURL: URL
+public class Datadog {
+    static var instance: Datadog?
 
-    public init(
-        logsEndpoint: String,
-        clientToken: String
-    ) throws {
-        self.logsUploadURL = try buildLogsUploadURLOrThrow(logsEndpoint: logsEndpoint, clientToken: clientToken)
+    // MARK: - Initialization
+
+    public static func initialize(endpointURL: String, clientToken: String) {
+        do { try initializeOrThrow(endpointURL: endpointURL, clientToken: clientToken)
+        } catch { fatalError("Programmer error - \(error)") }
+    }
+
+    static func initializeOrThrow(endpointURL: String, clientToken: String) throws {
+        guard Datadog.instance == nil else {
+            throw ProgrammerError(description: "Datadog SDK is already initialized.")
+        }
+        self.instance = Datadog(
+            logsUploader: LogsUploader(validURL: try .init(endpointURL: endpointURL, clientToken: clientToken))
+        )
+    }
+
+    // MARK: - Deinitialization
+
+    /// Internal feature made only for tests purpose.
+    static func deinitializeOrThrow() throws {
+        guard Datadog.instance != nil else {
+            throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
+        }
+        Datadog.instance = nil
+    }
+
+    // MARK: - Internal
+
+    // TODO: RUMM-109 Make `logsUploader` dependency private when logs are uploaded from files
+    let logsUploader: LogsUploader
+
+    init(logsUploader: LogsUploader) {
+        self.logsUploader = logsUploader
     }
 }
 
-private func buildLogsUploadURLOrThrow(logsEndpoint: String, clientToken: String) throws -> URL {
-    guard !logsEndpoint.isEmpty else {
-        throw DatadogInitializationException(description: "`logsEndpoint` cannot be empty.")
-    }
-    guard !clientToken.isEmpty else {
-        throw DatadogInitializationException(description: "`clientToken` cannot be empty.")
-    }
-    guard let endpointWithClientToken = URL(string: logsEndpoint)?.appendingPathComponent(clientToken) else {
-        throw DatadogInitializationException(description: "Invalid `logsEndpoint` or `clientToken`.")
-    }
-    guard let url = URL(string: "\(endpointWithClientToken.absoluteString)?ddsource=mobile") else {
-        throw DatadogInitializationException(description: "Cannot build logs upload URL.")
-    }
-    return url
+/// An exception thrown due to programmer error when calling SDK public API.
+/// It will stop current process execution and crash the app 💥.
+/// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
+/// and if you not call any other SDK methods before it returns.
+internal struct ProgrammerError: Error, CustomStringConvertible {
+    let description: String
 }
