@@ -18,7 +18,7 @@ class LoggerTests: XCTestCase {
 
         // Corresponding collection of matches applied on `.httpData` field of `URLRequest` objects sent by `Logger`
         let expectedRequestBodyMatches = [
-            (value: ["DEBUG"],    keyPath: "@unionOfObjects.status"),
+            (value: ["TEST FAILURE"],    keyPath: "@unionOfObjects.status"),
             (value: ["INFO"],     keyPath: "@unionOfObjects.status"),
             (value: ["NOTICE"],   keyPath: "@unionOfObjects.status"),
             (value: ["WARN"],     keyPath: "@unionOfObjects.status"),
