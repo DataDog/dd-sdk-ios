@@ -17,7 +17,7 @@ public class Datadog {
         }
         self.instance = Datadog(
             logsUploader: LogsUploader(validURL: try .init(endpointURL: endpointURL, clientToken: clientToken))
-        )
+        );
     }
 
     // MARK: - Deinitialization
