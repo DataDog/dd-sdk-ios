@@ -36,7 +36,10 @@ class DatadogTests: XCTestCase {
         }
         try initialize()
         XCTAssertThrowsError(try initialize()) { error in
-            XCTAssertTrue((error as? ProgrammerError)?.description == "Datadog SDK is already initialized.")
+            XCTAssertEqual(
+                (error as? ProgrammerError)?.description,
+                "Datadog SDK usage error: SDK is already initialized."
+            )
         }
         try Datadog.deinitializeOrThrow()
     }

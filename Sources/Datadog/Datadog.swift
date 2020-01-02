@@ -13,7 +13,7 @@ public class Datadog {
 
     static func initializeOrThrow(endpointURL: String, clientToken: String) throws {
         guard Datadog.instance == nil else {
-            throw ProgrammerError(description: "Datadog SDK is already initialized.")
+            throw ProgrammerError(description: "SDK is already initialized.")
         }
         self.instance = Datadog(
             logsUploader: LogsUploader(validURL: try .init(endpointURL: endpointURL, clientToken: clientToken))
@@ -45,5 +45,13 @@ public class Datadog {
 /// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
 /// and if you not call any other SDK methods before it returns.
 internal struct ProgrammerError: Error, CustomStringConvertible {
+    init(description: String) { self.description = "Datadog SDK usage error: \(description)" }
+    let description: String
+}
+
+/// An exception thrown internally by SDK.
+/// It is always handled by SDK and never passed to the user - never causing a crash ⛑.
+/// `InternalError` might be thrown due to  SDK internal inconsistency or external issues (e.g.  I/O errors).
+internal struct InternalError: Error, CustomStringConvertible {
     let description: String
 }
