@@ -46,7 +46,7 @@ extension Directory {
     }
 
     /// Deletes particular file in this directory.
-    func deleteFile(fileName: String) {
+    func deleteFile(named fileName: String) {
         let url = urlFor(fileNamed: fileName)
         if FileManager.default.fileExists(atPath: url.path) {
             try? FileManager.default.removeItem(at: url)

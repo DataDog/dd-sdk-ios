@@ -42,7 +42,7 @@ internal final class FileWriter {
 
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
 
-            if file.isEmpty {
+            if file.initialSize == 0 {
                 try file.append { write in
                     write(data)
                 }

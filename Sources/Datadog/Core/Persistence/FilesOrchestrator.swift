@@ -57,7 +57,7 @@ internal class FilesOrchestrator {
                 let lastFile = try WritableFile(existingFileFromURL: lastFileURL)
                 let lastFileAge = dateProvider.currentDate().timeIntervalSince(lastFile.creationDate)
                 let fileIsRecentEnough = lastFileAge <= writeConditions.maxFileAgeForWrite
-                let fileHasRoomForMore = (lastFile.size + writeSize) <= writeConditions.maxFileSize
+                let fileHasRoomForMore = (lastFile.initialSize + writeSize) <= writeConditions.maxFileSize
                 let fileCanBeUsedMoreTimes = (lastWritableFileUsesCount + 1) <= writeConditions.maxNumberOfUsesOfFile
 
                 if fileIsRecentEnough && fileHasRoomForMore && fileCanBeUsedMoreTimes {

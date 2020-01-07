@@ -35,6 +35,10 @@ extension Data {
     static func mockRepeating(byte: UInt8, times count: Int) -> Data {
         return Data(repeating: byte, count: count)
     }
+
+    static func mock(ofSize size: Int) -> Data {
+        return mockRepeating(byte: 0x41, times: size)
+    }
 }
 
 extension Array where Element == Data {
