@@ -19,10 +19,8 @@ internal final class WritableFile {
     init(existingFileFromURL url: URL) throws {
         self.fileURL = url
         self.creationDate = fileCreationDateFrom(fileName: url.lastPathComponent)
-
-        let fileHandle = try FileHandle(forWritingTo: url)
-        defer { fileHandle.closeFile() }
-        self.size = fileHandle.seekToEndOfFile()
+        let fileAttributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+        self.size = fileAttributes[.size] as? UInt64 ?? 0
     }
 
     /// URL of the underlying file in file system.

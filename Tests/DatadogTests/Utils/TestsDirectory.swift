@@ -45,6 +45,14 @@ extension Directory {
         create()
     }
 
+    /// Deletes particular file in this directory.
+    func deleteFile(fileName: String) {
+        let url = urlFor(fileNamed: fileName)
+        if FileManager.default.fileExists(atPath: url.path) {
+            try? FileManager.default.removeItem(at: url)
+        }
+    }
+
     /// Sets directory attributes.
     func set(attributes: [FileAttributeKey: Any]) {
         do {
@@ -52,6 +60,17 @@ extension Directory {
         } catch {
             fatalError("🔥 Failed to set attributes: \(attributes) for `TestsDirectory`: \(error)")
         }
+    }
+
+    /// Returns size of a given file.
+    func sizeOfFile(named fileName: String) throws -> UInt64 {
+        let attributes = try FileManager.default.attributesOfItem(atPath: urlFor(fileNamed: fileName).path)
+        return attributes[.size] as? UInt64 ?? 0
+    }
+
+    /// Creates URL for given file name in this directory.
+    func urlFor(fileNamed fileName: String) -> URL {
+        return url.appendingPathComponent(fileName, isDirectory: false)
     }
 
     /// Returns list of files matching given predicate.
@@ -64,20 +83,10 @@ extension Directory {
         return Set(try files().map { $0.lastPathComponent })
     }
 
-    /// Creates URL for given file name in this directory. Does not create any file.
-    func urlFor(fileNamed fileName: String) -> URL {
-        return url.appendingPathComponent(fileName, isDirectory: false)
-    }
-
     /// Checks if file with given name exists in this directory.
     func fileExists(fileName: String) -> Bool {
         let fileURL = urlFor(fileNamed: fileName)
         return FileManager.default.fileExists(atPath: fileURL.path)
-    }
-
-    /// Returns size of data stored in given file (queries file contents) or `nil` if file does not exist.
-    func sizeOfFile(fileName: String) -> Int? {
-        return contentsOfFile(fileName: fileName)?.count
     }
 
     /// Returns contents of file with given name or `nil` if file does not exist.

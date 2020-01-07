@@ -33,12 +33,14 @@ class WritableFileTests: XCTestCase {
 
     func testItOpensExistingFile() throws {
         let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: .mockDecember15th2019At10AMUTC())
+        let chunk: Data = .mockRepeating(byte: 0x41, times: 10) // 10x uppercase "A"
+        try file.append { write in write(chunk) }
 
         let existingFile = try WritableFile(existingFileFromURL: file.fileURL)
         XCTAssertEqual(existingFile.fileURL.lastPathComponent, fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC()))
         XCTAssertEqual(existingFile.creationDate, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(existingFile.size, 0)
-        XCTAssertTrue(existingFile.isEmpty)
+        XCTAssertEqual(existingFile.size, 10)
+        XCTAssertFalse(existingFile.isEmpty)
     }
 
     func testWhenFileCannotBeOpened_itThrows() {
@@ -57,7 +59,7 @@ class WritableFileTests: XCTestCase {
 
         XCTAssertFalse(file.isEmpty)
         XCTAssertEqual(file.size, 10)
-        XCTAssertEqual(temporaryDirectory.sizeOfFile(fileName: file.fileURL.lastPathComponent), 10)
+        XCTAssertEqual(try temporaryDirectory.sizeOfFile(named: file.fileURL.lastPathComponent), 10)
         XCTAssertEqual(
             temporaryDirectory.contentsOfFile(fileName: file.fileURL.lastPathComponent),
             Data([0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41])
@@ -69,7 +71,7 @@ class WritableFileTests: XCTestCase {
         }
 
         XCTAssertEqual(file.size, 30)
-        XCTAssertEqual(temporaryDirectory.sizeOfFile(fileName: file.fileURL.lastPathComponent), 30)
+        XCTAssertEqual(try temporaryDirectory.sizeOfFile(named: file.fileURL.lastPathComponent), 30)
         XCTAssertEqual(
             temporaryDirectory.contentsOfFile(fileName: file.fileURL.lastPathComponent),
             Data(

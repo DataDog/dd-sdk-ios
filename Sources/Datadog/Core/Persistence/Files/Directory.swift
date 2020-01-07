@@ -8,7 +8,7 @@ internal struct Directory {
         self.url = url
     }
 
-    /// Creates file with given `fileName`.
+    /// Creates file with given name.
     func createFile(named fileName: String) throws -> URL {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
         guard FileManager.default.createFile(atPath: fileURL.path, contents: nil, attributes: nil) == true else {
