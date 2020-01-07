@@ -83,4 +83,19 @@ class WritableFileTests: XCTestCase {
             )
         )
     }
+
+    func testWhenFileWasDeletedWhileWritting_itDoesNotCrash() throws {
+        let expectation = self.expectation(description: "100 writes completed")
+        expectation.expectedFulfillmentCount = 100
+        let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: .mockDecember15th2019At10AMUTC())
+        let chunk: Data = .mockRepeating(byte: 0x41, times: 10) // 10x uppercase "A"
+
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in
+            try? file.append { write in write(chunk) }
+            temporaryDirectory.deleteFile(fileName: file.fileURL.lastPathComponent)
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1, handler: nil)
+    }
 }
