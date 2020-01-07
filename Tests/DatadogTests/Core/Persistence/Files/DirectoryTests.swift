@@ -4,7 +4,7 @@ import XCTest
 class DirectoryTests: XCTestCase {
     private let uniqueSubdirectoryName = UUID().uuidString
 
-    func testItCreateWorkingDirectoryIfNotExists() throws {
+    func testItCreatesWorkingDirectoryIfNotExists() throws {
         let directory = Directory(url: try createWorkingDirectoryIfNotExists(subdirectory: uniqueSubdirectoryName))
         defer { directory.delete() }
 

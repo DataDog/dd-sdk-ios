@@ -45,6 +45,17 @@ extension Directory {
         create()
     }
 
+    /// Creates file with given data.
+    func createFile(withData data: Data, createdAt: Date) -> URL {
+        do {
+            let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: .mockDecember15th2019At10AMUTC())
+            try file.append { write in write(data) }
+            return file.fileURL
+        } catch {
+            fatalError("🔥 Failed create mock file in `TestsDirectory`: \(error)")
+        }
+    }
+
     /// Deletes particular file in this directory.
     func deleteFile(named fileName: String) {
         let url = urlFor(fileNamed: fileName)
