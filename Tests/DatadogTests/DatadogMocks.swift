@@ -51,6 +51,7 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: .mockUseSingleFile(),
+            readConditions: .default,
             dateProvider: SystemDateProvider()
         )
     }

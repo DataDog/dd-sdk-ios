@@ -4,10 +4,6 @@ import Foundation
 internal struct Directory {
     let url: URL
 
-    init(url: URL) {
-        self.url = url
-    }
-
     /// Creates file with given name.
     func createFile(named fileName: String) throws -> URL {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
@@ -15,6 +11,11 @@ internal struct Directory {
             throw InternalError(description: "Cannot create file at path: \(fileURL.path)")
         }
         return fileURL
+    }
+
+    /// Returns list of files in this directory.
+    func allFiles() throws -> [URL] {
+        return try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])
     }
 }
 

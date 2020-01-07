@@ -28,7 +28,7 @@ class FileWriterTests: XCTestCase {
 
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 1)
         XCTAssertEqual(
             try temporaryDirectory.textEncodedDataFromFirstFile(),
             #"{"key1":"value1"},{"key2":"value3"},{"key3":"value3"}"#
@@ -64,6 +64,7 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 writeConditions: .default,
+                readConditions: .default,
                 dateProvider: SystemDateProvider()
             ),
             queue: queue,
@@ -78,7 +79,7 @@ class FileWriterTests: XCTestCase {
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
         waitForExpectations(timeout: 10) // 10 seconds is an arbitrary timeout
 
-        XCTAssertGreaterThan(try temporaryDirectory.files().count, 1)
+        XCTAssertGreaterThan(try temporaryDirectory.allFiles().count, 1)
     }
 
     private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {

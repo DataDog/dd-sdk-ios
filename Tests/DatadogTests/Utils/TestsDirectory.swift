@@ -21,7 +21,7 @@ extension Directory {
     func create(attributes: [FileAttributeKey: Any]? = nil) {
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: attributes)
-            let initialFilesCount = try files().count
+            let initialFilesCount = try allFiles().count
             precondition(initialFilesCount == 0) // ensure it's empty
         } catch {
             fatalError("🔥 Failed to create `TestsDirectory`: \(error)")
@@ -84,14 +84,9 @@ extension Directory {
         return url.appendingPathComponent(fileName, isDirectory: false)
     }
 
-    /// Returns list of files matching given predicate.
-    func files(matching filter: ((URL) -> Bool) = { _ in true }) throws -> [URL] {
-        return try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey]).filter(filter)
-    }
-
     /// Returns names of all directory files.
     func allFileNames() throws -> Set<String> {
-        return Set(try files().map { $0.lastPathComponent })
+        return Set(try allFiles().map { $0.lastPathComponent })
     }
 
     /// Checks if file with given name exists in this directory.
@@ -109,7 +104,7 @@ extension Directory {
     /// Returns UTF-8 encoded text content from the first file in this directory.
     /// If there are more files, it doesn't guarantee which one will be picked.
     func textEncodedDataFromFirstFile() throws -> String? {
-        if let firstFileURL = try files().first {
+        if let firstFileURL = try allFiles().first {
             let data = try Data(contentsOf: firstFileURL)
             return String(data: data, encoding: .utf8)
         } else {

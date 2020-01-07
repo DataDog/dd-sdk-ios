@@ -5,10 +5,18 @@ internal struct WritableFileConditions {
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
 
-    static let `default`: WritableFileConditions = WritableFileConditions(
+    static let `default` = WritableFileConditions(
         maxFileSize: LogsFileStrategy.Constants.maxBatchSize,
         maxFileAgeForWrite: LogsFileStrategy.Constants.maxFileAgeForWrite,
         maxNumberOfUsesOfFile: LogsFileStrategy.Constants.maxLogsPerBatch
+    )
+}
+
+internal struct ReadableFileConditions {
+    let minFileAgeForRead: TimeInterval
+
+    static let `default` = ReadableFileConditions(
+        minFileAgeForRead: LogsFileStrategy.Constants.minFileAgeForRead
     )
 }
 
@@ -19,14 +27,17 @@ internal class FilesOrchestrator {
     private let dateProvider: DateProvider
     /// Conditions for picking up writable file.
     private let writeConditions: WritableFileConditions
+    /// Conditions for picking up readable file.
+    private let readConditions: ReadableFileConditions
     /// URL of the last file used by `getWritableFile()`.
     private var lastWritableFileURL: URL? = nil
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
     private var lastWritableFileUsesCount: Int = 0
 
-    init(directory: Directory, writeConditions: WritableFileConditions, dateProvider: DateProvider) {
+    init(directory: Directory, writeConditions: WritableFileConditions, readConditions: ReadableFileConditions, dateProvider: DateProvider) {
         self.directory = directory
         self.writeConditions = writeConditions
+        self.readConditions = readConditions
         self.dateProvider = dateProvider
     }
 
@@ -69,5 +80,24 @@ internal class FilesOrchestrator {
         }
 
         return nil
+    }
+
+    // MARK: - `ReadableFile` orchestration
+
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) throws -> ReadableFile? {
+        let fileURLs = try directory.allFiles().filter { excludedFileNames.contains($0.lastPathComponent) == false }
+
+        let fileURLsWithCreationDate = fileURLs.map {
+            (url: $0, creationDate: fileCreationDateFrom(fileName: $0.lastPathComponent))
+        }
+        guard let oldestFileURL = fileURLsWithCreationDate.sorted(by: { $0.creationDate < $1.creationDate }).first?.url else {
+            return nil
+        }
+
+        let oldestFile = try ReadableFile(existingFileFromURL: oldestFileURL)
+        let oldestFileAge = dateProvider.currentDate().timeIntervalSince(oldestFile.creationDate)
+        let fileIsOldEnough = oldestFileAge >= readConditions.minFileAgeForRead
+
+        return fileIsOldEnough ? oldestFile : nil
     }
 }
