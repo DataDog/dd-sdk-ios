@@ -41,7 +41,7 @@ class ReadableFileTests: XCTestCase {
     func testWhenDataCannotBeRead_itThrows() throws {
         let fileURL = temporaryDirectory.createFile(withData: .mock(ofSize: 1), createdAt: .mockDecember15th2019At10AMUTC())
         let file = try ReadableFile(existingFileFromURL: fileURL)
-        temporaryDirectory.deleteFile(named: fileURL.lastPathComponent)
+        try temporaryDirectory.deleteFile(named: fileURL.lastPathComponent)
 
         XCTAssertThrowsError(try file.read())
     }

@@ -83,7 +83,7 @@ class WritableFileTests: XCTestCase {
 
     func testWhenDataCannotBeWritten_itThrows() throws {
         let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: .mockDecember15th2019At10AMUTC())
-        temporaryDirectory.deleteFile(named: file.fileURL.lastPathComponent)
+        try temporaryDirectory.deleteFile(named: file.fileURL.lastPathComponent)
 
         XCTAssertThrowsError(try file.append { write in write(.mock(ofSize: 1)) })
     }
@@ -92,7 +92,7 @@ class WritableFileTests: XCTestCase {
         let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: .mockDecember15th2019At10AMUTC())
         try file.append { write in
             write(.mock(ofSize: 10))
-            temporaryDirectory.deleteFile(named: file.fileURL.lastPathComponent)
+            try! temporaryDirectory.deleteFile(named: file.fileURL.lastPathComponent)
             write(.mock(ofSize: 10))
         }
     }

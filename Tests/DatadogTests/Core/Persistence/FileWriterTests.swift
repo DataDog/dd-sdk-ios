@@ -2,7 +2,7 @@ import XCTest
 @testable import Datadog
 
 class FileWriterTests: XCTestCase {
-    private let queue = DispatchQueue(label: "dd-write", target: .global(qos: .utility))
+    private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
 
     override func setUp() {
         super.setUp()

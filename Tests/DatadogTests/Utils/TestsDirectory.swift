@@ -48,7 +48,7 @@ extension Directory {
     /// Creates file with given data.
     func createFile(withData data: Data, createdAt: Date) -> URL {
         do {
-            let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: .mockDecember15th2019At10AMUTC())
+            let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: createdAt)
             try file.append { write in write(data) }
             return file.fileURL
         } catch {
@@ -56,12 +56,9 @@ extension Directory {
         }
     }
 
-    /// Deletes particular file in this directory.
-    func deleteFile(named fileName: String) {
-        let url = urlFor(fileNamed: fileName)
-        if FileManager.default.fileExists(atPath: url.path) {
-            try? FileManager.default.removeItem(at: url)
-        }
+    /// Creates file with given data and file name.
+    func createFile(withData data: Data, fileName: String) -> URL {
+        return createFile(withData: data, createdAt: fileCreationDateFrom(fileName: fileName))
     }
 
     /// Sets directory attributes.

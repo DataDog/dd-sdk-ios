@@ -13,6 +13,14 @@ internal struct Directory {
         return fileURL
     }
 
+    /// Deletes file with given name.
+    func deleteFile(named fileName: String) throws {
+        let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            try FileManager.default.removeItem(at: fileURL)
+        }
+    }
+
     /// Returns list of files in this directory.
     func allFiles() throws -> [URL] {
         return try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])

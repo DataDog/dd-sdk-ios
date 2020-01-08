@@ -75,7 +75,7 @@ internal class FilesOrchestrator {
                     return lastFile
                 }
             } catch {
-                print("Failed to open previously used file.")
+                print("Failed to open previously used file \(error).")
             }
         }
 
@@ -84,20 +84,33 @@ internal class FilesOrchestrator {
 
     // MARK: - `ReadableFile` orchestration
 
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) throws -> ReadableFile? {
-        let fileURLs = try directory.allFiles().filter { excludedFileNames.contains($0.lastPathComponent) == false }
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) -> ReadableFile? {
+        do {
+            let fileURLs = try directory.allFiles().filter { excludedFileNames.contains($0.lastPathComponent) == false }
 
-        let fileURLsWithCreationDate = fileURLs.map {
-            (url: $0, creationDate: fileCreationDateFrom(fileName: $0.lastPathComponent))
-        }
-        guard let oldestFileURL = fileURLsWithCreationDate.sorted(by: { $0.creationDate < $1.creationDate }).first?.url else {
+            let fileURLsWithCreationDate = fileURLs.map {
+                (url: $0, creationDate: fileCreationDateFrom(fileName: $0.lastPathComponent))
+            }
+            guard let oldestFileURL = fileURLsWithCreationDate.sorted(by: { $0.creationDate < $1.creationDate }).first?.url else {
+                return nil
+            }
+
+            let oldestFile = try ReadableFile(existingFileFromURL: oldestFileURL)
+            let oldestFileAge = dateProvider.currentDate().timeIntervalSince(oldestFile.creationDate)
+            let fileIsOldEnough = oldestFileAge >= readConditions.minFileAgeForRead
+
+            return fileIsOldEnough ? oldestFile : nil
+        } catch {
+            print("Failed to obtain readable file \(error).")
             return nil
         }
+    }
 
-        let oldestFile = try ReadableFile(existingFileFromURL: oldestFileURL)
-        let oldestFileAge = dateProvider.currentDate().timeIntervalSince(oldestFile.creationDate)
-        let fileIsOldEnough = oldestFileAge >= readConditions.minFileAgeForRead
-
-        return fileIsOldEnough ? oldestFile : nil
+    func delete(readableFile: ReadableFile) {
+        do {
+            try directory.deleteFile(named: readableFile.fileURL.lastPathComponent)
+        } catch {
+            print("Failed to delete readable file \(error).")
+        }
     }
 }
