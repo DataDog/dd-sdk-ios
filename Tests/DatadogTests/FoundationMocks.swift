@@ -31,11 +31,36 @@ extension Data {
     static func mockAny() -> Data {
         return Data()
     }
+
+    static func mockRepeating(byte: UInt8, times count: Int) -> Data {
+        return Data(repeating: byte, count: count)
+    }
+}
+
+extension Array where Element == Data {
+    /// Returns chunks of mocked data. Accumulative size of all chunks equals `totalSize`.
+    static func mockChunksOf(totalSize: UInt64) -> [Data] {
+        var chunks: [Data] = []
+        var bytesWritten: UInt64 = 0
+
+        while bytesWritten < totalSize {
+            let bytesLeft = totalSize - bytesWritten
+            let nextChunkSize: Int = bytesLeft > Int.max ? Int.max : Int(bytesLeft) // prevent `Int` overflow
+            chunks.append(.mockRepeating(byte: 0x1, times: nextChunkSize))
+            bytesWritten += UInt64(nextChunkSize)
+        }
+
+        return chunks
+    }
 }
 
 extension Date {
+    static func mockAny() -> Date {
+        return Date(timeIntervalSinceReferenceDate: 1)
+    }
+
     static func mockRandomInThePast() -> Date {
-        return Date(timeIntervalSince1970: TimeInterval.random(in: 0..<Date().timeIntervalSince1970))
+        return Date(timeIntervalSinceReferenceDate: TimeInterval.random(in: 0..<Date().timeIntervalSinceReferenceDate))
     }
 
     static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
@@ -51,8 +76,9 @@ extension Date {
         return dateComponents.date!
     }
 
-    static func mockDecember15th2019At10AMUTC() -> Date {
+    static func mockDecember15th2019At10AMUTC(addingTimeInterval timeInterval: TimeInterval = 0) -> Date {
         return mockSpecificUTCGregorianDate(year: 2_019, month: 12, day: 15, hour: 10)
+            .addingTimeInterval(timeInterval)
     }
 }
 
