@@ -26,6 +26,8 @@ class LoggerTests: XCTestCase {
             (value: ["CRITICAL"], keyPath: "@unionOfObjects.status"),
         ]
 
+        var loggers: [Logger] = [] // to not deallocate `Logger` instance immediately as it performs asynchronously
+
         zip(loggingMethods, expectedRequestBodyMatches).forEach { method, expectedRequestBodyMatch in
             let loggerInstance = Logger(
                 uploader: .mockUploaderCapturingRequests(captureBlock: { [unowned self] request in
@@ -40,6 +42,8 @@ class LoggerTests: XCTestCase {
             )
             let loggingMethodInvocation = method(loggerInstance)
             loggingMethodInvocation("some message")
+
+            loggers.append(loggerInstance)
         }
 
         waitForExpectations(timeout: 1, handler: nil)

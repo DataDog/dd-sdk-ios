@@ -6,6 +6,15 @@ A collection of mocks for Logs objects.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+extension DataUploadURL {
+    static func mockAny() -> DataUploadURL {
+        return try! DataUploadURL(
+            endpointURL: "https://app.example.com/v2/api",
+            clientToken: "abc-def-ghi"
+        )
+    }
+}
+
 extension LogsUploader.ValidURL {
     static func mockAny() -> LogsUploader.ValidURL {
         return try! LogsUploader.ValidURL(
