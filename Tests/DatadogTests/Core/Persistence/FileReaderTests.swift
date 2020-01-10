@@ -27,13 +27,13 @@ class FileReaderTests: XCTestCase {
         XCTAssertEqual(batch?.data, "[ABCD]".data(using: .utf8)!)
     }
 
-    func testItMarkBatchesAsRead() throws {
+    func testItMarksBatchesAsRead() throws {
         let dateProvider = DateProviderMock()
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: .default,
-                readConditions: .default,
+                writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
+                readConditions: LogsPersistenceStrategy.defaultReadConditions,
                 dateProvider: dateProvider
             ),
             queue: queue

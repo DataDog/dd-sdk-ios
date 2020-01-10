@@ -74,7 +74,7 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: .mockWriteToSingleFile(),
-            readConditions: .default,
+            readConditions: LogsPersistenceStrategy.defaultReadConditions,
             dateProvider: SystemDateProvider()
         )
     }
@@ -83,7 +83,7 @@ extension FilesOrchestrator {
     static func mockReadAllFiles(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
-            writeConditions: .default,
+            writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
             readConditions: .mockReadAllFiles(),
             dateProvider: SystemDateProvider()
         )

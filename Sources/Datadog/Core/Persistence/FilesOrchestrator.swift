@@ -4,22 +4,10 @@ internal struct WritableFileConditions {
     let maxFileSize: UInt64
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
-
-    /// Default configuration for `WritableFileConditions`.
-    static let `default` = WritableFileConditions(
-        maxFileSize: LogsFileStrategy.Constants.maxBatchSize,
-        maxFileAgeForWrite: LogsFileStrategy.Constants.maxFileAgeForWrite,
-        maxNumberOfUsesOfFile: LogsFileStrategy.Constants.maxLogsPerBatch
-    )
 }
 
 internal struct ReadableFileConditions {
     let minFileAgeForRead: TimeInterval
-
-    /// Default configuration for `ReadableFileConditions`.
-    static let `default` = ReadableFileConditions(
-        minFileAgeForRead: LogsFileStrategy.Constants.minFileAgeForRead
-    )
 }
 
 internal class FilesOrchestrator {

@@ -4,6 +4,25 @@ import Foundation
 public class Datadog {
     static var instance: Datadog?
 
+    internal let dateProvider: DateProvider
+
+    // MARK: - Logs
+
+    internal let logsPersistenceStrategy: LogsPersistenceStrategy
+    internal let logsUploadStrategy: LogsUploadStrategy
+
+    init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
+        self.dateProvider = dateProvider
+        self.logsPersistenceStrategy = try .defalut(using: dateProvider)
+        self.logsUploadStrategy = try .defalut(
+            endpointURL: endpointURL,
+            clientToken: clientToken,
+            reader: logsPersistenceStrategy.reader
+        )
+    }
+}
+
+extension Datadog {
     // MARK: - Initialization
 
     public static func initialize(endpointURL: String, clientToken: String) {
@@ -15,7 +34,11 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        self.instance = Datadog()
+        self.instance = try Datadog(
+            endpointURL: endpointURL,
+            clientToken: clientToken,
+            dateProvider: SystemDateProvider()
+        )
     }
 
     // MARK: - Deinitialization
@@ -26,12 +49,6 @@ public class Datadog {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
         Datadog.instance = nil
-    }
-
-    // MARK: - Internal
-
-    init() {
-        // TODO: RUMM-109 clean up
     }
 }
 

@@ -33,12 +33,4 @@ internal struct LogsUploadDelay {
     mutating func increaseOnce() {
         delay = maxDelay
     }
-
-    /// Default configuration for `LogsUploadDelay`.
-    static let `default`: LogsUploadDelay = LogsUploadDelay(
-        default: LogsFileStrategy.Constants.defaultLogsUploadDelay,
-        min: LogsFileStrategy.Constants.minLogsUploadDelay,
-        max: LogsFileStrategy.Constants.maxLogsUploadDelay,
-        decreaseFactor: LogsFileStrategy.Constants.logsUploadDelayDecreaseFactor
-    )
 }

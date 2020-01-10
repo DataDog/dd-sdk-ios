@@ -63,12 +63,12 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: .default,
-                readConditions: .default,
+                writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
+                readConditions: LogsPersistenceStrategy.defaultReadConditions,
                 dateProvider: SystemDateProvider()
             ),
             queue: queue,
-            maxWriteSize: LogsFileStrategy.Constants.maxLogSize
+            maxWriteSize: LogsPersistenceStrategy.Constants.maxLogSize
         )
 
         for _ in 0..<10_000 {
