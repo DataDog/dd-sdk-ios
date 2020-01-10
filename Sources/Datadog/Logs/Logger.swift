@@ -1,11 +1,9 @@
 import Foundation
 
 public class Logger {
-    let uploader: LogsUploader
     let serviceName: String
 
-    init(uploader: LogsUploader, serviceName: String) {
-        self.uploader = uploader
+    init(serviceName: String) {
         self.serviceName = serviceName
     }
 
@@ -49,9 +47,8 @@ public class Logger {
         // TODO: RUMM-128 Evaluate `message()` only if "datadog" or "console" output is enabled
         let log = Log(date: Date(), status: status, message: message(), service: serviceName)
         do {
-            try uploader.upload(logs: [log]) { status in
-                print("ℹ️ logs delivery status: \(status)")
-            }
+            _ = log
+            // TODO: RUMM-109 Write log to file
         } catch {
             print("🔥 logs not delivered due to: \(error)")
         }
@@ -81,7 +78,6 @@ public class Logger {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
             return Logger(
-                uploader: datadog.logsUploader,
                 serviceName: serviceName
             )
         }

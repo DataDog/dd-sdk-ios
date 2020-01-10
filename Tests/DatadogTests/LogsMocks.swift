@@ -15,15 +15,6 @@ extension DataUploadURL {
     }
 }
 
-extension LogsUploader.ValidURL {
-    static func mockAny() -> LogsUploader.ValidURL {
-        return try! LogsUploader.ValidURL(
-            endpointURL: "https://app.example.com/v2/api",
-            clientToken: "abc-def-ghi"
-        )
-    }
-}
-
 extension Log {
     static func mockRandom() -> Log {
         return Log(

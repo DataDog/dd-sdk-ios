@@ -15,9 +15,7 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        self.instance = Datadog(
-            logsUploader: LogsUploader(validURL: try .init(endpointURL: endpointURL, clientToken: clientToken))
-        )
+        self.instance = Datadog()
     }
 
     // MARK: - Deinitialization
@@ -32,11 +30,8 @@ public class Datadog {
 
     // MARK: - Internal
 
-    // TODO: RUMM-109 Make `logsUploader` dependency private when logs are uploaded from files
-    let logsUploader: LogsUploader
-
-    init(logsUploader: LogsUploader) {
-        self.logsUploader = logsUploader
+    init() {
+        // TODO: RUMM-109 clean up
     }
 }
 

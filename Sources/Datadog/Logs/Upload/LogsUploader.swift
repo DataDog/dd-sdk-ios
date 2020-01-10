@@ -1,48 +1,62 @@
 import Foundation
 
-/// Sends logs to server.
-internal final class LogsUploader {
-    private let httpClient: HTTPClient
-    private let requestEncoder: LogsUploadRequestEncoder
+internal class LogsUploader {
+    /// Queue to execute uploads.
+    private let queue: DispatchQueue
+    /// File reader pointing to logs directory.
+    private let fileReader: FileReader
+    /// Data uploader.
+    private let dataUploader: DataUploader
+    /// For each file upload, the status is checked against this list of acceptable statuses.
+    /// If it's there, the file will be deleted. If not, it will be retried in next upload.
+    private let acceptableUploadStatuses: Set<DataUploadStatus> = [
+        .success, .redirection, .clientError, .unknown
+    ]
 
-    convenience init(validURL: ValidURL) {
-        self.init(validURL: validURL, httpClient: HTTPClient())
+    /// Delay used to schedule consecutive uploads.
+    private var delay: LogsUploadDelay
+
+    init(queue: DispatchQueue, fileReader: FileReader, dataUploader: DataUploader, delay: LogsUploadDelay) {
+        self.queue = queue
+        self.fileReader = fileReader
+        self.dataUploader = dataUploader
+        self.delay = delay
+
+        scheduleNextUpload(after: self.delay.nextUploadDelay())
     }
 
-    init(validURL: ValidURL, httpClient: HTTPClient) {
-        self.httpClient = httpClient
-        self.requestEncoder = LogsUploadRequestEncoder(uploadURL: validURL.url)
-    }
+    private func scheduleNextUpload(after delay: TimeInterval) {
+        queue.asyncAfter(deadline: .now() + delay) { [weak self] in
+            print("Will check for next batch...")
 
-    func upload(logs: [Log], completion: @escaping (LogsDeliveryStatus) -> Void) throws {
-        let request = try requestEncoder.encodeRequest(with: logs)
-        httpClient.send(request: request) { result in
-            switch result {
-            case .success(let httpResponse):
-                completion(LogsDeliveryStatus(from: httpResponse, logs: logs))
-            case .failure(let httpRequestDeliveryError):
-                completion(LogsDeliveryStatus(from: httpRequestDeliveryError, logs: logs))
+            guard let self = self else {
+                return
             }
+
+            if self.shouldPerformUpload(), let batch = self.fileReader.readNextBatch() {
+                print("Will upload batch... (current time: \(Date())")
+
+                let uploadStatus = self.dataUploader.upload(data: batch.data)
+                let wasDelivered = self.acceptableUploadStatuses.contains(uploadStatus)
+
+                print("   -> \(uploadStatus)")
+
+                if wasDelivered {
+                    self.fileReader.markBatchAsRead(batch)
+                }
+
+                self.delay.decrease()
+            } else {
+                print("No batch to upload.")
+                self.delay.increaseOnce()
+            }
+
+            self.scheduleNextUpload(after: self.delay.nextUploadDelay())
         }
     }
 
-    // MARK: - URL validation
-
-    struct ValidURL {
-        let url: URL
-
-        init(endpointURL: String, clientToken: String) throws {
-            guard !endpointURL.isEmpty, let endpointURL = URL(string: endpointURL) else {
-                throw ProgrammerError(description: "`endpointURL` cannot be empty.")
-            }
-            guard !clientToken.isEmpty else {
-                throw ProgrammerError(description: "`clientToken` cannot be empty.")
-            }
-            let endpointURLWithClientToken = endpointURL.appendingPathComponent(clientToken)
-            guard let url = URL(string: "\(endpointURLWithClientToken.absoluteString)?ddsource=mobile") else {
-                throw ProgrammerError(description: "Cannot build logs upload URL.")
-            }
-            self.url = url
-        }
+    /// TODO: RUMM-177 Skip logs uploads on certain battery and network conditions
+    private func shouldPerformUpload() -> Bool {
+        return true
     }
 }

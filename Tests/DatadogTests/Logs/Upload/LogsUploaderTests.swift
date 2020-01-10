@@ -2,121 +2,62 @@ import XCTest
 @testable import Datadog
 
 class LogsUploaderTests: XCTestCase {
-    func testWhenLogsAreSentWith200Code_itReportsLogsDeliveryStatus_success() throws {
-        let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
-        let uploader = LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200)
+    private let fileReadWriteQueue = DispatchQueue(label: "dd-tests-read-write", target: .global(qos: .utility))
+    private let uploaderQueue = DispatchQueue(label: "dd-tests-uploader", target: .global(qos: .utility))
+
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
+    }
+
+    override func tearDown() {
+        temporaryDirectory.delete()
+        super.tearDown()
+    }
+
+    func testItUploadsAllLogs() throws {
+        let dateProvider = DateProviderMock()
+        dateProvider.currentDates = [Date()]
+        dateProvider.currentFileCreationDates = [
+            dateProvider.currentDate().secondsAgo(30), // first file creation date
+            dateProvider.currentDate().secondsAgo(20), // second file creation date
+            dateProvider.currentDate().secondsAgo(10), // ...
+        ]
+        let orchestrator = FilesOrchestrator(
+            directory: temporaryDirectory,
+            writeConditions: .mockWriteToNewFileEachTime(),
+            readConditions: .mockReadAllFiles(),
+            dateProvider: dateProvider
         )
-        let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
-
-        try uploader.upload(logs: logs) { status in
-            XCTAssertEqual(status, LogsDeliveryStatus.success(logs: logs))
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1, handler: nil)
-    }
-
-    func testWhenLogsAreSentWith300Code_itReportsLogsDeliveryStatus_redirection() throws {
-        let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
-        let uploader = LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 300)
+        let writer = FileWriter(orchestrator: orchestrator, queue: fileReadWriteQueue, maxWriteSize: .max)
+        let reader = FileReader(orchestrator: orchestrator, queue: fileReadWriteQueue)
+        let requestsRecorder = RequestsRecorder()
+        let dataUploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder)
         )
-        let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { status in
-            XCTAssertEqual(status, LogsDeliveryStatus.redirection(logs: logs))
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1, handler: nil)
-    }
-
-    func testWhenLogsAreSentWith400Code_itReportsLogsDeliveryStatus_redirection() throws {
-        let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
-        let uploader = LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 400)
+        // Start logs uploader
+        let logsUploader = LogsUploader(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            delay: .mockConstantDelay(of: 1)
         )
-        let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
-        try uploader.upload(logs: logs) { status in
-            XCTAssertEqual(status, LogsDeliveryStatus.clientError(logs: logs))
-            expectation.fulfill()
-        }
+        // Write 3 files
+        writer.write(value: ["k1": "v1"])
+        writer.write(value: ["k2": "v2"])
+        writer.write(value: ["k3": "v3"])
 
-        waitForExpectations(timeout: 1, handler: nil)
-    }
+        Thread.sleep(forTimeInterval: 5) // 5 seconds is enough to send 3 logs with 1 second interval
 
-    func testWhenLogsAreSentWith500Code_itReportsLogsDeliveryStatus_redirection() throws {
-        let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
-        let uploader = LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 500)
-        )
-        let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
+        XCTAssertEqual(requestsRecorder.requestsSent.count, 3)
+        XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k1":"v1"}]"#.utf8Data))
+        XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k2":"v2"}]"#.utf8Data))
+        XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k3":"v3"}]"#.utf8Data))
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 0)
 
-        try uploader.upload(logs: logs) { status in
-            XCTAssertEqual(status, LogsDeliveryStatus.serverError(logs: logs))
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1, handler: nil)
-    }
-
-    func testWhenLogsAreNotSentDueToNetworkError_itReportsLogsDeliveryStatus_networkError() throws {
-        let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
-        let uploader = LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliveryFailureWith(error: ErrorMock("no network connection"))
-        )
-        let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
-
-        try uploader.upload(logs: logs) { status in
-            XCTAssertEqual(status, LogsDeliveryStatus.networkError(logs: logs))
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1, handler: nil)
-    }
-
-    func testWhenLogsAreSentWithUnknownStatusCode_itReportsLogsDeliveryStatus_unknown() throws {
-        let expectation = self.expectation(description: "receive `LogsDeliveryStatus`")
-        let uploader = LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: -1)
-        )
-        let logs: [Log] = [.mockRandom(), .mockRandom(), .mockRandom()]
-
-        try uploader.upload(logs: logs) { status in
-            XCTAssertEqual(status, LogsDeliveryStatus.unknown(logs: logs))
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1, handler: nil)
-    }
-}
-
-class LogsUploaderValidURLTests: XCTestCase {
-    func testItBuildsValidURLForLogsUpload() throws {
-        let validURL1 = try LogsUploader.ValidURL(endpointURL: "https://api.example.com/v1/logs", clientToken: "abc")
-        XCTAssertEqual(validURL1.url, URL(string: "https://api.example.com/v1/logs/abc?ddsource=mobile"))
-
-        let validURL2 = try LogsUploader.ValidURL(endpointURL: "https://api.example.com/v1/logs/", clientToken: "abc")
-        XCTAssertEqual(validURL2.url, URL(string: "https://api.example.com/v1/logs/abc?ddsource=mobile"))
-    }
-
-    func testWhenClientTokenIsInvalid_itThrowsProgrammerError() {
-        XCTAssertThrowsError(try LogsUploader.ValidURL(endpointURL: "https://api.example.com/v1/logs", clientToken: "")) { error in
-            XCTAssertEqual((error as? ProgrammerError)?.description, "Datadog SDK usage error: `clientToken` cannot be empty.")
-        }
-    }
-
-    func testWhenEndpointURLIsInvalid_itThrowsProgrammerError() {
-        XCTAssertThrowsError(try LogsUploader.ValidURL(endpointURL: "", clientToken: "abc")) { error in
-            XCTAssertEqual((error as? ProgrammerError)?.description, "Datadog SDK usage error: `endpointURL` cannot be empty.")
-        }
+        _ = logsUploader // keep the strong reference
     }
 }

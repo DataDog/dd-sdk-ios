@@ -117,16 +117,6 @@ extension HTTPClient {
 
 // MARK: - Logs uploading
 
-extension LogsUploader {
-    /// Mocks `LogsUploader` recording requests passed to underlying `URLSession`.
-    static func mockUploaderRecordingRequests(on requestsRecorder: RequestsRecorder) -> LogsUploader {
-        return LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder)
-        )
-    }
-}
-
 extension LogsUploadDelay {
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
     static func mockConstantDelay(of seconds: TimeInterval) -> LogsUploadDelay {
