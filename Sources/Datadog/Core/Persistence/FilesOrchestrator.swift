@@ -5,6 +5,7 @@ internal struct WritableFileConditions {
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
 
+    /// Default configuration for `WritableFileConditions`.
     static let `default` = WritableFileConditions(
         maxFileSize: LogsFileStrategy.Constants.maxBatchSize,
         maxFileAgeForWrite: LogsFileStrategy.Constants.maxFileAgeForWrite,
@@ -15,6 +16,7 @@ internal struct WritableFileConditions {
 internal struct ReadableFileConditions {
     let minFileAgeForRead: TimeInterval
 
+    /// Default configuration for `ReadableFileConditions`.
     static let `default` = ReadableFileConditions(
         minFileAgeForRead: LogsFileStrategy.Constants.minFileAgeForRead
     )

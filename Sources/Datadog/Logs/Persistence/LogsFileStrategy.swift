@@ -17,6 +17,20 @@ internal struct LogsFileStrategy {
         /// Maximum size of serialized log data.
         /// If JSON encoded `Log` exceeds this size, it is dropped.
         static let maxLogSize: Int = 256 * 1_024
+        /// Default time interval for logs upload (in seconds).
+        /// At runtime, the upload interval range from `minLogsUploadDelay` to `maxLogsUploadDelay` depending
+        /// on logs delivery success / failure.
+        static let defaultLogsUploadDelay: TimeInterval = 5
+        /// Mininum time interval for logs upload (in seconds).
+        /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
+        /// on logs delivery success / failure.
+        static let minLogsUploadDelay: TimeInterval = 1
+        /// Maximum time interval for logs upload (in seconds).
+        /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
+        /// on logs delivery success / failure.
+        static let maxLogsUploadDelay: TimeInterval = defaultLogsUploadDelay * 4
+        /// Change factor of logs upload interval due to upload success.
+        static let logsUploadDelayDecreaseFactor: Double = 0.9
     }
 
     /// TODO: RUMM-109 Send messages from persistent storage

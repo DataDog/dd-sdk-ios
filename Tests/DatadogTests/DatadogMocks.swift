@@ -2,19 +2,11 @@ import Foundation
 @testable import Datadog
 
 /*
-A collection of mock configurations for SDK.
+A collection of SDK object mocks.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
-extension LogsUploader {
-    /// Mocks `LogsUploader` instance which notifies sent requests on `captureBlock`.
-    static func mockUploaderCapturingRequests(captureBlock: @escaping (URLRequest) -> Void) -> LogsUploader {
-        return LogsUploader(
-            validURL: .mockAny(),
-            httpClient: .mockRequestCapture(captureBlock: captureBlock)
-        )
-    }
-}
+// MARK: - Date and time
 
 /// Date provider which returns consecutive mocked dates in a loop.
 class DateProviderMock: DateProvider {
@@ -45,19 +37,30 @@ class DateProviderMock: DateProvider {
     }
 }
 
+// MARK: - Files orchestration
+
 extension WritableFileConditions {
-    /// Write conditions for a file that can accept infinite number of data.
-    static func mockUseSingleFile() -> WritableFileConditions {
+    /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
+    static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
             maxFileSize: .max,
             maxFileAgeForWrite: .greatestFiniteMagnitude,
             maxNumberOfUsesOfFile: .max
         )
     }
+
+    /// Write conditions causing `FilesOrchestrator` to create new file for each write.
+    static func mockWriteToNewFileEachTime() -> WritableFileConditions {
+        return WritableFileConditions(
+            maxFileSize: .max,
+            maxFileAgeForWrite: .greatestFiniteMagnitude,
+            maxNumberOfUsesOfFile: 1
+        )
+    }
 }
 
 extension ReadableFileConditions {
-    /// Read conditions for accepting all past files for read.
+    /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
             minFileAgeForRead: -1
@@ -70,7 +73,7 @@ extension FilesOrchestrator {
     static func mockWriteToSingleFile(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
-            writeConditions: .mockUseSingleFile(),
+            writeConditions: .mockWriteToSingleFile(),
             readConditions: .default,
             dateProvider: SystemDateProvider()
         )
@@ -83,6 +86,55 @@ extension FilesOrchestrator {
             writeConditions: .default,
             readConditions: .mockReadAllFiles(),
             dateProvider: SystemDateProvider()
+        )
+    }
+}
+
+// MARK: - URLRequests delivery
+
+typealias RequestsRecorder = URLSessionRequestRecorder
+
+extension HTTPClient {
+    static func mockDeliverySuccessWith(responseStatusCode: Int, requestsRecorder: RequestsRecorder? = nil) -> HTTPClient {
+        return HTTPClient(
+            session: .mockDeliverySuccess(
+                data: Data(),
+                response: .mockResponseWith(statusCode: responseStatusCode),
+                requestsRecorder: requestsRecorder
+            )
+        )
+    }
+
+    static func mockDeliveryFailureWith(error: Error, requestsRecorder: RequestsRecorder? = nil) -> HTTPClient {
+        return HTTPClient(
+            session: .mockDeliveryFailure(
+                error: error,
+                requestsRecorder: requestsRecorder
+            )
+        )
+    }
+}
+
+// MARK: - Logs uploading
+
+extension LogsUploader {
+    /// Mocks `LogsUploader` recording requests passed to underlying `URLSession`.
+    static func mockUploaderRecordingRequests(on requestsRecorder: RequestsRecorder) -> LogsUploader {
+        return LogsUploader(
+            validURL: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder)
+        )
+    }
+}
+
+extension LogsUploadDelay {
+    /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
+    static func mockConstantDelay(of seconds: TimeInterval) -> LogsUploadDelay {
+        return LogsUploadDelay(
+            default: seconds,
+            min: seconds,
+            max: seconds,
+            decreaseFactor: 1
         )
     }
 }

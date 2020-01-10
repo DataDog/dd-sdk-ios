@@ -29,15 +29,18 @@ class LoggerTests: XCTestCase {
         var loggers: [Logger] = [] // to not deallocate `Logger` instance immediately as it performs asynchronously
 
         zip(loggingMethods, expectedRequestBodyMatches).forEach { method, expectedRequestBodyMatch in
+            let requestsRecorder = RequestsRecorder()
+            requestsRecorder.onNewRequest = { [unowned self] request in
+                self.assertThat(
+                    serializedLogData: request.httpBody ?? Data(),
+                    matchesValue: expectedRequestBodyMatch.value,
+                    onKeyPath: expectedRequestBodyMatch.keyPath
+                )
+                expectation.fulfill()
+            }
+
             let loggerInstance = Logger(
-                uploader: .mockUploaderCapturingRequests(captureBlock: { [unowned self] request in
-                    self.assertThat(
-                        serializedLogData: request.httpBody ?? Data(),
-                        matchesValue: expectedRequestBodyMatch.value,
-                        onKeyPath: expectedRequestBodyMatch.keyPath
-                    )
-                    expectation.fulfill()
-                }),
+                uploader: .mockUploaderRecordingRequests(on: requestsRecorder),
                 serviceName: .mockRandom()
             )
             let loggingMethodInvocation = method(loggerInstance)
@@ -47,6 +50,8 @@ class LoggerTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1, handler: nil)
+
+        _ = loggers
     }
 }
 
