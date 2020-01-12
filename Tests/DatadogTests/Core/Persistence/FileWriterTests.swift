@@ -3,6 +3,7 @@ import XCTest
 
 class FileWriterTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
+    private let dateProvider = SystemDateProvider()
 
     override func setUp() {
         super.setUp()
@@ -17,7 +18,7 @@ class FileWriterTests: XCTestCase {
     func testItWritesDataToSingleFile() throws {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory, using: dateProvider),
             queue: queue,
             maxWriteSize: .max
         )
@@ -39,7 +40,7 @@ class FileWriterTests: XCTestCase {
         let expectation1 = self.expectation(description: "first write completed")
         let expectation2 = self.expectation(description: "second write completed")
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory, using: dateProvider),
             queue: queue,
             maxWriteSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
         )

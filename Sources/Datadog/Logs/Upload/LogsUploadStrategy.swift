@@ -31,7 +31,14 @@ internal struct LogsUploadStrategy {
         let uploadURL = try DataUploadURL(endpointURL: endpointURL, clientToken: clientToken)
         let httpClient = HTTPClient()
         let dataUploader = DataUploader(url: uploadURL, httpClient: httpClient)
+        return self.defalut(dataUploader: dataUploader, reader: reader)
+    }
 
+    static func `defalut`(
+        dataUploader: DataUploader,
+        reader: FileReader,
+        uploadDelay: LogsUploadDelay = defaultLogsUploadDelay
+    ) -> LogsUploadStrategy {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-upload",
             target: .global(qos: .utility)
@@ -42,7 +49,7 @@ internal struct LogsUploadStrategy {
                 queue: uploadQueue,
                 fileReader: reader,
                 dataUploader: dataUploader,
-                delay: defaultLogsUploadDelay
+                delay: uploadDelay
             )
         )
     }

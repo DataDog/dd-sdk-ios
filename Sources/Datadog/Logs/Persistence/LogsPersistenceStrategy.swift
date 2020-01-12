@@ -35,20 +35,25 @@ internal struct LogsPersistenceStrategy {
     )
 
     /// Default strategy which uses single GCD queue for read and write file access.
-    /// TODO: RUMM-140 Check with performance tests if it's worth introducing another thread
     static func `defalut`(using dateProvider: DateProvider) throws -> LogsPersistenceStrategy {
         let directory = try Directory(withSubdirectoryPath: Constants.logFilesSubdirectory)
-        return defalut(in: directory, dateProvider: dateProvider)
+        return self.default(in: directory, using: dateProvider)
     }
 
-    static func `defalut`(in directory: Directory, dateProvider: DateProvider) -> LogsPersistenceStrategy {
+    static func `default`(
+        in directory: Directory,
+        using dateProvider: DateProvider,
+        writeConditions: WritableFileConditions = defaultWriteConditions,
+        readConditions: ReadableFileConditions = defaultReadConditions
+    ) -> LogsPersistenceStrategy {
         let orchestrator = FilesOrchestrator(
             directory: directory,
-            writeConditions: defaultWriteConditions,
-            readConditions: defaultReadConditions,
+            writeConditions: writeConditions,
+            readConditions: readConditions,
             dateProvider: dateProvider
         )
 
+        /// TODO: RUMM-140 Check with performance tests if it's worth introducing another thread
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-read-write",
             target: .global(qos: .utility)

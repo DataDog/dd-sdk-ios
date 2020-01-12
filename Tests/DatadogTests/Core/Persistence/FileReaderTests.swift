@@ -3,6 +3,7 @@ import XCTest
 
 class FileReaderTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-read", target: .global(qos: .utility))
+    private let dateProvider = SystemDateProvider()
 
     override func setUp() {
         super.setUp()
@@ -16,7 +17,7 @@ class FileReaderTests: XCTestCase {
 
     func testItReadsSingleBatch() throws {
         let reader = FileReader(
-            orchestrator: .mockReadAllFiles(in: temporaryDirectory),
+            orchestrator: .mockReadAllFiles(in: temporaryDirectory, using: dateProvider),
             queue: queue
         )
         let data = "ABCD".data(using: .utf8)!

@@ -11,14 +11,28 @@ public class Datadog {
     internal let logsPersistenceStrategy: LogsPersistenceStrategy
     internal let logsUploadStrategy: LogsUploadStrategy
 
-    init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
-        self.dateProvider = dateProvider
-        self.logsPersistenceStrategy = try .defalut(using: dateProvider)
-        self.logsUploadStrategy = try .defalut(
+    internal convenience init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
+        let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
+        let logsUploadStrategy: LogsUploadStrategy = try .defalut(
             endpointURL: endpointURL,
             clientToken: clientToken,
             reader: logsPersistenceStrategy.reader
         )
+        self.init(
+            logsPersistenceStrategy: logsPersistenceStrategy,
+            logsUploadStrategy: logsUploadStrategy,
+            dateProvider: dateProvider
+        )
+    }
+
+    internal init(
+        logsPersistenceStrategy: LogsPersistenceStrategy,
+        logsUploadStrategy: LogsUploadStrategy,
+        dateProvider: DateProvider
+    ) {
+        self.dateProvider = dateProvider
+        self.logsPersistenceStrategy = logsPersistenceStrategy
+        self.logsUploadStrategy = logsUploadStrategy
     }
 }
 
