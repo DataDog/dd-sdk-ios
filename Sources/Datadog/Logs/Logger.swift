@@ -1,11 +1,14 @@
 import Foundation
 
 public class Logger {
-    // TODO: RUMM-128 Use `LogsHandler` protocol to abstract destination (file or console)
-    let logWriter: LogWriter
+    /// Builds `Log` objects.
+    let logBuilder: LogBuilder
+    /// Writes `Log` objects to output.
+    let logOutput: LogOutput
 
-    init(logWriter: LogWriter) {
-        self.logWriter = logWriter
+    init(logBuilder: LogBuilder, logOutput: LogOutput) {
+        self.logBuilder = logBuilder
+        self.logOutput = logOutput
     }
 
     /// Sends a DEBUG log message.
@@ -45,7 +48,8 @@ public class Logger {
     }
 
     private func log(status: Log.Status, message: @autoclosure () -> String) {
-        logWriter.writeLog(status: status, message: message())
+        let log = logBuilder.createLogWith(status: status, message: message())
+        logOutput.write(log: log)
     }
 
     // MARK: - Logger.Builder
@@ -71,12 +75,15 @@ public class Logger {
             guard let datadog = Datadog.instance else {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
+            let logBuilder = LogBuilder(
+                serviceName: serviceName,
+                dateProvider: datadog.dateProvider
+            )
+            let fileOutput = LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer)
+
             return Logger(
-                logWriter: LogWriter(
-                    fileWriter: datadog.logsPersistenceStrategy.writer,
-                    serviceName: serviceName,
-                    dateProvider: datadog.dateProvider
-                )
+                logBuilder: logBuilder,
+                logOutput: fileOutput
             )
         }
     }
