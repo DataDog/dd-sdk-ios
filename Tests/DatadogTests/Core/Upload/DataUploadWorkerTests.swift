@@ -1,7 +1,7 @@
 import XCTest
 @testable import Datadog
 
-class LogsUploaderTests: XCTestCase {
+class DataUploadWorkerTests: XCTestCase {
     private let fileReadWriteQueue = DispatchQueue(label: "dd-tests-read-write", target: .global(qos: .utility))
     private let uploaderQueue = DispatchQueue(label: "dd-tests-uploader", target: .global(qos: .utility))
 
@@ -38,7 +38,7 @@ class LogsUploaderTests: XCTestCase {
         )
 
         // Start logs uploader
-        let logsUploader = LogsUploader(
+        let uploadWorker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
@@ -58,6 +58,6 @@ class LogsUploaderTests: XCTestCase {
         XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k3":"v3"}]"#.utf8Data))
         XCTAssertEqual(try temporaryDirectory.allFiles().count, 0)
 
-        _ = logsUploader // keep the strong reference
+        _ = uploadWorker // keep the strong reference
     }
 }

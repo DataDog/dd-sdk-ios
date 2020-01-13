@@ -1,7 +1,7 @@
 import Foundation
 
-/// Mutable interval used for periodic logs upload.
-internal struct LogsUploadDelay {
+/// Mutable interval used for periodic data uploads.
+internal struct DataUploadDelay {
     private let defaultDelay: TimeInterval
     private let minDelay: TimeInterval
     private let maxDelay: TimeInterval

@@ -20,7 +20,7 @@ internal struct LogsUploadStrategy {
     }
 
     /// Default logs upload delay.
-    static let defaultLogsUploadDelay = LogsUploadDelay(
+    static let defaultLogsUploadDelay = DataUploadDelay(
         default: Constants.defaultLogsUploadDelay,
         min: Constants.minLogsUploadDelay,
         max: Constants.maxLogsUploadDelay,
@@ -37,7 +37,7 @@ internal struct LogsUploadStrategy {
     static func `defalut`(
         dataUploader: DataUploader,
         reader: FileReader,
-        uploadDelay: LogsUploadDelay = defaultLogsUploadDelay
+        uploadDelay: DataUploadDelay = defaultLogsUploadDelay
     ) -> LogsUploadStrategy {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-upload",
@@ -45,7 +45,7 @@ internal struct LogsUploadStrategy {
         )
 
         return LogsUploadStrategy(
-            logsUploader: LogsUploader(
+            uploadWorker: DataUploadWorker(
                 queue: uploadQueue,
                 fileReader: reader,
                 dataUploader: dataUploader,
@@ -54,6 +54,6 @@ internal struct LogsUploadStrategy {
         )
     }
 
-    /// Uploads logs to server with dynamic time intervals.
-    let logsUploader: LogsUploader
+    /// Uploads data to server with dynamic time intervals.
+    let uploadWorker: DataUploadWorker
 }

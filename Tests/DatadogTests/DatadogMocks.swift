@@ -130,12 +130,12 @@ extension HTTPClient {
     }
 }
 
-// MARK: - Logs uploading
+// MARK: - Persistence and Upload
 
-extension LogsUploadDelay {
+extension DataUploadDelay {
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
-    static func mockConstantDelay(of seconds: TimeInterval) -> LogsUploadDelay {
-        return LogsUploadDelay(
+    static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
+        return DataUploadDelay(
             default: seconds,
             min: seconds,
             max: seconds,
@@ -143,8 +143,6 @@ extension LogsUploadDelay {
         )
     }
 }
-
-// MARK: - Persistence and upload strategies
 
 extension LogsPersistenceStrategy {
     /// Mocks persistence strategy where:

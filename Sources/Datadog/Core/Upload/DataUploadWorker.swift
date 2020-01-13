@@ -1,11 +1,11 @@
 import Foundation
 
-internal class LogsUploader {
+internal class DataUploadWorker {
     /// Queue to execute uploads.
     private let queue: DispatchQueue
-    /// File reader pointing to logs directory.
+    /// File reader providing data to upload.
     private let fileReader: FileReader
-    /// Data uploader.
+    /// Data uploader sending data to server..
     private let dataUploader: DataUploader
     /// For each file upload, the status is checked against this list of acceptable statuses.
     /// If it's there, the file will be deleted. If not, it will be retried in next upload.
@@ -14,9 +14,9 @@ internal class LogsUploader {
     ]
 
     /// Delay used to schedule consecutive uploads.
-    private var delay: LogsUploadDelay
+    private var delay: DataUploadDelay
 
-    init(queue: DispatchQueue, fileReader: FileReader, dataUploader: DataUploader, delay: LogsUploadDelay) {
+    init(queue: DispatchQueue, fileReader: FileReader, dataUploader: DataUploader, delay: DataUploadDelay) {
         self.queue = queue
         self.fileReader = fileReader
         self.dataUploader = dataUploader

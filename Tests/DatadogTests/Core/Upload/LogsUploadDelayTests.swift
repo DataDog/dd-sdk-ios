@@ -1,7 +1,7 @@
 import XCTest
 @testable import Datadog
 
-class LogsUploadDelayTests: XCTestCase {
+class DataUploadDelayTests: XCTestCase {
     func testWhenNotModified_itReturnsDefaultDelay() {
         var delay = LogsUploadStrategy.defaultLogsUploadDelay
         XCTAssertEqual(delay.nextUploadDelay(), LogsUploadStrategy.Constants.defaultLogsUploadDelay)
