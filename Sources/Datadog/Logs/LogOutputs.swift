@@ -29,11 +29,16 @@ internal struct LogConsoleOutput: LogOutput {
     }
 }
 
+/// `LogOutput` which does nothing.
+internal struct NoOpLogOutput: LogOutput {
+    func write(log: Log) {}
+}
+
 // MARK: - Outputs arithmetics
 
 /// Combines one or more `LogOutputs` into one.
 internal struct CombinedLogOutput: LogOutput {
-    private let combinedOutputs: [LogOutput]
+    let combinedOutputs: [LogOutput]
 
     init(combine outputs: [LogOutput]) {
         self.combinedOutputs = outputs

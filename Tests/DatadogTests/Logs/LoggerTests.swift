@@ -116,6 +116,49 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    func testUsingDifferentOutputs() throws {
+        Datadog.instance = .mockAny(logsDirectory: temporaryDirectory)
+
+        assertThat(
+            logger: Logger.builder.build(),
+            usesOutput: LogFileOutput.self
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToDatadog(true).build(),
+            usesOutput: LogFileOutput.self
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToDatadog(false).build(),
+            usesOutput: NoOpLogOutput.self
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToConsole(true).build(),
+            usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToDatadog(true).sendLogsToConsole(true).build(),
+            usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToDatadog(false).sendLogsToConsole(true).build(),
+            usesOutput: LogConsoleOutput.self
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToConsole(false).build(),
+            usesOutput: LogFileOutput.self
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToDatadog(true).sendLogsToConsole(false).build(),
+            usesOutput: LogFileOutput.self
+        )
+        assertThat(
+            logger: Logger.builder.sendLogsToDatadog(false).sendLogsToConsole(false).build(),
+            usesOutput: NoOpLogOutput.self
+        )
+
+        try Datadog.deinitializeOrThrow()
+    }
+
     func testWhenDatadogIsNotInitialized_itThrowsProgrammerError() {
         XCTAssertThrowsError(try Logger.builder.buildOrThrow()) { error in
             XCTAssertEqual(
@@ -168,5 +211,20 @@ private extension LoggerTests {
         try Datadog.deinitializeOrThrow()
 
         return requestsRecorder
+    }
+
+    private func assertThat(logger: Logger, usesOutput outputType: LogOutput.Type, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertTrue(type(of: logger.logOutput) == outputType, file: file, line: line)
+    }
+
+    private func assertThat(logger: Logger, usesCombinedOutputs outputTypes: [LogOutput.Type], file: StaticString = #file, line: UInt = #line) {
+        if let combinedOutputs = (logger.logOutput as? CombinedLogOutput)?.combinedOutputs {
+            XCTAssertEqual(outputTypes.count, combinedOutputs.count, file: file, line: line)
+            outputTypes.forEach { outputType in
+                XCTAssertTrue(combinedOutputs.contains { type(of: $0) == outputType }, file: file, line: line)
+            }
+        } else {
+            XCTFail(file: file, line: line)
+        }
     }
 }
