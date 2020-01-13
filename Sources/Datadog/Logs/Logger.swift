@@ -61,7 +61,7 @@ public class Logger {
     public class Builder {
         private var serviceName: String = "ios"
         private var useFileOutput = true
-        private var useConsoleOutput = false
+        private var useConsoleLogFormat: ConsoleLogFormat?
 
         public func set(serviceName: String) -> Builder {
             self.serviceName = serviceName
@@ -73,8 +73,15 @@ public class Logger {
             return self
         }
 
-        public func sendLogsToConsole(_ enabled: Bool) -> Builder {
-            self.useConsoleOutput = enabled
+        public enum ConsoleLogFormat {
+            case short
+            case shortWith(prefix: String)
+            case json
+            case jsonWith(prefix: String)
+        }
+
+        public func sendLogsToConsole(_ enabled: Bool, using format: ConsoleLogFormat = .short) -> Builder {
+            useConsoleLogFormat = enabled ? format : nil
             return self
         }
 
@@ -98,17 +105,20 @@ public class Logger {
         }
 
         private func resolveOutputs(using datadog: Datadog) -> LogOutput {
-            switch (useFileOutput, useConsoleOutput) {
-            case (true, true):
+            switch (useFileOutput, useConsoleLogFormat) {
+            case (true, let format?):
                 return CombinedLogOutput(
                     combine: [
                         LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer),
-                        LogConsoleOutput()
+                        LogConsoleOutput(format: format)
                     ]
                 )
-            case (true, false):     return LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer)
-            case (false, true):     return LogConsoleOutput()
-            case (false, false):    return NoOpLogOutput()
+            case (true, nil):
+                return LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer)
+            case (false, let format?):
+                return LogConsoleOutput(format: format)
+            case (false, nil):
+                return NoOpLogOutput()
             }
         }
     }
