@@ -63,24 +63,38 @@ public class Logger {
         private var useFileOutput = true
         private var useConsoleLogFormat: ConsoleLogFormat?
 
+        /// Sets the service name that will appear in your logs.
+        /// - Parameter serviceName: the service name (default value is "ios")
         public func set(serviceName: String) -> Builder {
             self.serviceName = serviceName
             return self
         }
 
+        /// Enables your logs to be sent to Datadog servers.
+        /// You can use it to disable sending logs during development and instead enable console logs with `printLogsToConsole(_:)`
+        /// - Parameter enabled: `true` by default
         public func sendLogsToDatadog(_ enabled: Bool) -> Builder {
             self.useFileOutput = enabled
             return self
         }
 
+        /// Format to use when printing logs to console if `printLogsToConsole(_:)` is enabled.
         public enum ConsoleLogFormat {
+            /// Prints short representation of log.
             case short
+            /// Prints short representation of log with given prefix.
             case shortWith(prefix: String)
+            /// Prints JSON representation of log.
             case json
+            /// Prints JSON representation of log with given prefix.
             case jsonWith(prefix: String)
         }
 
-        public func sendLogsToConsole(_ enabled: Bool, using format: ConsoleLogFormat = .short) -> Builder {
+        /// Enables your logs to be printed to debugger console.
+        /// - Parameters:
+        ///   - enabled: `false` by default
+        ///   - format: format to use when printing logs to console - either `.short` or `.json` (`.short` is default)
+        public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder {
             useConsoleLogFormat = enabled ? format : nil
             return self
         }

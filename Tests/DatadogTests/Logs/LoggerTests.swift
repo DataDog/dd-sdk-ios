@@ -132,27 +132,27 @@ class LoggerTests: XCTestCase {
             usesOutput: NoOpLogOutput.self
         )
         assertThat(
-            logger: Logger.builder.sendLogsToConsole(true).build(),
+            logger: Logger.builder.printLogsToConsole(true).build(),
             usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
         )
         assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).sendLogsToConsole(true).build(),
+            logger: Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build(),
             usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
         )
         assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).sendLogsToConsole(true).build(),
+            logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build(),
             usesOutput: LogConsoleOutput.self
         )
         assertThat(
-            logger: Logger.builder.sendLogsToConsole(false).build(),
+            logger: Logger.builder.printLogsToConsole(false).build(),
             usesOutput: LogFileOutput.self
         )
         assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).sendLogsToConsole(false).build(),
+            logger: Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build(),
             usesOutput: LogFileOutput.self
         )
         assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).sendLogsToConsole(false).build(),
+            logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(),
             usesOutput: NoOpLogOutput.self
         )
 

@@ -18,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Create logger instance
         logger = Logger.builder
             .set(serviceName: "ios-sdk-test-service")
+            .printLogsToConsole(true, usingFormat: .short)
             .build()
 
         return true
