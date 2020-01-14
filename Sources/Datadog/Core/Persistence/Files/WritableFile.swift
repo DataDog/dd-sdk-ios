@@ -1,9 +1,9 @@
 import Foundation
 
-/// Provides convenient interface to append data to underlying file and tracks metadata of that file.
+/// Provides convenient interface for getting metadata of the file and appending data to it.
+/// `WritableFile` is an immutable `struct` designed to provide optimized and thread safe interface for file manipulation.
 /// It doesn't own the file, which means the file presence is not guaranteed - the file can be deleted by OS at any time (e.g. due to memory pressure).
-/// This class is should be the only interface for manipulating storage files in the "write" context (opening and writting).
-internal final class WritableFile {
+internal struct WritableFile {
     /// Creates new file in given directory.
     /// Creation date is used to name the file by time interval elapsed since reference date (00:00:00 UTC on 1 January 2001).
     init(newFileInDirectory directory: Directory, createdAt date: Date) throws {
@@ -12,7 +12,7 @@ internal final class WritableFile {
         let fileURL = try directory.createFile(named: fileName)
         self.fileURL = fileURL
         self.creationDate = creationDate
-        self.size = 0
+        self.initialSize = 0
     }
 
     /// Opens file with given url.
@@ -20,7 +20,7 @@ internal final class WritableFile {
         self.fileURL = url
         self.creationDate = fileCreationDateFrom(fileName: url.lastPathComponent)
         let fileAttributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-        self.size = fileAttributes[.size] as? UInt64 ?? 0
+        self.initialSize = fileAttributes[.size] as? UInt64 ?? 0
     }
 
     /// URL of the underlying file in file system.
@@ -29,20 +29,18 @@ internal final class WritableFile {
     /// Time of the file creation.
     let creationDate: Date
 
-    /// Size of this file.
-    private(set) var size: UInt64
+    /// The initial size of the file. It doesn't change after data is appended.
+    /// New immutable instance of `WritableFile` should be obtained to get updated info.
+    let initialSize: UInt64
 
-    /// Checks if the file was written before.
-    var isEmpty: Bool { return size == 0 }
-
-    /// Appends given data do the end of this file within single "write" operation counted on `numberOfWrites`.
+    /// Synchronously appends given data at the end of this file.
     func append(transaction: ((Data) -> Void) -> Void) throws {
         let fileHandle = try FileHandle(forWritingTo: fileURL)
         defer { fileHandle.closeFile() }
-        size = fileHandle.seekToEndOfFile()
+        fileHandle.seekToEndOfFile()
 
-        // Writes given data to file and seeks to the end of file.
-        func writeAndSeek(data: Data) {
+        // Writes given data at the end of the file.
+        func appendData(_ data: Data) {
             /*
              Apple documentation https://developer.apple.com/documentation/foundation/filehandle/1410936-write says
              that `fileHandle.write()` raises an exception if no free space is left on the file system,
@@ -55,8 +53,7 @@ internal final class WritableFile {
              crashing client applications, other precautions are implemented carefuly.
              */
             fileHandle.write(data)
-            size = fileHandle.seekToEndOfFile()
         }
-        transaction(writeAndSeek)
+        transaction(appendData)
     }
 }

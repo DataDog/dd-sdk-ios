@@ -2,7 +2,8 @@ import XCTest
 @testable import Datadog
 
 class FileWriterTests: XCTestCase {
-    private let queue = DispatchQueue(label: "dd-write", target: .global(qos: .utility))
+    private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
+    private let dateProvider = SystemDateProvider()
 
     override func setUp() {
         super.setUp()
@@ -17,7 +18,7 @@ class FileWriterTests: XCTestCase {
     func testItWritesDataToSingleFile() throws {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory, using: dateProvider),
             queue: queue,
             maxWriteSize: .max
         )
@@ -28,7 +29,7 @@ class FileWriterTests: XCTestCase {
 
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 1)
         XCTAssertEqual(
             try temporaryDirectory.textEncodedDataFromFirstFile(),
             #"{"key1":"value1"},{"key2":"value3"},{"key3":"value3"}"#
@@ -39,7 +40,7 @@ class FileWriterTests: XCTestCase {
         let expectation1 = self.expectation(description: "first write completed")
         let expectation2 = self.expectation(description: "second write completed")
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory, using: dateProvider),
             queue: queue,
             maxWriteSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
         )
@@ -63,11 +64,12 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: .default,
+                writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
+                readConditions: LogsPersistenceStrategy.defaultReadConditions,
                 dateProvider: SystemDateProvider()
             ),
             queue: queue,
-            maxWriteSize: LogsFileStrategy.Constants.maxLogSize
+            maxWriteSize: LogsPersistenceStrategy.Constants.maxLogSize
         )
 
         for _ in 0..<10_000 {
@@ -78,7 +80,7 @@ class FileWriterTests: XCTestCase {
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
         waitForExpectations(timeout: 10) // 10 seconds is an arbitrary timeout
 
-        XCTAssertGreaterThan(try temporaryDirectory.files().count, 1)
+        XCTAssertGreaterThan(try temporaryDirectory.allFiles().count, 1)
     }
 
     private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {

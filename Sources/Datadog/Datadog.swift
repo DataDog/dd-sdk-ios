@@ -4,6 +4,39 @@ import Foundation
 public class Datadog {
     static var instance: Datadog?
 
+    internal let dateProvider: DateProvider
+
+    // MARK: - Logs
+
+    internal let logsPersistenceStrategy: LogsPersistenceStrategy
+    internal let logsUploadStrategy: LogsUploadStrategy
+
+    internal convenience init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
+        let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
+        let logsUploadStrategy: LogsUploadStrategy = try .defalut(
+            endpointURL: endpointURL,
+            clientToken: clientToken,
+            reader: logsPersistenceStrategy.reader
+        )
+        self.init(
+            logsPersistenceStrategy: logsPersistenceStrategy,
+            logsUploadStrategy: logsUploadStrategy,
+            dateProvider: dateProvider
+        )
+    }
+
+    internal init(
+        logsPersistenceStrategy: LogsPersistenceStrategy,
+        logsUploadStrategy: LogsUploadStrategy,
+        dateProvider: DateProvider
+    ) {
+        self.dateProvider = dateProvider
+        self.logsPersistenceStrategy = logsPersistenceStrategy
+        self.logsUploadStrategy = logsUploadStrategy
+    }
+}
+
+extension Datadog {
     // MARK: - Initialization
 
     public static func initialize(endpointURL: String, clientToken: String) {
@@ -15,8 +48,10 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        self.instance = Datadog(
-            logsUploader: LogsUploader(validURL: try .init(endpointURL: endpointURL, clientToken: clientToken))
+        self.instance = try Datadog(
+            endpointURL: endpointURL,
+            clientToken: clientToken,
+            dateProvider: SystemDateProvider()
         )
     }
 
@@ -28,15 +63,6 @@ public class Datadog {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
         Datadog.instance = nil
-    }
-
-    // MARK: - Internal
-
-    // TODO: RUMM-109 Make `logsUploader` dependency private when logs are uploaded from files
-    let logsUploader: LogsUploader
-
-    init(logsUploader: LogsUploader) {
-        self.logsUploader = logsUploader
     }
 }
 

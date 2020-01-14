@@ -35,6 +35,10 @@ extension Data {
     static func mockRepeating(byte: UInt8, times count: Int) -> Data {
         return Data(repeating: byte, count: count)
     }
+
+    static func mock(ofSize size: Int) -> Data {
+        return mockRepeating(byte: 0x41, times: size)
+    }
 }
 
 extension Array where Element == Data {
@@ -106,20 +110,80 @@ struct ErrorMock: Error {
 // MARK: - HTTP and URLSession
 
 class URLSessionDataTaskMock: URLSessionDataTask {
-    private let closure: () -> Void
+    /// Queue to execute work on.
+    private let queue: DispatchQueue
+    /// Work to execute.
+    private let work: () -> Void
+    /// Callback to tell `URLSession` mock that the work is done.
+    private let completion: (URLSessionDataTaskMock) -> Void
 
-    init(closure: @escaping () -> Void) {
-        self.closure = closure
+    init(queue: DispatchQueue, work: @escaping () -> Void, completion: @escaping (URLSessionDataTaskMock) -> Void) {
+        self.queue = queue
+        self.work = work
+        self.completion = completion
     }
 
     override func resume() {
-        closure()
+        // The use of `unowned` is to assert that all mocked tasks complete.
+        queue.async { [unowned self] in
+            self.work()
+            self.completion(self)
+        }
+    }
+}
+
+/// Apple's `URLSession` maintains a strong reference to the task until the request finishes or fails.
+/// This objects allows to reproduce this behaviour for `URLSession` mocks. This object is thread-safe.
+private class URLSessionDataTaskReferences {
+    private let queue: DispatchQueue
+    private var references: Set<URLSessionDataTaskMock> = []
+
+    init(synchronizationQueue: DispatchQueue) {
+        self.queue = synchronizationQueue
+    }
+
+    func add(_ task: URLSessionDataTaskMock) {
+        queue.async { [weak self] in self?.references.insert(task) }
+    }
+
+    func remove(_ task: URLSessionDataTaskMock) {
+        queue.async { [weak self] in self?.references.remove(task) }
+    }
+}
+
+/// Records requests passed to `URLSessionMock`.
+class URLSessionRequestRecorder {
+    private var requests: [URLRequest] = []
+
+    /// Closure called immediately after new request is recorded.
+    var onNewRequest: ((URLRequest) -> Void)?
+
+    func record(request: URLRequest) {
+        requests.append(request)
+        onNewRequest?(request)
+    }
+
+    var requestsSent: [URLRequest] {
+        requests
+    }
+
+    func containsRequestWith(body: Data) -> Bool {
+        return requests.contains { $0.httpBody == body }
     }
 }
 
 /// Mocked `URLSession` which returns given `data`, `urlResponse` or `error`.
 class URLSessionMock: URLSession {
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+    private let queue = DispatchQueue(label: "queue-URLSessionMock-\(UUID().uuidString)")
+    private let requestsRecorder: URLSessionRequestRecorder?
+    private lazy var taskReferences: URLSessionDataTaskReferences = {
+        URLSessionDataTaskReferences(synchronizationQueue: queue)
+    }()
+
+    init(requestsRecorder: URLSessionRequestRecorder? = nil) {
+        self.requestsRecorder = requestsRecorder
+    }
 
     var data: Data?
     var urlResponse: URLResponse?
@@ -130,41 +194,33 @@ class URLSessionMock: URLSession {
         let urlResponse = self.urlResponse
         let error = self.error
 
-        return URLSessionDataTaskMock { completionHandler(data, urlResponse, error) }
-    }
-}
-
-/// Mocked `URLSession` which notifies sent requests on `requestSent` callback.
-class URLSessionRequestCapturingMock: URLSession {
-    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
-
-    var requestSent: ((URLRequest) -> Void)?
-
-    override func dataTask(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> URLSessionDataTask {
-        return URLSessionDataTaskMock { [unowned self] in self.requestSent?(request) }
+        let dataTask = URLSessionDataTaskMock(
+            queue: queue,
+            work: { [weak self] in
+                self?.requestsRecorder?.record(request: request)
+                completionHandler(data, urlResponse, error)
+            },
+            completion: { [weak self] thisTask in self?.taskReferences.remove(thisTask) }
+        )
+        taskReferences.add(dataTask)
+        return dataTask
     }
 }
 
 extension URLSession {
-    static func mockDeliverySuccess(data: Data, response: HTTPURLResponse) -> URLSessionMock {
-        let session = URLSessionMock()
+    static func mockDeliverySuccess(data: Data, response: HTTPURLResponse, requestsRecorder: RequestsRecorder? = nil) -> URLSessionMock {
+        let session = URLSessionMock(requestsRecorder: requestsRecorder)
         session.data = data
         session.urlResponse = response
         session.error = nil
         return session
     }
 
-    static func mockDeliveryFailure(error: Error) -> URLSessionMock {
-        let session = URLSessionMock()
+    static func mockDeliveryFailure(error: Error, requestsRecorder: RequestsRecorder? = nil) -> URLSessionMock {
+        let session = URLSessionMock(requestsRecorder: requestsRecorder)
         session.data = nil
         session.urlResponse = nil
         session.error = error
-        return session
-    }
-
-    static func mockRequestCapture(captureBlock: @escaping (URLRequest) -> Void) -> URLSessionRequestCapturingMock {
-        let session = URLSessionRequestCapturingMock()
-        session.requestSent = captureBlock
         return session
     }
 }

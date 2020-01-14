@@ -1,12 +1,11 @@
 import Foundation
 
 public class Logger {
-    let uploader: LogsUploader
-    let serviceName: String
+    // TODO: RUMM-128 Use `LogsHandler` protocol to abstract destination (file or console)
+    let logWriter: LogWriter
 
-    init(uploader: LogsUploader, serviceName: String) {
-        self.uploader = uploader
-        self.serviceName = serviceName
+    init(logWriter: LogWriter) {
+        self.logWriter = logWriter
     }
 
     /// Sends a DEBUG log message.
@@ -46,15 +45,7 @@ public class Logger {
     }
 
     private func log(status: Log.Status, message: @autoclosure () -> String) {
-        // TODO: RUMM-128 Evaluate `message()` only if "datadog" or "console" output is enabled
-        let log = Log(date: Date(), status: status, message: message(), service: serviceName)
-        do {
-            try uploader.upload(logs: [log]) { status in
-                print("ℹ️ logs delivery status: \(status)")
-            }
-        } catch {
-            print("🔥 logs not delivered due to: \(error)")
-        }
+        logWriter.writeLog(status: status, message: message())
     }
 
     // MARK: - Logger.Builder
@@ -81,8 +72,11 @@ public class Logger {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
             return Logger(
-                uploader: datadog.logsUploader,
-                serviceName: serviceName
+                logWriter: LogWriter(
+                    fileWriter: datadog.logsPersistenceStrategy.writer,
+                    serviceName: serviceName,
+                    dateProvider: datadog.dateProvider
+                )
             )
         }
     }

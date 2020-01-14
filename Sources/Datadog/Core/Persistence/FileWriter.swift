@@ -9,7 +9,7 @@ internal final class FileWriter {
     private let jsonEncoder: JSONEncoder
     /// Max size of encoded value that can be written to file. If this size is exceeded, the write is skipped..
     private let maxWriteSize: Int
-    /// Queue used to synchronize writes and perform decoding on background thread.
+    /// Queue used to synchronize files access (read / write) and perform decoding on background thread.
     private let queue: DispatchQueue
 
     init(orchestrator: FilesOrchestrator, queue: DispatchQueue, maxWriteSize: Int) {
@@ -23,15 +23,17 @@ internal final class FileWriter {
         }
     }
 
+    // MARK: - Writing data
+
     /// Encodes given value to JSON data and writes it to file.
     /// Comma is used to separate consecutive values in the file.
     func write<T: Encodable>(value: T) {
         queue.async { [weak self] in
-            self?.writeOnBackgroundThread(value: value)
+            self?.synchronizedWrite(value: value)
         }
     }
 
-    private func writeOnBackgroundThread<T: Encodable>(value: T) {
+    private func synchronizedWrite<T: Encodable>(value: T) {
         do {
             let data = try jsonEncoder.encode(value)
 
@@ -42,7 +44,7 @@ internal final class FileWriter {
 
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
 
-            if file.isEmpty {
+            if file.initialSize == 0 {
                 try file.append { write in
                     write(data)
                 }
@@ -53,7 +55,7 @@ internal final class FileWriter {
                 }
             }
         } catch {
-            print("Failed to write \(type(of: value)) value into file: \(error)")
+            print("FileWriter: failed to write \(type(of: value)) value into file: \(error)")
         }
     }
 }
