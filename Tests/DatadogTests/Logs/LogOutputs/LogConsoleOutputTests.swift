@@ -36,11 +36,10 @@ class LogConsoleOutputTests: XCTestCase {
         }
         """)
 
-        let output2 = LogConsoleOutput(format: .jsonWith(prefix: "🐶\n")) { messagePrinted = $0 }
+        let output2 = LogConsoleOutput(format: .jsonWith(prefix: "🐶 → ")) { messagePrinted = $0 }
         output2.write(log: log)
         XCTAssertEqual(messagePrinted, """
-        🐶
-        {
+        🐶 → {
           "status" : "INFO",
           "message" : "Info message.",
           "service" : "test-service",

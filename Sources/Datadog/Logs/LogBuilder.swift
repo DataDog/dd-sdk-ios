@@ -24,11 +24,11 @@ internal struct LogBuilder {
     /// Current date to write in log.
     let dateProvider: DateProvider
 
-    func createLogWith(status: Log.Status, message: @autoclosure () -> String) -> Log {
+    func createLogWith(status: Log.Status, message: String) -> Log {
         return Log(
             date: dateProvider.currentDate(),
             status: status,
-            message: message(),
+            message: message,
             service: serviceName
         )
     }
