@@ -132,6 +132,15 @@ extension HTTPClient {
 
 // MARK: - Persistence and Upload
 
+extension DataUploadURL {
+    static func mockAny() -> DataUploadURL {
+        return try! DataUploadURL(
+            endpointURL: "https://app.example.com/v2/api",
+            clientToken: "abc-def-ghi"
+        )
+    }
+}
+
 extension DataUploadDelay {
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
     static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {

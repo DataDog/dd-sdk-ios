@@ -6,15 +6,6 @@ A collection of mocks for Logs objects.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
-extension DataUploadURL {
-    static func mockAny() -> DataUploadURL {
-        return try! DataUploadURL(
-            endpointURL: "https://app.example.com/v2/api",
-            clientToken: "abc-def-ghi"
-        )
-    }
-}
-
 extension Log {
     static func mockRandom() -> Log {
         return Log(
@@ -39,5 +30,17 @@ extension Log.Status {
     static func mockRandom() -> Log.Status {
         let statuses: [Log.Status] = [.debug, .info, .notice, .warn, .error, .critical]
         return statuses.randomElement()!
+    }
+}
+
+extension LogBuilder {
+    /// Mocks `LogBuilder` producing logs signed with given `date` and `serviceName`.
+    static func mockUsing(date: Date, serviceName: String = "test-service") -> LogBuilder {
+        let dateProvider = DateProviderMock()
+        dateProvider.currentDates = [date]
+        return LogBuilder(
+            serviceName: serviceName,
+            dateProvider: dateProvider
+        )
     }
 }

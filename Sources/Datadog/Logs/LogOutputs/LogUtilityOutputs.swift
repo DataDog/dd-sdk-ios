@@ -2,7 +2,7 @@ import Foundation
 
 /// `LogOutput` which does nothing.
 internal struct NoOpLogOutput: LogOutput {
-    func write(log: Log) {}
+    func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {}
 }
 
 /// Combines one or more `LogOutputs` into one.
@@ -13,18 +13,18 @@ internal struct CombinedLogOutput: LogOutput {
         self.combinedOutputs = outputs
     }
 
-    func write(log: Log) {
-        combinedOutputs.forEach { $0.write(log: log) }
+    func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {
+        combinedOutputs.forEach { $0.writeLogWith(level: level, message: message()) }
     }
 }
 
 internal struct ConditionalLogOutput: LogOutput {
     let conditionedOutput: LogOutput
-    let condition: (Log) -> Bool
+    let condition: (LogLevel) -> Bool
 
-    func write(log: Log) {
-        if condition(log) {
-            conditionedOutput.write(log: log)
+    func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {
+        if condition(level) {
+            conditionedOutput.writeLogWith(level: level, message: message())
         }
     }
 }

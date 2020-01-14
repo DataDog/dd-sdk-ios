@@ -12,13 +12,10 @@ public enum LogLevel: Int, Codable {
 }
 
 public class Logger {
-    /// Builds `Log` objects.
-    let logBuilder: LogBuilder
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
 
-    init(logBuilder: LogBuilder, logOutput: LogOutput) {
-        self.logBuilder = logBuilder
+    init(logOutput: LogOutput) {
         self.logOutput = logOutput
     }
 
@@ -59,8 +56,7 @@ public class Logger {
     }
 
     private func log(level: LogLevel, message: @autoclosure () -> String) {
-        let log = logBuilder.createLogWith(level: level, message: message())
-        logOutput.write(log: log)
+        logOutput.writeLogWith(level: level, message: message())
     }
 
     // MARK: - Logger.Builder
@@ -120,28 +116,39 @@ public class Logger {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
 
-            return Logger(
-                logBuilder: LogBuilder(
-                    serviceName: serviceName,
-                    dateProvider: datadog.dateProvider
-                ),
-                logOutput: resolveOutputs(using: datadog)
-            )
+            return Logger(logOutput: resolveLogsOutput(using: datadog))
         }
 
-        private func resolveOutputs(using datadog: Datadog) -> LogOutput {
+        private func resolveLogsOutput(using datadog: Datadog) -> LogOutput {
+            let logBuilder = LogBuilder(
+                serviceName: serviceName,
+                dateProvider: datadog.dateProvider
+            )
+
             switch (useFileOutput, useConsoleLogFormat) {
             case (true, let format?):
                 return CombinedLogOutput(
                     combine: [
-                        LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer),
-                        LogConsoleOutput(format: format)
+                        LogFileOutput(
+                            logBuilder: logBuilder,
+                            fileWriter: datadog.logsPersistenceStrategy.writer
+                        ),
+                        LogConsoleOutput(
+                            logBuilder: logBuilder,
+                            format: format
+                        )
                     ]
                 )
             case (true, nil):
-                return LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer)
+                return LogFileOutput(
+                    logBuilder: logBuilder,
+                    fileWriter: datadog.logsPersistenceStrategy.writer
+                )
             case (false, let format?):
-                return LogConsoleOutput(format: format)
+                return LogConsoleOutput(
+                    logBuilder: logBuilder,
+                    format: format
+                )
             case (false, nil):
                 return NoOpLogOutput()
             }

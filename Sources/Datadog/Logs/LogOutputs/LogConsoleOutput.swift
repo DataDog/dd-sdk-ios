@@ -7,20 +7,27 @@ internal protocol ConsoleLogFormatter {
 
 /// `LogOutput` which prints logs to console.
 internal struct LogConsoleOutput: LogOutput {
+    private let logBuilder: LogBuilder
     private let formatter: ConsoleLogFormatter
     private let printingFunction: (String) -> Void
 
-    init(format: Logger.Builder.ConsoleLogFormat, printingFunction: @escaping (String) -> Void = { print($0) }) {
+    init(
+        logBuilder: LogBuilder,
+        format: Logger.Builder.ConsoleLogFormat,
+        printingFunction: @escaping (String) -> Void = { print($0) }
+    ) {
         switch format {
         case .short:                    self.formatter = ShortLogFormatter()
         case .shortWith(let prefix):    self.formatter = ShortLogFormatter(prefix: prefix)
         case .json:                     self.formatter = JSONLogFormatter()
         case .jsonWith(let prefix):     self.formatter = JSONLogFormatter(prefix: prefix)
         }
+        self.logBuilder = logBuilder
         self.printingFunction = printingFunction
     }
 
-    func write(log: Log) {
+    func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {
+        let log = logBuilder.createLogWith(level: level, message: message())
         printingFunction(formatter.format(log: log))
     }
 }

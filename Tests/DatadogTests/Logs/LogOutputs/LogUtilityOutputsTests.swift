@@ -2,14 +2,19 @@ import XCTest
 @testable import Datadog
 
 class CombinedLogOutputTests: XCTestCase {
-    /// Basic `LogOutput` mock only recording received logs.
+    /// `LogOutput` recording received logs.
     class LogOutputMock: LogOutput {
-        var logWritten: Log?
-        init() {}
-        func write(log: Log) { logWritten = log }
-    }
+        struct RecordedLog: Equatable {
+            let level: LogLevel
+            let message: String
+        }
 
-    private let log: Log = .mockRandom()
+        var recordedLog: RecordedLog? = nil
+
+        func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {
+            recordedLog = RecordedLog(level: level, message: message())
+        }
+    }
 
     func testCombinedLogOutput_writesLogToAllCombinedOutputs() {
         let output1 = LogOutputMock()
@@ -17,24 +22,24 @@ class CombinedLogOutputTests: XCTestCase {
         let output3 = LogOutputMock()
 
         let combinedOutput = CombinedLogOutput(combine: [output1, output2, output3])
-        combinedOutput.write(log: log)
+        combinedOutput.writeLogWith(level: .info, message: "info message")
 
-        XCTAssertEqual(output1.logWritten, log)
-        XCTAssertEqual(output2.logWritten, log)
-        XCTAssertEqual(output3.logWritten, log)
+        XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message"))
+        XCTAssertEqual(output2.recordedLog, .init(level: .info, message: "info message"))
+        XCTAssertEqual(output3.recordedLog, .init(level: .info, message: "info message"))
     }
 
     func testConditionalLogOutput_writesLogToCombinedOutputOnlyIfConditionIsMet() {
         let output1 = LogOutputMock()
         let conditionalOutput1 = ConditionalLogOutput(conditionedOutput: output1) { _ in true }
 
-        conditionalOutput1.write(log: log)
-        XCTAssertEqual(output1.logWritten, log)
+        conditionalOutput1.writeLogWith(level: .info, message: "info message")
+        XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message"))
 
         let output2 = LogOutputMock()
         let conditionalOutput2 = ConditionalLogOutput(conditionedOutput: output2) { _ in false }
 
-        conditionalOutput2.write(log: log)
-        XCTAssertNil(output2.logWritten)
+        conditionalOutput2.writeLogWith(level: .info, message: "info message")
+        XCTAssertNil(output2.recordedLog)
     }
 }
