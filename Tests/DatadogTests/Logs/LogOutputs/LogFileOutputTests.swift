@@ -1,9 +1,7 @@
 import XCTest
 @testable import Datadog
 
-class LogWriterTests: XCTestCase {
-    private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
-
+class LogFileOutputTests: XCTestCase {
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
@@ -16,15 +14,18 @@ class LogWriterTests: XCTestCase {
 
     func testItWritesLogToFileAsJSON() throws {
         let dateProvider = DateProviderMock()
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
         dateProvider.currentFileCreationDates = [.mockDecember15th2019At10AMUTC()]
-        let writer = LogWriter(
-            fileWriter: .mockWrittingToSingleFile(in: temporaryDirectory, on: queue, using: dateProvider),
-            serviceName: "test-service-name",
-            dateProvider: dateProvider
+        let queue = DispatchQueue(label: "any")
+
+        let output = LogFileOutput(
+            fileWriter: .mockWrittingToSingleFile(
+                in: temporaryDirectory,
+                on: queue,
+                using: dateProvider
+            )
         )
 
-        writer.writeLog(status: .mockRandom(), message: "some message")
+        output.write(log: .mockRandom())
 
         queue.sync {} // wait on writter queue
 

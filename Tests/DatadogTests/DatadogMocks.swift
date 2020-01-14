@@ -170,7 +170,7 @@ extension LogsUploadStrategy {
     static func mockUploadBatchesInConstantDelayWith200ResponseStatusCode(
         interval: TimeInterval,
         using fileReader: FileReader,
-        andRecordRequestsOn requestsRecorder: RequestsRecorder
+        andRecordRequestsOn requestsRecorder: RequestsRecorder?
     ) -> LogsUploadStrategy {
         return .defalut(
             dataUploader: DataUploader(
@@ -201,7 +201,7 @@ extension Datadog {
         logsFileCreationDateProvider: DateProvider,
         logsUploadInterval: TimeInterval,
         logsTimeProvider: DateProvider,
-        requestsRecorder: RequestsRecorder
+        requestsRecorder: RequestsRecorder?
     ) -> Datadog {
         let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
             in: temporaryDirectory,
@@ -216,6 +216,17 @@ extension Datadog {
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: logsTimeProvider
+        )
+    }
+
+    /// Mocks SDK instance which doesn't send logs.
+    static func mockAny(logsDirectory: Directory) -> Datadog {
+        return .mockSuccessfullySendingOneLogPerRequest(
+            logsDirectory: logsDirectory,
+            logsFileCreationDateProvider: DateProviderMock(),
+            logsUploadInterval: Date.distantFuture.timeIntervalSinceReferenceDate,
+            logsTimeProvider: DateProviderMock(),
+            requestsRecorder: nil
         )
     }
 }
