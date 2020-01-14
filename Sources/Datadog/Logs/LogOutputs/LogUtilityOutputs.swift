@@ -17,3 +17,14 @@ internal struct CombinedLogOutput: LogOutput {
         combinedOutputs.forEach { $0.write(log: log) }
     }
 }
+
+internal struct ConditionalLogOutput: LogOutput {
+    let conditionedOutput: LogOutput
+    let condition: (Log) -> Bool
+
+    func write(log: Log) {
+        if condition(log) {
+            conditionedOutput.write(log: log)
+        }
+    }
+}
