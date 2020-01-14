@@ -1,5 +1,16 @@
 import Foundation
 
+/// Log levels ordered by their severity, with `.debug` being the least severe and
+/// `.critical` being the most severe.
+public enum LogLevel: Int, Codable {
+    case debug
+    case info
+    case notice
+    case warn
+    case error
+    case critical
+}
+
 public class Logger {
     /// Builds `Log` objects.
     let logBuilder: LogBuilder
@@ -14,41 +25,41 @@ public class Logger {
     /// Sends a DEBUG log message.
     /// - Parameter message: the message to be logged
     public func debug(_ message: @autoclosure () -> String) {
-        log(status: .debug, message: message())
+        log(level: .debug, message: message())
     }
 
     /// Sends an INFO log message.
     /// - Parameter message: the message to be logged
     public func info(_ message: @autoclosure () -> String) {
-        log(status: .info, message: message())
+        log(level: .info, message: message())
     }
 
     /// Sends a NOTICE log message.
     /// - Parameter message: the message to be logged
     public func notice(_ message: @autoclosure () -> String) {
-        log(status: .notice, message: message())
+        log(level: .notice, message: message())
     }
 
     /// Sends a WARN log message.
     /// - Parameter message: the message to be logged
     public func warn(_ message: @autoclosure () -> String) {
-        log(status: .warn, message: message())
+        log(level: .warn, message: message())
     }
 
     /// Sends an ERROR log message.
     /// - Parameter message: the message to be logged
     public func error(_ message: @autoclosure () -> String) {
-        log(status: .error, message: message())
+        log(level: .error, message: message())
     }
 
     /// Sends a CRITICAL log message.
     /// - Parameter message: the message to be logged
     public func critical(_ message: @autoclosure () -> String) {
-        log(status: .critical, message: message())
+        log(level: .critical, message: message())
     }
 
-    private func log(status: Log.Status, message: @autoclosure () -> String) {
-        let log = logBuilder.createLogWith(status: status, message: message())
+    private func log(level: LogLevel, message: @autoclosure () -> String) {
+        let log = logBuilder.createLogWith(level: level, message: message())
         logOutput.write(log: log)
     }
 

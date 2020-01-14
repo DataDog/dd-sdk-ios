@@ -9,6 +9,17 @@ internal struct Log: Codable, Equatable {
         case warn = "WARN"
         case error = "ERROR"
         case critical = "CRITICAL"
+
+        init(for logLevel: LogLevel) {
+            switch logLevel {
+            case .debug:    self = .debug
+            case .info:     self = .info
+            case .notice:   self = .notice
+            case .warn:     self = .warn
+            case .error:    self = .error
+            case .critical: self = .critical
+            }
+        }
     }
 
     let date: Date
@@ -24,10 +35,10 @@ internal struct LogBuilder {
     /// Current date to write in log.
     let dateProvider: DateProvider
 
-    func createLogWith(status: Log.Status, message: String) -> Log {
+    func createLogWith(level: LogLevel, message: String) -> Log {
         return Log(
             date: dateProvider.currentDate(),
-            status: status,
+            status: Log.Status(for: level),
             message: message,
             service: serviceName
         )
