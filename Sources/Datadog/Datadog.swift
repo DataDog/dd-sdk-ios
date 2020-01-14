@@ -55,6 +55,13 @@ extension Datadog {
         )
     }
 
+    // MARK: - Global configuration
+
+    /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
+    /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
+    /// Default is `nil`.
+    public static var verbosityLevel: LogLevel? = nil
+
     // MARK: - Deinitialization
 
     /// Internal feature made only for tests purpose.
