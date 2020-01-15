@@ -21,6 +21,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .printLogsToConsole(true, usingFormat: .short)
             .build()
 
+        // Set highest verbosity level to see internal actions made in SDK
+        Datadog.verbosityLevel = .debug
+
         return true
     }
 

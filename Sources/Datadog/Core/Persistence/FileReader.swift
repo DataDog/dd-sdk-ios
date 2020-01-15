@@ -40,7 +40,7 @@ internal final class FileReader {
                 let batchData = openingBracketData + fileData + closingBracketData
                 return Batch(data: batchData, file: file)
             } catch {
-                print("FileReader - failed to read batch from file: \(error)")
+                developerLogger?.error("🔥 Failed to read file: \(error)")
                 return nil
             }
         }

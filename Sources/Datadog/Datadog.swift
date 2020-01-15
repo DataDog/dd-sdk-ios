@@ -41,7 +41,10 @@ extension Datadog {
 
     public static func initialize(endpointURL: String, clientToken: String) {
         do { try initializeOrThrow(endpointURL: endpointURL, clientToken: clientToken)
-        } catch { fatalError("Programmer error - \(error)") }
+        } catch {
+            userLogger.critical("\(error)")
+            fatalError("Programmer error - \(error)")  // crash
+        }
     }
 
     static func initializeOrThrow(endpointURL: String, clientToken: String) throws {

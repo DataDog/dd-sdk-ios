@@ -111,7 +111,10 @@ public class Logger {
 
         public func build() -> Logger {
             do { return try buildOrThrow()
-            } catch { fatalError("`Logger` cannot be built: \(error)") }
+            } catch {
+                userLogger.critical("\(error)")
+                fatalError("`Logger` cannot be built: \(error)") // crash
+            }
         }
 
         internal func buildOrThrow() throws -> Logger {

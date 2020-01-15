@@ -1,5 +1,8 @@
 import Foundation
 
+internal let developerLogger = createSDKDeveloperLogger()
+internal let userLogger = createSDKUserLogger()
+
 internal func createSDKDeveloperLogger(
     consolePrintFunction: @escaping (String) -> Void = { print($0) },
     dateProvider: DateProvider = SystemDateProvider()

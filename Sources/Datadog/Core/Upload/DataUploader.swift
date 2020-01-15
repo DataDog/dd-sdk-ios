@@ -46,7 +46,7 @@ internal final class DataUploader {
             case .success(let httpResponse):
                 uploadStatus = DataUploadStatus(from: httpResponse)
             case .failure(let error):
-                print("Data upload error: \(error)")
+                developerLogger?.error("🔥 Failed to upload data: \(error)")
                 uploadStatus = .networkError
             }
 
