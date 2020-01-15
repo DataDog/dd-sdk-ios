@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Create logger instance
         logger = Logger.builder
             .set(serviceName: "ios-sdk-test-service")
-            .printLogsToConsole(true, usingFormat: .short)
+            .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
 
         // Set highest verbosity level to see internal actions made in SDK
