@@ -7,7 +7,7 @@ if [ "$CURRENT_DIR" != "dd-sdk-ios" ]; then
 fi
 
 # Generate `Datadog.xcodeproj`
-swift package generate-xcodeproj
+swift package generate-xcodeproj --enable-code-coverage --xcconfig-overrides Datadog.xcconfig
 
 # Install `swiftlint`
 brew install swiftlint

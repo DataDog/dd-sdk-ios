@@ -25,7 +25,7 @@ This will invoke [`swiftlint`](https://github.com/realm/SwiftLint) tool with the
 
 ### What does `kickoff` do?
 
-This project uses [Swift Package Manager](https://swift.org/package-manager/). `kickoff` will **generate `Datadog.xcodeproj`** for you.
+This project uses [Swift Package Manager](https://swift.org/package-manager/). The `kickoff` tool will **generate `Datadog.xcodeproj`** and configure it for development.
 
 If you don't have [`swiftlint`](https://github.com/realm/SwiftLint) installed, `brew` will be used to install it. 
 
