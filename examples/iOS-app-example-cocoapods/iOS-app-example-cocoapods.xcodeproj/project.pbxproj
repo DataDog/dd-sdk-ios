@@ -15,9 +15,20 @@
 		617AA3CA23D0B0180073EC69 /* SendMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3C123D0B0180073EC69 /* SendMessageViewController.swift */; };
 		617AA3CB23D0B0180073EC69 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3C223D0B0180073EC69 /* AppDelegate.swift */; };
 		617AA3CD23D0B0180073EC69 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3C423D0B0180073EC69 /* SceneDelegate.swift */; };
-		617AA3E923D0B6E20073EC69 /* datadog-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */; };
+		617AA42123D110210073EC69 /* iOS_app_example_spm_UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA41F23D110210073EC69 /* iOS_app_example_spm_UITests.swift */; };
+		617AA42423D112300073EC69 /* example-specific-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 617AA42323D112300073EC69 /* example-specific-config.xcconfig */; };
 		A2A1DEC3FF43DDD75B554D76 /* Pods_iOS_app_example_cocoapods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5964A16DAA09F4B1FBC42922 /* Pods_iOS_app_example_cocoapods.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		617AA41923D1100F0073EC69 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6166E72A23D05E9C00A47A75 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6166E73123D05E9C00A47A75;
+			remoteInfo = "iOS-app-example-cocoapods";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		351DD3890AD40E0A6D48EFEF /* Pods-iOS-app-example-cocoapods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOS-app-example-cocoapods.release.xcconfig"; path = "Target Support Files/Pods-iOS-app-example-cocoapods/Pods-iOS-app-example-cocoapods.release.xcconfig"; sourceTree = "<group>"; };
@@ -32,7 +43,10 @@
 		617AA3C223D0B0180073EC69 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		617AA3C323D0B0180073EC69 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		617AA3C423D0B0180073EC69 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "datadog-config.xcconfig"; path = "../examples-shared-sources/datadog-config.xcconfig"; sourceTree = "<group>"; };
+		617AA41423D1100F0073EC69 /* iOS-app-example-cocoapods-UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "iOS-app-example-cocoapods-UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		617AA41F23D110210073EC69 /* iOS_app_example_spm_UITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = iOS_app_example_spm_UITests.swift; sourceTree = "<group>"; };
+		617AA42023D110210073EC69 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		617AA42323D112300073EC69 /* example-specific-config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "example-specific-config.xcconfig"; sourceTree = "<group>"; };
 		C39961C03A6C76C42FF26D40 /* Pods-iOS-app-example-cocoapods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOS-app-example-cocoapods.debug.xcconfig"; path = "Target Support Files/Pods-iOS-app-example-cocoapods/Pods-iOS-app-example-cocoapods.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -45,6 +59,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		617AA41123D1100F0073EC69 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -53,6 +74,7 @@
 			children = (
 				617AA3E723D0B6D30073EC69 /* Config */,
 				6166E73423D05E9C00A47A75 /* iOS-app-example-cocoapods */,
+				617AA41523D1100F0073EC69 /* iOS-app-example-cocoapods-UITests */,
 				6166E73323D05E9C00A47A75 /* Products */,
 				9C18BDAF04D2E8B0A25FD200 /* Pods */,
 				7D894FC5CCAECA83C83C58A4 /* Frameworks */,
@@ -63,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				6166E73223D05E9C00A47A75 /* iOS-app-example-cocoapods.app */,
+				617AA41423D1100F0073EC69 /* iOS-app-example-cocoapods-UITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,9 +126,27 @@
 		617AA3E723D0B6D30073EC69 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */,
+				617AA42323D112300073EC69 /* example-specific-config.xcconfig */,
 			);
 			name = Config;
+			sourceTree = "<group>";
+		};
+		617AA41523D1100F0073EC69 /* iOS-app-example-cocoapods-UITests */ = {
+			isa = PBXGroup;
+			children = (
+				617AA41E23D110210073EC69 /* examples-shared-uitests */,
+			);
+			path = "iOS-app-example-cocoapods-UITests";
+			sourceTree = "<group>";
+		};
+		617AA41E23D110210073EC69 /* examples-shared-uitests */ = {
+			isa = PBXGroup;
+			children = (
+				617AA41F23D110210073EC69 /* iOS_app_example_spm_UITests.swift */,
+				617AA42023D110210073EC69 /* Info.plist */,
+			);
+			name = "examples-shared-uitests";
+			path = "../../examples-shared-uitests";
 			sourceTree = "<group>";
 		};
 		7D894FC5CCAECA83C83C58A4 /* Frameworks */ = {
@@ -147,6 +188,24 @@
 			productReference = 6166E73223D05E9C00A47A75 /* iOS-app-example-cocoapods.app */;
 			productType = "com.apple.product-type.application";
 		};
+		617AA41323D1100F0073EC69 /* iOS-app-example-cocoapods-UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 617AA41D23D1100F0073EC69 /* Build configuration list for PBXNativeTarget "iOS-app-example-cocoapods-UITests" */;
+			buildPhases = (
+				617AA41023D1100F0073EC69 /* Sources */,
+				617AA41123D1100F0073EC69 /* Frameworks */,
+				617AA41223D1100F0073EC69 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				617AA41A23D1100F0073EC69 /* PBXTargetDependency */,
+			);
+			name = "iOS-app-example-cocoapods-UITests";
+			productName = "iOS-app-example-cocoapods-UITests";
+			productReference = 617AA41423D1100F0073EC69 /* iOS-app-example-cocoapods-UITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -159,6 +218,10 @@
 				TargetAttributes = {
 					6166E73123D05E9C00A47A75 = {
 						CreatedOnToolsVersion = 11.2.1;
+					};
+					617AA41323D1100F0073EC69 = {
+						CreatedOnToolsVersion = 11.2.1;
+						TestTargetID = 6166E73123D05E9C00A47A75;
 					};
 				};
 			};
@@ -176,6 +239,7 @@
 			projectRoot = "";
 			targets = (
 				6166E73123D05E9C00A47A75 /* iOS-app-example-cocoapods */,
+				617AA41323D1100F0073EC69 /* iOS-app-example-cocoapods-UITests */,
 			);
 		};
 /* End PBXProject section */
@@ -186,9 +250,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				617AA3C923D0B0180073EC69 /* Main.storyboard in Resources */,
-				617AA3E923D0B6E20073EC69 /* datadog-config.xcconfig in Resources */,
 				617AA3C523D0B0180073EC69 /* Assets.xcassets in Resources */,
+				617AA42423D112300073EC69 /* example-specific-config.xcconfig in Resources */,
 				617AA3C823D0B0180073EC69 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		617AA41223D1100F0073EC69 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,7 +320,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		617AA41023D1100F0073EC69 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				617AA42123D110210073EC69 /* iOS_app_example_spm_UITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		617AA41A23D1100F0073EC69 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6166E73123D05E9C00A47A75 /* iOS-app-example-cocoapods */;
+			targetProxy = 617AA41923D1100F0073EC69 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		617AA3BD23D0B0180073EC69 /* LaunchScreen.storyboard */ = {
@@ -273,7 +360,7 @@
 /* Begin XCBuildConfiguration section */
 		6166E74423D05E9D00A47A75 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */;
+			baseConfigurationReference = 617AA42323D112300073EC69 /* example-specific-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -334,7 +421,7 @@
 		};
 		6166E74523D05E9D00A47A75 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */;
+			baseConfigurationReference = 617AA42323D112300073EC69 /* example-specific-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -423,6 +510,42 @@
 			};
 			name = Release;
 		};
+		617AA41B23D1100F0073EC69 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = "../examples-shared-uitests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.iOS-app-example-cocoapods-UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "iOS-app-example-cocoapods";
+			};
+			name = Debug;
+		};
+		617AA41C23D1100F0073EC69 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = "../examples-shared-uitests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.iOS-app-example-cocoapods-UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "iOS-app-example-cocoapods";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -440,6 +563,15 @@
 			buildConfigurations = (
 				6166E74723D05E9D00A47A75 /* Debug */,
 				6166E74823D05E9D00A47A75 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		617AA41D23D1100F0073EC69 /* Build configuration list for PBXNativeTarget "iOS-app-example-cocoapods-UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				617AA41B23D1100F0073EC69 /* Debug */,
+				617AA41C23D1100F0073EC69 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
