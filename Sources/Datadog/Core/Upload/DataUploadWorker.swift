@@ -27,27 +27,32 @@ internal class DataUploadWorker {
 
     private func scheduleNextUpload(after delay: TimeInterval) {
         queue.asyncAfter(deadline: .now() + delay) { [weak self] in
-            print("Will check for next batch...")
+            developerLogger?.info("⏳ Checking for next batch...")
 
             guard let self = self else {
                 return
             }
 
             if self.shouldPerformUpload(), let batch = self.fileReader.readNextBatch() {
-                print("Will upload batch... (current time: \(Date())")
+                developerLogger?.info("⏳ Uploading batch...")
+                userLogger.debug("⏳ Uploading batch...")
 
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
-                let wasDelivered = self.acceptableUploadStatuses.contains(uploadStatus)
+                let shouldBeAccepted = self.acceptableUploadStatuses.contains(uploadStatus)
 
-                print("   -> \(uploadStatus)")
-
-                if wasDelivered {
+                if shouldBeAccepted {
                     self.fileReader.markBatchAsRead(batch)
+                    developerLogger?.info("   → accepted, won't be retransmitted: \(uploadStatus)")
+                    userLogger.debug("   → accepted, won't be retransmitted: \(uploadStatus)")
+                } else {
+                    developerLogger?.info("  → not delivered, will be retransmitted: \(uploadStatus)")
+                    userLogger.debug("   → not delivered, will be retransmitted: \(uploadStatus)")
                 }
 
                 self.delay.decrease()
             } else {
-                print("No batch to upload.")
+                developerLogger?.info("💡 No batch to upload.")
+                userLogger.debug("💡 No batch to upload.")
                 self.delay.increaseOnce()
             }
 

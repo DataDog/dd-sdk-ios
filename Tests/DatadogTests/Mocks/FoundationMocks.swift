@@ -75,8 +75,8 @@ extension Date {
         dateComponents.hour = hour
         dateComponents.minute = minute
         dateComponents.second = second
-        dateComponents.timeZone = TimeZone(abbreviation: "UTC")
-        dateComponents.calendar = Calendar(identifier: .gregorian)
+        dateComponents.timeZone = .UTC
+        dateComponents.calendar = .gregorian
         return dateComponents.date!
     }
 

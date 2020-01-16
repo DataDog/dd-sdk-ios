@@ -35,6 +35,13 @@ class DateProviderMock: DateProvider {
     func minutesAgo(_ minutes: Double) -> Date {
         return currentDates[index1].minutesAgo(minutes)
     }
+
+    /// Mocks `DateProvider` which always returns given date for `.currentDate()`
+    static func mockReturning(currentDate: Date) -> DateProvider {
+        let mock = DateProviderMock()
+        mock.currentDates = [currentDate]
+        return mock
+    }
 }
 
 // MARK: - Files orchestration
@@ -131,6 +138,15 @@ extension HTTPClient {
 }
 
 // MARK: - Persistence and Upload
+
+extension DataUploadURL {
+    static func mockAny() -> DataUploadURL {
+        return try! DataUploadURL(
+            endpointURL: "https://app.example.com/v2/api",
+            clientToken: "abc-def-ghi"
+        )
+    }
+}
 
 extension DataUploadDelay {
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.

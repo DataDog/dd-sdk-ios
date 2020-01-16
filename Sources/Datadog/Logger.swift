@@ -1,55 +1,62 @@
 import Foundation
 
+/// Log levels ordered by their severity, with `.debug` being the least severe and
+/// `.critical` being the most severe.
+public enum LogLevel: Int, Codable {
+    case debug
+    case info
+    case notice
+    case warn
+    case error
+    case critical
+}
+
 public class Logger {
-    /// Builds `Log` objects.
-    let logBuilder: LogBuilder
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
 
-    init(logBuilder: LogBuilder, logOutput: LogOutput) {
-        self.logBuilder = logBuilder
+    init(logOutput: LogOutput) {
         self.logOutput = logOutput
     }
 
     /// Sends a DEBUG log message.
     /// - Parameter message: the message to be logged
     public func debug(_ message: @autoclosure () -> String) {
-        log(status: .debug, message: message())
+        log(level: .debug, message: message())
     }
 
     /// Sends an INFO log message.
     /// - Parameter message: the message to be logged
     public func info(_ message: @autoclosure () -> String) {
-        log(status: .info, message: message())
+        log(level: .info, message: message())
     }
 
     /// Sends a NOTICE log message.
     /// - Parameter message: the message to be logged
     public func notice(_ message: @autoclosure () -> String) {
-        log(status: .notice, message: message())
+        log(level: .notice, message: message())
     }
 
     /// Sends a WARN log message.
     /// - Parameter message: the message to be logged
     public func warn(_ message: @autoclosure () -> String) {
-        log(status: .warn, message: message())
+        log(level: .warn, message: message())
     }
 
     /// Sends an ERROR log message.
     /// - Parameter message: the message to be logged
     public func error(_ message: @autoclosure () -> String) {
-        log(status: .error, message: message())
+        log(level: .error, message: message())
     }
 
     /// Sends a CRITICAL log message.
     /// - Parameter message: the message to be logged
     public func critical(_ message: @autoclosure () -> String) {
-        log(status: .critical, message: message())
+        log(level: .critical, message: message())
     }
 
-    private func log(status: Log.Status, message: @autoclosure () -> String) {
-        let log = logBuilder.createLogWith(status: status, message: message())
-        logOutput.write(log: log)
+    private func log(level: LogLevel, message: @autoclosure () -> String) {
+        logOutput.writeLogWith(level: level, message: message())
     }
 
     // MARK: - Logger.Builder
@@ -63,15 +70,16 @@ public class Logger {
         private var useFileOutput = true
         private var useConsoleLogFormat: ConsoleLogFormat?
 
-        /// Sets the service name that will appear in your logs.
+        /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name (default value is "ios")
         public func set(serviceName: String) -> Builder {
             self.serviceName = serviceName
             return self
         }
 
-        /// Enables your logs to be sent to Datadog servers.
-        /// You can use it to disable sending logs during development and instead enable console logs with `printLogsToConsole(_:)`
+        /// Enables logs to be sent to Datadog servers.
+        /// Can be used to disable sending logs in development.
+        /// See also: `printLogsToConsole(_:)`.
         /// - Parameter enabled: `true` by default
         public func sendLogsToDatadog(_ enabled: Bool) -> Builder {
             self.useFileOutput = enabled
@@ -90,7 +98,9 @@ public class Logger {
             case jsonWith(prefix: String)
         }
 
-        /// Enables your logs to be printed to debugger console.
+        /// Enables  logs to be printed to debugger console.
+        /// Can be used in development instead of sending logs to Datadog servers.
+        /// See also: `sendLogsToDatadog(_:)`.
         /// - Parameters:
         ///   - enabled: `false` by default
         ///   - format: format to use when printing logs to console - either `.short` or `.json` (`.short` is default)
@@ -101,7 +111,10 @@ public class Logger {
 
         public func build() -> Logger {
             do { return try buildOrThrow()
-            } catch { fatalError("`Logger` cannot be built: \(error)") }
+            } catch {
+                userLogger.critical("\(error)")
+                fatalError("`Logger` cannot be built: \(error)") // crash
+            }
         }
 
         internal func buildOrThrow() throws -> Logger {
@@ -109,28 +122,39 @@ public class Logger {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
 
-            return Logger(
-                logBuilder: LogBuilder(
-                    serviceName: serviceName,
-                    dateProvider: datadog.dateProvider
-                ),
-                logOutput: resolveOutputs(using: datadog)
-            )
+            return Logger(logOutput: resolveLogsOutput(using: datadog))
         }
 
-        private func resolveOutputs(using datadog: Datadog) -> LogOutput {
+        private func resolveLogsOutput(using datadog: Datadog) -> LogOutput {
+            let logBuilder = LogBuilder(
+                serviceName: serviceName,
+                dateProvider: datadog.dateProvider
+            )
+
             switch (useFileOutput, useConsoleLogFormat) {
             case (true, let format?):
                 return CombinedLogOutput(
                     combine: [
-                        LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer),
-                        LogConsoleOutput(format: format)
+                        LogFileOutput(
+                            logBuilder: logBuilder,
+                            fileWriter: datadog.logsPersistenceStrategy.writer
+                        ),
+                        LogConsoleOutput(
+                            logBuilder: logBuilder,
+                            format: format
+                        )
                     ]
                 )
             case (true, nil):
-                return LogFileOutput(fileWriter: datadog.logsPersistenceStrategy.writer)
+                return LogFileOutput(
+                    logBuilder: logBuilder,
+                    fileWriter: datadog.logsPersistenceStrategy.writer
+                )
             case (false, let format?):
-                return LogConsoleOutput(format: format)
+                return LogConsoleOutput(
+                    logBuilder: logBuilder,
+                    format: format
+                )
             case (false, nil):
                 return NoOpLogOutput()
             }

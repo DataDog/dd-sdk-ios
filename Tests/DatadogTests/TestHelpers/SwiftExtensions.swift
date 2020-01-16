@@ -30,6 +30,18 @@ extension Date {
     }
 }
 
+extension TimeZone {
+    static var UTC: TimeZone {
+        return TimeZone(abbreviation: "UTC")!
+    }
+}
+
+extension Calendar {
+    static var gregorian: Calendar {
+        return Calendar(identifier: .gregorian)
+    }
+}
+
 extension String {
     var utf8Data: Data { data(using: .utf8)! }
 }

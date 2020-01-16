@@ -51,7 +51,7 @@ internal class FilesOrchestrator {
         if let lastFileURL = lastWritableFileURL {
             do {
                 guard FileManager.default.fileExists(atPath: lastFileURL.path) else {
-                    print("Previously used file does not exist.")
+                    developerLogger?.info("💡 Previously used writable file does no longer exist.")
                     return nil
                 }
 
@@ -65,7 +65,7 @@ internal class FilesOrchestrator {
                     return lastFile
                 }
             } catch {
-                print("Failed to open previously used file \(error).")
+                developerLogger?.error("🔥 Failed to read previously used writable file: \(error)")
             }
         }
 
@@ -91,7 +91,7 @@ internal class FilesOrchestrator {
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
-            print("Failed to obtain readable file \(error).")
+            developerLogger?.error("🔥 Failed to obtain readable file: \(error)")
             return nil
         }
     }
@@ -100,7 +100,7 @@ internal class FilesOrchestrator {
         do {
             try directory.deleteFile(named: readableFile.fileURL.lastPathComponent)
         } catch {
-            print("Failed to delete readable file \(error).")
+            developerLogger?.error("🔥 Failed to delete file: \(error)")
         }
     }
 }

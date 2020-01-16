@@ -7,20 +7,41 @@ internal protocol ConsoleLogFormatter {
 
 /// `LogOutput` which prints logs to console.
 internal struct LogConsoleOutput: LogOutput {
+    /// Time formatter used for `.short` output format.
+    static func shortTimeFormatter(calendar: Calendar = .current, timeZone: TimeZone = .current) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "HH:mm:ss"
+        return formatter
+    }
+
+    private let logBuilder: LogBuilder
     private let formatter: ConsoleLogFormatter
     private let printingFunction: (String) -> Void
 
-    init(format: Logger.Builder.ConsoleLogFormat, printingFunction: @escaping (String) -> Void = { print($0) }) {
+    init(
+        logBuilder: LogBuilder,
+        format: Logger.Builder.ConsoleLogFormat,
+        printingFunction: @escaping (String) -> Void = { print($0) },
+        timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
+    ) {
         switch format {
-        case .short:                    self.formatter = ShortLogFormatter()
-        case .shortWith(let prefix):    self.formatter = ShortLogFormatter(prefix: prefix)
-        case .json:                     self.formatter = JSONLogFormatter()
-        case .jsonWith(let prefix):     self.formatter = JSONLogFormatter(prefix: prefix)
+        case .short:
+            self.formatter = ShortLogFormatter(timeFormatter: timeFormatter)
+        case .shortWith(let prefix):
+            self.formatter = ShortLogFormatter(timeFormatter: timeFormatter, prefix: prefix)
+        case .json:
+            self.formatter = JSONLogFormatter()
+        case .jsonWith(let prefix):
+            self.formatter = JSONLogFormatter(prefix: prefix)
         }
+        self.logBuilder = logBuilder
         self.printingFunction = printingFunction
     }
 
-    func write(log: Log) {
+    func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {
+        let log = logBuilder.createLogWith(level: level, message: message())
         printingFunction(formatter.format(log: log))
     }
 }
@@ -52,13 +73,17 @@ private struct JSONLogFormatter: ConsoleLogFormatter {
 
 /// Formats log as custom short string.
 private struct ShortLogFormatter: ConsoleLogFormatter {
+    private let timeFormatter: DateFormatter
     private let prefix: String
 
-    init(prefix: String = "") {
+    init(timeFormatter: DateFormatter, prefix: String = "") {
+        self.timeFormatter = timeFormatter
         self.prefix = prefix
     }
 
     func format(log: Log) -> String {
-        return "\(prefix)\(log.date) [\(log.status.rawValue.uppercased())] \(log.message)"
+        let time = timeFormatter.string(from: log.date)
+        let status = log.status.rawValue.uppercased()
+        return "\(prefix)\(time) [\(status)] \(log.message)"
     }
 }

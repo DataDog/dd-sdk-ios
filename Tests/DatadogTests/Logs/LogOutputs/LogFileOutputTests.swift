@@ -18,6 +18,7 @@ class LogFileOutputTests: XCTestCase {
         let queue = DispatchQueue(label: "any")
 
         let output = LogFileOutput(
+            logBuilder: .mockUsing(date: .mockAny()),
             fileWriter: .mockWrittingToSingleFile(
                 in: temporaryDirectory,
                 on: queue,
@@ -25,7 +26,7 @@ class LogFileOutputTests: XCTestCase {
             )
         )
 
-        output.write(log: .mockRandom())
+        output.writeLogWith(level: .info, message: "message")
 
         queue.sync {} // wait on writter queue
 

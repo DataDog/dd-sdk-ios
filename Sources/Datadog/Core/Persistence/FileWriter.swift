@@ -38,7 +38,7 @@ internal final class FileWriter {
             let data = try jsonEncoder.encode(value)
 
             if data.count > maxWriteSize {
-                print("Serialized \(type(of: value)) value is too big. Skipping write.")
+                userLogger.error("Cannot persist data because it is too big.")
                 return
             }
 
@@ -55,7 +55,7 @@ internal final class FileWriter {
                 }
             }
         } catch {
-            print("FileWriter: failed to write \(type(of: value)) value into file: \(error)")
+            developerLogger?.error("🔥 Failed to write file: \(error)")
         }
     }
 }
