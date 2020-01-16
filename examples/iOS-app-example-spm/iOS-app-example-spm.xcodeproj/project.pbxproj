@@ -16,6 +16,7 @@
 		617AA3E023D0B0700073EC69 /* SendMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D723D0B0700073EC69 /* SendMessageViewController.swift */; };
 		617AA3E123D0B0700073EC69 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D823D0B0700073EC69 /* AppDelegate.swift */; };
 		617AA3E323D0B0700073EC69 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3DA23D0B0700073EC69 /* SceneDelegate.swift */; };
+		617AA3E623D0B6A80073EC69 /* datadog-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3E523D0B6A80073EC69 /* datadog-config.xcconfig */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		617AA3D823D0B0700073EC69 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		617AA3D923D0B0700073EC69 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		617AA3DA23D0B0700073EC69 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		617AA3E523D0B6A80073EC69 /* datadog-config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "datadog-config.xcconfig"; path = "../examples-shared-sources/datadog-config.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,6 +50,7 @@
 			isa = PBXGroup;
 			children = (
 				617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */,
+				617AA3E423D0B6940073EC69 /* Config */,
 				617AA39F23D0AF250073EC69 /* iOS-app-example-spm */,
 				617AA39E23D0AF250073EC69 /* Products */,
 				617AA3B523D0AFA90073EC69 /* Frameworks */,
@@ -100,6 +103,14 @@
 				617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		617AA3E423D0B6940073EC69 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				617AA3E523D0B6A80073EC69 /* datadog-config.xcconfig */,
+			);
+			name = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -164,6 +175,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				617AA3DF23D0B0700073EC69 /* Main.storyboard in Resources */,
+				617AA3E623D0B6A80073EC69 /* datadog-config.xcconfig in Resources */,
 				617AA3DB23D0B0700073EC69 /* Assets.xcassets in Resources */,
 				617AA3DE23D0B0700073EC69 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -208,6 +220,7 @@
 /* Begin XCBuildConfiguration section */
 		617AA3AF23D0AF260073EC69 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 617AA3E523D0B6A80073EC69 /* datadog-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -268,6 +281,7 @@
 		};
 		617AA3B023D0AF260073EC69 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 617AA3E523D0B6A80073EC69 /* datadog-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

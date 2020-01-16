@@ -60,5 +60,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>DatadogClientToken</key>
+	<string>$(DATADOG_CLIENT_TOKEN)</string>
 </dict>
 </plist>

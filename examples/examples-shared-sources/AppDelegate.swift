@@ -17,12 +17,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Create logger instance
         logger = Logger.builder
-            .set(serviceName: "ios-sdk-test-service")
+            .set(serviceName: "ios-sdk-example-app")
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
+
+        // Send some logs 🚀
+        logger.info("application did finish launching")
 
         return true
     }

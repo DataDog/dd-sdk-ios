@@ -1,0 +1,3 @@
+// The `examples-secret.xcconfig` is git-ignored thus it is included optionaly.
+// See `README.md` for more details about `examples-secret.xcconfig`.
+#include? "../examples-secret.xcconfig"

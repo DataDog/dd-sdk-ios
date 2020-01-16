@@ -15,6 +15,7 @@
 		617AA3CA23D0B0180073EC69 /* SendMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3C123D0B0180073EC69 /* SendMessageViewController.swift */; };
 		617AA3CB23D0B0180073EC69 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3C223D0B0180073EC69 /* AppDelegate.swift */; };
 		617AA3CD23D0B0180073EC69 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3C423D0B0180073EC69 /* SceneDelegate.swift */; };
+		617AA3E923D0B6E20073EC69 /* datadog-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */; };
 		A2A1DEC3FF43DDD75B554D76 /* Pods_iOS_app_example_cocoapods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5964A16DAA09F4B1FBC42922 /* Pods_iOS_app_example_cocoapods.framework */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		617AA3C223D0B0180073EC69 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		617AA3C323D0B0180073EC69 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		617AA3C423D0B0180073EC69 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "datadog-config.xcconfig"; path = "../examples-shared-sources/datadog-config.xcconfig"; sourceTree = "<group>"; };
 		C39961C03A6C76C42FF26D40 /* Pods-iOS-app-example-cocoapods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOS-app-example-cocoapods.debug.xcconfig"; path = "Target Support Files/Pods-iOS-app-example-cocoapods/Pods-iOS-app-example-cocoapods.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -49,6 +51,7 @@
 		6166E72923D05E9C00A47A75 = {
 			isa = PBXGroup;
 			children = (
+				617AA3E723D0B6D30073EC69 /* Config */,
 				6166E73423D05E9C00A47A75 /* iOS-app-example-cocoapods */,
 				6166E73323D05E9C00A47A75 /* Products */,
 				9C18BDAF04D2E8B0A25FD200 /* Pods */,
@@ -95,6 +98,14 @@
 				617AA3BC23D0B0180073EC69 /* UIViewController+KeyboardControlling.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		617AA3E723D0B6D30073EC69 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */,
+			);
+			name = Config;
 			sourceTree = "<group>";
 		};
 		7D894FC5CCAECA83C83C58A4 /* Frameworks */ = {
@@ -175,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				617AA3C923D0B0180073EC69 /* Main.storyboard in Resources */,
+				617AA3E923D0B6E20073EC69 /* datadog-config.xcconfig in Resources */,
 				617AA3C523D0B0180073EC69 /* Assets.xcassets in Resources */,
 				617AA3C823D0B0180073EC69 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -261,6 +273,7 @@
 /* Begin XCBuildConfiguration section */
 		6166E74423D05E9D00A47A75 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -321,6 +334,7 @@
 		};
 		6166E74523D05E9D00A47A75 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 617AA3E823D0B6E20073EC69 /* datadog-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
