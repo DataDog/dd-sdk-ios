@@ -31,7 +31,7 @@ If you don't have [`swiftlint`](https://github.com/realm/SwiftLint) installed, `
 
 As part of our coding convention, we use **custom Xcode file templates** for creating `.swift` and unit test files. Templates will be automatically installed and available from Xcode's "New File..." menu (search for "Datadog" section).
 
-To send real logs from the example app, you must configure `./examples/dd-config.plist` file with your own secret obtained on Datadog website. The file template will be automatically generated for you by `kickoff`.
+To send real logs from the example app, you must configure `./examples/examples-secret.xcconfig` file with your own secret obtained on Datadog website. The file template will be automatically generated for you by `kickoff`.
 
 ## Contributing to `Datadog` SDK
 
