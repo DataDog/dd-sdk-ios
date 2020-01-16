@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,7 @@
 		617AA3A823D0AF250073EC69 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3A623D0AF250073EC69 /* Main.storyboard */; };
 		617AA3AA23D0AF260073EC69 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3A923D0AF260073EC69 /* Assets.xcassets */; };
 		617AA3AD23D0AF260073EC69 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3AB23D0AF260073EC69 /* LaunchScreen.storyboard */; };
+		617AA3B723D0AFA90073EC69 /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 617AA3B623D0AFA90073EC69 /* Datadog */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		617AA3A923D0AF260073EC69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		617AA3AC23D0AF260073EC69 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		617AA3AE23D0AF260073EC69 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				617AA3B723D0AFA90073EC69 /* Datadog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,8 +43,10 @@
 		617AA39423D0AF250073EC69 = {
 			isa = PBXGroup;
 			children = (
+				617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */,
 				617AA39F23D0AF250073EC69 /* iOS-app-example-spm */,
 				617AA39E23D0AF250073EC69 /* Products */,
+				617AA3B523D0AFA90073EC69 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -67,6 +72,13 @@
 			path = "iOS-app-example-spm";
 			sourceTree = "<group>";
 		};
+		617AA3B523D0AFA90073EC69 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -83,6 +95,9 @@
 			dependencies = (
 			);
 			name = "iOS-app-example-spm";
+			packageProductDependencies = (
+				617AA3B623D0AFA90073EC69 /* Datadog */,
+			);
 			productName = "iOS-app-example-spm";
 			productReference = 617AA39D23D0AF250073EC69 /* iOS-app-example-spm.app */;
 			productType = "com.apple.product-type.application";
@@ -336,6 +351,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		617AA3B623D0AFA90073EC69 /* Datadog */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Datadog;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 617AA39523D0AF250073EC69 /* Project object */;
 }
