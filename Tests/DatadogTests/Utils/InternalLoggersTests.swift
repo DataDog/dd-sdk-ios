@@ -85,7 +85,7 @@ class InternalLoggersTests: XCTestCase {
 
     // MARK: - `developerLogger`
 
-    func testWhenCompiledNotForDevelopment_DeveloperLoggerIsNotAvailable() {
+    func testWhenCompileNotForDevelopment_DeveloperLoggerIsNotAvailable() {
         let originalValue = CompilationConditions.isSDKCompiledForDevelopment
         defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
 
@@ -94,7 +94,7 @@ class InternalLoggersTests: XCTestCase {
         XCTAssertNil(createSDKDeveloperLogger())
     }
 
-    func testWhenCompiledForDevelopment_DeveloperLoggerIsAvailable() {
+    func testWhenCompileForDevelopment_DeveloperLoggerIsAvailable() {
         let originalValue = CompilationConditions.isSDKCompiledForDevelopment
         defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
         var printedMessage: String?
