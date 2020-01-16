@@ -7,25 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		617AA3A123D0AF250073EC69 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3A023D0AF250073EC69 /* AppDelegate.swift */; };
-		617AA3A323D0AF250073EC69 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3A223D0AF250073EC69 /* SceneDelegate.swift */; };
-		617AA3A523D0AF250073EC69 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3A423D0AF250073EC69 /* ViewController.swift */; };
-		617AA3A823D0AF250073EC69 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3A623D0AF250073EC69 /* Main.storyboard */; };
-		617AA3AA23D0AF260073EC69 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3A923D0AF260073EC69 /* Assets.xcassets */; };
-		617AA3AD23D0AF260073EC69 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3AB23D0AF260073EC69 /* LaunchScreen.storyboard */; };
 		617AA3B723D0AFA90073EC69 /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 617AA3B623D0AFA90073EC69 /* Datadog */; };
+		617AA3DB23D0B0700073EC69 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3CF23D0B0700073EC69 /* Assets.xcassets */; };
+		617AA3DC23D0B0700073EC69 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D023D0B0700073EC69 /* ExampleAppConfig.swift */; };
+		617AA3DD23D0B0700073EC69 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */; };
+		617AA3DE23D0B0700073EC69 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3D323D0B0700073EC69 /* LaunchScreen.storyboard */; };
+		617AA3DF23D0B0700073EC69 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3D523D0B0700073EC69 /* Main.storyboard */; };
+		617AA3E023D0B0700073EC69 /* SendMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D723D0B0700073EC69 /* SendMessageViewController.swift */; };
+		617AA3E123D0B0700073EC69 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D823D0B0700073EC69 /* AppDelegate.swift */; };
+		617AA3E323D0B0700073EC69 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3DA23D0B0700073EC69 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		617AA39D23D0AF250073EC69 /* iOS-app-example-spm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS-app-example-spm.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		617AA3A023D0AF250073EC69 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		617AA3A223D0AF250073EC69 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		617AA3A423D0AF250073EC69 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		617AA3A723D0AF250073EC69 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		617AA3A923D0AF260073EC69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		617AA3AC23D0AF260073EC69 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		617AA3AE23D0AF260073EC69 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../..; sourceTree = "<group>"; };
+		617AA3CF23D0B0700073EC69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		617AA3D023D0B0700073EC69 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
+		617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
+		617AA3D423D0B0700073EC69 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		617AA3D623D0B0700073EC69 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		617AA3D723D0B0700073EC69 /* SendMessageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendMessageViewController.swift; sourceTree = "<group>"; };
+		617AA3D823D0B0700073EC69 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		617AA3D923D0B0700073EC69 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		617AA3DA23D0B0700073EC69 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,13 +65,7 @@
 		617AA39F23D0AF250073EC69 /* iOS-app-example-spm */ = {
 			isa = PBXGroup;
 			children = (
-				617AA3A023D0AF250073EC69 /* AppDelegate.swift */,
-				617AA3A223D0AF250073EC69 /* SceneDelegate.swift */,
-				617AA3A423D0AF250073EC69 /* ViewController.swift */,
-				617AA3A623D0AF250073EC69 /* Main.storyboard */,
-				617AA3A923D0AF260073EC69 /* Assets.xcassets */,
-				617AA3AB23D0AF260073EC69 /* LaunchScreen.storyboard */,
-				617AA3AE23D0AF260073EC69 /* Info.plist */,
+				617AA3CE23D0B0700073EC69 /* examples-shared-sources */,
 			);
 			path = "iOS-app-example-spm";
 			sourceTree = "<group>";
@@ -77,6 +75,31 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		617AA3CE23D0B0700073EC69 /* examples-shared-sources */ = {
+			isa = PBXGroup;
+			children = (
+				617AA3CF23D0B0700073EC69 /* Assets.xcassets */,
+				617AA3D023D0B0700073EC69 /* ExampleAppConfig.swift */,
+				617AA3D123D0B0700073EC69 /* Utils */,
+				617AA3D323D0B0700073EC69 /* LaunchScreen.storyboard */,
+				617AA3D523D0B0700073EC69 /* Main.storyboard */,
+				617AA3D723D0B0700073EC69 /* SendMessageViewController.swift */,
+				617AA3D823D0B0700073EC69 /* AppDelegate.swift */,
+				617AA3D923D0B0700073EC69 /* Info.plist */,
+				617AA3DA23D0B0700073EC69 /* SceneDelegate.swift */,
+			);
+			name = "examples-shared-sources";
+			path = "../../examples-shared-sources";
+			sourceTree = "<group>";
+		};
+		617AA3D123D0B0700073EC69 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,9 +163,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				617AA3AD23D0AF260073EC69 /* LaunchScreen.storyboard in Resources */,
-				617AA3AA23D0AF260073EC69 /* Assets.xcassets in Resources */,
-				617AA3A823D0AF250073EC69 /* Main.storyboard in Resources */,
+				617AA3DF23D0B0700073EC69 /* Main.storyboard in Resources */,
+				617AA3DB23D0B0700073EC69 /* Assets.xcassets in Resources */,
+				617AA3DE23D0B0700073EC69 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,29 +176,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				617AA3A523D0AF250073EC69 /* ViewController.swift in Sources */,
-				617AA3A123D0AF250073EC69 /* AppDelegate.swift in Sources */,
-				617AA3A323D0AF250073EC69 /* SceneDelegate.swift in Sources */,
+				617AA3E323D0B0700073EC69 /* SceneDelegate.swift in Sources */,
+				617AA3E123D0B0700073EC69 /* AppDelegate.swift in Sources */,
+				617AA3DC23D0B0700073EC69 /* ExampleAppConfig.swift in Sources */,
+				617AA3E023D0B0700073EC69 /* SendMessageViewController.swift in Sources */,
+				617AA3DD23D0B0700073EC69 /* UIViewController+KeyboardControlling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		617AA3A623D0AF250073EC69 /* Main.storyboard */ = {
+		617AA3D323D0B0700073EC69 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				617AA3A723D0AF250073EC69 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		617AA3AB23D0AF260073EC69 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				617AA3AC23D0AF260073EC69 /* Base */,
+				617AA3D423D0B0700073EC69 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		617AA3D523D0B0700073EC69 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				617AA3D623D0B0700073EC69 /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -300,7 +325,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "iOS-app-example-spm/Info.plist";
+				INFOPLIST_FILE = "../examples-shared-sources/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -317,7 +342,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "iOS-app-example-spm/Info.plist";
+				INFOPLIST_FILE = "../examples-shared-sources/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

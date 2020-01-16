@@ -1,12 +1,29 @@
 import UIKit
+import Datadog
+
+fileprivate(set) var logger: Logger!
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-
+    private lazy var config = ExampleAppConfig()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+
+        // Initialize Datadog SDK
+        Datadog.initialize(
+            endpointURL: "https://mobile-http-intake.logs.datadoghq.com/v1/input/",
+            clientToken: config.clientToken // use your own client token obtained on Datadog website
+        )
+
+        // Create logger instance
+        logger = Logger.builder
+            .set(serviceName: "ios-sdk-test-service")
+            .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
+            .build()
+
+        // Set highest verbosity level to see internal actions made in SDK
+        Datadog.verbosityLevel = .debug
+
         return true
     }
 
@@ -23,7 +40,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
-
-
 }
-
