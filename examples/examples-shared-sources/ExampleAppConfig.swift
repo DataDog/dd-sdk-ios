@@ -12,6 +12,7 @@ struct ExampleAppConfig {
             fatalError("""
             ✋⛔️ Cannot read `DATADOG_CLIENT_TOKEN` from `Info.plist` dictionary.
             See your configuration of `examples-secret.xcconfig` or refer to `README.md` if you haven't created this file yet.
+            You might need to run `Product > Clean Build Folder` before retrying.
             """)
         }
 
