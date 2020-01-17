@@ -15,7 +15,7 @@ brew install swiftlint
 # Install Datadog Xcode templates
 ./tools/xcode-templates/install-xcode-templates.sh
 
-echo "💡 If you are running \`kickoff.sh\` for the first time, it will create \`examples/examples-secret.xcconfig\` file template for you."
-cp -i ./tools/config/examples-secret-template.xcconfig ./examples/examples-secret.xcconfig
+# Generate example apps config template
+./tools/config/generate-examples-config-template.sh
 
 echo "💪 All good"
