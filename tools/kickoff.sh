@@ -1,8 +1,6 @@
 #!/bin/bash
 
-CURRENT_DIR=${PWD##*/}
-
-if [ "$CURRENT_DIR" != "dd-sdk-ios" ]; then 
+if [ ! -f "Package.swift" ]; then
 	echo "\`kickoff.sh\` must be run in repository root folder: \`./tools/kickoff.sh\`"; exit 1
 fi
 

@@ -1,8 +1,6 @@
 #!/bin/bash
 
-CURRENT_DIR=${PWD##*/}
-
-if [ "$CURRENT_DIR" != "dd-sdk-ios" ]; then
+if [ ! -f "Package.swift" ]; then
     echo "\`generate-examples-config-template.sh\` must be run in repository root folder: \`./tools/config/generate-examples-config-template.sh\`"; exit 1
 fi
 
