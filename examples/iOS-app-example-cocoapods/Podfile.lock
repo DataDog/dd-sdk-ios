@@ -1,0 +1,16 @@
+PODS:
+  - Datadog (0.0.1)
+
+DEPENDENCIES:
+  - Datadog (from `../..`)
+
+EXTERNAL SOURCES:
+  Datadog:
+    :path: "../.."
+
+SPEC CHECKSUMS:
+  Datadog: 00960173d62f5383dfe679deaa68d32694475ddc
+
+PODFILE CHECKSUM: ffdf9636cb4362cca853fa5ed9d0c1c1b80d73fe
+
+COCOAPODS: 1.8.4

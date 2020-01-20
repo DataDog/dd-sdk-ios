@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61B3C87123A2356D007D500B"
-               BuildableName = "iOS-app-example.app"
-               BlueprintName = "iOS-app-example"
-               ReferencedContainer = "container:iOS-app-example.xcodeproj">
+               BlueprintIdentifier = "6166E73123D05E9C00A47A75"
+               BuildableName = "iOS-app-example-cocoapods.app"
+               BlueprintName = "iOS-app-example-cocoapods"
+               ReferencedContainer = "container:iOS-app-example-cocoapods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -28,6 +28,16 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "617AA41323D1100F0073EC69"
+               BuildableName = "iOS-app-example-cocoapods-UITests.xctest"
+               BlueprintName = "iOS-app-example-cocoapods-UITests"
+               ReferencedContainer = "container:iOS-app-example-cocoapods.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -44,10 +54,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61B3C87123A2356D007D500B"
-            BuildableName = "iOS-app-example.app"
-            BlueprintName = "iOS-app-example"
-            ReferencedContainer = "container:iOS-app-example.xcodeproj">
+            BlueprintIdentifier = "6166E73123D05E9C00A47A75"
+            BuildableName = "iOS-app-example-cocoapods.app"
+            BlueprintName = "iOS-app-example-cocoapods"
+            ReferencedContainer = "container:iOS-app-example-cocoapods.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -61,10 +71,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61B3C87123A2356D007D500B"
-            BuildableName = "iOS-app-example.app"
-            BlueprintName = "iOS-app-example"
-            ReferencedContainer = "container:iOS-app-example.xcodeproj">
+            BlueprintIdentifier = "6166E73123D05E9C00A47A75"
+            BuildableName = "iOS-app-example-cocoapods.app"
+            BlueprintName = "iOS-app-example-cocoapods"
+            ReferencedContainer = "container:iOS-app-example-cocoapods.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

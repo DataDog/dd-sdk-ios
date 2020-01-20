@@ -1,8 +1,6 @@
 #!/bin/bash
 
-CURRENT_DIR=${PWD##*/}
-
-if [ "$CURRENT_DIR" != "dd-sdk-ios" ]; then 
+if [ ! -f "Package.swift" ]; then
 	echo "\`lint.sh\` must be run in repository root folder: \`./tools/lint.sh\`"; exit 1
 fi
 

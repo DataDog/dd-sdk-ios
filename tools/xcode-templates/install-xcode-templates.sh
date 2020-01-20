@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ ! -f "Package.swift" ]; then
+    echo "\`install-xcode-templates.sh\` must be run in repository root folder: \`./tools/xcode-templates/install-xcode-templates.sh\`"; exit 1
+fi
+
 XCODE_LOCATION=$(xcode-select -p)
 XCODE_TEMPLATES_LOCATION="$XCODE_LOCATION/Library/Xcode/Templates/File Templates/"
 

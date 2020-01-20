@@ -1,2 +1,2 @@
-# `dd-config.plist` file stores your Datadog secrets and should not be checked in
-dd-config.plist
+# `examples-secret.xcconfig` file stores your Datadog secrets and should not be checked in
+examples-secret.xcconfig

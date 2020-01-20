@@ -12,17 +12,10 @@ _TBD_
 
 ## Example Application
 
-This repository contains example application demonstrating SDK features. To send real logs, you must create `examples/dd-config.plist` file with your own secret obtained on Datadog website. The file must have following structure:
+This repository contains example apps showing SDK features (see `examples/` folder). To send real logs, you must create `examples/examples-secret.xcconfig` file with your own client token obtained on Datadog website. The file must have following structure:
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>clientToken</key>
-	<string>generate client token on Datadog website and paste it here</string>
-</dict>
-</plist>
+DATADOG_CLIENT_TOKEN=your-own-token-generated-on-datadog-website
 
 ```
 
