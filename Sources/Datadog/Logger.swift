@@ -14,6 +14,8 @@ public enum LogLevel: Int, Codable {
 public class Logger {
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
+    /// Attributes associated with every log.
+    private var attributes: [String: EncodableValue] = [:]
 
     init(logOutput: LogOutput) {
         self.logOutput = logOutput
@@ -55,8 +57,16 @@ public class Logger {
         log(level: .critical, message: message())
     }
 
-    private func log(level: LogLevel, message: @autoclosure () -> String) {
-        logOutput.writeLogWith(level: level, message: message())
+    public func addAttribute(key: String, value: Encodable) {
+        attributes[key] = EncodableValue(value)
+    }
+
+    private func log(level: LogLevel, message: @autoclosure () -> String, messageAttributes: [String: EncodableValue] = [:]) {
+        let combinedAttributes = attributes.merging(messageAttributes) { _, messageAttributeValue in
+            messageAttributeValue // use message attribute when the same key appears also in `loggerAttributes`
+        }
+
+        logOutput.writeLogWith(level: level, message: message(), attributes: combinedAttributes)
     }
 
     // MARK: - Logger.Builder

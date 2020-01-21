@@ -12,7 +12,8 @@ extension Log {
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(length: 20),
-            service: "ios-sdk-unit-tests"
+            service: "ios-sdk-unit-tests",
+            attributes: [:]
         )
     }
 
@@ -21,7 +22,8 @@ extension Log {
             date: .mockRandomInThePast(),
             status: status,
             message: .mockRandom(length: 20),
-            service: "ios-sdk-unit-tests"
+            service: "ios-sdk-unit-tests",
+            attributes: [:]
         )
     }
 }

@@ -26,7 +26,7 @@ class LogFileOutputTests: XCTestCase {
             )
         )
 
-        output.writeLogWith(level: .info, message: "message")
+        output.writeLogWith(level: .info, message: "log message", attributes: [:])
 
         queue.sync {} // wait on writter queue
 
@@ -36,8 +36,6 @@ class LogFileOutputTests: XCTestCase {
             return
         }
 
-        let jsonDecoder = JSONDecoder()
-        jsonDecoder.dateDecodingStrategy = .iso8601
-        XCTAssertNoThrow(try jsonDecoder.decode(Log.self, from: fileData))
+        assertThat(jsonObjectData: fileData, matchesValue: "log message", onKeyPath: "message")
     }
 }
