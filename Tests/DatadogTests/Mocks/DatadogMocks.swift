@@ -10,11 +10,16 @@ It follows the mocking conventions described in `FoundationMocks.swift`.
 
 /// Date provider which returns consecutive mocked dates in a loop.
 class DateProviderMock: DateProvider {
-    var currentDates = [Date()]
-    var currentFileCreationDates = [Date()]
+    var currentDates: [Date]
+    var currentFileCreationDates: [Date]
 
     private var index1 = 0
     private var index2 = 0
+
+    init(currentDate: Date = Date(), currentFileCreationDate: Date = Date()) {
+        self.currentDates = [currentDate]
+        self.currentFileCreationDates = [currentFileCreationDate]
+    }
 
     func currentDate() -> Date {
         defer { index1 = (index1 + 1) % currentDates.count }

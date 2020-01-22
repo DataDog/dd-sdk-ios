@@ -35,6 +35,12 @@ extension Log.Status {
     }
 }
 
+extension EncodableValue {
+    static func mockAny() -> EncodableValue {
+        return EncodableValue("abc")
+    }
+}
+
 extension LogBuilder {
     /// Mocks `LogBuilder` producing logs signed with given `date` and `serviceName`.
     static func mockUsing(date: Date, serviceName: String = "test-service") -> LogBuilder {
