@@ -1,7 +1,7 @@
 import Foundation
 
-/// Builds `Log` objects.
-internal struct LogBuilder {
+/// Sanitizes `Log` representation received from the user, so it can match Datadog log constraints.
+internal struct LogSanitizer {
     struct Constants {
         /// Attribute names reserved for Datadog.
         /// If any of those is used by user, the attribute will be ignored.
@@ -16,42 +16,29 @@ internal struct LogBuilder {
         static let maxNumberOfAttributes: Int = 256
     }
 
-    /// Service name to write in log.
-    let serviceName: String
-    /// Current date to write in log.
-    let dateProvider: DateProvider
-
-    func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable]) -> Log {
-        let encodableAttributes = Dictionary(
-            uniqueKeysWithValues: attributes.map { name, value in (name, EncodableValue(value)) }
-        )
-
-        var validatedAttributes = removeInvalidAttributes(encodableAttributes)
-        validatedAttributes = removeReservedAttributes(validatedAttributes)
-        validatedAttributes = sanitizeAttributeNames(validatedAttributes)
-        validatedAttributes = limitToMaxNumberOfAttributes(validatedAttributes)
-
+    func sanitize(log: Log) -> Log {
         return Log(
-            date: dateProvider.currentDate(),
-            status: logStatus(for: level),
-            message: message,
-            service: serviceName,
-            attributes: !validatedAttributes.isEmpty ? validatedAttributes : nil
+            date: log.date,
+            status: log.status,
+            message: log.message,
+            service: log.service,
+            attributes: sanitize(attributes: log.attributes)
         )
     }
 
-    private func logStatus(for level: LogLevel) -> Log.Status {
-        switch level {
-        case .debug:    return .debug
-        case .info:     return .info
-        case .notice:   return .notice
-        case .warn:     return .warn
-        case .error:    return .error
-        case .critical: return .critical
+    // MARK: - Attributes sanitization
+
+    private func sanitize(attributes rawAttributes: [String: EncodableValue]?) -> [String: EncodableValue]? {
+        if let rawAttributes = rawAttributes {
+            var attributes = removeInvalidAttributes(rawAttributes)
+            attributes = removeReservedAttributes(attributes)
+            attributes = sanitizeAttributeNames(attributes)
+            attributes = limitToMaxNumberOfAttributes(attributes)
+            return attributes
+        } else {
+            return nil
         }
     }
-
-    // MARK: - Attributes validation
 
     private func removeInvalidAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
         return attributes.filter { attribute in

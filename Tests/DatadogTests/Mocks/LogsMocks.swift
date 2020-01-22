@@ -33,6 +33,16 @@ extension Log.Status {
         let statuses: [Log.Status] = [.debug, .info, .notice, .warn, .error, .critical]
         return statuses.randomElement()!
     }
+
+    static func mockAny() -> Log.Status {
+        return .info
+    }
+}
+
+extension EncodableValue {
+    static func mockAny() -> EncodableValue {
+        return EncodableValue(String.mockAny())
+    }
 }
 
 extension LogBuilder {
