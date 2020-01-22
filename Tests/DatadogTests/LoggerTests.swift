@@ -124,23 +124,26 @@ class LoggerTests: XCTestCase {
         let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 1) {
             let logger = Logger.builder.build()
 
+            // string literal
+            logger.addAttribute(forKey: "string", value: "hello")
+
             // boolean literal
-            logger.addAttribute(key: "Bool", value: true)
+            logger.addAttribute(forKey: "bool", value: true)
 
             // integer literal
-            logger.addAttribute(key: "Int", value: 10)
+            logger.addAttribute(forKey: "int", value: 10)
 
             // Typed 8-bit unsigned Integer
-            logger.addAttribute(key: "UInt8", value: UInt8(10))
+            logger.addAttribute(forKey: "uint-8", value: UInt8(10))
 
             // double-precision, floating-point value
-            logger.addAttribute(key: "Double", value: 10.5)
+            logger.addAttribute(forKey: "double", value: 10.5)
 
             // array of `Encodable` integer
-            logger.addAttribute(key: "Array<Int>", value: [1, 2, 3])
+            logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
 
             // dictionary of `Encodable` date types
-            logger.addAttribute(key: "Dictionary<String: Date>", value: [
+            logger.addAttribute(forKey: "dictionary-of-date", value: [
                 "date1": Date.mockDecember15th2019At10AMUTC(),
                 "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
             ])
@@ -152,7 +155,13 @@ class LoggerTests: XCTestCase {
             }
 
             // custom `Encodable` structure
-            logger.addAttribute(key: "Person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+            logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+
+            // custom `Encodable` structure
+            logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+
+            // nested string literal
+            logger.addAttribute(forKey: "nested.string", value: "hello")
 
             logger.info("message")
         }
@@ -164,20 +173,22 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "date" : "2019-12-15T09:59:55Z",
-          "Bool" : true,
-          "Int" : 10,
-          "UInt8" : 10,
-          "Double" : 10.5,
-          "Array<Int>" : [1, 2, 3],
-          "Dictionary<String: Date>" : {
+          "string" : "hello",
+          "bool" : true,
+          "int" : 10,
+          "uint-8" : 10,
+          "double" : 10.5,
+          "array-of-int" : [1, 2, 3],
+          "dictionary-of-date" : {
              "date1": "2019-12-15T10:00:00Z",
              "date2": "2019-12-15T11:00:00Z"
           },
-          "Person" : {
+          "person" : {
              "name" : "Adam",
              "age" : 30,
              "nationality" : "Polish",
-          }
+          },
+          "nested.string" : "hello"
         }]
         """)
     }
@@ -185,10 +196,10 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
             let logger = Logger.builder.build()
-            logger.addAttribute(key: "attribute", value: "logger's value")
+            logger.addAttribute(forKey: "attribute", value: "logger's value")
             logger.info("info message 1")
             logger.info("info message 2", attributes: ["attribute": "message's value"]) // will overwrite logger's attribute
-            logger.removeAttributeFor(key: "attribute")
+            logger.removeAttribute(forKey: "attribute")
             logger.info("info message 3")
         }
 

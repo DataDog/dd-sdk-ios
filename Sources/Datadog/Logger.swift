@@ -11,6 +11,64 @@ public enum LogLevel: Int, Codable {
     case critical
 }
 
+/// A `String` value naming the attribute.
+///
+/// Dot syntax can be used to nest objects:
+///
+///     logger.addAttribute(forKey: "person.name", value: "Adam")
+///     logger.addAttribute(forKey: "person.age", value: 32)
+///
+///     // When seen in Datadog console:
+///     {
+///         person: {
+///             name: "Adam"
+///             age: 32
+///         }
+///     }
+///
+/// - Important
+/// Values can be nested up to 10 levels deep. Keys using more than 10 levels will be sanitized by SDK.
+///
+public typealias AttributeKey = String
+
+//nested encoding containers limitation.
+
+/// Any `Ecodable` value of the attribute (`String`, `Int`, `Bool`, `Date` etc.).
+///
+/// Custom `Encodable` types are supported as well with nested encoding containers:
+///
+///     struct Person: Codable {
+///         let name: String
+///         let age: Int
+///         let address: Address
+///     }
+///
+///     struct Address: Codable {
+///         let city: String
+///         let street: String
+///     }
+///
+///     let address = Address(city: "Paris", street: "Champs Elysees")
+///     let person = Person(name: "Adam", age: 32, address: address)
+///
+///     // When seen in Datadog console:
+///     {
+///         person: {
+///             name: "Adam"
+///             age: 32
+///             address: {
+///                 city: "Paris",
+///                 street: "Champs Elysees"
+///             }
+///         }
+///     }
+///
+/// - Important
+/// Attributes in Datadog console can be nested up to 10 levels deep. If number of nested attribute levels
+/// defined as sum of key levels and value levels exceeds 10, the log will not be delivered.
+///
+public typealias AttributeValue = Encodable
+
 public class Logger {
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
@@ -24,48 +82,75 @@ public class Logger {
     // MARK: - Logging
 
     /// Sends a DEBUG log message.
-    /// - Parameter message: the message to be logged
-    public func debug(_ message: String, attributes: [String: Encodable]? = nil) {
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (just for this message).
+    public func debug(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         log(level: .debug, message: message, messageAttributes: attributes)
     }
 
     /// Sends an INFO log message.
-    /// - Parameter message: the message to be logged
-    public func info(_ message: String, attributes: [String: Encodable]? = nil) {
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (just for this message).
+    public func info(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         log(level: .info, message: message, messageAttributes: attributes)
     }
 
     /// Sends a NOTICE log message.
-    /// - Parameter message: the message to be logged
-    public func notice(_ message: String, attributes: [String: Encodable]? = nil) {
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (just for this message).
+    public func notice(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         log(level: .notice, message: message, messageAttributes: attributes)
     }
 
     /// Sends a WARN log message.
-    /// - Parameter message: the message to be logged
-    public func warn(_ message: String, attributes: [String: Encodable]? = nil) {
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (just for this message).
+    public func warn(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         log(level: .warn, message: message, messageAttributes: attributes)
     }
 
     /// Sends an ERROR log message.
-    /// - Parameter message: the message to be logged
-    public func error(_ message: String, attributes: [String: Encodable]? = nil) {
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (just for this message).
+    public func error(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         log(level: .error, message: message, messageAttributes: attributes)
     }
 
     /// Sends a CRITICAL log message.
-    /// - Parameter message: the message to be logged
-    public func critical(_ message: String, attributes: [String: Encodable]? = nil) {
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (just for this message).
+    public func critical(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         log(level: .critical, message: message, messageAttributes: attributes)
     }
 
     // MARK: - Attributes
 
-    public func addAttribute(key: String, value: Encodable) {
+    /// Adds a custom attribute to all future logs sent by this logger.
+    /// - Parameters:
+    ///   - key: key for this attribute. See `AttributeKey` documentation for information about
+    ///   nesting attribute values using dot `.` syntax.
+    ///   - value: any value that conforms to `Encodable`. See `AttributeValue` documentation
+    ///   for information about nested encoding containers limitation.
+    public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         loggerAttributes[key] = value
     }
 
-    public func removeAttributeFor(key: String) {
+    /// Removes the custom attribute from all future logs sent by this logger.
+    /// Previous logs won't lose this attribute if they were created prior to this call.
+    /// - Parameter key: key for the attribute that will be removed.
+    public func removeAttribute(forKey key: AttributeKey) {
         loggerAttributes.removeValue(forKey: key)
     }
 
