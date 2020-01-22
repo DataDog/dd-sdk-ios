@@ -26,7 +26,8 @@ internal struct LogBuilder {
             uniqueKeysWithValues: attributes.map { name, value in (name, EncodableValue(value)) }
         )
 
-        var validatedAttributes = removeReservedAttributes(encodableAttributes)
+        var validatedAttributes = removeInvalidAttributes(encodableAttributes)
+        validatedAttributes = removeReservedAttributes(validatedAttributes)
         validatedAttributes = sanitizeAttributeNames(validatedAttributes)
         validatedAttributes = limitToMaxNumberOfAttributes(validatedAttributes)
 
@@ -51,6 +52,16 @@ internal struct LogBuilder {
     }
 
     // MARK: - Attributes validation
+
+    private func removeInvalidAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
+        return attributes.filter { attribute in
+            if attribute.key.isEmpty {
+                userLogger.error("Attribute key is empty. This attribute will be ignored.")
+                return false
+            }
+            return true
+        }
+    }
 
     private func removeReservedAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
         return attributes.filter { attribute in
@@ -96,6 +107,7 @@ internal struct LogBuilder {
         // limit to `Constants.maxNumberOfAttributes` attributes.
         if attributes.count > Constants.maxNumberOfAttributes {
             let extraAttributesCount = attributes.count - Constants.maxNumberOfAttributes
+            userLogger.error("Number of attributes exceeds the limit of \(Constants.maxNumberOfAttributes). \(extraAttributesCount) attribute(s) will be ignored.")
             return Dictionary(uniqueKeysWithValues: attributes.dropLast(extraAttributesCount))
         } else {
             return attributes

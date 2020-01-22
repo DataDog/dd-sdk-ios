@@ -93,4 +93,18 @@ class LogBuilderTests: XCTestCase {
 
         XCTAssertEqual(log.attributes?.count, LogBuilder.Constants.maxNumberOfAttributes)
     }
+
+    func testWhenAttributeNameIsInvalid_itIsIgnored() {
+        let log = builder.createLogWith(
+            level: .debug,
+            message: "",
+            attributes: [
+                "valid-name": String.mockAny(),
+                "": String.mockAny(), // invalid name
+            ]
+        )
+
+        XCTAssertEqual(log.attributes?.count, 1)
+        XCTAssertNotNil(log.attributes?["valid-name"])
+    }
 }
