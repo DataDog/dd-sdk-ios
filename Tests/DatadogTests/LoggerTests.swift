@@ -182,12 +182,14 @@ class LoggerTests: XCTestCase {
         """)
     }
 
-    func testGivenLoggerAttribute_whenTheSameKeyIsUsedForMessage_itGetsOverwrittenOnlyForThatMessage() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 2) {
+    func testSendingMessageAttributes() throws {
+        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
             let logger = Logger.builder.build()
             logger.addAttribute(key: "attribute", value: "logger's value")
-            logger.info("info message 1", attributes: ["attribute": "message's value"])
-            logger.info("info message 2")
+            logger.info("info message 1")
+            logger.info("info message 2", attributes: ["attribute": "message's value"]) // will overwrite logger's attribute
+            logger.removeAttributeFor(key: "attribute")
+            logger.info("info message 3")
         }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
@@ -197,7 +199,7 @@ class LoggerTests: XCTestCase {
           "message" : "info message 1",
           "service" : "ios",
           "date" : "2019-12-15T09:59:55Z",
-          "attribute": "message's value"
+          "attribute": "logger's value"
         }]
         """)
         assertThat(jsonArrayData: requestsData[1], fullyMatches: """
@@ -206,7 +208,15 @@ class LoggerTests: XCTestCase {
           "message" : "info message 2",
           "service" : "ios",
           "date" : "2019-12-15T09:59:56Z",
-          "attribute": "logger's value"
+          "attribute": "message's value"
+        }]
+        """)
+        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 3",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:57Z"
         }]
         """)
     }

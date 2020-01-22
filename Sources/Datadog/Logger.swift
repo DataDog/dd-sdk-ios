@@ -21,6 +21,8 @@ public class Logger {
         self.logOutput = logOutput
     }
 
+    // MARK: - Logging
+
     /// Sends a DEBUG log message.
     /// - Parameter message: the message to be logged
     public func debug(_ message: String, attributes: [String: Encodable]? = nil) {
@@ -57,9 +59,17 @@ public class Logger {
         log(level: .critical, message: message, messageAttributes: attributes)
     }
 
+    // MARK: - Attributes
+
     public func addAttribute(key: String, value: Encodable) {
         loggerAttributes[key] = value
     }
+
+    public func removeAttributeFor(key: String) {
+        loggerAttributes.removeValue(forKey: key)
+    }
+
+    // MARK: - Private
 
     private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
         let combinedAttributes = loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
