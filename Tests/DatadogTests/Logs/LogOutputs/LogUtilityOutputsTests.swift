@@ -11,8 +11,8 @@ class CombinedLogOutputTests: XCTestCase {
 
         var recordedLog: RecordedLog? = nil
 
-        func writeLogWith(level: LogLevel, message: @autoclosure () -> String, attributes: [String: EncodableValue]) {
-            recordedLog = RecordedLog(level: level, message: message())
+        func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable]) {
+            recordedLog = RecordedLog(level: level, message: message)
         }
     }
 

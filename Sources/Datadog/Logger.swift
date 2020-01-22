@@ -15,7 +15,7 @@ public class Logger {
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
     /// Attributes associated with every log.
-    private var attributes: [String: EncodableValue] = [:]
+    private var loggerAttributes: [String: Encodable] = [:]
 
     init(logOutput: LogOutput) {
         self.logOutput = logOutput
@@ -23,50 +23,50 @@ public class Logger {
 
     /// Sends a DEBUG log message.
     /// - Parameter message: the message to be logged
-    public func debug(_ message: @autoclosure () -> String) {
-        log(level: .debug, message: message())
+    public func debug(_ message: String, attributes: [String: Encodable]? = nil) {
+        log(level: .debug, message: message, messageAttributes: attributes)
     }
 
     /// Sends an INFO log message.
     /// - Parameter message: the message to be logged
-    public func info(_ message: @autoclosure () -> String) {
-        log(level: .info, message: message())
+    public func info(_ message: String, attributes: [String: Encodable]? = nil) {
+        log(level: .info, message: message, messageAttributes: attributes)
     }
 
     /// Sends a NOTICE log message.
     /// - Parameter message: the message to be logged
-    public func notice(_ message: @autoclosure () -> String) {
-        log(level: .notice, message: message())
+    public func notice(_ message: String, attributes: [String: Encodable]? = nil) {
+        log(level: .notice, message: message, messageAttributes: attributes)
     }
 
     /// Sends a WARN log message.
     /// - Parameter message: the message to be logged
-    public func warn(_ message: @autoclosure () -> String) {
-        log(level: .warn, message: message())
+    public func warn(_ message: String, attributes: [String: Encodable]? = nil) {
+        log(level: .warn, message: message, messageAttributes: attributes)
     }
 
     /// Sends an ERROR log message.
     /// - Parameter message: the message to be logged
-    public func error(_ message: @autoclosure () -> String) {
-        log(level: .error, message: message())
+    public func error(_ message: String, attributes: [String: Encodable]? = nil) {
+        log(level: .error, message: message, messageAttributes: attributes)
     }
 
     /// Sends a CRITICAL log message.
     /// - Parameter message: the message to be logged
-    public func critical(_ message: @autoclosure () -> String) {
-        log(level: .critical, message: message())
+    public func critical(_ message: String, attributes: [String: Encodable]? = nil) {
+        log(level: .critical, message: message, messageAttributes: attributes)
     }
 
     public func addAttribute(key: String, value: Encodable) {
-        attributes[key] = EncodableValue(value)
+        loggerAttributes[key] = value
     }
 
-    private func log(level: LogLevel, message: @autoclosure () -> String, messageAttributes: [String: EncodableValue] = [:]) {
-        let combinedAttributes = attributes.merging(messageAttributes) { _, messageAttributeValue in
-            messageAttributeValue // use message attribute when the same key appears also in `loggerAttributes`
+    private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
+        let combinedAttributes = loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
+            return messageAttributeValue // use message attribute when the same key appears also in logger attributes
         }
 
-        logOutput.writeLogWith(level: level, message: message(), attributes: combinedAttributes)
+        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes)
     }
 
     // MARK: - Logger.Builder

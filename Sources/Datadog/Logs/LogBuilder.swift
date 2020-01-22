@@ -21,9 +21,12 @@ internal struct LogBuilder {
     /// Current date to write in log.
     let dateProvider: DateProvider
 
-    func createLogWith(level: LogLevel, message: String, attributes: [String: EncodableValue]) -> Log {
-        var validatedAttributes = attributes
-        validatedAttributes = removeReservedAttributes(attributes)
+    func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable]) -> Log {
+        let encodableAttributes = Dictionary(
+            uniqueKeysWithValues: attributes.map { name, value in (name, EncodableValue(value)) }
+        )
+
+        var validatedAttributes = removeReservedAttributes(encodableAttributes)
         validatedAttributes = sanitizeAttributeNames(validatedAttributes)
         validatedAttributes = limitToMaxNumberOfAttributes(validatedAttributes)
 

@@ -118,9 +118,9 @@ class LoggerTests: XCTestCase {
         }
     }
 
-    // MARK: - Adding attributes
+    // MARK: - Sending attributes
 
-    func testSendingAttributesOfDifferentEncodableValues() throws {
+    func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 1) {
             let logger = Logger.builder.build()
 
@@ -178,6 +178,35 @@ class LoggerTests: XCTestCase {
              "age" : 30,
              "nationality" : "Polish",
           }
+        }]
+        """)
+    }
+
+    func testGivenLoggerAttribute_whenTheSameKeyIsUsedForMessage_itGetsOverwrittenOnlyForThatMessage() throws {
+        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 2) {
+            let logger = Logger.builder.build()
+            logger.addAttribute(key: "attribute", value: "logger's value")
+            logger.info("info message 1", attributes: ["attribute": "message's value"])
+            logger.info("info message 2")
+        }
+
+        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
+        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 1",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:55Z",
+          "attribute": "message's value"
+        }]
+        """)
+        assertThat(jsonArrayData: requestsData[1], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 2",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:56Z",
+          "attribute": "logger's value"
         }]
         """)
     }

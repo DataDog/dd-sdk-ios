@@ -27,20 +27,20 @@ class LogBuilderTests: XCTestCase {
             message: "debug message",
             attributes: [
                 // reserved attributes:
-                "host": .mockAny(),
-                "message": .mockAny(),
-                "status": .mockAny(),
-                "service": .mockAny(),
-                "source": .mockAny(),
-                "date": .mockAny(),
-                "error.kind": .mockAny(),
-                "error.message": .mockAny(),
-                "error.stack": .mockAny(),
-                "ddtags": .mockAny(),
+                "host": String.mockAny(),
+                "message": String.mockAny(),
+                "status": String.mockAny(),
+                "service": String.mockAny(),
+                "source": String.mockAny(),
+                "date": String.mockAny(),
+                "error.kind": String.mockAny(),
+                "error.message": String.mockAny(),
+                "error.stack": String.mockAny(),
+                "ddtags": String.mockAny(),
 
                 // valid attributes:
-                "attribute1": .mockAny(),
-                "attribute2": .mockAny(),
+                "attribute1": String.mockAny(),
+                "attribute2": String.mockAny(),
             ]
         )
 
@@ -54,18 +54,18 @@ class LogBuilderTests: XCTestCase {
             level: .debug,
             message: "",
             attributes: [
-                "one": .mockAny(),
-                "one.two": .mockAny(),
-                "one.two.three": .mockAny(),
-                "one.two.three.four": .mockAny(),
-                "one.two.three.four.five": .mockAny(),
-                "one.two.three.four.five.six": .mockAny(),
-                "one.two.three.four.five.six.seven": .mockAny(),
-                "one.two.three.four.five.six.seven.eight": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
+                "one": String.mockAny(),
+                "one.two": String.mockAny(),
+                "one.two.three": String.mockAny(),
+                "one.two.three.four": String.mockAny(),
+                "one.two.three.four.five": String.mockAny(),
+                "one.two.three.four.five.six": String.mockAny(),
+                "one.two.three.four.five.six.seven": String.mockAny(),
+                "one.two.three.four.five.six.seven.eight": String.mockAny(),
+                "one.two.three.four.five.six.seven.eight.nine": String.mockAny(),
+                "one.two.three.four.five.six.seven.eight.nine.ten": String.mockAny(),
+                "one.two.three.four.five.six.seven.eight.nine.ten.eleven": String.mockAny(),
+                "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": String.mockAny(),
             ]
         )
 
@@ -84,7 +84,7 @@ class LogBuilderTests: XCTestCase {
     }
 
     func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
-        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
+        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", String.mockAny()) }
         let log = builder.createLogWith(
             level: .debug,
             message: "",
