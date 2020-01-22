@@ -196,10 +196,20 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
             let logger = Logger.builder.build()
+
+            // add logger attribute
             logger.addAttribute(forKey: "attribute", value: "logger's value")
+
+            // send message with no attributes
             logger.info("info message 1")
-            logger.info("info message 2", attributes: ["attribute": "message's value"]) // will overwrite logger's attribute
+
+            // send message with attribute overriding logger's attribute
+            logger.info("info message 2", attributes: ["attribute": "message's value"])
+
+            // remove logger attribute
             logger.removeAttribute(forKey: "attribute")
+
+            // send message
             logger.info("info message 3")
         }
 

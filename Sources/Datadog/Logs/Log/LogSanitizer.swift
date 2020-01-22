@@ -70,7 +70,6 @@ internal struct LogSanitizer {
                 return (name, value)
             }
         }
-
         return Dictionary(uniqueKeysWithValues: sanitizedAttributes)
     }
 
@@ -86,7 +85,6 @@ internal struct LogSanitizer {
                 sanitized.append(char)
             }
         }
-
         return sanitized
     }
 
