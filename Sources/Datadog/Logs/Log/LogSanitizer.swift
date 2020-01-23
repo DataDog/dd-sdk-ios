@@ -22,7 +22,8 @@ internal struct LogSanitizer {
             status: log.status,
             message: log.message,
             service: log.service,
-            attributes: sanitize(attributes: log.attributes)
+            attributes: sanitize(attributes: log.attributes),
+            tags: sanitize(tags: log.tags)
         )
     }
 
@@ -97,5 +98,11 @@ internal struct LogSanitizer {
         } else {
             return attributes
         }
+    }
+
+    // MARK: - Tags sanitization
+
+    private func sanitize(tags rawTags: [String]?) -> [String]? {
+        return rawTags
     }
 }

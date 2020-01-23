@@ -40,8 +40,8 @@ internal struct LogConsoleOutput: LogOutput {
         self.printingFunction = printingFunction
     }
 
-    func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable]) {
-        let log = logBuilder.createLogWith(level: level, message: message, attributes: attributes)
+    func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
+        let log = logBuilder.createLogWith(level: level, message: message, attributes: attributes, tags: tags)
         printingFunction(formatter.format(log: log))
     }
 }

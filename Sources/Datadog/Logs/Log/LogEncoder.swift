@@ -1,6 +1,6 @@
 import Foundation
 
-/// `Encodable` representation of log. Sanitizes the log before encoding.
+/// `Encodable` representation of log. It gets sanitized before encoding.
 internal struct Log: Encodable {
     enum Status: String, Encodable {
         case debug = "DEBUG"
@@ -16,6 +16,7 @@ internal struct Log: Encodable {
     let message: String
     let service: String
     let attributes: [String: EncodableValue]?
+    let tags: [String]?
 
     func encode(to encoder: Encoder) throws {
         let sanitizedLog = LogSanitizer().sanitize(log: self)
@@ -26,11 +27,12 @@ internal struct Log: Encodable {
 /// Encodes `Log` to given encoder.
 internal struct LogEncoder {
     /// Coding keys for permanent `Log` attributes.
-    private enum StaticCodingKeys: String, CodingKey {
+    enum StaticCodingKeys: String, CodingKey {
         case date
         case status
         case message
         case service
+        case tags = "ddtags"
     }
 
     /// Coding keys for dynamic `Log` attributes specified by user.

@@ -24,7 +24,8 @@ class LogSanitizerTests: XCTestCase {
                 // valid attributes:
                 "attribute1": .mockAny(),
                 "attribute2": .mockAny(),
-            ]
+            ],
+            tags: []
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
@@ -53,7 +54,8 @@ class LogSanitizerTests: XCTestCase {
                 "one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
                 "one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
                 "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
-            ]
+            ],
+            tags: []
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
@@ -79,7 +81,8 @@ class LogSanitizerTests: XCTestCase {
             status: .mockAny(),
             message: .mockAny(),
             service: .mockAny(),
-            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
+            attributes: Dictionary(uniqueKeysWithValues: mockAttributes),
+            tags: []
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
@@ -96,7 +99,8 @@ class LogSanitizerTests: XCTestCase {
             attributes: [
                 "valid-name": .mockAny(),
                 "": .mockAny(), // invalid name
-            ]
+            ],
+            tags: []
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)

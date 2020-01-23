@@ -13,7 +13,8 @@ extension Log {
             status: .mockRandom(),
             message: .mockRandom(length: 20),
             service: "ios-sdk-unit-tests",
-            attributes: [:]
+            attributes: [:],
+            tags: []
         )
     }
 
@@ -23,7 +24,8 @@ extension Log {
             status: status,
             message: .mockRandom(length: 20),
             service: "ios-sdk-unit-tests",
-            attributes: [:]
+            attributes: [:],
+            tags: []
         )
     }
 }

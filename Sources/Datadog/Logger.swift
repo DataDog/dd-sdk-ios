@@ -72,6 +72,8 @@ public class Logger {
     let logOutput: LogOutput
     /// Attributes associated with every log.
     private var loggerAttributes: [String: Encodable] = [:]
+    /// Taggs associated with every log.
+    private var loggerTags: Set<String> = []
 
     init(logOutput: LogOutput) {
         self.logOutput = logOutput
@@ -159,7 +161,7 @@ public class Logger {
             return messageAttributeValue // use message attribute when the same key appears also in logger attributes
         }
 
-        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes)
+        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes, tags: loggerTags)
     }
 
     // MARK: - Logger.Builder

@@ -7,7 +7,7 @@ internal struct LogBuilder {
     /// Current date to write in log.
     let dateProvider: DateProvider
 
-    func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable]) -> Log {
+    func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) -> Log {
         let encodableAttributes = Dictionary(
             uniqueKeysWithValues: attributes.map { name, value in (name, EncodableValue(value)) }
         )
@@ -17,7 +17,8 @@ internal struct LogBuilder {
             status: logStatus(for: level),
             message: message,
             service: serviceName,
-            attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil
+            attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
+            tags: []
         )
     }
 

@@ -26,7 +26,7 @@ class LogFileOutputTests: XCTestCase {
             )
         )
 
-        output.writeLogWith(level: .info, message: "log message", attributes: [:])
+        output.writeLogWith(level: .info, message: "log message", attributes: [:], tags: [])
 
         queue.sync {} // wait on writter queue
 
