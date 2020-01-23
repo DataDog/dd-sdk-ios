@@ -1,17 +1,44 @@
 import XCTest
 
 extension XCTestCase {
-    func assertThat(serializedLogData: Data, fullyMatches jsonString: String, file: StaticString = #file, line: UInt = #line) {
+    func assertThat(jsonArrayData: Data, fullyMatches jsonString: String, file: StaticString = #file, line: UInt = #line) {
+        assertThat(jsonData: jsonArrayData, representing: NSArray.self, fullyMatches: jsonString, file: file, line: line)
+    }
+
+    func assertThat(jsonObjectData: Data, fullyMatches jsonString: String, file: StaticString = #file, line: UInt = #line) {
+        assertThat(jsonData: jsonObjectData, representing: NSDictionary.self, fullyMatches: jsonString, file: file, line: line)
+    }
+
+    func assertThat<T: Equatable>(jsonArrayData: Data, matchesValue value: T, onKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
+        assertThat(
+            jsonData: jsonArrayData, representing: NSArray.self, matchesValue: value, onKeyPath: keyPath, file: file, line: line
+        )
+    }
+
+    func assertThat<T: Equatable>(jsonObjectData: Data, matchesValue value: T, onKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
+        assertThat(
+            jsonData: jsonObjectData, representing: NSDictionary.self, matchesValue: value, onKeyPath: keyPath, file: file, line: line
+        )
+    }
+
+    private func assertThat<T: Equatable>(
+        jsonData: Data,
+        representing rootLevelType: T.Type,
+        fullyMatches
+        jsonString: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
         guard let jsonStringData = jsonString.data(using: .utf8) else {
             XCTFail("Cannot encode data from given json string.", file: file, line: line)
             return
         }
 
-        guard let jsonObjectFromSerializedData = try? JSONSerialization.jsonObject(with: serializedLogData, options: []) as? NSArray else {
-            XCTFail("Cannot decode JSON object from given `serializedLogData`.", file: file, line: line)
+        guard let jsonObjectFromSerializedData = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? T else {
+            XCTFail("Cannot decode JSON object from given json data.", file: file, line: line)
             return
         }
-        guard let jsonObjectFromJSONString = try? JSONSerialization.jsonObject(with: jsonStringData, options: []) as? NSArray else {
+        guard let jsonObjectFromJSONString = try? JSONSerialization.jsonObject(with: jsonStringData, options: []) as? T else {
             XCTFail("Cannot encode JSON object from given `jsonString`.", file: file, line: line)
             return
         }
@@ -19,14 +46,21 @@ extension XCTestCase {
         XCTAssertEqual(jsonObjectFromSerializedData, jsonObjectFromJSONString, file: file, line: line)
     }
 
-    func assertThat<T: Equatable>(serializedLogData: Data, matchesValue value: T, onKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
-        guard let jsonObjectFromSerializedData = try? JSONSerialization.jsonObject(with: serializedLogData, options: []) as? NSArray else {
-            XCTFail("Cannot decode JSON object from given `serializedLogData`.", file: file, line: line)
+    private func assertThat<T: NSObject, V: Equatable>(
+        jsonData: Data,
+        representing rootLevelType: T.Type,
+        matchesValue value: V,
+        onKeyPath keyPath: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        guard let jsonObjectFromSerializedData = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? T else {
+            XCTFail("Cannot decode JSON object from given `jsonObjectData`.", file: file, line: line)
             return
         }
 
-        guard let jsonObjectValue = jsonObjectFromSerializedData.value(forKeyPath: keyPath) as? T else {
-            XCTFail("Cannot access or cast value of type \(T.self) on key path \(keyPath).", file: file, line: line)
+        guard let jsonObjectValue = jsonObjectFromSerializedData.value(forKeyPath: keyPath) as? V else {
+            XCTFail("Cannot access or cast value of type \(V.self) on key path \(keyPath).", file: file, line: line)
             return
         }
 

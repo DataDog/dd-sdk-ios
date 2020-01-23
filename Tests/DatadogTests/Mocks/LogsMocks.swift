@@ -12,7 +12,8 @@ extension Log {
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(length: 20),
-            service: "ios-sdk-unit-tests"
+            service: "ios-sdk-unit-tests",
+            attributes: [:]
         )
     }
 
@@ -21,7 +22,8 @@ extension Log {
             date: .mockRandomInThePast(),
             status: status,
             message: .mockRandom(length: 20),
-            service: "ios-sdk-unit-tests"
+            service: "ios-sdk-unit-tests",
+            attributes: [:]
         )
     }
 }
@@ -30,6 +32,16 @@ extension Log.Status {
     static func mockRandom() -> Log.Status {
         let statuses: [Log.Status] = [.debug, .info, .notice, .warn, .error, .critical]
         return statuses.randomElement()!
+    }
+
+    static func mockAny() -> Log.Status {
+        return .info
+    }
+}
+
+extension EncodableValue {
+    static func mockAny() -> EncodableValue {
+        return EncodableValue(String.mockAny())
     }
 }
 

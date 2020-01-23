@@ -11,8 +11,8 @@ class CombinedLogOutputTests: XCTestCase {
 
         var recordedLog: RecordedLog? = nil
 
-        func writeLogWith(level: LogLevel, message: @autoclosure () -> String) {
-            recordedLog = RecordedLog(level: level, message: message())
+        func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable]) {
+            recordedLog = RecordedLog(level: level, message: message)
         }
     }
 
@@ -22,7 +22,7 @@ class CombinedLogOutputTests: XCTestCase {
         let output3 = LogOutputMock()
 
         let combinedOutput = CombinedLogOutput(combine: [output1, output2, output3])
-        combinedOutput.writeLogWith(level: .info, message: "info message")
+        combinedOutput.writeLogWith(level: .info, message: "info message", attributes: [:])
 
         XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message"))
         XCTAssertEqual(output2.recordedLog, .init(level: .info, message: "info message"))
@@ -33,13 +33,13 @@ class CombinedLogOutputTests: XCTestCase {
         let output1 = LogOutputMock()
         let conditionalOutput1 = ConditionalLogOutput(conditionedOutput: output1) { _ in true }
 
-        conditionalOutput1.writeLogWith(level: .info, message: "info message")
+        conditionalOutput1.writeLogWith(level: .info, message: "info message", attributes: [:])
         XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message"))
 
         let output2 = LogOutputMock()
         let conditionalOutput2 = ConditionalLogOutput(conditionedOutput: output2) { _ in false }
 
-        conditionalOutput2.writeLogWith(level: .info, message: "info message")
+        conditionalOutput2.writeLogWith(level: .info, message: "info message", attributes: [:])
         XCTAssertNil(output2.recordedLog)
     }
 }

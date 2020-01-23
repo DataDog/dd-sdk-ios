@@ -29,6 +29,8 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Sending logs
+
     func testSendingLogsWithDefaultLogger() throws {
         let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 6) {
             let logger = Logger.builder.build()
@@ -42,7 +44,7 @@ class LoggerTests: XCTestCase {
         }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
-        assertThat(serializedLogData: requestsData[0], fullyMatches: """
+        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
         [{
           "status" : "DEBUG",
           "message" : "message",
@@ -50,7 +52,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T09:59:55Z"
         }]
         """)
-        assertThat(serializedLogData: requestsData[1], fullyMatches: """
+        assertThat(jsonArrayData: requestsData[1], fullyMatches: """
         [{
           "status" : "INFO",
           "message" : "message",
@@ -58,7 +60,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T09:59:56Z"
         }]
         """)
-        assertThat(serializedLogData: requestsData[2], fullyMatches: """
+        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
         [{
           "status" : "NOTICE",
           "message" : "message",
@@ -66,7 +68,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T09:59:57Z"
         }]
         """)
-        assertThat(serializedLogData: requestsData[3], fullyMatches: """
+        assertThat(jsonArrayData: requestsData[3], fullyMatches: """
         [{
           "status" : "WARN",
           "message" : "message",
@@ -74,7 +76,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T09:59:58Z"
         }]
         """)
-        assertThat(serializedLogData: requestsData[4], fullyMatches: """
+        assertThat(jsonArrayData: requestsData[4], fullyMatches: """
         [{
           "status" : "ERROR",
           "message" : "message",
@@ -82,7 +84,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T09:59:59Z"
         }]
         """)
-        assertThat(serializedLogData: requestsData[5], fullyMatches: """
+        assertThat(jsonArrayData: requestsData[5], fullyMatches: """
         [{
           "status" : "CRITICAL",
           "message" : "message",
@@ -109,12 +111,135 @@ class LoggerTests: XCTestCase {
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
         requestsData.forEach { requestData in
             assertThat(
-                serializedLogData: requestData,
+                jsonArrayData: requestData,
                 matchesValue: ["custom-service-name"],
                 onKeyPath: "@unionOfObjects.service"
             )
         }
     }
+
+    // MARK: - Sending attributes
+
+    func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
+        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 1) {
+            let logger = Logger.builder.build()
+
+            // string literal
+            logger.addAttribute(forKey: "string", value: "hello")
+
+            // boolean literal
+            logger.addAttribute(forKey: "bool", value: true)
+
+            // integer literal
+            logger.addAttribute(forKey: "int", value: 10)
+
+            // Typed 8-bit unsigned Integer
+            logger.addAttribute(forKey: "uint-8", value: UInt8(10))
+
+            // double-precision, floating-point value
+            logger.addAttribute(forKey: "double", value: 10.5)
+
+            // array of `Encodable` integer
+            logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
+
+            // dictionary of `Encodable` date types
+            logger.addAttribute(forKey: "dictionary-of-date", value: [
+                "date1": Date.mockDecember15th2019At10AMUTC(),
+                "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
+            ])
+
+            struct Person: Codable {
+                let name: String
+                let age: Int
+                let nationality: String
+            }
+
+            // custom `Encodable` structure
+            logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+
+            // nested string literal
+            logger.addAttribute(forKey: "nested.string", value: "hello")
+
+            logger.info("message")
+        }
+
+        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
+        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "message",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:55Z",
+          "string" : "hello",
+          "bool" : true,
+          "int" : 10,
+          "uint-8" : 10,
+          "double" : 10.5,
+          "array-of-int" : [1, 2, 3],
+          "dictionary-of-date" : {
+             "date1": "2019-12-15T10:00:00Z",
+             "date2": "2019-12-15T11:00:00Z"
+          },
+          "person" : {
+             "name" : "Adam",
+             "age" : 30,
+             "nationality" : "Polish",
+          },
+          "nested.string" : "hello"
+        }]
+        """)
+    }
+
+    func testSendingMessageAttributes() throws {
+        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
+            let logger = Logger.builder.build()
+
+            // add logger attribute
+            logger.addAttribute(forKey: "attribute", value: "logger's value")
+
+            // send message with no attributes
+            logger.info("info message 1")
+
+            // send message with attribute overriding logger's attribute
+            logger.info("info message 2", attributes: ["attribute": "message's value"])
+
+            // remove logger attribute
+            logger.removeAttribute(forKey: "attribute")
+
+            // send message
+            logger.info("info message 3")
+        }
+
+        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
+        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 1",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:55Z",
+          "attribute": "logger's value"
+        }]
+        """)
+        assertThat(jsonArrayData: requestsData[1], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 2",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:56Z",
+          "attribute": "message's value"
+        }]
+        """)
+        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 3",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:57Z"
+        }]
+        """)
+    }
+
+    // MARK: - Customizing outputs
 
     func testUsingDifferentOutputs() throws {
         Datadog.instance = .mockAny(logsDirectory: temporaryDirectory)
@@ -158,6 +283,8 @@ class LoggerTests: XCTestCase {
 
         try Datadog.deinitializeOrThrow()
     }
+
+    // MARK: - Initialization
 
     func testWhenDatadogIsNotInitialized_itThrowsProgrammerError() {
         XCTAssertThrowsError(try Logger.builder.buildOrThrow()) { error in
