@@ -2,7 +2,7 @@ import Foundation
 
 /// Sanitizes `Log` representation received from the user, so it can match Datadog log constraints.
 internal struct LogSanitizer {
-    struct Constants {
+    struct Constraints {
         /// Attribute names reserved for Datadog.
         /// If any of those is used by user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
@@ -52,7 +52,7 @@ internal struct LogSanitizer {
 
     private func removeReservedAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
         return attributes.filter { attribute in
-            if Constants.reservedAttributeNames.contains(attribute.key) {
+            if Constraints.reservedAttributeNames.contains(attribute.key) {
                 userLogger.error("'\(attribute.key)' is a reserved attribute name. This attribute will be ignored.")
                 return false
             }
@@ -80,7 +80,7 @@ internal struct LogSanitizer {
         for char in attributeName {
             if char == "." {
                 dotsCount += 1
-                sanitized.append(dotsCount > Constants.maxNestedLevelsInAttributeName ? "_" : char)
+                sanitized.append(dotsCount > Constraints.maxNestedLevelsInAttributeName ? "_" : char)
             } else {
                 sanitized.append(char)
             }
@@ -90,9 +90,9 @@ internal struct LogSanitizer {
 
     private func limitToMaxNumberOfAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
         // limit to `Constants.maxNumberOfAttributes` attributes.
-        if attributes.count > Constants.maxNumberOfAttributes {
-            let extraAttributesCount = attributes.count - Constants.maxNumberOfAttributes
-            userLogger.error("Number of attributes exceeds the limit of \(Constants.maxNumberOfAttributes). \(extraAttributesCount) attribute(s) will be ignored.")
+        if attributes.count > Constraints.maxNumberOfAttributes {
+            let extraAttributesCount = attributes.count - Constraints.maxNumberOfAttributes
+            userLogger.error("Number of attributes exceeds the limit of \(Constraints.maxNumberOfAttributes). \(extraAttributesCount) attribute(s) will be ignored.")
             return Dictionary(uniqueKeysWithValues: attributes.dropLast(extraAttributesCount))
         } else {
             return attributes

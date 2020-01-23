@@ -1,6 +1,6 @@
 import Foundation
 
-/// `Encodable` representation of log.
+/// `Encodable` representation of log. Sanitizes the log before encoding.
 internal struct Log: Encodable {
     enum Status: String, Encodable {
         case debug = "DEBUG"

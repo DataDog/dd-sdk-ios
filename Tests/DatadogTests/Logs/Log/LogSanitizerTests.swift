@@ -84,7 +84,7 @@ class LogSanitizerTests: XCTestCase {
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constants.maxNumberOfAttributes)
+        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constraints.maxNumberOfAttributes)
     }
 
     func testWhenAttributeNameIsInvalid_itIsIgnored() {

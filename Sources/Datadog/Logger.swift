@@ -31,8 +31,6 @@ public enum LogLevel: Int, Codable {
 ///
 public typealias AttributeKey = String
 
-//nested encoding containers limitation.
-
 /// Any `Ecodable` value of the attribute (`String`, `Int`, `Bool`, `Date` etc.).
 ///
 /// Custom `Encodable` types are supported as well with nested encoding containers:

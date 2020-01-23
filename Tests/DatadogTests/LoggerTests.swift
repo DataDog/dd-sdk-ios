@@ -157,9 +157,6 @@ class LoggerTests: XCTestCase {
             // custom `Encodable` structure
             logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
 
-            // custom `Encodable` structure
-            logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
-
             // nested string literal
             logger.addAttribute(forKey: "nested.string", value: "hello")
 
