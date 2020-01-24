@@ -6,7 +6,7 @@ internal struct LogSanitizer {
         /// Attribute names reserved for Datadog.
         /// If any of those is used by user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
-            "host", "message", "status", "service", "source", "date", "error.kind", "error.message", "error.stack", "ddtags"
+            "host", "message", "status", "service", "source", "error.kind", "error.message", "error.stack", "ddtags"
         ]
         /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
         /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).

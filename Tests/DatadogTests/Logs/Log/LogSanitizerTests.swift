@@ -15,7 +15,6 @@ class LogSanitizerTests: XCTestCase {
                 "status": .mockAny(),
                 "service": .mockAny(),
                 "source": .mockAny(),
-                "date": .mockAny(),
                 "error.kind": .mockAny(),
                 "error.message": .mockAny(),
                 "error.stack": .mockAny(),
@@ -24,15 +23,17 @@ class LogSanitizerTests: XCTestCase {
                 // valid attributes:
                 "attribute1": .mockAny(),
                 "attribute2": .mockAny(),
+                "date": .mockAny(), // 💡 date is not a reserved attribute
             ],
             tags: []
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, 2)
+        XCTAssertEqual(sanitized.attributes?.count, 3)
         XCTAssertNotNil(sanitized.attributes?["attribute1"])
         XCTAssertNotNil(sanitized.attributes?["attribute2"])
+        XCTAssertNotNil(sanitized.attributes?["date"])
     }
 
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
