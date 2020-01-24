@@ -28,6 +28,9 @@ internal struct LogSanitizer {
         static let reservedTagKeys: Set<String> = [
             "host", "device", "source", "service"
         ]
+        /// Maximum number of attributes in log.
+        /// If this number is exceeded, extra attributes will be ignored.
+        static let maxNumberOfTags: Int = 100
     }
 
     func sanitize(log: Log) -> Log {
@@ -105,7 +108,7 @@ internal struct LogSanitizer {
     }
 
     private func limitToMaxNumberOfAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
-        // Only `Constants.maxNumberOfAttributes` of attributes is allowed.
+        // Only `Constants.maxNumberOfAttributes` of attributes are allowed.
         if attributes.count > Constraints.maxNumberOfAttributes {
             let extraAttributesCount = attributes.count - Constraints.maxNumberOfAttributes
             userLogger.error("Number of attributes exceeds the limit of \(Constraints.maxNumberOfAttributes). \(extraAttributesCount) attribute(s) will be ignored.")
@@ -125,6 +128,7 @@ internal struct LogSanitizer {
             tags = removeTagTrailingCommas(tags)
             tags = limitToMaxTagLength(tags)
             tags = removeReservedTags(tags)
+            tags = limitToMaxNumberOfTags(tags)
             return tags
         } else {
             return nil
@@ -197,6 +201,17 @@ internal struct LogSanitizer {
             } else {
                 return true
             }
+        }
+    }
+
+    private func limitToMaxNumberOfTags(_ tags: [String]) -> [String] {
+        // Only `Constraints.maxNumberOfTags` of tags are allowed.
+        if tags.count > Constraints.maxNumberOfTags {
+            let extraTagsCount = tags.count - Constraints.maxNumberOfTags
+            userLogger.error("Number of tags exceeds the limit of \(Constraints.maxNumberOfTags). \(extraTagsCount) attribute(s) will be ignored.")
+            return tags.dropLast(extraTagsCount)
+        } else {
+            return tags
         }
     }
 }

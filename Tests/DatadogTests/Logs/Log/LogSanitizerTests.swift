@@ -67,17 +67,6 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
     }
 
-    func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
-        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
-        let log = Log.mockAnyWith(
-            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
-        )
-
-        let sanitized = LogSanitizer().sanitize(log: log)
-
-        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constraints.maxNumberOfAttributes)
-    }
-
     func testWhenAttributeNameIsInvalid_itIsIgnored() {
         let log = Log.mockAnyWith(
             attributes: [
@@ -90,6 +79,17 @@ class LogSanitizerTests: XCTestCase {
 
         XCTAssertEqual(sanitized.attributes?.count, 1)
         XCTAssertNotNil(sanitized.attributes?["valid-name"])
+    }
+
+    func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
+        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
+        let log = Log.mockAnyWith(
+            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constraints.maxNumberOfAttributes)
     }
 
     // MARK: - Tags sanitization
@@ -155,5 +155,16 @@ class LogSanitizerTests: XCTestCase {
         let sanitized = LogSanitizer().sanitize(log: log)
 
         XCTAssertEqual(sanitized.tags, ["valid"])
+    }
+
+    func testWhenNumberOfTagsExceedsLimit_itDropsExtraOnes() {
+        let mockTags = (0...1_000).map { index in "tag\(index)" }
+        let log = Log.mockAnyWith(
+            tags: mockTags
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags?.count, LogSanitizer.Constraints.maxNumberOfTags)
     }
 }
