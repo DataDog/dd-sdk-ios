@@ -2,12 +2,10 @@ import XCTest
 @testable import Datadog
 
 class LogSanitizerTests: XCTestCase {
+    // MARK: - Attributes sanitization
+
     func testWhenAttributeUsesReservedName_itIsIgnored() {
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
+        let log = Log.mockAnyWith(
             attributes: [
                 // reserved attributes:
                 "host": .mockAny(),
@@ -24,8 +22,7 @@ class LogSanitizerTests: XCTestCase {
                 "attribute1": .mockAny(),
                 "attribute2": .mockAny(),
                 "date": .mockAny(), // 💡 date is not a reserved attribute
-            ],
-            tags: []
+            ]
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
@@ -37,11 +34,7 @@ class LogSanitizerTests: XCTestCase {
     }
 
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
+        let log = Log.mockAnyWith(
             attributes: [
                 "one": .mockAny(),
                 "one.two": .mockAny(),
@@ -55,8 +48,7 @@ class LogSanitizerTests: XCTestCase {
                 "one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
                 "one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
                 "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
-            ],
-            tags: []
+            ]
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
@@ -77,13 +69,8 @@ class LogSanitizerTests: XCTestCase {
 
     func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
         let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
-            attributes: Dictionary(uniqueKeysWithValues: mockAttributes),
-            tags: []
+        let log = Log.mockAnyWith(
+            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
@@ -92,21 +79,81 @@ class LogSanitizerTests: XCTestCase {
     }
 
     func testWhenAttributeNameIsInvalid_itIsIgnored() {
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
+        let log = Log.mockAnyWith(
             attributes: [
                 "valid-name": .mockAny(),
                 "": .mockAny(), // invalid name
-            ],
-            tags: []
+            ]
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
         XCTAssertEqual(sanitized.attributes?.count, 1)
         XCTAssertNotNil(sanitized.attributes?["valid-name"])
+    }
+
+    // MARK: - Tags sanitization
+
+    func testWhenTagHasUpperCasedCharacters_itGetsLowerCased() {
+        let log = Log.mockAnyWith(
+            tags: ["abcd", "Abcdef:ghi", "ABCDEF:GHIJK", "ABCDEFGHIJK"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["abcd", "abcdef:ghi", "abcdef:ghijk", "abcdefghijk"])
+    }
+
+    func testWhenTagStartsWithIllegalCharacter_itIsIgnored() {
+        let log = Log.mockAnyWith(
+            tags: ["?invalid", "valid", "&invalid", ".abcdefghijk", ":abcd"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["valid"])
+    }
+
+    func testWhenTagContainsIllegalCharacter_itIsConvertedToUnderscore() {
+        let log = Log.mockAnyWith(
+            tags: ["this&needs&underscore", "this*as*well", "this/doesnt"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["this_needs_underscore", "this_as_well", "this/doesnt"])
+    }
+
+    func testWhenTagContainsTrailingCommas_itItTruncatesThem() {
+        let log = Log.mockAnyWith(
+            tags: ["with-one-comma:", "with-several-commas::::", "with-comma:in-the-middle"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["with-one-comma", "with-several-commas", "with-comma:in-the-middle"])
+    }
+
+    func testWhenTagExceedsLengthLimit_itIsTruncated() {
+        let log = Log.mockAnyWith(
+            tags: [.mockRepeating(character: "a", times: 2 * LogSanitizer.Constraints.maxTagLength)]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(
+            sanitized.tags,
+            [.mockRepeating(character: "a", times: LogSanitizer.Constraints.maxTagLength)]
+        )
+    }
+
+    func testWhenTagUsesReservedKey_itIsIgnored() {
+        let log = Log.mockAnyWith(
+            tags: ["host:abc", "device:abc", "source:abc", "service:abc", "valid"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["valid"])
     }
 }
