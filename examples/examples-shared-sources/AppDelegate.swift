@@ -24,6 +24,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
 
+        // Add attributes
+        logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
+
+        // Add tags
+        #if DEBUG
+        logger.addTag(withKey: "build_configuration", value: "debug")
+        #else
+        logger.addTag(withKey: "build_configuration", value: "release")
+        #endif
+
         // Send some logs 🚀
         logger.info("application did finish launching")
 
