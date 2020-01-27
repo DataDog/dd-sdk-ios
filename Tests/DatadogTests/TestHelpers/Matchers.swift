@@ -21,6 +21,18 @@ extension XCTestCase {
         )
     }
 
+    func assertThat<V: Equatable>(
+        jsonArrayData: Data,
+        matchesAnyOfTheValues values: [V],
+        onKeyPath keyPath: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        assertThat(
+            jsonData: jsonArrayData, representing: NSArray.self, matchesAnyOfTheValues: values, onKeyPath: keyPath, file: file, line: line
+        )
+    }
+
     private func assertThat<T: Equatable>(
         jsonData: Data,
         representing rootLevelType: T.Type,
@@ -65,5 +77,43 @@ extension XCTestCase {
         }
 
         XCTAssertEqual(jsonObjectValue, value, file: file, line: line)
+    }
+
+    private func assertThat<T: NSObject, V: Equatable>(
+        jsonData: Data,
+        representing rootLevelType: T.Type,
+        matchesAnyOfTheValues values: [V],
+        onKeyPath keyPath: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        guard let jsonObjectFromSerializedData = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? T else {
+            XCTFail("Cannot decode JSON object from given `jsonObjectData`.", file: file, line: line)
+            return
+        }
+
+        guard let jsonObjectValue = jsonObjectFromSerializedData.value(forKeyPath: keyPath) as? V else {
+            XCTFail("Cannot access or cast value of type \(V.self) on key path \(keyPath).", file: file, line: line)
+            return
+        }
+
+        var atLeastOneMatch = false
+        var missmatches: [String] = []
+
+        values.forEach { value in
+            if value == jsonObjectValue {
+                atLeastOneMatch = true
+            } else {
+                missmatches.append("\(value)")
+            }
+        }
+
+        if !atLeastOneMatch {
+            XCTFail(
+                "Any of specified values doesn't match \(jsonObjectValue): \(missmatches.joined(separator: "\n"))",
+                file: file,
+                line: line
+            )
+        }
     }
 }

@@ -18,7 +18,7 @@ internal struct LogBuilder {
             message: message,
             service: serviceName,
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
-            tags: []
+            tags: !tags.isEmpty ? Array(tags) : nil
         )
     }
 

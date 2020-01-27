@@ -55,5 +55,10 @@ internal struct LogEncoder {
             var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
             try attributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
         }
+
+        if let tags = log.tags {
+            let tagsString = tags.joined(separator: ",")
+            try container.encode(tagsString, forKey: .tags)
+        }
     }
 }

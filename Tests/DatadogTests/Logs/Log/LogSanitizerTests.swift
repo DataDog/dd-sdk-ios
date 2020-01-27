@@ -116,12 +116,12 @@ class LogSanitizerTests: XCTestCase {
 
     func testWhenTagContainsIllegalCharacter_itIsConvertedToUnderscore() {
         let log = Log.mockAnyWith(
-            tags: ["this&needs&underscore", "this*as*well", "this/doesnt"]
+            tags: ["this&needs&underscore", "this*as*well", "this/doesnt", "tag with whitespaces"]
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.tags, ["this_needs_underscore", "this_as_well", "this/doesnt"])
+        XCTAssertEqual(sanitized.tags, ["this_needs_underscore", "this_as_well", "this/doesnt", "tag_with_whitespaces"])
     }
 
     func testWhenTagContainsTrailingCommas_itItTruncatesThem() {
