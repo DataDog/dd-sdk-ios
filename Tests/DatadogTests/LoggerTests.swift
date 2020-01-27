@@ -279,7 +279,7 @@ class LoggerTests: XCTestCase {
         """)
         assertThat(
             jsonArrayData: requestsData[1],
-            matchesAnyOfTheValues: [["tag1,tag2:abcd"], ["tag2:abcd, tag1"]],
+            matchesAnyOfTheValues: [["tag1,tag2:abcd"], ["tag2:abcd,tag1"]],
             onKeyPath: "ddtags"
         )
         assertThat(jsonArrayData: requestsData[2], fullyMatches: """

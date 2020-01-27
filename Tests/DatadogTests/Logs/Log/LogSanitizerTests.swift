@@ -21,7 +21,7 @@ class LogSanitizerTests: XCTestCase {
                 // valid attributes:
                 "attribute1": .mockAny(),
                 "attribute2": .mockAny(),
-                "date": .mockAny(), // 💡 date is not a reserved attribute
+                "date": .mockAny(),
             ]
         )
 
