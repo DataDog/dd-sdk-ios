@@ -101,6 +101,11 @@ extension String {
         let characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
         return String((0..<length).map { _ in characters.randomElement()! })
     }
+
+    static func mockRepeating(character: Character, times: Int) -> String {
+        let characters = (0..<times).map { _ in character }
+        return String(characters)
+    }
 }
 
 struct ErrorMock: Error {

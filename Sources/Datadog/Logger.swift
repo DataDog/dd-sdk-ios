@@ -72,6 +72,8 @@ public class Logger {
     let logOutput: LogOutput
     /// Attributes associated with every log.
     private var loggerAttributes: [String: Encodable] = [:]
+    /// Taggs associated with every log.
+    private var loggerTags: Set<String> = []
 
     init(logOutput: LogOutput) {
         self.logOutput = logOutput
@@ -152,6 +154,60 @@ public class Logger {
         loggerAttributes.removeValue(forKey: key)
     }
 
+    // MARK: - Tags
+
+    /// Adds a tag to all future logs sent by this logger.
+    /// The tag will be in the format `key:value`.
+    ///
+    /// Tags must start with a letter and after that may contain the following characters:
+    /// Alphanumerics, Underscores, Minuses, Colons, Periods, Slashes. Other special characters
+    /// are converted to underscores.
+    /// Tags must be lowercase, and can be at most 200 characters. If the tag is
+    /// longer, only the first 200 characters will be used.
+    ///
+    /// # Reference
+    /// [Defining Tags](https://docs.datadoghq.com/tagging/#defining-tags)
+    ///
+    /// - Parameter key: key for the tag
+    /// - Parameter value: value of the tag
+    public func addTag(withKey key: String, value: String) {
+        let prefix = "\(key):"
+        loggerTags.insert("\(prefix)\(value)")
+    }
+
+    /// Remove all tags with the given key from all future logs sent by this logger.
+    /// Previous logs won't lose this tag if they were created prior to this call.
+    ///
+    /// - Parameter key: key of the tag to remove
+    public func removeTag(withKey key: String) {
+        let prefix = "\(key):"
+        loggerTags = loggerTags.filter { !$0.hasPrefix(prefix) }
+    }
+
+    /// Adds a tag to all future logs sent by this logger.
+    ///
+    /// Tags must start with a letter and after that may contain the following characters:
+    /// Alphanumerics, Underscores, Minuses, Colons, Periods, Slashes. Other special characters
+    /// are converted to underscores.
+    /// Tags must be lowercase, and can be at most 200 characters. If the tag is
+    /// longer, only the first 200 characters will be used.
+    ///
+    /// # Reference
+    /// [Defining Tags](https://docs.datadoghq.com/tagging/#defining-tags)
+    ///
+    /// - Parameter tag: value of the tag
+    public func add(tag: String) {
+        loggerTags.insert(tag)
+    }
+
+    /// Removes a tag from all future logs sent by this logger.
+    /// Previous logs won't lose the this tag if they were created prior to this call.
+    ///
+    /// - Parameter tag: value of the tag to remove
+    public func remove(tag: String) {
+        loggerTags.remove(tag)
+    }
+
     // MARK: - Private
 
     private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
@@ -159,7 +215,7 @@ public class Logger {
             return messageAttributeValue // use message attribute when the same key appears also in logger attributes
         }
 
-        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes)
+        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes, tags: loggerTags)
     }
 
     // MARK: - Logger.Builder

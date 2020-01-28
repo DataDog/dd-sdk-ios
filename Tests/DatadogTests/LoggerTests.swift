@@ -239,6 +239,59 @@ class LoggerTests: XCTestCase {
         """)
     }
 
+    // MARK: - Sending tags
+
+    func testSendingTags() throws {
+        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
+            let logger = Logger.builder.build()
+
+            // add tag
+            logger.add(tag: "tag1")
+
+            // send message
+            logger.info("info message 1")
+
+            // add tag with key
+            logger.addTag(withKey: "tag2", value: "abcd")
+
+            // send message
+            logger.info("info message 2")
+
+            // remove tag with key
+            logger.removeTag(withKey: "tag2")
+
+            // remove tag
+            logger.remove(tag: "tag1")
+
+            // send message
+            logger.info("info message 3")
+        }
+
+        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
+        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 1",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:55Z",
+          "ddtags": "tag1"
+        }]
+        """)
+        assertThat(
+            jsonArrayData: requestsData[1],
+            matchesAnyOfTheValues: [["tag1,tag2:abcd"], ["tag2:abcd,tag1"]],
+            onKeyPath: "ddtags"
+        )
+        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
+        [{
+          "status" : "INFO",
+          "message" : "info message 3",
+          "service" : "ios",
+          "date" : "2019-12-15T09:59:57Z"
+        }]
+        """)
+    }
+
     // MARK: - Customizing outputs
 
     func testUsingDifferentOutputs() throws {

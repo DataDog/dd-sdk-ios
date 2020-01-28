@@ -8,16 +8,26 @@ class LogBuilderTests: XCTestCase {
     )
 
     func testItBuildsBasicLog() {
-        let log = builder.createLogWith(level: .debug, message: "debug message", attributes: [:])
+        let log = builder.createLogWith(level: .debug, message: "debug message", attributes: [:], tags: [])
 
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
         XCTAssertEqual(log.service, "test-service-name")
-        XCTAssertEqual(builder.createLogWith(level: .info, message: "", attributes: [:]).status, .info)
-        XCTAssertEqual(builder.createLogWith(level: .notice, message: "", attributes: [:]).status, .notice)
-        XCTAssertEqual(builder.createLogWith(level: .warn, message: "", attributes: [:]).status, .warn)
-        XCTAssertEqual(builder.createLogWith(level: .error, message: "", attributes: [:]).status, .error)
-        XCTAssertEqual(builder.createLogWith(level: .critical, message: "", attributes: [:]).status, .critical)
+        XCTAssertEqual(
+            builder.createLogWith(level: .info, message: "", attributes: [:], tags: []).status, .info
+        )
+        XCTAssertEqual(
+            builder.createLogWith(level: .notice, message: "", attributes: [:], tags: []).status, .notice
+        )
+        XCTAssertEqual(
+            builder.createLogWith(level: .warn, message: "", attributes: [:], tags: []).status, .warn
+        )
+        XCTAssertEqual(
+            builder.createLogWith(level: .error, message: "", attributes: [:], tags: []).status, .error
+        )
+        XCTAssertEqual(
+            builder.createLogWith(level: .critical, message: "", attributes: [:], tags: []).status, .critical
+        )
     }
 }

@@ -2,12 +2,10 @@ import XCTest
 @testable import Datadog
 
 class LogSanitizerTests: XCTestCase {
+    // MARK: - Attributes sanitization
+
     func testWhenAttributeUsesReservedName_itIsIgnored() {
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
+        let log = Log.mockAnyWith(
             attributes: [
                 // reserved attributes:
                 "host": .mockAny(),
@@ -15,7 +13,6 @@ class LogSanitizerTests: XCTestCase {
                 "status": .mockAny(),
                 "service": .mockAny(),
                 "source": .mockAny(),
-                "date": .mockAny(),
                 "error.kind": .mockAny(),
                 "error.message": .mockAny(),
                 "error.stack": .mockAny(),
@@ -24,22 +21,20 @@ class LogSanitizerTests: XCTestCase {
                 // valid attributes:
                 "attribute1": .mockAny(),
                 "attribute2": .mockAny(),
+                "date": .mockAny(),
             ]
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, 2)
+        XCTAssertEqual(sanitized.attributes?.count, 3)
         XCTAssertNotNil(sanitized.attributes?["attribute1"])
         XCTAssertNotNil(sanitized.attributes?["attribute2"])
+        XCTAssertNotNil(sanitized.attributes?["date"])
     }
 
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
+        let log = Log.mockAnyWith(
             attributes: [
                 "one": .mockAny(),
                 "one.two": .mockAny(),
@@ -72,27 +67,8 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
     }
 
-    func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
-        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
-            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
-        )
-
-        let sanitized = LogSanitizer().sanitize(log: log)
-
-        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constraints.maxNumberOfAttributes)
-    }
-
     func testWhenAttributeNameIsInvalid_itIsIgnored() {
-        let log = Log(
-            date: .mockAny(),
-            status: .mockAny(),
-            message: .mockAny(),
-            service: .mockAny(),
+        let log = Log.mockAnyWith(
             attributes: [
                 "valid-name": .mockAny(),
                 "": .mockAny(), // invalid name
@@ -103,5 +79,92 @@ class LogSanitizerTests: XCTestCase {
 
         XCTAssertEqual(sanitized.attributes?.count, 1)
         XCTAssertNotNil(sanitized.attributes?["valid-name"])
+    }
+
+    func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
+        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
+        let log = Log.mockAnyWith(
+            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
+    // MARK: - Tags sanitization
+
+    func testWhenTagHasUpperCasedCharacters_itGetsLowerCased() {
+        let log = Log.mockAnyWith(
+            tags: ["abcd", "Abcdef:ghi", "ABCDEF:GHIJK", "ABCDEFGHIJK"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["abcd", "abcdef:ghi", "abcdef:ghijk", "abcdefghijk"])
+    }
+
+    func testWhenTagStartsWithIllegalCharacter_itIsIgnored() {
+        let log = Log.mockAnyWith(
+            tags: ["?invalid", "valid", "&invalid", ".abcdefghijk", ":abcd"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["valid"])
+    }
+
+    func testWhenTagContainsIllegalCharacter_itIsConvertedToUnderscore() {
+        let log = Log.mockAnyWith(
+            tags: ["this&needs&underscore", "this*as*well", "this/doesnt", "tag with whitespaces"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["this_needs_underscore", "this_as_well", "this/doesnt", "tag_with_whitespaces"])
+    }
+
+    func testWhenTagContainsTrailingCommas_itItTruncatesThem() {
+        let log = Log.mockAnyWith(
+            tags: ["with-one-comma:", "with-several-commas::::", "with-comma:in-the-middle"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["with-one-comma", "with-several-commas", "with-comma:in-the-middle"])
+    }
+
+    func testWhenTagExceedsLengthLimit_itIsTruncated() {
+        let log = Log.mockAnyWith(
+            tags: [.mockRepeating(character: "a", times: 2 * LogSanitizer.Constraints.maxTagLength)]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(
+            sanitized.tags,
+            [.mockRepeating(character: "a", times: LogSanitizer.Constraints.maxTagLength)]
+        )
+    }
+
+    func testWhenTagUsesReservedKey_itIsIgnored() {
+        let log = Log.mockAnyWith(
+            tags: ["host:abc", "device:abc", "source:abc", "service:abc", "valid"]
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags, ["valid"])
+    }
+
+    func testWhenNumberOfTagsExceedsLimit_itDropsExtraOnes() {
+        let mockTags = (0...1_000).map { index in "tag\(index)" }
+        let log = Log.mockAnyWith(
+            tags: mockTags
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.tags?.count, LogSanitizer.Constraints.maxNumberOfTags)
     }
 }

@@ -17,7 +17,7 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 },
             timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
         )
-        output1.writeLogWith(level: .info, message: "Info message.", attributes: [:])
+        output1.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
         XCTAssertEqual(messagePrinted, "10:00:00 [INFO] Info message.")
 
         let output2 = LogConsoleOutput(
@@ -26,7 +26,7 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 },
             timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
         )
-        output2.writeLogWith(level: .info, message: "Info message.", attributes: [:])
+        output2.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
         XCTAssertEqual(messagePrinted, "🐶 10:00:00 [INFO] Info message.")
     }
 
@@ -38,7 +38,7 @@ class LogConsoleOutputTests: XCTestCase {
             format: .json,
             printingFunction: { messagePrinted = $0 }
         )
-        output1.writeLogWith(level: .info, message: "Info message.", attributes: [:])
+        output1.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
         XCTAssertEqual(messagePrinted, """
         {
           "status" : "INFO",
@@ -53,7 +53,7 @@ class LogConsoleOutputTests: XCTestCase {
             format: .jsonWith(prefix: "🐶 → "),
             printingFunction: { messagePrinted = $0 }
         )
-        output2.writeLogWith(level: .info, message: "Info message.", attributes: [:])
+        output2.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
         XCTAssertEqual(messagePrinted, """
         🐶 → {
           "status" : "INFO",
