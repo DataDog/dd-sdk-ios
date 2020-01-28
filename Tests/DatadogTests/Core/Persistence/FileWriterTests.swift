@@ -78,7 +78,7 @@ class FileWriterTests: XCTestCase {
         }
 
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 10) // 10 seconds is an arbitrary timeout
+        waitForExpectations(timeout: 20) // 20 seconds is an arbitrary timeout
 
         XCTAssertGreaterThan(try temporaryDirectory.allFiles().count, 1)
     }

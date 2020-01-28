@@ -2,6 +2,7 @@ import XCTest
 @testable import Datadog
 
 let mockUseSingleFile = WritableFileConditions(
+    maxDirectorySize: UInt64.max,
     maxFileSize: UInt64.max,
     maxFileAgeForWrite: TimeInterval.greatestFiniteMagnitude,
     maxNumberOfUsesOfFile: Int.max
@@ -145,6 +146,55 @@ class FilesOrchestratorTests: XCTestCase {
 
         _ = try orchestrator2.getWritableFile(writeSize: 1)
         XCTAssertEqual(try temporaryDirectory.allFiles().count, 2)
+    }
+
+    func testWhenFilesDirectorySizeIsBig_itKeepsItUnderLimit_byRemovingOldestFilesFirst() throws {
+        dateProvider.currentFileCreationDates = [
+            .mockDecember15th2019At10AMUTC(addingTimeInterval: -30),
+            .mockDecember15th2019At10AMUTC(addingTimeInterval: -25),
+            .mockDecember15th2019At10AMUTC(addingTimeInterval: -20),
+            .mockDecember15th2019At10AMUTC(addingTimeInterval: -15),
+            .mockDecember15th2019At10AMUTC(addingTimeInterval: -10),
+        ]
+
+        let oneMB: UInt64 = 1_024 * 1_024
+
+        let orchestrator = FilesOrchestrator(
+            directory: temporaryDirectory,
+            writeConditions: .init(
+                maxDirectorySize: 3 * oneMB, // 3MB
+                maxFileSize: oneMB, // 1MB
+                maxFileAgeForWrite: .greatestFiniteMagnitude,
+                maxNumberOfUsesOfFile: 1
+            ),
+            readConditions: LogsPersistenceStrategy.defaultReadConditions,
+            dateProvider: dateProvider
+        )
+
+        // write 1MB to first file (1MB of directory size in total)
+        let file1 = try orchestrator.getWritableFile(writeSize: oneMB)
+        try file1.append { write in write(.mock(ofSize: oneMB)) }
+
+        // write 1MB to second file (2MB of directory size in total)
+        let file2 = try orchestrator.getWritableFile(writeSize: oneMB)
+        try file2.append { write in write(.mock(ofSize: oneMB)) }
+
+        // write 1MB to third file (3MB of directory size in total)
+        let file3 = try orchestrator.getWritableFile(writeSize: oneMB + 1) // +1 byte to exceed the limit
+        try file3.append { write in write(.mock(ofSize: oneMB + 1)) }
+
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 3)
+
+        // At this point, directory reached its maximum size.
+        // Asking for the next file should purge the oldest one.
+        let file4 = try orchestrator.getWritableFile(writeSize: oneMB)
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 3)
+        XCTAssertFalse(temporaryDirectory.fileExists(fileName: file1.fileURL.lastPathComponent))
+        try file4.append { write in write(.mock(ofSize: oneMB + 1)) }
+
+        _ = try orchestrator.getWritableFile(writeSize: oneMB)
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 3)
+        XCTAssertFalse(temporaryDirectory.fileExists(fileName: file2.fileURL.lastPathComponent))
     }
 
     // MARK: - Readable file tests

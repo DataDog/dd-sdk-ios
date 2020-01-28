@@ -8,6 +8,9 @@ internal struct LogsPersistenceStrategy {
         /// Maximum size of batched logs in single file (in bytes).
         /// If last written file is too big to append next log data, new file is created.
         static let maxBatchSize: UInt64 = 4 * 1_024 * 1_024 // 4MB
+        /// Maximum size of the log files directory.
+        /// If this size is exceeded, log files are being deleted (starting from the oldest one) until this limit is met again.
+        static let maxSizeOfLogsDirectory: UInt64 = 128 * maxBatchSize // 512 MB
         /// Maximum age of logs file for file reuse (in seconds).
         /// If last written file is older than this, new file is created to store next log data.
         static let maxFileAgeForWrite: TimeInterval = 4.75
@@ -27,6 +30,7 @@ internal struct LogsPersistenceStrategy {
 
     /// Default write conditions for `FilesOrchestrator`.
     static let defaultWriteConditions = WritableFileConditions(
+        maxDirectorySize: LogsPersistenceStrategy.Constants.maxSizeOfLogsDirectory,
         maxFileSize: LogsPersistenceStrategy.Constants.maxBatchSize,
         maxFileAgeForWrite: LogsPersistenceStrategy.Constants.maxFileAgeForWrite,
         maxNumberOfUsesOfFile: LogsPersistenceStrategy.Constants.maxLogsPerBatch
