@@ -14,12 +14,9 @@ internal struct LogSanitizer {
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
         static let maxNumberOfAttributes: Int = 256
-        /// Possible first characters of a valid tag name.
-        /// Tags with names starting with different character will be dropped.
-        static let allowedTagNameFirstCharacters: Set<Character> = [
-            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-            "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
-        ]
+        /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
+        /// Tags with name starting with different character will be dropped.
+        static let allowedTagNameFirstCharacterASCIIRange: [UInt8] = Array(97...122)
         /// Maximum lenght of the tag.
         /// Tags exceeting this lenght will be trunkated.
         static let maxTagLength: Int = 200
@@ -122,85 +119,73 @@ internal struct LogSanitizer {
 
     private func sanitize(tags rawTags: [String]?) -> [String]? {
         if let rawTags = rawTags {
-            var tags = lowercaseTags(rawTags)
-            tags = removeInvalidTags(tags)
-            tags = replaceIllegalTagCharacters(tags)
-            tags = removeTagTrailingCommas(tags)
-            tags = limitToMaxTagLength(tags)
-            tags = removeReservedTags(tags)
-            tags = limitToMaxNumberOfTags(tags)
-            return tags
+            let tags = rawTags
+                .map { $0.lowercased() }
+                .filter { startsWithAllowedCharacter(tag: $0) }
+                .map { replaceIllegalCharactersIn(tag: $0) }
+                .map { removeTrailingCommasIn(tag: $0) }
+                .map { limitToMaxLength(tag: $0) }
+                .filter { isNotReserved(tag: $0) }
+            return limitToMaxNumberOfTags(tags)
         } else {
             return nil
         }
     }
 
-    private func lowercaseTags(_ tags: [String]) -> [String] {
-        return tags.map { $0.lowercased() }
-    }
+    private func startsWithAllowedCharacter(tag: String) -> Bool {
+        guard let firstCharacter = tag.first?.asciiValue else {
+            userLogger.error("Tag is empty and will be ignored.")
+            return false
+        }
 
-    private func removeInvalidTags(_ tags: [String]) -> [String] {
-        return tags
-            .filter { tag in
-                // Tag must start with a letter
-                let firstCharacter = tag.first ?? Character("")
-                if Constraints.allowedTagNameFirstCharacters.contains(firstCharacter) {
-                    return true
-                } else {
-                    userLogger.error("Tag '\(tag)' starts with an invalid character and will be ignored.")
-                    return false
-                }
-            }
-    }
-
-    private func replaceIllegalTagCharacters(_ tags: [String]) -> [String] {
-        // Convert illegal tag characters to underscode
-        return tags.map { tag -> String in
-            let sanitized = tag.replacingOccurrences(of: #"[^a-z0-9_:.\/-]"#, with: "_", options: .regularExpression)
-            if sanitized != tag {
-                userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
-            }
-            return sanitized
+        // Tag must start with a letter
+        if Constraints.allowedTagNameFirstCharacterASCIIRange.contains(firstCharacter) {
+            return true
+        } else {
+            userLogger.error("Tag '\(tag)' starts with an invalid character and will be ignored.")
+            return false
         }
     }
 
-    private func removeTagTrailingCommas(_ tags: [String]) -> [String] {
+    private func replaceIllegalCharactersIn(tag: String) -> String {
+        let sanitized = tag.replacingOccurrences(of: #"[^a-z0-9_:.\/-]"#, with: "_", options: .regularExpression)
+        if sanitized != tag {
+            userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
+        }
+        return sanitized
+    }
+
+    private func removeTrailingCommasIn(tag: String) -> String {
         // If present, remove trailing commas `:`
-        return tags.map { tag -> String in
-            var sanitized = tag
-            while sanitized.last == ":" { _ = sanitized.removeLast() }
-            if sanitized != tag {
-                userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
-            }
+        var sanitized = tag
+        while sanitized.last == ":" { _ = sanitized.removeLast() }
+        if sanitized != tag {
+            userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
+        }
+        return sanitized
+    }
+
+    private func limitToMaxLength(tag: String) -> String {
+        if tag.count > Constraints.maxTagLength {
+            let sanitized = String(tag.prefix(Constraints.maxTagLength))
+            userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
             return sanitized
+        } else {
+            return tag
         }
     }
 
-    private func limitToMaxTagLength(_ tags: [String]) -> [String] {
-        return tags.map { tag -> String in
-            if tag.count > Constraints.maxTagLength {
-                let sanitized = String(tag.prefix(Constraints.maxTagLength))
-                userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
-                return sanitized
-            } else {
-                return tag
-            }
-        }
-    }
-
-    private func removeReservedTags(_ tags: [String]) -> [String] {
-        return tags.filter { tag in
-            if let colonIndex = tag.firstIndex(of: ":") {
-                let key = String(tag.prefix(upTo: colonIndex))
-                if Constraints.reservedTagKeys.contains(key) {
-                    userLogger.error("'\(key)' is a reserved tag key. This tag will be ignored.")
-                    return false
-                } else {
-                    return true
-                }
+    private func isNotReserved(tag: String) -> Bool {
+        if let colonIndex = tag.firstIndex(of: ":") {
+            let key = String(tag.prefix(upTo: colonIndex))
+            if Constraints.reservedTagKeys.contains(key) {
+                userLogger.error("'\(key)' is a reserved tag key. This tag will be ignored.")
+                return false
             } else {
                 return true
             }
+        } else {
+            return true
         }
     }
 
