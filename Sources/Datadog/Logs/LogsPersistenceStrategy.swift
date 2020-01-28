@@ -7,19 +7,22 @@ internal struct LogsPersistenceStrategy {
         static let logFilesSubdirectory: String = "com.datadoghq.logs/v1"
         /// Maximum size of batched logs in single file (in bytes).
         /// If last written file is too big to append next log data, new file is created.
-        static let maxBatchSize: UInt64 = 4 * 1_024 * 1_024
+        static let maxBatchSize: UInt64 = 4 * 1_024 * 1_024 // 4MB
         /// Maximum age of logs file for file reuse (in seconds).
         /// If last written file is older than this, new file is created to store next log data.
         static let maxFileAgeForWrite: TimeInterval = 4.75
         /// Minimum age of logs file to be picked for upload (in seconds).
-        /// It has the arbitrary offset (0.5s) over `maxFileAgeForWrite` to ensure that no upload is started for file being written.
+        /// It has the arbitrary offset (0.5s) over `maxFileAgeForWrite` to ensure that no upload is started for the file being written.
         static let minFileAgeForRead: TimeInterval = maxFileAgeForWrite + 0.5
+        /// Maximum age of logs file to be picked for uload (in seconds).
+        /// Files older than this age are considered outdated and get deleted with no upload.
+        static let maxFileAgeForRead: TimeInterval = 18 * 60 * 60 // 18h
         /// Maximum number of logs written to single file.
         /// If number of logs in last written file reaches this limit, new file is created to store next log data.
         static let maxLogsPerBatch: Int = 500
         /// Maximum size of serialized log data.
         /// If JSON encoded `Log` exceeds this size, it is dropped (not written to file).
-        static let maxLogSize: Int = 256 * 1_024
+        static let maxLogSize: Int = 256 * 1_024 // 256KB
     }
 
     /// Default write conditions for `FilesOrchestrator`.
@@ -31,7 +34,8 @@ internal struct LogsPersistenceStrategy {
 
     /// Default read conditions for `FilesOrchestrator`.
     static let defaultReadConditions = ReadableFileConditions(
-        minFileAgeForRead: LogsPersistenceStrategy.Constants.minFileAgeForRead
+        minFileAgeForRead: LogsPersistenceStrategy.Constants.minFileAgeForRead,
+        maxFileAgeForRead: LogsPersistenceStrategy.Constants.maxFileAgeForRead
     )
 
     /// Default strategy which uses single GCD queue for read and write file access.

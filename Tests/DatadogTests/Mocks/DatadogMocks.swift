@@ -75,7 +75,8 @@ extension ReadableFileConditions {
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
-            minFileAgeForRead: -1
+            minFileAgeForRead: -1,
+            maxFileAgeForRead: .greatestFiniteMagnitude
         )
     }
 }

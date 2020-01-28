@@ -163,34 +163,45 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itReturnsTheOldestOne() throws {
         dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
 
-        _ = try temporaryDirectory.createFile(named: "123")
-        _ = try temporaryDirectory.createFile(named: "512734")
-        _ = try temporaryDirectory.createFile(named: "777777")
-        _ = try temporaryDirectory.createFile(named: "1000")
+        let fileNames = [
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-10)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-9)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-8)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-7))
+        ]
 
-        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, "123")
-        try temporaryDirectory.deleteFile(named: "123")
-        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, "1000")
-        try temporaryDirectory.deleteFile(named: "1000")
-        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, "512734")
-        try temporaryDirectory.deleteFile(named: "512734")
-        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, "777777")
-        try temporaryDirectory.deleteFile(named: "777777")
+        try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
+
+        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, fileNames[0])
+        try temporaryDirectory.deleteFile(named: fileNames[0])
+        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, fileNames[1])
+        try temporaryDirectory.deleteFile(named: fileNames[1])
+        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, fileNames[2])
+        try temporaryDirectory.deleteFile(named: fileNames[2])
+        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, fileNames[3])
+        try temporaryDirectory.deleteFile(named: fileNames[3])
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
     func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itExcludesGivenFileNames() throws {
         dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
 
-        _ = try temporaryDirectory.createFile(named: "123")
-        _ = try temporaryDirectory.createFile(named: "512734")
-        _ = try temporaryDirectory.createFile(named: "777777")
-        _ = try temporaryDirectory.createFile(named: "1000")
+        let fileNames = [
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-10)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-9)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-8)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-7))
+        ]
 
-        XCTAssertEqual(orchestrator.getReadableFile(excludingFilesNamed: ["123", "1000", "512734"])?.fileURL.lastPathComponent, "777777")
+        try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
+
+        XCTAssertEqual(
+            orchestrator.getReadableFile(excludingFilesNamed: Set(fileNames[0...2]))?.fileURL.lastPathComponent,
+            fileNames[3]
+        )
     }
 
-    func testGivenDefaultReadConditions_whenThereIsNotAnyFile_itReturnsNil() throws {
+    func testGivenDefaultReadConditions_whenThereAreNoFiles_itReturnsNil() throws {
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
@@ -202,6 +213,33 @@ class FilesOrchestratorTests: XCTestCase {
         _ = try temporaryDirectory.createFile(named: fileNameFrom(fileCreationDate: notEnoughInThePast))
 
         XCTAssertNil(orchestrator.getReadableFile())
+    }
+
+    func testGivenDefaultReadConditions_whenFileIsTooOld_itGetsDeleted() throws {
+        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
+
+        let fileNames = [
+            fileNameFrom(
+                fileCreationDate: dateProvider.currentDate().addingTimeInterval(
+                    -2 * LogsPersistenceStrategy.defaultReadConditions.maxFileAgeForRead
+                )
+            ),
+            fileNameFrom(
+                fileCreationDate: dateProvider.currentDate().addingTimeInterval(
+                    -1.5 * LogsPersistenceStrategy.defaultReadConditions.maxFileAgeForRead
+                )
+            ),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-8)),
+            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-7))
+        ]
+
+        try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
+
+        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, fileNames[2])
+        try temporaryDirectory.deleteFile(named: fileNames[2])
+        XCTAssertEqual(orchestrator.getReadableFile()?.fileURL.lastPathComponent, fileNames[3])
+        try temporaryDirectory.deleteFile(named: fileNames[3])
+        XCTAssertEqual(try temporaryDirectory.allFiles().count, 0)
     }
 
     func testItDeletesReadableFile() throws {
