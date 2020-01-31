@@ -55,6 +55,7 @@ extension WritableFileConditions {
     /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
     static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
+            maxDirectorySize: .max,
             maxFileSize: .max,
             maxFileAgeForWrite: .greatestFiniteMagnitude,
             maxNumberOfUsesOfFile: .max
@@ -64,6 +65,7 @@ extension WritableFileConditions {
     /// Write conditions causing `FilesOrchestrator` to create new file for each write.
     static func mockWriteToNewFileEachTime() -> WritableFileConditions {
         return WritableFileConditions(
+            maxDirectorySize: .max,
             maxFileSize: .max,
             maxFileAgeForWrite: .greatestFiniteMagnitude,
             maxNumberOfUsesOfFile: 1
@@ -75,7 +77,8 @@ extension ReadableFileConditions {
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
-            minFileAgeForRead: -1
+            minFileAgeForRead: -1,
+            maxFileAgeForRead: .greatestFiniteMagnitude
         )
     }
 }

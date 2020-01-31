@@ -1,6 +1,7 @@
 import Foundation
 
 internal struct WritableFileConditions {
+    let maxDirectorySize: UInt64
     let maxFileSize: UInt64
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
@@ -8,6 +9,7 @@ internal struct WritableFileConditions {
 
 internal struct ReadableFileConditions {
     let minFileAgeForRead: TimeInterval
+    let maxFileAgeForRead: TimeInterval
 }
 
 internal class FilesOrchestrator {
@@ -24,7 +26,12 @@ internal class FilesOrchestrator {
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
     private var lastWritableFileUsesCount: Int = 0
 
-    init(directory: Directory, writeConditions: WritableFileConditions, readConditions: ReadableFileConditions, dateProvider: DateProvider) {
+    init(
+        directory: Directory,
+        writeConditions: WritableFileConditions,
+        readConditions: ReadableFileConditions,
+        dateProvider: DateProvider
+    ) {
         self.directory = directory
         self.writeConditions = writeConditions
         self.readConditions = readConditions
@@ -34,6 +41,8 @@ internal class FilesOrchestrator {
     // MARK: - `WritableFile` orchestration
 
     func getWritableFile(writeSize: UInt64) throws -> WritableFile {
+        try purgeFilesDirectoryIfNeeded()
+
         let lastWritableFileOrNil = reuseLastWritableFileIfPossible(writeSize: writeSize)
 
         if let lastWritableFile = lastWritableFileOrNil { // if last writable file can be reused
@@ -76,12 +85,15 @@ internal class FilesOrchestrator {
 
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) -> ReadableFile? {
         do {
-            let fileURLs = try directory.allFiles().filter { excludedFileNames.contains($0.lastPathComponent) == false }
+            let filesWithCreationDate = try directory.allFiles()
+                .map { (url: $0, creationDate: fileCreationDateFrom(fileName: $0.lastPathComponent)) }
+                .compactMap { try deleteFileIfItsObsolete(url: $0.url, fileCreationDate: $0.creationDate) }
 
-            let fileURLsWithCreationDate = fileURLs.map {
-                (url: $0, creationDate: fileCreationDateFrom(fileName: $0.lastPathComponent))
-            }
-            guard let oldestFileURL = fileURLsWithCreationDate.sorted(by: { $0.creationDate < $1.creationDate }).first?.url else {
+            guard let oldestFileURL = filesWithCreationDate
+                .filter({ excludedFileNames.contains($0.url.lastPathComponent) == false })
+                .sorted(by: { $0.creationDate < $1.creationDate })
+                .first?.url
+            else {
                 return nil
             }
 
@@ -101,6 +113,42 @@ internal class FilesOrchestrator {
             try directory.deleteFile(named: readableFile.fileURL.lastPathComponent)
         } catch {
             developerLogger?.error("🔥 Failed to delete file: \(error)")
+        }
+    }
+
+    // MARK: - Directory size management
+
+    /// Removes oldest files from the directory if it becomes too big.
+    private func purgeFilesDirectoryIfNeeded() throws {
+        let filesSortedByCreationDate = try directory.allFiles()
+            .map { (url: $0, creationDate: fileCreationDateFrom(fileName: $0.lastPathComponent)) }
+            .sorted { $0.creationDate < $1.creationDate }
+
+        var filesWithSizeSortedByCreationDate = try filesSortedByCreationDate
+            .map { (url: $0.url, size: try FileManager.default.attributesOfItem(atPath: $0.url.path)[.size] as? UInt64 ?? 0) }
+
+        let accumulatedFilesSize = filesWithSizeSortedByCreationDate.map { $0.size }.reduce(0, +)
+
+        if accumulatedFilesSize > writeConditions.maxDirectorySize {
+            let sizeToFree = accumulatedFilesSize - writeConditions.maxDirectorySize
+            var sizeFreed: UInt64 = 0
+
+            while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
+                let file = filesWithSizeSortedByCreationDate.removeFirst()
+                try directory.deleteFile(named: file.url.lastPathComponent)
+                sizeFreed += file.size
+            }
+        }
+    }
+
+    private func deleteFileIfItsObsolete(url: URL, fileCreationDate: Date) throws -> (url: URL, creationDate: Date)? {
+        let fileAge = dateProvider.currentDate().timeIntervalSince(fileCreationDate)
+
+        if fileAge > readConditions.maxFileAgeForRead {
+            try directory.deleteFile(named: url.lastPathComponent)
+            return nil
+        } else {
+            return (url: url, creationDate: fileCreationDate)
         }
     }
 }
