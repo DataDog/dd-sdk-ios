@@ -34,7 +34,7 @@ internal final class FileReader {
     }
 
     private func synchronizedReadNextBatch() -> Batch? {
-        if let file = orchestrator.getReadableFile(excludingFilesNamed: Set(filesRead.map { $0.fileURL.lastPathComponent })) {
+        if let file = orchestrator.getReadableFile(excludingFilesNamed: Set(filesRead.map { $0.name })) {
             do {
                 let fileData = try file.read()
                 let batchData = openingBracketData + fileData + closingBracketData
