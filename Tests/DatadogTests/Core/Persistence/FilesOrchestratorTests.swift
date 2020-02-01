@@ -33,7 +33,7 @@ class FilesOrchestratorTests: XCTestCase {
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        XCTAssertNotNil(try temporaryDirectory.file(named: dateProvider.currentFileCreationDate().toFileName))
+        XCTAssertNotNil(try temporaryDirectory.file(named: dateProvider.currentDate().toFileName))
     }
 
     func testGivenDefaultWriteConditions_whenUsedNextTime_itReusesWritableFile() throws {
@@ -212,7 +212,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenFileIsTooOld_itGetsDeleted() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-        _ = try temporaryDirectory.createFile(named: dateProvider.currentFileCreationDate().toFileName)
+        _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
         dateProvider.advance(bySeconds: 2 * defaultReadConditions.maxFileAgeForRead)
 

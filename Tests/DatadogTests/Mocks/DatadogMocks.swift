@@ -38,12 +38,6 @@ class RelativeDateProvider: DateProvider {
         return date
     }
 
-    /// Returns current date and advances next date by `timeInterval`.
-    func currentFileCreationDate() -> Date {
-        defer { date.addTimeInterval(timeInterval) }
-        return date
-    }
-
     /// Pushes time forward by given number of seconds.
     func advance(bySeconds seconds: TimeInterval) {
         date = date.addingTimeInterval(seconds)

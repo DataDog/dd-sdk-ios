@@ -49,7 +49,7 @@ internal class FilesOrchestrator {
             lastWritableFileUsesCount += 1
             return lastWritableFile
         } else {
-            let newFileName = fileNameFrom(fileCreationDate: dateProvider.currentFileCreationDate())
+            let newFileName = fileNameFrom(fileCreationDate: dateProvider.currentDate())
             let newFile = try directory.createFile(named: newFileName)
             lastWritableFileName = newFile.name
             lastWritableFileUsesCount = 1
