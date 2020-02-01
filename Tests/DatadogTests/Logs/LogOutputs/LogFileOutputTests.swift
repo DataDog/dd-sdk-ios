@@ -13,26 +13,17 @@ class LogFileOutputTests: XCTestCase {
     }
 
     func testItWritesLogToFileAsJSON() throws {
-        let dateProvider = DateProviderMock()
-        dateProvider.currentFileCreationDates = [.mockDecember15th2019At10AMUTC()]
         let queue = DispatchQueue(label: "any")
-
         let output = LogFileOutput(
             logBuilder: .mockUsing(date: .mockAny()),
-            fileWriter: .mockWrittingToSingleFile(
-                in: temporaryDirectory,
-                on: queue,
-                using: dateProvider
-            )
+            fileWriter: .mockWrittingToSingleFile(in: temporaryDirectory, on: queue)
         )
 
         output.writeLogWith(level: .info, message: "log message", attributes: [:], tags: [])
 
         queue.sync {} // wait on writter queue
 
-        let file = try temporaryDirectory.file(named: dateProvider.currentFileCreationDate().toFileName)
-        let fileData = try file.read()
-
+        let fileData = try temporaryDirectory.files()[0].read()
         assertThat(jsonObjectData: fileData, matchesValue: "log message", onKeyPath: "message")
     }
 }

@@ -1,89 +1,72 @@
 import XCTest
 @testable import Datadog
 
-let mockUseSingleFile = WritableFileConditions(
-    maxDirectorySize: UInt64.max,
-    maxFileSize: UInt64.max,
-    maxFileAgeForWrite: TimeInterval.greatestFiniteMagnitude,
-    maxNumberOfUsesOfFile: Int.max
-)
-
 class FilesOrchestratorTests: XCTestCase {
-    private var dateProvider: DateProviderMock!  // swiftlint:disable:this implicitly_unwrapped_optional
-    private var orchestrator: FilesOrchestrator! // swiftlint:disable:this implicitly_unwrapped_optional
+    private let defaultWriteConditions = LogsPersistenceStrategy.defaultWriteConditions
+    private let defaultReadConditions = LogsPersistenceStrategy.defaultReadConditions
 
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
-        dateProvider = DateProviderMock()
-        orchestrator = FilesOrchestrator(
-            directory: temporaryDirectory,
-            writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
-            readConditions: LogsPersistenceStrategy.defaultReadConditions,
-            dateProvider: dateProvider
-        )
     }
 
     override func tearDown() {
         temporaryDirectory.delete()
-        dateProvider = nil
-        orchestrator = nil
         super.tearDown()
+    }
+
+    /// Configures `FilesOrchestrator` under tests.
+    private func configureOrchestrator(using dateProvider: DateProvider) -> FilesOrchestrator {
+        return FilesOrchestrator(
+            directory: temporaryDirectory,
+            writeConditions: defaultWriteConditions,
+            readConditions: defaultReadConditions,
+            dateProvider: dateProvider
+        )
     }
 
     // MARK: - Writable file tests
 
     func testGivenDefaultWriteConditions_whenUsedFirstTime_itCreatesNewWritableFile() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        dateProvider.currentFileCreationDates = [.mockDecember15th2019At10AMUTC()]
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertNotNil(try temporaryDirectory.file(named: dateProvider.currentFileCreationDate().toFileName))
     }
 
     func testGivenDefaultWriteConditions_whenUsedNextTime_itReusesWritableFile() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        dateProvider.currentFileCreationDates = [.mockDecember15th2019At10AMUTC()]
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
-        XCTAssertEqual(file1.name, file2.name)
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(file1.name, file2.name)
     }
 
     func testGivenDefaultWriteConditions_whenFileCanNotBeUsedMoreTimes_itCreatesNewFile() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        dateProvider.currentFileCreationDates = [
-            .mockDecember15th2019At10AMUTC(), // time of initially created file
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: 1) // time of next created file
-        ]
-
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
         var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use
         var nextFile: WritableFile
 
         // use file maximum number of times
-        for _ in (0 ..< (LogsPersistenceStrategy.defaultWriteConditions.maxNumberOfUsesOfFile - 1)) { // skip first use
+        for _ in (0 ..< defaultWriteConditions.maxNumberOfUsesOfFile).dropLast() { // skip first use
             nextFile = try orchestrator.getWritableFile(writeSize: 1)
-            XCTAssertEqual(nextFile.name, previousFile.name) // assert it reuses previous file
+            XCTAssertEqual(nextFile.name, previousFile.name) // assert it uses same file
             previousFile = nextFile
         }
 
-        // use it one more time
+        // next time it returns different file
         nextFile = try orchestrator.getWritableFile(writeSize: 1)
-        XCTAssertNotEqual((nextFile as! File).url, (previousFile as! File).url) // assert it uses different flie
+        XCTAssertNotEqual(nextFile.name, previousFile.name)
     }
 
     func testGivenDefaultWriteConditions_whenFileHasNoRoomForMore_itCreatesNewFile() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        dateProvider.currentFileCreationDates = [
-            .mockDecember15th2019At10AMUTC(), // time of initially created file
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: 1) // time of next created file
-        ]
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
+        let chunkedData: [Data] = .mockChunksOf(totalSize: defaultWriteConditions.maxFileSize)
 
-        // chunks of data to fill entire file
-        let chunkedData: [Data] = .mockChunksOf(totalSize: LogsPersistenceStrategy.defaultWriteConditions.maxFileSize)
-
-        let file1 = try orchestrator.getWritableFile(writeSize: LogsPersistenceStrategy.defaultWriteConditions.maxFileSize)
+        let file1 = try orchestrator.getWritableFile(writeSize: defaultWriteConditions.maxFileSize)
         try file1.append { write in chunkedData.forEach { chunk in write(chunk) } }
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
@@ -91,30 +74,21 @@ class FilesOrchestratorTests: XCTestCase {
     }
 
     func testGivenDefaultWriteConditions_fileIsNotRecentEnough_itCreatesNewFile() throws {
-        let timeIntervalExceedingMaxFileAge = 1 + LogsPersistenceStrategy.defaultWriteConditions.maxFileAgeForWrite
-        dateProvider.currentFileCreationDates = [
-            .mockDecember15th2019At10AMUTC(),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: timeIntervalExceedingMaxFileAge)
-        ]
-        dateProvider.currentDates = [
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: timeIntervalExceedingMaxFileAge)
-        ]
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
 
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
+        dateProvider.advance(bySeconds: 1 + defaultWriteConditions.maxFileAgeForWrite)
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertNotEqual(file1.name, file2.name)
     }
 
     func testWhenCurrentWritableFileIsDeleted_itCreatesNewOne() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        dateProvider.currentFileCreationDates = [
-            .mockDecember15th2019At10AMUTC(), // time of initially created file
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: 1) // time of next created file
-        ]
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
 
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
-        try temporaryDirectory.files().forEach { file in try file.delete() }
+        try temporaryDirectory.files().forEach { try $0.delete() }
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertNotEqual(file1.name, file2.name)
@@ -123,22 +97,9 @@ class FilesOrchestratorTests: XCTestCase {
     /// This test makes sure that if SDK is used by multiple processes simultaneously, each `FileOrchestrator` works on a separate writable file.
     /// It is important when SDK is used by iOS App and iOS App Extension at the same time.
     func testWhenRequestedFirstTime_eachOrchestratorInstanceCreatesNewWritableFile() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        dateProvider.currentFileCreationDates = [
-            .mockDecember15th2019At10AMUTC(), // file created by 1st orchestrator
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: 1) // file created by 2nd orchestrator
-        ]
-        let orchestrator1 = FilesOrchestrator(
-            directory: temporaryDirectory,
-            writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
-            readConditions: LogsPersistenceStrategy.defaultReadConditions,
-            dateProvider: dateProvider
-        )
-        let orchestrator2 = FilesOrchestrator(
-            directory: temporaryDirectory,
-            writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
-            readConditions: LogsPersistenceStrategy.defaultReadConditions,
-            dateProvider: dateProvider
+        let orchestrator1 = configureOrchestrator(using: RelativeDateProvider())
+        let orchestrator2 = configureOrchestrator(
+            using: RelativeDateProvider(startingFrom: Date().secondsAgo(0.01)) // simulate time difference
         )
 
         _ = try orchestrator1.getWritableFile(writeSize: 1)
@@ -149,14 +110,6 @@ class FilesOrchestratorTests: XCTestCase {
     }
 
     func testWhenFilesDirectorySizeIsBig_itKeepsItUnderLimit_byRemovingOldestFilesFirst() throws {
-        dateProvider.currentFileCreationDates = [
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -30),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -25),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -20),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -15),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -10),
-        ]
-
         let oneMB: UInt64 = 1_024 * 1_024
 
         let orchestrator = FilesOrchestrator(
@@ -165,10 +118,10 @@ class FilesOrchestratorTests: XCTestCase {
                 maxDirectorySize: 3 * oneMB, // 3MB
                 maxFileSize: oneMB, // 1MB
                 maxFileAgeForWrite: .greatestFiniteMagnitude,
-                maxNumberOfUsesOfFile: 1
+                maxNumberOfUsesOfFile: 1 // create new file each time
             ),
-            readConditions: LogsPersistenceStrategy.defaultReadConditions,
-            dateProvider: dateProvider
+            readConditions: defaultReadConditions,
+            dateProvider: RelativeDateProvider(advancingBySeconds: 1)
         )
 
         // write 1MB to first file (1MB of directory size in total)
@@ -199,28 +152,38 @@ class FilesOrchestratorTests: XCTestCase {
 
     // MARK: - Readable file tests
 
-    func testGivenDefaultReadConditions_itReturnsReadableFile() throws {
-        let ageExceedingMinFileAge = 1 + LogsPersistenceStrategy.defaultReadConditions.minFileAgeForRead
-        let creationDateExceedingMinFileAge = dateProvider.currentDate().secondsAgo(ageExceedingMinFileAge)
-        let file = try temporaryDirectory.createFile(named: creationDateExceedingMinFileAge.toFileName)
+    func testGivenDefaultReadConditions_whenThereAreNoFiles_itReturnsNil() throws {
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        XCTAssertNil(orchestrator.getReadableFile())
+    }
 
-        let readableFile = orchestrator.getReadableFile()
+    func testGivenDefaultReadConditions_whenFileIsOldEnough_itReturnsReadableFile() throws {
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        let file = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
-        XCTAssertEqual(readableFile?.name, file.name)
+        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        XCTAssertEqual(orchestrator.getReadableFile()?.name, file.name)
+    }
+
+    func testGivenDefaultReadConditions_whenFileIsTooYoung_itReturnsNoFile() throws {
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+
+        dateProvider.advance(bySeconds: 0.5 * defaultReadConditions.minFileAgeForRead)
+        XCTAssertNil(orchestrator.getReadableFile())
     }
 
     func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itReturnsTheOldestOne() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-
-        let fileNames = [
-            dateProvider.currentDate().addingTimeInterval(-10).toFileName,
-            dateProvider.currentDate().addingTimeInterval(-9).toFileName,
-            dateProvider.currentDate().addingTimeInterval(-8).toFileName,
-            dateProvider.currentDate().addingTimeInterval(-7).toFileName,
-        ]
-
+        let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        let fileNames = (0..<4).map { _ in dateProvider.currentDate().toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
+        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
         XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[0])
         try temporaryDirectory.file(named: fileNames[0]).delete()
         XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[1])
@@ -233,16 +196,12 @@ class FilesOrchestratorTests: XCTestCase {
     }
 
     func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itExcludesGivenFileNames() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-
-        let fileNames = [
-            dateProvider.currentDate().addingTimeInterval(-10).toFileName,
-            dateProvider.currentDate().addingTimeInterval(-9).toFileName,
-            dateProvider.currentDate().addingTimeInterval(-8).toFileName,
-            dateProvider.currentDate().addingTimeInterval(-7).toFileName,
-        ]
-
+        let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        let fileNames = (0..<4).map { _ in dateProvider.currentDate().toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
+
+        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
 
         XCTAssertEqual(
             orchestrator.getReadableFile(excludingFilesNamed: Set(fileNames[0...2]))?.name,
@@ -250,58 +209,27 @@ class FilesOrchestratorTests: XCTestCase {
         )
     }
 
-    func testGivenDefaultReadConditions_whenThereAreNoFiles_itReturnsNil() throws {
-        XCTAssertNil(orchestrator.getReadableFile())
-    }
-
-    func testGivenDefaultReadConditions_whenFileIsTooYoung_itReturnsNoFile() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
-        let notEnoughInThePast: Date = .mockDecember15th2019At10AMUTC(
-            addingTimeInterval: -0.5 * LogsPersistenceStrategy.defaultReadConditions.minFileAgeForRead
-        )
-        _ = try temporaryDirectory.createFile(named: notEnoughInThePast.toFileName)
-
-        XCTAssertNil(orchestrator.getReadableFile())
-    }
-
     func testGivenDefaultReadConditions_whenFileIsTooOld_itGetsDeleted() throws {
-        dateProvider.currentDates = [.mockDecember15th2019At10AMUTC()]
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        _ = try temporaryDirectory.createFile(named: dateProvider.currentFileCreationDate().toFileName)
 
-        let fileNames = [
-            fileNameFrom(
-                fileCreationDate: dateProvider.currentDate().addingTimeInterval(
-                    -2 * LogsPersistenceStrategy.defaultReadConditions.maxFileAgeForRead
-                )
-            ),
-            fileNameFrom(
-                fileCreationDate: dateProvider.currentDate().addingTimeInterval(
-                    -1.5 * LogsPersistenceStrategy.defaultReadConditions.maxFileAgeForRead
-                )
-            ),
-            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-8)),
-            fileNameFrom(fileCreationDate: dateProvider.currentDate().addingTimeInterval(-7))
-        ]
+        dateProvider.advance(bySeconds: 2 * defaultReadConditions.maxFileAgeForRead)
 
-        try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
-
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[2])
-        try temporaryDirectory.file(named: fileNames[2]).delete()
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[3])
-        try temporaryDirectory.file(named: fileNames[3]).delete()
+        XCTAssertNil(orchestrator.getReadableFile())
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
 
     func testItDeletesReadableFile() throws {
-        let ageExceedingMinFileAge = 1 + LogsPersistenceStrategy.defaultReadConditions.minFileAgeForRead
-        let creationDateExceedingMinFileAge = dateProvider.currentDate().secondsAgo(ageExceedingMinFileAge)
-        _ = try temporaryDirectory.createFile(named: creationDateExceedingMinFileAge.toFileName)
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
-        let readableFile = orchestrator.getReadableFile()
+        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
 
+        let readableFile = try orchestrator.getReadableFile().unwrapOrThrow()
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        orchestrator.delete(readableFile: readableFile!)
-
+        orchestrator.delete(readableFile: readableFile)
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
 

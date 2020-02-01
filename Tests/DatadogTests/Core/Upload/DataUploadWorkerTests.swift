@@ -16,13 +16,7 @@ class DataUploadWorkerTests: XCTestCase {
     }
 
     func testItUploadsAllLogs() throws {
-        let dateProvider = DateProviderMock()
-        dateProvider.currentDates = [Date()]
-        dateProvider.currentFileCreationDates = [
-            dateProvider.currentDate().secondsAgo(30), // first file creation date
-            dateProvider.currentDate().secondsAgo(20), // second file creation date
-            dateProvider.currentDate().secondsAgo(10), // ...
-        ]
+        let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
             writeConditions: .mockWriteToNewFileEachTime(),
@@ -37,20 +31,20 @@ class DataUploadWorkerTests: XCTestCase {
             httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder)
         )
 
-        // Start logs uploader
-        let uploadWorker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            delay: .mockConstantDelay(of: 1)
-        )
-
         // Write 3 files
         writer.write(value: ["k1": "v1"])
         writer.write(value: ["k2": "v2"])
         writer.write(value: ["k3": "v3"])
 
-        Thread.sleep(forTimeInterval: 5) // 5 seconds is enough to send 3 logs with 1 second interval
+        // Start logs uploader
+        let uploadWorker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            delay: .mockConstantDelay(of: 0.1)
+        )
+
+        Thread.sleep(forTimeInterval: 1) // 1 second is enough to send 3 logs with 0.1 second interval
 
         XCTAssertEqual(requestsRecorder.requestsSent.count, 3)
         XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k1":"v1"}]"#.utf8Data))

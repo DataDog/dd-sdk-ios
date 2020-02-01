@@ -55,11 +55,9 @@ extension EncodableValue {
 extension LogBuilder {
     /// Mocks `LogBuilder` producing logs signed with given `date` and `serviceName`.
     static func mockUsing(date: Date, serviceName: String = "test-service") -> LogBuilder {
-        let dateProvider = DateProviderMock()
-        dateProvider.currentDates = [date]
         return LogBuilder(
             serviceName: serviceName,
-            dateProvider: dateProvider
+            dateProvider: RelativeDateProvider(using: date)
         )
     }
 }

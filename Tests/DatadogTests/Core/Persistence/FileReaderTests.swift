@@ -3,7 +3,6 @@ import XCTest
 
 class FileReaderTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-read", target: .global(qos: .utility))
-    private let dateProvider = SystemDateProvider()
 
     override func setUp() {
         super.setUp()
@@ -17,7 +16,7 @@ class FileReaderTests: XCTestCase {
 
     func testItReadsSingleBatch() throws {
         let reader = FileReader(
-            orchestrator: .mockReadAllFiles(in: temporaryDirectory, using: dateProvider),
+            orchestrator: .mockReadAllFiles(in: temporaryDirectory),
             queue: queue
         )
         _ = try temporaryDirectory
@@ -30,7 +29,7 @@ class FileReaderTests: XCTestCase {
     }
 
     func testItMarksBatchesAsRead() throws {
-        let dateProvider = DateProviderMock()
+        let dateProvider = RelativeDateProvider(advancingBySeconds: 60)
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
@@ -40,11 +39,13 @@ class FileReaderTests: XCTestCase {
             ),
             queue: queue
         )
-        let file1 = try temporaryDirectory.createFile(named: dateProvider.minutesAgo(3).toFileName)
-        let file2 = try temporaryDirectory.createFile(named: dateProvider.minutesAgo(2).toFileName)
-        let file3 = try temporaryDirectory.createFile(named: dateProvider.minutesAgo(1).toFileName)
+        let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
         try file1.append { write in write("1".utf8Data) }
+
+        let file2 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
         try file2.append { write in write("2".utf8Data) }
+
+        let file3 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
         try file3.append { write in write("3".utf8Data) }
 
         var batch: Batch
