@@ -21,7 +21,7 @@ extension Directory {
     func create(attributes: [FileAttributeKey: Any]? = nil) {
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: attributes)
-            let initialFilesCount = try allFiles().count
+            let initialFilesCount = try files().count
             precondition(initialFilesCount == 0) // ensure it's empty
         } catch {
             fatalError("🔥 Failed to create `TestsDirectory`: \(error)")
@@ -39,73 +39,12 @@ extension Directory {
         }
     }
 
-    /// Deletes all files  in this directory.
-    func deleteAllFiles() {
-        delete()
-        create()
-    }
-
-    /// Creates file with given data.
-    func createFile(withData data: Data, createdAt: Date) -> URL {
-        do {
-            let file = try WritableFile(newFileInDirectory: temporaryDirectory, createdAt: createdAt)
-            try file.append { write in write(data) }
-            return file.fileURL
-        } catch {
-            fatalError("🔥 Failed create mock file in `TestsDirectory`: \(error)")
-        }
-    }
-
-    /// Creates file with given data and file name.
-    func createFile(withData data: Data, fileName: String) -> URL {
-        return createFile(withData: data, createdAt: fileCreationDateFrom(fileName: fileName))
-    }
-
     /// Sets directory attributes.
     func set(attributes: [FileAttributeKey: Any]) {
         do {
             try FileManager.default.setAttributes(attributes, ofItemAtPath: url.path)
         } catch {
             fatalError("🔥 Failed to set attributes: \(attributes) for `TestsDirectory`: \(error)")
-        }
-    }
-
-    /// Returns size of a given file.
-    func sizeOfFile(named fileName: String) throws -> UInt64 {
-        let attributes = try FileManager.default.attributesOfItem(atPath: urlFor(fileNamed: fileName).path)
-        return attributes[.size] as? UInt64 ?? 0
-    }
-
-    /// Creates URL for given file name in this directory.
-    func urlFor(fileNamed fileName: String) -> URL {
-        return url.appendingPathComponent(fileName, isDirectory: false)
-    }
-
-    /// Returns names of all directory files.
-    func allFileNames() throws -> Set<String> {
-        return Set(try allFiles().map { $0.lastPathComponent })
-    }
-
-    /// Checks if file with given name exists in this directory.
-    func fileExists(fileName: String) -> Bool {
-        let fileURL = urlFor(fileNamed: fileName)
-        return FileManager.default.fileExists(atPath: fileURL.path)
-    }
-
-    /// Returns contents of file with given name or `nil` if file does not exist.
-    func contentsOfFile(fileName: String) -> Data? {
-        let fileURL = urlFor(fileNamed: fileName)
-        return FileManager.default.contents(atPath: fileURL.path)
-    }
-
-    /// Returns UTF-8 encoded text content from the first file in this directory.
-    /// If there are more files, it doesn't guarantee which one will be picked.
-    func textEncodedDataFromFirstFile() throws -> String? {
-        if let firstFileURL = try allFiles().first {
-            let data = try Data(contentsOf: firstFileURL)
-            return String(data: data, encoding: .utf8)
-        } else {
-            return nil
         }
     }
 }

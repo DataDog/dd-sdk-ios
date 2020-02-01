@@ -3,12 +3,15 @@ import XCTest
 
 class DirectoryTests: XCTestCase {
     private let uniqueSubdirectoryName = UUID().uuidString
+    private let fileManager = FileManager.default
+
+    // MARK: - Directory creation
 
     func testGivenSubdirectoryName_itCreatesIt() throws {
         let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName)
         defer { directory.delete() }
 
-        XCTAssertTrue(FileManager.default.fileExists(atPath: directory.url.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: directory.url.path))
     }
 
     func testGivenSubdirectoryPath_itCreatesIt() throws {
@@ -16,16 +19,7 @@ class DirectoryTests: XCTestCase {
         let directory = try Directory(withSubdirectoryPath: path)
         defer { directory.delete() }
 
-        XCTAssertTrue(FileManager.default.fileExists(atPath: directory.url.path))
-    }
-
-    func testItCreatesFileWithinDirectory() throws {
-        let path = uniqueSubdirectoryName + "/subdirectory/another-subdirectory"
-        let directory = try Directory(withSubdirectoryPath: path)
-        defer { directory.delete() }
-
-        _ = try directory.createFile(named: "abcd")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: directory.url.appendingPathComponent("abcd").path))
+        XCTAssertTrue(fileManager.fileExists(atPath: directory.url.path))
     }
 
     func testWhenDirectoryExists_itDoesNothing() throws {
@@ -38,6 +32,44 @@ class DirectoryTests: XCTestCase {
         let retrievedDirectory = try Directory(withSubdirectoryPath: path)
 
         XCTAssertEqual(retrievedDirectory.url, originalDirectory.url)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: retrievedDirectory.url.appendingPathComponent("abcd").path))
+        XCTAssertTrue(fileManager.fileExists(atPath: retrievedDirectory.url.appendingPathComponent("abcd").path))
+    }
+
+    // MARK: - Files manipulation
+
+    func testItCreatesFile() throws {
+        let path = uniqueSubdirectoryName + "/subdirectory/another-subdirectory"
+        let directory = try Directory(withSubdirectoryPath: path)
+        defer { directory.delete() }
+
+        let file = try directory.createFile(named: "abcd")
+
+        XCTAssertEqual(file.url, directory.url.appendingPathComponent("abcd"))
+        XCTAssertTrue(fileManager.fileExists(atPath: file.url.path))
+    }
+
+    func testItRetrievesFile() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName)
+        defer { directory.delete() }
+        _ = try directory.createFile(named: "abcd")
+
+        let file = try directory.file(named: "abcd")
+        XCTAssertEqual(file.url, directory.url.appendingPathComponent("abcd"))
+        XCTAssertTrue(fileManager.fileExists(atPath: file.url.path))
+    }
+
+    func testItRetrievesAllFiles() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName)
+        defer { directory.delete() }
+        _ = try directory.createFile(named: "f1")
+        _ = try directory.createFile(named: "f2")
+        _ = try directory.createFile(named: "f3")
+
+        let files = try directory.files()
+        XCTAssertEqual(files.count, 3)
+        XCTAssertTrue(files.contains { file in file.url == directory.url.appendingPathComponent("f1") })
+        XCTAssertTrue(files.contains { file in file.url == directory.url.appendingPathComponent("f2") })
+        XCTAssertTrue(files.contains { file in file.url == directory.url.appendingPathComponent("f3") })
+        files.forEach { file in XCTAssertTrue(fileManager.fileExists(atPath: file.url.path)) }
     }
 }

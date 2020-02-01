@@ -6,6 +6,15 @@ A collection of SDK object mocks.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+// MARK: - Primitive types
+
+extension String {
+    /// Returns string being a valid name of the file managed by `FilesOrchestrator`.
+    static func mockAnyFileName() -> String {
+        return fileNameFrom(fileCreationDate: Date.mockAny())
+    }
+}
+
 // MARK: - Date and time
 
 /// Date provider which returns consecutive mocked dates in a loop.

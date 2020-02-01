@@ -4,6 +4,7 @@ import Foundation
 internal struct Directory {
     let url: URL
 
+    /// Creates subdirectory with given path under system caches directory.
     init(withSubdirectoryPath path: String) throws {
         self.init(url: try createCachesSubdirectoryIfNotExists(subdirectoryPath: path))
     }

@@ -56,7 +56,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k1":"v1"}]"#.utf8Data))
         XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k2":"v2"}]"#.utf8Data))
         XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k3":"v3"}]"#.utf8Data))
-        XCTAssertEqual(try temporaryDirectory.allFiles().count, 0)
+        XCTAssertEqual(try temporaryDirectory.files().count, 0)
 
         _ = uploadWorker // keep the strong reference
     }

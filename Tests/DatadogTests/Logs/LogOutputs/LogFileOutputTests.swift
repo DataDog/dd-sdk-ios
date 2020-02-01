@@ -30,11 +30,8 @@ class LogFileOutputTests: XCTestCase {
 
         queue.sync {} // wait on writter queue
 
-        let fileName = fileNameFrom(fileCreationDate: dateProvider.currentFileCreationDate())
-        guard let fileData = temporaryDirectory.contentsOfFile(fileName: fileName) else {
-            XCTFail()
-            return
-        }
+        let file = try temporaryDirectory.file(named: dateProvider.currentFileCreationDate().toFileName)
+        let fileData = try file.read()
 
         assertThat(jsonObjectData: fileData, matchesValue: "log message", onKeyPath: "message")
     }

@@ -153,13 +153,13 @@ internal class FilesOrchestrator {
 /// File creation date is used as file name - timestamp in milliseconds is used for date representation.
 /// This function converts file creation date into file name.
 internal func fileNameFrom(fileCreationDate: Date) -> String {
-    let milliseconds = fileCreationDate.timeIntervalSinceReferenceDate * 1_000.rounded()
+    let milliseconds = (fileCreationDate.timeIntervalSinceReferenceDate * 1_000).rounded()
 
     // safety check for no overflow when converting `TimeInterval` to `UInt64`
     guard milliseconds >= TimeInterval(UInt64.min), milliseconds < TimeInterval(UInt64.max) else {
-        return ""
+        return "0"
     }
-    return String(milliseconds)
+    return String(UInt64(milliseconds))
 }
 
 /// File creation date is used as file name - timestamp in milliseconds is used for date representation.

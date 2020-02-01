@@ -65,12 +65,12 @@ internal struct File: WritableFile, ReadableFile {
         return fileHandle.readDataToEndOfFile()
     }
 
-    func delete() throws {
-        try FileManager.default.removeItem(at: url)
-    }
-
     func size() throws -> UInt64 {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         return attributes[.size] as? UInt64 ?? 0
+    }
+
+    func delete() throws {
+        try FileManager.default.removeItem(at: url)
     }
 }
