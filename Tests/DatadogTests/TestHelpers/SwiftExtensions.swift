@@ -24,10 +24,6 @@ extension Date {
     func secondsAgo(_ seconds: TimeInterval) -> Date {
         return addingTimeInterval(-seconds)
     }
-
-    func minutesAgo(_ minutes: Double) -> Date {
-        return secondsAgo(minutes * 60.0)
-    }
 }
 
 extension TimeZone {

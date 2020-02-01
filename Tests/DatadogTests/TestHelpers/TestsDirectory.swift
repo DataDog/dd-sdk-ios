@@ -38,13 +38,4 @@ extension Directory {
             }
         }
     }
-
-    /// Sets directory attributes.
-    func set(attributes: [FileAttributeKey: Any]) {
-        do {
-            try FileManager.default.setAttributes(attributes, ofItemAtPath: url.path)
-        } catch {
-            fatalError("🔥 Failed to set attributes: \(attributes) for `TestsDirectory`: \(error)")
-        }
-    }
 }
