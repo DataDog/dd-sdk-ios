@@ -11,9 +11,6 @@ struct ServerSession<R: ServerRequest> {
     let recordedRequests: [R]
 
     init(recordedIn directory: Directory) throws {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-
         let orderedRequestFiles = try directory.files()
             .filter { file in file.name.hasPrefix("request") }
             .sorted { file1, file2 in file1.name < file2.name }
