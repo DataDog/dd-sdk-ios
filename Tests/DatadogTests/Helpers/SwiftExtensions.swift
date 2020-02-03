@@ -24,6 +24,10 @@ extension Date {
     func secondsAgo(_ seconds: TimeInterval) -> Date {
         return addingTimeInterval(-seconds)
     }
+
+    func isNotOlderThan(seconds: TimeInterval) -> Bool {
+        return Date().timeIntervalSince(self) <= seconds
+    }
 }
 
 extension TimeZone {
