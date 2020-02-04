@@ -68,6 +68,7 @@ class LoggingTests: XCTestCase {
                 matcher.assertDate(matches: { $0.isNotOlderThan(seconds: 60) })
                 matcher.assertServiceName(equals: "service-name")
                 matcher.assertLoggerName(equals: "logger-name")
+                matcher.assertThreadName(equals: "main")
                 matcher.assertAttributes(
                     equal: [
                         "logger-attribute1": "string value",

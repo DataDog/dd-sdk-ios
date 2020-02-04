@@ -20,6 +20,7 @@ internal struct LogBuilder {
             message: message,
             serviceName: serviceName,
             loggerName: loggerName,
+            threadName: currentThreadName(),
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
@@ -34,5 +35,9 @@ internal struct LogBuilder {
         case .error:    return .error
         case .critical: return .critical
         }
+    }
+
+    private func currentThreadName() -> String {
+        return Thread.isMainThread ? "main" : "background"
     }
 }

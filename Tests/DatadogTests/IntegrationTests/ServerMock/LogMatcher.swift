@@ -23,6 +23,10 @@ struct LogMatcher {
         assertJSONValue(forKey: LogEncoder.StaticCodingKeys.serviceName.rawValue, equals: serviceName, file: file, line: line)
     }
 
+    func assertThreadName(equals threadName: String, file: StaticString = #file, line: UInt = #line) {
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.threadName.rawValue, equals: threadName, file: file, line: line)
+    }
+
     func assertLoggerName(equals loggerName: String, file: StaticString = #file, line: UInt = #line) {
         assertJSONValue(forKey: LogEncoder.StaticCodingKeys.loggerName.rawValue, equals: loggerName, file: file, line: line)
     }

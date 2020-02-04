@@ -39,4 +39,23 @@ class LogBuilderTests: XCTestCase {
             builder.createLogWith(level: .critical, message: "", attributes: [:], tags: []).status, .critical
         )
     }
+
+    func testItSetsThreadName() {
+        let expectation = self.expectation(description: "create all logs")
+        expectation.expectedFulfillmentCount = 2
+
+        DispatchQueue.main.async {
+            let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+            XCTAssertEqual(log.threadName, "main")
+            expectation.fulfill()
+        }
+
+        DispatchQueue(label: "custom-queue").async {
+            let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+            XCTAssertEqual(log.threadName, "background")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1, handler: nil)
+    }
 }

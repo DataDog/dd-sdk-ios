@@ -16,6 +16,7 @@ internal struct Log: Encodable {
     let message: String
     let serviceName: String
     let loggerName: String
+    let threadName: String
     let attributes: [String: EncodableValue]?
     let tags: [String]?
 
@@ -34,6 +35,7 @@ internal struct LogEncoder {
         case message
         case serviceName = "service"
         case loggerName = "logger.name"
+        case threadName = "logger.thread_name"
         case tags = "ddtags"
     }
 
@@ -52,6 +54,7 @@ internal struct LogEncoder {
         try container.encode(log.status, forKey: .status)
         try container.encode(log.message, forKey: .message)
         try container.encode(log.serviceName, forKey: .serviceName)
+        try container.encode(log.threadName, forKey: .threadName)
         try container.encode(log.loggerName, forKey: .loggerName)
 
         if let attributes = log.attributes {
