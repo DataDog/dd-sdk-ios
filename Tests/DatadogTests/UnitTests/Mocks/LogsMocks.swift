@@ -11,7 +11,8 @@ extension Log {
         date: Date = .mockAny(),
         status: Log.Status = .mockAny(),
         message: String = .mockAny(),
-        service: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        loggerName: String = .mockAny(),
         attributes: [String: EncodableValue]? = nil,
         tags: [String]? = nil
     ) -> Log {
@@ -19,7 +20,8 @@ extension Log {
             date: date,
             status: status,
             message: message,
-            service: service,
+            serviceName: serviceName,
+            loggerName: loggerName,
             attributes: attributes,
             tags: tags
         )
@@ -30,7 +32,8 @@ extension Log {
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(length: 20),
-            service: "ios-sdk-unit-tests"
+            serviceName: .mockRandom(),
+            loggerName: .mockRandom()
         )
     }
 }
@@ -54,9 +57,10 @@ extension EncodableValue {
 
 extension LogBuilder {
     /// Mocks `LogBuilder` producing logs signed with given `date` and `serviceName`.
-    static func mockUsing(date: Date, serviceName: String = "test-service") -> LogBuilder {
+    static func mockUsing(date: Date, serviceName: String = "test-service", loggerName: String = "test-logger-name") -> LogBuilder {
         return LogBuilder(
             serviceName: serviceName,
+            loggerName: loggerName,
             dateProvider: RelativeDateProvider(using: date)
         )
     }

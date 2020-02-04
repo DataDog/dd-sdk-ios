@@ -14,7 +14,8 @@ internal struct Log: Encodable {
     let date: Date
     let status: Status
     let message: String
-    let service: String
+    let serviceName: String
+    let loggerName: String
     let attributes: [String: EncodableValue]?
     let tags: [String]?
 
@@ -31,7 +32,8 @@ internal struct LogEncoder {
         case date
         case status
         case message
-        case service
+        case serviceName = "service"
+        case loggerName = "logger.name"
         case tags = "ddtags"
     }
 
@@ -49,7 +51,8 @@ internal struct LogEncoder {
         try container.encode(log.date, forKey: .date)
         try container.encode(log.status, forKey: .status)
         try container.encode(log.message, forKey: .message)
-        try container.encode(log.service, forKey: .service)
+        try container.encode(log.serviceName, forKey: .serviceName)
+        try container.encode(log.loggerName, forKey: .loggerName)
 
         if let attributes = log.attributes {
             var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)

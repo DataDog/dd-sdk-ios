@@ -44,6 +44,14 @@ extension Calendar {
 
 extension String {
     var utf8Data: Data { data(using: .utf8)! }
+
+    func removingPrefix(_ prefix: String) -> String {
+        if self.hasPrefix(prefix) {
+            return String(self.dropFirst(prefix.count))
+        } else {
+            fatalError("`\(self)` has no prefix of `\(prefix)`")
+        }
+    }
 }
 
 extension Data {

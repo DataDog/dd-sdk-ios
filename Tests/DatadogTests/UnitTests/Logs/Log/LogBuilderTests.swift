@@ -4,6 +4,7 @@ import XCTest
 class LogBuilderTests: XCTestCase {
     let builder = LogBuilder(
         serviceName: "test-service-name",
+        loggerName: "test-logger-name",
         dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     )
 
@@ -18,7 +19,8 @@ class LogBuilderTests: XCTestCase {
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
-        XCTAssertEqual(log.service, "test-service-name")
+        XCTAssertEqual(log.serviceName, "test-service-name")
+        XCTAssertEqual(log.loggerName, "test-logger-name")
         XCTAssertEqual(log.tags, ["tag"])
         XCTAssertEqual(log.attributes, ["attribute": EncodableValue("value")])
         XCTAssertEqual(

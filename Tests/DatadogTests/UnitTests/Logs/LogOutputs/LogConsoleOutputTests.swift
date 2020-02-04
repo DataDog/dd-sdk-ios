@@ -5,7 +5,8 @@ import XCTest
 class LogConsoleOutputTests: XCTestCase {
     private let logBuilder: LogBuilder = .mockUsing(
         date: .mockDecember15th2019At10AMUTC(),
-        serviceName: "test-service"
+        serviceName: "test-service",
+        loggerName: "test-logger-name"
     )
 
     func testItPrintsLogsUsingShortFormat() {
@@ -39,11 +40,12 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 }
         )
         output1.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
-        XCTAssertEqual(messagePrinted, """
+        assertThat(jsonObjectData: messagePrinted.utf8Data, fullyMatches: """
         {
           "status" : "INFO",
           "message" : "Info message.",
           "service" : "test-service",
+          "logger.name" : "test-logger-name",
           "date" : "2019-12-15T10:00:00Z"
         }
         """)
@@ -54,11 +56,13 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 }
         )
         output2.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
-        XCTAssertEqual(messagePrinted, """
-        🐶 → {
+        XCTAssertTrue(messagePrinted.hasPrefix("🐶 → "))
+        assertThat(jsonObjectData: messagePrinted.removingPrefix("🐶 → ").utf8Data, fullyMatches: """
+        {
           "status" : "INFO",
           "message" : "Info message.",
           "service" : "test-service",
+          "logger.name" : "test-logger-name",
           "date" : "2019-12-15T10:00:00Z"
         }
         """)

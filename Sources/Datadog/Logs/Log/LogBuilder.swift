@@ -4,6 +4,8 @@ import Foundation
 internal struct LogBuilder {
     /// Service name to write in log.
     let serviceName: String
+    /// Logger name to write in log.
+    let loggerName: String
     /// Current date to write in log.
     let dateProvider: DateProvider
 
@@ -16,7 +18,8 @@ internal struct LogBuilder {
             date: dateProvider.currentDate(),
             status: logStatus(for: level),
             message: message,
-            service: serviceName,
+            serviceName: serviceName,
+            loggerName: loggerName,
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
         )

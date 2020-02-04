@@ -24,7 +24,7 @@ internal func createSDKDeveloperLogger(
     }
 
     let consoleOutput = LogConsoleOutput(
-        logBuilder: LogBuilder(serviceName: "sdk-developer", dateProvider: dateProvider),
+        logBuilder: LogBuilder(serviceName: "sdk-developer", loggerName: "sdk-developer", dateProvider: dateProvider),
         format: .shortWith(prefix: "🐶 → "),
         printingFunction: consolePrintFunction,
         timeFormatter: timeFormatter
@@ -39,7 +39,7 @@ internal func createSDKUserLogger(
     timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
     let consoleOutput = LogConsoleOutput(
-        logBuilder: LogBuilder(serviceName: "sdk-user", dateProvider: dateProvider),
+        logBuilder: LogBuilder(serviceName: "sdk-user", loggerName: "sdk-user", dateProvider: dateProvider),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
         printingFunction: consolePrintFunction,
         timeFormatter: timeFormatter

@@ -226,6 +226,7 @@ public class Logger {
 
     public class Builder {
         private var serviceName: String = "ios"
+        private var loggerName: String = Bundle.main.bundleIdentifier ?? ""
         private var useFileOutput = true
         private var useConsoleLogFormat: ConsoleLogFormat?
 
@@ -233,6 +234,13 @@ public class Logger {
         /// - Parameter serviceName: the service name (default value is "ios")
         public func set(serviceName: String) -> Builder {
             self.serviceName = serviceName
+            return self
+        }
+
+        /// Sets the logger name that will appear in logs.
+        /// - Parameter loggerName: the logger custom name (default value is set to main bundle identifier)
+        public func set(loggerName: String) -> Builder {
+            self.loggerName = loggerName
             return self
         }
 
@@ -287,6 +295,7 @@ public class Logger {
         private func resolveLogsOutput(using datadog: Datadog) -> LogOutput {
             let logBuilder = LogBuilder(
                 serviceName: serviceName,
+                loggerName: loggerName,
                 dateProvider: datadog.dateProvider
             )
 
