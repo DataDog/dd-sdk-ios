@@ -8,7 +8,11 @@ class LoggingTests: XCTestCase {
         super.setUp()
         serverMock.start()
         Datadog.initialize(
-            appContext: AppContext(),
+            appContext: AppContext(
+                bundleIdentifier: "com.datadoghq.ios-sdk",
+                bundleVersion: "1.0.0",
+                bundleShortVersion: "1.0.0"
+            ),
             endpointURL: serverMock.url,
             clientToken: "abcd"
         )
