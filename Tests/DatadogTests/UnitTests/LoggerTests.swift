@@ -42,6 +42,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z"
         }]
@@ -52,6 +53,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:01Z"
         }]
@@ -62,6 +64,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:02Z"
         }]
@@ -72,6 +75,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:03Z"
         }]
@@ -82,6 +86,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:04Z"
         }]
@@ -92,6 +97,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:05Z"
         }]
@@ -180,6 +186,7 @@ class LoggerTests: XCTestCase {
           "message" : "message",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z",
           "string" : "hello",
@@ -229,6 +236,7 @@ class LoggerTests: XCTestCase {
           "message" : "info message 1",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z",
           "attribute": "logger's value"
@@ -240,6 +248,7 @@ class LoggerTests: XCTestCase {
           "message" : "info message 2",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:01Z",
           "attribute": "message's value"
@@ -251,6 +260,7 @@ class LoggerTests: XCTestCase {
           "message" : "info message 3",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:02Z"
         }]
@@ -292,6 +302,7 @@ class LoggerTests: XCTestCase {
           "message" : "info message 1",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z",
           "ddtags": "tag1"
@@ -308,6 +319,7 @@ class LoggerTests: XCTestCase {
           "message" : "info message 3",
           "service" : "ios",
           "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:02Z"
         }]

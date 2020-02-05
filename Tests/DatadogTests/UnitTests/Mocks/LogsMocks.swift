@@ -13,6 +13,7 @@ extension Log {
         message: String = .mockAny(),
         serviceName: String = .mockAny(),
         loggerName: String = .mockAny(),
+        loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
         attributes: [String: EncodableValue]? = nil,
         tags: [String]? = nil
@@ -23,6 +24,7 @@ extension Log {
             message: message,
             serviceName: serviceName,
             loggerName: loggerName,
+            loggerVersion: loggerVersion,
             threadName: threadName,
             attributes: attributes,
             tags: tags
@@ -36,6 +38,7 @@ extension Log {
             message: .mockRandom(length: 20),
             serviceName: .mockRandom(),
             loggerName: .mockRandom(),
+            loggerVersion: .mockRandom(),
             threadName: .mockRandom()
         )
     }

@@ -20,6 +20,7 @@ internal struct LogBuilder {
             message: message,
             serviceName: serviceName,
             loggerName: loggerName,
+            loggerVersion: getSDKVersion(),
             threadName: currentThreadName(),
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
@@ -39,5 +40,9 @@ internal struct LogBuilder {
 
     private func currentThreadName() -> String {
         return Thread.isMainThread ? "main" : "background"
+    }
+
+    private func getSDKVersion() -> String {
+        return sdkVersion
     }
 }

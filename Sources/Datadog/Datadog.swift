@@ -1,5 +1,9 @@
 import Foundation
 
+/// Internal version information associated with logs.
+/// Should be synced with SDK releases.
+internal let sdkVersion = "1.0.0-alpha1"
+
 /// Datadog SDK configuration object.
 public class Datadog {
     static var instance: Datadog?

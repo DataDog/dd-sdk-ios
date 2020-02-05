@@ -46,6 +46,7 @@ class LogConsoleOutputTests: XCTestCase {
           "message" : "Info message.",
           "service" : "test-service",
           "logger.name" : "test-logger-name",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z"
         }
@@ -64,6 +65,7 @@ class LogConsoleOutputTests: XCTestCase {
           "message" : "Info message.",
           "service" : "test-service",
           "logger.name" : "test-logger-name",
+          "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z"
         }
