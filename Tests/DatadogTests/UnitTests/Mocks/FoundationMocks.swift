@@ -217,6 +217,10 @@ class URLSessionMock: URLSession {
 }
 
 extension URLSession {
+    static func mockAny() -> URLSession {
+        return URLSessionMock()
+    }
+
     static func mockDeliverySuccess(data: Data, response: HTTPURLResponse, requestsRecorder: RequestsRecorder? = nil) -> URLSessionMock {
         let session = URLSessionMock(requestsRecorder: requestsRecorder)
         session.data = data

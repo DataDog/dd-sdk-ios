@@ -35,6 +35,10 @@ struct LogMatcher {
         assertJSONValue(forKey: LogEncoder.StaticCodingKeys.loggerVersion.rawValue, equals: loggerVersion, file: file, line: line)
     }
 
+    func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.applicationVersion.rawValue, equals: applicationVersion, file: file, line: line)
+    }
+
     func assertStatus(equals status: String, file: StaticString = #file, line: UInt = #line) {
         assertJSONValue(forKey: LogEncoder.StaticCodingKeys.status.rawValue, equals: status, file: file, line: line)
     }

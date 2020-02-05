@@ -14,6 +14,7 @@ class DatadogTests: XCTestCase {
 
     func testItCanBeInitializedWithValidConfiguration() throws {
         Datadog.initialize(
+            appContext: .mockAny(),
             endpointURL: "https://api.example.com/v1/logs/",
             clientToken: "abcdefghi"
         )
@@ -22,7 +23,9 @@ class DatadogTests: XCTestCase {
     }
 
     func testWhenInitializedWithInvalidConfiguration_itThrowsProgrammerError() {
-        XCTAssertThrowsError(try Datadog.initializeOrThrow(endpointURL: "", clientToken: "")) { error in
+        XCTAssertThrowsError(
+            try Datadog.initializeOrThrow(appContext: .mockAny(), endpointURL: "", clientToken: "")
+        ) { error in
             XCTAssertTrue(error is ProgrammerError)
         }
     }
@@ -30,6 +33,7 @@ class DatadogTests: XCTestCase {
     func testWhenInitializedMoreThanOnce_itThrowsProgrammerError() throws {
         let initialize = {
             try Datadog.initializeOrThrow(
+                appContext: .mockAny(),
                 endpointURL: "https://api.example.com/v1/logs/",
                 clientToken: "abcdefghi"
             )

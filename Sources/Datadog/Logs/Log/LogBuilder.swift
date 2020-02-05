@@ -2,6 +2,7 @@ import Foundation
 
 /// Builds `Log` representation as it was received from the user (without sanitization).
 internal struct LogBuilder {
+    let appContext: AppContext
     /// Service name to write in log.
     let serviceName: String
     /// Logger name to write in log.
@@ -22,6 +23,7 @@ internal struct LogBuilder {
             loggerName: loggerName,
             loggerVersion: getSDKVersion(),
             threadName: currentThreadName(),
+            applicationVersion: getApplicationVersion(),
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
@@ -44,5 +46,15 @@ internal struct LogBuilder {
 
     private func getSDKVersion() -> String {
         return sdkVersion
+    }
+
+    private func getApplicationVersion() -> String {
+        if let shortVersion = appContext.bundleShortVersion {
+            return shortVersion
+        } else if let version = appContext.bundleVersion {
+            return version
+        } else {
+            return ""
+        }
     }
 }

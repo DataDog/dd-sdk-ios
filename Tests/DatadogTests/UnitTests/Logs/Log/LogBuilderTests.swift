@@ -3,6 +3,11 @@ import XCTest
 
 class LogBuilderTests: XCTestCase {
     let builder = LogBuilder(
+        appContext: AppContext(
+            bundleIdentifier: "com.datadoghq.ios-sdk",
+            bundleVersion: "1.0.0",
+            bundleShortVersion: "1.0.0"
+        ),
         serviceName: "test-service-name",
         loggerName: "test-logger-name",
         dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
@@ -40,7 +45,7 @@ class LogBuilderTests: XCTestCase {
         )
     }
 
-    func testItSetsThreadName() {
+    func testItSetsThreadNameAttribute() {
         let expectation = self.expectation(description: "create all logs")
         expectation.expectedFulfillmentCount = 2
 
@@ -57,5 +62,34 @@ class LogBuilderTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1, handler: nil)
+    }
+
+    func testItSetsApplicationVersionAttribute() {
+        func createLogUsing(appContext: AppContext) -> Log {
+            let builder = LogBuilder(
+                appContext: appContext,
+                serviceName: .mockAny(),
+                loggerName: .mockAny(),
+                dateProvider: SystemDateProvider()
+            )
+
+            return builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+        }
+
+        // When only `bundle.version` is available
+        var log = createLogUsing(appContext: .mockWith(bundleVersion: "version", bundleShortVersion: nil))
+        XCTAssertEqual(log.applicationVersion, "version")
+
+        // When only `bundle.shortVersion` is available
+        log = createLogUsing(appContext: .mockWith(bundleVersion: nil, bundleShortVersion: "shortVersion"))
+        XCTAssertEqual(log.applicationVersion, "shortVersion")
+
+        // When both `bundle.version` and `bundle.shortVersion` are available
+        log = createLogUsing(appContext: .mockWith(bundleVersion: "version", bundleShortVersion: "shortVersion"))
+        XCTAssertEqual(log.applicationVersion, "shortVersion")
+
+        // When neither of `bundle.version` and `bundle.shortVersion` is available
+        log = createLogUsing(appContext: .mockWith(bundleVersion: nil, bundleShortVersion: nil))
+        XCTAssertEqual(log.applicationVersion, "")
     }
 }

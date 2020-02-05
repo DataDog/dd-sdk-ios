@@ -226,7 +226,7 @@ public class Logger {
 
     public class Builder {
         private var serviceName: String = "ios"
-        private var loggerName: String = Bundle.main.bundleIdentifier ?? ""
+        private var loggerName: String?
         private var useFileOutput = true
         private var useConsoleLogFormat: ConsoleLogFormat?
 
@@ -294,8 +294,9 @@ public class Logger {
 
         private func resolveLogsOutput(using datadog: Datadog) -> LogOutput {
             let logBuilder = LogBuilder(
+                appContext: datadog.appContext,
                 serviceName: serviceName,
-                loggerName: loggerName,
+                loggerName: loggerName ?? datadog.appContext.bundleIdentifier ?? "",
                 dateProvider: datadog.dateProvider
             )
 

@@ -3,6 +3,11 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
+    private let appContextMock = AppContext(
+        bundleIdentifier: "com.datadoghq.ios-sdk",
+        bundleVersion: "1.0.0",
+        bundleShortVersion: "1.0.0"
+    )
     /// Provides consecutive `date` values for logs send with `Logger`.
     private let logDatesProvider = RelativeDateProvider(
         startingFrom: .mockDecember15th2019At10AMUTC(),
@@ -41,10 +46,11 @@ class LoggerTests: XCTestCase {
           "status" : "DEBUG",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z"
+          "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0"
         }]
         """)
         assertThat(jsonArrayData: requestsData[1], fullyMatches: """
@@ -52,10 +58,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:01Z"
+          "date" : "2019-12-15T10:00:01Z",
+          "application.version": "1.0.0"
         }]
         """)
         assertThat(jsonArrayData: requestsData[2], fullyMatches: """
@@ -63,10 +70,11 @@ class LoggerTests: XCTestCase {
           "status" : "NOTICE",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:02Z"
+          "date" : "2019-12-15T10:00:02Z",
+          "application.version": "1.0.0"
         }]
         """)
         assertThat(jsonArrayData: requestsData[3], fullyMatches: """
@@ -74,10 +82,11 @@ class LoggerTests: XCTestCase {
           "status" : "WARN",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:03Z"
+          "date" : "2019-12-15T10:00:03Z",
+          "application.version": "1.0.0"
         }]
         """)
         assertThat(jsonArrayData: requestsData[4], fullyMatches: """
@@ -85,10 +94,11 @@ class LoggerTests: XCTestCase {
           "status" : "ERROR",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:04Z"
+          "date" : "2019-12-15T10:00:04Z",
+          "application.version": "1.0.0"
         }]
         """)
         assertThat(jsonArrayData: requestsData[5], fullyMatches: """
@@ -96,10 +106,11 @@ class LoggerTests: XCTestCase {
           "status" : "CRITICAL",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:05Z"
+          "date" : "2019-12-15T10:00:05Z",
+          "application.version": "1.0.0"
         }]
         """)
     }
@@ -185,10 +196,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "message",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0",
           "string" : "hello",
           "bool" : true,
           "int" : 10,
@@ -235,10 +247,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 1",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0",
           "attribute": "logger's value"
         }]
         """)
@@ -247,10 +260,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 2",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:01Z",
+          "application.version": "1.0.0",
           "attribute": "message's value"
         }]
         """)
@@ -259,10 +273,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 3",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:02Z"
+          "date" : "2019-12-15T10:00:02Z",
+          "application.version": "1.0.0"
         }]
         """)
     }
@@ -301,10 +316,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 1",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0",
           "ddtags": "tag1"
         }]
         """)
@@ -318,10 +334,11 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 3",
           "service" : "ios",
-          "logger.name" : "com.apple.dt.xctest.tool",
+          "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:02Z"
+          "date" : "2019-12-15T10:00:02Z",
+          "application.version": "1.0.0"
         }]
         """)
     }
@@ -329,7 +346,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Customizing outputs
 
     func testUsingDifferentOutputs() throws {
-        Datadog.instance = .mockAny(logsDirectory: temporaryDirectory)
+        Datadog.instance = .mockAny()
 
         assertThat(
             logger: Logger.builder.build(),
@@ -404,6 +421,7 @@ private extension LoggerTests {
 
         // Configure `Datadog` instance
         Datadog.instance = .mockSuccessfullySendingOneLogPerRequest(
+            appContext: appContextMock,
             logsDirectory: temporaryDirectory,
             logsFileCreationDateProvider: fileCreationDatesProvider,
             logsUploadInterval: logsUploadInterval,

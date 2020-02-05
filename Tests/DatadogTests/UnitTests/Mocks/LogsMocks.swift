@@ -15,6 +15,7 @@ extension Log {
         loggerName: String = .mockAny(),
         loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
         attributes: [String: EncodableValue]? = nil,
         tags: [String]? = nil
     ) -> Log {
@@ -26,6 +27,7 @@ extension Log {
             loggerName: loggerName,
             loggerVersion: loggerVersion,
             threadName: threadName,
+            applicationVersion: applicationVersion,
             attributes: attributes,
             tags: tags
         )
@@ -39,7 +41,8 @@ extension Log {
             serviceName: .mockRandom(),
             loggerName: .mockRandom(),
             loggerVersion: .mockRandom(),
-            threadName: .mockRandom()
+            threadName: .mockRandom(),
+            applicationVersion: .mockRandom()
         )
     }
 }
@@ -62,9 +65,15 @@ extension EncodableValue {
 }
 
 extension LogBuilder {
-    /// Mocks `LogBuilder` producing logs signed with given `date` and `serviceName`.
-    static func mockUsing(date: Date, serviceName: String = "test-service", loggerName: String = "test-logger-name") -> LogBuilder {
+    /// Mocks `LogBuilder` producing logs signed with given `date`.
+    static func mockUsing(
+        date: Date,
+        appContext: AppContext = .mockAny(),
+        serviceName: String = "test-service",
+        loggerName: String = "test-logger-name"
+    ) -> LogBuilder {
         return LogBuilder(
+            appContext: appContext,
             serviceName: serviceName,
             loggerName: loggerName,
             dateProvider: RelativeDateProvider(using: date)

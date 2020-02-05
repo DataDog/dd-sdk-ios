@@ -7,7 +7,11 @@ class LoggingTests: XCTestCase {
     override func setUp() {
         super.setUp()
         serverMock.start()
-        Datadog.initialize(endpointURL: serverMock.url, clientToken: "abcd")
+        Datadog.initialize(
+            appContext: AppContext(),
+            endpointURL: serverMock.url,
+            clientToken: "abcd"
+        )
     }
 
     override func tearDown() {
@@ -69,6 +73,7 @@ class LoggingTests: XCTestCase {
                 matcher.assertServiceName(equals: "service-name")
                 matcher.assertLoggerName(equals: "logger-name")
                 matcher.assertLoggerVersion(equals: sdkVersion)
+                matcher.assertApplicationVersion(equals: "1.0.0")
                 matcher.assertThreadName(equals: "main")
                 matcher.assertAttributes(
                     equal: [
