@@ -19,6 +19,7 @@ internal struct Log: Encodable {
     let loggerVersion: String
     let threadName: String
     let applicationVersion: String
+    let userInfo: UserInfo
     let attributes: [String: EncodableValue]?
     let tags: [String]?
 

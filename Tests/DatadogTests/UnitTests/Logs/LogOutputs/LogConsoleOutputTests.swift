@@ -13,6 +13,9 @@ class LogConsoleOutputTests: XCTestCase {
         loggerName: "test-logger-name",
         dateProvider: RelativeDateProvider(
             using: .mockDecember15th2019At10AMUTC()
+        ),
+        userInfoProvider: .mockWith(
+            userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
         )
     )
 

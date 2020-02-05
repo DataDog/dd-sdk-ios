@@ -300,6 +300,32 @@ extension AppContext {
     }
 }
 
+extension UserInfo {
+    static func mockAny() -> UserInfo {
+        return UserInfo(id: nil, name: nil, email: nil)
+    }
+
+    static func mockRandom() -> UserInfo {
+        return UserInfo(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom()
+        )
+    }
+}
+
+extension UserInfoProvider {
+    static func mockAny() -> UserInfoProvider {
+        return UserInfoProvider()
+    }
+
+    static func mockWith(userInfo: UserInfo) -> UserInfoProvider {
+        let provider = UserInfoProvider()
+        provider.value = userInfo
+        return provider
+    }
+}
+
 extension Datadog {
     static func mockAny() -> Datadog {
         return mockWith(
@@ -314,13 +340,15 @@ extension Datadog {
         appContext: AppContext = .mockAny(),
         logsPersistenceStrategy: LogsPersistenceStrategy = .mockAny(),
         logsUploadStrategy: LogsUploadStrategy = .mockAny(),
-        dateProvider: DateProvider = SystemDateProvider()
+        dateProvider: DateProvider = SystemDateProvider(),
+        userInfoProvider: UserInfoProvider = .mockAny()
     ) -> Datadog {
         return Datadog(
             appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider
         )
     }
 
@@ -333,6 +361,7 @@ extension Datadog {
     ///   - requestsRecorder: requests recorder recording all requests passed to `URLSession`.
     static func mockSuccessfullySendingOneLogPerRequest(
         appContext: AppContext,
+        userInfoProvider: UserInfoProvider,
         logsDirectory: Directory,
         logsFileCreationDateProvider: DateProvider,
         logsUploadInterval: TimeInterval,
@@ -352,7 +381,8 @@ extension Datadog {
             appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
-            dateProvider: logsTimeProvider
+            dateProvider: logsTimeProvider,
+            userInfoProvider: userInfoProvider
         )
     }
 }

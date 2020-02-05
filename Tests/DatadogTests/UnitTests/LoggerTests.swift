@@ -8,6 +8,9 @@ class LoggerTests: XCTestCase {
         bundleVersion: "1.0.0",
         bundleShortVersion: "1.0.0"
     )
+    private let userInfoProviderMock: UserInfoProvider = .mockWith(
+        userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
+    )
     /// Provides consecutive `date` values for logs send with `Logger`.
     private let logDatesProvider = RelativeDateProvider(
         startingFrom: .mockDecember15th2019At10AMUTC(),
@@ -422,6 +425,7 @@ private extension LoggerTests {
         // Configure `Datadog` instance
         Datadog.instance = .mockSuccessfullySendingOneLogPerRequest(
             appContext: appContextMock,
+            userInfoProvider: userInfoProviderMock,
             logsDirectory: temporaryDirectory,
             logsFileCreationDateProvider: fileCreationDatesProvider,
             logsUploadInterval: logsUploadInterval,
