@@ -14,9 +14,7 @@ class LogConsoleOutputTests: XCTestCase {
         dateProvider: RelativeDateProvider(
             using: .mockDecember15th2019At10AMUTC()
         ),
-        userInfoProvider: .mockWith(
-            userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
-        )
+        userInfoProvider: .mockWith(userInfo: .mockEmpty())
     )
 
     func testItPrintsLogsUsingShortFormat() {

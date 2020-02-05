@@ -40,6 +40,9 @@ internal struct LogEncoder {
         case loggerName = "logger.name"
         case loggerVersion = "logger.version"
         case threadName = "logger.thread_name"
+        case userId = "usr.id"
+        case userName = "usr.name"
+        case userEmail = "usr.email"
         case applicationVersion = "application.version"
         case tags = "ddtags"
     }
@@ -63,6 +66,9 @@ internal struct LogEncoder {
         try container.encode(log.loggerName, forKey: .loggerName)
         try container.encode(log.loggerVersion, forKey: .loggerVersion)
         try container.encode(log.applicationVersion, forKey: .applicationVersion)
+        try log.userInfo.id.ifNotNilNorEmpty { try container.encode($0, forKey: .userId) }
+        try log.userInfo.name.ifNotNilNorEmpty { try container.encode($0, forKey: .userName) }
+        try log.userInfo.email.ifNotNilNorEmpty { try container.encode($0, forKey: .userEmail) }
 
         if let attributes = log.attributes {
             var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)

@@ -11,8 +11,7 @@ class LoggerTests: XCTestCase {
     private let userInfoProviderMock: UserInfoProvider = .mockWith(
         userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
     )
-    /// Provides consecutive `date` values for logs send with `Logger`.
-    private let logDatesProvider = RelativeDateProvider(
+    private let dateProviderMock = RelativeDateProvider(
         startingFrom: .mockDecember15th2019At10AMUTC(),
         advancingBySeconds: 1
     )
@@ -32,16 +31,20 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending logs
 
     func testSendingLogsWithDefaultLogger() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 6) {
-            let logger = Logger.builder.build()
+        let requestsRecorder = try environmentFor(expectedRequestsCount: 6)
+            .set(appContext: appContextMock)
+            .set(dateProvider: dateProviderMock)
+            .configure()
+            .startRecordingRequestsAndRun {
+                let logger = Logger.builder.build()
 
-            logger.debug("message")
-            logger.info("message")
-            logger.notice("message")
-            logger.warn("message")
-            logger.error("message")
-            logger.critical("message")
-        }
+                logger.debug("message")
+                logger.info("message")
+                logger.notice("message")
+                logger.warn("message")
+                logger.error("message")
+                logger.critical("message")
+            }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
         assertThat(jsonArrayData: requestsData[0], fullyMatches: """
@@ -119,19 +122,23 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithCustomizedLogger() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 6) {
-            let logger = Logger.builder
-                .set(serviceName: "custom-service-name")
-                .set(loggerName: "custom-logger-name")
-                .build()
+        let requestsRecorder = try environmentFor(expectedRequestsCount: 6)
+            .set(appContext: appContextMock)
+            .set(dateProvider: dateProviderMock)
+            .configure()
+            .startRecordingRequestsAndRun {
+                let logger = Logger.builder
+                    .set(serviceName: "custom-service-name")
+                    .set(loggerName: "custom-logger-name")
+                    .build()
 
-            logger.debug("message")
-            logger.info("message")
-            logger.notice("message")
-            logger.warn("message")
-            logger.error("message")
-            logger.critical("message")
-        }
+                logger.debug("message")
+                logger.info("message")
+                logger.notice("message")
+                logger.warn("message")
+                logger.error("message")
+                logger.critical("message")
+            }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
         requestsData.forEach { requestData in
@@ -151,47 +158,51 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 1) {
-            let logger = Logger.builder.build()
+        let requestsRecorder = try environmentFor(expectedRequestsCount: 1)
+            .set(appContext: appContextMock)
+            .set(dateProvider: dateProviderMock)
+            .configure()
+            .startRecordingRequestsAndRun {
+                let logger = Logger.builder.build()
 
-            // string literal
-            logger.addAttribute(forKey: "string", value: "hello")
+                // string literal
+                logger.addAttribute(forKey: "string", value: "hello")
 
-            // boolean literal
-            logger.addAttribute(forKey: "bool", value: true)
+                // boolean literal
+                logger.addAttribute(forKey: "bool", value: true)
 
-            // integer literal
-            logger.addAttribute(forKey: "int", value: 10)
+                // integer literal
+                logger.addAttribute(forKey: "int", value: 10)
 
-            // Typed 8-bit unsigned Integer
-            logger.addAttribute(forKey: "uint-8", value: UInt8(10))
+                // Typed 8-bit unsigned Integer
+                logger.addAttribute(forKey: "uint-8", value: UInt8(10))
 
-            // double-precision, floating-point value
-            logger.addAttribute(forKey: "double", value: 10.5)
+                // double-precision, floating-point value
+                logger.addAttribute(forKey: "double", value: 10.5)
 
-            // array of `Encodable` integer
-            logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
+                // array of `Encodable` integer
+                logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
 
-            // dictionary of `Encodable` date types
-            logger.addAttribute(forKey: "dictionary-of-date", value: [
-                "date1": Date.mockDecember15th2019At10AMUTC(),
-                "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
-            ])
+                // dictionary of `Encodable` date types
+                logger.addAttribute(forKey: "dictionary-of-date", value: [
+                    "date1": Date.mockDecember15th2019At10AMUTC(),
+                    "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
+                ])
 
-            struct Person: Codable {
-                let name: String
-                let age: Int
-                let nationality: String
+                struct Person: Codable {
+                    let name: String
+                    let age: Int
+                    let nationality: String
+                }
+
+                // custom `Encodable` structure
+                logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+
+                // nested string literal
+                logger.addAttribute(forKey: "nested.string", value: "hello")
+
+                logger.info("message")
             }
-
-            // custom `Encodable` structure
-            logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
-
-            // nested string literal
-            logger.addAttribute(forKey: "nested.string", value: "hello")
-
-            logger.info("message")
-        }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
         assertThat(jsonArrayData: requestsData[0], fullyMatches: """
@@ -225,24 +236,28 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
-            let logger = Logger.builder.build()
+        let requestsRecorder = try environmentFor(expectedRequestsCount: 3)
+            .set(appContext: appContextMock)
+            .set(dateProvider: dateProviderMock)
+            .configure()
+            .startRecordingRequestsAndRun {
+                let logger = Logger.builder.build()
 
-            // add logger attribute
-            logger.addAttribute(forKey: "attribute", value: "logger's value")
+                // add logger attribute
+                logger.addAttribute(forKey: "attribute", value: "logger's value")
 
-            // send message with no attributes
-            logger.info("info message 1")
+                // send message with no attributes
+                logger.info("info message 1")
 
-            // send message with attribute overriding logger's attribute
-            logger.info("info message 2", attributes: ["attribute": "message's value"])
+                // send message with attribute overriding logger's attribute
+                logger.info("info message 2", attributes: ["attribute": "message's value"])
 
-            // remove logger attribute
-            logger.removeAttribute(forKey: "attribute")
+                // remove logger attribute
+                logger.removeAttribute(forKey: "attribute")
 
-            // send message
-            logger.info("info message 3")
-        }
+                // send message
+                logger.info("info message 3")
+            }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
         assertThat(jsonArrayData: requestsData[0], fullyMatches: """
@@ -288,30 +303,34 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingTags() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
-            let logger = Logger.builder.build()
+        let requestsRecorder = try environmentFor(expectedRequestsCount: 3)
+            .set(appContext: appContextMock)
+            .set(dateProvider: dateProviderMock)
+            .configure()
+            .startRecordingRequestsAndRun {
+                let logger = Logger.builder.build()
 
-            // add tag
-            logger.add(tag: "tag1")
+                // add tag
+                logger.add(tag: "tag1")
 
-            // send message
-            logger.info("info message 1")
+                // send message
+                logger.info("info message 1")
 
-            // add tag with key
-            logger.addTag(withKey: "tag2", value: "abcd")
+                // add tag with key
+                logger.addTag(withKey: "tag2", value: "abcd")
 
-            // send message
-            logger.info("info message 2")
+                // send message
+                logger.info("info message 2")
 
-            // remove tag with key
-            logger.removeTag(withKey: "tag2")
+                // remove tag with key
+                logger.removeTag(withKey: "tag2")
 
-            // remove tag
-            logger.remove(tag: "tag1")
+                // remove tag
+                logger.remove(tag: "tag1")
 
-            // send message
-            logger.info("info message 3")
-        }
+                // send message
+                logger.info("info message 3")
+            }
 
         let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
         assertThat(jsonArrayData: requestsData[0], fullyMatches: """
@@ -406,46 +425,108 @@ class LoggerTests: XCTestCase {
 // MARK: - Helpers for ensuring `Logger` run environment
 
 private extension LoggerTests {
-    /// Ensures that `Logger` is accessed within configured `Datadog` environment.
-    private func setUpDatadogAndRecordSendingOneLogPerRequest(
-        expectedRequestsCount: Int,
-        run test: () -> Void
-    ) throws -> RequestsRecorder {
-        let requestsRecorder = RequestsRecorder()
+    func environmentFor(expectedRequestsCount: Int) -> LoggerRunEnvironmentBuilder {
         let expectation = self.expectation(description: "Send \(expectedRequestsCount) requests")
         expectation.expectedFulfillmentCount = expectedRequestsCount
-
         let logsUploadInterval: TimeInterval = 0.05 // pretty quick 😎
 
-        let fileCreationDatesProvider = RelativeDateProvider(
-            startingFrom: .mockDecember15th2019At10AMUTC(),
-            advancingBySeconds: 1
-        )
+        return LoggerRunEnvironmentBuilder(
+            expectation: expectation,
+            logsUploadInterval: logsUploadInterval
+        ) { [unowned self] in
+            let arbitraryEnoughOfTime = logsUploadInterval * Double(expectedRequestsCount) * 3
+            self.waitForExpectations(timeout: arbitraryEnoughOfTime, handler: nil)
+        }
+    }
 
-        // Configure `Datadog` instance
-        Datadog.instance = .mockSuccessfullySendingOneLogPerRequest(
-            appContext: appContextMock,
-            userInfoProvider: userInfoProviderMock,
-            logsDirectory: temporaryDirectory,
-            logsFileCreationDateProvider: fileCreationDatesProvider,
-            logsUploadInterval: logsUploadInterval,
-            logsTimeProvider: logDatesProvider,
-            requestsRecorder: requestsRecorder
-        )
+    class LoggerRunEnvironmentBuilder {
+        private let expectation: XCTestExpectation
+        private let logsUploadInterval: TimeInterval
+        private let wait: () -> Void
+        private var appContext: AppContext = .mockAny()
+        private var userInfoProvider: UserInfoProvider = .mockAny()
+        private var dateProvider: DateProvider = SystemDateProvider()
+        private var fileCreationDateProvider: DateProvider = SystemDateProvider()
 
-        // Fulfill expectation on every request sent
-        requestsRecorder.onNewRequest = { _ in expectation.fulfill() }
+        init(
+            expectation: XCTestExpectation,
+            logsUploadInterval: TimeInterval,
+            wait: @escaping () -> Void
+        ) {
+            self.expectation = expectation
+            self.wait = wait
+            self.logsUploadInterval = logsUploadInterval
+        }
 
-        // Execute test
-        test()
+        func set(appContext: AppContext) -> LoggerRunEnvironmentBuilder {
+            self.appContext = appContext
+            return self
+        }
 
-        // Wait for all requests being sent
-        let arbitraryEnoughOfTime = logsUploadInterval * Double(expectedRequestsCount) * 3
-        waitForExpectations(timeout: arbitraryEnoughOfTime, handler: nil)
+        func set(userInfoProvider: UserInfoProvider) -> LoggerRunEnvironmentBuilder {
+            self.userInfoProvider = userInfoProvider
+            return self
+        }
 
-        try Datadog.deinitializeOrThrow()
+        func set(dateProvider: RelativeDateProvider) -> LoggerRunEnvironmentBuilder {
+            self.dateProvider = dateProvider
+            self.fileCreationDateProvider = RelativeDateProvider(
+                startingFrom: dateProvider.date,
+                advancingBySeconds: dateProvider.timeInterval
+            )
+            return self
+        }
 
-        return requestsRecorder
+        func configure() -> LoggerRunEnvironment {
+            return LoggerRunEnvironment(
+                expectation: expectation,
+                logsUploadInterval: logsUploadInterval,
+                appContext: appContext,
+                dateProvider: dateProvider,
+                fileCreationDateProvider: fileCreationDateProvider,
+                userInfoProvider: userInfoProvider,
+                wait: wait
+            )
+        }
+    }
+
+    /// Configures `Datadog` object for running `Logger` in mocked environment.
+    struct LoggerRunEnvironment {
+        let expectation: XCTestExpectation
+        let logsUploadInterval: TimeInterval
+        let appContext: AppContext
+        let dateProvider: DateProvider
+        let fileCreationDateProvider: DateProvider
+        let userInfoProvider: UserInfoProvider
+        let wait: () -> Void
+
+        func startRecordingRequestsAndRun(test: () -> Void) throws -> RequestsRecorder {
+            let requestsRecorder = RequestsRecorder()
+
+            // Configure `Datadog` instance
+            Datadog.instance = .mockSuccessfullySendingOneLogPerRequest(
+                appContext: appContext,
+                userInfoProvider: userInfoProvider,
+                logsDirectory: temporaryDirectory,
+                logsFileCreationDateProvider: fileCreationDateProvider,
+                logsUploadInterval: logsUploadInterval,
+                logsTimeProvider: dateProvider,
+                requestsRecorder: requestsRecorder
+            )
+
+            // Fulfill expectation on every request sent
+            requestsRecorder.onNewRequest = { [expectation] _ in expectation.fulfill() }
+
+            // Execute test
+            test()
+
+            // Wait for expectation being fulfilled
+            wait()
+
+            try Datadog.deinitializeOrThrow()
+
+            return requestsRecorder
+        }
     }
 
     private func assertThat(logger: Logger, usesOutput outputType: LogOutput.Type, file: StaticString = #file, line: UInt = #line) {

@@ -19,8 +19,8 @@ extension String {
 
 /// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
 class RelativeDateProvider: DateProvider {
-    private var date: Date
-    private let timeInterval: TimeInterval
+    private(set) var date: Date
+    internal let timeInterval: TimeInterval
 
     init(using date: Date = Date()) {
         self.date = date
@@ -302,6 +302,10 @@ extension AppContext {
 
 extension UserInfo {
     static func mockAny() -> UserInfo {
+        return mockEmpty()
+    }
+
+    static func mockEmpty() -> UserInfo {
         return UserInfo(id: nil, name: nil, email: nil)
     }
 
