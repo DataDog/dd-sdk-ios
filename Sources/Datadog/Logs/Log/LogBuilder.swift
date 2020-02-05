@@ -22,7 +22,7 @@ internal struct LogBuilder {
             serviceName: serviceName,
             loggerName: loggerName,
             loggerVersion: getSDKVersion(),
-            threadName: currentThreadName(),
+            threadName: getCurrentThreadName(),
             applicationVersion: getApplicationVersion(),
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
@@ -40,7 +40,7 @@ internal struct LogBuilder {
         }
     }
 
-    private func currentThreadName() -> String {
+    private func getCurrentThreadName() -> String {
         if let customName = Thread.current.name, !customName.isEmpty {
             return customName
         } else {

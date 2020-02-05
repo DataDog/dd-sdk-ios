@@ -1,6 +1,6 @@
 import Foundation
 
-/// Internal version information associated with logs.
+/// SDK version associated with logs.
 /// Should be synced with SDK releases.
 internal let sdkVersion = "1.0.0-alpha1"
 
@@ -45,7 +45,7 @@ public class Datadog {
 }
 
 extension Datadog {
-    /// Context providing informations about the app.
+    /// Context providing information about the app.
     public struct AppContext {
         internal let bundleIdentifier: String?
         internal let bundleVersion: String?

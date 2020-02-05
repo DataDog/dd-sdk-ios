@@ -7,7 +7,7 @@ It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
 extension Log {
-    static func mockAnyWith(
+    static func mockWith(
         date: Date = .mockAny(),
         status: Log.Status = .mockAny(),
         message: String = .mockAny(),
@@ -34,7 +34,7 @@ extension Log {
     }
 
     static func mockRandom() -> Log {
-        return mockAnyWith(
+        return mockWith(
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(length: 20),
@@ -66,7 +66,7 @@ extension EncodableValue {
 
 extension LogBuilder {
     /// Mocks `LogBuilder` producing logs signed with given `date`.
-    static func mockUsing(
+    static func mockWith(
         date: Date,
         appContext: AppContext = .mockAny(),
         serviceName: String = "test-service",
