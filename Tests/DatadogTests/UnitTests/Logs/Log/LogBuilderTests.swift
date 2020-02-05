@@ -47,7 +47,7 @@ class LogBuilderTests: XCTestCase {
 
     func testItSetsThreadNameAttribute() {
         let expectation = self.expectation(description: "create all logs")
-        expectation.expectedFulfillmentCount = 2
+        expectation.expectedFulfillmentCount = 3
 
         DispatchQueue.main.async {
             let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
@@ -55,9 +55,16 @@ class LogBuilderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        DispatchQueue(label: "custom-queue").async {
+        DispatchQueue.global(qos: .default).async {
             let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
             XCTAssertEqual(log.threadName, "background")
+            expectation.fulfill()
+        }
+
+        DispatchQueue(label: "custom-queue").async {
+            Thread.current.name = "custom-thread-name"
+            let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+            XCTAssertEqual(log.threadName, "custom-thread-name")
             expectation.fulfill()
         }
 

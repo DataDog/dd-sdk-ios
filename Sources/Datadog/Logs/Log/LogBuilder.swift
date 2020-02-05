@@ -41,7 +41,11 @@ internal struct LogBuilder {
     }
 
     private func currentThreadName() -> String {
-        return Thread.isMainThread ? "main" : "background"
+        if let customName = Thread.current.name, !customName.isEmpty {
+            return customName
+        } else {
+            return Thread.isMainThread ? "main" : "background"
+        }
     }
 
     private func getSDKVersion() -> String {
