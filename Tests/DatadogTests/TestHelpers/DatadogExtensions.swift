@@ -11,9 +11,10 @@ extension Date {
     var toFileName: String {
         return fileNameFrom(fileCreationDate: self)
     }
+}
 
-    /// Returns creation date of file with given name.
-    static func from(fileName: String) -> Date {
-        return fileCreationDateFrom(fileName: fileName)
+extension EncodableValue: Equatable {
+    public static func == (lhs: EncodableValue, rhs: EncodableValue) -> Bool {
+        return String(describing: lhs) == String(describing: rhs)
     }
 }

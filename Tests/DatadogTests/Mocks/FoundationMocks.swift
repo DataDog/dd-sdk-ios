@@ -235,10 +235,6 @@ extension URLSession {
 }
 
 extension HTTPURLResponse {
-    static func mockAny() -> HTTPURLResponse {
-        return HTTPURLResponse(url: .mockAny(), statusCode: 1, httpVersion: nil, headerFields: nil)!
-    }
-
     static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }

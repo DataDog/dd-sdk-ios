@@ -4,16 +4,23 @@ import XCTest
 class LogBuilderTests: XCTestCase {
     let builder = LogBuilder(
         serviceName: "test-service-name",
-        dateProvider: DateProviderMock(currentDate: .mockDecember15th2019At10AMUTC())
+        dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     )
 
     func testItBuildsBasicLog() {
-        let log = builder.createLogWith(level: .debug, message: "debug message", attributes: [:], tags: [])
+        let log = builder.createLogWith(
+            level: .debug,
+            message: "debug message",
+            attributes: ["attribute": "value"],
+            tags: ["tag"]
+        )
 
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
         XCTAssertEqual(log.service, "test-service-name")
+        XCTAssertEqual(log.tags, ["tag"])
+        XCTAssertEqual(log.attributes, ["attribute": EncodableValue("value")])
         XCTAssertEqual(
             builder.createLogWith(level: .info, message: "", attributes: [:], tags: []).status, .info
         )

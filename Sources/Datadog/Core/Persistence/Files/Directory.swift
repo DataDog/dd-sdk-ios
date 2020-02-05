@@ -4,6 +4,7 @@ import Foundation
 internal struct Directory {
     let url: URL
 
+    /// Creates subdirectory with given path under system caches directory.
     init(withSubdirectoryPath path: String) throws {
         self.init(url: try createCachesSubdirectoryIfNotExists(subdirectoryPath: path))
     }
@@ -13,25 +14,28 @@ internal struct Directory {
     }
 
     /// Creates file with given name.
-    func createFile(named fileName: String) throws -> URL {
+    func createFile(named fileName: String) throws -> File {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
         guard FileManager.default.createFile(atPath: fileURL.path, contents: nil, attributes: nil) == true else {
             throw InternalError(description: "Cannot create file at path: \(fileURL.path)")
         }
-        return fileURL
+        return File(url: fileURL)
     }
 
-    /// Deletes file with given name.
-    func deleteFile(named fileName: String) throws {
+    /// Returns file with given name.
+    func file(named fileName: String) throws -> File {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            try FileManager.default.removeItem(at: fileURL)
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw InternalError(description: "File does not exist at path: \(fileURL.path)")
         }
+        return File(url: fileURL)
     }
 
-    /// Returns list of files in this directory.
-    func allFiles() throws -> [URL] {
-        return try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])
+    /// Returns all files of this directory.
+    func files() throws -> [File] {
+        return try FileManager.default
+            .contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])
+            .map { url in File(url: url) }
     }
 }
 

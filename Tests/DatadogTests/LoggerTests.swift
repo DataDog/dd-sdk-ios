@@ -3,19 +3,11 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
-    /// Provides consecutive dates for send with `Logger`.
-    private var logDatesProvider: DateProvider {
-        let provider = DateProviderMock()
-        provider.currentDates = [
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -5),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -4),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -3),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -2),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: -1),
-            .mockDecember15th2019At10AMUTC(addingTimeInterval: 0),
-        ]
-        return provider
-    }
+    /// Provides consecutive `date` values for logs send with `Logger`.
+    private let logDatesProvider = RelativeDateProvider(
+        startingFrom: .mockDecember15th2019At10AMUTC(),
+        advancingBySeconds: 1
+    )
 
     override func setUp() {
         super.setUp()
@@ -49,7 +41,7 @@ class LoggerTests: XCTestCase {
           "status" : "DEBUG",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:55Z"
+          "date" : "2019-12-15T10:00:00Z"
         }]
         """)
         assertThat(jsonArrayData: requestsData[1], fullyMatches: """
@@ -57,7 +49,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:56Z"
+          "date" : "2019-12-15T10:00:01Z"
         }]
         """)
         assertThat(jsonArrayData: requestsData[2], fullyMatches: """
@@ -65,7 +57,7 @@ class LoggerTests: XCTestCase {
           "status" : "NOTICE",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:57Z"
+          "date" : "2019-12-15T10:00:02Z"
         }]
         """)
         assertThat(jsonArrayData: requestsData[3], fullyMatches: """
@@ -73,7 +65,7 @@ class LoggerTests: XCTestCase {
           "status" : "WARN",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:58Z"
+          "date" : "2019-12-15T10:00:03Z"
         }]
         """)
         assertThat(jsonArrayData: requestsData[4], fullyMatches: """
@@ -81,7 +73,7 @@ class LoggerTests: XCTestCase {
           "status" : "ERROR",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:59Z"
+          "date" : "2019-12-15T10:00:04Z"
         }]
         """)
         assertThat(jsonArrayData: requestsData[5], fullyMatches: """
@@ -89,7 +81,7 @@ class LoggerTests: XCTestCase {
           "status" : "CRITICAL",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T10:00:00Z"
+          "date" : "2019-12-15T10:00:05Z"
         }]
         """)
     }
@@ -169,7 +161,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "message",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:55Z",
+          "date" : "2019-12-15T10:00:00Z",
           "string" : "hello",
           "bool" : true,
           "int" : 10,
@@ -216,7 +208,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 1",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:55Z",
+          "date" : "2019-12-15T10:00:00Z",
           "attribute": "logger's value"
         }]
         """)
@@ -225,7 +217,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 2",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:56Z",
+          "date" : "2019-12-15T10:00:01Z",
           "attribute": "message's value"
         }]
         """)
@@ -234,7 +226,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 3",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:57Z"
+          "date" : "2019-12-15T10:00:02Z"
         }]
         """)
     }
@@ -273,7 +265,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 1",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:55Z",
+          "date" : "2019-12-15T10:00:00Z",
           "ddtags": "tag1"
         }]
         """)
@@ -287,7 +279,7 @@ class LoggerTests: XCTestCase {
           "status" : "INFO",
           "message" : "info message 3",
           "service" : "ios",
-          "date" : "2019-12-15T09:59:57Z"
+          "date" : "2019-12-15T10:00:02Z"
         }]
         """)
     }
@@ -361,18 +353,17 @@ private extension LoggerTests {
         let expectation = self.expectation(description: "Send \(expectedRequestsCount) requests")
         expectation.expectedFulfillmentCount = expectedRequestsCount
 
-        // Set up `DateProvider` for creating log files in the past
-        let fileCreationDateProvider = DateProviderMock()
-        fileCreationDateProvider.currentFileCreationDates = (0..<expectedRequestsCount)
-            .map { Date().secondsAgo(Double($0) * 10) } // create file every 10 seconds in the past ...
-            .reversed() // ... starting from oldest time
-
         let logsUploadInterval: TimeInterval = 0.05 // pretty quick 😎
+
+        let fileCreationDatesProvider = RelativeDateProvider(
+            startingFrom: .mockDecember15th2019At10AMUTC(),
+            advancingBySeconds: 1
+        )
 
         // Configure `Datadog` instance
         Datadog.instance = .mockSuccessfullySendingOneLogPerRequest(
             logsDirectory: temporaryDirectory,
-            logsFileCreationDateProvider: fileCreationDateProvider,
+            logsFileCreationDateProvider: fileCreationDatesProvider,
             logsUploadInterval: logsUploadInterval,
             logsTimeProvider: logDatesProvider,
             requestsRecorder: requestsRecorder

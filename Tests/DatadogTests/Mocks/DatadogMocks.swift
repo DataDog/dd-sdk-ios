@@ -6,46 +6,41 @@ A collection of SDK object mocks.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+// MARK: - Primitive types
+
+extension String {
+    /// Returns string being a valid name of the file managed by `FilesOrchestrator`.
+    static func mockAnyFileName() -> String {
+        return Date.mockAny().toFileName
+    }
+}
+
 // MARK: - Date and time
 
-/// Date provider which returns consecutive mocked dates in a loop.
-class DateProviderMock: DateProvider {
-    var currentDates: [Date]
-    var currentFileCreationDates: [Date]
+/// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
+class RelativeDateProvider: DateProvider {
+    private var date: Date
+    private let timeInterval: TimeInterval
 
-    private var index1 = 0
-    private var index2 = 0
-
-    init(currentDate: Date = Date(), currentFileCreationDate: Date = Date()) {
-        self.currentDates = [currentDate]
-        self.currentFileCreationDates = [currentFileCreationDate]
+    init(using date: Date = Date()) {
+        self.date = date
+        self.timeInterval = 0
     }
 
+    init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
+        self.date = referenceDate
+        self.timeInterval = timeInterval
+    }
+
+    /// Returns current date and advances next date by `timeInterval`.
     func currentDate() -> Date {
-        defer { index1 = (index1 + 1) % currentDates.count }
-        return currentDates[index1]
+        defer { date.addTimeInterval(timeInterval) }
+        return date
     }
 
-    func currentFileCreationDate() -> Date {
-        defer { index2 = (index2 + 1) % currentFileCreationDates.count }
-        return currentFileCreationDates[index2]
-    }
-
-    /// Returns past date starting from `currentDate()`
-    func secondsAgo(_ seconds: TimeInterval) -> Date {
-        return currentDates[index1].secondsAgo(seconds)
-    }
-
-    /// Returns past date starting from `currentDate()`
-    func minutesAgo(_ minutes: Double) -> Date {
-        return currentDates[index1].minutesAgo(minutes)
-    }
-
-    /// Mocks `DateProvider` which always returns given date for `.currentDate()`
-    static func mockReturning(currentDate: Date) -> DateProvider {
-        let mock = DateProviderMock()
-        mock.currentDates = [currentDate]
-        return mock
+    /// Pushes time forward by given number of seconds.
+    func advance(bySeconds seconds: TimeInterval) {
+        date = date.addingTimeInterval(seconds)
     }
 }
 
@@ -85,22 +80,22 @@ extension ReadableFileConditions {
 
 extension FilesOrchestrator {
     /// Mocks `FilesOrchestrator` which always returns the same file for `getWritableFile()`.
-    static func mockWriteToSingleFile(in directory: Directory, using dateProvider: DateProvider) -> FilesOrchestrator {
+    static func mockWriteToSingleFile(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: .mockWriteToSingleFile(),
             readConditions: LogsPersistenceStrategy.defaultReadConditions,
-            dateProvider: dateProvider
+            dateProvider: SystemDateProvider()
         )
     }
 
     /// Mocks `FilesOrchestrator` which does not perform age classification for `getReadableFile()`.
-    static func mockReadAllFiles(in directory: Directory, using dateProvider: DateProvider) -> FilesOrchestrator {
+    static func mockReadAllFiles(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
             readConditions: .mockReadAllFiles(),
-            dateProvider: dateProvider
+            dateProvider: SystemDateProvider()
         )
     }
 }
@@ -109,11 +104,10 @@ extension FileWriter {
     /// Mocks `FileWriter` writting data to single file with given name.
     static func mockWrittingToSingleFile(
         in directory: Directory,
-        on queue: DispatchQueue,
-        using dateProvider: DateProvider
+        on queue: DispatchQueue
     ) -> FileWriter {
         return FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: directory, using: dateProvider),
+            orchestrator: .mockWriteToSingleFile(in: directory),
             queue: queue,
             maxWriteSize: .max
         )
@@ -247,9 +241,9 @@ extension Datadog {
     static func mockAny(logsDirectory: Directory) -> Datadog {
         return .mockSuccessfullySendingOneLogPerRequest(
             logsDirectory: logsDirectory,
-            logsFileCreationDateProvider: DateProviderMock(),
+            logsFileCreationDateProvider: RelativeDateProvider(),
             logsUploadInterval: Date.distantFuture.timeIntervalSinceReferenceDate,
-            logsTimeProvider: DateProviderMock(),
+            logsTimeProvider: RelativeDateProvider(),
             requestsRecorder: nil
         )
     }

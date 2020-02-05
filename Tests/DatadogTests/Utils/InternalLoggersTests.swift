@@ -10,7 +10,7 @@ class InternalLoggersTests: XCTestCase {
         printedMessages = []
         userLogger = createSDKUserLogger(
             consolePrintFunction: { [weak self] in self?.printedMessages.append($0) },
-            dateProvider: DateProviderMock.mockReturning(currentDate: .mockDecember15th2019At10AMUTC()),
+            dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC()),
             timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
         )
     }
@@ -103,7 +103,7 @@ class InternalLoggersTests: XCTestCase {
 
         let developerLogger = createSDKDeveloperLogger(
             consolePrintFunction: { printedMessage = $0 },
-            dateProvider: DateProviderMock.mockReturning(currentDate: .mockDecember15th2019At10AMUTC()),
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
         )
         developerLogger?.info("It works.")
