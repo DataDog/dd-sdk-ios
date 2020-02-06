@@ -1,4 +1,5 @@
 import Foundation
+import XCTest
 @testable import Datadog
 
 /*
@@ -355,38 +356,138 @@ extension Datadog {
             userInfoProvider: userInfoProvider
         )
     }
+}
 
-    /// Mocks SDK instance successfully delivering logs (with 200OK HTTP response returned from underlying `URLSession` mock).
-    /// - Parameters:
-    ///   - logsDirectory: directory where log files are created.
-    ///   - logsFileCreationDateProvider: date provider used by `FilesOrchestrator` to create and access log files.
-    ///   - logsUploadInterval: constant time interval used to uploads logs.
-    ///   - logsTimeProvider: date provider used by `LogsWritter` to set `date` in `Log`.
-    ///   - requestsRecorder: requests recorder recording all requests passed to `URLSession`.
-    static func mockSuccessfullySendingOneLogPerRequest(
+class DatadogInstanceMock {
+    private let requestsRecorder = RequestsRecorder()
+    private let logsUploadInterval: TimeInterval = 0.05
+
+    private var runClosure: (() -> Void)? = nil
+    private var waitClosure: (() -> Void)? = nil
+
+    static var build: Builder { Builder() }
+
+    class Builder {
+        private var appContext: AppContext = .mockAny()
+        private var userInfoProvider: UserInfoProvider = .mockAny()
+        private var dateProvider = RelativeDateProvider()
+
+        func with(appContext: AppContext) -> Builder {
+            self.appContext = appContext
+            return self
+        }
+
+        func with(userInfoProvider: UserInfoProvider) -> Builder {
+            self.userInfoProvider = userInfoProvider
+            return self
+        }
+
+        func with(dateProvider: RelativeDateProvider) -> Builder {
+            self.dateProvider = dateProvider
+            return self
+        }
+
+        func initialize() -> DatadogInstanceMock {
+            return DatadogInstanceMock(
+                appContext: appContext,
+                userInfoProvider: userInfoProvider,
+                dateProvider: dateProvider
+            )
+        }
+    }
+
+    private init(
         appContext: AppContext,
         userInfoProvider: UserInfoProvider,
-        logsDirectory: Directory,
-        logsFileCreationDateProvider: DateProvider,
-        logsUploadInterval: TimeInterval,
-        logsTimeProvider: DateProvider,
-        requestsRecorder: RequestsRecorder?
-    ) -> Datadog {
+        dateProvider: RelativeDateProvider
+    ) {
         let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
             in: temporaryDirectory,
-            using: logsFileCreationDateProvider
+            using: RelativeDateProvider(
+                startingFrom: dateProvider.date,
+                advancingBySeconds: dateProvider.timeInterval
+            )
         )
         let logsUploadStrategy: LogsUploadStrategy = .mockUploadBatchesInConstantDelayWith200ResponseStatusCode(
             interval: logsUploadInterval,
             using: logsPersistenceStrategy.reader,
             andRecordRequestsOn: requestsRecorder
         )
-        return Datadog(
+
+        // Instantiate `Datadog` object configured for sending one log per request.
+        Datadog.instance = Datadog(
             appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
-            dateProvider: logsTimeProvider,
+            dateProvider: dateProvider,
             userInfoProvider: userInfoProvider
         )
+    }
+
+    func run(closure: @escaping () -> Void) -> DatadogInstanceMock {
+        runClosure = closure
+        return self
+    }
+
+    func waitUntil(numberOfLogsSent: Int, file: StaticString = #file, line: UInt = #line) -> DatadogInstanceMock {
+        // Configure asynchronous expectation to be fulfilled `numberOfLogsSent` times
+        // as mocked `Datadog.instance` will be sending one log per request.
+        let expectation = XCTestExpectation(description: "Send \(numberOfLogsSent) logs")
+        expectation.expectedFulfillmentCount = numberOfLogsSent
+
+        // Fulfill the expectation on every request sent.
+        requestsRecorder.onNewRequest = { [expectation] _ in expectation.fulfill() }
+
+        // Set the timeout to 3 times more than expected (arbitrary).
+        let waitTime = logsUploadInterval * Double(numberOfLogsSent) * 3
+
+        waitClosure = { [requestsRecorder] in
+            let result = XCTWaiter().wait(for: [expectation], timeout: waitTime)
+
+            switch result {
+            case .completed:
+                break
+            case .incorrectOrder, .interrupted, .invertedFulfillment:
+                fatalError("Can't happen.")
+            case .timedOut:
+                XCTFail(
+                    "Exceeded time out with sending only \(requestsRecorder.requestsSent.count) out of \(numberOfLogsSent) expected logs.",
+                    file: file,
+                    line: line
+                )
+            @unknown default:
+                fatalError()
+            }
+        }
+        return self
+    }
+
+    /// Use to verify all logs sent.
+    func verifyAll(closure: @escaping ([LogMatcher]) throws -> Void) throws -> DatadogInstanceMock {
+        precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
+        precondition(waitClosure != nil, "`.wait {}` must preceed `.verify {}`")
+
+        runClosure?()
+        waitClosure?()
+
+        let logMatchers = try requestsRecorder.requestsSent
+            .map { request in try request.httpBody.unwrapOrThrow() }
+            .flatMap { requestBody in try requestBody.toArrayOfJSONObjects() }
+            .map { jsonObject in LogMatcher(from: jsonObject) }
+
+        try closure(logMatchers)
+
+        return self
+    }
+
+    /// Use to verify the first log sent.
+    func verifyFirst(closure: @escaping (LogMatcher) throws -> Void) throws -> DatadogInstanceMock {
+        try verifyAll { allMatchers in
+            try closure(allMatchers[0])
+        }
+    }
+
+    func destroy() throws {
+        try Datadog.deinitializeOrThrow()
     }
 }

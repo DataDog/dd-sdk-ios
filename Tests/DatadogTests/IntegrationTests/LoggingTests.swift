@@ -51,8 +51,10 @@ class LoggingTests: XCTestCase {
         Thread.sleep(forTimeInterval: 30)
 
         // Assert
-        try serverMock.verify { (session: ServerSession<LogsRequest>) in
-            let logMatchers = try session.retrieveLogMatchers()
+        try serverMock.verify { (session: ServerSession) in
+            let logMatchers = try session.recordedRequests
+                .flatMap { request in try request.body.toArrayOfJSONObjects() }
+                .map { jsonObject in LogMatcher(from: jsonObject) }
 
             logMatchers[0].assertStatus(equals: "DEBUG")
             logMatchers[0].assertMessage(equals: "debug message")

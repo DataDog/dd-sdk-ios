@@ -1,14 +1,15 @@
 import Foundation
+import XCTest
 @testable import Datadog
 
 /// Request received by server.
-protocol ServerRequest {
-    init(body: Data)
+struct ServerRequest {
+    let body: Data
 }
 
 /// Current server session recorded since `server.start()` call.
-struct ServerSession<R: ServerRequest> {
-    let recordedRequests: [R]
+struct ServerSession {
+    let recordedRequests: [ServerRequest]
 
     init(recordedIn directory: Directory) throws {
         let orderedRequestFiles = try directory.files()
@@ -16,6 +17,6 @@ struct ServerSession<R: ServerRequest> {
             .sorted { file1, file2 in file1.name < file2.name }
 
         self.recordedRequests = try orderedRequestFiles
-            .map { file in R(body: try file.read()) }
+            .map { file in try ServerRequest(body: file.read()) }
     }
 }

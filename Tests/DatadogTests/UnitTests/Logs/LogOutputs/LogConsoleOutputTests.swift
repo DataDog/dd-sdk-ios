@@ -39,7 +39,7 @@ class LogConsoleOutputTests: XCTestCase {
         XCTAssertEqual(messagePrinted, "🐶 10:00:00 [INFO] Info message.")
     }
 
-    func testItPrintsLogsUsingJSONFormat() {
+    func testItPrintsLogsUsingJSONFormat() throws {
         var messagePrinted: String = ""
 
         let output1 = LogConsoleOutput(
@@ -48,18 +48,19 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 }
         )
         output1.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
-        assertThat(jsonObjectData: messagePrinted.utf8Data, fullyMatches: """
-        {
-          "status" : "INFO",
-          "message" : "Info message.",
-          "service" : "test-service",
-          "logger.name" : "test-logger-name",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
-          "application.version": "1.0.0"
-        }
-        """)
+        try LogMatcher(from: messagePrinted.utf8Data)
+            .assertItFullyMatches(jsonString: """
+            {
+              "status" : "INFO",
+              "message" : "Info message.",
+              "service" : "test-service",
+              "logger.name" : "test-logger-name",
+              "logger.version": "\(sdkVersion)",
+              "logger.thread_name" : "main",
+              "date" : "2019-12-15T10:00:00Z",
+              "application.version": "1.0.0"
+            }
+            """)
 
         let output2 = LogConsoleOutput(
             logBuilder: logBuilder,
@@ -68,17 +69,18 @@ class LogConsoleOutputTests: XCTestCase {
         )
         output2.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
         XCTAssertTrue(messagePrinted.hasPrefix("🐶 → "))
-        assertThat(jsonObjectData: messagePrinted.removingPrefix("🐶 → ").utf8Data, fullyMatches: """
-        {
-          "status" : "INFO",
-          "message" : "Info message.",
-          "service" : "test-service",
-          "logger.name" : "test-logger-name",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
-          "application.version": "1.0.0"
-        }
-        """)
+        try LogMatcher(from: messagePrinted.removingPrefix("🐶 → ").utf8Data)
+            .assertItFullyMatches(jsonString: """
+            {
+              "status" : "INFO",
+              "message" : "Info message.",
+              "service" : "test-service",
+              "logger.name" : "test-logger-name",
+              "logger.version": "\(sdkVersion)",
+              "logger.thread_name" : "main",
+              "date" : "2019-12-15T10:00:00Z",
+              "application.version": "1.0.0"
+            }
+            """)
     }
 }
