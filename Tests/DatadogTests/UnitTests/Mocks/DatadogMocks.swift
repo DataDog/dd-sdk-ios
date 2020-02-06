@@ -370,7 +370,7 @@ class DatadogInstanceMock {
     class Builder {
         private var appContext: AppContext = .mockAny()
         private var userInfoProvider: UserInfoProvider = .mockAny()
-        private var dateProvider = RelativeDateProvider()
+        private var dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
 
         func with(appContext: AppContext) -> Builder {
             self.appContext = appContext

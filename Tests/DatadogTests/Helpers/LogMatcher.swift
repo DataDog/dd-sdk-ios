@@ -65,6 +65,24 @@ struct LogMatcher {
         assertValue(forKey: LogEncoder.StaticCodingKeys.message.rawValue, equals: message, file: file, line: line)
     }
 
+    func assertUserInfo(equals userInfo: UserInfo?, file: StaticString = #file, line: UInt = #line) {
+        if let id = userInfo?.id { // swiftlint:disable:this identifier_name
+            assertValue(forKey: LogEncoder.StaticCodingKeys.userId.rawValue, equals: id, file: file, line: line)
+        } else {
+            assertNoValue(forKey: LogEncoder.StaticCodingKeys.userId.rawValue, file: file, line: line)
+        }
+        if let name = userInfo?.name {
+            assertValue(forKey: LogEncoder.StaticCodingKeys.userName.rawValue, equals: name, file: file, line: line)
+        } else {
+            assertNoValue(forKey: LogEncoder.StaticCodingKeys.userName.rawValue, file: file, line: line)
+        }
+        if let email = userInfo?.email {
+            assertValue(forKey: LogEncoder.StaticCodingKeys.userEmail.rawValue, equals: email, file: file, line: line)
+        } else {
+            assertNoValue(forKey: LogEncoder.StaticCodingKeys.userEmail.rawValue, file: file, line: line)
+        }
+    }
+
     func assertAttributes(equal attributes: [String: Any], file: StaticString = #file, line: UInt = #line) {
         attributes.forEach { key, value in
             switch json[key] {

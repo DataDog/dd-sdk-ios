@@ -8,9 +8,6 @@ class LoggerTests: XCTestCase {
         bundleVersion: "1.0.0",
         bundleShortVersion: "1.0.0"
     )
-    private let userInfoProviderMock: UserInfoProvider = .mockWith(
-        userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
-    )
     private let dateProviderMock = RelativeDateProvider(
         startingFrom: .mockDecember15th2019At10AMUTC(),
         advancingBySeconds: 1
@@ -90,7 +87,6 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         try DatadogInstanceMock.build
             .with(appContext: appContextMock)
-            .with(dateProvider: dateProviderMock)
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -109,6 +105,35 @@ class LoggerTests: XCTestCase {
                 logMatchers[3].assertStatus(equals: "WARN")
                 logMatchers[4].assertStatus(equals: "ERROR")
                 logMatchers[5].assertStatus(equals: "CRITICAL")
+            }
+            .destroy()
+    }
+
+    // MARK: - Sending user info
+
+    func testSendingUserInfo() throws {
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message with no user info")
+
+                Datadog.setUserInfo(id: "abc-123", name: "Foo")
+                logger.debug("message with user `id` and `name`")
+
+                Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
+                logger.debug("message with user `id`, `name` and `email`")
+
+                Datadog.setUserInfo(id: nil, name: nil, email: nil)
+                logger.debug("message with no user info")
+            }
+            .waitUntil(numberOfLogsSent: 4)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertUserInfo(equals: nil)
+                logMatchers[1].assertUserInfo(equals: UserInfo(id: "abc-123", name: "Foo", email: nil))
+                logMatchers[2].assertUserInfo(equals: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com"))
+                logMatchers[3].assertUserInfo(equals: nil)
             }
             .destroy()
     }
@@ -198,7 +223,6 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         try DatadogInstanceMock.build
             .with(appContext: appContextMock)
-            .with(dateProvider: dateProviderMock)
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -232,7 +256,6 @@ class LoggerTests: XCTestCase {
     func testSendingTags() throws {
         try DatadogInstanceMock.build
             .with(appContext: appContextMock)
-            .with(dateProvider: dateProviderMock)
             .initialize()
             .run {
                 let logger = Logger.builder.build()
