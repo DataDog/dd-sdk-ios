@@ -358,6 +358,29 @@ extension Datadog {
     }
 }
 
+/// Wraps and mocks `Datadog.initialize(...)` to configure SDK in tests.
+/// All underlying componetns are instantiated and properly mocked.
+/// Requests passed to `URLSession` are captured and their data is passed to `verifyAll {}` method as `[LogMatcher]`.
+///
+/// Example usage:
+///
+///     try DatadogInstanceMock.build
+///         .with(appContext:)
+///         .with(dateProvider:)
+///         ...
+///         .initialize()
+///         .run {
+///             let logger = Logger.builder.build()
+///             logger.debug(...) // send logs
+///         }
+///         .waitUntil(numberOfLogsSent: 3) // expect number of logs
+///         .verifyAll { logMatchers in
+///             logMatchers[0].assert ... // verify logs
+///             logMatchers[1].assert ...
+///             logMatchers[2].assert ...
+///         }
+///         .destroy()
+///
 class DatadogInstanceMock {
     private let requestsRecorder = RequestsRecorder()
     private let logsUploadInterval: TimeInterval = 0.05
