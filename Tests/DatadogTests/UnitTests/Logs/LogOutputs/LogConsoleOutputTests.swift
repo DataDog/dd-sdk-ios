@@ -3,9 +3,17 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets trailing_closure
 class LogConsoleOutputTests: XCTestCase {
-    private let logBuilder: LogBuilder = .mockUsing(
-        date: .mockDecember15th2019At10AMUTC(),
-        serviceName: "test-service"
+    private let logBuilder = LogBuilder(
+        appContext: AppContext(
+            bundleIdentifier: "com.datadoghq.ios-sdk",
+            bundleVersion: "1.0.0",
+            bundleShortVersion: "1.0.0"
+        ),
+        serviceName: "test-service",
+        loggerName: "test-logger-name",
+        dateProvider: RelativeDateProvider(
+            using: .mockDecember15th2019At10AMUTC()
+        )
     )
 
     func testItPrintsLogsUsingShortFormat() {
@@ -39,12 +47,16 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 }
         )
         output1.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
-        XCTAssertEqual(messagePrinted, """
+        assertThat(jsonObjectData: messagePrinted.utf8Data, fullyMatches: """
         {
           "status" : "INFO",
           "message" : "Info message.",
           "service" : "test-service",
-          "date" : "2019-12-15T10:00:00Z"
+          "logger.name" : "test-logger-name",
+          "logger.version": "\(sdkVersion)",
+          "logger.thread_name" : "main",
+          "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0"
         }
         """)
 
@@ -54,12 +66,17 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 }
         )
         output2.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
-        XCTAssertEqual(messagePrinted, """
-        🐶 → {
+        XCTAssertTrue(messagePrinted.hasPrefix("🐶 → "))
+        assertThat(jsonObjectData: messagePrinted.removingPrefix("🐶 → ").utf8Data, fullyMatches: """
+        {
           "status" : "INFO",
           "message" : "Info message.",
           "service" : "test-service",
-          "date" : "2019-12-15T10:00:00Z"
+          "logger.name" : "test-logger-name",
+          "logger.version": "\(sdkVersion)",
+          "logger.thread_name" : "main",
+          "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0"
         }
         """)
     }

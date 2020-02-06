@@ -35,7 +35,11 @@ internal struct LogSanitizer {
             date: log.date,
             status: log.status,
             message: log.message,
-            service: log.service,
+            serviceName: log.serviceName,
+            loggerName: log.loggerName,
+            loggerVersion: log.loggerVersion,
+            threadName: log.threadName,
+            applicationVersion: log.applicationVersion,
             attributes: sanitize(attributes: log.attributes),
             tags: sanitize(tags: log.tags)
         )

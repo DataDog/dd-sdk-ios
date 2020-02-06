@@ -7,7 +7,15 @@ class LoggingTests: XCTestCase {
     override func setUp() {
         super.setUp()
         serverMock.start()
-        Datadog.initialize(endpointURL: serverMock.url, clientToken: "abcd")
+        Datadog.initialize(
+            appContext: AppContext(
+                bundleIdentifier: "com.datadoghq.ios-sdk",
+                bundleVersion: "1.0.0",
+                bundleShortVersion: "1.0.0"
+            ),
+            endpointURL: serverMock.url,
+            clientToken: "abcd"
+        )
     }
 
     override func tearDown() {
@@ -22,6 +30,7 @@ class LoggingTests: XCTestCase {
         let logger = Logger.builder
             .printLogsToConsole(true)
             .set(serviceName: "service-name")
+            .set(loggerName: "logger-name")
             .build()
 
         // Send logs
@@ -66,6 +75,10 @@ class LoggingTests: XCTestCase {
             logMatchers.forEach { matcher in
                 matcher.assertDate(matches: { $0.isNotOlderThan(seconds: 60) })
                 matcher.assertServiceName(equals: "service-name")
+                matcher.assertLoggerName(equals: "logger-name")
+                matcher.assertLoggerVersion(equals: sdkVersion)
+                matcher.assertApplicationVersion(equals: "1.0.0")
+                matcher.assertThreadName(equals: "main")
                 matcher.assertAttributes(
                     equal: [
                         "logger-attribute1": "string value",

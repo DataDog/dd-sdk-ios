@@ -20,7 +20,23 @@ struct LogMatcher {
     }
 
     func assertServiceName(equals serviceName: String, file: StaticString = #file, line: UInt = #line) {
-        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.service.rawValue, equals: serviceName, file: file, line: line)
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.serviceName.rawValue, equals: serviceName, file: file, line: line)
+    }
+
+    func assertThreadName(equals threadName: String, file: StaticString = #file, line: UInt = #line) {
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.threadName.rawValue, equals: threadName, file: file, line: line)
+    }
+
+    func assertLoggerName(equals loggerName: String, file: StaticString = #file, line: UInt = #line) {
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.loggerName.rawValue, equals: loggerName, file: file, line: line)
+    }
+
+    func assertLoggerVersion(equals loggerVersion: String, file: StaticString = #file, line: UInt = #line) {
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.loggerVersion.rawValue, equals: loggerVersion, file: file, line: line)
+    }
+
+    func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
+        assertJSONValue(forKey: LogEncoder.StaticCodingKeys.applicationVersion.rawValue, equals: applicationVersion, file: file, line: line)
     }
 
     func assertStatus(equals status: String, file: StaticString = #file, line: UInt = #line) {

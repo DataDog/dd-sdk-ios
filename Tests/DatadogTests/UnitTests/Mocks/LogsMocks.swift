@@ -7,11 +7,15 @@ It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
 extension Log {
-    static func mockAnyWith(
+    static func mockWith(
         date: Date = .mockAny(),
         status: Log.Status = .mockAny(),
         message: String = .mockAny(),
-        service: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        loggerName: String = .mockAny(),
+        loggerVersion: String = .mockAny(),
+        threadName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
         attributes: [String: EncodableValue]? = nil,
         tags: [String]? = nil
     ) -> Log {
@@ -19,18 +23,26 @@ extension Log {
             date: date,
             status: status,
             message: message,
-            service: service,
+            serviceName: serviceName,
+            loggerName: loggerName,
+            loggerVersion: loggerVersion,
+            threadName: threadName,
+            applicationVersion: applicationVersion,
             attributes: attributes,
             tags: tags
         )
     }
 
     static func mockRandom() -> Log {
-        return mockAnyWith(
+        return mockWith(
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(length: 20),
-            service: "ios-sdk-unit-tests"
+            serviceName: .mockRandom(),
+            loggerName: .mockRandom(),
+            loggerVersion: .mockRandom(),
+            threadName: .mockRandom(),
+            applicationVersion: .mockRandom()
         )
     }
 }
@@ -53,10 +65,17 @@ extension EncodableValue {
 }
 
 extension LogBuilder {
-    /// Mocks `LogBuilder` producing logs signed with given `date` and `serviceName`.
-    static func mockUsing(date: Date, serviceName: String = "test-service") -> LogBuilder {
+    /// Mocks `LogBuilder` producing logs signed with given `date`.
+    static func mockWith(
+        date: Date,
+        appContext: AppContext = .mockAny(),
+        serviceName: String = "test-service",
+        loggerName: String = "test-logger-name"
+    ) -> LogBuilder {
         return LogBuilder(
+            appContext: appContext,
             serviceName: serviceName,
+            loggerName: loggerName,
             dateProvider: RelativeDateProvider(using: date)
         )
     }

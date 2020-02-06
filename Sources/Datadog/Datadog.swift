@@ -1,9 +1,14 @@
 import Foundation
 
+/// SDK version associated with logs.
+/// Should be synced with SDK releases.
+internal let sdkVersion = "1.0.0-alpha1"
+
 /// Datadog SDK configuration object.
 public class Datadog {
-    static var instance: Datadog?
+    internal static var instance: Datadog?
 
+    internal let appContext: AppContext
     internal let dateProvider: DateProvider
 
     // MARK: - Logs
@@ -11,7 +16,7 @@ public class Datadog {
     internal let logsPersistenceStrategy: LogsPersistenceStrategy
     internal let logsUploadStrategy: LogsUploadStrategy
 
-    internal convenience init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
+    internal convenience init(appContext: AppContext, endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
         let logsUploadStrategy: LogsUploadStrategy = try .defalut(
             endpointURL: endpointURL,
@@ -19,6 +24,7 @@ public class Datadog {
             reader: logsPersistenceStrategy.reader
         )
         self.init(
+            appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: dateProvider
@@ -26,10 +32,12 @@ public class Datadog {
     }
 
     internal init(
+        appContext: AppContext,
         logsPersistenceStrategy: LogsPersistenceStrategy,
         logsUploadStrategy: LogsUploadStrategy,
         dateProvider: DateProvider
     ) {
+        self.appContext = appContext
         self.dateProvider = dateProvider
         self.logsPersistenceStrategy = logsPersistenceStrategy
         self.logsUploadStrategy = logsUploadStrategy
@@ -37,21 +45,43 @@ public class Datadog {
 }
 
 extension Datadog {
+    /// Context providing information about the app.
+    public struct AppContext {
+        internal let bundleIdentifier: String?
+        internal let bundleVersion: String?
+        internal let bundleShortVersion: String?
+
+        public init(mainBundle: Bundle = Bundle.main) {
+            self.init(
+                bundleIdentifier: mainBundle.bundleIdentifier,
+                bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            )
+        }
+
+        internal init(bundleIdentifier: String?, bundleVersion: String?, bundleShortVersion: String?) {
+            self.bundleIdentifier = bundleIdentifier
+            self.bundleVersion = bundleVersion
+            self.bundleShortVersion = bundleShortVersion
+        }
+    }
+
     // MARK: - Initialization
 
-    public static func initialize(endpointURL: String, clientToken: String) {
-        do { try initializeOrThrow(endpointURL: endpointURL, clientToken: clientToken)
+    public static func initialize(appContext: AppContext, endpointURL: String, clientToken: String) {
+        do { try initializeOrThrow(appContext: appContext, endpointURL: endpointURL, clientToken: clientToken)
         } catch {
             userLogger.critical("\(error)")
             fatalError("Programmer error - \(error)")  // crash
         }
     }
 
-    static func initializeOrThrow(endpointURL: String, clientToken: String) throws {
+    static func initializeOrThrow(appContext: AppContext, endpointURL: String, clientToken: String) throws {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
         self.instance = try Datadog(
+            appContext: appContext,
             endpointURL: endpointURL,
             clientToken: clientToken,
             dateProvider: SystemDateProvider()
@@ -75,6 +105,9 @@ extension Datadog {
         Datadog.instance = nil
     }
 }
+
+/// Convenience typealias.
+internal typealias AppContext = Datadog.AppContext
 
 /// An exception thrown due to programmer error when calling SDK public API.
 /// It will stop current process execution and crash the app 💥.

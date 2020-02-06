@@ -15,7 +15,7 @@ class LogFileOutputTests: XCTestCase {
     func testItWritesLogToFileAsJSON() throws {
         let queue = DispatchQueue(label: "any")
         let output = LogFileOutput(
-            logBuilder: .mockUsing(date: .mockAny()),
+            logBuilder: .mockWith(date: .mockAny()),
             fileWriter: .mockWrittingToSingleFile(in: temporaryDirectory, on: queue)
         )
 

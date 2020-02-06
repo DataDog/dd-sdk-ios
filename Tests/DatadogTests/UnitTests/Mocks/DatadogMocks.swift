@@ -47,6 +47,15 @@ class RelativeDateProvider: DateProvider {
 // MARK: - Files orchestration
 
 extension WritableFileConditions {
+    static func mockAny() -> WritableFileConditions {
+        return WritableFileConditions(
+            maxDirectorySize: 0,
+            maxFileSize: 0,
+            maxFileAgeForWrite: 0,
+            maxNumberOfUsesOfFile: 0
+        )
+    }
+
     /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
     static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
@@ -69,6 +78,10 @@ extension WritableFileConditions {
 }
 
 extension ReadableFileConditions {
+    static func mockAny() -> ReadableFileConditions {
+        return ReadableFileConditions(minFileAgeForRead: 0, maxFileAgeForRead: 0)
+    }
+
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
@@ -79,6 +92,15 @@ extension ReadableFileConditions {
 }
 
 extension FilesOrchestrator {
+    static func mockAny() -> FilesOrchestrator {
+        return FilesOrchestrator(
+            directory: temporaryDirectory,
+            writeConditions: .mockAny(),
+            readConditions: .mockAny(),
+            dateProvider: SystemDateProvider()
+        )
+    }
+
     /// Mocks `FilesOrchestrator` which always returns the same file for `getWritableFile()`.
     static func mockWriteToSingleFile(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
@@ -101,6 +123,14 @@ extension FilesOrchestrator {
 }
 
 extension FileWriter {
+    static func mockAny() -> FileWriter {
+        return FileWriter(
+            orchestrator: .mockAny(),
+            queue: .global(),
+            maxWriteSize: 0
+        )
+    }
+
     /// Mocks `FileWriter` writting data to single file with given name.
     static func mockWrittingToSingleFile(
         in directory: Directory,
@@ -114,11 +144,24 @@ extension FileWriter {
     }
 }
 
+extension FileReader {
+    static func mockAny() -> FileReader {
+        return FileReader(
+            orchestrator: .mockAny(),
+            queue: .global()
+        )
+    }
+}
+
 // MARK: - URLRequests delivery
 
 typealias RequestsRecorder = URLSessionRequestRecorder
 
 extension HTTPClient {
+    static func mockAny() -> HTTPClient {
+        return HTTPClient(session: .mockAny())
+    }
+
     static func mockDeliverySuccessWith(responseStatusCode: Int, requestsRecorder: RequestsRecorder? = nil) -> HTTPClient {
         return HTTPClient(
             session: .mockDeliverySuccess(
@@ -151,6 +194,10 @@ extension DataUploadURL {
 }
 
 extension DataUploadDelay {
+    static func mockAny() -> DataUploadDelay {
+        return DataUploadDelay(default: 0, min: 0, max: 0, decreaseFactor: 0)
+    }
+
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
     static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
         return DataUploadDelay(
@@ -162,7 +209,28 @@ extension DataUploadDelay {
     }
 }
 
+extension DataUploader {
+    static func mockAny() -> DataUploader {
+        return DataUploader(url: .mockAny(), httpClient: .mockAny())
+    }
+}
+
+extension DataUploadWorker {
+    static func mockAny() -> DataUploadWorker {
+        return DataUploadWorker(
+            queue: .global(),
+            fileReader: .mockAny(),
+            dataUploader: .mockAny(),
+            delay: .mockAny()
+        )
+    }
+}
+
 extension LogsPersistenceStrategy {
+    static func mockAny() -> LogsPersistenceStrategy {
+        return LogsPersistenceStrategy(writer: .mockAny(), reader: .mockAny())
+    }
+
     /// Mocks persistence strategy where:
     /// * new file is created for each write (so every log is written to new file);
     /// * file age is ignored when reading (so every file can be read immediately after writting);
@@ -181,6 +249,10 @@ extension LogsPersistenceStrategy {
 }
 
 extension LogsUploadStrategy {
+    static func mockAny() -> LogsUploadStrategy {
+        return LogsUploadStrategy(uploadWorker: .mockAny())
+    }
+
     /// Mocks upload strategy where:
     /// * batches are read with given `interval` of seconds using `fileReader`;
     /// * `URLRequest` passed to underlying `URLSession` are recorded on given `requestsRecorder`;
@@ -206,7 +278,52 @@ extension LogsUploadStrategy {
 
 // MARK: - Integration
 
+extension AppContext {
+    static func mockAny() -> AppContext {
+        return mockWith(
+            bundleIdentifier: nil,
+            bundleVersion: nil,
+            bundleShortVersion: nil
+        )
+    }
+
+    static func mockWith(
+        bundleIdentifier: String? = nil,
+        bundleVersion: String? = nil,
+        bundleShortVersion: String? = nil
+    ) -> AppContext {
+        return AppContext(
+            bundleIdentifier: bundleIdentifier,
+            bundleVersion: bundleVersion,
+            bundleShortVersion: bundleShortVersion
+        )
+    }
+}
+
 extension Datadog {
+    static func mockAny() -> Datadog {
+        return mockWith(
+            appContext: .mockAny(),
+            logsPersistenceStrategy: .mockAny(),
+            logsUploadStrategy: .mockAny(),
+            dateProvider: SystemDateProvider()
+        )
+    }
+
+    static func mockWith(
+        appContext: AppContext = .mockAny(),
+        logsPersistenceStrategy: LogsPersistenceStrategy = .mockAny(),
+        logsUploadStrategy: LogsUploadStrategy = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider()
+    ) -> Datadog {
+        return Datadog(
+            appContext: appContext,
+            logsPersistenceStrategy: logsPersistenceStrategy,
+            logsUploadStrategy: logsUploadStrategy,
+            dateProvider: dateProvider
+        )
+    }
+
     /// Mocks SDK instance successfully delivering logs (with 200OK HTTP response returned from underlying `URLSession` mock).
     /// - Parameters:
     ///   - logsDirectory: directory where log files are created.
@@ -215,6 +332,7 @@ extension Datadog {
     ///   - logsTimeProvider: date provider used by `LogsWritter` to set `date` in `Log`.
     ///   - requestsRecorder: requests recorder recording all requests passed to `URLSession`.
     static func mockSuccessfullySendingOneLogPerRequest(
+        appContext: AppContext,
         logsDirectory: Directory,
         logsFileCreationDateProvider: DateProvider,
         logsUploadInterval: TimeInterval,
@@ -231,20 +349,10 @@ extension Datadog {
             andRecordRequestsOn: requestsRecorder
         )
         return Datadog(
+            appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: logsTimeProvider
-        )
-    }
-
-    /// Mocks SDK instance which doesn't send logs.
-    static func mockAny(logsDirectory: Directory) -> Datadog {
-        return .mockSuccessfullySendingOneLogPerRequest(
-            logsDirectory: logsDirectory,
-            logsFileCreationDateProvider: RelativeDateProvider(),
-            logsUploadInterval: Date.distantFuture.timeIntervalSinceReferenceDate,
-            logsTimeProvider: RelativeDateProvider(),
-            requestsRecorder: nil
         )
     }
 }

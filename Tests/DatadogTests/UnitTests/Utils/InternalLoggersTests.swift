@@ -7,6 +7,7 @@ class InternalLoggersTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        Datadog.instance = .mockAny()
         printedMessages = []
         userLogger = createSDKUserLogger(
             consolePrintFunction: { [weak self] in self?.printedMessages.append($0) },
@@ -18,6 +19,7 @@ class InternalLoggersTests: XCTestCase {
     override func tearDown() {
         printedMessages = nil
         userLogger = nil
+        Datadog.instance = nil
         super.tearDown()
     }
 
