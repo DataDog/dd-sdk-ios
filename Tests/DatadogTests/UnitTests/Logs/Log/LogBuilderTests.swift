@@ -65,6 +65,9 @@ class LogBuilderTests: XCTestCase {
         }
 
         DispatchQueue(label: "custom-queue").async {
+            let previousName = Thread.current.name
+            defer { Thread.current.name = previousName } // reset it as this thread might be picked by `.global(qos: .default)`
+
             Thread.current.name = "custom-thread-name"
             let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
             XCTAssertEqual(log.threadName, "custom-thread-name")
