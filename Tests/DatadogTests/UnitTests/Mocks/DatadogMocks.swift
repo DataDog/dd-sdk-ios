@@ -438,8 +438,8 @@ class DatadogInstanceMock {
         // Fulfill the expectation on every request sent.
         requestsRecorder.onNewRequest = { [expectation] _ in expectation.fulfill() }
 
-        // Set the timeout to 3 times more than expected (arbitrary).
-        let waitTime = logsUploadInterval * Double(numberOfLogsSent) * 3
+        // Set the timeout to 8 times more than expected (arbitrary).
+        let waitTime = logsUploadInterval * Double(numberOfLogsSent) * 8
 
         waitClosure = { [requestsRecorder] in
             let result = XCTWaiter().wait(for: [expectation], timeout: waitTime)
