@@ -210,6 +210,36 @@ extension DataUploadDelay {
     }
 }
 
+extension BatteryStatus.State {
+    static func mockRandom(within cases: [BatteryStatus.State] = [.unknown, .unplugged, .charging, .full]) -> BatteryStatus.State {
+        return cases.randomElement()!
+    }
+}
+
+struct BatteryStatusProviderMock: BatteryStatusProvider {
+    let current: BatteryStatus
+
+    static func mockWith(status: BatteryStatus) -> BatteryStatusProviderMock {
+        return BatteryStatusProviderMock(current: status)
+    }
+}
+
+extension NetworkStatus.Reachability {
+    static func mockRandom(within cases: [NetworkStatus.Reachability] = [.yes, .no, .maybe]) -> NetworkStatus.Reachability {
+        return cases.randomElement()!
+    }
+}
+
+struct NetworkStatusProviderMock: NetworkStatusProvider {
+    let current: NetworkStatus
+
+    static func mockWith(reachability: NetworkStatus.Reachability) -> NetworkStatusProviderMock {
+        return NetworkStatusProviderMock(
+            current: NetworkStatus(reachability: reachability)
+        )
+    }
+}
+
 extension DataUploader {
     static func mockAny() -> DataUploader {
         return DataUploader(url: .mockAny(), httpClient: .mockAny())

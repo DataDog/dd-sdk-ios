@@ -15,7 +15,11 @@ internal struct NetworkStatus {
 }
 
 /// Shared provider to get current `NetworkStatus`.
-internal struct NetworkStatusProvider {
+internal protocol NetworkStatusProvider {
+    var current: NetworkStatus { get }
+}
+
+internal struct PlatformSpecificNetworkStatusProvider: NetworkStatusProvider {
     private let monitor = NWPathMonitor()
 
     var current: NetworkStatus {

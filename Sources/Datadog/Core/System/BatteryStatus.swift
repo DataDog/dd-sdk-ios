@@ -14,7 +14,7 @@ internal struct BatteryStatus {
 
     let state: State
     let level: Float
-    let isSavingEnergy: Bool
+    let isLowPowerModeEnabled: Bool
 }
 
 /// Shared provider to get current `BatteryStatus`.
@@ -24,12 +24,12 @@ internal protocol BatteryStatusProvider {
 
 #if canImport(UIKit) // SDK does not consider battery status when running on macOS
 /// `BatteryStatusProvider` provider specific to platforms supporting `UIKit` (iOS 2.0+, Mac Catalyst 13.0+, ...).
-internal struct UIKitBatteryStatusProvider: BatteryStatusProvider {
+internal struct PlatformSpecificBatteryStatusProvider: BatteryStatusProvider {
     var current: BatteryStatus {
         BatteryStatus(
             state: toBatteryState(UIDevice.current.batteryState),
             level: UIDevice.current.batteryLevel,
-            isSavingEnergy: ProcessInfo.processInfo.isLowPowerModeEnabled
+            isLowPowerModeEnabled: ProcessInfo.processInfo.isLowPowerModeEnabled
         )
     }
 
