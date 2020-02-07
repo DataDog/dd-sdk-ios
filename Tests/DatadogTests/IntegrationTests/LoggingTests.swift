@@ -1,6 +1,7 @@
 import XCTest
 @testable import Datadog
 
+#if os(macOS) // TODO: RUMM-216 Integration tests can be run on simulator and device
 class LoggingTests: XCTestCase {
     private let serverMock = ServerMock()
 
@@ -94,3 +95,4 @@ class LoggingTests: XCTestCase {
     }
     // swiftlint:enable trailing_closure
 }
+#endif

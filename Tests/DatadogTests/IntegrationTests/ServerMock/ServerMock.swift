@@ -1,6 +1,7 @@
 import Foundation
 @testable import Datadog
 
+#if os(macOS) // TODO: RUMM-216 Integration tests can be run on simulator and device
 class ServerMock {
     let url: String = "http://localhost:8000/"
     /// Directory where server saves request files.
@@ -50,3 +51,4 @@ class ServerMock {
         fatalError("Cannot resolve the URL to folder containing `Package.swif`.")
     }
 }
+#endif
