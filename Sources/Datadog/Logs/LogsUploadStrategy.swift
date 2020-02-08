@@ -1,7 +1,7 @@
 import Foundation
 
 /// Creates and owns components necessary for logs upload.
-internal struct LogsUploadStrategy {
+internal struct LogsUploadStrategy2 {
     struct Constants {
         /// Default time interval for logs upload (in seconds).
         /// At runtime, the upload interval range from `minLogsUploadDelay` to `maxLogsUploadDelay` depending
@@ -43,12 +43,24 @@ internal struct LogsUploadStrategy {
             label: "com.datadoghq.ios-sdk-logs-upload",
             target: .global(qos: .utility)
         )
+        #if canImport(PlatformSpecificBatteryStatusProvider)
+        let uploadConditions = DataUploadConditions(
+            batteryStatus: PlatformSpecificBatteryStatusProvider(),
+            networkStatus: PlatformSpecificNetworkStatusProvider()
+        )
+        #else
+        let uploadConditions = DataUploadConditions(
+            batteryStatus: nil,
+            networkStatus: PlatformSpecificNetworkStatusProvider()
+        )
+        #endif
 
         return LogsUploadStrategy(
             uploadWorker: DataUploadWorker(
                 queue: uploadQueue,
                 fileReader: reader,
                 dataUploader: dataUploader,
+                uploadConditions: uploadConditions,
                 delay: uploadDelay
             )
         )
