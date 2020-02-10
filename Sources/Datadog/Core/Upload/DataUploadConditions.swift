@@ -4,7 +4,7 @@ import Foundation
 internal struct DataUploadConditions {
     struct Constants {
         /// Battery level above which data upload can be performed.
-        static let minBatteryLevel: Float = 10
+        static let minBatteryLevel: Float = 0.1
     }
 
     let batteryStatus: BatteryStatusProviderType?

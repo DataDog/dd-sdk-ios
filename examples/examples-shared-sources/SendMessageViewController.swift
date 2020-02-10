@@ -13,14 +13,10 @@ class SendMessageViewController: UIViewController {
         case debug = 0, info, notice, warn, error, critical
     }
 
-    private let consoleOutput = ConsoleOutputInterceptor()
-
     override func viewDidLoad() {
         super.viewDidLoad()
         hideKeyboardWhenTapOutside()
-        consoleOutput.notifyContentsChange = { [weak self] newContents in
-            self?.updateConsoleTextView(with: newContents)
-        }
+        startDisplayingDebugInfo(in: consoleTextView)
     }
 
     @IBAction func didTapSendSingleLog(_ sender: Any) {
@@ -51,10 +47,5 @@ class SendMessageViewController: UIViewController {
 
     private func repeat10x(block: () -> Void) {
         (0..<10).forEach { _ in block() }
-    }
-
-    private func updateConsoleTextView(with contents: String) {
-        let reversedLines = contents.split(separator: "\n").reversed().joined(separator: "\n")
-        consoleTextView.text = reversedLines
     }
 }

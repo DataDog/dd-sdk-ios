@@ -24,7 +24,18 @@ internal protocol BatteryStatusProviderType {
 
 #if canImport(UIKit) // SDK does not consider battery status when running on macOS
 /// `BatteryStatusProvider` provider specific to platforms supporting `UIKit` (iOS 2.0+, Mac Catalyst 13.0+, ...).
-internal struct BatteryStatusProvider: BatteryStatusProviderType {
+internal class BatteryStatusProvider: BatteryStatusProviderType {
+    private var originalIsBatteryMonitoringEnabled: Bool
+
+    init() {
+        originalIsBatteryMonitoringEnabled = UIDevice.current.isBatteryMonitoringEnabled
+        UIDevice.current.isBatteryMonitoringEnabled = true
+    }
+
+    deinit {
+        UIDevice.current.isBatteryMonitoringEnabled = originalIsBatteryMonitoringEnabled
+    }
+
     var current: BatteryStatus {
         BatteryStatus(
             state: toBatteryState(UIDevice.current.batteryState),

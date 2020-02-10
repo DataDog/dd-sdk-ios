@@ -5,6 +5,11 @@ internal protocol ConsoleLogFormatter {
     func format(log: Log) -> String
 }
 
+/// Function printing `String` content to console.
+internal var consolePrint: (String) -> Void = { content in
+    print(content)
+}
+
 /// `LogOutput` which prints logs to console.
 internal struct LogConsoleOutput: LogOutput {
     /// Time formatter used for `.short` output format.
@@ -23,7 +28,7 @@ internal struct LogConsoleOutput: LogOutput {
     init(
         logBuilder: LogBuilder,
         format: Logger.Builder.ConsoleLogFormat,
-        printingFunction: @escaping (String) -> Void = { print($0) },
+        printingFunction: @escaping (String) -> Void = { consolePrint($0) },
         timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
     ) {
         switch format {

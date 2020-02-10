@@ -10,7 +10,7 @@ class DataUploadConditionsTests: XCTestCase {
                 canPerformUploadReturns: true,
                 forBattery: .mockWith(
                     status: BatteryStatus(
-                        state: .mockRandom(), level: Constants.minBatteryLevel + 1, isLowPowerModeEnabled: false
+                        state: .mockRandom(), level: Constants.minBatteryLevel + 0.01, isLowPowerModeEnabled: false
                     )
                 ),
                 forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
@@ -56,7 +56,7 @@ class DataUploadConditionsTests: XCTestCase {
                 canPerformUploadReturns: false,
                 forBattery: .mockWith(
                     status: BatteryStatus(
-                        state: .mockRandom(within: [.unknown, .unplugged]), level: Constants.minBatteryLevel - 1, isLowPowerModeEnabled: .random()
+                        state: .mockRandom(within: [.unknown, .unplugged]), level: Constants.minBatteryLevel - 0.01, isLowPowerModeEnabled: .random()
                     )
                 ),
                 forNetwork: .mockWith(reachability: .mockRandom())
