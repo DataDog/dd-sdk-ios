@@ -7,14 +7,20 @@ class SendMessageViewController: UIViewController {
     @IBOutlet weak var logServiceNameTextField: UITextField!
     @IBOutlet weak var sendOnceButton: UIButton!
     @IBOutlet weak var send10xButton: UIButton!
+    @IBOutlet weak var consoleTextView: UITextView!
 
     enum LogLevelSegment: Int {
         case debug = 0, info, notice, warn, error, critical
     }
 
+    private let consoleOutput = ConsoleOutputInterceptor()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         hideKeyboardWhenTapOutside()
+        consoleOutput.notifyContentsChange = { [weak self] newContents in
+            self?.updateConsoleTextView(with: newContents)
+        }
     }
 
     @IBAction func didTapSendSingleLog(_ sender: Any) {
@@ -45,5 +51,10 @@ class SendMessageViewController: UIViewController {
 
     private func repeat10x(block: () -> Void) {
         (0..<10).forEach { _ in block() }
+    }
+
+    private func updateConsoleTextView(with contents: String) {
+        let reversedLines = contents.split(separator: "\n").reversed().joined(separator: "\n")
+        consoleTextView.text = reversedLines
     }
 }

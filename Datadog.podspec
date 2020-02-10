@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
   spec.license            = { :type => "Apache" }
   spec.authors            = { "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com" }
   spec.social_media_url   = "https://twitter.com/datadoghq"
-  spec.platform           = :ios, "11.0"
+  spec.platform           = :ios, "12.0"
   spec.swift_version      = '5.1'
   spec.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git',
                   :tag => spec.version.to_s }
