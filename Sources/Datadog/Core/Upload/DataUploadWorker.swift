@@ -42,7 +42,10 @@ internal class DataUploadWorker {
                 return
             }
 
-            if self.uploadConditions.canPerformUpload(), let batch = self.fileReader.readNextBatch() {
+            let isSystemReady = self.uploadConditions.canPerformUpload()
+            let nextBatch = self.fileReader.readNextBatch()
+
+            if isSystemReady, let batch = nextBatch {
                 developerLogger?.info("⏳ Uploading batch...")
                 userLogger.debug("⏳ Uploading batch...")
 
@@ -60,8 +63,11 @@ internal class DataUploadWorker {
 
                 self.delay.decrease()
             } else {
-                developerLogger?.info("💡 No batch to upload.")
-                userLogger.debug("💡 No batch to upload.")
+                let batchLabel = nextBatch != nil ? "✅" : "❌"
+                let systemLabel = isSystemReady ? "✅" : "❌"
+                developerLogger?.info("💡 No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
+                userLogger.debug("💡 No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
+
                 self.delay.increaseOnce()
             }
 

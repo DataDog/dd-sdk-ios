@@ -18,13 +18,13 @@ internal struct BatteryStatus {
 }
 
 /// Shared provider to get current `BatteryStatus`.
-internal protocol BatteryStatusProvider {
+internal protocol BatteryStatusProviderType {
     var current: BatteryStatus { get }
 }
 
 #if canImport(UIKit) // SDK does not consider battery status when running on macOS
 /// `BatteryStatusProvider` provider specific to platforms supporting `UIKit` (iOS 2.0+, Mac Catalyst 13.0+, ...).
-internal struct PlatformSpecificBatteryStatusProvider: BatteryStatusProvider {
+internal struct BatteryStatusProvider: BatteryStatusProviderType {
     var current: BatteryStatus {
         BatteryStatus(
             state: toBatteryState(UIDevice.current.batteryState),

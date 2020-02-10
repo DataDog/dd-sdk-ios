@@ -7,8 +7,8 @@ internal struct DataUploadConditions {
         static let minBatteryLevel: Float = 10
     }
 
-    let batteryStatus: BatteryStatusProvider?
-    let networkStatus: NetworkStatusProvider
+    let batteryStatus: BatteryStatusProviderType?
+    let networkStatus: NetworkStatusProviderType
 
     func canPerformUpload() -> Bool {
         let batteryStatus = self.batteryStatus?.current

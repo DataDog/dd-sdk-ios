@@ -1,7 +1,7 @@
 import Foundation
 
 /// Creates and owns components necessary for logs upload.
-internal struct LogsUploadStrategy2 {
+internal struct LogsUploadStrategy {
     struct Constants {
         /// Default time interval for logs upload (in seconds).
         /// At runtime, the upload interval range from `minLogsUploadDelay` to `maxLogsUploadDelay` depending
@@ -31,27 +31,20 @@ internal struct LogsUploadStrategy2 {
         let uploadURL = try DataUploadURL(endpointURL: endpointURL, clientToken: clientToken)
         let httpClient = HTTPClient()
         let dataUploader = DataUploader(url: uploadURL, httpClient: httpClient)
-        return self.defalut(dataUploader: dataUploader, reader: reader)
-    }
 
-    static func `defalut`(
-        dataUploader: DataUploader,
-        reader: FileReader,
-        uploadDelay: DataUploadDelay = defaultLogsUploadDelay
-    ) -> LogsUploadStrategy {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-upload",
             target: .global(qos: .utility)
         )
-        #if canImport(PlatformSpecificBatteryStatusProvider)
+        #if canImport(BatteryStatusProvider)
         let uploadConditions = DataUploadConditions(
-            batteryStatus: PlatformSpecificBatteryStatusProvider(),
-            networkStatus: PlatformSpecificNetworkStatusProvider()
+            batteryStatus: BatteryStatusProvider(),
+            networkStatus: NetworkStatusProvider()
         )
         #else
         let uploadConditions = DataUploadConditions(
             batteryStatus: nil,
-            networkStatus: PlatformSpecificNetworkStatusProvider()
+            networkStatus: NetworkStatusProvider()
         )
         #endif
 
@@ -61,7 +54,7 @@ internal struct LogsUploadStrategy2 {
                 fileReader: reader,
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
-                delay: uploadDelay
+                delay: defaultLogsUploadDelay
             )
         )
     }

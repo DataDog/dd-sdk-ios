@@ -15,12 +15,21 @@ internal struct NetworkStatus {
 }
 
 /// Shared provider to get current `NetworkStatus`.
-internal protocol NetworkStatusProvider {
+internal protocol NetworkStatusProviderType {
     var current: NetworkStatus { get }
 }
 
-internal struct PlatformSpecificNetworkStatusProvider: NetworkStatusProvider {
+internal class NetworkStatusProvider: NetworkStatusProviderType {
+    private let queue = DispatchQueue.global(qos: .utility)
     private let monitor = NWPathMonitor()
+
+    init() {
+        monitor.start(queue: queue)
+    }
+
+    deinit {
+        monitor.cancel()
+    }
 
     var current: NetworkStatus {
         switch monitor.currentPath.status {
