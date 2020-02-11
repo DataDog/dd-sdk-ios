@@ -3,12 +3,10 @@ import XCTest
 
 class LogBuilderTests: XCTestCase {
     let builder = LogBuilder(
-        appContext: AppContext(
+        appContext: .mockWith(
             bundleIdentifier: "com.datadoghq.ios-sdk",
             bundleVersion: "1.0.0",
-            bundleShortVersion: "1.0.0",
-            executableName: .mockAny(),
-            mobileDevice: .mockAny()
+            bundleShortVersion: "1.0.0"
         ),
         serviceName: "test-service-name",
         loggerName: "test-logger-name",

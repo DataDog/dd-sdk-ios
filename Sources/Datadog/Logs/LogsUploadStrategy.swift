@@ -37,17 +37,20 @@ internal struct LogsUploadStrategy {
             label: "com.datadoghq.ios-sdk-logs-upload",
             target: .global(qos: .utility)
         )
-        #if canImport(UIKit) && !targetEnvironment(simulator)
-        let uploadConditions = DataUploadConditions(
-            batteryStatus: BatteryStatusProvider(),
-            networkStatus: NetworkStatusProvider()
-        )
-        #else
-        let uploadConditions = DataUploadConditions(
-            batteryStatus: nil,
-            networkStatus: NetworkStatusProvider()
-        )
-        #endif
+
+        let uploadConditions: DataUploadConditions = {
+            if let mobileDevice = appContext.mobileDevice {
+                return DataUploadConditions(
+                    batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
+                    networkStatus: NetworkStatusProvider()
+                )
+            } else {
+                return DataUploadConditions(
+                    batteryStatus: nil,
+                    networkStatus: NetworkStatusProvider()
+                )
+            }
+        }()
 
         return LogsUploadStrategy(
             uploadWorker: DataUploadWorker(

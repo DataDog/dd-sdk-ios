@@ -7,7 +7,7 @@ class HTTPHeadersTests: XCTestCase {
             appContext: .mockWith(
                 bundleVersion: "1.0.0",
                 executableName: "app-name",
-                mobileDevice: MobileDevice(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
 

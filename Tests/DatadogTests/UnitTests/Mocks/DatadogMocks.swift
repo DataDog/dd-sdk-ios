@@ -193,7 +193,25 @@ extension HTTPHeaders {
 
 extension MobileDevice {
     static func mockAny() -> MobileDevice {
-        return MobileDevice(model: .mockAny(), osName: .mockAny(), osVersion: .mockAny())
+        return .mockWith()
+    }
+
+    static func mockWith(
+        model: String = .mockAny(),
+        osName: String = .mockAny(),
+        osVersion: String = .mockAny(),
+        enableBatteryStatusMonitoring: @escaping () -> Void = {},
+        resetBatteryStatusMonitoring: @escaping () -> Void = {},
+        currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
+    ) -> MobileDevice {
+        return MobileDevice(
+            model: model,
+            osName: osName,
+            osVersion: osVersion,
+            enableBatteryStatusMonitoring: enableBatteryStatusMonitoring,
+            resetBatteryStatusMonitoring: resetBatteryStatusMonitoring,
+            currentBatteryStatus: currentBatteryStatus
+        )
     }
 }
 
@@ -379,13 +397,7 @@ extension LogsUploadStrategy {
 
 extension AppContext {
     static func mockAny() -> AppContext {
-        return mockWith(
-            bundleIdentifier: nil,
-            bundleVersion: nil,
-            bundleShortVersion: nil,
-            executableName: nil,
-            mobileDevice: nil
-        )
+        return mockWith()
     }
 
     static func mockWith(
@@ -437,12 +449,7 @@ extension UserInfoProvider {
 
 extension Datadog {
     static func mockAny() -> Datadog {
-        return mockWith(
-            appContext: .mockAny(),
-            logsPersistenceStrategy: .mockAny(),
-            logsUploadStrategy: .mockAny(),
-            dateProvider: SystemDateProvider()
-        )
+        return mockWith()
     }
 
     static func mockWith(
