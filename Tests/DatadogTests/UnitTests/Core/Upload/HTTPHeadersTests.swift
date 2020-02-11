@@ -2,7 +2,7 @@ import XCTest
 @testable import Datadog
 
 class HTTPHeadersTests: XCTestCase {
-    func testItCreatesHeadersForMobileDevice() {
+    func testWhenRunningOnMobileDevice_itCreatesExpectedHeaders() {
         let headers = HTTPHeaders(
             appContext: .mockWith(
                 bundleVersion: "1.0.0",
@@ -20,7 +20,7 @@ class HTTPHeadersTests: XCTestCase {
         )
     }
 
-    func testItCreatesHeadersForOtherDevices() {
+    func testWhenRunningOnOtherDevice_itCreatesExpectedHeaders() {
         let headers = HTTPHeaders(
             appContext: .mockWith(mobileDevice: nil)
         )
