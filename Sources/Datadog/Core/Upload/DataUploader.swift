@@ -23,14 +23,12 @@ internal struct DataUploadURL {
 internal final class DataUploader {
     private let uploadURL: DataUploadURL
     private let httpClient: HTTPClient
+    private let httpHeaders: HTTPHeaders
 
-    convenience init(url: DataUploadURL) {
-        self.init(url: url, httpClient: HTTPClient())
-    }
-
-    init(url: DataUploadURL, httpClient: HTTPClient) {
+    init(url: DataUploadURL, httpClient: HTTPClient, httpHeaders: HTTPHeaders) {
         self.uploadURL = url
         self.httpClient = httpClient
+        self.httpHeaders = httpHeaders
     }
 
     /// Uploads data synchronously (will block current thread) and returns upload status.
@@ -61,7 +59,7 @@ internal final class DataUploader {
     private func createRequestWith(data: Data) -> URLRequest {
         var request = URLRequest(url: uploadURL.url)
         request.httpMethod = "POST"
-        request.allHTTPHeaderFields = ["Content-Type": "application/json"]
+        request.allHTTPHeaderFields = httpHeaders.all
         request.httpBody = data
         return request
     }

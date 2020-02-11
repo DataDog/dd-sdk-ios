@@ -6,7 +6,9 @@ class LoggerTests: XCTestCase {
     private let appContextMock = AppContext(
         bundleIdentifier: "com.datadoghq.ios-sdk",
         bundleVersion: "1.0.0",
-        bundleShortVersion: "1.0.0"
+        bundleShortVersion: "1.0.0",
+        executableName: .mockAny(),
+        mobileDevice: .mockAny()
     )
     private let dateProviderMock = RelativeDateProvider(
         startingFrom: .mockDecember15th2019At10AMUTC(),

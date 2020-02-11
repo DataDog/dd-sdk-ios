@@ -2,7 +2,7 @@ import Foundation
 
 /// SDK version associated with logs.
 /// Should be synced with SDK releases.
-internal let sdkVersion = "1.0.0-alpha1"
+internal let sdkVersion = "1.0.0-alpha2"
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -26,6 +26,7 @@ public class Datadog {
     ) throws {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
         let logsUploadStrategy: LogsUploadStrategy = try .defalut(
+            appContext: appContext,
             endpointURL: endpointURL,
             clientToken: clientToken,
             reader: logsPersistenceStrategy.reader
@@ -60,19 +61,32 @@ extension Datadog {
         internal let bundleIdentifier: String?
         internal let bundleVersion: String?
         internal let bundleShortVersion: String?
+        internal let executableName: String?
+        /// Describes current mobile device if SDK runs on a platform that supports `UIKit`.
+        internal let mobileDevice: MobileDevice?
 
         public init(mainBundle: Bundle = Bundle.main) {
             self.init(
                 bundleIdentifier: mainBundle.bundleIdentifier,
                 bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
-                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                executableName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
+                mobileDevice: MobileDevice.current
             )
         }
 
-        internal init(bundleIdentifier: String?, bundleVersion: String?, bundleShortVersion: String?) {
+        internal init(
+            bundleIdentifier: String?,
+            bundleVersion: String?,
+            bundleShortVersion: String?,
+            executableName: String?,
+            mobileDevice: MobileDevice?
+        ) {
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleShortVersion = bundleShortVersion
+            self.executableName = executableName
+            self.mobileDevice = mobileDevice
         }
     }
 

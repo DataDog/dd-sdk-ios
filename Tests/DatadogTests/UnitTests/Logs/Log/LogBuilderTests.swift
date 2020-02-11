@@ -6,7 +6,9 @@ class LogBuilderTests: XCTestCase {
         appContext: AppContext(
             bundleIdentifier: "com.datadoghq.ios-sdk",
             bundleVersion: "1.0.0",
-            bundleShortVersion: "1.0.0"
+            bundleShortVersion: "1.0.0",
+            executableName: .mockAny(),
+            mobileDevice: .mockAny()
         ),
         serviceName: "test-service-name",
         loggerName: "test-logger-name",

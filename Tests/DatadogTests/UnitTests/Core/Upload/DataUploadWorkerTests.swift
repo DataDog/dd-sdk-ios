@@ -28,7 +28,8 @@ class DataUploadWorkerTests: XCTestCase {
         let requestsRecorder = RequestsRecorder()
         let dataUploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder)
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder),
+            httpHeaders: .mockAny()
         )
 
         // Write 3 files

@@ -25,28 +25,44 @@ class DataUploadURLTests: XCTestCase {
 
 class DataUploaderTests: XCTestCase {
     func testWhenDataIsSentWith200Code_itReturnsDataUploadStatus_success() {
-        let uploader = DataUploader(url: .mockAny(), httpClient: .mockDeliverySuccessWith(responseStatusCode: 200))
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200),
+            httpHeaders: .mockAny()
+        )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .success)
     }
 
     func testWhenDataIsSentWith300Code_itReturnsDataUploadStatus_redirection() {
-        let uploader = DataUploader(url: .mockAny(), httpClient: .mockDeliverySuccessWith(responseStatusCode: 300))
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 300),
+            httpHeaders: .mockAny()
+        )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .redirection)
     }
 
     func testWhenDataIsSentWith400Code_itReturnsDataUploadStatus_clientError() {
-        let uploader = DataUploader(url: .mockAny(), httpClient: .mockDeliverySuccessWith(responseStatusCode: 400))
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 400),
+            httpHeaders: .mockAny()
+        )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .clientError)
     }
 
     func testWhenDataIsSentWith500Code_itReturnsDataUploadStatus_serverError() {
-        let uploader = DataUploader(url: .mockAny(), httpClient: .mockDeliverySuccessWith(responseStatusCode: 500))
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 500),
+            httpHeaders: .mockAny()
+        )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .serverError)
@@ -54,14 +70,22 @@ class DataUploaderTests: XCTestCase {
 
     func testWhenDataIsNotSentDueToNetworkError_itReturnsDataUploadStatus_networkError() {
         let error = ErrorMock("network error")
-        let uploader = DataUploader(url: .mockAny(), httpClient: .mockDeliveryFailureWith(error: error))
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliveryFailureWith(error: error),
+            httpHeaders: .mockAny()
+        )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .networkError)
     }
 
     func testWhenDataIsNotSentDueToUnknownStatusCode_itReturnsDataUploadStatus_unknown() {
-        let uploader = DataUploader(url: .mockAny(), httpClient: .mockDeliverySuccessWith(responseStatusCode: -1))
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: -1),
+            httpHeaders: .mockAny()
+        )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .unknown)
