@@ -16,7 +16,7 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(Datadog.LogsEndpoint.us.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertEqual(Datadog.LogsEndpoint.eu.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
         XCTAssertEqual(
-            Datadog.LogsEndpoint.custom("https://api.example.com/v1/logs/").url,
+            Datadog.LogsEndpoint.custom(url: "https://api.example.com/v1/logs/").url,
             "https://api.example.com/v1/logs/"
         )
     }
@@ -24,7 +24,7 @@ class DatadogTests: XCTestCase {
     func testItCanBeInitializedWithValidConfiguration() throws {
         Datadog.initialize(
             appContext: .mockAny(),
-            endpoint: .custom("https://api.example.com/v1/logs/"),
+            endpoint: .custom(url: "https://api.example.com/v1/logs/"),
             clientToken: "abcdefghi"
         )
         XCTAssertNotNil(Datadog.instance)
@@ -43,7 +43,7 @@ class DatadogTests: XCTestCase {
         let initialize = {
             try Datadog.initializeOrThrow(
                 appContext: .mockAny(),
-                endpoint: .custom("https://api.example.com/v1/logs/"),
+                endpoint: .custom(url: "https://api.example.com/v1/logs/"),
                 clientToken: "abcdefghi"
             )
         }

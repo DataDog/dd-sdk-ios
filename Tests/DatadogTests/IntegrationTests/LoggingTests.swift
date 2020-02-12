@@ -16,7 +16,7 @@ class LoggingTests: XCTestCase {
                 executableName: "some-app",
                 mobileDevice: nil
             ),
-            endpoint: .custom(serverMock.url),
+            endpoint: .custom(url: serverMock.url),
             clientToken: "abcd"
         )
     }

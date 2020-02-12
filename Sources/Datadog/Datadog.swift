@@ -65,13 +65,13 @@ extension Datadog {
         /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
         case eu // swiftlint:disable:this identifier_name
         /// User-defined server.
-        case custom(String)
+        case custom(url: String)
 
         var url: String {
             switch self {
             case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
             case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
-            case .custom(let url): return url
+            case let .custom(url: url): return url
             }
         }
     }
