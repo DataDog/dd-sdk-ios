@@ -24,6 +24,8 @@ class DataUploadURLTests: XCTestCase {
 }
 
 class DataUploaderTests: XCTestCase {
+    // MARK: - Upload Status
+
     func testWhenDataIsSentWith200Code_itReturnsDataUploadStatus_success() {
         let uploader = DataUploader(
             url: .mockAny(),
@@ -89,5 +91,60 @@ class DataUploaderTests: XCTestCase {
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .unknown)
+    }
+
+    // MARK: - HTTP Headers
+
+    func testWhenSendingFromMobileDevice_itSetsMobileHeaders() {
+        let requestRecorder = RequestsRecorder()
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestRecorder),
+            httpHeaders: HTTPHeaders(
+                appContext: .mockWith(
+                    bundleVersion: "1.0.0",
+                    executableName: "app-name",
+                    mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+                )
+            )
+        )
+
+        _ = uploader.upload(data: .mockAny())
+
+        XCTAssertEqual(requestRecorder.requestsSent.count, 1)
+
+        let request = requestRecorder.requestsSent[0]
+        let expectedUAHeader = MobileDeviceUserAgentHeader(
+            appName: "app-name",
+            appVersion: "1.0.0",
+            device: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+        )
+
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], expectedUAHeader.value)
+    }
+
+    func testWhenSendingFromOtherDevice_itSetsDefaultHeaders() {
+        let requestRecorder = RequestsRecorder()
+        let uploader = DataUploader(
+            url: .mockAny(),
+            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestRecorder),
+            httpHeaders: HTTPHeaders(
+                appContext: .mockWith(
+                    bundleVersion: "1.0.0",
+                    executableName: "app-name",
+                    mobileDevice: nil
+                )
+            )
+        )
+
+        _ = uploader.upload(data: .mockAny())
+
+        XCTAssertEqual(requestRecorder.requestsSent.count, 1)
+
+        let request = requestRecorder.requestsSent[0]
+
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
+        XCTAssertNil(request.allHTTPHeaderFields?["User-Agent"])
     }
 }
