@@ -24,6 +24,6 @@ class LogFileOutputTests: XCTestCase {
         queue.sync {} // wait on writter queue
 
         let fileData = try temporaryDirectory.files()[0].read()
-        assertThat(jsonObjectData: fileData, matchesValue: "log message", onKeyPath: "message")
+        try LogMatcher(from: fileData).assertMessage(equals: "log message")
     }
 }

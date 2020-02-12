@@ -10,13 +10,20 @@ public class Datadog {
 
     internal let appContext: AppContext
     internal let dateProvider: DateProvider
+    internal var userInfoProvider: UserInfoProvider
 
     // MARK: - Logs
 
     internal let logsPersistenceStrategy: LogsPersistenceStrategy
     internal let logsUploadStrategy: LogsUploadStrategy
 
-    internal convenience init(appContext: AppContext, endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
+    internal convenience init(
+        appContext: AppContext,
+        endpointURL: String,
+        clientToken: String,
+        dateProvider: DateProvider,
+        userInfoProvider: UserInfoProvider
+    ) throws {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
         let logsUploadStrategy: LogsUploadStrategy = try .defalut(
             endpointURL: endpointURL,
@@ -27,7 +34,8 @@ public class Datadog {
             appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider
         )
     }
 
@@ -35,17 +43,19 @@ public class Datadog {
         appContext: AppContext,
         logsPersistenceStrategy: LogsPersistenceStrategy,
         logsUploadStrategy: LogsUploadStrategy,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        userInfoProvider: UserInfoProvider
     ) {
         self.appContext = appContext
         self.dateProvider = dateProvider
         self.logsPersistenceStrategy = logsPersistenceStrategy
         self.logsUploadStrategy = logsUploadStrategy
+        self.userInfoProvider = userInfoProvider
     }
 }
 
 extension Datadog {
-    /// Context providing information about the app.
+    /// Provides information about the app.
     public struct AppContext {
         internal let bundleIdentifier: String?
         internal let bundleVersion: String?
@@ -84,7 +94,8 @@ extension Datadog {
             appContext: appContext,
             endpointURL: endpointURL,
             clientToken: clientToken,
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            userInfoProvider: UserInfoProvider()
         )
     }
 
@@ -94,6 +105,14 @@ extension Datadog {
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
     public static var verbosityLevel: LogLevel? = nil
+
+    public static func setUserInfo(
+        id: String? = nil, // swiftlint:disable:this identifier_name
+        name: String? = nil,
+        email: String? = nil
+    ) {
+        instance?.userInfoProvider.value = UserInfo(id: id, name: name, email: email)
+    }
 
     // MARK: - Deinitialization
 

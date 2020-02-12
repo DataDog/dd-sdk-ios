@@ -23,16 +23,17 @@ internal func createSDKDeveloperLogger(
         return nil
     }
 
-    guard let appContext = Datadog.instance?.appContext else {
+    guard let datadog = Datadog.instance else {
         return nil
     }
 
     let consoleOutput = LogConsoleOutput(
         logBuilder: LogBuilder(
-            appContext: appContext,
+            appContext: datadog.appContext,
             serviceName: "sdk-developer",
             loggerName: "sdk-developer",
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            userInfoProvider: datadog.userInfoProvider
         ),
         format: .shortWith(prefix: "🐶 → "),
         printingFunction: consolePrintFunction,
@@ -47,16 +48,17 @@ internal func createSDKUserLogger(
     dateProvider: DateProvider = SystemDateProvider(),
     timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
-    guard let appContext = Datadog.instance?.appContext else {
+    guard let datadog = Datadog.instance else {
         return Logger(logOutput: NoOpLogOutput())
     }
 
     let consoleOutput = LogConsoleOutput(
         logBuilder: LogBuilder(
-            appContext: appContext,
+            appContext: datadog.appContext,
             serviceName: "sdk-user",
             loggerName: "sdk-user",
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            userInfoProvider: datadog.userInfoProvider
         ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
         printingFunction: consolePrintFunction,

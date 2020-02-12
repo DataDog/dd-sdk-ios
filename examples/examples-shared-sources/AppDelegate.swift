@@ -16,6 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             clientToken: config.clientToken // use your own client token obtained on Datadog website
         )
 
+        // Set user information
+        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com")
+
         // Create logger instance
         logger = Logger.builder
             .set(serviceName: "ios-sdk-example-app")

@@ -2,6 +2,7 @@ import Foundation
 
 /// Builds `Log` representation as it was received from the user (without sanitization).
 internal struct LogBuilder {
+    /// App information context.
     let appContext: AppContext
     /// Service name to write in log.
     let serviceName: String
@@ -9,6 +10,8 @@ internal struct LogBuilder {
     let loggerName: String
     /// Current date to write in log.
     let dateProvider: DateProvider
+    /// Shared user info provider.
+    let userInfoProvider: UserInfoProvider
 
     func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) -> Log {
         let encodableAttributes = Dictionary(
@@ -24,6 +27,7 @@ internal struct LogBuilder {
             loggerVersion: getSDKVersion(),
             threadName: getCurrentThreadName(),
             applicationVersion: getApplicationVersion(),
+            userInfo: getUserInfo(),
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
@@ -60,5 +64,9 @@ internal struct LogBuilder {
         } else {
             return ""
         }
+    }
+
+    private func getUserInfo() -> UserInfo {
+        return userInfoProvider.value
     }
 }

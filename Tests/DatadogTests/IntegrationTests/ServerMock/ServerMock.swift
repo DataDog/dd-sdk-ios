@@ -24,8 +24,8 @@ class ServerMock {
     }
 
     /// Captures server session since `.start()` to now and passess it to verification closure.
-    func verify<R: ServerRequest>(using verificationClosure: (ServerSession<R>) throws -> Void) throws {
-        let session = try ServerSession<R>(recordedIn: directory)
+    func verify(using verificationClosure: (ServerSession) throws -> Void) throws {
+        let session = try ServerSession(recordedIn: directory)
         try verificationClosure(session)
     }
 

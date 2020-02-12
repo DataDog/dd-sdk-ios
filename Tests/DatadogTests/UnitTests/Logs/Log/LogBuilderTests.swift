@@ -10,7 +10,10 @@ class LogBuilderTests: XCTestCase {
         ),
         serviceName: "test-service-name",
         loggerName: "test-logger-name",
-        dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+        userInfoProvider: .mockWith(
+            userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
+        )
     )
 
     func testItBuildsBasicLog() {
@@ -62,6 +65,9 @@ class LogBuilderTests: XCTestCase {
         }
 
         DispatchQueue(label: "custom-queue").async {
+            let previousName = Thread.current.name
+            defer { Thread.current.name = previousName } // reset it as this thread might be picked by `.global(qos: .default)`
+
             Thread.current.name = "custom-thread-name"
             let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
             XCTAssertEqual(log.threadName, "custom-thread-name")
@@ -77,7 +83,8 @@ class LogBuilderTests: XCTestCase {
                 appContext: appContext,
                 serviceName: .mockAny(),
                 loggerName: .mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                userInfoProvider: .mockAny()
             )
 
             return builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])

@@ -8,8 +8,7 @@ class LoggerTests: XCTestCase {
         bundleVersion: "1.0.0",
         bundleShortVersion: "1.0.0"
     )
-    /// Provides consecutive `date` values for logs send with `Logger`.
-    private let logDatesProvider = RelativeDateProvider(
+    private let dateProviderMock = RelativeDateProvider(
         startingFrom: .mockDecember15th2019At10AMUTC(),
         advancingBySeconds: 1
     )
@@ -28,319 +27,267 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Sending logs
 
-    func testSendingLogsWithDefaultLogger() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 6) {
-            let logger = Logger.builder.build()
-
-            logger.debug("message")
-            logger.info("message")
-            logger.notice("message")
-            logger.warn("message")
-            logger.error("message")
-            logger.critical("message")
-        }
-
-        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
-        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
-        [{
-          "status" : "DEBUG",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
-          "application.version": "1.0.0"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[1], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:01Z",
-          "application.version": "1.0.0"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
-        [{
-          "status" : "NOTICE",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:02Z",
-          "application.version": "1.0.0"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[3], fullyMatches: """
-        [{
-          "status" : "WARN",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:03Z",
-          "application.version": "1.0.0"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[4], fullyMatches: """
-        [{
-          "status" : "ERROR",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:04Z",
-          "application.version": "1.0.0"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[5], fullyMatches: """
-        [{
-          "status" : "CRITICAL",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:05Z",
-          "application.version": "1.0.0"
-        }]
-        """)
+    func testSendingLogWithDefaultLogger() throws {
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .with(dateProvider: dateProviderMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyFirst { logMatcher in
+                try logMatcher.assertItFullyMatches(jsonString: """
+                {
+                  "status" : "DEBUG",
+                  "message" : "message",
+                  "service" : "ios",
+                  "logger.name" : "com.datadoghq.ios-sdk",
+                  "logger.version": "\(sdkVersion)",
+                  "logger.thread_name" : "main",
+                  "date" : "2019-12-15T10:00:00Z",
+                  "application.version": "1.0.0"
+                }
+                """)
+            }
+            .destroy()
     }
 
-    func testSendingLogsWithCustomizedLogger() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 6) {
-            let logger = Logger.builder
-                .set(serviceName: "custom-service-name")
-                .set(loggerName: "custom-logger-name")
-                .build()
+    func testSendingLogWithCustomizedLogger() throws {
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .with(dateProvider: dateProviderMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder
+                    .set(serviceName: "custom-service-name")
+                    .set(loggerName: "custom-logger-name")
+                    .build()
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyFirst { logMatcher in
+                try logMatcher.assertItFullyMatches(jsonString: """
+                {
+                  "status" : "DEBUG",
+                  "message" : "message",
+                  "service" : "custom-service-name",
+                  "logger.name" : "custom-logger-name",
+                  "logger.version": "\(sdkVersion)",
+                  "logger.thread_name" : "main",
+                  "date" : "2019-12-15T10:00:00Z",
+                  "application.version": "1.0.0"
+                }
+                """)
+            }
+            .destroy()
+    }
 
-            logger.debug("message")
-            logger.info("message")
-            logger.notice("message")
-            logger.warn("message")
-            logger.error("message")
-            logger.critical("message")
-        }
+    func testSendingLogsWithDifferentLevels() throws {
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message")
+                logger.info("message")
+                logger.notice("message")
+                logger.warn("message")
+                logger.error("message")
+                logger.critical("message")
+            }
+            .waitUntil(numberOfLogsSent: 6)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertStatus(equals: "DEBUG")
+                logMatchers[1].assertStatus(equals: "INFO")
+                logMatchers[2].assertStatus(equals: "NOTICE")
+                logMatchers[3].assertStatus(equals: "WARN")
+                logMatchers[4].assertStatus(equals: "ERROR")
+                logMatchers[5].assertStatus(equals: "CRITICAL")
+            }
+            .destroy()
+    }
 
-        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
-        requestsData.forEach { requestData in
-            assertThat(
-                jsonArrayData: requestData,
-                matchesValue: ["custom-service-name"],
-                onKeyPath: "@unionOfObjects.service"
-            )
-            assertThat(
-                jsonArrayData: requestData,
-                matchesValue: ["custom-logger-name"],
-                onKeyPath: "@unionOfObjects.logger.name"
-            )
-        }
+    // MARK: - Sending user info
+
+    func testSendingUserInfo() throws {
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message with no user info")
+
+                Datadog.setUserInfo(id: "abc-123", name: "Foo")
+                logger.debug("message with user `id` and `name`")
+
+                Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
+                logger.debug("message with user `id`, `name` and `email`")
+
+                Datadog.setUserInfo(id: nil, name: nil, email: nil)
+                logger.debug("message with no user info")
+            }
+            .waitUntil(numberOfLogsSent: 4)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertUserInfo(equals: nil)
+                logMatchers[1].assertUserInfo(equals: UserInfo(id: "abc-123", name: "Foo", email: nil))
+                logMatchers[2].assertUserInfo(equals: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com"))
+                logMatchers[3].assertUserInfo(equals: nil)
+            }
+            .destroy()
     }
 
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 1) {
-            let logger = Logger.builder.build()
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .with(dateProvider: dateProviderMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
 
-            // string literal
-            logger.addAttribute(forKey: "string", value: "hello")
+                // string literal
+                logger.addAttribute(forKey: "string", value: "hello")
 
-            // boolean literal
-            logger.addAttribute(forKey: "bool", value: true)
+                // boolean literal
+                logger.addAttribute(forKey: "bool", value: true)
 
-            // integer literal
-            logger.addAttribute(forKey: "int", value: 10)
+                // integer literal
+                logger.addAttribute(forKey: "int", value: 10)
 
-            // Typed 8-bit unsigned Integer
-            logger.addAttribute(forKey: "uint-8", value: UInt8(10))
+                // Typed 8-bit unsigned Integer
+                logger.addAttribute(forKey: "uint-8", value: UInt8(10))
 
-            // double-precision, floating-point value
-            logger.addAttribute(forKey: "double", value: 10.5)
+                // double-precision, floating-point value
+                logger.addAttribute(forKey: "double", value: 10.5)
 
-            // array of `Encodable` integer
-            logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
+                // array of `Encodable` integer
+                logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
 
-            // dictionary of `Encodable` date types
-            logger.addAttribute(forKey: "dictionary-of-date", value: [
-                "date1": Date.mockDecember15th2019At10AMUTC(),
-                "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
-            ])
+                // dictionary of `Encodable` date types
+                logger.addAttribute(forKey: "dictionary-of-date", value: [
+                    "date1": Date.mockDecember15th2019At10AMUTC(),
+                    "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
+                ])
 
-            struct Person: Codable {
-                let name: String
-                let age: Int
-                let nationality: String
+                struct Person: Codable {
+                    let name: String
+                    let age: Int
+                    let nationality: String
+                }
+
+                // custom `Encodable` structure
+                logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+
+                // nested string literal
+                logger.addAttribute(forKey: "nested.string", value: "hello")
+
+                logger.info("message")
             }
-
-            // custom `Encodable` structure
-            logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
-
-            // nested string literal
-            logger.addAttribute(forKey: "nested.string", value: "hello")
-
-            logger.info("message")
-        }
-
-        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
-        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "message",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
-          "application.version": "1.0.0",
-          "string" : "hello",
-          "bool" : true,
-          "int" : 10,
-          "uint-8" : 10,
-          "double" : 10.5,
-          "array-of-int" : [1, 2, 3],
-          "dictionary-of-date" : {
-             "date1": "2019-12-15T10:00:00Z",
-             "date2": "2019-12-15T11:00:00Z"
-          },
-          "person" : {
-             "name" : "Adam",
-             "age" : 30,
-             "nationality" : "Polish",
-          },
-          "nested.string" : "hello"
-        }]
-        """)
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyFirst { logMatcher in
+                try logMatcher.assertItFullyMatches(jsonString: """
+                {
+                  "status" : "INFO",
+                  "message" : "message",
+                  "service" : "ios",
+                  "logger.name" : "com.datadoghq.ios-sdk",
+                  "logger.version": "\(sdkVersion)",
+                  "logger.thread_name" : "main",
+                  "date" : "2019-12-15T10:00:00Z",
+                  "application.version": "1.0.0",
+                  "string" : "hello",
+                  "bool" : true,
+                  "int" : 10,
+                  "uint-8" : 10,
+                  "double" : 10.5,
+                  "array-of-int" : [1, 2, 3],
+                  "dictionary-of-date" : {
+                     "date1": "2019-12-15T10:00:00Z",
+                     "date2": "2019-12-15T11:00:00Z"
+                  },
+                  "person" : {
+                     "name" : "Adam",
+                     "age" : 30,
+                     "nationality" : "Polish",
+                  },
+                  "nested.string" : "hello"
+                }
+                """)
+            }
+            .destroy()
     }
 
     func testSendingMessageAttributes() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
-            let logger = Logger.builder.build()
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
 
-            // add logger attribute
-            logger.addAttribute(forKey: "attribute", value: "logger's value")
+                // add logger attribute
+                logger.addAttribute(forKey: "attribute", value: "logger's value")
 
-            // send message with no attributes
-            logger.info("info message 1")
+                // send message with no attributes
+                logger.info("info message 1")
 
-            // send message with attribute overriding logger's attribute
-            logger.info("info message 2", attributes: ["attribute": "message's value"])
+                // send message with attribute overriding logger's attribute
+                logger.info("info message 2", attributes: ["attribute": "message's value"])
 
-            // remove logger attribute
-            logger.removeAttribute(forKey: "attribute")
+                // remove logger attribute
+                logger.removeAttribute(forKey: "attribute")
 
-            // send message
-            logger.info("info message 3")
-        }
-
-        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
-        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "info message 1",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
-          "application.version": "1.0.0",
-          "attribute": "logger's value"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[1], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "info message 2",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:01Z",
-          "application.version": "1.0.0",
-          "attribute": "message's value"
-        }]
-        """)
-        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "info message 3",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:02Z",
-          "application.version": "1.0.0"
-        }]
-        """)
+                // send message
+                logger.info("info message 3")
+            }
+            .waitUntil(numberOfLogsSent: 3)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertValue(forKey: "attribute", equals: "logger's value")
+                logMatchers[1].assertValue(forKey: "attribute", equals: "message's value")
+                logMatchers[2].assertNoValue(forKey: "attribute")
+            }
+            .destroy()
     }
 
     // MARK: - Sending tags
 
     func testSendingTags() throws {
-        let requestsRecorder = try setUpDatadogAndRecordSendingOneLogPerRequest(expectedRequestsCount: 3) {
-            let logger = Logger.builder.build()
+        try DatadogInstanceMock.build
+            .with(appContext: appContextMock)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
 
-            // add tag
-            logger.add(tag: "tag1")
+                // add tag
+                logger.add(tag: "tag1")
 
-            // send message
-            logger.info("info message 1")
+                // send message
+                logger.info("info message 1")
 
-            // add tag with key
-            logger.addTag(withKey: "tag2", value: "abcd")
+                // add tag with key
+                logger.addTag(withKey: "tag2", value: "abcd")
 
-            // send message
-            logger.info("info message 2")
+                // send message
+                logger.info("info message 2")
 
-            // remove tag with key
-            logger.removeTag(withKey: "tag2")
+                // remove tag with key
+                logger.removeTag(withKey: "tag2")
 
-            // remove tag
-            logger.remove(tag: "tag1")
+                // remove tag
+                logger.remove(tag: "tag1")
 
-            // send message
-            logger.info("info message 3")
-        }
-
-        let requestsData = requestsRecorder.requestsSent.compactMap { $0.httpBody }
-        assertThat(jsonArrayData: requestsData[0], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "info message 1",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
-          "application.version": "1.0.0",
-          "ddtags": "tag1"
-        }]
-        """)
-        assertThat(
-            jsonArrayData: requestsData[1],
-            matchesAnyOfTheValues: [["tag1,tag2:abcd"], ["tag2:abcd,tag1"]],
-            onKeyPath: "ddtags"
-        )
-        assertThat(jsonArrayData: requestsData[2], fullyMatches: """
-        [{
-          "status" : "INFO",
-          "message" : "info message 3",
-          "service" : "ios",
-          "logger.name" : "com.datadoghq.ios-sdk",
-          "logger.version": "\(sdkVersion)",
-          "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:02Z",
-          "application.version": "1.0.0"
-        }]
-        """)
+                // send message
+                logger.info("info message 3")
+            }
+            .waitUntil(numberOfLogsSent: 3)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertTags(equal: ["tag1"])
+                logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd"])
+                logMatchers[2].assertNoValue(forKey: LogEncoder.StaticCodingKeys.tags.rawValue)
+            }
+            .destroy()
     }
 
     // MARK: - Customizing outputs
@@ -398,51 +345,8 @@ class LoggerTests: XCTestCase {
             )
         }
     }
-}
 
-// MARK: - Helpers for ensuring `Logger` run environment
-
-private extension LoggerTests {
-    /// Ensures that `Logger` is accessed within configured `Datadog` environment.
-    private func setUpDatadogAndRecordSendingOneLogPerRequest(
-        expectedRequestsCount: Int,
-        run test: () -> Void
-    ) throws -> RequestsRecorder {
-        let requestsRecorder = RequestsRecorder()
-        let expectation = self.expectation(description: "Send \(expectedRequestsCount) requests")
-        expectation.expectedFulfillmentCount = expectedRequestsCount
-
-        let logsUploadInterval: TimeInterval = 0.05 // pretty quick 😎
-
-        let fileCreationDatesProvider = RelativeDateProvider(
-            startingFrom: .mockDecember15th2019At10AMUTC(),
-            advancingBySeconds: 1
-        )
-
-        // Configure `Datadog` instance
-        Datadog.instance = .mockSuccessfullySendingOneLogPerRequest(
-            appContext: appContextMock,
-            logsDirectory: temporaryDirectory,
-            logsFileCreationDateProvider: fileCreationDatesProvider,
-            logsUploadInterval: logsUploadInterval,
-            logsTimeProvider: logDatesProvider,
-            requestsRecorder: requestsRecorder
-        )
-
-        // Fulfill expectation on every request sent
-        requestsRecorder.onNewRequest = { _ in expectation.fulfill() }
-
-        // Execute test
-        test()
-
-        // Wait for all requests being sent
-        let arbitraryEnoughOfTime = logsUploadInterval * Double(expectedRequestsCount) * 3
-        waitForExpectations(timeout: arbitraryEnoughOfTime, handler: nil)
-
-        try Datadog.deinitializeOrThrow()
-
-        return requestsRecorder
-    }
+    // MARK: - Helpers
 
     private func assertThat(logger: Logger, usesOutput outputType: LogOutput.Type, file: StaticString = #file, line: UInt = #line) {
         XCTAssertTrue(type(of: logger.logOutput) == outputType, file: file, line: line)

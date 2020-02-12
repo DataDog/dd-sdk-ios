@@ -16,6 +16,7 @@ extension Log {
         loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
+        userInfo: UserInfo = .mockAny(),
         attributes: [String: EncodableValue]? = nil,
         tags: [String]? = nil
     ) -> Log {
@@ -28,6 +29,7 @@ extension Log {
             loggerVersion: loggerVersion,
             threadName: threadName,
             applicationVersion: applicationVersion,
+            userInfo: userInfo,
             attributes: attributes,
             tags: tags
         )
@@ -42,7 +44,8 @@ extension Log {
             loggerName: .mockRandom(),
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
-            applicationVersion: .mockRandom()
+            applicationVersion: .mockRandom(),
+            userInfo: .mockRandom()
         )
     }
 }
@@ -70,13 +73,15 @@ extension LogBuilder {
         date: Date,
         appContext: AppContext = .mockAny(),
         serviceName: String = "test-service",
-        loggerName: String = "test-logger-name"
+        loggerName: String = "test-logger-name",
+        userInfoProvider: UserInfoProvider = .mockAny()
     ) -> LogBuilder {
         return LogBuilder(
             appContext: appContext,
             serviceName: serviceName,
             loggerName: loggerName,
-            dateProvider: RelativeDateProvider(using: date)
+            dateProvider: RelativeDateProvider(using: date),
+            userInfoProvider: userInfoProvider
         )
     }
 }
