@@ -1,44 +1,31 @@
 import Foundation
 
-internal protocol HTTPHeader {
-    var field: String { get }
-    var value: String { get }
-}
-
 /// HTTP headers associated with requests send by SDK.
 internal struct HTTPHeaders {
+    private struct Constants {
+        static let contentTypeField = "Content-Type"
+        static let contentTypeValue = "application/json"
+        static let userAgentField = "User-Agent"
+    }
+
     let all: [String: String]
 
     init(appContext: AppContext) {
-        var headers: [HTTPHeader] = [ContentTypeHeader()]
-
-        // When running on mobile, `User-Agent` header is customized.
+        // When running on mobile, `User-Agent` header is customized (e.x. `app-name/1 (iPhone; iOS/13.3)`).
         // Other platforms will fall back to default UA header set by OS.
         if let mobileDevice = appContext.mobileDevice {
-            headers.append(
-                MobileDeviceUserAgentHeader(
-                    appName: appContext.executableName ?? "Datadog",
-                    appVersion: appContext.bundleVersion ?? sdkVersion,
-                    device: mobileDevice
-                )
-            )
+            let appName = appContext.executableName ?? "Datadog"
+            let appVersion = appContext.bundleVersion ?? sdkVersion
+            let device = mobileDevice
+
+            self.all = [
+                Constants.contentTypeField: Constants.contentTypeValue,
+                Constants.userAgentField: "\(appName)/\(appVersion) (\(device.model); \(device.osName)/\(device.osVersion))"
+            ]
+        } else {
+            self.all = [
+                Constants.contentTypeField: Constants.contentTypeValue
+            ]
         }
-
-        self.all = Dictionary(uniqueKeysWithValues: headers.map { ($0.field, $0.value) })
-    }
-}
-
-internal struct ContentTypeHeader: HTTPHeader {
-    let field = "Content-Type"
-    let value = "application/json"
-}
-
-internal struct MobileDeviceUserAgentHeader: HTTPHeader {
-    let field = "User-Agent"
-    let value: String
-
-    init(appName: String, appVersion: String, device: MobileDevice) {
-        // Example: `app-name/1 (iPhone; iOS/13.3)`
-        self.value = "\(appName)/\(appVersion) (\(device.model); \(device.osName)/\(device.osVersion))"
     }
 }

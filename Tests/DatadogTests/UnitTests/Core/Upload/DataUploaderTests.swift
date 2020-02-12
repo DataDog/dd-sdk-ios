@@ -114,14 +114,8 @@ class DataUploaderTests: XCTestCase {
         XCTAssertEqual(requestRecorder.requestsSent.count, 1)
 
         let request = requestRecorder.requestsSent[0]
-        let expectedUAHeader = MobileDeviceUserAgentHeader(
-            appName: "app-name",
-            appVersion: "1.0.0",
-            device: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
-        )
-
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
-        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], expectedUAHeader.value)
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "app-name/1.0.0 (iPhone; iOS/13.3.1)")
     }
 
     func testWhenSendingFromOtherDevice_itSetsDefaultHeaders() {
@@ -143,7 +137,6 @@ class DataUploaderTests: XCTestCase {
         XCTAssertEqual(requestRecorder.requestsSent.count, 1)
 
         let request = requestRecorder.requestsSent[0]
-
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
         XCTAssertNil(request.allHTTPHeaderFields?["User-Agent"])
     }
