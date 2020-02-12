@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		611435CB23F183BF0090CCE5 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611435CA23F183BF0090CCE5 /* ConsoleOutputInterceptor.swift */; };
 		617AA3C523D0B0180073EC69 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3B923D0B0180073EC69 /* Assets.xcassets */; };
 		617AA3C623D0B0180073EC69 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3BA23D0B0180073EC69 /* ExampleAppConfig.swift */; };
 		617AA3C723D0B0180073EC69 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3BC23D0B0180073EC69 /* UIViewController+KeyboardControlling.swift */; };
@@ -33,6 +34,7 @@
 /* Begin PBXFileReference section */
 		351DD3890AD40E0A6D48EFEF /* Pods-iOS-app-example-cocoapods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOS-app-example-cocoapods.release.xcconfig"; path = "Target Support Files/Pods-iOS-app-example-cocoapods/Pods-iOS-app-example-cocoapods.release.xcconfig"; sourceTree = "<group>"; };
 		5964A16DAA09F4B1FBC42922 /* Pods_iOS_app_example_cocoapods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOS_app_example_cocoapods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		611435CA23F183BF0090CCE5 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
 		6166E73223D05E9C00A47A75 /* iOS-app-example-cocoapods.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS-app-example-cocoapods.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		617AA3B923D0B0180073EC69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		617AA3BA23D0B0180073EC69 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 		617AA3BB23D0B0180073EC69 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				611435CA23F183BF0090CCE5 /* ConsoleOutputInterceptor.swift */,
 				617AA3BC23D0B0180073EC69 /* UIViewController+KeyboardControlling.swift */,
 			);
 			path = Utils;
@@ -316,6 +319,7 @@
 				617AA3CB23D0B0180073EC69 /* AppDelegate.swift in Sources */,
 				617AA3C623D0B0180073EC69 /* ExampleAppConfig.swift in Sources */,
 				617AA3CA23D0B0180073EC69 /* SendMessageViewController.swift in Sources */,
+				611435CB23F183BF0090CCE5 /* ConsoleOutputInterceptor.swift in Sources */,
 				617AA3C723D0B0180073EC69 /* UIViewController+KeyboardControlling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -481,6 +485,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "../examples-shared-sources/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -499,6 +504,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "../examples-shared-sources/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

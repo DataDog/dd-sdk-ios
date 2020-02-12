@@ -7,6 +7,7 @@ class SendMessageViewController: UIViewController {
     @IBOutlet weak var logServiceNameTextField: UITextField!
     @IBOutlet weak var sendOnceButton: UIButton!
     @IBOutlet weak var send10xButton: UIButton!
+    @IBOutlet weak var consoleTextView: UITextView!
 
     enum LogLevelSegment: Int {
         case debug = 0, info, notice, warn, error, critical
@@ -15,6 +16,7 @@ class SendMessageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         hideKeyboardWhenTapOutside()
+        startDisplayingDebugInfo(in: consoleTextView)
     }
 
     @IBAction func didTapSendSingleLog(_ sender: Any) {

@@ -41,6 +41,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            uploadConditions: .mockAlwaysPerformingUpload(),
             delay: .mockConstantDelay(of: 0.1)
         )
 

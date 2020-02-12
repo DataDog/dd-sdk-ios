@@ -210,6 +210,76 @@ extension DataUploadDelay {
     }
 }
 
+extension BatteryStatus.State {
+    static func mockRandom(within cases: [BatteryStatus.State] = [.unknown, .unplugged, .charging, .full]) -> BatteryStatus.State {
+        return cases.randomElement()!
+    }
+}
+
+extension BatteryStatus {
+    static func mockAny() -> BatteryStatus {
+        return BatteryStatus(state: .charging, level: 50, isLowPowerModeEnabled: false)
+    }
+}
+
+struct BatteryStatusProviderMock: BatteryStatusProviderType {
+    let current: BatteryStatus
+
+    static func mockAny() -> BatteryStatusProviderMock {
+        return BatteryStatusProviderMock(current: .mockAny())
+    }
+
+    static func mockWith(status: BatteryStatus) -> BatteryStatusProviderMock {
+        return BatteryStatusProviderMock(current: status)
+    }
+}
+
+extension NetworkStatus.Reachability {
+    static func mockRandom(within cases: [NetworkStatus.Reachability] = [.yes, .no, .maybe]) -> NetworkStatus.Reachability {
+        return cases.randomElement()!
+    }
+}
+
+extension NetworkStatus {
+    static func mockAny() -> NetworkStatus {
+        return NetworkStatus(reachability: .yes)
+    }
+}
+
+struct NetworkStatusProviderMock: NetworkStatusProviderType {
+    let current: NetworkStatus
+
+    static func mockAny() -> NetworkStatusProviderMock {
+        return NetworkStatusProviderMock(current: .mockAny())
+    }
+
+    static func mockWith(reachability: NetworkStatus.Reachability) -> NetworkStatusProviderMock {
+        return NetworkStatusProviderMock(
+            current: NetworkStatus(reachability: reachability)
+        )
+    }
+}
+
+extension DataUploadConditions {
+    static func mockAny() -> DataUploadConditions {
+        return DataUploadConditions(
+            batteryStatus: BatteryStatusProviderMock.mockAny(),
+            networkStatus: NetworkStatusProviderMock.mockAny()
+        )
+    }
+
+    static func mockAlwaysPerformingUpload() -> DataUploadConditions {
+        return DataUploadConditions(
+            batteryStatus: BatteryStatusProviderMock.mockWith(
+                status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false)
+            ),
+            networkStatus: NetworkStatusProviderMock(
+                current: NetworkStatus(reachability: .yes)
+            )
+        )
+    }
+}
+
 extension DataUploader {
     static func mockAny() -> DataUploader {
         return DataUploader(url: .mockAny(), httpClient: .mockAny())
@@ -222,6 +292,7 @@ extension DataUploadWorker {
             queue: .global(),
             fileReader: .mockAny(),
             dataUploader: .mockAny(),
+            uploadConditions: .mockAny(),
             delay: .mockAny()
         )
     }
@@ -263,16 +334,24 @@ extension LogsUploadStrategy {
         using fileReader: FileReader,
         andRecordRequestsOn requestsRecorder: RequestsRecorder?
     ) -> LogsUploadStrategy {
-        return .defalut(
-            dataUploader: DataUploader(
-                url: .mockAny(),
-                httpClient: .mockDeliverySuccessWith(
-                    responseStatusCode: 200,
-                    requestsRecorder: requestsRecorder
-                )
-            ),
-            reader: fileReader,
-            uploadDelay: .mockConstantDelay(of: interval)
+        let uploadQueue = DispatchQueue(
+            label: "com.datadoghq.ios-sdk-tests-logs-upload",
+            target: .global(qos: .utility)
+        )
+        return LogsUploadStrategy(
+            uploadWorker: DataUploadWorker(
+                queue: uploadQueue,
+                fileReader: fileReader,
+                dataUploader: DataUploader(
+                    url: .mockAny(),
+                    httpClient: .mockDeliverySuccessWith(
+                        responseStatusCode: 200,
+                        requestsRecorder: requestsRecorder
+                    )
+                ),
+                uploadConditions: .mockAlwaysPerformingUpload(),
+                delay: .mockConstantDelay(of: interval)
+            )
         )
     }
 }

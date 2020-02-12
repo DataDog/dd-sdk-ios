@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		611435C923F16CF00090CCE5 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611435C823F16CF00090CCE5 /* ConsoleOutputInterceptor.swift */; };
 		617AA3B723D0AFA90073EC69 /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 617AA3B623D0AFA90073EC69 /* Datadog */; };
 		617AA3DB23D0B0700073EC69 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3CF23D0B0700073EC69 /* Assets.xcassets */; };
 		617AA3DC23D0B0700073EC69 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D023D0B0700073EC69 /* ExampleAppConfig.swift */; };
@@ -31,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		611435C823F16CF00090CCE5 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
 		617AA39D23D0AF250073EC69 /* iOS-app-example-spm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS-app-example-spm.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../..; sourceTree = "<group>"; };
 		617AA3CF23D0B0700073EC69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */,
+				611435C823F16CF00090CCE5 /* ConsoleOutputInterceptor.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -263,6 +266,7 @@
 				617AA3E123D0B0700073EC69 /* AppDelegate.swift in Sources */,
 				617AA3DC23D0B0700073EC69 /* ExampleAppConfig.swift in Sources */,
 				617AA3E023D0B0700073EC69 /* SendMessageViewController.swift in Sources */,
+				611435C923F16CF00090CCE5 /* ConsoleOutputInterceptor.swift in Sources */,
 				617AA3DD23D0B0700073EC69 /* UIViewController+KeyboardControlling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -16,7 +16,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="8Ej-XI-aBq">
-                                <rect key="frame" x="15" y="103" width="384" height="243.5"/>
+                                <rect key="frame" x="15" y="103" width="384" height="744"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Customize log" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CV1-qa-sOB">
                                         <rect key="frame" x="0.0" y="0.0" width="384" height="20.5"/>
@@ -45,7 +45,10 @@
                                         </constraints>
                                     </view>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="UdV-tc-uuY">
-                                        <rect key="frame" x="0.0" y="50" width="384" height="32"/>
+                                        <rect key="frame" x="0.0" y="50" width="384" height="45"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="oPQ-Ng-44a"/>
+                                        </constraints>
                                         <segments>
                                             <segment title="DEBUG"/>
                                             <segment title="INFO"/>
@@ -56,27 +59,27 @@
                                         </segments>
                                     </segmentedControl>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="P9X-Q2-9qd" userLabel="Vertical gap 10">
-                                        <rect key="frame" x="0.0" y="81" width="384" height="10"/>
+                                        <rect key="frame" x="0.0" y="94" width="384" height="10"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="10" id="A24-Bm-eBl"/>
                                         </constraints>
                                     </view>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="MESSAGE:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mAn-oB-k6U">
-                                        <rect key="frame" x="0.0" y="91" width="384" height="14.5"/>
+                                        <rect key="frame" x="0.0" y="104" width="384" height="14.5"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                         <color key="textColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ayK-SK-Oab" userLabel="Vertical gap 5">
-                                        <rect key="frame" x="0.0" y="105.5" width="384" height="5"/>
+                                        <rect key="frame" x="0.0" y="118.5" width="384" height="5"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="5" id="2n3-c0-HAm"/>
                                         </constraints>
                                     </view>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter log message..." textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="jxw-Tx-HjK">
-                                        <rect key="frame" x="0.0" y="110.5" width="384" height="44"/>
+                                        <rect key="frame" x="0.0" y="123.5" width="384" height="44"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="45u-SB-xBU"/>
                                         </constraints>
@@ -84,14 +87,14 @@
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="continue" enablesReturnKeyAutomatically="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I51-hP-D8P" userLabel="Vertical gap 10">
-                                        <rect key="frame" x="0.0" y="154.5" width="384" height="10"/>
+                                        <rect key="frame" x="0.0" y="167.5" width="384" height="10"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="10" id="8vL-62-VnN"/>
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eZw-Qh-BcZ">
-                                        <rect key="frame" x="0.0" y="164.5" width="384" height="20"/>
+                                        <rect key="frame" x="0.0" y="177.5" width="384" height="20"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="249" text="SERVICE:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vne-5f-T8F">
                                                 <rect key="frame" x="0.0" y="0.0" width="53.5" height="20"/>
@@ -118,14 +121,14 @@
                                         </constraints>
                                     </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3rA-Dh-QOm" userLabel="Vertical gap 15">
-                                        <rect key="frame" x="0.0" y="184.5" width="384" height="15"/>
+                                        <rect key="frame" x="0.0" y="197.5" width="384" height="15"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="15" id="ims-n9-2bf"/>
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="PLk-ao-bzx">
-                                        <rect key="frame" x="0.0" y="199.5" width="384" height="44"/>
+                                        <rect key="frame" x="0.0" y="212.5" width="384" height="44"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gtC-h0-4xC">
                                                 <rect key="frame" x="0.0" y="0.0" width="189.5" height="44"/>
@@ -169,11 +172,39 @@
                                             <constraint firstAttribute="height" constant="44" id="qZn-EW-PqZ"/>
                                         </constraints>
                                     </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rlt-GG-uem" userLabel="Vertical gap 10">
+                                        <rect key="frame" x="0.0" y="256.5" width="384" height="10"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="10" id="oUy-Tr-5NI"/>
+                                        </constraints>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CONSOLE OUTPUT:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="x1i-in-lYX">
+                                        <rect key="frame" x="0.0" y="266.5" width="384" height="14.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                        <color key="textColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MU9-DG-sTJ" userLabel="Vertical gap 10">
+                                        <rect key="frame" x="0.0" y="281" width="384" height="10"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="10" id="P0L-Pu-XZ9"/>
+                                        </constraints>
+                                    </view>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2G0-OF-tGX">
+                                        <rect key="frame" x="0.0" y="291" width="384" height="453"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <color key="textColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
                                 </subviews>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="8Ej-XI-aBq" secondAttribute="bottom" constant="15" id="3gi-r7-60l"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="8Ej-XI-aBq" secondAttribute="trailing" constant="15" id="5Ic-p0-TAp"/>
                             <constraint firstItem="8Ej-XI-aBq" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="15" id="JUA-HU-bsu"/>
                             <constraint firstItem="8Ej-XI-aBq" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="15" id="NUg-dD-pQw"/>
@@ -182,6 +213,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="7vC-Cy-I7K"/>
                     <connections>
+                        <outlet property="consoleTextView" destination="2G0-OF-tGX" id="xxC-Bo-W3K"/>
                         <outlet property="logLevelSegmentedControl" destination="UdV-tc-uuY" id="EYr-Gl-gxV"/>
                         <outlet property="logMessageTextField" destination="jxw-Tx-HjK" id="Dxl-Ts-Cgw"/>
                         <outlet property="logServiceNameTextField" destination="fGc-5E-uEZ" id="15I-2q-gUt"/>
