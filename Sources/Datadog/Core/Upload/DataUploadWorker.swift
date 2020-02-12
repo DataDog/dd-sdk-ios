@@ -43,9 +43,9 @@ internal class DataUploadWorker {
             }
 
             let isSystemReady = self.uploadConditions.canPerformUpload()
-            let nextBatch = self.fileReader.readNextBatch()
+            let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
 
-            if isSystemReady, let batch = nextBatch {
+            if let batch = nextBatch {
                 developerLogger?.info("⏳ Uploading batch...")
                 userLogger.debug("⏳ Uploading batch...")
 
