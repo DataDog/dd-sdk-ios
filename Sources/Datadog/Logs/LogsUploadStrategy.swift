@@ -27,26 +27,30 @@ internal struct LogsUploadStrategy {
         decreaseFactor: Constants.logsUploadDelayDecreaseFactor
     )
 
-    static func `defalut`(endpointURL: String, clientToken: String, reader: FileReader) throws -> LogsUploadStrategy {
+    static func `defalut`(appContext: AppContext, endpointURL: String, clientToken: String, reader: FileReader) throws -> LogsUploadStrategy {
         let uploadURL = try DataUploadURL(endpointURL: endpointURL, clientToken: clientToken)
         let httpClient = HTTPClient()
-        let dataUploader = DataUploader(url: uploadURL, httpClient: httpClient)
+        let httpHeaders = HTTPHeaders(appContext: appContext)
+        let dataUploader = DataUploader(url: uploadURL, httpClient: httpClient, httpHeaders: httpHeaders)
 
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-upload",
             target: .global(qos: .utility)
         )
-        #if canImport(UIKit) && !targetEnvironment(simulator)
-        let uploadConditions = DataUploadConditions(
-            batteryStatus: BatteryStatusProvider(),
-            networkStatus: NetworkStatusProvider()
-        )
-        #else
-        let uploadConditions = DataUploadConditions(
-            batteryStatus: nil,
-            networkStatus: NetworkStatusProvider()
-        )
-        #endif
+
+        let uploadConditions: DataUploadConditions = {
+            if let mobileDevice = appContext.mobileDevice {
+                return DataUploadConditions(
+                    batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
+                    networkStatus: NetworkStatusProvider()
+                )
+            } else {
+                return DataUploadConditions(
+                    batteryStatus: nil,
+                    networkStatus: NetworkStatusProvider()
+                )
+            }
+        }()
 
         return LogsUploadStrategy(
             uploadWorker: DataUploadWorker(

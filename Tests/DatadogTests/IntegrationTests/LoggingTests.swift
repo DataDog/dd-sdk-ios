@@ -12,7 +12,9 @@ class LoggingTests: XCTestCase {
             appContext: AppContext(
                 bundleIdentifier: "com.datadoghq.ios-sdk",
                 bundleVersion: "1.0.0",
-                bundleShortVersion: "1.0.0"
+                bundleShortVersion: "1.0.0",
+                executableName: "some-app",
+                mobileDevice: nil
             ),
             endpointURL: serverMock.url,
             clientToken: "abcd"

@@ -3,7 +3,7 @@ import XCTest
 
 class LogBuilderTests: XCTestCase {
     let builder = LogBuilder(
-        appContext: AppContext(
+        appContext: .mockWith(
             bundleIdentifier: "com.datadoghq.ios-sdk",
             bundleVersion: "1.0.0",
             bundleShortVersion: "1.0.0"

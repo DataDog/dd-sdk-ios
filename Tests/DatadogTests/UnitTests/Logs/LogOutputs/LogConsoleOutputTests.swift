@@ -4,7 +4,7 @@ import XCTest
 // swiftlint:disable multiline_arguments_brackets trailing_closure
 class LogConsoleOutputTests: XCTestCase {
     private let logBuilder = LogBuilder(
-        appContext: AppContext(
+        appContext: .mockWith(
             bundleIdentifier: "com.datadoghq.ios-sdk",
             bundleVersion: "1.0.0",
             bundleShortVersion: "1.0.0"

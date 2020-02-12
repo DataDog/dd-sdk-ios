@@ -183,29 +183,34 @@ extension HTTPClient {
     }
 }
 
-// MARK: - Persistence and Upload
-
-extension DataUploadURL {
-    static func mockAny() -> DataUploadURL {
-        return try! DataUploadURL(
-            endpointURL: "https://app.example.com/v2/api",
-            clientToken: "abc-def-ghi"
-        )
+extension HTTPHeaders {
+    static func mockAny() -> HTTPHeaders {
+        return HTTPHeaders(appContext: .mockAny())
     }
 }
 
-extension DataUploadDelay {
-    static func mockAny() -> DataUploadDelay {
-        return DataUploadDelay(default: 0, min: 0, max: 0, decreaseFactor: 0)
+// MARK: - System
+
+extension MobileDevice {
+    static func mockAny() -> MobileDevice {
+        return .mockWith()
     }
 
-    /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
-    static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
-        return DataUploadDelay(
-            default: seconds,
-            min: seconds,
-            max: seconds,
-            decreaseFactor: 1
+    static func mockWith(
+        model: String = .mockAny(),
+        osName: String = .mockAny(),
+        osVersion: String = .mockAny(),
+        enableBatteryStatusMonitoring: @escaping () -> Void = {},
+        resetBatteryStatusMonitoring: @escaping () -> Void = {},
+        currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
+    ) -> MobileDevice {
+        return MobileDevice(
+            model: model,
+            osName: osName,
+            osVersion: osVersion,
+            enableBatteryStatusMonitoring: enableBatteryStatusMonitoring,
+            resetBatteryStatusMonitoring: resetBatteryStatusMonitoring,
+            currentBatteryStatus: currentBatteryStatus
         )
     }
 }
@@ -260,6 +265,33 @@ struct NetworkStatusProviderMock: NetworkStatusProviderType {
     }
 }
 
+// MARK: - Persistence and Upload
+
+extension DataUploadURL {
+    static func mockAny() -> DataUploadURL {
+        return try! DataUploadURL(
+            endpointURL: "https://app.example.com/v2/api",
+            clientToken: "abc-def-ghi"
+        )
+    }
+}
+
+extension DataUploadDelay {
+    static func mockAny() -> DataUploadDelay {
+        return DataUploadDelay(default: 0, min: 0, max: 0, decreaseFactor: 0)
+    }
+
+    /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
+    static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
+        return DataUploadDelay(
+            default: seconds,
+            min: seconds,
+            max: seconds,
+            decreaseFactor: 1
+        )
+    }
+}
+
 extension DataUploadConditions {
     static func mockAny() -> DataUploadConditions {
         return DataUploadConditions(
@@ -282,7 +314,11 @@ extension DataUploadConditions {
 
 extension DataUploader {
     static func mockAny() -> DataUploader {
-        return DataUploader(url: .mockAny(), httpClient: .mockAny())
+        return DataUploader(
+            url: .mockAny(),
+            httpClient: .mockAny(),
+            httpHeaders: .mockAny()
+        )
     }
 }
 
@@ -347,7 +383,8 @@ extension LogsUploadStrategy {
                     httpClient: .mockDeliverySuccessWith(
                         responseStatusCode: 200,
                         requestsRecorder: requestsRecorder
-                    )
+                    ),
+                    httpHeaders: .mockAny()
                 ),
                 uploadConditions: .mockAlwaysPerformingUpload(),
                 delay: .mockConstantDelay(of: interval)
@@ -360,22 +397,22 @@ extension LogsUploadStrategy {
 
 extension AppContext {
     static func mockAny() -> AppContext {
-        return mockWith(
-            bundleIdentifier: nil,
-            bundleVersion: nil,
-            bundleShortVersion: nil
-        )
+        return mockWith()
     }
 
     static func mockWith(
         bundleIdentifier: String? = nil,
         bundleVersion: String? = nil,
-        bundleShortVersion: String? = nil
+        bundleShortVersion: String? = nil,
+        executableName: String? = nil,
+        mobileDevice: MobileDevice? = nil
     ) -> AppContext {
         return AppContext(
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
-            bundleShortVersion: bundleShortVersion
+            bundleShortVersion: bundleShortVersion,
+            executableName: executableName,
+            mobileDevice: mobileDevice
         )
     }
 }
@@ -412,12 +449,7 @@ extension UserInfoProvider {
 
 extension Datadog {
     static func mockAny() -> Datadog {
-        return mockWith(
-            appContext: .mockAny(),
-            logsPersistenceStrategy: .mockAny(),
-            logsUploadStrategy: .mockAny(),
-            dateProvider: SystemDateProvider()
-        )
+        return mockWith()
     }
 
     static func mockWith(
