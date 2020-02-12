@@ -12,7 +12,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
-            endpointURL: "https://mobile-http-intake.logs.datadoghq.com/v1/input/",
+            endpoint: .us,
             clientToken: config.clientToken // use your own client token obtained on Datadog website
         )
 

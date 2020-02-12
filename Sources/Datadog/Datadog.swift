@@ -19,7 +19,7 @@ public class Datadog {
 
     internal convenience init(
         appContext: AppContext,
-        endpointURL: String,
+        endpoint: LogsEndpoint,
         clientToken: String,
         dateProvider: DateProvider,
         userInfoProvider: UserInfoProvider
@@ -27,7 +27,7 @@ public class Datadog {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
         let logsUploadStrategy: LogsUploadStrategy = try .defalut(
             appContext: appContext,
-            endpointURL: endpointURL,
+            endpointURL: endpoint.url,
             clientToken: clientToken,
             reader: logsPersistenceStrategy.reader
         )
@@ -56,6 +56,26 @@ public class Datadog {
 }
 
 extension Datadog {
+    /// Determines server to which logs are sent.
+    public enum LogsEndpoint {
+        /// US based servers.
+        /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
+        case us // swiftlint:disable:this identifier_name
+        /// Europe based servers.
+        /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
+        case eu // swiftlint:disable:this identifier_name
+        /// User-defined server.
+        case custom(String)
+
+        var url: String {
+            switch self {
+            case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
+            case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
+            case .custom(let url): return url
+            }
+        }
+    }
+
     /// Provides information about the app.
     public struct AppContext {
         internal let bundleIdentifier: String?
@@ -92,21 +112,21 @@ extension Datadog {
 
     // MARK: - Initialization
 
-    public static func initialize(appContext: AppContext, endpointURL: String, clientToken: String) {
-        do { try initializeOrThrow(appContext: appContext, endpointURL: endpointURL, clientToken: clientToken)
+    public static func initialize(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) {
+        do { try initializeOrThrow(appContext: appContext, endpoint: endpoint, clientToken: clientToken)
         } catch {
             userLogger.critical("\(error)")
             fatalError("Programmer error - \(error)")  // crash
         }
     }
 
-    static func initializeOrThrow(appContext: AppContext, endpointURL: String, clientToken: String) throws {
+    static func initializeOrThrow(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) throws {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
         self.instance = try Datadog(
             appContext: appContext,
-            endpointURL: endpointURL,
+            endpoint: endpoint,
             clientToken: clientToken,
             dateProvider: SystemDateProvider(),
             userInfoProvider: UserInfoProvider()
