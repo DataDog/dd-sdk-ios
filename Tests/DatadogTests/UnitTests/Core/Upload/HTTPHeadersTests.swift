@@ -15,7 +15,7 @@ class HTTPHeadersTests: XCTestCase {
             headers.all,
             [
             "Content-Type": "application/json",
-            "User-Agent": "app-name/1.0.0 (iPhone; iOS/13.3.1)"
+            "User-Agent": "app-name/1.0.0 CFNetwork (iPhone; iOS/13.3.1)"
             ]
         )
     }

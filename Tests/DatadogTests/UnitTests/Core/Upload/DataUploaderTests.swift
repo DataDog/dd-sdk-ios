@@ -115,7 +115,7 @@ class DataUploaderTests: XCTestCase {
 
         let request = requestRecorder.requestsSent[0]
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
-        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "app-name/1.0.0 (iPhone; iOS/13.3.1)")
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "app-name/1.0.0 CFNetwork (iPhone; iOS/13.3.1)")
     }
 
     func testWhenSendingFromOtherDevice_itSetsDefaultHeaders() {
