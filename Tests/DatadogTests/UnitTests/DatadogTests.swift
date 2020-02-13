@@ -12,10 +12,19 @@ class DatadogTests: XCTestCase {
         super.tearDown()
     }
 
+    func testItEvaluatesLogEndpoints() {
+        XCTAssertEqual(Datadog.LogsEndpoint.us.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
+        XCTAssertEqual(Datadog.LogsEndpoint.eu.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
+        XCTAssertEqual(
+            Datadog.LogsEndpoint.custom(url: "https://api.example.com/v1/logs/").url,
+            "https://api.example.com/v1/logs/"
+        )
+    }
+
     func testItCanBeInitializedWithValidConfiguration() throws {
         Datadog.initialize(
             appContext: .mockAny(),
-            endpointURL: "https://api.example.com/v1/logs/",
+            endpoint: .custom(url: "https://api.example.com/v1/logs/"),
             clientToken: "abcdefghi"
         )
         XCTAssertNotNil(Datadog.instance)
@@ -24,7 +33,7 @@ class DatadogTests: XCTestCase {
 
     func testWhenInitializedWithInvalidConfiguration_itThrowsProgrammerError() {
         XCTAssertThrowsError(
-            try Datadog.initializeOrThrow(appContext: .mockAny(), endpointURL: "", clientToken: "")
+            try Datadog.initializeOrThrow(appContext: .mockAny(), endpoint: .us, clientToken: "")
         ) { error in
             XCTAssertTrue(error is ProgrammerError)
         }
@@ -34,7 +43,7 @@ class DatadogTests: XCTestCase {
         let initialize = {
             try Datadog.initializeOrThrow(
                 appContext: .mockAny(),
-                endpointURL: "https://api.example.com/v1/logs/",
+                endpoint: .custom(url: "https://api.example.com/v1/logs/"),
                 clientToken: "abcdefghi"
             )
         }
