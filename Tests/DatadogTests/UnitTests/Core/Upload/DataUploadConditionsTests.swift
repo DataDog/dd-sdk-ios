@@ -72,11 +72,11 @@ class DataUploadConditionsTests: XCTestCase {
     private func assert(
         canPerformUploadReturns value: Bool,
         forBattery battery: BatteryStatusProviderMock?,
-        forNetwork network: NetworkStatusProviderMock,
+        forNetwork network: NetworkConnectionInfoProviderMock,
         file: StaticString = #file,
         line: UInt = #line
     ) {
-        let conditions = DataUploadConditions(batteryStatus: battery, networkStatus: network)
+        let conditions = DataUploadConditions(batteryStatus: battery, networkConnectionInfo: network)
         XCTAssertEqual(
             value,
             conditions.canPerformUpload(),

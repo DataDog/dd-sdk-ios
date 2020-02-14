@@ -239,28 +239,57 @@ struct BatteryStatusProviderMock: BatteryStatusProviderType {
     }
 }
 
-extension NetworkStatus.Reachability {
-    static func mockRandom(within cases: [NetworkStatus.Reachability] = [.yes, .no, .maybe]) -> NetworkStatus.Reachability {
+extension NetworkConnectionInfo.Reachability {
+    static func mockAny() -> NetworkConnectionInfo.Reachability {
+        return .maybe
+    }
+
+    static func mockRandom(
+        within cases: [NetworkConnectionInfo.Reachability] = [.yes, .no, .maybe]
+    ) -> NetworkConnectionInfo.Reachability {
         return cases.randomElement()!
     }
 }
 
-extension NetworkStatus {
-    static func mockAny() -> NetworkStatus {
-        return NetworkStatus(reachability: .yes)
+extension NetworkConnectionInfo {
+    static func mockAny() -> NetworkConnectionInfo {
+        return NetworkConnectionInfo(
+            reachability: .yes,
+            availableInterfaces: [],
+            supportsIPv4: false,
+            supportsIPv6: false,
+            isExpensive: false,
+            isConstrained: false
+        )
     }
 }
 
-struct NetworkStatusProviderMock: NetworkStatusProviderType {
-    let current: NetworkStatus
+struct NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
+    let current: NetworkConnectionInfo
 
-    static func mockAny() -> NetworkStatusProviderMock {
-        return NetworkStatusProviderMock(current: .mockAny())
+    static func mockAny() -> NetworkConnectionInfoProviderMock {
+        return NetworkConnectionInfoProviderMock(
+            current: .mockAny()
+        )
     }
 
-    static func mockWith(reachability: NetworkStatus.Reachability) -> NetworkStatusProviderMock {
-        return NetworkStatusProviderMock(
-            current: NetworkStatus(reachability: reachability)
+    static func mockWith(
+        reachability: NetworkConnectionInfo.Reachability = .mockAny(),
+        availableInterfaces: [NetworkConnectionInfo.Interface] = [.wifi],
+        supportsIPv4: Bool = true,
+        supportsIPv6: Bool = true,
+        isExpensive: Bool = true,
+        isConstrained: Bool = true
+    ) -> NetworkConnectionInfoProviderMock {
+        return NetworkConnectionInfoProviderMock(
+            current: NetworkConnectionInfo(
+                reachability: reachability,
+                availableInterfaces: availableInterfaces,
+                supportsIPv4: supportsIPv4,
+                supportsIPv6: supportsIPv6,
+                isExpensive: isExpensive,
+                isConstrained: isConstrained
+            )
         )
     }
 }
@@ -296,7 +325,7 @@ extension DataUploadConditions {
     static func mockAny() -> DataUploadConditions {
         return DataUploadConditions(
             batteryStatus: BatteryStatusProviderMock.mockAny(),
-            networkStatus: NetworkStatusProviderMock.mockAny()
+            networkConnectionInfo: NetworkConnectionInfoProviderMock.mockAny()
         )
     }
 
@@ -305,8 +334,15 @@ extension DataUploadConditions {
             batteryStatus: BatteryStatusProviderMock.mockWith(
                 status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false)
             ),
-            networkStatus: NetworkStatusProviderMock(
-                current: NetworkStatus(reachability: .yes)
+            networkConnectionInfo: NetworkConnectionInfoProviderMock(
+                current: NetworkConnectionInfo(
+                    reachability: .yes,
+                    availableInterfaces: [.wifi],
+                    supportsIPv4: true,
+                    supportsIPv6: true,
+                    isExpensive: false,
+                    isConstrained: false
+                )
             )
         )
     }

@@ -42,12 +42,12 @@ internal struct LogsUploadStrategy {
             if let mobileDevice = appContext.mobileDevice {
                 return DataUploadConditions(
                     batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                    networkStatus: NetworkStatusProvider()
+                    networkConnectionInfo: NetworkConnectionInfoProvider()
                 )
             } else {
                 return DataUploadConditions(
                     batteryStatus: nil,
-                    networkStatus: NetworkStatusProvider()
+                    networkConnectionInfo: NetworkConnectionInfoProvider()
                 )
             }
         }()

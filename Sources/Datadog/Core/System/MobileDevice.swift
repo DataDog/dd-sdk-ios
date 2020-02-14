@@ -49,7 +49,7 @@ internal class MobileDevice {
         self.currentBatteryStatus = currentBatteryStatus
     }
 
-    /// Returns current mobile device  if `UIKit` can be imported on this platform.
+    /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
     static var current: MobileDevice? {
         #if canImport(UIKit)

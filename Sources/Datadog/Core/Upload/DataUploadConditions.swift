@@ -8,16 +8,16 @@ internal struct DataUploadConditions {
     }
 
     let batteryStatus: BatteryStatusProviderType?
-    let networkStatus: NetworkStatusProviderType
+    let networkConnectionInfo: NetworkConnectionInfoProviderType
 
     func canPerformUpload() -> Bool {
         let batteryStatus = self.batteryStatus?.current
-        let networkStatus = self.networkStatus.current
+        let networkConnectionInfo = self.networkConnectionInfo.current
 
         if let batteryStatus = batteryStatus {
-            return shouldUploadFor(networkStatus: networkStatus) && shouldUploadFor(batteryStatus: batteryStatus)
+            return shouldUploadFor(networkConnectionInfo: networkConnectionInfo) && shouldUploadFor(batteryStatus: batteryStatus)
         } else {
-            return shouldUploadFor(networkStatus: networkStatus)
+            return shouldUploadFor(networkConnectionInfo: networkConnectionInfo)
         }
     }
 
@@ -28,7 +28,7 @@ internal struct DataUploadConditions {
         return (batteryLevelIsEnough || batteryFullOrCharging) && !isLowPowerModeEnabled
     }
 
-    private func shouldUploadFor(networkStatus: NetworkStatus) -> Bool {
-        return networkStatus.reachability == .yes || networkStatus.reachability == .maybe
+    private func shouldUploadFor(networkConnectionInfo: NetworkConnectionInfo) -> Bool {
+        return networkConnectionInfo.reachability == .yes || networkConnectionInfo.reachability == .maybe
     }
 }
