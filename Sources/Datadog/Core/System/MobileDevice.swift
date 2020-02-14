@@ -49,26 +49,31 @@ internal class MobileDevice {
         self.currentBatteryStatus = currentBatteryStatus
     }
 
+    #if canImport(UIKit)
+    convenience init(uiDevice: UIDevice, processInfo: ProcessInfo) {
+        let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
+        self.init(
+            model: uiDevice.model,
+            osName: uiDevice.systemName,
+            osVersion: uiDevice.systemVersion,
+            enableBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = true },
+            resetBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
+            currentBatteryStatus: {
+                return BatteryStatus(
+                    state: MobileDevice.toBatteryState(uiDevice.batteryState),
+                    level: uiDevice.batteryLevel,
+                    isLowPowerModeEnabled: processInfo.isLowPowerModeEnabled
+                )
+            }
+        )
+    }
+    #endif
+
     /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
     static var current: MobileDevice? {
         #if canImport(UIKit)
-        let wasBatteryMonitoringEnabled = UIDevice.current.isBatteryMonitoringEnabled
-
-        return MobileDevice(
-            model: UIDevice.current.model,
-            osName: UIDevice.current.systemName,
-            osVersion: UIDevice.current.systemVersion,
-            enableBatteryStatusMonitoring: { UIDevice.current.isBatteryMonitoringEnabled = true },
-            resetBatteryStatusMonitoring: { UIDevice.current.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
-            currentBatteryStatus: {
-                return BatteryStatus(
-                    state: toBatteryState(UIDevice.current.batteryState),
-                    level: UIDevice.current.batteryLevel,
-                    isLowPowerModeEnabled: ProcessInfo.processInfo.isLowPowerModeEnabled
-                )
-            }
-        )
+        return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
         #else
         return nil
         #endif
