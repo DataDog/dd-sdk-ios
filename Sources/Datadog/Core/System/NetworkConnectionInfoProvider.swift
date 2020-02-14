@@ -35,10 +35,11 @@ internal protocol NetworkConnectionInfoProviderType {
 
 internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
     private let queue = DispatchQueue.global(qos: .utility)
-    private let monitor = NWPathMonitor()
+    private let monitor: NWCurrentPathMonitor
 
-    init() {
-        monitor.start(queue: queue)
+    init(monitor: NWCurrentPathMonitor = NWPathMonitor()) {
+        self.monitor = monitor
+        self.monitor.start(queue: queue)
     }
 
     deinit {
@@ -46,9 +47,10 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
     }
 
     var current: NetworkConnectionInfo {
+        let currentPath = monitor.currentPathInfo()
         let availableInterfaces: [NetworkConnectionInfo.Interface] = {
-            monitor.currentPath.availableInterfaces.map { interface in
-                switch interface.type {
+            currentPath.availableInterfaceTypes.map { interfaceType in
+                switch interfaceType {
                 case .wifi: return .wifi
                 case .wiredEthernet: return .wiredEthernet
                 case .cellular: return .cellular
@@ -60,7 +62,7 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
         }()
 
         let reachability: NetworkConnectionInfo.Reachability = {
-            switch monitor.currentPath.status {
+            switch currentPath.status {
             case .satisfied: return .yes
             case .requiresConnection: return .maybe
             case .unsatisfied: return .no
@@ -68,21 +70,54 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
             }
         }()
 
-        let isConstrained: Bool? = {
-            if #available(iOS 13.0, OSX 10.15, *) {
-                return monitor.currentPath.isConstrained
+        return NetworkConnectionInfo(
+            reachability: reachability,
+            availableInterfaces: availableInterfaces,
+            supportsIPv4: currentPath.supportsIPv4,
+            supportsIPv6: currentPath.supportsIPv6,
+            isExpensive: currentPath.isExpensive,
+            isConstrained: currentPath.isConstrained
+        )
+    }
+}
+
+// MARK: - Utilities
+
+/// Utility protocol to inject `NWPathMonitor` to `NetworkConnectionInfoProvider`.
+internal protocol NWCurrentPathMonitor {
+    func start(queue: DispatchQueue)
+    func cancel()
+    func currentPathInfo() -> NWCurrentPathInfo
+}
+
+/// Utility type to aggregate current path info provided by `NWPathMonitor`,
+internal struct NWCurrentPathInfo {
+    let availableInterfaceTypes: [NWInterface.InterfaceType]
+    let status: NWPath.Status
+    let supportsIPv4: Bool
+    let supportsIPv6: Bool
+    let isExpensive: Bool
+    let isConstrained: Bool?
+}
+
+/// Apple's `NWPathMonitor` conformance to utility `NWCurrentPathMonitor`.
+extension NWPathMonitor: NWCurrentPathMonitor {
+    func currentPathInfo() -> NWCurrentPathInfo {
+        let isCurrentPathConstrained: Bool? = {
+            if #available(iOS 13.0, macOS 10.15, *) {
+                return currentPath.isConstrained
             } else {
                 return nil
             }
         }()
 
-        return NetworkConnectionInfo(
-            reachability: reachability,
-            availableInterfaces: availableInterfaces,
-            supportsIPv4: monitor.currentPath.supportsIPv4,
-            supportsIPv6: monitor.currentPath.supportsIPv6,
-            isExpensive: monitor.currentPath.isExpensive,
-            isConstrained: isConstrained
+        return NWCurrentPathInfo(
+            availableInterfaceTypes: currentPath.availableInterfaces.map { $0.type },
+            status: currentPath.status,
+            supportsIPv4: currentPath.supportsIPv4,
+            supportsIPv6: currentPath.supportsIPv6,
+            isExpensive: currentPath.isExpensive,
+            isConstrained: isCurrentPathConstrained
         )
     }
 }
