@@ -33,10 +33,18 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     #if os(iOS)
     private let networkInfo: CTTelephonyNetworkInfo
 
-    init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
+    init(networkInfo: CTTelephonyNetworkInfo) {
         self.networkInfo = networkInfo
     }
     #endif
+
+    static func getIfAvailable() -> CarrierInfoProvider? {
+        #if os(iOS)
+        return CarrierInfoProvider(networkInfo: CTTelephonyNetworkInfo())
+        #else
+        return nil
+        #endif
+    }
 
     var current: CarrierInfo? {
         #if os(iOS)
@@ -62,7 +70,7 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
             return nil
         }
         #else
-        return nil // `CTTelephonyNetworkInfo` is not available on the platform
+        return nil // not available on this platform
         #endif
     }
 }
