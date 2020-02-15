@@ -63,7 +63,7 @@ internal class DataUploadWorker {
 
                 self.delay.decrease()
             } else {
-                let batchLabel = nextBatch != nil ? "YES" : "NOT CHECKED"
+                let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
                 let systemLabel = isSystemReady ? "✅" : "❌"
                 developerLogger?.info("💡 No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
                 userLogger.debug("💡 No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")

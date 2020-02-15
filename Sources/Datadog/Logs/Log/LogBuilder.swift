@@ -12,6 +12,10 @@ internal struct LogBuilder {
     let dateProvider: DateProvider
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
+    /// Shared network connection info provider.
+    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    /// Shared mobile carrier info provider (or `nil` if not available on current platform).
+    let carrierInfoProvider: CarrierInfoProvider?
 
     func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) -> Log {
         let encodableAttributes = Dictionary(
@@ -24,10 +28,12 @@ internal struct LogBuilder {
             message: message,
             serviceName: serviceName,
             loggerName: loggerName,
-            loggerVersion: getSDKVersion(),
+            loggerVersion: sdkVersion,
             threadName: getCurrentThreadName(),
             applicationVersion: getApplicationVersion(),
-            userInfo: getUserInfo(),
+            userInfo: userInfoProvider.value,
+            networkConnectionInfo: networkConnectionInfoProvider.current,
+            mobileCarrierInfo: carrierInfoProvider?.current,
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
@@ -52,10 +58,6 @@ internal struct LogBuilder {
         }
     }
 
-    private func getSDKVersion() -> String {
-        return sdkVersion
-    }
-
     private func getApplicationVersion() -> String {
         if let shortVersion = appContext.bundleShortVersion {
             return shortVersion
@@ -64,9 +66,5 @@ internal struct LogBuilder {
         } else {
             return ""
         }
-    }
-
-    private func getUserInfo() -> UserInfo {
-        return userInfoProvider.value
     }
 }

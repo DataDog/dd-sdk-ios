@@ -3,7 +3,7 @@ import Network
 /// Network reachability details.
 internal struct NetworkConnectionInfo {
     /// Tells if network is reachable.
-    enum Reachability {
+    enum Reachability: String, Encodable {
         /// The network is reachable.
         case yes
         /// The network might be reachable after trying.
@@ -13,7 +13,7 @@ internal struct NetworkConnectionInfo {
     }
 
     /// Network connection interfaces.
-    enum Interface {
+    enum Interface: String, Encodable {
         case wifi
         case wiredEthernet
         case cellular

@@ -41,6 +41,8 @@ internal struct LogSanitizer {
             threadName: log.threadName,
             applicationVersion: log.applicationVersion,
             userInfo: log.userInfo,
+            networkConnectionInfo: log.networkConnectionInfo,
+            mobileCarrierInfo: log.mobileCarrierInfo,
             attributes: sanitize(attributes: log.attributes),
             tags: sanitize(tags: log.tags)
         )

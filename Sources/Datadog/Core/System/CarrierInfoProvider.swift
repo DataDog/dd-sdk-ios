@@ -3,7 +3,7 @@ import CoreTelephony
 /// Network connection details specific to cellular radio access.
 internal struct CarrierInfo {
     // swiftlint:disable identifier_name
-    enum RadioAccessTechnology {
+    enum RadioAccessTechnology: String, Encodable {
         case GPRS
         case Edge
         case WCDMA
