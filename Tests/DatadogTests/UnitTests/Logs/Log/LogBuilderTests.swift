@@ -2,39 +2,12 @@ import XCTest
 @testable import Datadog
 
 class LogBuilderTests: XCTestCase {
-    let builder = LogBuilder(
-        appContext: .mockWith(
-            bundleIdentifier: "com.datadoghq.ios-sdk",
-            bundleVersion: "1.0.0",
-            bundleShortVersion: "1.0.0"
-        ),
-        serviceName: "test-service-name",
-        loggerName: "test-logger-name",
-        dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-        userInfoProvider: .mockWith(
-            userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
-        ),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes,
-                availableInterfaces: [.wifi, .cellular],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: false,
-                isConstrained: false
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderMock.mockWith(
-            carrierInfo: .mockWith(
-                carrierName: "Carrier",
-                carrierISOCountryCode: "us",
-                carrierAllowsVOIP: true,
-                radioAccessTechnology: .LTE
-            )
-        )
-    )
-
     func testItBuildsBasicLog() {
+        let builder: LogBuilder = .mockWith(
+            date: .mockDecember15th2019At10AMUTC(),
+            serviceName: "test-service-name",
+            loggerName: "test-logger-name"
+        )
         let log = builder.createLogWith(
             level: .debug,
             message: "debug message",
@@ -67,17 +40,18 @@ class LogBuilderTests: XCTestCase {
     }
 
     func testItSetsThreadNameAttribute() {
+        let builder: LogBuilder = .mockAny()
         let expectation = self.expectation(description: "create all logs")
         expectation.expectedFulfillmentCount = 3
 
         DispatchQueue.main.async {
-            let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+            let log = builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
             XCTAssertEqual(log.threadName, "main")
             expectation.fulfill()
         }
 
         DispatchQueue.global(qos: .default).async {
-            let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+            let log = builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
             XCTAssertEqual(log.threadName, "background")
             expectation.fulfill()
         }
@@ -87,7 +61,7 @@ class LogBuilderTests: XCTestCase {
             defer { Thread.current.name = previousName } // reset it as this thread might be picked by `.global(qos: .default)`
 
             Thread.current.name = "custom-thread-name"
-            let log = self.builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
+            let log = builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
             XCTAssertEqual(log.threadName, "custom-thread-name")
             expectation.fulfill()
         }
@@ -97,16 +71,7 @@ class LogBuilderTests: XCTestCase {
 
     func testItSetsApplicationVersionAttribute() {
         func createLogUsing(appContext: AppContext) -> Log {
-            let builder = LogBuilder(
-                appContext: appContext,
-                serviceName: .mockAny(),
-                loggerName: .mockAny(),
-                dateProvider: SystemDateProvider(),
-                userInfoProvider: .mockAny(),
-                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
-                carrierInfoProvider: nil
-            )
-
+            let builder: LogBuilder = .mockWith(appContext: appContext)
             return builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
         }
 

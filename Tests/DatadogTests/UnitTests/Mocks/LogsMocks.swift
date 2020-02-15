@@ -74,12 +74,15 @@ extension EncodableValue {
 }
 
 extension LogBuilder {
-    /// Mocks `LogBuilder` producing logs signed with given `date`.
+    static func mockAny() -> LogBuilder {
+        return mockWith()
+    }
+
     static func mockWith(
-        date: Date,
+        date: Date = .mockAny(),
         appContext: AppContext = .mockAny(),
-        serviceName: String = "test-service",
-        loggerName: String = "test-logger-name",
+        serviceName: String = .mockAny(),
+        loggerName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
