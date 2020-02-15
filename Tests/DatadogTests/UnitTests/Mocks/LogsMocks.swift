@@ -17,6 +17,8 @@ extension Log {
         threadName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         userInfo: UserInfo = .mockAny(),
+        networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
+        mobileCarrierInfo: CarrierInfo? = .mockAny(),
         attributes: [String: EncodableValue]? = nil,
         tags: [String]? = nil
     ) -> Log {
@@ -30,6 +32,8 @@ extension Log {
             threadName: threadName,
             applicationVersion: applicationVersion,
             userInfo: userInfo,
+            networkConnectionInfo: networkConnectionInfo,
+            mobileCarrierInfo: mobileCarrierInfo,
             attributes: attributes,
             tags: tags
         )
@@ -45,7 +49,9 @@ extension Log {
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
-            userInfo: .mockRandom()
+            userInfo: .mockRandom(),
+            networkConnectionInfo: .mockRandom(),
+            mobileCarrierInfo: .mockRandom()
         )
     }
 }
@@ -74,14 +80,18 @@ extension LogBuilder {
         appContext: AppContext = .mockAny(),
         serviceName: String = "test-service",
         loggerName: String = "test-logger-name",
-        userInfoProvider: UserInfoProvider = .mockAny()
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> LogBuilder {
         return LogBuilder(
             appContext: appContext,
             serviceName: serviceName,
             loggerName: loggerName,
             dateProvider: RelativeDateProvider(using: date),
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
         )
     }
 }

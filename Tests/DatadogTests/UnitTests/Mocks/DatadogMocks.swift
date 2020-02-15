@@ -253,24 +253,7 @@ extension NetworkConnectionInfo.Reachability {
 
 extension NetworkConnectionInfo {
     static func mockAny() -> NetworkConnectionInfo {
-        return NetworkConnectionInfo(
-            reachability: .yes,
-            availableInterfaces: [],
-            supportsIPv4: false,
-            supportsIPv6: false,
-            isExpensive: false,
-            isConstrained: false
-        )
-    }
-}
-
-struct NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
-    let current: NetworkConnectionInfo
-
-    static func mockAny() -> NetworkConnectionInfoProviderMock {
-        return NetworkConnectionInfoProviderMock(
-            current: .mockAny()
-        )
+        return mockWith()
     }
 
     static func mockWith(
@@ -280,17 +263,87 @@ struct NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
         supportsIPv6: Bool = true,
         isExpensive: Bool = true,
         isConstrained: Bool = true
-    ) -> NetworkConnectionInfoProviderMock {
-        return NetworkConnectionInfoProviderMock(
-            current: NetworkConnectionInfo(
-                reachability: reachability,
-                availableInterfaces: availableInterfaces,
-                supportsIPv4: supportsIPv4,
-                supportsIPv6: supportsIPv6,
-                isExpensive: isExpensive,
-                isConstrained: isConstrained
-            )
+    ) -> NetworkConnectionInfo {
+        return NetworkConnectionInfo(
+            reachability: reachability,
+            availableInterfaces: availableInterfaces,
+            supportsIPv4: supportsIPv4,
+            supportsIPv6: supportsIPv6,
+            isExpensive: isExpensive,
+            isConstrained: isConstrained
         )
+    }
+
+    static func mockRandom() -> NetworkConnectionInfo {
+        return mockWith(
+            reachability: NetworkConnectionInfo.Reachability.allCases.randomElement()!,
+            availableInterfaces: [NetworkConnectionInfo.Interface.allCases.randomElement()!],
+            supportsIPv4: .random(),
+            supportsIPv6: .random(),
+            isExpensive: .random(),
+            isConstrained: .random()
+        )
+    }
+}
+
+struct NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
+    let current: NetworkConnectionInfo
+
+    static func mockAny() -> NetworkConnectionInfoProviderMock {
+        return mockWith()
+    }
+
+    static func mockWith(
+        networkConnectionInfo: NetworkConnectionInfo = .mockAny()
+    ) -> NetworkConnectionInfoProviderMock {
+        return NetworkConnectionInfoProviderMock(current: networkConnectionInfo)
+    }
+}
+
+extension CarrierInfo.RadioAccessTechnology {
+    static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
+}
+
+extension CarrierInfo {
+    static func mockAny() -> CarrierInfo {
+        return mockWith()
+    }
+
+    static func mockWith(
+        carrierName: String? = .mockAny(),
+        carrierISOCountryCode: String? = .mockAny(),
+        carrierAllowsVOIP: Bool = .mockAny(),
+        radioAccessTechnology: CarrierInfo.RadioAccessTechnology = .mockAny()
+    ) -> CarrierInfo {
+        return CarrierInfo(
+            carrierName: carrierName,
+            carrierISOCountryCode: carrierISOCountryCode,
+            carrierAllowsVOIP: carrierAllowsVOIP,
+            radioAccessTechnology: radioAccessTechnology
+        )
+    }
+
+    static func mockRandom() -> CarrierInfo {
+        return mockWith(
+            carrierName: .mockRandom(),
+            carrierISOCountryCode: .mockRandom(),
+            carrierAllowsVOIP: .random(),
+            radioAccessTechnology: CarrierInfo.RadioAccessTechnology.allCases.randomElement()!
+        )
+    }
+}
+
+struct CarrierInfoProviderMock: CarrierInfoProviderType {
+    let current: CarrierInfo?
+
+    static func mockAny() -> CarrierInfoProviderMock {
+        return mockWith()
+    }
+
+    static func mockWith(
+        carrierInfo: CarrierInfo = .mockAny()
+    ) -> CarrierInfoProviderMock {
+        return CarrierInfoProviderMock(current: carrierInfo)
     }
 }
 

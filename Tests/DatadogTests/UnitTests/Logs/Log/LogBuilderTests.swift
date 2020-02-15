@@ -13,6 +13,24 @@ class LogBuilderTests: XCTestCase {
         dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
         userInfoProvider: .mockWith(
             userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
+        ),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes,
+                availableInterfaces: [.wifi, .cellular],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: false,
+                isConstrained: false
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderMock.mockWith(
+            carrierInfo: .mockWith(
+                carrierName: "Carrier",
+                carrierISOCountryCode: "us",
+                carrierAllowsVOIP: true,
+                radioAccessTechnology: .LTE
+            )
         )
     )
 
@@ -84,7 +102,9 @@ class LogBuilderTests: XCTestCase {
                 serviceName: .mockAny(),
                 loggerName: .mockAny(),
                 dateProvider: SystemDateProvider(),
-                userInfoProvider: .mockAny()
+                userInfoProvider: .mockAny(),
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
+                carrierInfoProvider: nil
             )
 
             return builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
