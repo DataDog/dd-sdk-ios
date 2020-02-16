@@ -54,6 +54,7 @@ class CarrierInfoProviderTests: XCTestCase {
     #else
     func testItIsNotAvailableOnOtherPlatforms() {
         XCTAssertNil(CarrierInfoProvider.getIfAvailable())
+        XCTAssertNil(CarrierInfoProvider().current)
     }
     #endif
 }

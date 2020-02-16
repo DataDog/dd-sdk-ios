@@ -36,6 +36,8 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     init(networkInfo: CTTelephonyNetworkInfo) {
         self.networkInfo = networkInfo
     }
+    #else
+    init() {}
     #endif
 
     static func getIfAvailable() -> CarrierInfoProvider? {
