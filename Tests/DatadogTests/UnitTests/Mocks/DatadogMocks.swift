@@ -286,8 +286,12 @@ extension NetworkConnectionInfo {
     }
 }
 
-struct NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
+class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     let current: NetworkConnectionInfo
+
+    init(networkConnectionInfo: NetworkConnectionInfo) {
+        self.current = networkConnectionInfo
+    }
 
     static func mockAny() -> NetworkConnectionInfoProviderMock {
         return mockWith()
@@ -296,7 +300,7 @@ struct NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     static func mockWith(
         networkConnectionInfo: NetworkConnectionInfo = .mockAny()
     ) -> NetworkConnectionInfoProviderMock {
-        return NetworkConnectionInfoProviderMock(current: networkConnectionInfo)
+        return NetworkConnectionInfoProviderMock(networkConnectionInfo: networkConnectionInfo)
     }
 }
 
@@ -333,8 +337,12 @@ extension CarrierInfo {
     }
 }
 
-struct CarrierInfoProviderMock: CarrierInfoProviderType {
-    let current: CarrierInfo?
+class CarrierInfoProviderMock: CarrierInfoProviderType {
+    var current: CarrierInfo?
+
+    init(carrierInfo: CarrierInfo?) {
+        self.current = carrierInfo
+    }
 
     static func mockAny() -> CarrierInfoProviderMock {
         return mockWith()
@@ -343,7 +351,7 @@ struct CarrierInfoProviderMock: CarrierInfoProviderType {
     static func mockWith(
         carrierInfo: CarrierInfo = .mockAny()
     ) -> CarrierInfoProviderMock {
-        return CarrierInfoProviderMock(current: carrierInfo)
+        return CarrierInfoProviderMock(carrierInfo: carrierInfo)
     }
 }
 
@@ -388,7 +396,7 @@ extension DataUploadConditions {
                 status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false)
             ),
             networkConnectionInfo: NetworkConnectionInfoProviderMock(
-                current: NetworkConnectionInfo(
+                networkConnectionInfo: NetworkConnectionInfo(
                     reachability: .yes,
                     availableInterfaces: [.wifi],
                     supportsIPv4: true,
@@ -546,14 +554,18 @@ extension Datadog {
         logsPersistenceStrategy: LogsPersistenceStrategy = .mockAny(),
         logsUploadStrategy: LogsUploadStrategy = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
-        userInfoProvider: UserInfoProvider = .mockAny()
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        carrierInfoProvider: CarrierInfoProviderType? = CarrierInfoProviderMock.mockAny()
     ) -> Datadog {
         return Datadog(
             appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
         )
     }
 }
@@ -588,12 +600,14 @@ class DatadogInstanceMock {
     private var runClosure: (() -> Void)? = nil
     private var waitClosure: (() -> Void)? = nil
 
-    static var build: Builder { Builder() }
+    static var builder: Builder { Builder() }
 
     class Builder {
         private var appContext: AppContext = .mockAny()
         private var userInfoProvider: UserInfoProvider = .mockAny()
         private var dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        private var networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny()
+        private var carrierInfoProvider: CarrierInfoProviderType? = nil
 
         func with(appContext: AppContext) -> Builder {
             self.appContext = appContext
@@ -610,11 +624,23 @@ class DatadogInstanceMock {
             return self
         }
 
+        func with(networkConnectionInfoProvider: NetworkConnectionInfoProviderType) -> Builder {
+            self.networkConnectionInfoProvider = networkConnectionInfoProvider
+            return self
+        }
+
+        func with(carrierInfoProvider: CarrierInfoProviderType?) -> Builder {
+            self.carrierInfoProvider = carrierInfoProvider
+            return self
+        }
+
         func initialize() -> DatadogInstanceMock {
             return DatadogInstanceMock(
                 appContext: appContext,
                 userInfoProvider: userInfoProvider,
-                dateProvider: dateProvider
+                dateProvider: dateProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
             )
         }
     }
@@ -622,7 +648,9 @@ class DatadogInstanceMock {
     private init(
         appContext: AppContext,
         userInfoProvider: UserInfoProvider,
-        dateProvider: RelativeDateProvider
+        dateProvider: RelativeDateProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType?
     ) {
         let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
             in: temporaryDirectory,
@@ -643,7 +671,9 @@ class DatadogInstanceMock {
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
         )
     }
 

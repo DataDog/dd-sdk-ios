@@ -119,4 +119,19 @@ struct LogMatcher {
     func assertNoValue(forKey key: String, file: StaticString = #file, line: UInt = #line) {
         XCTAssertNil(json[key], file: file, line: line)
     }
+
+    func assertValue<T: Equatable>(forKeyPath keyPath: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
+        let dictionary = json as NSDictionary
+        let dictionaryValue = dictionary.value(forKeyPath: keyPath)
+        guard let jsonValue = dictionaryValue as? T else {
+            XCTFail("Value at key path `\(keyPath)` is not of type `\(type(of: value))`: \(String(describing: dictionaryValue))", file: file, line: line)
+            return
+        }
+        XCTAssertEqual(jsonValue, value, file: file, line: line)
+    }
+
+    func assertNoValue(forKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
+        let dictionary = json as NSDictionary
+        XCTAssertNil(dictionary.value(forKeyPath: keyPath), file: file, line: line)
+    }
 }

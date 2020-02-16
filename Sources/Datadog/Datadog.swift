@@ -10,7 +10,9 @@ public class Datadog {
 
     internal let appContext: AppContext
     internal let dateProvider: DateProvider
-    internal var userInfoProvider: UserInfoProvider
+    internal let userInfoProvider: UserInfoProvider
+    internal let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    internal let carrierInfoProvider: CarrierInfoProviderType?
 
     // MARK: - Logs
 
@@ -22,21 +24,26 @@ public class Datadog {
         endpoint: LogsEndpoint,
         clientToken: String,
         dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType?
     ) throws {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
         let logsUploadStrategy: LogsUploadStrategy = try .defalut(
             appContext: appContext,
             endpointURL: endpoint.url,
             clientToken: clientToken,
-            reader: logsPersistenceStrategy.reader
+            reader: logsPersistenceStrategy.reader,
+            networkConnectionInfoProvider: networkConnectionInfoProvider
         )
         self.init(
             appContext: appContext,
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
         )
     }
 
@@ -45,13 +52,17 @@ public class Datadog {
         logsPersistenceStrategy: LogsPersistenceStrategy,
         logsUploadStrategy: LogsUploadStrategy,
         dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType?
     ) {
         self.appContext = appContext
         self.dateProvider = dateProvider
         self.logsPersistenceStrategy = logsPersistenceStrategy
         self.logsUploadStrategy = logsUploadStrategy
         self.userInfoProvider = userInfoProvider
+        self.networkConnectionInfoProvider = networkConnectionInfoProvider
+        self.carrierInfoProvider = carrierInfoProvider
     }
 }
 
@@ -129,7 +140,9 @@ extension Datadog {
             endpoint: endpoint,
             clientToken: clientToken,
             dateProvider: SystemDateProvider(),
-            userInfoProvider: UserInfoProvider()
+            userInfoProvider: UserInfoProvider(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
+            carrierInfoProvider: CarrierInfoProvider.getIfAvailable()
         )
     }
 
