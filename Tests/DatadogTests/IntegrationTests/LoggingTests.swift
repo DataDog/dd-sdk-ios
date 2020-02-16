@@ -92,6 +92,22 @@ class LoggingTests: XCTestCase {
                     ]
                 )
                 matcher.assertTags(equal: ["tag1:tag-value", "tag2"])
+                matcher.assertNetworkConnectionInfo(
+                    equals: NetworkConnectionInfo(
+                        reachability: .yes,
+                        availableInterfaces: [.wifi],
+                        supportsIPv4: true,
+                        supportsIPv6: false, // mock server doesn't support IPv6
+                        isExpensive: false,
+                        isConstrained: false
+                    )
+                )
+                // Integration tests run on `macOS`, so carrier info must be expected to be empty:
+                // TODO: RUMM-216 Integration tests can be run on simulator and device
+                matcher.assertNoValue(forKey: LogEncoder.StaticCodingKeys.mobileNetworkCarrierName.rawValue)
+                matcher.assertNoValue(forKey: LogEncoder.StaticCodingKeys.mobileNetworkCarrierISOCountryCode.rawValue)
+                matcher.assertNoValue(forKey: LogEncoder.StaticCodingKeys.mobileNetworkCarrierRadioTechnology.rawValue)
+                matcher.assertNoValue(forKey: LogEncoder.StaticCodingKeys.mobileNetworkCarrierAllowsVoIP.rawValue)
             }
         }
     }

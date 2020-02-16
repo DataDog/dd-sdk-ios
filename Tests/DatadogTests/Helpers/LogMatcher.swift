@@ -83,6 +83,45 @@ struct LogMatcher {
         }
     }
 
+    func assertNetworkConnectionInfo(equals networkConnectionInfo: NetworkConnectionInfo, file: StaticString = #file, line: UInt = #line) {
+        assertValue(
+            forKey: LogEncoder.StaticCodingKeys.networkReachability.rawValue,
+            equals: networkConnectionInfo.reachability.rawValue,
+            file: file,
+            line: line
+        )
+        assertValue(
+            forKey: LogEncoder.StaticCodingKeys.networkAvailableInterfaces.rawValue,
+            equals: networkConnectionInfo.availableInterfaces.map { $0.rawValue },
+            file: file,
+            line: line
+        )
+        assertValue(
+            forKey: LogEncoder.StaticCodingKeys.networkConnectionSupportsIPv4.rawValue,
+            equals: networkConnectionInfo.supportsIPv4,
+            file: file,
+            line: line
+        )
+        assertValue(
+            forKey: LogEncoder.StaticCodingKeys.networkConnectionSupportsIPv6.rawValue,
+            equals: networkConnectionInfo.supportsIPv6,
+            file: file,
+            line: line
+        )
+        assertValue(
+            forKey: LogEncoder.StaticCodingKeys.networkConnectionIsExpensive.rawValue,
+            equals: networkConnectionInfo.isExpensive,
+            file: file,
+            line: line
+        )
+        assertValue(
+            forKey: LogEncoder.StaticCodingKeys.networkConnectionIsConstrained.rawValue,
+            equals: networkConnectionInfo.isConstrained,
+            file: file,
+            line: line
+        )
+    }
+
     func assertAttributes(equal attributes: [String: Any], file: StaticString = #file, line: UInt = #line) {
         attributes.forEach { key, value in
             switch json[key] {
