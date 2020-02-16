@@ -353,6 +353,42 @@ class LoggerTests: XCTestCase {
         try Datadog.deinitializeOrThrow()
     }
 
+    // MARK: - Sending logs with different network and battery conditions
+
+    func testGivenBadBatteryConditions_itDoesntTryToSendLogs() throws {
+        try DatadogInstanceMock.builder
+            .with(
+                batteryStatusProvider: BatteryStatusProviderMock.mockWith(
+                    status: .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
+                )
+            )
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyNoLogsSent()
+            .destroy()
+    }
+
+    func testGivenNoNetworkConnection_itDoesntTryToSendLogs() throws {
+        try DatadogInstanceMock.builder
+            .with(
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+                    networkConnectionInfo: .mockWith(reachability: .no)
+                )
+            )
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyNoLogsSent()
+            .destroy()
+    }
+
     // MARK: - Initialization
 
     func testWhenDatadogIsNotInitialized_itThrowsProgrammerError() {

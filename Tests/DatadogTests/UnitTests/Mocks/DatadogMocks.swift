@@ -223,7 +223,19 @@ extension BatteryStatus.State {
 
 extension BatteryStatus {
     static func mockAny() -> BatteryStatus {
-        return BatteryStatus(state: .charging, level: 50, isLowPowerModeEnabled: false)
+        return mockWith()
+    }
+
+    static func mockWith(
+        state: State = .charging,
+        level: Float = 0.5,
+        isLowPowerModeEnabled: Bool = false
+    ) -> BatteryStatus {
+        return BatteryStatus(state: state, level: level, isLowPowerModeEnabled: isLowPowerModeEnabled)
+    }
+
+    static func mockFullBattery() -> BatteryStatus {
+        return mockWith(state: .full, level: 1, isLowPowerModeEnabled: false)
     }
 }
 
@@ -236,6 +248,12 @@ struct BatteryStatusProviderMock: BatteryStatusProviderType {
 
     static func mockWith(status: BatteryStatus) -> BatteryStatusProviderMock {
         return BatteryStatusProviderMock(current: status)
+    }
+
+    static func mockFullBattery() -> BatteryStatusProviderMock {
+        return BatteryStatusProviderMock(
+            current: .mockFullBattery()
+        )
     }
 }
 
@@ -301,6 +319,15 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
         networkConnectionInfo: NetworkConnectionInfo = .mockAny()
     ) -> NetworkConnectionInfoProviderMock {
         return NetworkConnectionInfoProviderMock(networkConnectionInfo: networkConnectionInfo)
+    }
+
+    static func mockGoodConnection() -> NetworkConnectionInfoProviderMock {
+        return .mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes,
+                availableInterfaces: [.wifi]
+            )
+        )
     }
 }
 
@@ -465,7 +492,8 @@ extension LogsUploadStrategy {
     static func mockUploadBatchesInConstantDelayWith200ResponseStatusCode(
         interval: TimeInterval,
         using fileReader: FileReader,
-        andRecordRequestsOn requestsRecorder: RequestsRecorder?
+        andRecordRequestsOn requestsRecorder: RequestsRecorder?,
+        uploadConditions: DataUploadConditions
     ) -> LogsUploadStrategy {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-tests-logs-upload",
@@ -483,7 +511,7 @@ extension LogsUploadStrategy {
                     ),
                     httpHeaders: .mockAny()
                 ),
-                uploadConditions: .mockAlwaysPerformingUpload(),
+                uploadConditions: uploadConditions,
                 delay: .mockConstantDelay(of: interval)
             )
         )
@@ -534,10 +562,10 @@ extension UserInfo {
 
 extension UserInfoProvider {
     static func mockAny() -> UserInfoProvider {
-        return UserInfoProvider()
+        return mockWith()
     }
 
-    static func mockWith(userInfo: UserInfo) -> UserInfoProvider {
+    static func mockWith(userInfo: UserInfo = .mockAny()) -> UserInfoProvider {
         let provider = UserInfoProvider()
         provider.value = userInfo
         return provider
@@ -599,23 +627,19 @@ class DatadogInstanceMock {
 
     private var runClosure: (() -> Void)? = nil
     private var waitClosure: (() -> Void)? = nil
+    private var waitExpectation: XCTestExpectation?
 
     static var builder: Builder { Builder() }
 
     class Builder {
         private var appContext: AppContext = .mockAny()
-        private var userInfoProvider: UserInfoProvider = .mockAny()
         private var dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        private var networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny()
+        private var networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockGoodConnection()
         private var carrierInfoProvider: CarrierInfoProviderType? = nil
+        private var batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockFullBattery()
 
         func with(appContext: AppContext) -> Builder {
             self.appContext = appContext
-            return self
-        }
-
-        func with(userInfoProvider: UserInfoProvider) -> Builder {
-            self.userInfoProvider = userInfoProvider
             return self
         }
 
@@ -634,23 +658,28 @@ class DatadogInstanceMock {
             return self
         }
 
+        func with(batteryStatusProvider: BatteryStatusProviderType) -> Builder {
+            self.batteryStatusProvider = batteryStatusProvider
+            return self
+        }
+
         func initialize() -> DatadogInstanceMock {
             return DatadogInstanceMock(
                 appContext: appContext,
-                userInfoProvider: userInfoProvider,
                 dateProvider: dateProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                carrierInfoProvider: carrierInfoProvider,
+                batteryStatusProvider: batteryStatusProvider
             )
         }
     }
 
     private init(
         appContext: AppContext,
-        userInfoProvider: UserInfoProvider,
         dateProvider: RelativeDateProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType?
+        carrierInfoProvider: CarrierInfoProviderType?,
+        batteryStatusProvider: BatteryStatusProviderType
     ) {
         let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
             in: temporaryDirectory,
@@ -662,7 +691,11 @@ class DatadogInstanceMock {
         let logsUploadStrategy: LogsUploadStrategy = .mockUploadBatchesInConstantDelayWith200ResponseStatusCode(
             interval: logsUploadInterval,
             using: logsPersistenceStrategy.reader,
-            andRecordRequestsOn: requestsRecorder
+            andRecordRequestsOn: requestsRecorder,
+            uploadConditions: DataUploadConditions(
+                batteryStatus: batteryStatusProvider,
+                networkConnectionInfo: networkConnectionInfoProvider
+            )
         )
 
         // Instantiate `Datadog` object configured for sending one log per request.
@@ -671,7 +704,7 @@ class DatadogInstanceMock {
             logsPersistenceStrategy: logsPersistenceStrategy,
             logsUploadStrategy: logsUploadStrategy,
             dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
+            userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
@@ -694,17 +727,24 @@ class DatadogInstanceMock {
         // Set the timeout to 8 times more than expected (arbitrary).
         let waitTime = logsUploadInterval * Double(numberOfLogsSent) * 8
 
+        waitExpectation = expectation
         waitClosure = { [requestsRecorder] in
             let result = XCTWaiter().wait(for: [expectation], timeout: waitTime)
 
             switch result {
             case .completed:
                 break
-            case .incorrectOrder, .interrupted, .invertedFulfillment:
+            case .incorrectOrder, .interrupted:
                 fatalError("Can't happen.")
             case .timedOut:
                 XCTFail(
-                    "Exceeded time out with sending only \(requestsRecorder.requestsSent.count) out of \(numberOfLogsSent) expected logs.",
+                    "Exceeded timeout with sending only \(requestsRecorder.requestsSent.count) out of \(numberOfLogsSent) expected logs.",
+                    file: file,
+                    line: line
+                )
+            case .invertedFulfillment:
+                XCTFail(
+                    "\(requestsRecorder.requestsSent.count) requeste were sent, but not expected.",
                     file: file,
                     line: line
                 )
@@ -738,6 +778,22 @@ class DatadogInstanceMock {
         try verifyAll { allMatchers in
             try closure(allMatchers[0])
         }
+    }
+
+    func verifyNoLogsSent(file: StaticString = #file, line: UInt = #line) throws -> DatadogInstanceMock {
+        precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
+        precondition(waitClosure != nil, "`.wait {}` must preceed `.verify {}`")
+
+        waitExpectation?.isInverted = true
+
+        runClosure?()
+        waitClosure?()
+
+        if requestsRecorder.requestsSent.count > 0 {
+            XCTFail("\(requestsRecorder.requestsSent.count) requests were / was sent. ", file: file, line: line)
+        }
+
+        return self
     }
 
     func destroy() throws {
