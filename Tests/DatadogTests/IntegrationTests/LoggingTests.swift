@@ -112,7 +112,10 @@ class LoggingTests: XCTestCase {
                 matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionSupportsIPv4.rawValue, isTypeOf: Bool.self)
                 matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionSupportsIPv6.rawValue, isTypeOf: Bool.self)
                 matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionIsExpensive.rawValue, isTypeOf: Bool.self)
-                matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionIsConstrained.rawValue, isTypeOf: Bool.self)
+                matcher.assertValue(
+                    forKeyPath: LogJSONKeys.networkConnectionIsConstrained.rawValue,
+                    isTypeOf: Optional<Bool>.self
+                )
 
                 // Integration tests run on `macOS`, so carrier info must be expected to be empty:
                 // TODO: RUMM-216 Integration tests can be run on simulator and device
