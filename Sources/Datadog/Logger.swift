@@ -277,9 +277,12 @@ public class Logger {
         }
 
         public func build() -> Logger {
-            do { return try buildOrThrow()
+            do {
+                return try buildOrThrow()
             } catch {
                 userLogger.critical("\(error)")
+
+                // TODO: RUMM-171 Fail silently when misusing SDK public API
                 fatalError("`Logger` cannot be built: \(error)") // crash
             }
         }

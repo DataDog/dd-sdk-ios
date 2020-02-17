@@ -29,15 +29,13 @@ internal struct LogsUploadStrategy {
 
     static func `defalut`(
         appContext: AppContext,
-        endpointURL: String,
-        clientToken: String,
+        logsUploadURL: DataUploadURL,
         reader: FileReader,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     ) throws -> LogsUploadStrategy {
-        let uploadURL = try DataUploadURL(endpointURL: endpointURL, clientToken: clientToken)
         let httpClient = HTTPClient()
         let httpHeaders = HTTPHeaders(appContext: appContext)
-        let dataUploader = DataUploader(url: uploadURL, httpClient: httpClient, httpHeaders: httpHeaders)
+        let dataUploader = DataUploader(url: logsUploadURL, httpClient: httpClient, httpHeaders: httpHeaders)
 
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-upload",
