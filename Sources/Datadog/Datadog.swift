@@ -45,12 +45,10 @@ public class Datadog {
     ///   - appContext: context passing information about the app.
     ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
     public static func initialize(appContext: AppContext, configuration: Configuration) {
-        do { try initializeOrThrow(appContext: appContext, configuration: configuration)
+        do {
+            try initializeOrThrow(appContext: appContext, configuration: configuration)
         } catch {
-            userLogger.critical("\(error)")
-
-            // TODO: RUMM-171 Fail silently when misusing SDK public API
-            fatalError("Programmer error - \(error)")  // crash
+            consolePrint("🔥 \(error)")
         }
     }
 
@@ -80,13 +78,16 @@ public class Datadog {
     internal let logsPersistenceStrategy: LogsPersistenceStrategy
     internal let logsUploadStrategy: LogsUploadStrategy
 
-    internal static func initializeOrThrow(appContext: AppContext, configuration: Configuration) throws {
+    private static func initializeOrThrow(appContext: AppContext, configuration: Configuration) throws {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
+        guard let logsUploadURL = configuration.logsUploadURL else {
+            throw ProgrammerError(description: "SDK configuration is invalid - check `logsEndpoint` and (or) `clientToken`.")
+        }
         self.instance = try Datadog(
             appContext: appContext,
-            logsUploadURL: configuration.logsUploadURL,
+            logsUploadURL: logsUploadURL,
             dateProvider: SystemDateProvider(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),

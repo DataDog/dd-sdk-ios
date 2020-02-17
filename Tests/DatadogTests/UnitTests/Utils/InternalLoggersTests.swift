@@ -19,6 +19,7 @@ class InternalLoggersTests: XCTestCase {
     override func tearDown() {
         printedMessages = nil
         userLogger = nil
+        Datadog.verbosityLevel = nil
         Datadog.instance = nil
         super.tearDown()
     }
