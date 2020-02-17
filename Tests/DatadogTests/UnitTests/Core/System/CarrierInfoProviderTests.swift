@@ -22,7 +22,7 @@ class CarrierInfoProviderTests: XCTestCase {
         XCTAssertEqual(provider.current?.carrierAllowsVOIP, true)
     }
 
-    func testWhenCellularServiceIsUnavailable_itReturnsCarrierInfo() {
+    func testWhenCellularServiceIsUnavailable_itReturnsNoCarrierInfo() {
         let telephonyNetworkInfo = CTTelephonyNetworkInfoMock(
             serviceCurrentRadioAccessTechnology: [:],
             serviceSubscriberCellularProviders: [:]

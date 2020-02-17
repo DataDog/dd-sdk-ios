@@ -22,11 +22,11 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
     func testItReturnsCurrentNetworkConnectionInfo() {
         func networkConnectionInfo(for pathInfo: NWCurrentPathInfo) -> NetworkConnectionInfo {
             let monitor = NWCurrentPathMonitorMock(pathInfo: pathInfo)
-            let providedr = NetworkConnectionInfoProvider(monitor: monitor)
-            return providedr.current
+            let provider = NetworkConnectionInfoProvider(monitor: monitor)
+            return provider.current
         }
 
-        // It maps `availableInterfaceTypes` info from `Network` to `Datadog`
+        // It maps `availableInterfaceTypes` info from `Network` domain to `Datadog`
         XCTAssertEqual(
             networkConnectionInfo(for: .mockWith(availableInterfaceTypes: [.wifi, .wiredEthernet, .cellular, .loopback, .other])).availableInterfaces,
             [.wifi, .wiredEthernet, .cellular, .loopback, .other]
