@@ -44,7 +44,7 @@ extension Datadog {
                 return self
             }
 
-            public func build() throws -> Datadog.Configuration {
+            public func build() -> Configuration {
                 do {
                     return try buildOrThrow()
                 } catch {
@@ -55,7 +55,7 @@ extension Datadog {
                 }
             }
 
-            internal func buildOrThrow() throws -> Datadog.Configuration {
+            internal func buildOrThrow() throws -> Configuration {
                 return Datadog.Configuration(
                     logsUploadURL: try DataUploadURL(endpointURL: logsEndpoint.url, clientToken: clientToken)
                 )

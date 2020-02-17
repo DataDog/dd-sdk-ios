@@ -99,7 +99,7 @@ public class Datadog {
         carrierInfoProvider: CarrierInfoProviderType?
     ) throws {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
-        let logsUploadStrategy: LogsUploadStrategy = try .defalut(
+        let logsUploadStrategy: LogsUploadStrategy = .defalut(
             appContext: appContext,
             logsUploadURL: logsUploadURL,
             reader: logsPersistenceStrategy.reader,

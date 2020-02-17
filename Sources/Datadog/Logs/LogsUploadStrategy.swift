@@ -32,7 +32,7 @@ internal struct LogsUploadStrategy {
         logsUploadURL: DataUploadURL,
         reader: FileReader,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    ) throws -> LogsUploadStrategy {
+    ) -> LogsUploadStrategy {
         let httpClient = HTTPClient()
         let httpHeaders = HTTPHeaders(appContext: appContext)
         let dataUploader = DataUploader(url: logsUploadURL, httpClient: httpClient, httpHeaders: httpHeaders)
