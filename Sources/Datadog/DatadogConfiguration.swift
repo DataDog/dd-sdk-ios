@@ -1,6 +1,7 @@
 import Foundation
 
 extension Datadog {
+    /// Datadog SDK configuration.
     public struct Configuration {
         /// Determines server to which logs are sent.
         public enum LogsEndpoint {
@@ -24,10 +25,20 @@ extension Datadog {
 
         internal let logsUploadURL: DataUploadURL
 
+        /// Creates configuration builder and sets client token.
+        /// - Parameter clientToken: client token obtained on Datadog website.
         public static func builderUsing(clientToken: String) -> Builder {
             return Builder(clientToken: clientToken)
         }
 
+        /// `Datadog.Configuration` builder.
+        ///
+        /// Usage:
+        ///
+        ///     Datadog.Configuration.builderUsing(clientToken: "<client token>")
+        ///                           ... // customize using builder methods
+        ///                          .build()
+        ///
         public class Builder {
             private let clientToken: String
             private var logsEndpoint: LogsEndpoint
@@ -44,6 +55,7 @@ extension Datadog {
                 return self
             }
 
+            /// Builds `Datadog.Configuration` object.
             public func build() -> Configuration {
                 do {
                     return try buildOrThrow()

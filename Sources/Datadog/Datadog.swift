@@ -40,6 +40,10 @@ public class Datadog {
         }
     }
 
+    /// Initializes the Datadog SDK.
+    /// - Parameters:
+    ///   - appContext: context passing information about the app.
+    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
     public static func initialize(appContext: AppContext, configuration: Configuration) {
         do { try initializeOrThrow(appContext: appContext, configuration: configuration)
         } catch {
