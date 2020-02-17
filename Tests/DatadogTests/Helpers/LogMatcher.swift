@@ -83,45 +83,6 @@ struct LogMatcher {
         }
     }
 
-    func assertNetworkConnectionInfo(equals networkConnectionInfo: NetworkConnectionInfo, file: StaticString = #file, line: UInt = #line) {
-        assertValue(
-            forKey: LogEncoder.StaticCodingKeys.networkReachability.rawValue,
-            equals: networkConnectionInfo.reachability.rawValue,
-            file: file,
-            line: line
-        )
-        assertValue(
-            forKey: LogEncoder.StaticCodingKeys.networkAvailableInterfaces.rawValue,
-            equals: networkConnectionInfo.availableInterfaces.map { $0.rawValue },
-            file: file,
-            line: line
-        )
-        assertValue(
-            forKey: LogEncoder.StaticCodingKeys.networkConnectionSupportsIPv4.rawValue,
-            equals: networkConnectionInfo.supportsIPv4,
-            file: file,
-            line: line
-        )
-        assertValue(
-            forKey: LogEncoder.StaticCodingKeys.networkConnectionSupportsIPv6.rawValue,
-            equals: networkConnectionInfo.supportsIPv6,
-            file: file,
-            line: line
-        )
-        assertValue(
-            forKey: LogEncoder.StaticCodingKeys.networkConnectionIsExpensive.rawValue,
-            equals: networkConnectionInfo.isExpensive,
-            file: file,
-            line: line
-        )
-        assertValue(
-            forKey: LogEncoder.StaticCodingKeys.networkConnectionIsConstrained.rawValue,
-            equals: networkConnectionInfo.isConstrained,
-            file: file,
-            line: line
-        )
-    }
-
     func assertAttributes(equal attributes: [String: Any], file: StaticString = #file, line: UInt = #line) {
         attributes.forEach { key, value in
             switch json[key] {
@@ -151,6 +112,8 @@ struct LogMatcher {
         XCTAssertEqual(matcherTags, logTags, file: file, line: line)
     }
 
+    // MARK: - Generic matches
+
     func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(json[key] as? T, value, file: file, line: line)
     }
@@ -172,5 +135,36 @@ struct LogMatcher {
     func assertNoValue(forKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
         let dictionary = json as NSDictionary
         XCTAssertNil(dictionary.value(forKeyPath: keyPath), file: file, line: line)
+    }
+
+    func assertValue<T: Equatable>(
+        forKeyPath keyPath: String,
+        matches matcherClosure: (T) -> Bool,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let dictionary = json as NSDictionary
+        let dictionaryValue = dictionary.value(forKeyPath: keyPath)
+        guard let jsonValue = dictionaryValue as? T else {
+            XCTFail(
+                "Can't cast value at key path `\(keyPath)` to expected type: \(String(describing: dictionaryValue))",
+                file: file,
+                line: line
+            )
+            return
+        }
+
+        XCTAssertTrue(matcherClosure(jsonValue), file: file, line: line)
+    }
+
+    func assertValue<T>(
+        forKeyPath keyPath: String,
+        isTypeOf type: T.Type,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let dictionary = json as NSDictionary
+        let dictionaryValue = dictionary.value(forKeyPath: keyPath)
+        XCTAssertTrue((dictionaryValue as? T) != nil, file: file, line: line)
     }
 }
