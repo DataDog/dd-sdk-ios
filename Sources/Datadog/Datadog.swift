@@ -6,6 +6,85 @@ internal let sdkVersion = "1.0.0-alpha2"
 
 /// Datadog SDK configuration object.
 public class Datadog {
+    // MARK: - Public API
+
+    /// Determines server to which logs are sent.
+    public enum LogsEndpoint {
+        /// US based servers.
+        /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
+        case us // swiftlint:disable:this identifier_name
+        /// Europe based servers.
+        /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
+        case eu // swiftlint:disable:this identifier_name
+        /// User-defined server.
+        case custom(url: String)
+
+        internal var url: String {
+            switch self {
+            case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
+            case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
+            case let .custom(url: url): return url
+            }
+        }
+    }
+
+    /// Provides information about the app.
+    public struct AppContext {
+        internal let bundleIdentifier: String?
+        internal let bundleVersion: String?
+        internal let bundleShortVersion: String?
+        internal let executableName: String?
+        /// Describes current mobile device if SDK runs on a platform that supports `UIKit`.
+        internal let mobileDevice: MobileDevice?
+
+        public init(mainBundle: Bundle = Bundle.main) {
+            self.init(
+                bundleIdentifier: mainBundle.bundleIdentifier,
+                bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                executableName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
+                mobileDevice: MobileDevice.current
+            )
+        }
+
+        internal init(
+            bundleIdentifier: String?,
+            bundleVersion: String?,
+            bundleShortVersion: String?,
+            executableName: String?,
+            mobileDevice: MobileDevice?
+        ) {
+            self.bundleIdentifier = bundleIdentifier
+            self.bundleVersion = bundleVersion
+            self.bundleShortVersion = bundleShortVersion
+            self.executableName = executableName
+            self.mobileDevice = mobileDevice
+        }
+    }
+
+    public static func initialize(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) {
+        do { try initializeOrThrow(appContext: appContext, endpoint: endpoint, clientToken: clientToken)
+        } catch {
+            userLogger.critical("\(error)")
+            fatalError("Programmer error - \(error)")  // crash
+        }
+    }
+
+    /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
+    /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
+    /// Default is `nil`.
+    public static var verbosityLevel: LogLevel? = nil
+
+    public static func setUserInfo(
+        id: String? = nil, // swiftlint:disable:this identifier_name
+        name: String? = nil,
+        email: String? = nil
+    ) {
+        instance?.userInfoProvider.value = UserInfo(id: id, name: name, email: email)
+    }
+
+    // MARK: - Internal
+
     internal static var instance: Datadog?
 
     internal let appContext: AppContext
@@ -14,10 +93,23 @@ public class Datadog {
     internal let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     internal let carrierInfoProvider: CarrierInfoProviderType?
 
-    // MARK: - Logs
-
     internal let logsPersistenceStrategy: LogsPersistenceStrategy
     internal let logsUploadStrategy: LogsUploadStrategy
+
+    internal static func initializeOrThrow(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) throws {
+        guard Datadog.instance == nil else {
+            throw ProgrammerError(description: "SDK is already initialized.")
+        }
+        self.instance = try Datadog(
+            appContext: appContext,
+            endpoint: endpoint,
+            clientToken: clientToken,
+            dateProvider: SystemDateProvider(),
+            userInfoProvider: UserInfoProvider(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
+            carrierInfoProvider: CarrierInfoProvider.getIfAvailable()
+        )
+    }
 
     internal convenience init(
         appContext: AppContext,
@@ -64,104 +156,6 @@ public class Datadog {
         self.networkConnectionInfoProvider = networkConnectionInfoProvider
         self.carrierInfoProvider = carrierInfoProvider
     }
-}
-
-extension Datadog {
-    /// Determines server to which logs are sent.
-    public enum LogsEndpoint {
-        /// US based servers.
-        /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-        case us // swiftlint:disable:this identifier_name
-        /// Europe based servers.
-        /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-        case eu // swiftlint:disable:this identifier_name
-        /// User-defined server.
-        case custom(url: String)
-
-        var url: String {
-            switch self {
-            case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
-            case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
-            case let .custom(url: url): return url
-            }
-        }
-    }
-
-    /// Provides information about the app.
-    public struct AppContext {
-        internal let bundleIdentifier: String?
-        internal let bundleVersion: String?
-        internal let bundleShortVersion: String?
-        internal let executableName: String?
-        /// Describes current mobile device if SDK runs on a platform that supports `UIKit`.
-        internal let mobileDevice: MobileDevice?
-
-        public init(mainBundle: Bundle = Bundle.main) {
-            self.init(
-                bundleIdentifier: mainBundle.bundleIdentifier,
-                bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
-                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-                executableName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
-                mobileDevice: MobileDevice.current
-            )
-        }
-
-        internal init(
-            bundleIdentifier: String?,
-            bundleVersion: String?,
-            bundleShortVersion: String?,
-            executableName: String?,
-            mobileDevice: MobileDevice?
-        ) {
-            self.bundleIdentifier = bundleIdentifier
-            self.bundleVersion = bundleVersion
-            self.bundleShortVersion = bundleShortVersion
-            self.executableName = executableName
-            self.mobileDevice = mobileDevice
-        }
-    }
-
-    // MARK: - Initialization
-
-    public static func initialize(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) {
-        do { try initializeOrThrow(appContext: appContext, endpoint: endpoint, clientToken: clientToken)
-        } catch {
-            userLogger.critical("\(error)")
-            fatalError("Programmer error - \(error)")  // crash
-        }
-    }
-
-    static func initializeOrThrow(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) throws {
-        guard Datadog.instance == nil else {
-            throw ProgrammerError(description: "SDK is already initialized.")
-        }
-        self.instance = try Datadog(
-            appContext: appContext,
-            endpoint: endpoint,
-            clientToken: clientToken,
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: UserInfoProvider(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider.getIfAvailable()
-        )
-    }
-
-    // MARK: - Global configuration
-
-    /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
-    /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
-    /// Default is `nil`.
-    public static var verbosityLevel: LogLevel? = nil
-
-    public static func setUserInfo(
-        id: String? = nil, // swiftlint:disable:this identifier_name
-        name: String? = nil,
-        email: String? = nil
-    ) {
-        instance?.userInfoProvider.value = UserInfo(id: id, name: name, email: email)
-    }
-
-    // MARK: - Deinitialization
 
     /// Internal feature made only for tests purpose.
     static func deinitializeOrThrow() throws {
