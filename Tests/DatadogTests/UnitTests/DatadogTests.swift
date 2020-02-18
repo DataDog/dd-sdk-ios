@@ -2,16 +2,18 @@ import XCTest
 @testable import Datadog
 
 class DatadogTests: XCTestCase {
-    private let printFunction = PrintFunctionMock()
+    private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         XCTAssertNil(Datadog.instance)
+        printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
     }
 
     override func tearDown() {
         consolePrint = { print($0) }
+        printFunction = nil
         XCTAssertNil(Datadog.instance)
         super.tearDown()
     }
