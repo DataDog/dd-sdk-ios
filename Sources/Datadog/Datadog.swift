@@ -6,87 +6,6 @@ internal let sdkVersion = "1.0.0-alpha2"
 
 /// Datadog SDK configuration object.
 public class Datadog {
-    internal static var instance: Datadog?
-
-    internal let appContext: AppContext
-    internal let dateProvider: DateProvider
-    internal let userInfoProvider: UserInfoProvider
-    internal let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    internal let carrierInfoProvider: CarrierInfoProviderType?
-
-    // MARK: - Logs
-
-    internal let logsPersistenceStrategy: LogsPersistenceStrategy
-    internal let logsUploadStrategy: LogsUploadStrategy
-
-    internal convenience init(
-        appContext: AppContext,
-        endpoint: LogsEndpoint,
-        clientToken: String,
-        dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType?
-    ) throws {
-        let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
-        let logsUploadStrategy: LogsUploadStrategy = try .defalut(
-            appContext: appContext,
-            endpointURL: endpoint.url,
-            clientToken: clientToken,
-            reader: logsPersistenceStrategy.reader,
-            networkConnectionInfoProvider: networkConnectionInfoProvider
-        )
-        self.init(
-            appContext: appContext,
-            logsPersistenceStrategy: logsPersistenceStrategy,
-            logsUploadStrategy: logsUploadStrategy,
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
-    }
-
-    internal init(
-        appContext: AppContext,
-        logsPersistenceStrategy: LogsPersistenceStrategy,
-        logsUploadStrategy: LogsUploadStrategy,
-        dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType?
-    ) {
-        self.appContext = appContext
-        self.dateProvider = dateProvider
-        self.logsPersistenceStrategy = logsPersistenceStrategy
-        self.logsUploadStrategy = logsUploadStrategy
-        self.userInfoProvider = userInfoProvider
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
-    }
-}
-
-extension Datadog {
-    /// Determines server to which logs are sent.
-    public enum LogsEndpoint {
-        /// US based servers.
-        /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-        case us // swiftlint:disable:this identifier_name
-        /// Europe based servers.
-        /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-        case eu // swiftlint:disable:this identifier_name
-        /// User-defined server.
-        case custom(url: String)
-
-        var url: String {
-            switch self {
-            case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
-            case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
-            case let .custom(url: url): return url
-            }
-        }
-    }
-
     /// Provides information about the app.
     public struct AppContext {
         internal let bundleIdentifier: String?
@@ -121,32 +40,19 @@ extension Datadog {
         }
     }
 
-    // MARK: - Initialization
-
-    public static func initialize(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) {
-        do { try initializeOrThrow(appContext: appContext, endpoint: endpoint, clientToken: clientToken)
+    /// Initializes the Datadog SDK.
+    /// - Parameters:
+    ///   - appContext: context passing information about the app.
+    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
+    public static func initialize(appContext: AppContext, configuration: Configuration) {
+        do { try initializeOrThrow(appContext: appContext, configuration: configuration)
         } catch {
             userLogger.critical("\(error)")
+
+            // TODO: RUMM-171 Fail silently when misusing SDK public API
             fatalError("Programmer error - \(error)")  // crash
         }
     }
-
-    static func initializeOrThrow(appContext: AppContext, endpoint: LogsEndpoint, clientToken: String) throws {
-        guard Datadog.instance == nil else {
-            throw ProgrammerError(description: "SDK is already initialized.")
-        }
-        self.instance = try Datadog(
-            appContext: appContext,
-            endpoint: endpoint,
-            clientToken: clientToken,
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: UserInfoProvider(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider.getIfAvailable()
-        )
-    }
-
-    // MARK: - Global configuration
 
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
@@ -161,7 +67,76 @@ extension Datadog {
         instance?.userInfoProvider.value = UserInfo(id: id, name: name, email: email)
     }
 
-    // MARK: - Deinitialization
+    // MARK: - Internal
+
+    internal static var instance: Datadog?
+
+    internal let appContext: AppContext
+    internal let dateProvider: DateProvider
+    internal let userInfoProvider: UserInfoProvider
+    internal let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    internal let carrierInfoProvider: CarrierInfoProviderType?
+
+    internal let logsPersistenceStrategy: LogsPersistenceStrategy
+    internal let logsUploadStrategy: LogsUploadStrategy
+
+    internal static func initializeOrThrow(appContext: AppContext, configuration: Configuration) throws {
+        guard Datadog.instance == nil else {
+            throw ProgrammerError(description: "SDK is already initialized.")
+        }
+        self.instance = try Datadog(
+            appContext: appContext,
+            logsUploadURL: configuration.logsUploadURL,
+            dateProvider: SystemDateProvider(),
+            userInfoProvider: UserInfoProvider(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
+            carrierInfoProvider: CarrierInfoProvider.getIfAvailable()
+        )
+    }
+
+    internal convenience init(
+        appContext: AppContext,
+        logsUploadURL: DataUploadURL,
+        dateProvider: DateProvider,
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType?
+    ) throws {
+        let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
+        let logsUploadStrategy: LogsUploadStrategy = .defalut(
+            appContext: appContext,
+            logsUploadURL: logsUploadURL,
+            reader: logsPersistenceStrategy.reader,
+            networkConnectionInfoProvider: networkConnectionInfoProvider
+        )
+        self.init(
+            appContext: appContext,
+            logsPersistenceStrategy: logsPersistenceStrategy,
+            logsUploadStrategy: logsUploadStrategy,
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+
+    internal init(
+        appContext: AppContext,
+        logsPersistenceStrategy: LogsPersistenceStrategy,
+        logsUploadStrategy: LogsUploadStrategy,
+        dateProvider: DateProvider,
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType?
+    ) {
+        self.appContext = appContext
+        self.dateProvider = dateProvider
+        self.logsPersistenceStrategy = logsPersistenceStrategy
+        self.logsUploadStrategy = logsUploadStrategy
+        self.userInfoProvider = userInfoProvider
+        self.networkConnectionInfoProvider = networkConnectionInfoProvider
+        self.carrierInfoProvider = carrierInfoProvider
+    }
 
     /// Internal feature made only for tests purpose.
     static func deinitializeOrThrow() throws {

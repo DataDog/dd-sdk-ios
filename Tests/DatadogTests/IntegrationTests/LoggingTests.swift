@@ -16,8 +16,9 @@ class LoggingTests: XCTestCase {
                 executableName: "some-app",
                 mobileDevice: nil
             ),
-            endpoint: .custom(url: serverMock.url),
-            clientToken: "abcd"
+            configuration: Datadog.Configuration.builderUsing(clientToken: "abcd")
+                .set(logsEndpoint: .custom(url: serverMock.url))
+                .build()
         )
     }
 

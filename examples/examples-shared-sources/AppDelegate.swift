@@ -12,8 +12,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
-            endpoint: .us,
-            clientToken: config.clientToken // use your own client token obtained on Datadog website
+            configuration: Datadog.Configuration
+                .builderUsing(clientToken: config.clientToken) // use your own client token obtained on Datadog website)
+                .build()
         )
 
         // Set user information

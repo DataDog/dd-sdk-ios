@@ -220,10 +220,19 @@ public class Logger {
 
     // MARK: - Logger.Builder
 
+    /// Creates logger builder.
     public static var builder: Builder {
         return Builder()
     }
 
+    /// `Logger` builder.
+    ///
+    /// Usage:
+    ///
+    ///     Logger.builder
+    ///            ... // customize using builder methods
+    ///           .build()
+    ///
     public class Builder {
         private var serviceName: String = "ios"
         private var loggerName: String?
@@ -276,10 +285,14 @@ public class Logger {
             return self
         }
 
+        /// Builds `Logger` object.
         public func build() -> Logger {
-            do { return try buildOrThrow()
+            do {
+                return try buildOrThrow()
             } catch {
                 userLogger.critical("\(error)")
+
+                // TODO: RUMM-171 Fail silently when misusing SDK public API
                 fatalError("`Logger` cannot be built: \(error)") // crash
             }
         }
