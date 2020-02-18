@@ -108,6 +108,18 @@ extension String {
     }
 }
 
+extension Bool {
+    static func mockAny() -> Bool {
+        return false
+    }
+}
+
+extension Float {
+    static func mockAny() -> Float {
+        return 0
+    }
+}
+
 struct ErrorMock: Error {
     let description: String
 
@@ -249,3 +261,17 @@ extension URLRequest {
         return URLRequest(url: .mockAny())
     }
 }
+
+// MARK: - Process
+
+#if os(iOS)
+class ProcessInfoMock: ProcessInfo {
+    private var _isLowPowerModeEnabled: Bool
+
+    init(isLowPowerModeEnabled: Bool = .mockAny()) {
+        _isLowPowerModeEnabled = isLowPowerModeEnabled
+    }
+
+    override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+}
+#endif

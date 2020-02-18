@@ -298,7 +298,9 @@ public class Logger {
                 serviceName: serviceName,
                 loggerName: loggerName ?? datadog.appContext.bundleIdentifier ?? "",
                 dateProvider: datadog.dateProvider,
-                userInfoProvider: datadog.userInfoProvider
+                userInfoProvider: datadog.userInfoProvider,
+                networkConnectionInfoProvider: datadog.networkConnectionInfoProvider,
+                carrierInfoProvider: datadog.carrierInfoProvider
             )
 
             switch (useFileOutput, useConsoleLogFormat) {

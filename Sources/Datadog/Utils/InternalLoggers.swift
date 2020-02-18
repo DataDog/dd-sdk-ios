@@ -33,7 +33,9 @@ internal func createSDKDeveloperLogger(
             serviceName: "sdk-developer",
             loggerName: "sdk-developer",
             dateProvider: dateProvider,
-            userInfoProvider: datadog.userInfoProvider
+            userInfoProvider: datadog.userInfoProvider,
+            networkConnectionInfoProvider: datadog.networkConnectionInfoProvider,
+            carrierInfoProvider: datadog.carrierInfoProvider
         ),
         format: .shortWith(prefix: "🐶 → "),
         printingFunction: consolePrintFunction,
@@ -58,7 +60,9 @@ internal func createSDKUserLogger(
             serviceName: "sdk-user",
             loggerName: "sdk-user",
             dateProvider: dateProvider,
-            userInfoProvider: datadog.userInfoProvider
+            userInfoProvider: datadog.userInfoProvider,
+            networkConnectionInfoProvider: datadog.networkConnectionInfoProvider,
+            carrierInfoProvider: datadog.carrierInfoProvider
         ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
         printingFunction: consolePrintFunction,

@@ -27,7 +27,13 @@ internal struct LogsUploadStrategy {
         decreaseFactor: Constants.logsUploadDelayDecreaseFactor
     )
 
-    static func `defalut`(appContext: AppContext, endpointURL: String, clientToken: String, reader: FileReader) throws -> LogsUploadStrategy {
+    static func `defalut`(
+        appContext: AppContext,
+        endpointURL: String,
+        clientToken: String,
+        reader: FileReader,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    ) throws -> LogsUploadStrategy {
         let uploadURL = try DataUploadURL(endpointURL: endpointURL, clientToken: clientToken)
         let httpClient = HTTPClient()
         let httpHeaders = HTTPHeaders(appContext: appContext)
@@ -42,12 +48,12 @@ internal struct LogsUploadStrategy {
             if let mobileDevice = appContext.mobileDevice {
                 return DataUploadConditions(
                     batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                    networkStatus: NetworkStatusProvider()
+                    networkConnectionInfo: networkConnectionInfoProvider
                 )
             } else {
                 return DataUploadConditions(
                     batteryStatus: nil,
-                    networkStatus: NetworkStatusProvider()
+                    networkConnectionInfo: networkConnectionInfoProvider
                 )
             }
         }()

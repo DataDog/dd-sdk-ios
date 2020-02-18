@@ -92,6 +92,37 @@ class LoggingTests: XCTestCase {
                     ]
                 )
                 matcher.assertTags(equal: ["tag1:tag-value", "tag2"])
+
+                typealias LogJSONKeys = LogEncoder.StaticCodingKeys
+
+                matcher.assertValue(
+                    forKeyPath: LogJSONKeys.networkReachability.rawValue,
+                    matches: { (value: String) -> Bool in
+                        let validValues = NetworkConnectionInfo.Reachability.allCases.map { $0.rawValue }
+                        return validValues.contains(value)
+                    }
+                )
+                matcher.assertValue(
+                    forKeyPath: LogJSONKeys.networkAvailableInterfaces.rawValue,
+                    matches: { (value: [String]) -> Bool in
+                        let validValues = NetworkConnectionInfo.Interface.allCases.map { $0.rawValue }
+                        return Set(value).isSubset(of: Set(validValues))
+                    }
+                )
+                matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionSupportsIPv4.rawValue, isTypeOf: Bool.self)
+                matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionSupportsIPv6.rawValue, isTypeOf: Bool.self)
+                matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionIsExpensive.rawValue, isTypeOf: Bool.self)
+                matcher.assertValue(
+                    forKeyPath: LogJSONKeys.networkConnectionIsConstrained.rawValue,
+                    isTypeOf: Optional<Bool>.self
+                )
+
+                // Integration tests run on `macOS`, so carrier info must be expected to be empty:
+                // TODO: RUMM-216 Integration tests can be run on simulator and device
+                matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierName.rawValue)
+                matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierISOCountryCode.rawValue)
+                matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierRadioTechnology.rawValue)
+                matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierAllowsVoIP.rawValue)
             }
         }
     }

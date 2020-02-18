@@ -3,18 +3,6 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
-    private let appContextMock = AppContext(
-        bundleIdentifier: "com.datadoghq.ios-sdk",
-        bundleVersion: "1.0.0",
-        bundleShortVersion: "1.0.0",
-        executableName: .mockAny(),
-        mobileDevice: .mockAny()
-    )
-    private let dateProviderMock = RelativeDateProvider(
-        startingFrom: .mockDecember15th2019At10AMUTC(),
-        advancingBySeconds: 1
-    )
-
     override func setUp() {
         super.setUp()
         XCTAssertNil(Datadog.instance)
@@ -29,10 +17,30 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Sending logs
 
-    func testSendingLogWithDefaultLogger() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
-            .with(dateProvider: dateProviderMock)
+    func testSendingMinimalLogWithDefaultLogger() throws {
+        try DatadogInstanceMock.builder
+            .with(
+                appContext: .mockWith(
+                    bundleIdentifier: "com.datadoghq.ios-sdk",
+                    bundleVersion: "1.0.0",
+                    bundleShortVersion: "1.0.0"
+                )
+            )
+            .with(
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            )
+            .with(
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+                    networkConnectionInfo: .mockWith(
+                        reachability: .yes,
+                        availableInterfaces: [.wifi, .cellular],
+                        supportsIPv4: true,
+                        supportsIPv6: true,
+                        isExpensive: false,
+                        isConstrained: false
+                    )
+                )
+            )
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -49,7 +57,13 @@ class LoggerTests: XCTestCase {
                   "logger.version": "\(sdkVersion)",
                   "logger.thread_name" : "main",
                   "date" : "2019-12-15T10:00:00Z",
-                  "application.version": "1.0.0"
+                  "application.version": "1.0.0",
+                  "network.client.available_interfaces": ["wifi", "cellular"],
+                  "network.client.reachability": "yes",
+                  "network.client.is_constrained": false,
+                  "network.client.is_expensive": false,
+                  "network.client.supports_ipv4": true,
+                  "network.client.supports_ipv6": true
                 }
                 """)
             }
@@ -57,9 +71,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogWithCustomizedLogger() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
-            .with(dateProvider: dateProviderMock)
+        try DatadogInstanceMock.builder
             .initialize()
             .run {
                 let logger = Logger.builder
@@ -70,25 +82,14 @@ class LoggerTests: XCTestCase {
             }
             .waitUntil(numberOfLogsSent: 1)
             .verifyFirst { logMatcher in
-                try logMatcher.assertItFullyMatches(jsonString: """
-                {
-                  "status" : "DEBUG",
-                  "message" : "message",
-                  "service" : "custom-service-name",
-                  "logger.name" : "custom-logger-name",
-                  "logger.version": "\(sdkVersion)",
-                  "logger.thread_name" : "main",
-                  "date" : "2019-12-15T10:00:00Z",
-                  "application.version": "1.0.0"
-                }
-                """)
+                logMatcher.assertServiceName(equals: "custom-service-name")
+                logMatcher.assertLoggerName(equals: "custom-logger-name")
             }
             .destroy()
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
+        try DatadogInstanceMock.builder
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -114,8 +115,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
+        try DatadogInstanceMock.builder
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -140,12 +140,46 @@ class LoggerTests: XCTestCase {
             .destroy()
     }
 
+    // MARK: - Sending carrier info
+
+    func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
+        let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
+        try DatadogInstanceMock.builder
+            .with(carrierInfoProvider: carrierInfoProvider)
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+
+                // simulate entering cellular service range
+                carrierInfoProvider.current = .mockWith(
+                    carrierName: "Carrier",
+                    carrierISOCountryCode: "US",
+                    carrierAllowsVOIP: true,
+                    radioAccessTechnology: .LTE
+                )
+
+                logger.debug("message")
+
+                // simulate leaving cellular service range
+                carrierInfoProvider.current = nil
+
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 2)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.name", equals: "Carrier")
+                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.iso_country", equals: "US")
+                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.technology", equals: "LTE")
+                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", equals: true)
+                logMatchers[1].assertNoValue(forKeyPath: "network.client.sim_carrier")
+            }
+            .destroy()
+    }
+
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
-            .with(dateProvider: dateProviderMock)
+        try DatadogInstanceMock.builder
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -190,41 +224,24 @@ class LoggerTests: XCTestCase {
             }
             .waitUntil(numberOfLogsSent: 1)
             .verifyFirst { logMatcher in
-                try logMatcher.assertItFullyMatches(jsonString: """
-                {
-                  "status" : "INFO",
-                  "message" : "message",
-                  "service" : "ios",
-                  "logger.name" : "com.datadoghq.ios-sdk",
-                  "logger.version": "\(sdkVersion)",
-                  "logger.thread_name" : "main",
-                  "date" : "2019-12-15T10:00:00Z",
-                  "application.version": "1.0.0",
-                  "string" : "hello",
-                  "bool" : true,
-                  "int" : 10,
-                  "uint-8" : 10,
-                  "double" : 10.5,
-                  "array-of-int" : [1, 2, 3],
-                  "dictionary-of-date" : {
-                     "date1": "2019-12-15T10:00:00Z",
-                     "date2": "2019-12-15T11:00:00Z"
-                  },
-                  "person" : {
-                     "name" : "Adam",
-                     "age" : 30,
-                     "nationality" : "Polish",
-                  },
-                  "nested.string" : "hello"
-                }
-                """)
+                logMatcher.assertValue(forKey: "string", equals: "hello")
+                logMatcher.assertValue(forKey: "bool", equals: true)
+                logMatcher.assertValue(forKey: "int", equals: 10)
+                logMatcher.assertValue(forKey: "uint-8", equals: UInt8(10))
+                logMatcher.assertValue(forKey: "double", equals: 10.5)
+                logMatcher.assertValue(forKey: "array-of-int", equals: [1, 2, 3])
+                logMatcher.assertValue(forKeyPath: "dictionary-of-date.date1", equals: "2019-12-15T10:00:00Z")
+                logMatcher.assertValue(forKeyPath: "dictionary-of-date.date2", equals: "2019-12-15T11:00:00Z")
+                logMatcher.assertValue(forKeyPath: "person.name", equals: "Adam")
+                logMatcher.assertValue(forKeyPath: "person.age", equals: 30)
+                logMatcher.assertValue(forKeyPath: "person.nationality", equals: "Polish")
+                logMatcher.assertValue(forKeyPath: "nested.string", equals: "hello")
             }
             .destroy()
     }
 
     func testSendingMessageAttributes() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
+        try DatadogInstanceMock.builder
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -256,8 +273,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingTags() throws {
-        try DatadogInstanceMock.build
-            .with(appContext: appContextMock)
+        try DatadogInstanceMock.builder
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -335,6 +351,42 @@ class LoggerTests: XCTestCase {
         )
 
         try Datadog.deinitializeOrThrow()
+    }
+
+    // MARK: - Sending logs with different network and battery conditions
+
+    func testGivenBadBatteryConditions_itDoesntTryToSendLogs() throws {
+        try DatadogInstanceMock.builder
+            .with(
+                batteryStatusProvider: BatteryStatusProviderMock.mockWith(
+                    status: .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
+                )
+            )
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyNoLogsSent()
+            .destroy()
+    }
+
+    func testGivenNoNetworkConnection_itDoesntTryToSendLogs() throws {
+        try DatadogInstanceMock.builder
+            .with(
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+                    networkConnectionInfo: .mockWith(reachability: .no)
+                )
+            )
+            .initialize()
+            .run {
+                let logger = Logger.builder.build()
+                logger.debug("message")
+            }
+            .waitUntil(numberOfLogsSent: 1)
+            .verifyNoLogsSent()
+            .destroy()
     }
 
     // MARK: - Initialization
