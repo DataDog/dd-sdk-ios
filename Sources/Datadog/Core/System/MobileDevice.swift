@@ -62,11 +62,20 @@ internal class MobileDevice {
             enableBatteryStatusMonitoring: { UIDevice.current.isBatteryMonitoringEnabled = true },
             resetBatteryStatusMonitoring: { UIDevice.current.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
             currentBatteryStatus: {
+                #if targetEnvironment(simulator)
+                // Battery monitoring doesn't work on Simulator, so "always OK" value is used instead.
+                return BatteryStatus(
+                    state: .full,
+                    level: 1.0,
+                    isLowPowerModeEnabled: false
+                )
+                #else
                 return BatteryStatus(
                     state: toBatteryState(UIDevice.current.batteryState),
                     level: UIDevice.current.batteryLevel,
                     isLowPowerModeEnabled: ProcessInfo.processInfo.isLowPowerModeEnabled
                 )
+                #endif
             }
         )
         #else
