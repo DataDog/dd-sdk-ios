@@ -1,21 +1,25 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a bug
 title: ''
 labels: bug
 assignees: ''
 
 ---
 
-Thanks for taking the time for reporting an issue 🏅!
-
 **Describe what happened**
 Include any error message or stack trace if available.
 
 **Steps to reproduce the issue:**
+📝
 
-**Describe what you expected:**
+**Expected behaviour:**
+📝
+
+**Actual behaviour:**
+📝
 
 **Additional context**
  - OS version and device model
  - Datadog SDK version
+ - an explanation of what might cause the bug and/or how it can be fixed

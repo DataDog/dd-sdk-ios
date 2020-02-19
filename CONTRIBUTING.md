@@ -49,7 +49,10 @@ if which swiftlint >/dev/null; then
   ${SOURCE_ROOT}/tools/lint/run-linter.sh
 fi
 ```
-This will invoke [`swiftlint`](https://github.com/realm/SwiftLint)  with the rules we enforce for this project. You can also run linter from command line in repository root folder:
-```bash
-./tools/lint/run-linter.sh
-```
+This will invoke [`swiftlint`](https://github.com/realm/SwiftLint)  with the rules we enforce for this project. Code which does not follow our lint rules will not pass on CI.
+
+### Testing
+
+It is important to be sure that our library works properly in any scenario. All non trivial code must be tested. If you're not used to writing tests, you can take a look at the `Tests/` folder to get some ideas on how we write them at Datadog.
+
+Both, unit and integration tests can be run directly from `Datadog.xcodeproj` project. The CI also runs UI tests for projects in `examples/` directory to make sure the dependency managers compatibility works.

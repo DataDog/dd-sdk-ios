@@ -6,7 +6,7 @@ A short description of what changes does this PR introduce and why.
 
 A brief description of implementation details of this PR.
 
-### Review checklist (to be filled by reviewers)
+### Review checklist
 
 - [ ] Feature or bugfix MUST have appropriate tests (unit, integration)
-- [ ] Make sure each commit and the PR mention the Issue number (cf the [CONTRIBUTING](CONTRIBUTING.md) doc)
+- [ ] Make sure each commit and the PR mention the Issue number or JIRA reference
