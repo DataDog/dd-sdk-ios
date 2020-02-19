@@ -290,14 +290,12 @@ public class Logger {
             do {
                 return try buildOrThrow()
             } catch {
-                userLogger.critical("\(error)")
-
-                // TODO: RUMM-171 Fail silently when misusing SDK public API
-                fatalError("`Logger` cannot be built: \(error)") // crash
+                consolePrint("🔥 \(error)")
+                return Logger(logOutput: NoOpLogOutput())
             }
         }
 
-        internal func buildOrThrow() throws -> Logger {
+        private func buildOrThrow() throws -> Logger {
             guard let datadog = Datadog.instance else {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }

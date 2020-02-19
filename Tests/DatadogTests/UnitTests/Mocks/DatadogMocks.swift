@@ -520,6 +520,20 @@ extension LogsUploadStrategy {
 
 // MARK: - Integration
 
+/// Mock which can be used to intercept messages printed by `developerLogger` or
+/// `userLogger` by overwritting `Datadog.consolePrint` function:
+///
+///     let printFunction = PrintFunctionMock()
+///     consolePrint = printFunction.print
+///
+class PrintFunctionMock {
+    private(set) var printedMessage: String?
+
+    func print(message: String) {
+        printedMessage = message
+    }
+}
+
 extension AppContext {
     static func mockAny() -> AppContext {
         return mockWith()
@@ -569,6 +583,20 @@ extension UserInfoProvider {
         let provider = UserInfoProvider()
         provider.value = userInfo
         return provider
+    }
+}
+
+extension Datadog.Configuration {
+    static func mockAny() -> Datadog.Configuration {
+        return mockWith()
+    }
+
+    static func mockWith(
+        logsUploadURL: DataUploadURL? = .mockAny()
+    ) -> Datadog.Configuration {
+        return Datadog.Configuration(
+            logsUploadURL: logsUploadURL
+        )
     }
 }
 
