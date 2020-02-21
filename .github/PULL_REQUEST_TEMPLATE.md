@@ -1,6 +1,6 @@
 ### What and why?
 
-A short description of what changes does this PR introduce and why.
+A short description of what changes this PR introduces and why.
 
 ### How?
 
