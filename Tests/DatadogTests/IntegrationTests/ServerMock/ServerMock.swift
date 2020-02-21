@@ -4,57 +4,74 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Foundation
-@testable import Datadog
+import XCTest
 
-#if os(macOS) // TODO: RUMM-216 Integration tests can be run on simulator and device
 class ServerMock {
-    let url: String = "http://localhost:8000/"
-    /// Directory where server saves request files.
-    private let directory = obtainUniqueTemporaryDirectory()
-    /// Process running python server.
-    private var process: Process! // swiftlint:disable:this implicitly_unwrapped_optional
+    #if os(macOS) && DD_SDK_DEVELOPMENT
+    /// For convenience, when testing locally on macOS, mock server is started automatically.
+    /// When testing on iOS Simulator, the server must be started manually by running `/tools/server-mock/run-server-mock.py`.
+    private let serverProcess: ServerMockProcess = .runUntilDeallocated()
+    #endif
 
-    /// Starts mock server.
-    func start() {
-        directory.create()
-        process = Process()
-        process.launchPath = "/usr/bin/python"
-        process.arguments = [serverScriptPath(), directory.url.path]
-        process.launch()
+    /// Base url of the server.
+    let url = URL(string: "http://localhost:8000")!
+
+    /// Retrieves session object providing unique server url to capture only a subset of requests.
+    func obtainUniqueRecordingSession(file: StaticString = #file, line: UInt = #line) -> ServerSession {
+        waitUntilServerProcessIsReachable(file: file, line: line)
+        return ServerSession(server: self)
     }
 
-    /// Stops mock server.
-    func stop() {
-        process.terminate()
-        directory.delete()
+    // MARK: - Fetching recorded requests
+
+    /// Info about single request recorded by the server.
+    struct RequestInfo: Codable {
+        /// Original path of the request, i.e. `/something/1` for `POST /something/1`.
+        let path: String
+        /// HTTP method of this request.
+        let httpMethod: String
+        /// Follow-up path to fetch HTTP body associated with this request.
+        let httpBodyInspectionPath: String
+
+        enum CodingKeys: String, CodingKey {
+            case path = "request_path"
+            case httpMethod = "request_method"
+            case httpBodyInspectionPath = "inspection_path"
+        }
     }
 
-    /// Captures server session since `.start()` to now and passess it to verification closure.
-    func verify(using verificationClosure: (ServerSession) throws -> Void) throws {
-        let session = try ServerSession(recordedIn: directory)
-        try verificationClosure(session)
+    /// Fetches info about all `POST` requests recorded by the server.
+    func getRecordedPOSTRequestsInfo() throws -> [RequestInfo] {
+        let inspectionEndpointURL = url.appendingPathComponent("/inspect")
+        let inspectionData = try Data(contentsOf: inspectionEndpointURL)
+        return try JSONDecoder()
+            .decode([RequestInfo].self, from: inspectionData)
+            .filter { $0.httpMethod == "POST" }
     }
 
-    // MARK: - Private
-
-    private func serverScriptPath() -> String {
-        return resolveSwiftPackageFolder().path + "/tools/server-mock/run-server-mock.py"
+    /// Fetches HTTP body of particular request recorded by the server.
+    func getRecordedRequestBody(_ requestInfo: RequestInfo) throws -> Data {
+        let bodyURL = url.appendingPathComponent(requestInfo.httpBodyInspectionPath)
+        return try Data(contentsOf: bodyURL)
     }
 
-    /// Resolve an url to the folder containing `Package.swift`
-    private func resolveSwiftPackageFolder() -> URL {
-        var currentFolder = URL(fileURLWithPath: #file).deletingLastPathComponent()
+    // MARK: - Helpers
 
-        while currentFolder.pathComponents.count > 0 {
-            if FileManager.default.fileExists(atPath: currentFolder.appendingPathComponent("Package.swift").path) {
-                return currentFolder
-            } else {
-                currentFolder.deleteLastPathComponent()
+    /// Waits until server is started. Returns `false` if it failed to start within an arbitrary time.
+    private func waitUntilServerProcessIsReachable(file: StaticString = #file, line: UInt = #line) {
+        let deadline = Date(timeIntervalSinceNow: 3)
+
+        while Date() < deadline {
+            if ping() {
+                return // OK
             }
         }
 
-        fatalError("Cannot resolve the URL to folder containing `Package.swif`.")
+        XCTFail( "🔥 Mock server is not running. Start it using `/tools/server-mock/run-server-mock.py`.", file: file, line: line)
+    }
+
+    /// Checks if the server is running.
+    private func ping() -> Bool {
+        return (try? self.getRecordedPOSTRequestsInfo()) != nil
     }
 }
-#endif

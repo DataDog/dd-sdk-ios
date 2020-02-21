@@ -9,6 +9,7 @@
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import re
 import json
+import os
 
 class HTTPMockServer(BaseHTTPRequestHandler):
     """
@@ -51,7 +52,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         global history
         request_path = parameters[0]
         request_body = self.rfile.read(int(self.headers['Content-Length']))
-        request = GenericRequets("POST", request_path, request_body)
+        request = GenericRequest("POST", request_path, request_body)
         history.add_request(request)
         return "{}"
 
@@ -69,9 +70,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
                 "request_path": request.path,
                 "inspection_path": "/inspect/{request_id}".format( request_id = request.id )
             })
-
         return json.dumps(inspection_info)
-        # print("__return_requests_history")
 
     def __GET_inspect_request(self, parameters):
         """
@@ -102,7 +101,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         self.end_headers()
         return
 
-class GenericRequets:
+class GenericRequest:
     """
     Represents data of request sent to generic endponit.
     """
@@ -129,6 +128,9 @@ class GenericRequestsHistory:
 
     def request(self, request_id):
         return self.__requests[int(request_id)]
+
+# If any previous instance of this server is running - kill it
+os.system('pkill -f run-server-mock.py')
 
 history = GenericRequestsHistory()
 httpd = HTTPServer(('localhost', 8000), HTTPMockServer)
