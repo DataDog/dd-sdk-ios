@@ -1,46 +1,58 @@
 # Contributing
 
-## Prerequisites
+First of all, thanks for contributing!
 
-* Xcode 11.2.1 or later
+This document provides some basic guidelines for contributing to this repository.
+To propose improvements, feel free to submit a PR or open an Issue.
+
+## Have a feature request or idea?
+
+Many great ideas for new features come from the community, and we'd be happy to consider yours 👍.
+
+To share your idea or request, [open a GitHub Issue](https://github.com/DataDog/dd-sdk-ios/issues/new)  using dedicated issue template.
+
+## Found a bug?
+
+For any urgent matters (such as outages) or issues concerning the Datadog service or UI, contact our support team via https://docs.datadoghq.com/help/ for direct, faster assistance.
+
+You may submit a bug report concerning the Datadog SDK for iOS by [opening a GitHub Issue](https://github.com/DataDog/dd-sdk-android/issues/new). Use dedicated bug-issue template and provide all listed details to let us solve it better. 
+
+
+## Have a patch?
+
+We welcome all code contributions to the library. If you have a patch adding value to the SDK, let us know 💪! Before you [submit a Pull Request](https://github.com/DataDog/dd-sdk-ios/pull/new/master), make sure that you first create an Issue to explain the bug or the feature your patch covers, then make sure similar Issue or PR doesn't already exist.
+
+Your Pull Request will be run through our CI pipeline, and a project member will review the changes with you. At a minimum, to be accepted and merged, Pull Requests must:
+ - have a stated goal and detailed description of the changes made;
+ - include thorough test coverage and documentation, where applicable;
+ - pass all tests and code quality checks on CI;
+ - receive at least one approval from a project member with push permissions.
+
+Make sure that your code is clean and readable, that your commits are small and atomic, with a proper commit message.
+
+### Getting started
+
+The only things you need for contributing to this repository are:
+* Xcode 11.3.1+
 * [`homebrew`](https://brew.sh)
 
-## Preparation
-
-The easiest way to start is to use `kickoff` tool. It will prepare your machine for contributions. Simply run the tool from repository root folder:
+The easiest way to start is to run `make` command:
 ```bash
-./tools/kickoff.sh
+make
 ```
+
+This will generate `Datadog.xcodeproj` project file, install `swiftlint` and configure custom Datadog file templates for Xcode. Also, `examples-secret.xcconfig`  file will be created - update it with a client token obtained on Datadog website.
 
 To have linter warnings and errors appear in Xcode (which is highly convenient and recommended), create the "New Run Script Phase" for "Datadog" target and put following shell script in it:
 ```bash
 if which swiftlint >/dev/null; then
-  ${SOURCE_ROOT}/tools/lint.sh
+  ${SOURCE_ROOT}/tools/lint/run-linter.sh
 fi
 ```
-This will invoke [`swiftlint`](https://github.com/realm/SwiftLint) tool with the rules we enforce for our project. You can also run linter from command line in repository root folder:
-```bash
-./tools/lint.sh
-```
+This will invoke [`swiftlint`](https://github.com/realm/SwiftLint)  with the rules we enforce for this project. Code which does not follow our lint rules will not pass on CI.
 
-### What does `kickoff` do?
+### Testing
 
-This project uses [Swift Package Manager](https://swift.org/package-manager/). The `kickoff` tool will **generate `Datadog.xcodeproj`** and configure it for development.
+It is important to be sure that our library works properly in any scenario. All non trivial code must be tested. If you're not used to writing tests, you can take a look at the `Tests/` folder to get some ideas on how we write them at Datadog.
 
-If you don't have [`swiftlint`](https://github.com/realm/SwiftLint) installed, `brew` will be used to install it. 
-
-As part of our coding convention, we use **custom Xcode file templates** for creating `.swift` and unit test files. Templates will be automatically installed and available from Xcode's "New File..." menu (search for "Datadog" section).
-
-To send real logs from the example app, you must configure `./examples/examples-secret.xcconfig` file with your own secret obtained on Datadog website. The file template will be automatically generated for you by `kickoff`.
-
-## Contributing to `Datadog` SDK
-
-Make sure  you **always lint the code** before submitting contribution, otherwise your PR won't be accepted. You can either run `./tools/lint.sh` directly from command line or run it in Xcode's Build Phase (recommended). See _"Preparation"_ section for details on the build phase. 
-
-## Contributing to Project Tools
-
-Tools are located in `tools` directory. They are set of scripts dedicated to project setup and development automation. 
-
-Be aware of these conventions when contributing to tools:
-* each tool is located under separate directory in `tools/`, `kebab-case` convention is used for naming;
-* each script must work as it is executed from repository root folder (so they can be eventually used by `./tools/kickoff.sh`).
+Both, unit and integration tests can be run directly from `Datadog.xcodeproj` project. The CI also runs UI tests for projects in `examples/` directory to make sure the dependency managers compatibility works.

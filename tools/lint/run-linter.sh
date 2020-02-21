@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! -f "Package.swift" ]; then
-	echo "\`lint.sh\` must be run in repository root folder: \`./tools/lint.sh\`"; exit 1
+	echo "\`run-linter.sh\` must be run in repository root folder: \`./tools/lint/run-linter.sh\`"; exit 1
 fi
 
 if [[ -z "${XCODE_VERSION_ACTUAL}" ]]; then

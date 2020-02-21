@@ -14,5 +14,3 @@ fi
 
 rm -r "$XCODE_TEMPLATES_LOCATION/Datadog" 2> /dev/null
 cp -R "./tools/xcode-templates/Datadog" "$XCODE_TEMPLATES_LOCATION"
-
-echo "✅ Installed Xcode templates"
