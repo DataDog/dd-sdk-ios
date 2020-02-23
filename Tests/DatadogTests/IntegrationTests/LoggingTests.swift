@@ -24,7 +24,7 @@ class LoggingTests: XCTestCase {
                 executableName: "some-app",
                 mobileDevice: nil
             ),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abcd")
+            configuration: Datadog.Configuration.builderUsing(clientToken: "client-token")
                 .set(logsEndpoint: .custom(url: serverSession.recordingURL))
                 .build()
         )
@@ -62,7 +62,12 @@ class LoggingTests: XCTestCase {
         Thread.sleep(forTimeInterval: 30)
 
         // Assert
-        let logMatchers = try serverSession.getRecordedPOSTRequests()
+        let recordedRequests = try serverSession.getRecordedPOSTRequests()
+        recordedRequests.forEach { request in
+            XCTAssertTrue(request.path.contains("/client-token?ddsource=mobile"))
+        }
+
+        let logMatchers = try recordedRequests
             .flatMap { request in try request.httpBody.toArrayOfJSONObjects() }
             .map { jsonObject in LogMatcher(from: jsonObject) }
 
