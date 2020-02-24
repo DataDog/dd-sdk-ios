@@ -65,20 +65,11 @@ internal class MobileDevice {
             enableBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = true },
             resetBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
             currentBatteryStatus: {
-                #if targetEnvironment(simulator)
-                // Battery monitoring doesn't work on Simulator, so "always OK" value is used instead.
-                return BatteryStatus(
-                    state: .full,
-                    level: 1.0,
-                    isLowPowerModeEnabled: false
-                )
-                #else
                 return BatteryStatus(
                     state: MobileDevice.toBatteryState(uiDevice.batteryState),
                     level: uiDevice.batteryLevel,
                     isLowPowerModeEnabled: processInfo.isLowPowerModeEnabled
                 )
-                #endif
             }
         )
     }
@@ -88,7 +79,20 @@ internal class MobileDevice {
     /// On other platforms returns `nil`.
     static var current: MobileDevice? {
         #if canImport(UIKit)
-        return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
+            #if !targetEnvironment(simulator)
+            // Real device
+            return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
+            #else
+            // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+            return MobileDevice(
+                model: UIDevice.current.model,
+                osName: UIDevice.current.systemName,
+                osVersion: UIDevice.current.systemVersion,
+                enableBatteryStatusMonitoring: {},
+                resetBatteryStatusMonitoring: {},
+                currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+            )
+            #endif
         #else
         return nil
         #endif

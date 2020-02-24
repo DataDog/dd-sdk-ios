@@ -21,7 +21,7 @@ func obtainUniqueTemporaryDirectory() -> Directory {
 let temporaryDirectory = obtainUniqueTemporaryDirectory()
 
 /// References logs directory for current platform.
-/// For integration tests it is  necessary to make sure this directory is deleted each time so tests are run in clean state.
+/// For integration tests it is necessary to make sure this directory is deleted each time so tests are run in clean state.
 let logsDirectory = try! Directory(withSubdirectoryPath: LogsPersistenceStrategy.Constants.logFilesSubdirectory)
 
 /// Extends `Directory` with set of utilities for convenient work with files in tests.
