@@ -158,7 +158,7 @@ public class Datadog {
 internal typealias AppContext = Datadog.AppContext
 
 /// An exception thrown due to programmer error when calling SDK public API.
-/// It will stop current process execution and crash the app 💥.
+/// It make the SDK non-functional and print the error to developer in debugger console..
 /// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
 /// and if you not call any other SDK methods before it returns.
 internal struct ProgrammerError: Error, CustomStringConvertible {
@@ -167,8 +167,9 @@ internal struct ProgrammerError: Error, CustomStringConvertible {
 }
 
 /// An exception thrown internally by SDK.
-/// It is always handled by SDK and never passed to the user - never causing a crash ⛑.
-/// `InternalError` might be thrown due to  SDK internal inconsistency or external issues (e.g.  I/O errors).
+/// It is always handled by SDK and never passed to the user until `Datadog.verbosity` is set (then it might be printed in debugger console).
+/// `InternalError` might be thrown due to SDK internal inconsistency or external issues (e.g.  I/O errors). The SDK
+/// should always recover from that failures.
 internal struct InternalError: Error, CustomStringConvertible {
     let description: String
 }

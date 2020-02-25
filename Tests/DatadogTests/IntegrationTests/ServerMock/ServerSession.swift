@@ -4,27 +4,41 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Foundation
 import XCTest
-@testable import Datadog
 
-#if os(macOS) // TODO: RUMM-216 Integration tests can be run on simulator and device
-/// Request received by server.
-struct ServerRequest {
-    let body: Data
-}
+/// Server session object to capture only requests send to `session.recordingURL`.
+class ServerSession {
+    /// Details of a recorded request.
+    struct POSTRequestDetails {
+        /// Original path of the request, i.e. `/something/1` for `POST /something/1`.
+        let path: String
+        /// Original body of this request.
+        let httpBody: Data
+    }
 
-/// Current server session recorded since `server.start()` call.
-struct ServerSession {
-    let recordedRequests: [ServerRequest]
+    private let server: ServerMock
+    private let sessionIdentifier: String
 
-    init(recordedIn directory: Directory) throws {
-        let orderedRequestFiles = try directory.files()
-            .filter { file in file.name.hasPrefix("request") }
-            .sorted { file1, file2 in file1.name < file2.name }
+    /// Server URL unique to this session. `POST` requests send using this base URL can be later retrieved
+    /// using `getRecordedPOSTRequests()`.
+    let recordingURL: String
 
-        self.recordedRequests = try orderedRequestFiles
-            .map { file in try ServerRequest(body: file.read()) }
+    init(server: ServerMock) {
+        self.server = server
+        self.sessionIdentifier = UUID().uuidString
+        self.recordingURL = server.url.appendingPathComponent(sessionIdentifier).absoluteString
+    }
+
+    /// Fetches details of all `POST` requests recorded by the server during this session.
+    func getRecordedPOSTRequests() throws -> [POSTRequestDetails] {
+        return try server
+            .getRecordedPOSTRequestsInfo() // get all recorded requests info
+            .filter { requestInfo in requestInfo.path.contains(sessionIdentifier) } // narrow it to this session
+            .map { requestInfo in
+                return POSTRequestDetails(
+                    path: requestInfo.path,
+                    httpBody: try server.getRecordedRequestBody(requestInfo)
+                )
+            }
     }
 }
-#endif
