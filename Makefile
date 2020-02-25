@@ -1,4 +1,4 @@
-all: dependencies xcodeproj templates examples
+all: dependencies xcodeproj-sdk xcodeproj-httpservermock templates examples
 .PHONY : examples
 
 dependencies:
@@ -6,10 +6,15 @@ dependencies:
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@echo "OK 👌"
 
-xcodeproj:
+xcodeproj-sdk:
 		@echo "⚙️  Generating 'Datadog.xcodeproj'..."
 		swift package generate-xcodeproj --enable-code-coverage --xcconfig-overrides Datadog.xcconfig
 		@echo "OK 👌"
+
+xcodeproj-httpservermock:
+		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
+		cd tools/http-server-mock/ && swift package generate-xcodeproj
+		@echo "OK 👌"	
 
 templates:
 		@echo "⚙️  Installing Xcode templates..."
