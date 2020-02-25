@@ -84,3 +84,4 @@ custom_rules:
 included:
   - Sources
   - instrumented-tests/Integration/Integration
+  - instrumented-tests/Benchmark/Benchmark
