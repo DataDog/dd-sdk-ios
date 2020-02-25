@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,7 @@
 		6103D61D24053E2F0086F828 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6103D61B24053E2F0086F828 /* Main.storyboard */; };
 		6103D62224053E300086F828 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6103D62024053E300086F828 /* LaunchScreen.storyboard */; };
 		6103D62D24053E300086F828 /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6103D62C24053E300086F828 /* BenchmarkTests.swift */; };
+		61800F752405411400420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F742405411400420E0D /* Datadog */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61800F752405411400420E0D /* Datadog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +62,7 @@
 				6103D61424053E2F0086F828 /* Benchmark */,
 				6103D62B24053E300086F828 /* BenchmarkTests */,
 				6103D61324053E2F0086F828 /* Products */,
+				61800F732405411400420E0D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -91,6 +94,13 @@
 				6103D62E24053E300086F828 /* Info.plist */,
 			);
 			path = BenchmarkTests;
+			sourceTree = "<group>";
+		};
+		61800F732405411400420E0D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -128,6 +138,9 @@
 				6103D62A24053E300086F828 /* PBXTargetDependency */,
 			);
 			name = BenchmarkTests;
+			packageProductDependencies = (
+				61800F742405411400420E0D /* Datadog */,
+			);
 			productName = BenchmarkTests;
 			productReference = 6103D62824053E300086F828 /* BenchmarkTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -480,6 +493,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		61800F742405411400420E0D /* Datadog */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Datadog;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 6103D60A24053E2F0086F828 /* Project object */;
 }

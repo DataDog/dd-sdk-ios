@@ -5,6 +5,7 @@
 */
 
 import XCTest
+import Datadog
 
 class BenchmarkTests: XCTestCase {
 }
