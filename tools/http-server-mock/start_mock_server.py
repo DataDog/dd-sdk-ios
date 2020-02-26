@@ -7,9 +7,16 @@
 # -----------------------------------------------------------
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from server_address import get_localhost, get_best_server_address
 import re
 import json
 import os
+import sys
+import time
+
+# If `--prefer-localhost` argument is set, the server will listen on http://127.0.0.1:8000.
+# By default it tries to discover private IP address on local network and uses localhost as fallback.
+prefer_localhost_flag = "--prefer-localhost" in sys.argv
 
 class HTTPMockServer(BaseHTTPRequestHandler):
     """
@@ -130,8 +137,13 @@ class GenericRequestsHistory:
         return self.__requests[int(request_id)]
 
 # If any previous instance of this server is running - kill it
-os.system('pkill -f run-server-mock.py')
+os.system('pkill -f start_mock_server.py')
+time.sleep(1) # wait a bit until socket is eventually released
 
+# Configure the server
 history = GenericRequestsHistory()
-httpd = HTTPServer(('localhost', 8000), HTTPMockServer)
+address = get_localhost() if prefer_localhost_flag is True else get_best_server_address()
+httpd = HTTPServer((address.ip, address.port), HTTPMockServer)
+
+print("Starting server on http://{ip}:{port}".format( ip = address.ip, port = address.port))
 httpd.serve_forever()

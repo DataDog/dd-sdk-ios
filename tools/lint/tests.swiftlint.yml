@@ -79,3 +79,4 @@ included:
   - Tests
   - instrumented-tests/Integration/IntegrationTests
   - instrumented-tests/Benchmark/BenchmarkTests
+  - tools/http-server-mock/Tests
