@@ -12,6 +12,7 @@
 		610CCB7E240527F100C4FE79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB7C240527F100C4FE79 /* Main.storyboard */; };
 		610CCB83240527F300C4FE79 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB81240527F300C4FE79 /* LaunchScreen.storyboard */; };
 		610CCB8E240527F300C4FE79 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610CCB8D240527F300C4FE79 /* IntegrationTests.swift */; };
+		61204F622406C3C600B322BC /* tests-specific-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 61204F612406C3C600B322BC /* tests-specific-config.xcconfig */; };
 		61800F72240540B000420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F71240540B000420E0D /* Datadog */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,7 @@
 		610CCB89240527F300C4FE79 /* IntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		610CCB8D240527F300C4FE79 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		610CCB8F240527F300C4FE79 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61204F612406C3C600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 		610CCB6A240527F100C4FE79 = {
 			isa = PBXGroup;
 			children = (
+				61204F632406C3D200B322BC /* Config */,
 				610CCB75240527F100C4FE79 /* Integration */,
 				610CCB8C240527F300C4FE79 /* IntegrationTests */,
 				610CCB74240527F100C4FE79 /* Products */,
@@ -94,6 +97,14 @@
 				610CCB8F240527F300C4FE79 /* Info.plist */,
 			);
 			path = IntegrationTests;
+			sourceTree = "<group>";
+		};
+		61204F632406C3D200B322BC /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				61204F612406C3C600B322BC /* tests-specific-config.xcconfig */,
+			);
+			name = Config;
 			sourceTree = "<group>";
 		};
 		61800F70240540B000420E0D /* Frameworks */ = {
@@ -197,6 +208,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61204F622406C3C600B322BC /* tests-specific-config.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,7 +402,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Integration/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -398,6 +412,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.Integration";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -407,7 +422,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Integration/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -415,6 +432,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.Integration";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -422,10 +440,14 @@
 		};
 		610CCB96240527F300C4FE79 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61204F612406C3C600B322BC /* tests-specific-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = IntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -435,6 +457,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.IntegrationTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Integration.app/Integration";
@@ -443,10 +467,14 @@
 		};
 		610CCB97240527F300C4FE79 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61204F612406C3C600B322BC /* tests-specific-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = IntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -456,6 +484,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.IntegrationTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Integration.app/Integration";

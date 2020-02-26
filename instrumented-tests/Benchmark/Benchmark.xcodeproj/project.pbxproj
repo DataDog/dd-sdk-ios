@@ -35,6 +35,7 @@
 		6103D62824053E300086F828 /* BenchmarkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BenchmarkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6103D62C24053E300086F828 /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		6103D62E24053E300086F828 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61204F652406DD1600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +60,7 @@
 		6103D60924053E2F0086F828 = {
 			isa = PBXGroup;
 			children = (
+				61204F642406DD0800B322BC /* Config */,
 				6103D61424053E2F0086F828 /* Benchmark */,
 				6103D62B24053E300086F828 /* BenchmarkTests */,
 				6103D61324053E2F0086F828 /* Products */,
@@ -94,6 +96,14 @@
 				6103D62E24053E300086F828 /* Info.plist */,
 			);
 			path = BenchmarkTests;
+			sourceTree = "<group>";
+		};
+		61204F642406DD0800B322BC /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				61204F652406DD1600B322BC /* tests-specific-config.xcconfig */,
+			);
+			name = Config;
 			sourceTree = "<group>";
 		};
 		61800F732405411400420E0D /* Frameworks */ = {
@@ -390,7 +400,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Benchmark/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -398,6 +410,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.Benchmark";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -407,7 +420,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Benchmark/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -415,6 +430,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.Benchmark";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -422,10 +438,14 @@
 		};
 		6103D63524053E300086F828 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61204F652406DD1600B322BC /* tests-specific-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = BenchmarkTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -435,6 +455,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.BenchmarkTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Benchmark.app/Benchmark";
@@ -443,10 +465,14 @@
 		};
 		6103D63624053E300086F828 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61204F652406DD1600B322BC /* tests-specific-config.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = BenchmarkTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -456,6 +482,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.instrumented-tests.BenchmarkTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Benchmark.app/Benchmark";
