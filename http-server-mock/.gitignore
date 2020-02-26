@@ -3,4 +3,4 @@
 /.build
 /.swiftpm
 /*.xcodeproj
-*.pyc
+/python/*.pyc

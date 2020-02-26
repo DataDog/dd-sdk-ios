@@ -12,7 +12,6 @@
 		610CCB7E240527F100C4FE79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB7C240527F100C4FE79 /* Main.storyboard */; };
 		610CCB83240527F300C4FE79 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB81240527F300C4FE79 /* LaunchScreen.storyboard */; };
 		610CCB8E240527F300C4FE79 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610CCB8D240527F300C4FE79 /* IntegrationTests.swift */; };
-		61204F622406C3C600B322BC /* tests-specific-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 61204F612406C3C600B322BC /* tests-specific-config.xcconfig */; };
 		61800F72240540B000420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F71240540B000420E0D /* Datadog */; };
 		61999EC1240703D90094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC0240703D90094866C /* HTTPServerMock */; };
 		61999ECB24071AB70094866C /* LoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999ECA24071AB70094866C /* LoggingIntegrationTests.swift */; };
@@ -214,7 +213,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61204F622406C3C600B322BC /* tests-specific-config.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
