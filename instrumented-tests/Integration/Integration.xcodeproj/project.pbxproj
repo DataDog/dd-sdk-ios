@@ -14,6 +14,8 @@
 		610CCB8E240527F300C4FE79 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610CCB8D240527F300C4FE79 /* IntegrationTests.swift */; };
 		61204F622406C3C600B322BC /* tests-specific-config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 61204F612406C3C600B322BC /* tests-specific-config.xcconfig */; };
 		61800F72240540B000420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F71240540B000420E0D /* Datadog */; };
+		61999EC1240703D90094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC0240703D90094866C /* HTTPServerMock */; };
+		61999ECB24071AB70094866C /* LoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999ECA24071AB70094866C /* LoggingIntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +39,7 @@
 		610CCB8D240527F300C4FE79 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		610CCB8F240527F300C4FE79 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61204F612406C3C600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
+		61999ECA24071AB70094866C /* LoggingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingIntegrationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +55,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61800F72240540B000420E0D /* Datadog in Frameworks */,
+				61999EC1240703D90094866C /* HTTPServerMock in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +97,7 @@
 		610CCB8C240527F300C4FE79 /* IntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				61999ECA24071AB70094866C /* LoggingIntegrationTests.swift */,
 				610CCB8D240527F300C4FE79 /* IntegrationTests.swift */,
 				610CCB8F240527F300C4FE79 /* Info.plist */,
 			);
@@ -151,6 +156,7 @@
 			name = IntegrationTests;
 			packageProductDependencies = (
 				61800F71240540B000420E0D /* Datadog */,
+				61999EC0240703D90094866C /* HTTPServerMock */,
 			);
 			productName = IntegrationTests;
 			productReference = 610CCB89240527F300C4FE79 /* IntegrationTests.xctest */;
@@ -250,6 +256,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61999ECB24071AB70094866C /* LoggingIntegrationTests.swift in Sources */,
 				610CCB8E240527F300C4FE79 /* IntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -528,6 +535,10 @@
 		61800F71240540B000420E0D /* Datadog */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Datadog;
+		};
+		61999EC0240703D90094866C /* HTTPServerMock */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HTTPServerMock;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
