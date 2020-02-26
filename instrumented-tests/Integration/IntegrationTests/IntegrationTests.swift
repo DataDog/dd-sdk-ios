@@ -8,4 +8,9 @@ import XCTest
 import Datadog
 
 class IntegrationTests: XCTestCase {
+    func testSomething() throws {
+        let testsBundle = Bundle(for: IntegrationTests.self)
+        let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String
+        XCTAssertNotNil(serverAddress)
+    }
 }
