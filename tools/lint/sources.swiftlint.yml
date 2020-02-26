@@ -85,3 +85,4 @@ included:
   - Sources
   - instrumented-tests/Integration/Integration
   - instrumented-tests/Benchmark/Benchmark
+  - tools/http-server-mock/Sources
