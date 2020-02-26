@@ -13,7 +13,7 @@ xcodeproj-sdk:
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
-		cd tools/http-server-mock/ && swift package generate-xcodeproj
+		@cd http-server-mock/ && swift package generate-xcodeproj
 		@echo "OK 👌"	
 
 templates:

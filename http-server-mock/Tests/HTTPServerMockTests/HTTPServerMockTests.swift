@@ -33,7 +33,7 @@ final class HTTPServerMockTests: XCTestCase {
         }
 
         let server = ServerMock(serverProcess: serverProces)
-        let session = try server.obtainUniqueRecordingSession()
+        let session = server.obtainUniqueRecordingSession()
 
         sendPOSTRequestSynchronouslyTo(
             url: session.recordingURL.appendingPathComponent("/resource/1"),
@@ -58,7 +58,7 @@ final class HTTPServerMockTests: XCTestCase {
 
 /// Resolves the url to the Python script starting the server.
 private func serverPythonScriptPath() -> String {
-    return resolveSwiftPackageFolder().path + "/start_mock_server.py"
+    return resolveSwiftPackageFolder().path + "/python/start_mock_server.py"
 }
 
 /// Resolves the url to the folder containing `Package.swift`
