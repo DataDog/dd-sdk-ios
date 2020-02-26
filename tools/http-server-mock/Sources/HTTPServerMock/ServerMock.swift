@@ -16,7 +16,7 @@ public class ServerMock {
     }
 
     /// Retrieves session object providing unique server url to capture only a subset of requests.
-    public func obtainUniqueRecordingSession() throws -> ServerSession {
+    public func obtainUniqueRecordingSession() -> ServerSession {
         return ServerSession(server: self)
     }
 

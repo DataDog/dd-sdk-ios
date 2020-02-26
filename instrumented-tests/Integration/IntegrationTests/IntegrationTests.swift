@@ -5,12 +5,46 @@
 */
 
 import XCTest
-import Datadog
+import HTTPServerMock
 
+struct ServerConnectionError: Error {
+    let description: String
+}
+
+/// Base class providing mock server instrumentation.
 class IntegrationTests: XCTestCase {
-    func testSomething() throws {
+    var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        server = try! connectToServer()
+    }
+
+    override func tearDown() {
+        server = nil
+        super.tearDown()
+    }
+
+    // MARK: - `HTTPServerMock` connection
+
+    func connectToServer() throws -> ServerMock {
         let testsBundle = Bundle(for: IntegrationTests.self)
-        let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String
-        XCTAssertNotNil(serverAddress)
+        guard let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String else {
+            throw ServerConnectionError(description: "Cannot obtain `MockServerAddress` from `Info.plist`")
+        }
+
+        guard let serverURL = URL(string: "http://\(serverAddress)") else {
+            throw ServerConnectionError(description: "`MockServerAddress` obtained from `Info.plist` is invalid.")
+        }
+
+        let serverProcessRunner = ServerProcessRunner(serverURL: serverURL)
+        guard let serverProcess = serverProcessRunner.waitUntilServerIsReachable() else {
+            throw ServerConnectionError(description: "Cannot connect to server. Is server running properly on \(serverURL.absoluteString)?")
+        }
+
+        print("🌍 Connected to mock server on \(serverURL.absoluteString)")
+
+        let connectedServer = ServerMock(serverProcess: serverProcess)
+        return connectedServer
     }
 }

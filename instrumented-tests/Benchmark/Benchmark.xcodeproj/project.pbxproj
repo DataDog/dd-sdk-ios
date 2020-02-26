@@ -13,6 +13,8 @@
 		6103D62224053E300086F828 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6103D62024053E300086F828 /* LaunchScreen.storyboard */; };
 		6103D62D24053E300086F828 /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6103D62C24053E300086F828 /* BenchmarkTests.swift */; };
 		61800F752405411400420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F742405411400420E0D /* Datadog */; };
+		61999EC7240717F00094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC6240717F00094866C /* HTTPServerMock */; };
+		61999EC924071A760094866C /* LoggingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999EC824071A760094866C /* LoggingBenchmarkTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +38,7 @@
 		6103D62C24053E300086F828 /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		6103D62E24053E300086F828 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61204F652406DD1600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
+		61999EC824071A760094866C /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +54,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61800F752405411400420E0D /* Datadog in Frameworks */,
+				61999EC7240717F00094866C /* HTTPServerMock in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +96,7 @@
 		6103D62B24053E300086F828 /* BenchmarkTests */ = {
 			isa = PBXGroup;
 			children = (
+				61999EC824071A760094866C /* LoggingBenchmarkTests.swift */,
 				6103D62C24053E300086F828 /* BenchmarkTests.swift */,
 				6103D62E24053E300086F828 /* Info.plist */,
 			);
@@ -150,6 +155,7 @@
 			name = BenchmarkTests;
 			packageProductDependencies = (
 				61800F742405411400420E0D /* Datadog */,
+				61999EC6240717F00094866C /* HTTPServerMock */,
 			);
 			productName = BenchmarkTests;
 			productReference = 6103D62824053E300086F828 /* BenchmarkTests.xctest */;
@@ -249,6 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6103D62D24053E300086F828 /* BenchmarkTests.swift in Sources */,
+				61999EC924071A760094866C /* LoggingBenchmarkTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +533,10 @@
 		61800F742405411400420E0D /* Datadog */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Datadog;
+		};
+		61999EC6240717F00094866C /* HTTPServerMock */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HTTPServerMock;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
