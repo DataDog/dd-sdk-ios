@@ -107,11 +107,19 @@ class LoggingIntegrationTests: IntegrationTests {
                 isTypeOf: Optional<Bool>.self
             )
 
-            // Carrier info is empty both on macOS and iOS Simulator
-            matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierName)
-            matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierISOCountryCode)
-            matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierRadioTechnology)
-            matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierAllowsVoIP)
+            #if os(macOS) || targetEnvironment(simulator)
+                // When running on macOS or iOS Simulator
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierName)
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierISOCountryCode)
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierRadioTechnology)
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierAllowsVoIP)
+            #else
+                // When running on physical device with SIM card registered
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierName, isTypeOf: String.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierISOCountryCode, isTypeOf: String.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierRadioTechnology, isTypeOf: String.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierAllowsVoIP, isTypeOf: Bool.self)
+            #endif
         }
     }
     // swiftlint:enable trailing_closure
