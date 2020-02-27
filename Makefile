@@ -1,4 +1,4 @@
-all: dependencies xcodeproj-sdk xcodeproj-httpservermock templates examples
+all: dependencies xcodeproj-sdk xcodeproj-httpservermock xcodeproj-testhelpers templates examples
 .PHONY : examples
 
 dependencies:
@@ -14,6 +14,11 @@ xcodeproj-sdk:
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
 		@cd http-server-mock/ && swift package generate-xcodeproj
+		@echo "OK 👌"
+
+xcodeproj-testhelpers:
+		@echo "⚙️  Generating 'DatadogTestHelpers.xcodeproj'..."
+		@cd datadog-test-helpers/ && swift package generate-xcodeproj
 		@echo "OK 👌"	
 
 templates:
