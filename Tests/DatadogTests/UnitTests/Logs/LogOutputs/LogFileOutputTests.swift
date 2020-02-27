@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogTestHelpers
 @testable import Datadog
 
 class LogFileOutputTests: XCTestCase {
