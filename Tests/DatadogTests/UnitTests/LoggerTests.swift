@@ -139,8 +139,8 @@ class LoggerTests: XCTestCase {
             .waitUntil(numberOfLogsSent: 4)
             .verifyAll { logMatchers in
                 logMatchers[0].assertUserInfo(equals: nil)
-                logMatchers[1].assertUserInfo(equals: UserInfo(id: "abc-123", name: "Foo", email: nil))
-                logMatchers[2].assertUserInfo(equals: UserInfo(id: "abc-123", name: "Foo", email: "foo@example.com"))
+                logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
+                logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com"))
                 logMatchers[3].assertUserInfo(equals: nil)
             }
             .destroy()
