@@ -80,3 +80,4 @@ included:
   - instrumented-tests/Integration/IntegrationTests
   - instrumented-tests/Benchmark/BenchmarkTests
   - http-server-mock/Tests
+  - datadog-test-helpers/Tests
