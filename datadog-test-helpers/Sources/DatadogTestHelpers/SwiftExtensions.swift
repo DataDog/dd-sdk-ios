@@ -26,3 +26,9 @@ public extension Data {
         return jsonObject
     }
 }
+
+public extension Date {
+    func isNotOlderThan(seconds: TimeInterval) -> Bool {
+        return Date().timeIntervalSince(self) <= seconds
+    }
+}
