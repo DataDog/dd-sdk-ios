@@ -10,45 +10,51 @@ import XCTest
 public struct LogMatcher {
     private static let dateFormatter = ISO8601DateFormatter()
 
-    private struct JSONKey {
-        static let date = "date"
-        static let status = "status"
-        static let message = "message"
-        static let serviceName = "service"
-        static let tags = "ddtags"
+    /// Log JSON keys.
+    public struct JSONKey {
+        public static let date = "date"
+        public static let status = "status"
+        public static let message = "message"
+        public static let serviceName = "service"
+        public static let tags = "ddtags"
 
         // MARK: - Application info
 
-        static let applicationVersion = "application.version"
+        public static let applicationVersion = "application.version"
 
         // MARK: - Logger info
 
-        static let loggerName = "logger.name"
-        static let loggerVersion = "logger.version"
-        static let threadName = "logger.thread_name"
+        public static let loggerName = "logger.name"
+        public static let loggerVersion = "logger.version"
+        public static let threadName = "logger.thread_name"
 
         // MARK: - User info
 
-        static let userId = "usr.id"
-        static let userName = "usr.name"
-        static let userEmail = "usr.email"
+        public static let userId = "usr.id"
+        public static let userName = "usr.name"
+        public static let userEmail = "usr.email"
 
         // MARK: - Network connection info
 
-        static let networkReachability = "network.client.reachability"
-        static let networkAvailableInterfaces = "network.client.available_interfaces"
-        static let networkConnectionSupportsIPv4 = "network.client.supports_ipv4"
-        static let networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
-        static let networkConnectionIsExpensive = "network.client.is_expensive"
-        static let networkConnectionIsConstrained = "network.client.is_constrained"
+        public static let networkReachability = "network.client.reachability"
+        public static let networkAvailableInterfaces = "network.client.available_interfaces"
+        public static let networkConnectionSupportsIPv4 = "network.client.supports_ipv4"
+        public static let networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
+        public static let networkConnectionIsExpensive = "network.client.is_expensive"
+        public static let networkConnectionIsConstrained = "network.client.is_constrained"
 
         // MARK: - Mobile carrier info
 
-        static let mobileNetworkCarrierName = "network.client.sim_carrier.name"
-        static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
-        static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
-        static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
+        public static let mobileNetworkCarrierName = "network.client.sim_carrier.name"
+        public static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
+        public static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
+        public static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
     }
+
+    /// Allowed values for `network.client.available_interfaces` attribute.
+    public static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
+    /// Allowed values for `network.client.reachability` attribute.
+    public static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
 
     private let json: [String: Any]
 
@@ -97,8 +103,8 @@ public struct LogMatcher {
         assertValue(forKey: JSONKey.loggerName, equals: loggerName, file: file, line: line)
     }
 
-    public func assertLoggerVersion(equals loggerVersion: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.loggerVersion, equals: loggerVersion, file: file, line: line)
+    public func assertLoggerVersion(matches matcherClosure: (String) -> Bool, file: StaticString = #file, line: UInt = #line) {
+        assertValue(forKeyPath: JSONKey.loggerVersion, matches: matcherClosure, file: file, line: line)
     }
 
     public func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
