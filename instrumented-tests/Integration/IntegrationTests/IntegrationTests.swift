@@ -13,7 +13,7 @@ struct ServerConnectionError: Error {
 
 /// Base class providing mock server instrumentation.
 class IntegrationTests: XCTestCase {
-    var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()

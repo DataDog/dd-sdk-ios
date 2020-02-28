@@ -10,7 +10,16 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/../..&quot;&#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./tools/config/generate-http-server-mock-config.sh&#10;">
+               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/../..&quot; &#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./tools/config/generate-http-server-mock-config.sh&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "6103D62724053E300086F828"
+                     BuildableName = "BenchmarkTests.xctest"
+                     BlueprintName = "BenchmarkTests"
+                     ReferencedContainer = "container:Benchmark.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
             </ActionContent>
          </ExecutionAction>
       </PreActions>
@@ -32,9 +41,9 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      buildConfiguration = "Release"
+      selectedDebuggerIdentifier = ""
+      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <PreActions>
          <ExecutionAction

@@ -12,7 +12,9 @@
 		6103D61D24053E2F0086F828 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6103D61B24053E2F0086F828 /* Main.storyboard */; };
 		6103D62224053E300086F828 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6103D62024053E300086F828 /* LaunchScreen.storyboard */; };
 		6103D62D24053E300086F828 /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6103D62C24053E300086F828 /* BenchmarkTests.swift */; };
-		61800F752405411400420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F742405411400420E0D /* Datadog */; };
+		613089BD240924A000B3DA8A /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 613089BC240924A000B3DA8A /* Datadog.framework */; };
+		61308ABD240933E600B3DA8A /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 613089BC240924A000B3DA8A /* Datadog.framework */; };
+		61308ABE240933E600B3DA8A /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 613089BC240924A000B3DA8A /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61999EC7240717F00094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC6240717F00094866C /* HTTPServerMock */; };
 		61999EC924071A760094866C /* LoggingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999EC824071A760094866C /* LoggingBenchmarkTests.swift */; };
 /* End PBXBuildFile section */
@@ -27,6 +29,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		61308ABF240933E600B3DA8A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				61308ABE240933E600B3DA8A /* Datadog.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		6103D61224053E2F0086F828 /* Benchmark.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Benchmark.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6103D61524053E2F0086F828 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -38,6 +54,7 @@
 		6103D62C24053E300086F828 /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		6103D62E24053E300086F828 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61204F652406DD1600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
+		613089BC240924A000B3DA8A /* Datadog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61999EC824071A760094866C /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -46,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61308ABD240933E600B3DA8A /* Datadog.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61800F752405411400420E0D /* Datadog in Frameworks */,
+				613089BD240924A000B3DA8A /* Datadog.framework in Frameworks */,
 				61999EC7240717F00094866C /* HTTPServerMock in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -114,6 +132,7 @@
 		61800F732405411400420E0D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				613089BC240924A000B3DA8A /* Datadog.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -129,6 +148,7 @@
 				6103D60F24053E2F0086F828 /* Frameworks */,
 				6103D61024053E2F0086F828 /* Resources */,
 				6103D63724053E4D0086F828 /* Run linter */,
+				61308ABF240933E600B3DA8A /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -154,7 +174,6 @@
 			);
 			name = BenchmarkTests;
 			packageProductDependencies = (
-				61800F742405411400420E0D /* Datadog */,
 				61999EC6240717F00094866C /* HTTPServerMock */,
 			);
 			productName = BenchmarkTests;
@@ -530,10 +549,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		61800F742405411400420E0D /* Datadog */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Datadog;
-		};
 		61999EC6240717F00094866C /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;

@@ -6,28 +6,44 @@
 
 import XCTest
 import HTTPServerMock
+@testable import Datadog
 
 struct ServerConnectionError: Error {
     let description: String
 }
 
+/// Shared server instance for all test cases.
+private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+/// Shared server session for all test cases.
+private(set) var serverSession: ServerSession! // swiftlint:disable:this implicitly_unwrapped_optional
+
 /// Base class providing mock server instrumentation.
 class BenchmarkTests: XCTestCase {
-    var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    override class func setUp() {
+        super.setUp()
+        if server == nil { server = try! setUpMockServerConnection() }
+        if serverSession == nil { serverSession = server.obtainUniqueRecordingSession() }
+    }
 
     override func setUp() {
         super.setUp()
-        server = try! connectToServer()
+        Datadog.initialize(
+            appContext: Datadog.AppContext(mainBundle: Bundle.main),
+            configuration: Datadog.Configuration
+                .builderUsing(clientToken: "client-token")
+                .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
+                .build()
+        )
     }
 
     override func tearDown() {
-        server = nil
+        try! Datadog.deinitializeOrThrow()
         super.tearDown()
     }
 
     // MARK: - `HTTPServerMock` connection
 
-    func connectToServer() throws -> ServerMock {
+    private static func setUpMockServerConnection() throws -> ServerMock {
         let testsBundle = Bundle(for: BenchmarkTests.self)
         guard let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String else {
             throw ServerConnectionError(description: "Cannot obtain `MockServerAddress` from `Info.plist`")
