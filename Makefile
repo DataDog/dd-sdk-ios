@@ -8,7 +8,7 @@ dependencies:
 
 xcodeproj-sdk:
 		@echo "⚙️  Generating 'Datadog.xcodeproj'..."
-		swift package generate-xcodeproj --enable-code-coverage --xcconfig-overrides Datadog.xcconfig
+		swift package generate-xcodeproj --enable-code-coverage --xcconfig-overrides Datadog.xcconfig --skip-extra-files
 		@echo "OK 👌"
 
 xcodeproj-httpservermock:
