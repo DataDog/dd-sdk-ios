@@ -482,7 +482,11 @@ extension LogsPersistenceStrategy {
             in: directory,
             using: dateProvider,
             writeConditions: .mockWriteToNewFileEachTime(),
-            readConditions: .mockReadAllFiles()
+            readConditions: .mockReadAllFiles(),
+            readWriteQueue: DispatchQueue(
+                label: "com.datadoghq.ios-sdk-logs-read-write",
+                target: .global(qos: .utility)
+            )
         )
     }
 }

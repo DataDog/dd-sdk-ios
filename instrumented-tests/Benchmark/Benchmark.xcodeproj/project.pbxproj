@@ -15,6 +15,7 @@
 		613089BD240924A000B3DA8A /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 613089BC240924A000B3DA8A /* Datadog.framework */; };
 		61308ABD240933E600B3DA8A /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 613089BC240924A000B3DA8A /* Datadog.framework */; };
 		61308ABE240933E600B3DA8A /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 613089BC240924A000B3DA8A /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		613D7F5D240938560013B7DF /* LoggingIOBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613D7F5C240938560013B7DF /* LoggingIOBenchmarkTests.swift */; };
 		61999EC7240717F00094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC6240717F00094866C /* HTTPServerMock */; };
 		61999EC924071A760094866C /* LoggingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999EC824071A760094866C /* LoggingBenchmarkTests.swift */; };
 /* End PBXBuildFile section */
@@ -55,6 +56,7 @@
 		6103D62E24053E300086F828 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61204F652406DD1600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
 		613089BC240924A000B3DA8A /* Datadog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		613D7F5C240938560013B7DF /* LoggingIOBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingIOBenchmarkTests.swift; sourceTree = "<group>"; };
 		61999EC824071A760094866C /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -133,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				61999EC824071A760094866C /* LoggingBenchmarkTests.swift */,
+				613D7F5C240938560013B7DF /* LoggingIOBenchmarkTests.swift */,
 			);
 			path = Logs;
 			sourceTree = "<group>";
@@ -281,6 +284,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				613D7F5D240938560013B7DF /* LoggingIOBenchmarkTests.swift in Sources */,
 				6103D62D24053E300086F828 /* BenchmarkTests.swift in Sources */,
 				61999EC924071A760094866C /* LoggingBenchmarkTests.swift in Sources */,
 			);
