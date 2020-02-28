@@ -7,8 +7,13 @@ dependencies:
 		@echo "OK 👌"
 
 xcodeproj-sdk:
-		@echo "⚙️  Generating 'Datadog.xcodeproj'..."
+ifdef ci
+		@echo "⚙️  Generating 'Datadog.xcodeproj' for CI..."
+		swift package generate-xcodeproj --skip-extra-files
+else
+		@echo "⚙️  Generating 'Datadog.xcodeproj' for development..."
 		swift package generate-xcodeproj --enable-code-coverage --xcconfig-overrides Datadog.xcconfig --skip-extra-files
+endif
 		@echo "OK 👌"
 
 xcodeproj-httpservermock:
