@@ -63,31 +63,6 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
     }
 
-    // TODO: RUMM-140 Add performance tests - test this behaviour in more relevant place
-    func testItWrites10KLogsInReasonableTime() throws {
-        let expectation = self.expectation(description: "10K writes completed")
-        let writer = FileWriter(
-            orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
-                writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
-                readConditions: LogsPersistenceStrategy.defaultReadConditions,
-                dateProvider: SystemDateProvider()
-            ),
-            queue: queue,
-            maxWriteSize: LogsPersistenceStrategy.Constants.maxLogSize
-        )
-
-        for _ in 0..<10_000 {
-            let log: Log = .mockRandom()
-            writer.write(value: log)
-        }
-
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 60) // 60 seconds is an arbitrary timeout
-
-        XCTAssertGreaterThan(try temporaryDirectory.files().count, 1)
-    }
-
     private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {
         queue.async { expectation.fulfill() }
     }
