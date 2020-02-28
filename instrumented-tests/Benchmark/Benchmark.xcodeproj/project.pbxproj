@@ -114,7 +114,7 @@
 		6103D62B24053E300086F828 /* BenchmarkTests */ = {
 			isa = PBXGroup;
 			children = (
-				61999EC824071A760094866C /* LoggingBenchmarkTests.swift */,
+				61308AC12409346900B3DA8A /* Logs */,
 				6103D62C24053E300086F828 /* BenchmarkTests.swift */,
 				6103D62E24053E300086F828 /* Info.plist */,
 			);
@@ -127,6 +127,14 @@
 				61204F652406DD1600B322BC /* tests-specific-config.xcconfig */,
 			);
 			name = Config;
+			sourceTree = "<group>";
+		};
+		61308AC12409346900B3DA8A /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				61999EC824071A760094866C /* LoggingBenchmarkTests.swift */,
+			);
+			path = Logs;
 			sourceTree = "<group>";
 		};
 		61800F732405411400420E0D /* Frameworks */ = {
