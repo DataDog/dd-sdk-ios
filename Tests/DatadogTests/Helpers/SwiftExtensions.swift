@@ -30,10 +30,6 @@ extension Date {
     func secondsAgo(_ seconds: TimeInterval) -> Date {
         return addingTimeInterval(-seconds)
     }
-
-    func isNotOlderThan(seconds: TimeInterval) -> Bool {
-        return Date().timeIntervalSince(self) <= seconds
-    }
 }
 
 extension TimeZone {
@@ -62,22 +58,4 @@ extension String {
 
 extension Data {
     var utf8String: String { String(data: self, encoding: .utf8)! }
-
-    func toArrayOfJSONObjects(file: StaticString = #file, line: UInt = #line) throws -> [[String: Any]] {
-        guard let jsonArray = try? JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]] else {
-            XCTFail("Cannot decode array of JSON objects from data.", file: file, line: line)
-            return []
-        }
-
-        return jsonArray
-    }
-
-    func toJSONObject(file: StaticString = #file, line: UInt = #line) throws -> [String: Any] {
-        guard let jsonObject = try? JSONSerialization.jsonObject(with: self, options: []) as? [String: Any] else {
-            XCTFail("Cannot decode JSON object from given data.", file: file, line: line)
-            return [:]
-        }
-
-        return jsonObject
-    }
 }

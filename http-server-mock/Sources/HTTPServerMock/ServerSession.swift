@@ -4,33 +4,33 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import XCTest
+import Foundation
 
 /// Server session object to capture only requests send to `session.recordingURL`.
-class ServerSession {
+public class ServerSession {
     /// Details of a recorded request.
-    struct POSTRequestDetails {
+    public struct POSTRequestDetails {
         /// Original path of the request, i.e. `/something/1` for `POST /something/1`.
-        let path: String
+        public let path: String
         /// Original body of this request.
-        let httpBody: Data
+        public let httpBody: Data
     }
 
     private let server: ServerMock
     private let sessionIdentifier: String
 
-    /// Server URL unique to this session. `POST` requests send using this base URL can be later retrieved
+    /// Unique session URL. `POST` requests send using this base URL can be later retrieved
     /// using `getRecordedPOSTRequests()`.
-    let recordingURL: String
+    public let recordingURL: URL
 
-    init(server: ServerMock) {
+    internal init(server: ServerMock) {
         self.server = server
         self.sessionIdentifier = UUID().uuidString
-        self.recordingURL = server.url.appendingPathComponent(sessionIdentifier).absoluteString
+        self.recordingURL = server.baseURL.appendingPathComponent(sessionIdentifier)
     }
 
     /// Fetches details of all `POST` requests recorded by the server during this session.
-    func getRecordedPOSTRequests() throws -> [POSTRequestDetails] {
+    public func getRecordedPOSTRequests() throws -> [POSTRequestDetails] {
         return try server
             .getRecordedPOSTRequestsInfo() // get all recorded requests info
             .filter { requestInfo in requestInfo.path.contains(sessionIdentifier) } // narrow it to this session

@@ -83,3 +83,7 @@ custom_rules:
 
 included:
   - Sources
+  - instrumented-tests/Integration/Integration
+  - instrumented-tests/Benchmark/Benchmark
+  - http-server-mock/Sources
+  - datadog-test-helpers/Sources

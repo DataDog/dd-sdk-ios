@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogTestHelpers
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets trailing_closure

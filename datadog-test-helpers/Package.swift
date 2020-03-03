@@ -3,25 +3,21 @@
 import PackageDescription
 
 let package = Package(
-    name: "Datadog",
+    name: "DatadogTestHelpers",
     platforms: [
         .iOS(.v12),
         .macOS(.v10_14),
     ],
     products: [
         .library(
-            name: "Datadog",
-            targets: ["Datadog"]),
+            name: "DatadogTestHelpers",
+            targets: ["DatadogTestHelpers"]),
     ],
     dependencies: [
-        .package(path: "datadog-test-helpers/"),
     ],
     targets: [
         .target(
-            name: "Datadog",
+            name: "DatadogTestHelpers",
             dependencies: []),
-        .testTarget(
-            name: "DatadogTests",
-            dependencies: ["Datadog", "DatadogTestHelpers"]),
     ]
 )

@@ -6,6 +6,7 @@
 
 import Foundation
 import XCTest
+import DatadogTestHelpers
 @testable import Datadog
 
 /*
@@ -480,6 +481,10 @@ extension LogsPersistenceStrategy {
         return .default(
             in: directory,
             using: dateProvider,
+            readWriteQueue: DispatchQueue(
+                label: "com.datadoghq.ios-sdk-logs-read-write",
+                target: .global(qos: .utility)
+            ),
             writeConditions: .mockWriteToNewFileEachTime(),
             readConditions: .mockReadAllFiles()
         )

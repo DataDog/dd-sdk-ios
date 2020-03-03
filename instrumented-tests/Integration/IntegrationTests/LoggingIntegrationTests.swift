@@ -4,42 +4,26 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Datadog
+import DatadogTestHelpers
+import HTTPServerMock
 import XCTest
-@testable import Datadog
 
-class LoggingTests: XCTestCase {
-    private let serverMock = ServerMock()
-    private var serverSession: ServerSession! // swiftlint:disable:this implicitly_unwrapped_optional
+class LoggingIntegrationTests: IntegrationTests {
+    // swiftlint:disable trailing_closure
+    func testLogsAreUploadedToServer() throws {
+        let serverSession = server.obtainUniqueRecordingSession()
 
-    override func setUp() {
-        super.setUp()
-        logsDirectory.delete()
-        serverSession = serverMock.obtainUniqueRecordingSession()
-
+        // Initialize SDK
         Datadog.initialize(
-            appContext: AppContext(
-                bundleIdentifier: "com.datadoghq.ios-sdk",
-                bundleVersion: "1.0.0",
-                bundleShortVersion: "1.0.0",
-                executableName: "some-app",
-                mobileDevice: nil
-            ),
+            appContext: .init(mainBundle: .main),
             configuration: Datadog.Configuration.builderUsing(clientToken: "client-token")
-                .set(logsEndpoint: .custom(url: serverSession.recordingURL))
+                .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
                 .build()
         )
-    }
 
-    override func tearDown() {
-        try! Datadog.deinitializeOrThrow()
-        super.tearDown()
-    }
-
-    // swiftlint:disable trailing_closure
-    func testLogsWithTagsAndAttributesAreUploadedToServer() throws {
-        // Configure logger
+        // Create logger
         let logger = Logger.builder
-            .printLogsToConsole(true)
             .set(serviceName: "service-name")
             .set(loggerName: "logger-name")
             .build()
@@ -93,7 +77,7 @@ class LoggingTests: XCTestCase {
             matcher.assertDate(matches: { $0.isNotOlderThan(seconds: 60) })
             matcher.assertServiceName(equals: "service-name")
             matcher.assertLoggerName(equals: "logger-name")
-            matcher.assertLoggerVersion(equals: sdkVersion)
+            matcher.assertLoggerVersion(matches: { version in version.split(separator: ".").count == 3 })
             matcher.assertApplicationVersion(equals: "1.0.0")
             matcher.assertThreadName(equals: "main")
             matcher.assertAttributes(
@@ -105,35 +89,37 @@ class LoggingTests: XCTestCase {
             )
             matcher.assertTags(equal: ["tag1:tag-value", "tag2"])
 
-            typealias LogJSONKeys = LogEncoder.StaticCodingKeys
-
             matcher.assertValue(
-                forKeyPath: LogJSONKeys.networkReachability.rawValue,
-                matches: { (value: String) -> Bool in
-                    let validValues = NetworkConnectionInfo.Reachability.allCases.map { $0.rawValue }
-                    return validValues.contains(value)
-                }
+                forKeyPath: LogMatcher.JSONKey.networkReachability,
+                matches: { LogMatcher.allowedNetworkReachabilityValues.contains($0) }
             )
             matcher.assertValue(
-                forKeyPath: LogJSONKeys.networkAvailableInterfaces.rawValue,
-                matches: { (value: [String]) -> Bool in
-                    let validValues = NetworkConnectionInfo.Interface.allCases.map { $0.rawValue }
-                    return Set(value).isSubset(of: Set(validValues))
+                forKeyPath: LogMatcher.JSONKey.networkAvailableInterfaces,
+                matches: { (values: [String]) -> Bool in
+                    LogMatcher.allowedNetworkAvailableInterfacesValues.isSuperset(of: Set(values))
                 }
             )
-            matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionSupportsIPv4.rawValue, isTypeOf: Bool.self)
-            matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionSupportsIPv6.rawValue, isTypeOf: Bool.self)
-            matcher.assertValue(forKeyPath: LogJSONKeys.networkConnectionIsExpensive.rawValue, isTypeOf: Bool.self)
+            matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionSupportsIPv4, isTypeOf: Bool.self)
+            matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionSupportsIPv6, isTypeOf: Bool.self)
+            matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionIsExpensive, isTypeOf: Bool.self)
             matcher.assertValue(
-                forKeyPath: LogJSONKeys.networkConnectionIsConstrained.rawValue,
+                forKeyPath: LogMatcher.JSONKey.networkConnectionIsConstrained,
                 isTypeOf: Optional<Bool>.self
             )
 
-            // Carrier info is empty both on macOS and iOS Simulator
-            matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierName.rawValue)
-            matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierISOCountryCode.rawValue)
-            matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierRadioTechnology.rawValue)
-            matcher.assertNoValue(forKey: LogJSONKeys.mobileNetworkCarrierAllowsVoIP.rawValue)
+            #if os(macOS) || targetEnvironment(simulator)
+                // When running on macOS or iOS Simulator
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierName)
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierISOCountryCode)
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierRadioTechnology)
+                matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierAllowsVoIP)
+            #else
+                // When running on physical device with SIM card registered
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierName, isTypeOf: String.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierISOCountryCode, isTypeOf: String.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierRadioTechnology, isTypeOf: String.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.mobileNetworkCarrierAllowsVoIP, isTypeOf: Bool.self)
+            #endif
         }
     }
     // swiftlint:enable trailing_closure
