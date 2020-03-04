@@ -12,6 +12,9 @@ let package = Package(
         .library(
             name: "Datadog",
             targets: ["Datadog"]),
+        .library(
+            name: "DatadogObjc",
+            targets: ["DatadogObjc"]),
     ],
     dependencies: [
         .package(path: "datadog-test-helpers/"),
@@ -23,5 +26,11 @@ let package = Package(
         .testTarget(
             name: "DatadogTests",
             dependencies: ["Datadog", "DatadogTestHelpers"]),
+        .target(
+            name: "DatadogObjc",
+            dependencies: ["Datadog"]),
+        .testTarget(
+            name: "DatadogObjcTests",
+            dependencies: ["DatadogObjc"]),
     ]
 )
