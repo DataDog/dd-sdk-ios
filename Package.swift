@@ -15,9 +15,14 @@ let package = Package(
         .library(
             name: "DatadogObjc",
             targets: ["DatadogObjc"]),
+
+        // The `DatadogTestHelpers` library is a workaround for no local packages support in SPM.
+        // TODO: RUMM-279 remove `DatadogTestHelpers` from `Package.swift` by linking this code differently to instrumented tests.
+        .library(
+            name: "DatadogTestHelpers",
+            targets: ["DatadogTestHelpers"]),
     ],
     dependencies: [
-        .package(path: "datadog-test-helpers/"),
     ],
     targets: [
         .target(
@@ -32,5 +37,12 @@ let package = Package(
         .testTarget(
             name: "DatadogObjcTests",
             dependencies: ["DatadogObjc"]),
+
+        // TODO: RUMM-279 remove `DatadogTestHelpers` from `Package.swift`
+        .target(
+            name: "DatadogTestHelpers",
+            dependencies: [],
+            path: "datadog-test-helpers/Sources"
+        ),
     ]
 )
