@@ -18,7 +18,7 @@ public class DDLogsEndpoint: NSObject {
     // MARK: - Public
 
     public static func eu() -> DDLogsEndpoint { .init(sdkEndpoint: .eu) }
-    public static func us() -> DDLogsEndpoint { .init(sdkEndpoint: .eu) }
+    public static func us() -> DDLogsEndpoint { .init(sdkEndpoint: .us) }
     public static func custom(url: String) -> DDLogsEndpoint { .init(sdkEndpoint: .custom(url: url)) }
 }
 

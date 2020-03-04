@@ -134,6 +134,12 @@ struct ErrorMock: Error {
     }
 }
 
+extension Bundle {
+    static func mockAny() -> Bundle {
+        return Bundle.main
+    }
+}
+
 // MARK: - HTTP and URLSession
 
 class URLSessionDataTaskMock: URLSessionDataTask {

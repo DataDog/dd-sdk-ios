@@ -28,15 +28,12 @@ let package = Package(
         .target(
             name: "Datadog",
             dependencies: []),
-        .testTarget(
-            name: "DatadogTests",
-            dependencies: ["Datadog", "DatadogTestHelpers"]),
         .target(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
         .testTarget(
-            name: "DatadogObjcTests",
-            dependencies: ["DatadogObjc"]),
+            name: "DatadogTests",
+            dependencies: ["Datadog", "DatadogObjc", "DatadogTestHelpers"]),
 
         // TODO: RUMM-279 remove `DatadogTestHelpers` from `Package.swift`
         .target(

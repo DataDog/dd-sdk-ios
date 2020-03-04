@@ -16,6 +16,10 @@ public class DDAppContext: NSObject {
     public init(mainBundle: Bundle) {
         self.sdkAppContext = Datadog.AppContext(mainBundle: mainBundle)
     }
+
+    public override init() {
+        self.sdkAppContext = Datadog.AppContext()
+    }
 }
 
 @objcMembers
@@ -29,28 +33,27 @@ public class DDDatadog: NSObject {
         )
     }
 
-    public static var verbosityLevel: DDLogLevel? {
-        set {
-            switch newValue {
-            case .debug?: Datadog.verbosityLevel = .debug
-            case .info?: Datadog.verbosityLevel = .info
-            case .notice?: Datadog.verbosityLevel = .notice
-            case .warn?: Datadog.verbosityLevel = .warn
-            case .error?: Datadog.verbosityLevel = .error
-            case .critical?: Datadog.verbosityLevel = .critical
-            case .none: Datadog.verbosityLevel = nil
-            }
+    public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel) {
+        switch verbosityLevel {
+        case .debug: Datadog.verbosityLevel = .debug
+        case .info: Datadog.verbosityLevel = .info
+        case .notice: Datadog.verbosityLevel = .notice
+        case .warn: Datadog.verbosityLevel = .warn
+        case .error: Datadog.verbosityLevel = .error
+        case .critical: Datadog.verbosityLevel = .critical
+        case .none: Datadog.verbosityLevel = nil
         }
-        get {
-            switch Datadog.verbosityLevel {
-            case .debug?: return .debug
-            case .info?: return .info
-            case .notice?: return .notice
-            case .warn?: return .warn
-            case .error?: return .error
-            case .critical?: return .critical
-            case .none: return nil
-            }
+    }
+
+    public static func verbosityLevel() -> DDSDKVerbosityLevel {
+        switch Datadog.verbosityLevel {
+        case .debug: return .debug
+        case .info: return .info
+        case .notice: return .notice
+        case .warn: return .warn
+        case .error: return .error
+        case .critical: return .critical
+        case .none: return .none
         }
     }
 

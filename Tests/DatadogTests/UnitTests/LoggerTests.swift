@@ -317,7 +317,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Customizing outputs
 
     func testUsingDifferentOutputs() throws {
-        Datadog.instance = .mockAny()
+        Datadog.instance = .mockNeverPerformingUploads()
 
         assertThat(
             logger: Logger.builder.build(),

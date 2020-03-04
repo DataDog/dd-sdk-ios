@@ -8,7 +8,8 @@ import Foundation
 import class Datadog.Logger
 
 @objc
-public enum DDLogLevel: Int {
+public enum DDSDKVerbosityLevel: Int {
+    case none
     case debug
     case info
     case notice

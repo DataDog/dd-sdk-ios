@@ -455,12 +455,31 @@ extension DataUploader {
 
 extension DataUploadWorker {
     static func mockAny() -> DataUploadWorker {
+        return .mockWith()
+    }
+
+    static func mockWith(
+        queue: DispatchQueue = .global(),
+        fileReader: FileReader = .mockAny(),
+        dataUploader: DataUploader = .mockAny(),
+        uploadConditions: DataUploadConditions = .mockAny(),
+        delay: DataUploadDelay = .mockAny()
+    ) -> DataUploadWorker {
         return DataUploadWorker(
-            queue: .global(),
-            fileReader: .mockAny(),
-            dataUploader: .mockAny(),
-            uploadConditions: .mockAny(),
-            delay: .mockAny()
+            queue: queue,
+            fileReader: fileReader,
+            dataUploader: dataUploader,
+            uploadConditions: uploadConditions,
+            delay: delay
+        )
+    }
+
+    static func mockNeverPerformingUploads() -> DataUploadWorker {
+        // This creates constant delay of distant future, so first upload will never start.
+        // Big number is used instead of `.greatestFiniteMagnitude` as the latter might have
+        // an undefined behaviour according to Apple docs.
+        return .mockWith(
+            delay: .mockConstantDelay(of: 1_000_000)
         )
     }
 }
@@ -494,6 +513,12 @@ extension LogsPersistenceStrategy {
 extension LogsUploadStrategy {
     static func mockAny() -> LogsUploadStrategy {
         return LogsUploadStrategy(uploadWorker: .mockAny())
+    }
+
+    static func mockNeverPerformingUploads() -> LogsUploadStrategy {
+        return LogsUploadStrategy(
+            uploadWorker: .mockNeverPerformingUploads()
+        )
     }
 
     /// Mocks upload strategy where:
@@ -612,8 +637,10 @@ extension Datadog.Configuration {
 }
 
 extension Datadog {
-    static func mockAny() -> Datadog {
-        return mockWith()
+    static func mockNeverPerformingUploads() -> Datadog {
+        return .mockWith(
+            logsUploadStrategy: .mockNeverPerformingUploads()
+        )
     }
 
     static func mockWith(
