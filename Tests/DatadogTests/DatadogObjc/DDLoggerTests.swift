@@ -103,11 +103,7 @@ class DDLoggerTests: XCTestCase {
                 logMatcher.assertValue(forKey: "nsint", equals: 10)
                 logMatcher.assertValue(forKey: "nsnumber", equals: 10.5)
                 logMatcher.assertValue(forKeyPath: "nsnull", isTypeOf: Optional<Any>.self)
-                if #available(iOS 13.0, OSX 10.15, *) {
-                    logMatcher.assertValue(forKey: "nsurl", equals: "http://apple.com")
-                } else {
-                    logMatcher.assertValue(forKey: "nsurl", equals: "http:\\/\\/apple.com")
-                }
+                logMatcher.assertValue(forKey: "nsurl", equals: "http://apple.com")
                 logMatcher.assertValue(forKey: "nsarray-of-int", equals: [1, 2, 3])
                 logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date1", equals: "2019-12-15T10:00:00Z")
                 logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date2", equals: "2019-12-15T11:00:00Z")
