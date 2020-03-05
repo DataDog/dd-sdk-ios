@@ -1,9 +1,9 @@
 Pod::Spec.new do |spec|
-  spec.name         = "Datadog"
+  spec.name         = "DatadogObjc"
   spec.version      = "0.0.1"
   spec.summary      = "Logging and iOS app monitoring using Datadog."
   spec.description  = <<-DESC
-  Logging and iOS app monitoring using Datadog in Swift.
+  Logging and iOS app monitoring using Datadog in Objective-C.
                    DESC
   spec.homepage     = "https://www.datadoghq.com"
   spec.license            = { :type => "Apache" }
@@ -13,5 +13,6 @@ Pod::Spec.new do |spec|
   spec.swift_version      = '5.1'
   spec.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git',
                   :tag => spec.version.to_s }
-  spec.source_files       = "Sources/Datadog/**/*.swift"
+  spec.source_files       = "Sources/DatadogObjc/**/*.swift"
+  spec.dependency 'Datadog'
 end

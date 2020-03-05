@@ -1,0 +1,22 @@
+PODS:
+  - Datadog (0.0.1)
+  - DatadogObjc (0.0.1):
+    - Datadog
+
+DEPENDENCIES:
+  - Datadog (from `../../Datadog.podspec`)
+  - DatadogObjc (from `../..`)
+
+EXTERNAL SOURCES:
+  Datadog:
+    :path: "../../Datadog.podspec"
+  DatadogObjc:
+    :path: "../.."
+
+SPEC CHECKSUMS:
+  Datadog: a11253b8fb76f83acd77990485104602d6330b2a
+  DatadogObjc: 4dfe0422429d2a9166f882ff96625500a754f71c
+
+PODFILE CHECKSUM: da795f7f1eae6a225bc26f0d8ad7c62d243e5dc1
+
+COCOAPODS: 1.8.4
