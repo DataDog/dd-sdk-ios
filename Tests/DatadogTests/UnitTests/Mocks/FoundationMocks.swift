@@ -126,11 +126,19 @@ extension Float {
     }
 }
 
-struct ErrorMock: Error {
+struct ErrorMock: Error, CustomStringConvertible {
     let description: String
 
     init(_ description: String = "") {
         self.description = description
+    }
+}
+
+struct FailingEncodableMock: Encodable {
+    let errorMessage: String
+
+    func encode(to encoder: Encoder) throws {
+        throw ErrorMock(errorMessage)
     }
 }
 
