@@ -63,6 +63,29 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
     }
 
+    func testGivenErrorVerbosity_whenLogCannotBeEncoded_itPrintsError() throws {
+        let expectation = self.expectation(description: "write completed")
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = Logger(logOutput: output)
+
+        let writer = FileWriter(
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            queue: queue,
+            maxWriteSize: .max
+        )
+
+        writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
+
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 1, handler: nil)
+
+        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: failed to encode `FailingEncodable`.")
+    }
+
     private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {
         queue.async { expectation.fulfill() }
     }
