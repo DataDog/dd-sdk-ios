@@ -8,20 +8,6 @@ import XCTest
 @testable import Datadog
 
 class CombinedLogOutputTests: XCTestCase {
-    /// `LogOutput` recording received logs.
-    class LogOutputMock: LogOutput {
-        struct RecordedLog: Equatable {
-            let level: LogLevel
-            let message: String
-        }
-
-        var recordedLog: RecordedLog? = nil
-
-        func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
-            recordedLog = RecordedLog(level: level, message: message)
-        }
-    }
-
     func testCombinedLogOutput_writesLogToAllCombinedOutputs() {
         let output1 = LogOutputMock()
         let output2 = LogOutputMock()
