@@ -8,6 +8,8 @@ import XCTest
 @testable import Datadog
 @testable import DatadogObjc
 
+// swiftlint:disable multiline_arguments_brackets
+// swiftlint:disable compiler_protocol_init
 class DDLoggerTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -113,3 +115,5 @@ class DDLoggerTests: XCTestCase {
             .destroy()
     }
 }
+// swiftlint:enable multiline_arguments_brackets
+// swiftlint:enable compiler_protocol_init

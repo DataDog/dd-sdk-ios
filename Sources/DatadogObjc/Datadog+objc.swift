@@ -17,7 +17,7 @@ public class DDAppContext: NSObject {
         self.sdkAppContext = Datadog.AppContext(mainBundle: mainBundle)
     }
 
-    public override init() {
+    override public init() {
         self.sdkAppContext = Datadog.AppContext()
     }
 }
@@ -57,7 +57,9 @@ public class DDDatadog: NSObject {
         }
     }
 
+    // swiftlint:disable identifier_name
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil) {
         Datadog.setUserInfo(id: id, name: name, email: email)
     }
+    // swiftlint:enable identifier_name
 }
