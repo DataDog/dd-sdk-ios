@@ -5,8 +5,11 @@
 */
 
 #import "ViewController.h"
+@import DatadogObjc;
 
 @interface ViewController ()
+
+@property (nonatomic, nonnull) DDLogger *logger;
 
 @end
 
@@ -14,7 +17,37 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+
+    DDLoggerBuilder *loggerBuilder = [DDLogger builder];
+    [loggerBuilder setWithServiceName: @"ios-sdk-example-app"];
+    [loggerBuilder sendLogsToDatadog: YES];
+    [loggerBuilder printLogsToConsole: YES];
+
+    self.logger = [loggerBuilder build];
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.logger debug: @"viewDidLoad"];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self.logger debug: @"viewDidAppear"];
+}
+
+- (IBAction)didTapButton:(id)sender {
+    UIButton *button = sender;
+
+    [self.logger info: @"button tapped" attributes: @{
+        @"button-info": @{
+            @"label": button.titleLabel.text,
+            @"size": @{
+                @"width": [NSNumber numberWithFloat: button.frame.size.width],
+                @"height": [NSNumber numberWithFloat: button.frame.size.height]
+            }
+        },
+    }];
 }
 
 @end
