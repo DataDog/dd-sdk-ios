@@ -1,3 +1,7 @@
 xcuserdata/
 build/
 Pods/
+
+# Ignore .lock file as dependencies are linked using relative path reference
+# so they are never locked.
+Podfile.lock
