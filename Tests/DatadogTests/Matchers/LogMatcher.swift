@@ -74,7 +74,6 @@ struct LogMatcher {
         self.json = jsonObject
     }
 
-
     // MARK: Full match
 
     func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {

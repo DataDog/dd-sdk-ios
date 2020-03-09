@@ -85,5 +85,4 @@ included:
   - Sources
   - instrumented-tests/Integration/Integration
   - instrumented-tests/Benchmark/Benchmark
-  - http-server-mock/Sources
-  - datadog-test-helpers/Sources
+  - instrumented-tests/http-server-mock/Sources
