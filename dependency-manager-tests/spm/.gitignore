@@ -1,0 +1,8 @@
+.DS_Store
+/.build
+/Packages
+/*.xcodeproj
+xcuserdata/
+
+# Ignore `Package.resolved` file as it will be different for every branch that runs the test.
+Package.resolved
