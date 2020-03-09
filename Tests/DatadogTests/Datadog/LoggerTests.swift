@@ -35,18 +35,8 @@ class LoggerTests: XCTestCase {
             .with(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
-            .with(
-                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                    networkConnectionInfo: .mockWith(
-                        reachability: .yes,
-                        availableInterfaces: [.wifi, .cellular],
-                        supportsIPv4: true,
-                        supportsIPv6: true,
-                        isExpensive: false,
-                        isConstrained: false
-                    )
-                )
-            )
+            .with(networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny())
+            .with(carrierInfoProvider: CarrierInfoProviderMock.mockAny())
             .initialize()
             .run {
                 let logger = Logger.builder.build()
@@ -63,13 +53,7 @@ class LoggerTests: XCTestCase {
                   "logger.version": "\(sdkVersion)",
                   "logger.thread_name" : "main",
                   "date" : "2019-12-15T10:00:00Z",
-                  "application.version": "1.0.0",
-                  "network.client.available_interfaces": ["wifi", "cellular"],
-                  "network.client.reachability": "yes",
-                  "network.client.is_constrained": false,
-                  "network.client.is_expensive": false,
-                  "network.client.supports_ipv4": true,
-                  "network.client.supports_ipv6": true
+                  "application.version": "1.0.0"
                 }
                 """)
             }
@@ -78,11 +62,14 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogWithCustomizedLogger() throws {
         try DatadogInstanceMock.builder
+            .with(networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny())
+            .with(carrierInfoProvider: CarrierInfoProviderMock.mockAny())
             .initialize()
             .run {
                 let logger = Logger.builder
                     .set(serviceName: "custom-service-name")
                     .set(loggerName: "custom-logger-name")
+                    .sendNetworkInfo(true)
                     .build()
                 logger.debug("message")
             }
@@ -90,6 +77,18 @@ class LoggerTests: XCTestCase {
             .verifyFirst { logMatcher in
                 logMatcher.assertServiceName(equals: "custom-service-name")
                 logMatcher.assertLoggerName(equals: "custom-logger-name")
+                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.name", isTypeOf: String.self)
+                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.iso_country", isTypeOf: String.self)
+                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.technology", isTypeOf: String.self)
+                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", isTypeOf: Bool.self)
+                logMatcher.assertValue(forKeyPath: "network.client.available_interfaces", isTypeOf: [String].self)
+                logMatcher.assertValue(forKeyPath: "network.client.reachability", isTypeOf: String.self)
+                logMatcher.assertValue(forKeyPath: "network.client.is_expensive", isTypeOf: Bool.self)
+                logMatcher.assertValue(forKeyPath: "network.client.supports_ipv4", isTypeOf: Bool.self)
+                logMatcher.assertValue(forKeyPath: "network.client.supports_ipv6", isTypeOf: Bool.self)
+                if #available(iOS 13.0, macOS 10.15, *) {
+                    logMatcher.assertValue(forKeyPath: "network.client.is_constrained", isTypeOf: Bool.self)
+                }
             }
             .destroy()
     }
@@ -154,7 +153,9 @@ class LoggerTests: XCTestCase {
             .with(carrierInfoProvider: carrierInfoProvider)
             .initialize()
             .run {
-                let logger = Logger.builder.build()
+                let logger = Logger.builder
+                    .sendNetworkInfo(true)
+                    .build()
 
                 // simulate entering cellular service range
                 carrierInfoProvider.current = .mockWith(
@@ -178,6 +179,64 @@ class LoggerTests: XCTestCase {
                 logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.technology", equals: "LTE")
                 logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", equals: true)
                 logMatchers[1].assertNoValue(forKeyPath: "network.client.sim_carrier")
+            }
+            .destroy()
+    }
+
+    // MARK: - Sending network info
+
+    func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
+        let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
+        try DatadogInstanceMock.builder
+            .with(networkConnectionInfoProvider: networkConnectionInfoProvider)
+            .initialize()
+            .run {
+                let logger = Logger.builder
+                    .sendNetworkInfo(true)
+                    .build()
+
+                // simulate reachable network
+                networkConnectionInfoProvider.current = .mockWith(
+                    reachability: .yes,
+                    availableInterfaces: [.wifi, .cellular],
+                    supportsIPv4: true,
+                    supportsIPv6: true,
+                    isExpensive: false,
+                    isConstrained: false
+                )
+
+                logger.debug("message")
+
+                // simulate unreachable network
+                networkConnectionInfoProvider.current = .mockWith(
+                    reachability: .no,
+                    availableInterfaces: [],
+                    supportsIPv4: false,
+                    supportsIPv6: false,
+                    isExpensive: false,
+                    isConstrained: false
+                )
+
+                logger.debug("message")
+
+                // put the network back online so last log can be send
+                networkConnectionInfoProvider.current = .mockWith(reachability: .yes)
+            }
+            .waitUntil(numberOfLogsSent: 2)
+            .verifyAll { logMatchers in
+                logMatchers[0].assertValue(forKeyPath: "network.client.reachability", equals: "yes")
+                logMatchers[0].assertValue(forKeyPath: "network.client.available_interfaces", equals: ["wifi", "cellular"])
+                logMatchers[0].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
+                logMatchers[0].assertValue(forKeyPath: "network.client.is_expensive", equals: false)
+                logMatchers[0].assertValue(forKeyPath: "network.client.supports_ipv4", equals: true)
+                logMatchers[0].assertValue(forKeyPath: "network.client.supports_ipv6", equals: true)
+
+                logMatchers[1].assertValue(forKeyPath: "network.client.reachability", equals: "no")
+                logMatchers[1].assertValue(forKeyPath: "network.client.available_interfaces", equals: [String]())
+                logMatchers[1].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
+                logMatchers[1].assertValue(forKeyPath: "network.client.is_expensive", equals: false)
+                logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv4", equals: false)
+                logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv6", equals: false)
             }
             .destroy()
     }
@@ -378,7 +437,7 @@ class LoggerTests: XCTestCase {
             .destroy()
     }
 
-    func testGivenNoNetworkConnection_itDoesntTryToSendLogs() throws {
+    func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
         try DatadogInstanceMock.builder
             .with(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(

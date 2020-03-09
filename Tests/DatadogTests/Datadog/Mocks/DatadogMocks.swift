@@ -311,7 +311,7 @@ extension NetworkConnectionInfo {
 }
 
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
-    let current: NetworkConnectionInfo
+    var current: NetworkConnectionInfo
 
     init(networkConnectionInfo: NetworkConnectionInfo) {
         self.current = networkConnectionInfo
