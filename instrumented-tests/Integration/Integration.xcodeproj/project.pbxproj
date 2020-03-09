@@ -12,7 +12,6 @@
 		610CCB7E240527F100C4FE79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB7C240527F100C4FE79 /* Main.storyboard */; };
 		610CCB83240527F300C4FE79 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB81240527F300C4FE79 /* LaunchScreen.storyboard */; };
 		610CCB8E240527F300C4FE79 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610CCB8D240527F300C4FE79 /* IntegrationTests.swift */; };
-		6130885B2408021E00B3DA8A /* DatadogTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 6130885A2408021E00B3DA8A /* DatadogTestHelpers */; };
 		61800F72240540B000420E0D /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61800F71240540B000420E0D /* Datadog */; };
 		61999EC1240703D90094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC0240703D90094866C /* HTTPServerMock */; };
 		61999ECB24071AB70094866C /* LoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999ECA24071AB70094866C /* LoggingIntegrationTests.swift */; };
@@ -54,7 +53,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6130885B2408021E00B3DA8A /* DatadogTestHelpers in Frameworks */,
 				61800F72240540B000420E0D /* Datadog in Frameworks */,
 				61999EC1240703D90094866C /* HTTPServerMock in Frameworks */,
 			);
@@ -158,7 +156,6 @@
 			packageProductDependencies = (
 				61800F71240540B000420E0D /* Datadog */,
 				61999EC0240703D90094866C /* HTTPServerMock */,
-				6130885A2408021E00B3DA8A /* DatadogTestHelpers */,
 			);
 			productName = IntegrationTests;
 			productReference = 610CCB89240527F300C4FE79 /* IntegrationTests.xctest */;
@@ -537,10 +534,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6130885A2408021E00B3DA8A /* DatadogTestHelpers */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DatadogTestHelpers;
-		};
 		61800F71240540B000420E0D /* Datadog */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Datadog;

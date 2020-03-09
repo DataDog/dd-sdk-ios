@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import DatadogTestHelpers
 @testable import Datadog
 
 class LogFileOutputTests: XCTestCase {
@@ -31,6 +30,6 @@ class LogFileOutputTests: XCTestCase {
         queue.sync {} // wait on writter queue
 
         let fileData = try temporaryDirectory.files()[0].read()
-        try LogMatcher(from: fileData).assertMessage(equals: "log message")
+        try LogMatcher.fromJSONObjectData(fileData).assertMessage(equals: "log message")
     }
 }

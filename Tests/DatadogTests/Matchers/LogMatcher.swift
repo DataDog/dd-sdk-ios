@@ -7,70 +7,76 @@
 import XCTest
 
 /// Matcher providing assertions for Log's JSON.
-public struct LogMatcher {
+struct LogMatcher {
     private static let dateFormatter = ISO8601DateFormatter()
 
     /// Log JSON keys.
-    public struct JSONKey {
-        public static let date = "date"
-        public static let status = "status"
-        public static let message = "message"
-        public static let serviceName = "service"
-        public static let tags = "ddtags"
+    struct JSONKey {
+        static let date = "date"
+        static let status = "status"
+        static let message = "message"
+        static let serviceName = "service"
+        static let tags = "ddtags"
 
         // MARK: - Application info
 
-        public static let applicationVersion = "application.version"
+        static let applicationVersion = "application.version"
 
         // MARK: - Logger info
 
-        public static let loggerName = "logger.name"
-        public static let loggerVersion = "logger.version"
-        public static let threadName = "logger.thread_name"
+        static let loggerName = "logger.name"
+        static let loggerVersion = "logger.version"
+        static let threadName = "logger.thread_name"
 
         // MARK: - User info
 
-        public static let userId = "usr.id"
-        public static let userName = "usr.name"
-        public static let userEmail = "usr.email"
+        static let userId = "usr.id"
+        static let userName = "usr.name"
+        static let userEmail = "usr.email"
 
         // MARK: - Network connection info
 
-        public static let networkReachability = "network.client.reachability"
-        public static let networkAvailableInterfaces = "network.client.available_interfaces"
-        public static let networkConnectionSupportsIPv4 = "network.client.supports_ipv4"
-        public static let networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
-        public static let networkConnectionIsExpensive = "network.client.is_expensive"
-        public static let networkConnectionIsConstrained = "network.client.is_constrained"
+        static let networkReachability = "network.client.reachability"
+        static let networkAvailableInterfaces = "network.client.available_interfaces"
+        static let networkConnectionSupportsIPv4 = "network.client.supports_ipv4"
+        static let networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
+        static let networkConnectionIsExpensive = "network.client.is_expensive"
+        static let networkConnectionIsConstrained = "network.client.is_constrained"
 
         // MARK: - Mobile carrier info
 
-        public static let mobileNetworkCarrierName = "network.client.sim_carrier.name"
-        public static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
-        public static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
-        public static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
+        static let mobileNetworkCarrierName = "network.client.sim_carrier.name"
+        static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
+        static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
+        static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
     }
 
     /// Allowed values for `network.client.available_interfaces` attribute.
-    public static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
+    static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
     /// Allowed values for `network.client.reachability` attribute.
-    public static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
+    static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
 
     private let json: [String: Any]
 
     // MARK: - Initialization
 
-    public init(from json: [String: Any]) {
-        self.json = json
+    static func fromJSONObjectData(_ data: Data) throws -> LogMatcher {
+        return self.init(from: try data.toJSONObject())
     }
 
-    public init(from data: Data) throws {
-        self.init(from: try data.toJSONObject())
+    static func fromArrayOfJSONObjectsData(_ data: Data) throws -> [LogMatcher] {
+        return try data.toArrayOfJSONObjects()
+            .map { jsonObject in self.init(from: jsonObject) }
     }
+
+    private init(from jsonObject: [String: Any]) {
+        self.json = jsonObject
+    }
+
 
     // MARK: Full match
 
-    public func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {
+    func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {
         let thisJSON = json as NSDictionary
         let theirJSON = try jsonString.data(using: .utf8)!.toJSONObject() as NSDictionary // swiftlint:disable:this force_unwrapping
 
@@ -79,7 +85,7 @@ public struct LogMatcher {
 
     // MARK: Partial matches
 
-    public func assertDate(matches datePredicate: (Date) -> Bool, file: StaticString = #file, line: UInt = #line) {
+    func assertDate(matches datePredicate: (Date) -> Bool, file: StaticString = #file, line: UInt = #line) {
         guard let dateString = json[JSONKey.date] as? String else {
             XCTFail("Cannot decode date from log JSON: \(json).", file: file, line: line)
             return
@@ -91,35 +97,35 @@ public struct LogMatcher {
         XCTAssertTrue(datePredicate(date), file: file, line: line)
     }
 
-    public func assertServiceName(equals serviceName: String, file: StaticString = #file, line: UInt = #line) {
+    func assertServiceName(equals serviceName: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.serviceName, equals: serviceName, file: file, line: line)
     }
 
-    public func assertThreadName(equals threadName: String, file: StaticString = #file, line: UInt = #line) {
+    func assertThreadName(equals threadName: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.threadName, equals: threadName, file: file, line: line)
     }
 
-    public func assertLoggerName(equals loggerName: String, file: StaticString = #file, line: UInt = #line) {
+    func assertLoggerName(equals loggerName: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.loggerName, equals: loggerName, file: file, line: line)
     }
 
-    public func assertLoggerVersion(matches matcherClosure: (String) -> Bool, file: StaticString = #file, line: UInt = #line) {
+    func assertLoggerVersion(matches matcherClosure: (String) -> Bool, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKeyPath: JSONKey.loggerVersion, matches: matcherClosure, file: file, line: line)
     }
 
-    public func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
+    func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.applicationVersion, equals: applicationVersion, file: file, line: line)
     }
 
-    public func assertStatus(equals status: String, file: StaticString = #file, line: UInt = #line) {
+    func assertStatus(equals status: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.status, equals: status, file: file, line: line)
     }
 
-    public func assertMessage(equals message: String, file: StaticString = #file, line: UInt = #line) {
+    func assertMessage(equals message: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.message, equals: message, file: file, line: line)
     }
 
-    public func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {
+    func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {
         if let id = userInfo?.id { // swiftlint:disable:this identifier_name
             assertValue(forKey: JSONKey.userId, equals: id, file: file, line: line)
         } else {
@@ -137,7 +143,7 @@ public struct LogMatcher {
         }
     }
 
-    public func assertAttributes(equal attributes: [String: Any], file: StaticString = #file, line: UInt = #line) {
+    func assertAttributes(equal attributes: [String: Any], file: StaticString = #file, line: UInt = #line) {
         attributes.forEach { key, value in
             switch json[key] {
             case is String:
@@ -154,7 +160,7 @@ public struct LogMatcher {
         }
     }
 
-    public func assertTags(equal tags: [String], file: StaticString = #file, line: UInt = #line) {
+    func assertTags(equal tags: [String], file: StaticString = #file, line: UInt = #line) {
         guard let tagsString = json[JSONKey.tags] as? String else {
             XCTFail("Cannot decode date from log JSON: \(json).", file: file, line: line)
             return
@@ -168,15 +174,15 @@ public struct LogMatcher {
 
     // MARK: - Generic matches
 
-    public func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
+    func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(json[key] as? T, value, file: file, line: line)
     }
 
-    public func assertNoValue(forKey key: String, file: StaticString = #file, line: UInt = #line) {
+    func assertNoValue(forKey key: String, file: StaticString = #file, line: UInt = #line) {
         XCTAssertNil(json[key], file: file, line: line)
     }
 
-    public func assertValue<T: Equatable>(forKeyPath keyPath: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
+    func assertValue<T: Equatable>(forKeyPath keyPath: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
         let dictionary = json as NSDictionary
         let dictionaryValue = dictionary.value(forKeyPath: keyPath)
         guard let jsonValue = dictionaryValue as? T else {
@@ -186,12 +192,12 @@ public struct LogMatcher {
         XCTAssertEqual(jsonValue, value, file: file, line: line)
     }
 
-    public func assertNoValue(forKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
+    func assertNoValue(forKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
         let dictionary = json as NSDictionary
         XCTAssertNil(dictionary.value(forKeyPath: keyPath), file: file, line: line)
     }
 
-    public func assertValue<T: Equatable>(
+    func assertValue<T: Equatable>(
         forKeyPath keyPath: String,
         matches matcherClosure: (T) -> Bool,
         file: StaticString = #file,
@@ -211,7 +217,7 @@ public struct LogMatcher {
         XCTAssertTrue(matcherClosure(jsonValue), file: file, line: line)
     }
 
-    public func assertValue<T>(
+    func assertValue<T>(
         forKeyPath keyPath: String,
         isTypeOf type: T.Type,
         file: StaticString = #file,
@@ -220,5 +226,25 @@ public struct LogMatcher {
         let dictionary = json as NSDictionary
         let dictionaryValue = dictionary.value(forKeyPath: keyPath)
         XCTAssertTrue((dictionaryValue as? T) != nil, file: file, line: line)
+    }
+}
+
+private extension Data {
+    func toArrayOfJSONObjects(file: StaticString = #file, line: UInt = #line) throws -> [[String: Any]] {
+        guard let jsonArray = try? JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]] else {
+            XCTFail("Cannot decode array of JSON objects from data.", file: file, line: line)
+            return []
+        }
+
+        return jsonArray
+    }
+
+    func toJSONObject(file: StaticString = #file, line: UInt = #line) throws -> [String: Any] {
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: self, options: []) as? [String: Any] else {
+            XCTFail("Cannot decode JSON object from given data.", file: file, line: line)
+            return [:]
+        }
+
+        return jsonObject
     }
 }

@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import DatadogTestHelpers
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets trailing_closure
@@ -41,7 +40,7 @@ class LogConsoleOutputTests: XCTestCase {
             printingFunction: { messagePrinted = $0 }
         )
         output1.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
-        try LogMatcher(from: messagePrinted.utf8Data)
+        try LogMatcher.fromJSONObjectData(messagePrinted.utf8Data)
             .assertMessage(equals: "Info message.")
 
         let output2 = LogConsoleOutput(
@@ -51,7 +50,7 @@ class LogConsoleOutputTests: XCTestCase {
         )
         output2.writeLogWith(level: .info, message: "Info message.", attributes: [:], tags: [])
         XCTAssertTrue(messagePrinted.hasPrefix("🐶 → "))
-        try LogMatcher(from: messagePrinted.removingPrefix("🐶 → ").utf8Data)
+        try LogMatcher.fromJSONObjectData(messagePrinted.removingPrefix("🐶 → ").utf8Data)
             .assertMessage(equals: "Info message.")
     }
 }
