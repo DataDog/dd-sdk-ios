@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6108B99524168DD7002CA6DF /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 6108B99424168DD7002CA6DF /* Datadog */; };
 		611435C923F16CF00090CCE5 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611435C823F16CF00090CCE5 /* ConsoleOutputInterceptor.swift */; };
-		617AA3B723D0AFA90073EC69 /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 617AA3B623D0AFA90073EC69 /* Datadog */; };
 		617AA3DB23D0B0700073EC69 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617AA3CF23D0B0700073EC69 /* Assets.xcassets */; };
 		617AA3DC23D0B0700073EC69 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D023D0B0700073EC69 /* ExampleAppConfig.swift */; };
 		617AA3DD23D0B0700073EC69 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */; };
@@ -34,7 +34,6 @@
 /* Begin PBXFileReference section */
 		611435C823F16CF00090CCE5 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
 		617AA39D23D0AF250073EC69 /* iOS-app-example-spm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS-app-example-spm.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../..; sourceTree = "<group>"; };
 		617AA3CF23D0B0700073EC69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		617AA3D023D0B0700073EC69 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
 		617AA3D223D0B0700073EC69 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
@@ -55,7 +54,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				617AA3B723D0AFA90073EC69 /* Datadog in Frameworks */,
+				6108B99524168DD7002CA6DF /* Datadog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,7 +71,6 @@
 		617AA39423D0AF250073EC69 = {
 			isa = PBXGroup;
 			children = (
-				617AA3B423D0AF9E0073EC69 /* dd-sdk-ios */,
 				617AA3E423D0B6940073EC69 /* Config */,
 				617AA39F23D0AF250073EC69 /* iOS-app-example-spm */,
 				617AA40223D10AF50073EC69 /* iOS-app-example-spm-UITests */,
@@ -174,7 +172,7 @@
 			);
 			name = "iOS-app-example-spm";
 			packageProductDependencies = (
-				617AA3B623D0AFA90073EC69 /* Datadog */,
+				6108B99424168DD7002CA6DF /* Datadog */,
 			);
 			productName = "iOS-app-example-spm";
 			productReference = 617AA39D23D0AF250073EC69 /* iOS-app-example-spm.app */;
@@ -226,6 +224,9 @@
 				Base,
 			);
 			mainGroup = 617AA39423D0AF250073EC69;
+			packageReferences = (
+				6108B99324168DD7002CA6DF /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
+			);
 			productRefGroup = 617AA39E23D0AF250073EC69 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -527,9 +528,21 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		6108B99324168DD7002CA6DF /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		617AA3B623D0AFA90073EC69 /* Datadog */ = {
+		6108B99424168DD7002CA6DF /* Datadog */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 6108B99324168DD7002CA6DF /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = Datadog;
 		};
 /* End XCSwiftPackageProductDependency section */
