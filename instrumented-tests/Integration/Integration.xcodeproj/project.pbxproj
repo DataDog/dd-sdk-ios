@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6108B98124165E4E002CA6DF /* LogMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6108B98024165E4D002CA6DF /* LogMatcher.swift */; };
 		610CCB77240527F100C4FE79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610CCB76240527F100C4FE79 /* AppDelegate.swift */; };
 		610CCB79240527F100C4FE79 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610CCB78240527F100C4FE79 /* SceneDelegate.swift */; };
 		610CCB7E240527F100C4FE79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 610CCB7C240527F100C4FE79 /* Main.storyboard */; };
@@ -28,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6108B98024165E4D002CA6DF /* LogMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogMatcher.swift; sourceTree = "<group>"; };
 		610CCB73240527F100C4FE79 /* Integration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Integration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		610CCB76240527F100C4FE79 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		610CCB78240527F100C4FE79 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -61,6 +63,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6108B97F24165E4D002CA6DF /* Matchers */ = {
+			isa = PBXGroup;
+			children = (
+				6108B98024165E4D002CA6DF /* LogMatcher.swift */,
+			);
+			name = Matchers;
+			path = ../../../Tests/DatadogTests/Matchers;
+			sourceTree = "<group>";
+		};
 		610CCB6A240527F100C4FE79 = {
 			isa = PBXGroup;
 			children = (
@@ -96,6 +107,7 @@
 		610CCB8C240527F300C4FE79 /* IntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				6108B97F24165E4D002CA6DF /* Matchers */,
 				61999ECA24071AB70094866C /* LoggingIntegrationTests.swift */,
 				610CCB8D240527F300C4FE79 /* IntegrationTests.swift */,
 				610CCB8F240527F300C4FE79 /* Info.plist */,
@@ -255,6 +267,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61999ECB24071AB70094866C /* LoggingIntegrationTests.swift in Sources */,
+				6108B98124165E4E002CA6DF /* LogMatcher.swift in Sources */,
 				610CCB8E240527F300C4FE79 /* IntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

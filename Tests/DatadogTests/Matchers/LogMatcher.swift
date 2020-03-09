@@ -6,7 +6,8 @@
 
 import XCTest
 
-/// Matcher providing assertions for Log's JSON.
+/// Provides set of assertions for Log JSON object.
+/// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
 struct LogMatcher {
     private static let dateFormatter = ISO8601DateFormatter()
 
