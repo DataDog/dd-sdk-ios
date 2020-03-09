@@ -30,3 +30,7 @@ examples:
 		@echo "⚙️  Generating 'examples/examples-secret.xcconfig' file..."
 		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
+
+# Tests if current branch ships a valid SPM package.
+test-spm:
+	@cd dependency-manager-tests/spm && $(MAKE)

@@ -11,7 +11,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/DataDog/dd-sdk-ios",
-            .branch("ncreated/RUMM-279-fix-spm-installation")
+            .branch("REMOTE_GIT_BRANCH")
         )
     ],
     targets: [

@@ -4,5 +4,6 @@
 /*.xcodeproj
 xcuserdata/
 
-# Ignore `Package.resolved` file as it will be different for every branch that runs the test.
+# Ignore `Package.resolved` and `Package.swift` as they will be re-created for every test run.
 Package.resolved
+Package.swift
