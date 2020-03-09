@@ -874,6 +874,12 @@ class DatadogInstanceMock {
         return self
     }
 
+    /// Verifies given block without running `run()` and `wait()`.
+    func verifyBlock(closure: @escaping () throws -> Void) throws -> DatadogInstanceMock {
+        try closure()
+        return self
+    }
+
     func destroy() throws {
         try Datadog.deinitializeOrThrow()
     }

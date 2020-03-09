@@ -373,51 +373,6 @@ class LoggerTests: XCTestCase {
             .destroy()
     }
 
-    // MARK: - Customizing outputs
-
-    func testUsingDifferentOutputs() throws {
-        Datadog.instance = .mockNeverPerformingUploads()
-
-        assertThat(
-            logger: Logger.builder.build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).build(),
-            usesOutput: NoOpLogOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.printLogsToConsole(true).build(),
-            usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build(),
-            usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build(),
-            usesOutput: LogConsoleOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.printLogsToConsole(false).build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(),
-            usesOutput: NoOpLogOutput.self
-        )
-
-        try Datadog.deinitializeOrThrow()
-    }
-
     // MARK: - Sending logs with different network and battery conditions
 
     func testGivenBadBatteryConditions_itDoesntTryToSendLogs() throws {
@@ -452,39 +407,5 @@ class LoggerTests: XCTestCase {
             .waitUntil(numberOfLogsSent: 1)
             .verifyNoLogsSent()
             .destroy()
-    }
-
-    // MARK: - Initialization
-
-    func testGivenDatadogNotInitialized_whenBuildingLogger_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let logger = Logger.builder.build()
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
-        )
-        assertThat(logger: logger, usesOutput: NoOpLogOutput.self)
-    }
-
-    // MARK: - Helpers
-
-    private func assertThat(logger: Logger, usesOutput outputType: LogOutput.Type, file: StaticString = #file, line: UInt = #line) {
-        XCTAssertTrue(type(of: logger.logOutput) == outputType, file: file, line: line)
-    }
-
-    private func assertThat(logger: Logger, usesCombinedOutputs outputTypes: [LogOutput.Type], file: StaticString = #file, line: UInt = #line) {
-        if let combinedOutputs = (logger.logOutput as? CombinedLogOutput)?.combinedOutputs {
-            XCTAssertEqual(outputTypes.count, combinedOutputs.count, file: file, line: line)
-            outputTypes.forEach { outputType in
-                XCTAssertTrue(combinedOutputs.contains { type(of: $0) == outputType }, file: file, line: line)
-            }
-        } else {
-            XCTFail(file: file, line: line)
-        }
     }
 }
