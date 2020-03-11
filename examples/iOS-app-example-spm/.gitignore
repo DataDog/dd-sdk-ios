@@ -1,2 +1,5 @@
 xcuserdata/
 build/
+
+# Ignore `Package.resolved` file to always depend on recent `master`
+Package.resolved

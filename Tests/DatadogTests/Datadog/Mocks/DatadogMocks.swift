@@ -6,7 +6,6 @@
 
 import Foundation
 import XCTest
-import DatadogTestHelpers
 @testable import Datadog
 
 /*
@@ -845,8 +844,7 @@ class DatadogInstanceMock {
 
         let logMatchers = try requestsRecorder.requestsSent
             .map { request in try request.httpBody.unwrapOrThrow() }
-            .flatMap { requestBody in try requestBody.toArrayOfJSONObjects() }
-            .map { jsonObject in LogMatcher(from: jsonObject) }
+            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
 
         try closure(logMatchers)
 

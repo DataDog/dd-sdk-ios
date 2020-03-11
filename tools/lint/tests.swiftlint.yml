@@ -79,5 +79,4 @@ included:
   - Tests
   - instrumented-tests/Integration/IntegrationTests
   - instrumented-tests/Benchmark/BenchmarkTests
-  - http-server-mock/Tests
-  - datadog-test-helpers/Tests
+  - instrumented-tests/http-server-mock/Tests

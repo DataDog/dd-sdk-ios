@@ -1,4 +1,4 @@
-all: dependencies xcodeproj-sdk xcodeproj-httpservermock xcodeproj-testhelpers templates examples
+all: dependencies xcodeproj-sdk xcodeproj-httpservermock templates examples
 .PHONY : examples
 
 dependencies:
@@ -18,13 +18,8 @@ endif
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
-		@cd http-server-mock/ && swift package generate-xcodeproj
+		@cd instrumented-tests/http-server-mock/ && swift package generate-xcodeproj
 		@echo "OK 👌"
-
-xcodeproj-testhelpers:
-		@echo "⚙️  Generating 'DatadogTestHelpers.xcodeproj'..."
-		@cd datadog-test-helpers/ && swift package generate-xcodeproj
-		@echo "OK 👌"	
 
 templates:
 		@echo "⚙️  Installing Xcode templates..."
@@ -35,3 +30,7 @@ examples:
 		@echo "⚙️  Generating 'examples/examples-secret.xcconfig' file..."
 		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
+
+# Tests if current branch ships a valid SPM package.
+test-spm:
+	@cd dependency-manager-tests/spm && $(MAKE)

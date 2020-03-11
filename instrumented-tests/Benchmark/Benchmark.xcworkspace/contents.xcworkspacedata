@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../../http-server-mock">
+      location = "group:../http-server-mock">
    </FileRef>
    <FileRef
       location = "group:../../Datadog.xcodeproj">

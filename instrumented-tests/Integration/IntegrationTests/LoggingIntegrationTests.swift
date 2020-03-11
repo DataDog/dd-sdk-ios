@@ -5,11 +5,15 @@
  */
 
 import Datadog
-import DatadogTestHelpers
 import HTTPServerMock
 import XCTest
 
 class LoggingIntegrationTests: IntegrationTests {
+    private struct Constants {
+        /// Time needed for logs to be uploaded to mock server.
+        static let logsDeliveryTime: TimeInterval = 30
+    }
+
     // swiftlint:disable trailing_closure
     func testLogsAreUploadedToServer() throws {
         let serverSession = server.obtainUniqueRecordingSession()
@@ -43,7 +47,7 @@ class LoggingIntegrationTests: IntegrationTests {
         logger.critical("critical message", attributes: ["attribute": "value"])
 
         // Wait for delivery
-        Thread.sleep(forTimeInterval: 30)
+        Thread.sleep(forTimeInterval: Constants.logsDeliveryTime)
 
         // Assert
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
@@ -52,8 +56,7 @@ class LoggingIntegrationTests: IntegrationTests {
         }
 
         let logMatchers = try recordedRequests
-            .flatMap { request in try request.httpBody.toArrayOfJSONObjects() }
-            .map { jsonObject in LogMatcher(from: jsonObject) }
+            .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
 
         logMatchers[0].assertStatus(equals: "DEBUG")
         logMatchers[0].assertMessage(equals: "debug message")
@@ -74,7 +77,7 @@ class LoggingIntegrationTests: IntegrationTests {
         logMatchers[5].assertMessage(equals: "critical message")
 
         logMatchers.forEach { matcher in
-            matcher.assertDate(matches: { $0.isNotOlderThan(seconds: 60) })
+            matcher.assertDate(matches: { Date().timeIntervalSince($0) < Constants.logsDeliveryTime * 2 })
             matcher.assertServiceName(equals: "service-name")
             matcher.assertLoggerName(equals: "logger-name")
             matcher.assertLoggerVersion(matches: { version in version.split(separator: ".").count == 3 })
