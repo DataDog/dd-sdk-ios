@@ -311,7 +311,7 @@ extension NetworkConnectionInfo {
 }
 
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
-    let current: NetworkConnectionInfo
+    var current: NetworkConnectionInfo
 
     init(networkConnectionInfo: NetworkConnectionInfo) {
         self.current = networkConnectionInfo
@@ -871,6 +871,12 @@ class DatadogInstanceMock {
             XCTFail("\(requestsRecorder.requestsSent.count) requests were / was sent. ", file: file, line: line)
         }
 
+        return self
+    }
+
+    /// Verifies given block without running `run()` and `wait()`.
+    func verifyBlock(closure: @escaping () throws -> Void) throws -> DatadogInstanceMock {
+        try closure()
         return self
     }
 

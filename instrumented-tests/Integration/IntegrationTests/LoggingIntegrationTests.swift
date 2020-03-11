@@ -30,6 +30,7 @@ class LoggingIntegrationTests: IntegrationTests {
         let logger = Logger.builder
             .set(serviceName: "service-name")
             .set(loggerName: "logger-name")
+            .sendNetworkInfo(true)
             .build()
 
         // Send logs

@@ -242,6 +242,7 @@ public class Logger {
     public class Builder {
         private var serviceName: String = "ios"
         private var loggerName: String?
+        private var sendNetworkInfo: Bool = false
         private var useFileOutput = true
         private var useConsoleLogFormat: ConsoleLogFormat?
 
@@ -256,6 +257,15 @@ public class Logger {
         /// - Parameter loggerName: the logger custom name (default value is set to main bundle identifier)
         public func set(loggerName: String) -> Builder {
             self.loggerName = loggerName
+            return self
+        }
+
+        /// Enriches logs with network connection info.
+        /// This means: reachability status, connection type, mobile carrier name and many more will be added to each log.
+        /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
+        /// - Parameter enabled: `false` by default
+        public func sendNetworkInfo(_ enabled: Bool) -> Builder {
+            sendNetworkInfo = true
             return self
         }
 
@@ -316,8 +326,8 @@ public class Logger {
                 loggerName: loggerName ?? datadog.appContext.bundleIdentifier ?? "",
                 dateProvider: datadog.dateProvider,
                 userInfoProvider: datadog.userInfoProvider,
-                networkConnectionInfoProvider: datadog.networkConnectionInfoProvider,
-                carrierInfoProvider: datadog.carrierInfoProvider
+                networkConnectionInfoProvider: sendNetworkInfo ? datadog.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: sendNetworkInfo ? datadog.carrierInfoProvider : nil
             )
 
             switch (useFileOutput, useConsoleLogFormat) {

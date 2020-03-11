@@ -26,7 +26,7 @@ internal struct Log: Encodable {
     let threadName: String
     let applicationVersion: String
     let userInfo: UserInfo
-    let networkConnectionInfo: NetworkConnectionInfo
+    let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
     let attributes: [String: EncodableValue]?
     let tags: [String]?
@@ -110,13 +110,15 @@ internal struct LogEncoder {
         try log.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
 
         // Encode network info
-        try container.encode(log.networkConnectionInfo.reachability, forKey: .networkReachability)
-        try container.encode(log.networkConnectionInfo.availableInterfaces, forKey: .networkAvailableInterfaces)
-        try container.encode(log.networkConnectionInfo.supportsIPv4, forKey: .networkConnectionSupportsIPv4)
-        try container.encode(log.networkConnectionInfo.supportsIPv6, forKey: .networkConnectionSupportsIPv6)
-        try container.encode(log.networkConnectionInfo.isExpensive, forKey: .networkConnectionIsExpensive)
-        try log.networkConnectionInfo.isConstrained.ifNotNil {
-            try container.encode($0, forKey: .networkConnectionIsConstrained)
+        if let networkConnectionInfo = log.networkConnectionInfo {
+            try container.encode(networkConnectionInfo.reachability, forKey: .networkReachability)
+            try container.encode(networkConnectionInfo.availableInterfaces, forKey: .networkAvailableInterfaces)
+            try container.encode(networkConnectionInfo.supportsIPv4, forKey: .networkConnectionSupportsIPv4)
+            try container.encode(networkConnectionInfo.supportsIPv6, forKey: .networkConnectionSupportsIPv6)
+            try container.encode(networkConnectionInfo.isExpensive, forKey: .networkConnectionIsExpensive)
+            try networkConnectionInfo.isConstrained.ifNotNil {
+                try container.encode($0, forKey: .networkConnectionIsConstrained)
+            }
         }
 
         // Encode mobile carrier info

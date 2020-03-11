@@ -129,6 +129,10 @@ public class DDLoggerBuilder: NSObject {
         _ = sdkBuilder.set(loggerName: loggerName)
     }
 
+    public func sendNetworkInfo(_ enabled: Bool) {
+        _ = sdkBuilder.sendNetworkInfo(enabled)
+    }
+
     public func sendLogsToDatadog(_ enabled: Bool) {
         _ = sdkBuilder.sendLogsToDatadog(enabled)
     }

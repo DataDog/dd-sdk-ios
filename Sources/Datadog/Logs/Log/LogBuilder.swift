@@ -18,9 +18,9 @@ internal struct LogBuilder {
     let dateProvider: DateProvider
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
-    /// Shared network connection info provider.
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    /// Shared mobile carrier info provider (or `nil` if not available on current platform).
+    /// Shared network connection info provider (or `nil` if disabled for given logger).
+    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
+    /// Shared mobile carrier info provider (or `nil` if not available on current platform or disabled for given logger).
     let carrierInfoProvider: CarrierInfoProviderType?
 
     func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) -> Log {
@@ -38,7 +38,7 @@ internal struct LogBuilder {
             threadName: getCurrentThreadName(),
             applicationVersion: getApplicationVersion(),
             userInfo: userInfoProvider.value,
-            networkConnectionInfo: networkConnectionInfoProvider.current,
+            networkConnectionInfo: networkConnectionInfoProvider?.current,
             mobileCarrierInfo: carrierInfoProvider?.current,
             attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
             tags: !tags.isEmpty ? Array(tags) : nil
