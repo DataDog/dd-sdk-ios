@@ -408,4 +408,31 @@ class LoggerTests: XCTestCase {
             .verifyNoLogsSent()
             .destroy()
     }
+
+    // MARK: - Thread safety
+
+    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
+        Datadog.instance = .mockNeverPerformingUploads()
+        let logger = Logger.builder.build()
+
+        DispatchQueue.concurrentPerform(iterations: 900) { iteration in
+            let modulo = iteration % 3
+
+            switch modulo {
+            case 0:
+                logger.debug("message")
+                logger.debug("message", attributes: ["attribute": "value"])
+            case 1:
+                logger.addAttribute(forKey: "att\(modulo)", value: "value")
+                logger.addTag(withKey: "t\(modulo)", value: "value")
+            case 2:
+                logger.removeAttribute(forKey: "att\(modulo)")
+                logger.removeTag(withKey: "att\(modulo)")
+            default:
+                break
+            }
+        }
+
+        Datadog.instance = nil
+    }
 }
