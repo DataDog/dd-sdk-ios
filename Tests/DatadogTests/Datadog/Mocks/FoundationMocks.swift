@@ -195,21 +195,28 @@ private class URLSessionDataTaskReferences {
 /// Records requests passed to `URLSessionMock`.
 class URLSessionRequestRecorder {
     private var requests: [URLRequest] = []
+    private let queue = DispatchQueue(label: "queue-URLSessionRequestRecorder-\(UUID().uuidString)")
 
     /// Closure called immediately after new request is recorded.
     var onNewRequest: ((URLRequest) -> Void)?
 
     func record(request: URLRequest) {
-        requests.append(request)
-        onNewRequest?(request)
+        queue.async {
+            self.requests.append(request)
+            self.onNewRequest?(request)
+        }
     }
 
     var requestsSent: [URLRequest] {
-        requests
+        queue.sync {
+            requests
+        }
     }
 
     func containsRequestWith(body: Data) -> Bool {
-        return requests.contains { $0.httpBody == body }
+        queue.sync {
+            requests.contains { $0.httpBody == body }
+        }
     }
 }
 

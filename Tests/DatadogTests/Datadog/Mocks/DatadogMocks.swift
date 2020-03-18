@@ -28,6 +28,7 @@ extension String {
 class RelativeDateProvider: DateProvider {
     private(set) var date: Date
     internal let timeInterval: TimeInterval
+    private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
 
     init(using date: Date = Date()) {
         self.date = date
@@ -41,13 +42,21 @@ class RelativeDateProvider: DateProvider {
 
     /// Returns current date and advances next date by `timeInterval`.
     func currentDate() -> Date {
-        defer { date.addTimeInterval(timeInterval) }
-        return date
+        defer {
+            queue.async {
+                self.date.addTimeInterval(self.timeInterval)
+            }
+        }
+        return queue.sync {
+            return date
+        }
     }
 
     /// Pushes time forward by given number of seconds.
     func advance(bySeconds seconds: TimeInterval) {
-        date = date.addingTimeInterval(seconds)
+        queue.async {
+            self.date = self.date.addingTimeInterval(seconds)
+        }
     }
 }
 
