@@ -69,10 +69,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(
-            logOutput: output,
-            queue: DispatchQueue(label: "com.datadoghq.logger-sdk-user")
-        )
+        userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
         let writer = FileWriter(
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),

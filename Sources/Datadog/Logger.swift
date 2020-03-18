@@ -83,9 +83,9 @@ public class Logger {
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
 
-    init(logOutput: LogOutput, queue: DispatchQueue) {
+    init(logOutput: LogOutput, identifier: String) {
         self.logOutput = logOutput
-        self.queue = queue
+        self.queue = DispatchQueue(label: "com.datadoghq.logger-\(identifier)", qos: .userInteractive)
     }
 
     // MARK: - Logging
@@ -329,7 +329,7 @@ public class Logger {
                 consolePrint("🔥 \(error)")
                 return Logger(
                     logOutput: NoOpLogOutput(),
-                    queue: DispatchQueue(label: "com.datadoghq.logger-noop")
+                    identifier: "no-op"
                 )
             }
         }
@@ -341,7 +341,7 @@ public class Logger {
 
             return Logger(
                 logOutput: resolveLogsOutput(using: datadog),
-                queue: resolveSynchronizationQueue(using: datadog)
+                identifier: resolveLoggerName(using: datadog)
             )
         }
 
@@ -387,11 +387,6 @@ public class Logger {
 
         private func resolveLoggerName(using datadog: Datadog) -> String {
             return loggerName ?? datadog.appContext.bundleIdentifier ?? ""
-        }
-
-        private func resolveSynchronizationQueue(using datadog: Datadog) -> DispatchQueue {
-            let loggerName = resolveLoggerName(using: datadog)
-            return DispatchQueue(label: "com.datadoghq.logger-\(loggerName)", qos: .userInteractive)
         }
     }
 }

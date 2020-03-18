@@ -48,10 +48,7 @@ internal func createSDKDeveloperLogger(
         timeFormatter: timeFormatter
     )
 
-    return Logger(
-        logOutput: consoleOutput,
-        queue: DispatchQueue(label: "com.datadoghq.logger-sdk-dev")
-    )
+    return Logger(logOutput: consoleOutput, identifier: "sdk-developer")
 }
 
 internal func createSDKUserLogger(
@@ -60,10 +57,7 @@ internal func createSDKUserLogger(
     timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
     guard let datadog = Datadog.instance else {
-        return Logger(
-            logOutput: NoOpLogOutput(),
-            queue: DispatchQueue(label: "com.datadoghq.logger-noop")
-        )
+        return Logger(logOutput: NoOpLogOutput(), identifier: "no-op")
     }
 
     let consoleOutput = LogConsoleOutput(
@@ -85,6 +79,6 @@ internal func createSDKUserLogger(
         logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { logLevel in
             logLevel.rawValue >= (Datadog.verbosityLevel?.rawValue ?? .max)
         },
-        queue: DispatchQueue(label: "com.datadoghq.logger-sdk-user")
+        identifier: "sdk-user"
     )
 }
