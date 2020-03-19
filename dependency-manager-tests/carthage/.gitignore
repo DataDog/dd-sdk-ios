@@ -1,0 +1,6 @@
+.DS_Store
+/Carthage
+
+# Ignore `Cartfile.resolved` and `Cartfile` as they will be re-created for every test run.
+Cartfile.resolved
+Cartfile
