@@ -1,0 +1,1185 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		61133B8C242393DE00786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
+		61133B93242393DE00786299 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		61133BCA2423979B00786299 /* EncodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* EncodableValue.swift */; };
+		61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA22423979B00786299 /* CarrierInfoProvider.swift */; };
+		61133BCC2423979B00786299 /* MobileDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA32423979B00786299 /* MobileDevice.swift */; };
+		61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */; };
+		61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA52423979B00786299 /* BatteryStatusProvider.swift */; };
+		61133BCF2423979B00786299 /* FileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA72423979B00786299 /* FileWriter.swift */; };
+		61133BD02423979B00786299 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA82423979B00786299 /* DateProvider.swift */; };
+		61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA92423979B00786299 /* FilesOrchestrator.swift */; };
+		61133BD22423979B00786299 /* Directory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAB2423979B00786299 /* Directory.swift */; };
+		61133BD32423979B00786299 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAC2423979B00786299 /* File.swift */; };
+		61133BD42423979B00786299 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAD2423979B00786299 /* FileReader.swift */; };
+		61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAF2423979B00786299 /* DataUploadConditions.swift */; };
+		61133BD62423979B00786299 /* DataUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB02423979B00786299 /* DataUploader.swift */; };
+		61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB12423979B00786299 /* DataUploadWorker.swift */; };
+		61133BD82423979B00786299 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB22423979B00786299 /* HTTPClient.swift */; };
+		61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB32423979B00786299 /* DataUploadDelay.swift */; };
+		61133BDA2423979B00786299 /* HTTPHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB42423979B00786299 /* HTTPHeaders.swift */; };
+		61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB52423979B00786299 /* DatadogConfiguration.swift */; };
+		61133BDC2423979B00786299 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB62423979B00786299 /* Logger.swift */; };
+		61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB82423979B00786299 /* InternalLoggers.swift */; };
+		61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB92423979B00786299 /* CompilationConditions.swift */; };
+		61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBA2423979B00786299 /* SwiftExtensions.swift */; };
+		61133BE02423979B00786299 /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBB2423979B00786299 /* Datadog.swift */; };
+		61133BE12423979B00786299 /* LogsUploadStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBD2423979B00786299 /* LogsUploadStrategy.swift */; };
+		61133BE22423979B00786299 /* LogsPersistenceStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBE2423979B00786299 /* LogsPersistenceStrategy.swift */; };
+		61133BE32423979B00786299 /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC02423979B00786299 /* UserInfo.swift */; };
+		61133BE42423979B00786299 /* LogEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC22423979B00786299 /* LogEncoder.swift */; };
+		61133BE52423979B00786299 /* LogBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC32423979B00786299 /* LogBuilder.swift */; };
+		61133BE62423979B00786299 /* LogSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC42423979B00786299 /* LogSanitizer.swift */; };
+		61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC62423979B00786299 /* LogUtilityOutputs.swift */; };
+		61133BE82423979B00786299 /* LogFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC72423979B00786299 /* LogFileOutput.swift */; };
+		61133BE92423979B00786299 /* LogOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC82423979B00786299 /* LogOutput.swift */; };
+		61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC92423979B00786299 /* LogConsoleOutput.swift */; };
+		61133C00242397DA00786299 /* DatadogObjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133BF2242397DA00786299 /* DatadogObjc.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		61133C0E2423983800786299 /* Datadog+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C092423983800786299 /* Datadog+objc.swift */; };
+		61133C0F2423983800786299 /* AnyEncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C0B2423983800786299 /* AnyEncodable.swift */; };
+		61133C102423983800786299 /* Logger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C0C2423983800786299 /* Logger+objc.swift */; };
+		61133C112423983800786299 /* DatadogConfiguration+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C0D2423983800786299 /* DatadogConfiguration+objc.swift */; };
+		61133C482423990D00786299 /* DDDatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C142423990D00786299 /* DDDatadogTests.swift */; };
+		61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C152423990D00786299 /* DDLoggerBuilderTests.swift */; };
+		61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C162423990D00786299 /* DDConfigurationTests.swift */; };
+		61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C172423990D00786299 /* DDLoggerTests.swift */; };
+		61133C4C2423990D00786299 /* LogsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1A2423990D00786299 /* LogsMocks.swift */; };
+		61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */; };
+		61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1C2423990D00786299 /* UIKitMocks.swift */; };
+		61133C4F2423990D00786299 /* DatadogObjcMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1D2423990D00786299 /* DatadogObjcMocks.swift */; };
+		61133C502423990D00786299 /* NetworkMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1E2423990D00786299 /* NetworkMocks.swift */; };
+		61133C512423990D00786299 /* DatadogMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1F2423990D00786299 /* DatadogMocks.swift */; };
+		61133C522423990D00786299 /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
+		61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C232423990D00786299 /* MobileDeviceTests.swift */; };
+		61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C242423990D00786299 /* NetworkConnectionInfoProviderTests.swift */; };
+		61133C552423990D00786299 /* BatteryStatusProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C252423990D00786299 /* BatteryStatusProviderTests.swift */; };
+		61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C262423990D00786299 /* CarrierInfoProviderTests.swift */; };
+		61133C572423990D00786299 /* FileReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C282423990D00786299 /* FileReaderTests.swift */; };
+		61133C582423990D00786299 /* FileWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C292423990D00786299 /* FileWriterTests.swift */; };
+		61133C592423990D00786299 /* FilesOrchestratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */; };
+		61133C5A2423990D00786299 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C2C2423990D00786299 /* FileTests.swift */; };
+		61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C2D2423990D00786299 /* DirectoryTests.swift */; };
+		61133C5C2423990D00786299 /* DataUploadWorkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C2F2423990D00786299 /* DataUploadWorkerTests.swift */; };
+		61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C302423990D00786299 /* DataUploadConditionsTests.swift */; };
+		61133C5E2423990D00786299 /* LogsUploadDelayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C312423990D00786299 /* LogsUploadDelayTests.swift */; };
+		61133C5F2423990D00786299 /* DataUploaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C322423990D00786299 /* DataUploaderTests.swift */; };
+		61133C602423990D00786299 /* HTTPHeadersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C332423990D00786299 /* HTTPHeadersTests.swift */; };
+		61133C612423990D00786299 /* HTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C342423990D00786299 /* HTTPClientTests.swift */; };
+		61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C362423990D00786299 /* InternalLoggersTests.swift */; };
+		61133C632423990D00786299 /* DatadogConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C372423990D00786299 /* DatadogConfigurationTests.swift */; };
+		61133C642423990D00786299 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C382423990D00786299 /* LoggerTests.swift */; };
+		61133C652423990D00786299 /* LogBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3B2423990D00786299 /* LogBuilderTests.swift */; };
+		61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3C2423990D00786299 /* LogSanitizerTests.swift */; };
+		61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3E2423990D00786299 /* LogConsoleOutputTests.swift */; };
+		61133C682423990D00786299 /* LogUtilityOutputsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3F2423990D00786299 /* LogUtilityOutputsTests.swift */; };
+		61133C692423990D00786299 /* LogFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C402423990D00786299 /* LogFileOutputTests.swift */; };
+		61133C6A2423990D00786299 /* DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C412423990D00786299 /* DatadogTests.swift */; };
+		61133C6B2423990D00786299 /* LogMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C432423990D00786299 /* LogMatcher.swift */; };
+		61133C6C2423990D00786299 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C452423990D00786299 /* SwiftExtensions.swift */; };
+		61133C6D2423990D00786299 /* TestsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C462423990D00786299 /* TestsDirectory.swift */; };
+		61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C472423990D00786299 /* DatadogExtensions.swift */; };
+		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
+		61133C712423993200786299 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		61133B8D242393DE00786299 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133B81242393DE00786299;
+			remoteInfo = Datadog;
+		};
+		61133C722423993200786299 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133B81242393DE00786299;
+			remoteInfo = Datadog;
+		};
+		61133C752423993C00786299 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133BEF242397DA00786299;
+			remoteInfo = DatadogObjc;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		61133C742423993200786299 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				61133C712423993200786299 /* Datadog.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		61133B82242393DE00786299 /* Datadog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		61133B85242393DE00786299 /* Datadog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Datadog.h; sourceTree = "<group>"; };
+		61133B86242393DE00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61133B8B242393DE00786299 /* DatadogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61133B92242393DE00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61133BA02423979B00786299 /* EncodableValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncodableValue.swift; sourceTree = "<group>"; };
+		61133BA22423979B00786299 /* CarrierInfoProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarrierInfoProvider.swift; sourceTree = "<group>"; };
+		61133BA32423979B00786299 /* MobileDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileDevice.swift; sourceTree = "<group>"; };
+		61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoProvider.swift; sourceTree = "<group>"; };
+		61133BA52423979B00786299 /* BatteryStatusProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatusProvider.swift; sourceTree = "<group>"; };
+		61133BA72423979B00786299 /* FileWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileWriter.swift; sourceTree = "<group>"; };
+		61133BA82423979B00786299 /* DateProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
+		61133BA92423979B00786299 /* FilesOrchestrator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilesOrchestrator.swift; sourceTree = "<group>"; };
+		61133BAB2423979B00786299 /* Directory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Directory.swift; sourceTree = "<group>"; };
+		61133BAC2423979B00786299 /* File.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		61133BAD2423979B00786299 /* FileReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileReader.swift; sourceTree = "<group>"; };
+		61133BAF2423979B00786299 /* DataUploadConditions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadConditions.swift; sourceTree = "<group>"; };
+		61133BB02423979B00786299 /* DataUploader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploader.swift; sourceTree = "<group>"; };
+		61133BB12423979B00786299 /* DataUploadWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadWorker.swift; sourceTree = "<group>"; };
+		61133BB22423979B00786299 /* HTTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
+		61133BB32423979B00786299 /* DataUploadDelay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadDelay.swift; sourceTree = "<group>"; };
+		61133BB42423979B00786299 /* HTTPHeaders.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaders.swift; sourceTree = "<group>"; };
+		61133BB52423979B00786299 /* DatadogConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogConfiguration.swift; sourceTree = "<group>"; };
+		61133BB62423979B00786299 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		61133BB82423979B00786299 /* InternalLoggers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLoggers.swift; sourceTree = "<group>"; };
+		61133BB92423979B00786299 /* CompilationConditions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompilationConditions.swift; sourceTree = "<group>"; };
+		61133BBA2423979B00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
+		61133BBB2423979B00786299 /* Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Datadog.swift; sourceTree = "<group>"; };
+		61133BBD2423979B00786299 /* LogsUploadStrategy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsUploadStrategy.swift; sourceTree = "<group>"; };
+		61133BBE2423979B00786299 /* LogsPersistenceStrategy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsPersistenceStrategy.swift; sourceTree = "<group>"; };
+		61133BC02423979B00786299 /* UserInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
+		61133BC22423979B00786299 /* LogEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogEncoder.swift; sourceTree = "<group>"; };
+		61133BC32423979B00786299 /* LogBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogBuilder.swift; sourceTree = "<group>"; };
+		61133BC42423979B00786299 /* LogSanitizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSanitizer.swift; sourceTree = "<group>"; };
+		61133BC62423979B00786299 /* LogUtilityOutputs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogUtilityOutputs.swift; sourceTree = "<group>"; };
+		61133BC72423979B00786299 /* LogFileOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogFileOutput.swift; sourceTree = "<group>"; };
+		61133BC82423979B00786299 /* LogOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogOutput.swift; sourceTree = "<group>"; };
+		61133BC92423979B00786299 /* LogConsoleOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogConsoleOutput.swift; sourceTree = "<group>"; };
+		61133BF0242397DA00786299 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		61133BF2242397DA00786299 /* DatadogObjc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatadogObjc.h; sourceTree = "<group>"; };
+		61133BF3242397DA00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61133C092423983800786299 /* Datadog+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Datadog+objc.swift"; sourceTree = "<group>"; };
+		61133C0B2423983800786299 /* AnyEncodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyEncodable.swift; sourceTree = "<group>"; };
+		61133C0C2423983800786299 /* Logger+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Logger+objc.swift"; sourceTree = "<group>"; };
+		61133C0D2423983800786299 /* DatadogConfiguration+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DatadogConfiguration+objc.swift"; sourceTree = "<group>"; };
+		61133C142423990D00786299 /* DDDatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDDatadogTests.swift; sourceTree = "<group>"; };
+		61133C152423990D00786299 /* DDLoggerBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDLoggerBuilderTests.swift; sourceTree = "<group>"; };
+		61133C162423990D00786299 /* DDConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDConfigurationTests.swift; sourceTree = "<group>"; };
+		61133C172423990D00786299 /* DDLoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDLoggerTests.swift; sourceTree = "<group>"; };
+		61133C1A2423990D00786299 /* LogsMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsMocks.swift; sourceTree = "<group>"; };
+		61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreTelephonyMocks.swift; sourceTree = "<group>"; };
+		61133C1C2423990D00786299 /* UIKitMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIKitMocks.swift; sourceTree = "<group>"; };
+		61133C1D2423990D00786299 /* DatadogObjcMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogObjcMocks.swift; sourceTree = "<group>"; };
+		61133C1E2423990D00786299 /* NetworkMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkMocks.swift; sourceTree = "<group>"; };
+		61133C1F2423990D00786299 /* DatadogMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogMocks.swift; sourceTree = "<group>"; };
+		61133C202423990D00786299 /* FoundationMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FoundationMocks.swift; sourceTree = "<group>"; };
+		61133C232423990D00786299 /* MobileDeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileDeviceTests.swift; sourceTree = "<group>"; };
+		61133C242423990D00786299 /* NetworkConnectionInfoProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoProviderTests.swift; sourceTree = "<group>"; };
+		61133C252423990D00786299 /* BatteryStatusProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatusProviderTests.swift; sourceTree = "<group>"; };
+		61133C262423990D00786299 /* CarrierInfoProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarrierInfoProviderTests.swift; sourceTree = "<group>"; };
+		61133C282423990D00786299 /* FileReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileReaderTests.swift; sourceTree = "<group>"; };
+		61133C292423990D00786299 /* FileWriterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileWriterTests.swift; sourceTree = "<group>"; };
+		61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilesOrchestratorTests.swift; sourceTree = "<group>"; };
+		61133C2C2423990D00786299 /* FileTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
+		61133C2D2423990D00786299 /* DirectoryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectoryTests.swift; sourceTree = "<group>"; };
+		61133C2F2423990D00786299 /* DataUploadWorkerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadWorkerTests.swift; sourceTree = "<group>"; };
+		61133C302423990D00786299 /* DataUploadConditionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadConditionsTests.swift; sourceTree = "<group>"; };
+		61133C312423990D00786299 /* LogsUploadDelayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsUploadDelayTests.swift; sourceTree = "<group>"; };
+		61133C322423990D00786299 /* DataUploaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploaderTests.swift; sourceTree = "<group>"; };
+		61133C332423990D00786299 /* HTTPHeadersTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersTests.swift; sourceTree = "<group>"; };
+		61133C342423990D00786299 /* HTTPClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClientTests.swift; sourceTree = "<group>"; };
+		61133C362423990D00786299 /* InternalLoggersTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLoggersTests.swift; sourceTree = "<group>"; };
+		61133C372423990D00786299 /* DatadogConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationTests.swift; sourceTree = "<group>"; };
+		61133C382423990D00786299 /* LoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
+		61133C3B2423990D00786299 /* LogBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogBuilderTests.swift; sourceTree = "<group>"; };
+		61133C3C2423990D00786299 /* LogSanitizerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSanitizerTests.swift; sourceTree = "<group>"; };
+		61133C3E2423990D00786299 /* LogConsoleOutputTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogConsoleOutputTests.swift; sourceTree = "<group>"; };
+		61133C3F2423990D00786299 /* LogUtilityOutputsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogUtilityOutputsTests.swift; sourceTree = "<group>"; };
+		61133C402423990D00786299 /* LogFileOutputTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogFileOutputTests.swift; sourceTree = "<group>"; };
+		61133C412423990D00786299 /* DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogTests.swift; sourceTree = "<group>"; };
+		61133C432423990D00786299 /* LogMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogMatcher.swift; sourceTree = "<group>"; };
+		61133C452423990D00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
+		61133C462423990D00786299 /* TestsDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
+		61133C472423990D00786299 /* DatadogExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogExtensions.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		61133B7F242393DE00786299 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133B88242393DE00786299 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133B8C242393DE00786299 /* Datadog.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133BED242397DA00786299 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133C702423993200786299 /* Datadog.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		61133B78242393DE00786299 = {
+			isa = PBXGroup;
+			children = (
+				61133B9C2423979B00786299 /* Datadog */,
+				61133C082423983800786299 /* DatadogObjc */,
+				61133C122423990D00786299 /* DatadogTests */,
+				61133C07242397F200786299 /* TargetSupport */,
+				61133B83242393DE00786299 /* Products */,
+				61133C6F2423993200786299 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		61133B83242393DE00786299 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				61133B82242393DE00786299 /* Datadog.framework */,
+				61133B8B242393DE00786299 /* DatadogTests.xctest */,
+				61133BF0242397DA00786299 /* DatadogObjc.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		61133B84242393DE00786299 /* Datadog */ = {
+			isa = PBXGroup;
+			children = (
+				61133B85242393DE00786299 /* Datadog.h */,
+				61133B86242393DE00786299 /* Info.plist */,
+			);
+			path = Datadog;
+			sourceTree = "<group>";
+		};
+		61133B8F242393DE00786299 /* DatadogTests */ = {
+			isa = PBXGroup;
+			children = (
+				61133B92242393DE00786299 /* Info.plist */,
+			);
+			path = DatadogTests;
+			sourceTree = "<group>";
+		};
+		61133B9C2423979B00786299 /* Datadog */ = {
+			isa = PBXGroup;
+			children = (
+				61133BBB2423979B00786299 /* Datadog.swift */,
+				61133BB62423979B00786299 /* Logger.swift */,
+				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
+				61133B9E2423979B00786299 /* Core */,
+				61133BBC2423979B00786299 /* Logs */,
+				61133BB72423979B00786299 /* Utils */,
+			);
+			name = Datadog;
+			path = ../Sources/Datadog;
+			sourceTree = "<group>";
+		};
+		61133B9E2423979B00786299 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				61133B9F2423979B00786299 /* Utils */,
+				61133BA12423979B00786299 /* System */,
+				61133BA62423979B00786299 /* Persistence */,
+				61133BAE2423979B00786299 /* Upload */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		61133B9F2423979B00786299 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				61133BA02423979B00786299 /* EncodableValue.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		61133BA12423979B00786299 /* System */ = {
+			isa = PBXGroup;
+			children = (
+				61133BA22423979B00786299 /* CarrierInfoProvider.swift */,
+				61133BA32423979B00786299 /* MobileDevice.swift */,
+				61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */,
+				61133BA52423979B00786299 /* BatteryStatusProvider.swift */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
+		61133BA62423979B00786299 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				61133BA72423979B00786299 /* FileWriter.swift */,
+				61133BA82423979B00786299 /* DateProvider.swift */,
+				61133BA92423979B00786299 /* FilesOrchestrator.swift */,
+				61133BAA2423979B00786299 /* Files */,
+				61133BAD2423979B00786299 /* FileReader.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		61133BAA2423979B00786299 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				61133BAB2423979B00786299 /* Directory.swift */,
+				61133BAC2423979B00786299 /* File.swift */,
+			);
+			path = Files;
+			sourceTree = "<group>";
+		};
+		61133BAE2423979B00786299 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				61133BAF2423979B00786299 /* DataUploadConditions.swift */,
+				61133BB02423979B00786299 /* DataUploader.swift */,
+				61133BB12423979B00786299 /* DataUploadWorker.swift */,
+				61133BB22423979B00786299 /* HTTPClient.swift */,
+				61133BB32423979B00786299 /* DataUploadDelay.swift */,
+				61133BB42423979B00786299 /* HTTPHeaders.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		61133BB72423979B00786299 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				61133BB82423979B00786299 /* InternalLoggers.swift */,
+				61133BB92423979B00786299 /* CompilationConditions.swift */,
+				61133BBA2423979B00786299 /* SwiftExtensions.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		61133BBC2423979B00786299 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				61133BBD2423979B00786299 /* LogsUploadStrategy.swift */,
+				61133BBE2423979B00786299 /* LogsPersistenceStrategy.swift */,
+				61133BBF2423979B00786299 /* Attributes */,
+				61133BC12423979B00786299 /* Log */,
+				61133BC52423979B00786299 /* LogOutputs */,
+			);
+			path = Logs;
+			sourceTree = "<group>";
+		};
+		61133BBF2423979B00786299 /* Attributes */ = {
+			isa = PBXGroup;
+			children = (
+				61133BC02423979B00786299 /* UserInfo.swift */,
+			);
+			path = Attributes;
+			sourceTree = "<group>";
+		};
+		61133BC12423979B00786299 /* Log */ = {
+			isa = PBXGroup;
+			children = (
+				61133BC22423979B00786299 /* LogEncoder.swift */,
+				61133BC32423979B00786299 /* LogBuilder.swift */,
+				61133BC42423979B00786299 /* LogSanitizer.swift */,
+			);
+			path = Log;
+			sourceTree = "<group>";
+		};
+		61133BC52423979B00786299 /* LogOutputs */ = {
+			isa = PBXGroup;
+			children = (
+				61133BC62423979B00786299 /* LogUtilityOutputs.swift */,
+				61133BC72423979B00786299 /* LogFileOutput.swift */,
+				61133BC82423979B00786299 /* LogOutput.swift */,
+				61133BC92423979B00786299 /* LogConsoleOutput.swift */,
+			);
+			path = LogOutputs;
+			sourceTree = "<group>";
+		};
+		61133BF1242397DA00786299 /* DatadogObjc */ = {
+			isa = PBXGroup;
+			children = (
+				61133BF2242397DA00786299 /* DatadogObjc.h */,
+				61133BF3242397DA00786299 /* Info.plist */,
+			);
+			path = DatadogObjc;
+			sourceTree = "<group>";
+		};
+		61133C07242397F200786299 /* TargetSupport */ = {
+			isa = PBXGroup;
+			children = (
+				61133B84242393DE00786299 /* Datadog */,
+				61133BF1242397DA00786299 /* DatadogObjc */,
+				61133B8F242393DE00786299 /* DatadogTests */,
+			);
+			path = TargetSupport;
+			sourceTree = "<group>";
+		};
+		61133C082423983800786299 /* DatadogObjc */ = {
+			isa = PBXGroup;
+			children = (
+				61133C092423983800786299 /* Datadog+objc.swift */,
+				61133C0A2423983800786299 /* ObjcIntercompatibility */,
+				61133C0C2423983800786299 /* Logger+objc.swift */,
+				61133C0D2423983800786299 /* DatadogConfiguration+objc.swift */,
+			);
+			name = DatadogObjc;
+			path = ../Sources/DatadogObjc;
+			sourceTree = "<group>";
+		};
+		61133C0A2423983800786299 /* ObjcIntercompatibility */ = {
+			isa = PBXGroup;
+			children = (
+				61133C0B2423983800786299 /* AnyEncodable.swift */,
+			);
+			path = ObjcIntercompatibility;
+			sourceTree = "<group>";
+		};
+		61133C122423990D00786299 /* DatadogTests */ = {
+			isa = PBXGroup;
+			children = (
+				61133C182423990D00786299 /* Datadog */,
+				61133C132423990D00786299 /* DatadogObjc */,
+				61133C422423990D00786299 /* Matchers */,
+				61133C442423990D00786299 /* Helpers */,
+			);
+			name = DatadogTests;
+			path = ../Tests/DatadogTests;
+			sourceTree = "<group>";
+		};
+		61133C132423990D00786299 /* DatadogObjc */ = {
+			isa = PBXGroup;
+			children = (
+				61133C142423990D00786299 /* DDDatadogTests.swift */,
+				61133C152423990D00786299 /* DDLoggerBuilderTests.swift */,
+				61133C162423990D00786299 /* DDConfigurationTests.swift */,
+				61133C172423990D00786299 /* DDLoggerTests.swift */,
+			);
+			path = DatadogObjc;
+			sourceTree = "<group>";
+		};
+		61133C182423990D00786299 /* Datadog */ = {
+			isa = PBXGroup;
+			children = (
+				61133C192423990D00786299 /* Mocks */,
+				61133C412423990D00786299 /* DatadogTests.swift */,
+				61133C382423990D00786299 /* LoggerTests.swift */,
+				61133C372423990D00786299 /* DatadogConfigurationTests.swift */,
+				61133C212423990D00786299 /* Core */,
+				61133C392423990D00786299 /* Logs */,
+				61133C352423990D00786299 /* Utils */,
+			);
+			path = Datadog;
+			sourceTree = "<group>";
+		};
+		61133C192423990D00786299 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				61133C1A2423990D00786299 /* LogsMocks.swift */,
+				61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */,
+				61133C1C2423990D00786299 /* UIKitMocks.swift */,
+				61133C1D2423990D00786299 /* DatadogObjcMocks.swift */,
+				61133C1E2423990D00786299 /* NetworkMocks.swift */,
+				61133C1F2423990D00786299 /* DatadogMocks.swift */,
+				61133C202423990D00786299 /* FoundationMocks.swift */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
+		61133C212423990D00786299 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				61133C222423990D00786299 /* System */,
+				61133C272423990D00786299 /* Persistence */,
+				61133C2E2423990D00786299 /* Upload */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		61133C222423990D00786299 /* System */ = {
+			isa = PBXGroup;
+			children = (
+				61133C232423990D00786299 /* MobileDeviceTests.swift */,
+				61133C242423990D00786299 /* NetworkConnectionInfoProviderTests.swift */,
+				61133C252423990D00786299 /* BatteryStatusProviderTests.swift */,
+				61133C262423990D00786299 /* CarrierInfoProviderTests.swift */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
+		61133C272423990D00786299 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				61133C282423990D00786299 /* FileReaderTests.swift */,
+				61133C292423990D00786299 /* FileWriterTests.swift */,
+				61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */,
+				61133C2B2423990D00786299 /* Files */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		61133C2B2423990D00786299 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				61133C2C2423990D00786299 /* FileTests.swift */,
+				61133C2D2423990D00786299 /* DirectoryTests.swift */,
+			);
+			path = Files;
+			sourceTree = "<group>";
+		};
+		61133C2E2423990D00786299 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				61133C2F2423990D00786299 /* DataUploadWorkerTests.swift */,
+				61133C302423990D00786299 /* DataUploadConditionsTests.swift */,
+				61133C312423990D00786299 /* LogsUploadDelayTests.swift */,
+				61133C322423990D00786299 /* DataUploaderTests.swift */,
+				61133C332423990D00786299 /* HTTPHeadersTests.swift */,
+				61133C342423990D00786299 /* HTTPClientTests.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		61133C352423990D00786299 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				61133C362423990D00786299 /* InternalLoggersTests.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		61133C392423990D00786299 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				61133C3A2423990D00786299 /* Log */,
+				61133C3D2423990D00786299 /* LogOutputs */,
+			);
+			path = Logs;
+			sourceTree = "<group>";
+		};
+		61133C3A2423990D00786299 /* Log */ = {
+			isa = PBXGroup;
+			children = (
+				61133C3B2423990D00786299 /* LogBuilderTests.swift */,
+				61133C3C2423990D00786299 /* LogSanitizerTests.swift */,
+			);
+			path = Log;
+			sourceTree = "<group>";
+		};
+		61133C3D2423990D00786299 /* LogOutputs */ = {
+			isa = PBXGroup;
+			children = (
+				61133C3E2423990D00786299 /* LogConsoleOutputTests.swift */,
+				61133C3F2423990D00786299 /* LogUtilityOutputsTests.swift */,
+				61133C402423990D00786299 /* LogFileOutputTests.swift */,
+			);
+			path = LogOutputs;
+			sourceTree = "<group>";
+		};
+		61133C422423990D00786299 /* Matchers */ = {
+			isa = PBXGroup;
+			children = (
+				61133C432423990D00786299 /* LogMatcher.swift */,
+			);
+			path = Matchers;
+			sourceTree = "<group>";
+		};
+		61133C442423990D00786299 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				61133C452423990D00786299 /* SwiftExtensions.swift */,
+				61133C462423990D00786299 /* TestsDirectory.swift */,
+				61133C472423990D00786299 /* DatadogExtensions.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		61133C6F2423993200786299 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		61133B7D242393DE00786299 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133B93242393DE00786299 /* Datadog.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133BEB242397DA00786299 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133C00242397DA00786299 /* DatadogObjc.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		61133B81242393DE00786299 /* Datadog */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 61133B96242393DE00786299 /* Build configuration list for PBXNativeTarget "Datadog" */;
+			buildPhases = (
+				61133B7D242393DE00786299 /* Headers */,
+				61133B7E242393DE00786299 /* Sources */,
+				61133B7F242393DE00786299 /* Frameworks */,
+				61133B80242393DE00786299 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Datadog;
+			productName = Datadog;
+			productReference = 61133B82242393DE00786299 /* Datadog.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		61133B8A242393DE00786299 /* DatadogTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 61133B99242393DE00786299 /* Build configuration list for PBXNativeTarget "DatadogTests" */;
+			buildPhases = (
+				61133B87242393DE00786299 /* Sources */,
+				61133B88242393DE00786299 /* Frameworks */,
+				61133B89242393DE00786299 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				61133B8E242393DE00786299 /* PBXTargetDependency */,
+				61133C762423993C00786299 /* PBXTargetDependency */,
+			);
+			name = DatadogTests;
+			productName = DatadogTests;
+			productReference = 61133B8B242393DE00786299 /* DatadogTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		61133BEF242397DA00786299 /* DatadogObjc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 61133C01242397DA00786299 /* Build configuration list for PBXNativeTarget "DatadogObjc" */;
+			buildPhases = (
+				61133BEB242397DA00786299 /* Headers */,
+				61133BEC242397DA00786299 /* Sources */,
+				61133BED242397DA00786299 /* Frameworks */,
+				61133BEE242397DA00786299 /* Resources */,
+				61133C742423993200786299 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				61133C732423993200786299 /* PBXTargetDependency */,
+			);
+			name = DatadogObjc;
+			productName = DatadogObjc;
+			productReference = 61133BF0242397DA00786299 /* DatadogObjc.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		61133B79242393DE00786299 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1130;
+				LastUpgradeCheck = 1130;
+				ORGANIZATIONNAME = Datadog;
+				TargetAttributes = {
+					61133B81242393DE00786299 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
+					61133B8A242393DE00786299 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
+					61133BEF242397DA00786299 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
+				};
+			};
+			buildConfigurationList = 61133B7C242393DE00786299 /* Build configuration list for PBXProject "Datadog" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 61133B78242393DE00786299;
+			productRefGroup = 61133B83242393DE00786299 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				61133B81242393DE00786299 /* Datadog */,
+				61133BEF242397DA00786299 /* DatadogObjc */,
+				61133B8A242393DE00786299 /* DatadogTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		61133B80242393DE00786299 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133B89242393DE00786299 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133BEE242397DA00786299 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		61133B7E242393DE00786299 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */,
+				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
+				61133BDC2423979B00786299 /* Logger.swift in Sources */,
+				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
+				61133BCF2423979B00786299 /* FileWriter.swift in Sources */,
+				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
+				61133BCA2423979B00786299 /* EncodableValue.swift in Sources */,
+				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
+				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
+				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
+				61133BE32423979B00786299 /* UserInfo.swift in Sources */,
+				61133BE02423979B00786299 /* Datadog.swift in Sources */,
+				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
+				61133BD62423979B00786299 /* DataUploader.swift in Sources */,
+				61133BE52423979B00786299 /* LogBuilder.swift in Sources */,
+				61133BD42423979B00786299 /* FileReader.swift in Sources */,
+				61133BD32423979B00786299 /* File.swift in Sources */,
+				61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */,
+				61133BDA2423979B00786299 /* HTTPHeaders.swift in Sources */,
+				61133BE82423979B00786299 /* LogFileOutput.swift in Sources */,
+				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
+				61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */,
+				61133BE12423979B00786299 /* LogsUploadStrategy.swift in Sources */,
+				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
+				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
+				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
+				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
+				61133BE22423979B00786299 /* LogsPersistenceStrategy.swift in Sources */,
+				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
+				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
+				61133BE92423979B00786299 /* LogOutput.swift in Sources */,
+				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,
+				61133BD22423979B00786299 /* Directory.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133B87242393DE00786299 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
+				61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */,
+				61133C502423990D00786299 /* NetworkMocks.swift in Sources */,
+				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
+				61133C512423990D00786299 /* DatadogMocks.swift in Sources */,
+				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
+				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
+				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
+				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
+				61133C4C2423990D00786299 /* LogsMocks.swift in Sources */,
+				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,
+				61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */,
+				61133C602423990D00786299 /* HTTPHeadersTests.swift in Sources */,
+				61133C632423990D00786299 /* DatadogConfigurationTests.swift in Sources */,
+				61133C572423990D00786299 /* FileReaderTests.swift in Sources */,
+				61133C5F2423990D00786299 /* DataUploaderTests.swift in Sources */,
+				61133C612423990D00786299 /* HTTPClientTests.swift in Sources */,
+				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
+				61133C5E2423990D00786299 /* LogsUploadDelayTests.swift in Sources */,
+				61133C5C2423990D00786299 /* DataUploadWorkerTests.swift in Sources */,
+				61133C692423990D00786299 /* LogFileOutputTests.swift in Sources */,
+				61133C682423990D00786299 /* LogUtilityOutputsTests.swift in Sources */,
+				61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */,
+				61133C592423990D00786299 /* FilesOrchestratorTests.swift in Sources */,
+				61133C6D2423990D00786299 /* TestsDirectory.swift in Sources */,
+				61133C6C2423990D00786299 /* SwiftExtensions.swift in Sources */,
+				61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */,
+				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
+				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,
+				61133C4F2423990D00786299 /* DatadogObjcMocks.swift in Sources */,
+				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
+				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
+				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
+				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
+				61133C642423990D00786299 /* LoggerTests.swift in Sources */,
+				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,
+				61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */,
+				61133C552423990D00786299 /* BatteryStatusProviderTests.swift in Sources */,
+				61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61133BEC242397DA00786299 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61133C0F2423983800786299 /* AnyEncodable.swift in Sources */,
+				61133C0E2423983800786299 /* Datadog+objc.swift in Sources */,
+				61133C102423983800786299 /* Logger+objc.swift in Sources */,
+				61133C112423983800786299 /* DatadogConfiguration+objc.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		61133B8E242393DE00786299 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61133B81242393DE00786299 /* Datadog */;
+			targetProxy = 61133B8D242393DE00786299 /* PBXContainerItemProxy */;
+		};
+		61133C732423993200786299 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61133B81242393DE00786299 /* Datadog */;
+			targetProxy = 61133C722423993200786299 /* PBXContainerItemProxy */;
+		};
+		61133C762423993C00786299 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61133BEF242397DA00786299 /* DatadogObjc */;
+			targetProxy = 61133C752423993C00786299 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		61133B94242393DE00786299 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		61133B95242393DE00786299 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		61133B97242393DE00786299 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = TargetSupport/Datadog/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		61133B98242393DE00786299 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = TargetSupport/Datadog/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		61133B9A242393DE00786299 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		61133B9B242393DE00786299 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		61133C02242397DA00786299 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = TargetSupport/DatadogObjc/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogObjc;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		61133C03242397DA00786299 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = TargetSupport/DatadogObjc/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogObjc;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		61133B7C242393DE00786299 /* Build configuration list for PBXProject "Datadog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61133B94242393DE00786299 /* Debug */,
+				61133B95242393DE00786299 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		61133B96242393DE00786299 /* Build configuration list for PBXNativeTarget "Datadog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61133B97242393DE00786299 /* Debug */,
+				61133B98242393DE00786299 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		61133B99242393DE00786299 /* Build configuration list for PBXNativeTarget "DatadogTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61133B9A242393DE00786299 /* Debug */,
+				61133B9B242393DE00786299 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		61133C01242397DA00786299 /* Build configuration list for PBXNativeTarget "DatadogObjc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61133C02242397DA00786299 /* Debug */,
+				61133C03242397DA00786299 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 61133B79242393DE00786299 /* Project object */;
+}
