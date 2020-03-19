@@ -1,4 +1,4 @@
-all: dependencies xcodeproj-httpservermock templates examples
+all: dependencies xcodeproj-httpservermock templates examples benchmark
 .PHONY : examples
 
 dependencies:
@@ -21,10 +21,13 @@ examples:
 		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
 
+benchmark:
+		@cd instrumented-tests/Benchmark && $(MAKE)
+
 # Tests if current branch ships a valid SPM package.
 test-spm:
-	@cd dependency-manager-tests/spm && $(MAKE)
+		@cd dependency-manager-tests/spm && $(MAKE)
 
 # Tests if current branch ships a valid Carthage project.
 test-carthage:
-	@cd dependency-manager-tests/carthage && $(MAKE)
+		@cd dependency-manager-tests/carthage && $(MAKE)

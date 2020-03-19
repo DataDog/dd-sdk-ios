@@ -15,6 +15,8 @@
 		613D7F5D240938560013B7DF /* LoggingIOBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613D7F5C240938560013B7DF /* LoggingIOBenchmarkTests.swift */; };
 		61999EC7240717F00094866C /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61999EC6240717F00094866C /* HTTPServerMock */; };
 		61999EC924071A760094866C /* LoggingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61999EC824071A760094866C /* LoggingBenchmarkTests.swift */; };
+		61AEBF062423D2AE00A8CB51 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61AEBF052423D2AE00A8CB51 /* Datadog.framework */; };
+		61AEBF072423D2AE00A8CB51 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61AEBF052423D2AE00A8CB51 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +36,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				61AEBF072423D2AE00A8CB51 /* Datadog.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -53,6 +56,7 @@
 		61204F652406DD1600B322BC /* tests-specific-config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "tests-specific-config.xcconfig"; sourceTree = "<group>"; };
 		613D7F5C240938560013B7DF /* LoggingIOBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingIOBenchmarkTests.swift; sourceTree = "<group>"; };
 		61999EC824071A760094866C /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
+		61AEBF052423D2AE00A8CB51 /* Datadog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61AEBF062423D2AE00A8CB51 /* Datadog.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,6 +141,7 @@
 		61800F732405411400420E0D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				61AEBF052423D2AE00A8CB51 /* Datadog.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

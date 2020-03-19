@@ -5,6 +5,9 @@
       location = "group:../http-server-mock">
    </FileRef>
    <FileRef
+      location = "group:Datadog.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "container:Benchmark.xcodeproj">
    </FileRef>
 </Workspace>
