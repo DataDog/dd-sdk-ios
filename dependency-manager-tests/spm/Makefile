@@ -6,7 +6,7 @@ endif
 
 test:
 		@echo "⚙️  Testing SPM for remote branch: '${GIT_BRANCH}'..."
-		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" Package_swift.template > Package.swift
+		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" Package.swift.src > Package.swift
 		swift package update
 		swift build
 		@echo "OK 👌"
