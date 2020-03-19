@@ -158,7 +158,7 @@
 				6103D60E24053E2F0086F828 /* Sources */,
 				6103D60F24053E2F0086F828 /* Frameworks */,
 				6103D61024053E2F0086F828 /* Resources */,
-				6103D63724053E4D0086F828 /* Run linter */,
+				6103D63724053E4D0086F828 /* ⚙️ Run linter */,
 				61308ABF240933E600B3DA8A /* Embed Frameworks */,
 			);
 			buildRules = (
@@ -249,7 +249,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		6103D63724053E4D0086F828 /* Run linter */ = {
+		6103D63724053E4D0086F828 /* ⚙️ Run linter */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -258,7 +258,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Run linter";
+			name = "⚙️ Run linter";
 			outputFileListPaths = (
 			);
 			outputPaths = (

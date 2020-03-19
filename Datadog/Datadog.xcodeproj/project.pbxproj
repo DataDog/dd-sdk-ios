@@ -433,9 +433,9 @@
 			isa = PBXGroup;
 			children = (
 				61133C092423983800786299 /* Datadog+objc.swift */,
-				61133C0A2423983800786299 /* ObjcIntercompatibility */,
 				61133C0C2423983800786299 /* Logger+objc.swift */,
 				61133C0D2423983800786299 /* DatadogConfiguration+objc.swift */,
+				61133C0A2423983800786299 /* ObjcIntercompatibility */,
 			);
 			name = DatadogObjc;
 			path = ../Sources/DatadogObjc;
@@ -645,6 +645,7 @@
 				61133B7E242393DE00786299 /* Sources */,
 				61133B7F242393DE00786299 /* Frameworks */,
 				61133B80242393DE00786299 /* Resources */,
+				61133C772423A4C300786299 /* ⚙️ Run linter */,
 			);
 			buildRules = (
 			);
@@ -758,6 +759,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		61133C772423A4C300786299 /* ⚙️ Run linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		61133B7E242393DE00786299 /* Sources */ = {
