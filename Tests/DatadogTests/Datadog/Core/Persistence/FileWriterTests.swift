@@ -69,7 +69,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output)
+        userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
         let writer = FileWriter(
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),

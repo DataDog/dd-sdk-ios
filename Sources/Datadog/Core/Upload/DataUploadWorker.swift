@@ -42,11 +42,11 @@ internal class DataUploadWorker {
 
     private func scheduleNextUpload(after delay: TimeInterval) {
         queue.asyncAfter(deadline: .now() + delay) { [weak self] in
-            developerLogger?.info("⏳ Checking for next batch...")
-
             guard let self = self else {
                 return
             }
+
+            developerLogger?.info("⏳ Checking for next batch...")
 
             let isSystemReady = self.uploadConditions.canPerformUpload()
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil

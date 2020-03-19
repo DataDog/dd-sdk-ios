@@ -80,9 +80,12 @@ public class Logger {
     private var loggerAttributes: [String: Encodable] = [:]
     /// Taggs associated with every log.
     private var loggerTags: Set<String> = []
+    /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
+    private let queue: DispatchQueue
 
-    init(logOutput: LogOutput) {
+    init(logOutput: LogOutput, identifier: String) {
         self.logOutput = logOutput
+        self.queue = DispatchQueue(label: "com.datadoghq.logger-\(identifier)", qos: .userInteractive)
     }
 
     // MARK: - Logging
@@ -150,14 +153,18 @@ public class Logger {
     ///   - value: any value that conforms to `Encodable`. See `AttributeValue` documentation
     ///   for information about nested encoding containers limitation.
     public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        loggerAttributes[key] = value
+        queue.async {
+            self.loggerAttributes[key] = value
+        }
     }
 
     /// Removes the custom attribute from all future logs sent by this logger.
     /// Previous logs won't lose this attribute if they were created prior to this call.
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {
-        loggerAttributes.removeValue(forKey: key)
+        queue.async {
+            self.loggerAttributes.removeValue(forKey: key)
+        }
     }
 
     // MARK: - Tags
@@ -177,8 +184,10 @@ public class Logger {
     /// - Parameter key: key for the tag
     /// - Parameter value: value of the tag
     public func addTag(withKey key: String, value: String) {
-        let prefix = "\(key):"
-        loggerTags.insert("\(prefix)\(value)")
+        queue.async {
+            let prefix = "\(key):"
+            self.loggerTags.insert("\(prefix)\(value)")
+        }
     }
 
     /// Remove all tags with the given key from all future logs sent by this logger.
@@ -186,8 +195,10 @@ public class Logger {
     ///
     /// - Parameter key: key of the tag to remove
     public func removeTag(withKey key: String) {
-        let prefix = "\(key):"
-        loggerTags = loggerTags.filter { !$0.hasPrefix(prefix) }
+        queue.async {
+            let prefix = "\(key):"
+            self.loggerTags = self.loggerTags.filter { !$0.hasPrefix(prefix) }
+        }
     }
 
     /// Adds a tag to all future logs sent by this logger.
@@ -203,7 +214,9 @@ public class Logger {
     ///
     /// - Parameter tag: value of the tag
     public func add(tag: String) {
-        loggerTags.insert(tag)
+        queue.async {
+            self.loggerTags.insert(tag)
+        }
     }
 
     /// Removes a tag from all future logs sent by this logger.
@@ -211,17 +224,24 @@ public class Logger {
     ///
     /// - Parameter tag: value of the tag to remove
     public func remove(tag: String) {
-        loggerTags.remove(tag)
+        queue.async {
+            self.loggerTags.remove(tag)
+        }
     }
 
     // MARK: - Private
 
     private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
-        let combinedAttributes = loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
-            return messageAttributeValue // use message attribute when the same key appears also in logger attributes
+        let combinedAttributes = queue.sync {
+            return self.loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
+                return messageAttributeValue // use message attribute when the same key appears also in logger attributes
+            }
+        }
+        let tags = queue.sync {
+            return self.loggerTags
         }
 
-        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes, tags: loggerTags)
+        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes, tags: tags)
     }
 
     // MARK: - Logger.Builder
@@ -307,7 +327,10 @@ public class Logger {
                 return try buildOrThrow()
             } catch {
                 consolePrint("🔥 \(error)")
-                return Logger(logOutput: NoOpLogOutput())
+                return Logger(
+                    logOutput: NoOpLogOutput(),
+                    identifier: "no-op"
+                )
             }
         }
 
@@ -316,14 +339,17 @@ public class Logger {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
 
-            return Logger(logOutput: resolveLogsOutput(using: datadog))
+            return Logger(
+                logOutput: resolveLogsOutput(using: datadog),
+                identifier: resolveLoggerName(using: datadog)
+            )
         }
 
         private func resolveLogsOutput(using datadog: Datadog) -> LogOutput {
             let logBuilder = LogBuilder(
                 appContext: datadog.appContext,
                 serviceName: serviceName,
-                loggerName: loggerName ?? datadog.appContext.bundleIdentifier ?? "",
+                loggerName: resolveLoggerName(using: datadog),
                 dateProvider: datadog.dateProvider,
                 userInfoProvider: datadog.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? datadog.networkConnectionInfoProvider : nil,
@@ -357,6 +383,10 @@ public class Logger {
             case (false, nil):
                 return NoOpLogOutput()
             }
+        }
+
+        private func resolveLoggerName(using datadog: Datadog) -> String {
+            return loggerName ?? datadog.appContext.bundleIdentifier ?? ""
         }
     }
 }

@@ -48,7 +48,7 @@ internal func createSDKDeveloperLogger(
         timeFormatter: timeFormatter
     )
 
-    return Logger(logOutput: consoleOutput)
+    return Logger(logOutput: consoleOutput, identifier: "sdk-developer")
 }
 
 internal func createSDKUserLogger(
@@ -57,7 +57,7 @@ internal func createSDKUserLogger(
     timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
     guard let datadog = Datadog.instance else {
-        return Logger(logOutput: NoOpLogOutput())
+        return Logger(logOutput: NoOpLogOutput(), identifier: "no-op")
     }
 
     let consoleOutput = LogConsoleOutput(
@@ -78,6 +78,7 @@ internal func createSDKUserLogger(
     return Logger(
         logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { logLevel in
             logLevel.rawValue >= (Datadog.verbosityLevel?.rawValue ?? .max)
-        }
+        },
+        identifier: "sdk-user"
     )
 }
