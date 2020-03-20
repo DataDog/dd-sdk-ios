@@ -41,18 +41,14 @@ The easiest way to start is to run `make` command:
 make
 ```
 
-This will generate `Datadog.xcodeproj` project file, install `swiftlint` and configure custom Datadog file templates for Xcode. Also, `examples-secret.xcconfig`  file will be created - update it with a client token obtained on Datadog website.
+This will install `swiftlint` and configure custom Datadog file templates for Xcode. Also, `examples-secret.xcconfig` file will be created - update it with a client token obtained on Datadog website.
 
-To have linter warnings and errors appear in Xcode (which is highly convenient and recommended), create the "New Run Script Phase" for "Datadog" target and put following shell script in it:
-```bash
-if which swiftlint >/dev/null; then
-  ${SOURCE_ROOT}/tools/lint/run-linter.sh
-fi
-```
-This will invoke [`swiftlint`](https://github.com/realm/SwiftLint)  with the rules we enforce for this project. Code which does not follow our lint rules will not pass on CI.
+Then, open `Datadog/Datadog.xcodeproj` and you are ready to go 🚀.
 
 ### Testing
 
 It is important to be sure that our library works properly in any scenario. All non trivial code must be tested. If you're not used to writing tests, you can take a look at the `Tests/` folder to get some ideas on how we write them at Datadog.
 
-Both, unit and integration tests can be run directly from `Datadog.xcodeproj` project. The CI also runs UI tests for projects in `examples/` directory to make sure the dependency managers compatibility works.
+Unit tests are part of the `Datadog.xcodeproj` project. Integration tests and benchmarks are located in separate projects in `instrumented-tests` folder.
+
+The CI also runs UI tests for projects in `examples/` directory.

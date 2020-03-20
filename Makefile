@@ -1,19 +1,9 @@
-all: dependencies xcodeproj-sdk xcodeproj-httpservermock templates examples
+all: dependencies xcodeproj-httpservermock templates examples benchmark
 .PHONY : examples
 
 dependencies:
 		@echo "⚙️  Validating dependencies..."
 		@brew list swiftlint &>/dev/null || brew install swiftlint
-		@echo "OK 👌"
-
-xcodeproj-sdk:
-ifdef ci
-		@echo "⚙️  Generating 'Datadog.xcodeproj' for CI..."
-		swift package generate-xcodeproj --skip-extra-files
-else
-		@echo "⚙️  Generating 'Datadog.xcodeproj' for development..."
-		swift package generate-xcodeproj --enable-code-coverage --xcconfig-overrides Datadog.xcconfig --skip-extra-files
-endif
 		@echo "OK 👌"
 
 xcodeproj-httpservermock:
@@ -31,6 +21,13 @@ examples:
 		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
 
+benchmark:
+		@cd instrumented-tests/Benchmark && $(MAKE)
+
 # Tests if current branch ships a valid SPM package.
 test-spm:
-	@cd dependency-manager-tests/spm && $(MAKE)
+		@cd dependency-manager-tests/spm && $(MAKE)
+
+# Tests if current branch ships a valid Carthage project.
+test-carthage:
+		@cd dependency-manager-tests/carthage && $(MAKE)
