@@ -9,9 +9,9 @@ import CoreTelephony
 @testable import Datadog
 
 class CarrierInfoProviderTests: XCTestCase {
-    #if os(iOS)
+    #if canImport(CoreTelephony)
     func testItIsAvailableOnMobile() {
-        XCTAssertNotNil(CarrierInfoProvider.getIfAvailable())
+        XCTAssertNotNil(CarrierInfoProvider())
     }
 
     func testWhenCellularServiceIsAvailable_itReturnsCarrierInfo() {
@@ -23,9 +23,9 @@ class CarrierInfoProviderTests: XCTestCase {
 
         let provider = CarrierInfoProvider(networkInfo: telephonyNetworkInfo)
 
-        XCTAssertEqual(provider.current?.carrierName, "Carrier")
-        XCTAssertEqual(provider.current?.carrierISOCountryCode, "US")
-        XCTAssertEqual(provider.current?.carrierAllowsVOIP, true)
+        XCTAssertEqual(provider?.current?.carrierName, "Carrier")
+        XCTAssertEqual(provider?.current?.carrierISOCountryCode, "US")
+        XCTAssertEqual(provider?.current?.carrierAllowsVOIP, true)
     }
 
     func testWhenCellularServiceIsUnavailable_itReturnsNoCarrierInfo() {
@@ -36,7 +36,7 @@ class CarrierInfoProviderTests: XCTestCase {
 
         let provider = CarrierInfoProvider(networkInfo: telephonyNetworkInfo)
 
-        XCTAssertNil(provider.current)
+        XCTAssertNil(provider?.current)
     }
 
     func testDifferentCarrierInfoRadioAccessTechnologies() {

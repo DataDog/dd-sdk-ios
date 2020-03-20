@@ -97,7 +97,7 @@ public class Datadog {
             dateProvider: SystemDateProvider(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider.getIfAvailable()
+            carrierInfoProvider: CarrierInfoProvider()
         )
     }
 
