@@ -9,7 +9,6 @@ import CoreTelephony
 @testable import Datadog
 
 class CarrierInfoProviderTests: XCTestCase {
-    #if canImport(CoreTelephony)
     func testItIsAvailableOnMobile() {
         XCTAssertNotNil(CarrierInfoProvider())
     }
@@ -57,10 +56,4 @@ class CarrierInfoProviderTests: XCTestCase {
         XCTAssertEqual(initializeFrom(coreTelephonyConstant: CTRadioAccessTechnologyLTE), .LTE)
         XCTAssertEqual(initializeFrom(coreTelephonyConstant: "invalid"), .unknown)
     }
-    #else
-    func testItIsNotAvailableOnOtherPlatforms() {
-        XCTAssertNil(CarrierInfoProvider.getIfAvailable())
-        XCTAssertNil(CarrierInfoProvider().current)
-    }
-    #endif
 }

@@ -55,7 +55,6 @@
 		61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */; };
 		61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1C2423990D00786299 /* UIKitMocks.swift */; };
 		61133C4F2423990D00786299 /* DatadogObjcMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1D2423990D00786299 /* DatadogObjcMocks.swift */; };
-		61133C502423990D00786299 /* NetworkMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1E2423990D00786299 /* NetworkMocks.swift */; };
 		61133C512423990D00786299 /* DatadogMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1F2423990D00786299 /* DatadogMocks.swift */; };
 		61133C522423990D00786299 /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
 		61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C232423990D00786299 /* MobileDeviceTests.swift */; };
@@ -183,7 +182,6 @@
 		61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreTelephonyMocks.swift; sourceTree = "<group>"; };
 		61133C1C2423990D00786299 /* UIKitMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIKitMocks.swift; sourceTree = "<group>"; };
 		61133C1D2423990D00786299 /* DatadogObjcMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogObjcMocks.swift; sourceTree = "<group>"; };
-		61133C1E2423990D00786299 /* NetworkMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkMocks.swift; sourceTree = "<group>"; };
 		61133C1F2423990D00786299 /* DatadogMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogMocks.swift; sourceTree = "<group>"; };
 		61133C202423990D00786299 /* FoundationMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FoundationMocks.swift; sourceTree = "<group>"; };
 		61133C232423990D00786299 /* MobileDeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileDeviceTests.swift; sourceTree = "<group>"; };
@@ -496,7 +494,6 @@
 				61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */,
 				61133C1C2423990D00786299 /* UIKitMocks.swift */,
 				61133C1D2423990D00786299 /* DatadogObjcMocks.swift */,
-				61133C1E2423990D00786299 /* NetworkMocks.swift */,
 				61133C1F2423990D00786299 /* DatadogMocks.swift */,
 				61133C202423990D00786299 /* FoundationMocks.swift */,
 			);
@@ -833,7 +830,6 @@
 			files = (
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
 				61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */,
-				61133C502423990D00786299 /* NetworkMocks.swift in Sources */,
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61133C512423990D00786299 /* DatadogMocks.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,

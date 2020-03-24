@@ -11,7 +11,6 @@ A collection of mocks for different `CoreTelephony` types.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
-#if os(iOS)
 class CTCarrierMock: CTCarrier {
     private let _carrierName: String?
     private let _isoCountryCode: String?
@@ -43,4 +42,3 @@ class CTTelephonyNetworkInfoMock: CTTelephonyNetworkInfo {
     override var serviceCurrentRadioAccessTechnology: [String: String]? { _serviceCurrentRadioAccessTechnology }
     override var serviceSubscriberCellularProviders: [String: CTCarrier]? { _serviceSubscriberCellularProviders }
 }
-#endif

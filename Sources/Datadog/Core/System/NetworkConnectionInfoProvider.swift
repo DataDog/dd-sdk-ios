@@ -28,10 +28,10 @@ internal struct NetworkConnectionInfo {
     }
 
     let reachability: Reachability
-    let availableInterfaces: [Interface]
-    let supportsIPv4: Bool
-    let supportsIPv6: Bool
-    let isExpensive: Bool
+    let availableInterfaces: [Interface]?
+    let supportsIPv4: Bool?
+    let supportsIPv6: Bool?
+    let isExpensive: Bool?
     let isConstrained: Bool?
 }
 
@@ -40,6 +40,7 @@ internal protocol NetworkConnectionInfoProviderType {
 }
 
 internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
+    private let queue: DispatchQueue?
     private let fetchBlock: () -> NetworkConnectionInfo
     private let cancelBlock: (() -> Void)?
 
@@ -57,16 +58,24 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
 
     @available(iOS 12, *)
     init(_ provider: NWPathMonitor) {
+        let queue = DispatchQueue(
+            label: "com.datadoghq.network-connection-info",
+            qos: .utility,
+            attributes: [],
+            target: DispatchQueue.global(qos: .utility)
+        )
+        self.queue = queue
         self.fetchBlock = {
             return provider.current
         }
         self.cancelBlock = { [weak provider] in
             provider?.cancel()
         }
-        provider.start(queue: DispatchQueue.global(qos: .utility))
+        provider.start(queue: queue)
     }
 
     init(_ provider: iOS11PathMonitor) {
+        self.queue = nil
         self.fetchBlock = {
             return provider.current
         }

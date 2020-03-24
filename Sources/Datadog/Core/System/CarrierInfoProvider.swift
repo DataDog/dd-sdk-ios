@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import CoreTelephony
+
 /// Network connection details specific to cellular radio access.
 internal struct CarrierInfo {
     // swiftlint:disable identifier_name
@@ -32,9 +34,6 @@ internal struct CarrierInfo {
 internal protocol CarrierInfoProviderType {
     var current: CarrierInfo? { get }
 }
-
-#if os(iOS)
-import CoreTelephony
 
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
@@ -90,12 +89,3 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
         )
     }
 }
-#else
-internal class CarrierInfoProvider: CarrierInfoProviderType {
-    let current: CarrierInfo? = nil
-
-    init?() {
-        return nil
-    }
-}
-#endif

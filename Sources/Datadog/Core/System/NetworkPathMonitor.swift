@@ -11,28 +11,6 @@ extension NWPathMonitor {
     var current: NetworkConnectionInfo {
         let info = currentPath
 
-        let availableInterfaces: [NetworkConnectionInfo.Interface] = {
-            info.availableInterfaces.map { interface in
-                switch interface.type {
-                case .wifi: return .wifi
-                case .wiredEthernet: return .wiredEthernet
-                case .cellular: return .cellular
-                case .loopback: return .loopback
-                case .other: return .other
-                @unknown default: return .other
-                }
-            }
-        }()
-
-        let reachability: NetworkConnectionInfo.Reachability = {
-            switch info.status {
-            case .satisfied: return .yes
-            case .requiresConnection: return .maybe
-            case .unsatisfied: return .no
-            @unknown default: return .maybe
-            }
-        }()
-
         let isCurrentPathConstrained: Bool? = {
             if #available(iOS 13.0, macOS 10.15, *) {
                 return info.isConstrained
@@ -42,8 +20,8 @@ extension NWPathMonitor {
         }()
 
         return NetworkConnectionInfo(
-            reachability: reachability,
-            availableInterfaces: availableInterfaces,
+            reachability: NetworkConnectionInfo.Reachability(from: info.status),
+            availableInterfaces: Array(fromInterfaceTypes: info.availableInterfaces.map { $0.type }),
             supportsIPv4: info.supportsIPv4,
             supportsIPv6: info.supportsIPv6,
             isExpensive: info.isExpensive,
@@ -52,7 +30,7 @@ extension NWPathMonitor {
     }
 }
 
-// MARK: - Legacy Network Path Monitor
+// MARK: - iOS 11 Network Path Monitor
 
 import SystemConfiguration
 
@@ -66,31 +44,63 @@ internal class iOS11PathMonitor {
     }()
 
     var current: NetworkConnectionInfo {
-        var flags: SCNetworkReachabilityFlags?
         var retrieval = SCNetworkReachabilityFlags()
-        flags = (SCNetworkReachabilityGetFlags(reachability, &retrieval)) ? retrieval : nil
-
-        let reachableFlag = flags?.contains(.reachable)
-        let reachable: NetworkConnectionInfo.Reachability = {
-            switch reachableFlag {
-            case .none:
-                return .maybe
-            case .some(true):
-                return .yes
-            case .some(false):
-                return .no
-            }
-        }()
-        let cellular = flags?.contains(.isWWAN) ?? false
-
-        // TODO: RUMM-312 what to do with unknowns?
+        let flags = (SCNetworkReachabilityGetFlags(reachability, &retrieval)) ? retrieval : nil
         return NetworkConnectionInfo(
-            reachability: reachable,
-            availableInterfaces: cellular ? [.cellular] : [],
-            supportsIPv4: false,
-            supportsIPv6: false,
-            isExpensive: false,
-            isConstrained: false
+            reachability: NetworkConnectionInfo.Reachability(from: flags),
+            availableInterfaces: Array(fromReachabilityFlags: flags),
+            supportsIPv4: nil,
+            supportsIPv6: nil,
+            isExpensive: nil,
+            isConstrained: nil
         )
+    }
+}
+
+// MARK: Conversion helpers
+
+extension NetworkConnectionInfo.Reachability {
+    @available(iOS 12, *)
+    init(from status: NWPath.Status) {
+        switch status {
+        case .satisfied: self = .yes
+        case .requiresConnection: self = .maybe
+        case .unsatisfied: self = .no
+        @unknown default: self = .maybe
+        }
+    }
+
+    init(from flags: SCNetworkReachabilityFlags?) {
+        switch flags?.contains(.reachable) {
+        case .none: self = .maybe
+        case .some(true): self = .yes
+        case .some(false): self = .no
+        }
+    }
+}
+
+extension Array where Element == NetworkConnectionInfo.Interface {
+    @available(iOS 12, *)
+    init(fromInterfaceTypes interfaceTypes: [NWInterface.InterfaceType]) {
+        self = interfaceTypes.map { interface in
+            switch interface {
+            case .wifi: return .wifi
+            case .wiredEthernet: return .wiredEthernet
+            case .cellular: return .cellular
+            case .loopback: return .loopback
+            case .other: return .other
+            @unknown default: return .other
+            }
+        }
+    }
+
+    @available(iOS 2.0, macCatalyst 13.0, *)
+    init?(fromReachabilityFlags flags: SCNetworkReachabilityFlags?) {
+        if let flags = flags,
+            flags.contains(.isWWAN) {
+            self = [.cellular]
+        } else {
+            return nil
+        }
     }
 }
