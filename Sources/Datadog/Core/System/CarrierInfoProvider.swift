@@ -35,55 +35,6 @@ internal protocol CarrierInfoProviderType {
     var current: CarrierInfo? { get }
 }
 
-internal class CarrierInfoProvider: CarrierInfoProviderType {
-    #if os(iOS)
-    private let networkInfo: CTTelephonyNetworkInfo
-
-    init(networkInfo: CTTelephonyNetworkInfo) {
-        self.networkInfo = networkInfo
-    }
-    #else
-    init() {}
-    #endif
-
-    static func getIfAvailable() -> CarrierInfoProvider? {
-        #if os(iOS)
-        return CarrierInfoProvider(networkInfo: CTTelephonyNetworkInfo())
-        #else
-        return nil
-        #endif
-    }
-
-    var current: CarrierInfo? {
-        #if os(iOS)
-        if let cellularProviderKey = networkInfo.serviceCurrentRadioAccessTechnology?.keys.first {
-            guard let radioAccessTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey] else {
-                return nil
-            }
-            guard let currentCTCarrier = networkInfo.serviceSubscriberCellularProviders?[cellularProviderKey] else {
-                return nil
-            }
-
-            return CarrierInfo(
-                carrierName: currentCTCarrier.carrierName,
-                carrierISOCountryCode: currentCTCarrier.isoCountryCode,
-                carrierAllowsVOIP: currentCTCarrier.allowsVOIP,
-                radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
-            )
-        } else {
-            // Presumably:
-            // * The device is in airplane mode.
-            // * There is no SIM card in the device.
-            // * The device is outside of cellular service range.
-            return nil
-        }
-        #else
-        return nil // not available on this platform
-        #endif
-    }
-}
-
-#if os(iOS)
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
@@ -102,4 +53,39 @@ extension CarrierInfo.RadioAccessTechnology {
         }
     }
 }
-#endif
+
+internal class CarrierInfoProvider: CarrierInfoProviderType {
+    private let networkInfo: CTTelephonyNetworkInfo
+
+    init?(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
+        self.networkInfo = networkInfo
+    }
+
+    var current: CarrierInfo? {
+        let carrier: CTCarrier?
+        let radioTechnology: String?
+
+        if #available(iOS 12, *) {
+            guard let cellularProviderKey = networkInfo.serviceCurrentRadioAccessTechnology?.keys.first else {
+                return nil
+            }
+            radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey]
+            carrier = networkInfo.serviceSubscriberCellularProviders?[cellularProviderKey]
+        } else {
+            radioTechnology = networkInfo.currentRadioAccessTechnology
+            carrier = networkInfo.subscriberCellularProvider
+        }
+
+        guard let radioAccessTechnology = radioTechnology,
+            let currentCTCarrier = carrier else {
+                return nil
+        }
+
+        return CarrierInfo(
+            carrierName: currentCTCarrier.carrierName,
+            carrierISOCountryCode: currentCTCarrier.isoCountryCode,
+            carrierAllowsVOIP: currentCTCarrier.allowsVOIP,
+            radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
+        )
+    }
+}

@@ -28,10 +28,10 @@ internal struct NetworkConnectionInfo {
     }
 
     let reachability: Reachability
-    let availableInterfaces: [Interface]
-    let supportsIPv4: Bool
-    let supportsIPv6: Bool
-    let isExpensive: Bool
+    let availableInterfaces: [Interface]?
+    let supportsIPv4: Bool?
+    let supportsIPv6: Bool?
+    let isExpensive: Bool?
     let isConstrained: Bool?
 }
 
@@ -40,90 +40,49 @@ internal protocol NetworkConnectionInfoProviderType {
 }
 
 internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
-    private let queue = DispatchQueue.global(qos: .utility)
-    private let monitor: NWCurrentPathMonitor
+    private let queue: DispatchQueue?
+    private let fetchBlock: () -> NetworkConnectionInfo
+    private let cancelBlock: (() -> Void)?
 
-    init(monitor: NWCurrentPathMonitor = NWPathMonitor()) {
-        self.monitor = monitor
-        self.monitor.start(queue: queue)
+    var current: NetworkConnectionInfo {
+        return fetchBlock()
+    }
+
+    convenience init() {
+        if #available(iOS 12, *) {
+            self.init(NWPathMonitor())
+        } else {
+            self.init(iOS11PathMonitor())
+        }
+    }
+
+    @available(iOS 12, *)
+    init(_ provider: NWPathMonitor) {
+        let queue = DispatchQueue(
+            label: "com.datadoghq.network-connection-info",
+            qos: .utility,
+            attributes: [],
+            target: DispatchQueue.global(qos: .utility)
+        )
+        self.queue = queue
+        self.fetchBlock = {
+            return provider.current
+        }
+        self.cancelBlock = { [weak provider] in
+            provider?.cancel()
+        }
+        provider.start(queue: queue)
+    }
+
+    init(_ provider: iOS11PathMonitor) {
+        self.queue = nil
+        self.fetchBlock = {
+            return provider.current
+        }
+        self.cancelBlock = nil
     }
 
     deinit {
-        monitor.cancel()
-    }
-
-    var current: NetworkConnectionInfo {
-        let currentPath = monitor.currentPathInfo()
-        let availableInterfaces: [NetworkConnectionInfo.Interface] = {
-            currentPath.availableInterfaceTypes.map { interfaceType in
-                switch interfaceType {
-                case .wifi: return .wifi
-                case .wiredEthernet: return .wiredEthernet
-                case .cellular: return .cellular
-                case .loopback: return .loopback
-                case .other: return .other
-                @unknown default: return .other
-                }
-            }
-        }()
-
-        let reachability: NetworkConnectionInfo.Reachability = {
-            switch currentPath.status {
-            case .satisfied: return .yes
-            case .requiresConnection: return .maybe
-            case .unsatisfied: return .no
-            @unknown default: return .maybe
-            }
-        }()
-
-        return NetworkConnectionInfo(
-            reachability: reachability,
-            availableInterfaces: availableInterfaces,
-            supportsIPv4: currentPath.supportsIPv4,
-            supportsIPv6: currentPath.supportsIPv6,
-            isExpensive: currentPath.isExpensive,
-            isConstrained: currentPath.isConstrained
-        )
-    }
-}
-
-// MARK: - Utilities
-
-/// Utility protocol to inject `NWPathMonitor` to `NetworkConnectionInfoProvider`.
-internal protocol NWCurrentPathMonitor {
-    func start(queue: DispatchQueue)
-    func cancel()
-    func currentPathInfo() -> NWCurrentPathInfo
-}
-
-/// Utility type to aggregate current path info provided by `NWPathMonitor`,
-internal struct NWCurrentPathInfo {
-    let availableInterfaceTypes: [NWInterface.InterfaceType]
-    let status: NWPath.Status
-    let supportsIPv4: Bool
-    let supportsIPv6: Bool
-    let isExpensive: Bool
-    let isConstrained: Bool?
-}
-
-/// Apple's `NWPathMonitor` conformance to utility `NWCurrentPathMonitor`.
-extension NWPathMonitor: NWCurrentPathMonitor {
-    func currentPathInfo() -> NWCurrentPathInfo {
-        let isCurrentPathConstrained: Bool? = {
-            if #available(iOS 13.0, macOS 10.15, *) {
-                return currentPath.isConstrained
-            } else {
-                return nil
-            }
-        }()
-
-        return NWCurrentPathInfo(
-            availableInterfaceTypes: currentPath.availableInterfaces.map { $0.type },
-            status: currentPath.status,
-            supportsIPv4: currentPath.supportsIPv4,
-            supportsIPv6: currentPath.supportsIPv6,
-            isExpensive: currentPath.isExpensive,
-            isConstrained: isCurrentPathConstrained
-        )
+        cancelBlock?()
     }
 }

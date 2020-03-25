@@ -6,54 +6,109 @@
 
 import XCTest
 import Network
+import SystemConfiguration
 @testable import Datadog
 
 class NetworkConnectionInfoProviderTests: XCTestCase {
-    func testItStartsAndCancelsNWPathMonitor() {
-        let startExpectation = self.expectation(description: "call start")
-        let cancelExpectation = self.expectation(description: "call cancel")
-
-        let monitor = NWCurrentPathMonitorMock(pathInfo: .mockAny())
-        monitor.onStart = { startExpectation.fulfill() }
-        monitor.onCancel = { cancelExpectation.fulfill() }
-
-        autoreleasepool {
-            _ = NetworkConnectionInfoProvider(monitor: monitor) // `start()` when initialized
-            wait(for: [startExpectation], timeout: 1)
-        } // `cancel()` when deinitialized
-
-        wait(for: [cancelExpectation], timeout: 1)
-    }
-
-    func testItReturnsCurrentNetworkConnectionInfo() {
-        func networkConnectionInfo(for pathInfo: NWCurrentPathInfo) -> NetworkConnectionInfo {
-            let monitor = NWCurrentPathMonitorMock(pathInfo: pathInfo)
-            let provider = NetworkConnectionInfoProvider(monitor: monitor)
-            return provider.current
+    @available(iOS 12, *)
+    func testProviderRetainsNWPathMonitor() {
+        let isStarted: (NWPathMonitor) -> Bool = { monitor in
+            return monitor.queue != nil
         }
 
-        // It maps `availableInterfaceTypes` info from `Network` domain to `Datadog`
-        XCTAssertEqual(
-            networkConnectionInfo(for: .mockWith(availableInterfaceTypes: [.wifi, .wiredEthernet, .cellular, .loopback, .other])).availableInterfaces,
-            [.wifi, .wiredEthernet, .cellular, .loopback, .other]
-        )
+        var provider: NetworkConnectionInfoProvider?
+        autoreleasepool {
+            let pathMonitor = NWPathMonitor()
+            XCTAssertFalse(isStarted(pathMonitor))
+            provider = NetworkConnectionInfoProvider(pathMonitor)
+            XCTAssertTrue(isStarted(pathMonitor))
+        }
 
-        // It maps reachability info
-        XCTAssertEqual(networkConnectionInfo(for: .mockWith(status: .satisfied)).reachability, .yes)
-        XCTAssertEqual(networkConnectionInfo(for: .mockWith(status: .requiresConnection)).reachability, .maybe)
-        XCTAssertEqual(networkConnectionInfo(for: .mockWith(status: .unsatisfied)).reachability, .no)
+        XCTAssertNotNil(provider?.current, "provider should be working")
+    }
 
-        // It maps other info
-        XCTAssertTrue(networkConnectionInfo(for: .mockWith(supportsIPv4: true)).supportsIPv4)
-        XCTAssertFalse(networkConnectionInfo(for: .mockWith(supportsIPv4: false)).supportsIPv4)
-        XCTAssertTrue(networkConnectionInfo(for: .mockWith(supportsIPv6: true)).supportsIPv6)
-        XCTAssertFalse(networkConnectionInfo(for: .mockWith(supportsIPv6: false)).supportsIPv6)
-        XCTAssertTrue(networkConnectionInfo(for: .mockWith(isExpensive: true)).isExpensive)
-        XCTAssertFalse(networkConnectionInfo(for: .mockWith(isExpensive: false)).isExpensive)
-        // swiftlint:disable xct_specific_matcher
-        XCTAssertEqual(networkConnectionInfo(for: .mockWith(isConstrained: true)).isConstrained, true)
-        XCTAssertEqual(networkConnectionInfo(for: .mockWith(isConstrained: false)).isConstrained, false)
-        XCTAssertEqual(networkConnectionInfo(for: .mockWith(isConstrained: nil)).isConstrained, nil)
-        // swiftlint:enable xct_specific_matcher
+    @available(iOS 12, *)
+    func testProviderReleasesNWPathMonitor() {
+        weak var weakRef: NWPathMonitor? = nil
+        autoreleasepool {
+            let pathMonitor = NWPathMonitor()
+            _ = NetworkConnectionInfoProvider(pathMonitor)
+            weakRef = pathMonitor
+        }
+        Thread.sleep(forTimeInterval: 0.01)
+
+        XCTAssertNil(weakRef, "path monitor should be deallocated and nil")
+    }
+
+    @available(iOS 12, *)
+    func testNWPathMonitorUndocumentedBehavior() {
+        weak var weakRef: NWPathMonitor? = nil
+        autoreleasepool {
+            let pathMonitor = NWPathMonitor()
+            weakRef = pathMonitor
+        }
+        Thread.sleep(forTimeInterval: 0.01)
+
+        XCTAssertNotNil(weakRef, "iOS 12 did not use to release NWPathMonitor unless cancel is called, now it is fixed 🙌")
+    }
+
+    func testItStartsAndCancelsLegacyPathMonitor() {
+        var pathMonitor: iOS11PathMonitor? = iOS11PathMonitor()
+        weak var weakMonitor: iOS11PathMonitor? = pathMonitor
+
+        var provider: NetworkConnectionInfoProvider? = NetworkConnectionInfoProvider(pathMonitor!)
+
+        pathMonitor = nil
+
+        XCTAssertNotNil(weakMonitor, "provider should retain pathMonitor")
+        XCTAssertNotNil(provider!.current, "provider should be working")
+
+        provider = nil // `cancel()` when deinitialized
+
+        XCTAssertNil(provider)
+        XCTAssertNil(weakMonitor, "path monitor should be cancelled and released")
+    }
+}
+
+class NetworkConnectionInfoConversionTests: XCTestCase {
+    typealias Reachability = NetworkConnectionInfo.Reachability
+    typealias Interface = NetworkConnectionInfo.Interface
+
+    @available(iOS 12, *)
+    func testNWPathStatus() {
+        XCTAssertEqual(Reachability(from: .satisfied), .yes)
+        XCTAssertEqual(Reachability(from: .unsatisfied), .no)
+        XCTAssertEqual(Reachability(from: .requiresConnection), .maybe)
+    }
+
+    @available(iOS 12, *)
+    func testNWInterface() {
+        XCTAssertEqual(Array(fromInterfaceTypes: []), [])
+        XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
+        XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .wifi]), [.wifi, .wifi])
+        XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .cellular]), [.wifi, .cellular])
+        XCTAssertEqual(Array(fromInterfaceTypes: [.loopback, .other]), [.loopback, .other])
+    }
+
+    func testSCReachability() {
+        let reachable = SCNetworkReachabilityFlags(arrayLiteral: .reachable)
+        XCTAssertEqual(Reachability(from: reachable), .yes)
+
+        let unreachable = SCNetworkReachabilityFlags(arrayLiteral: .connectionOnDemand)
+        XCTAssertEqual(Reachability(from: unreachable), .no)
+
+        let null: SCNetworkReachabilityFlags? = nil
+        XCTAssertEqual(Reachability(from: null), .maybe)
+    }
+
+    func testSCInterface() {
+        let cellular = SCNetworkReachabilityFlags(arrayLiteral: .isWWAN)
+        XCTAssertEqual(Array(fromReachabilityFlags: cellular), [.cellular])
+
+        let null: SCNetworkReachabilityFlags? = nil
+        XCTAssertNil(Array(fromReachabilityFlags: null))
+
+        let nonCellularReachable = SCNetworkReachabilityFlags(arrayLiteral: .reachable)
+        XCTAssertNil(Array(fromReachabilityFlags: nonCellularReachable))
     }
 }
