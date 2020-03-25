@@ -86,3 +86,4 @@ included:
   - instrumented-tests/Integration/Integration
   - instrumented-tests/Benchmark/Benchmark
   - instrumented-tests/http-server-mock/Sources
+  - dependency-manager-tests/spm/SPMProject

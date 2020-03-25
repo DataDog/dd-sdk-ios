@@ -79,4 +79,8 @@ included:
   - Tests
   - instrumented-tests/Integration/IntegrationTests
   - instrumented-tests/Benchmark/BenchmarkTests
-  - instrumented-tests/http-server-mock/Tests
+  - instrumented-tests/http-server-mock/Test
+  - dependency-manager-tests/spm/SPMProjectTests
+  - dependency-manager-tests/spm/SPMProjectUITests
+
+

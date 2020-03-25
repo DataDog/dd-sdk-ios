@@ -6,7 +6,9 @@ endif
 
 test:
 		@echo "⚙️  Testing SPM for remote branch: '${GIT_BRANCH}'..."
-		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" Package.swift.src > Package.swift
-		swift package update
-		swift build
+		@sed -i "" "s|branch = *.;|branch = ${GIT_BRANCH};|g" SPMProject.xcodeproj/project.pbxproj
+		@xcodebuild -project SPMProject.xcodeproj \
+			-scheme "SPMProjectUITests" \
+        	   	-destination 'platform=iOS Simulator,name=iPhone 11' \
+        	   	test
 		@echo "OK 👌"

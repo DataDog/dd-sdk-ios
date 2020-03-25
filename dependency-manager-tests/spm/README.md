@@ -7,3 +7,8 @@ After pushing current branch to remote, run:
 $ make
 ```
 to check if SPM is able to fetch `Datadog` dependency from current branch and build the project.
+
+## Important Note:
+
+`make` auto-magically changes current branch for `Datadog` dependency. 
+By default, current branch is `master`; if you open `SPMProject.xcodeproj` and build, you will fetch `Datadog:master`
