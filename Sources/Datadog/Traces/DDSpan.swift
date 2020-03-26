@@ -8,9 +8,9 @@ import OpenTracing
 
 internal class DDSpan: Span {
     /// The `Tracer` which created this span.
-    let issuingTracer: DDTracer
-    let operationName: String
-    let startTime: Date
+    internal let issuingTracer: DDTracer
+    private(set) var operationName: String
+    internal let startTime: Date
 
     init(tracer: DDTracer, operationName: String, parentSpanContext: DDSpanContext?, startTime: Date) {
         self.issuingTracer = tracer
@@ -31,7 +31,7 @@ internal class DDSpan: Span {
     }
 
     func setOperationName(_ operationName: String) {
-        // TODO: RUMM-293
+        self.operationName = operationName
     }
 
     func setTag(key: String, value: Codable) {
