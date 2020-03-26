@@ -5,6 +5,7 @@
  */
 
 import OpenTracing
+import Foundation
 
 internal class DDSpan: Span {
     private(set) var operationName: String

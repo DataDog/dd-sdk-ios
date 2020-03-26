@@ -5,6 +5,7 @@
  */
 
 import OpenTracing
+import Foundation
 
 public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
