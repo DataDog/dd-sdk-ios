@@ -68,7 +68,8 @@ class DDLoggerBuilderTests: XCTestCase {
     }
 
     func testUsingDifferentOutputs() throws {
-        Datadog.instance = .mockNeverPerformingUploads()
+        Datadog.instance = .mockNoOp()
+        defer { Datadog.instance = nil }
 
         assertThat(
             logger: {
@@ -145,8 +146,6 @@ class DDLoggerBuilderTests: XCTestCase {
             }(),
             usesOutput: NoOpLogOutput.self
         )
-
-        try Datadog.deinitializeOrThrow()
     }
 
     // MARK: - Initialization

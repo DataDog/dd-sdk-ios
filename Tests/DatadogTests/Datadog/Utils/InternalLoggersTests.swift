@@ -13,7 +13,7 @@ class InternalLoggersTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        Datadog.instance = .mockNeverPerformingUploads()
+        Datadog.instance = .mockNoOp()
         printedMessages = []
         userLogger = createSDKUserLogger(
             consolePrintFunction: { [weak self] in self?.printedMessages.append($0) },
