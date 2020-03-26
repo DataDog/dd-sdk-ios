@@ -111,8 +111,8 @@ class LoggingIntegrationTests: IntegrationTests {
                 isTypeOf: Optional<Bool>.self
             )
 
-            #if os(macOS) || targetEnvironment(simulator)
-                // When running on macOS or iOS Simulator
+            #if targetEnvironment(simulator)
+                // When running on iOS Simulator
                 matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierName)
                 matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierISOCountryCode)
                 matcher.assertNoValue(forKey: LogMatcher.JSONKey.mobileNetworkCarrierRadioTechnology)

@@ -12,7 +12,7 @@ extension NWPathMonitor {
         let info = currentPath
 
         let isCurrentPathConstrained: Bool? = {
-            if #available(iOS 13.0, macOS 10.15, *) {
+            if #available(iOS 13.0, *) {
                 return info.isConstrained
             } else {
                 return nil

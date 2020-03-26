@@ -1,6 +1,6 @@
 # Datadog SDK for iOS
 
-> Swift library to interact with Datadog. Supports iOS and macOS.
+> Swift library to interact with Datadog. Supports iOS only.
 
 ⚠️ This is an **alpha version** of the SDK and source breaking changes might be introduced in `1.0.0`. 
 
