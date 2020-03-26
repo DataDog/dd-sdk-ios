@@ -99,6 +99,7 @@
 		611409A8242CC07D00316215 /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409A7242CC07D00316215 /* DDTracerTests.swift */; };
 		611409AA242CC08B00316215 /* DatadogTracingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409A9242CC08B00316215 /* DatadogTracingMocks.swift */; };
 		611409AC242CC10400316215 /* OpenTracing.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 61140994242CBED700316215 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		611409AF242CCE1E00316215 /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409AE242CCE1E00316215 /* DDSpanTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -253,6 +254,7 @@
 		6114099F242CC03000316215 /* DDSpanContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpanContext.swift; sourceTree = "<group>"; };
 		611409A7242CC07D00316215 /* DDTracerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
 		611409A9242CC08B00316215 /* DatadogTracingMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogTracingMocks.swift; sourceTree = "<group>"; };
+		611409AE242CCE1E00316215 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -527,6 +529,7 @@
 				611409A7242CC07D00316215 /* DDTracerTests.swift */,
 				61133C212423990D00786299 /* Core */,
 				61133C392423990D00786299 /* Logs */,
+				611409AD242CCDE600316215 /* Traces */,
 				61133C352423990D00786299 /* Utils */,
 			);
 			path = Datadog;
@@ -679,6 +682,14 @@
 				6114099E242CC03000316215 /* UUID.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		611409AD242CCDE600316215 /* Traces */ = {
+			isa = PBXGroup;
+			children = (
+				611409AE242CCE1E00316215 /* DDSpanTests.swift */,
+			);
+			path = Traces;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -910,6 +921,7 @@
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
+				611409AF242CCE1E00316215 /* DDSpanTests.swift in Sources */,
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
 				61133C4C2423990D00786299 /* LogsMocks.swift in Sources */,
 				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,

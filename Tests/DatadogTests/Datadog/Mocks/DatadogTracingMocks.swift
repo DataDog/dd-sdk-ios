@@ -22,3 +22,9 @@ extension TracingUUID {
         return TracingUUID(rawValue: rawValue)
     }
 }
+
+extension DDTracer {
+    static func mockNoOp() -> DDTracer {
+        return DDTracer()
+    }
+}
