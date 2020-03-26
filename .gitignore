@@ -6,3 +6,5 @@ xcuserdata/
 
 # SPM-generated .xcodedproj
 Datadog.xcodeproj
+
+Carthage/
