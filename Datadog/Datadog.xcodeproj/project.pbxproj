@@ -97,6 +97,13 @@
 		61140995242CBED700316215 /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61140994242CBED700316215 /* OpenTracing.framework */; };
 		61140996242CBED700316215 /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61140994242CBED700316215 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61140998242CBF4A00316215 /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61140994242CBED700316215 /* OpenTracing.framework */; };
+		611409A0242CC03000316215 /* DDTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61140999242CC02F00316215 /* DDTracer.swift */; };
+		611409A1242CC03000316215 /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114099B242CC03000316215 /* DDSpan.swift */; };
+		611409A2242CC03000316215 /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114099C242CC03000316215 /* DDNoOps.swift */; };
+		611409A3242CC03000316215 /* UUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114099E242CC03000316215 /* UUID.swift */; };
+		611409A4242CC03000316215 /* DDSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114099F242CC03000316215 /* DDSpanContext.swift */; };
+		611409A8242CC07D00316215 /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409A7242CC07D00316215 /* DDTracerTests.swift */; };
+		611409AA242CC08B00316215 /* DatadogTracingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409A9242CC08B00316215 /* DatadogTracingMocks.swift */; };
 		611409AC242CC10400316215 /* OpenTracing.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 61140994242CBED700316215 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -254,6 +261,13 @@
 		61C3646F243B5C8300C4D4E6 /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
 		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
 		61140994242CBED700316215 /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = ../Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
+		61140999242CC02F00316215 /* DDTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracer.swift; sourceTree = "<group>"; };
+		6114099B242CC03000316215 /* DDSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpan.swift; sourceTree = "<group>"; };
+		6114099C242CC03000316215 /* DDNoOps.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDNoOps.swift; sourceTree = "<group>"; };
+		6114099E242CC03000316215 /* UUID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UUID.swift; sourceTree = "<group>"; };
+		6114099F242CC03000316215 /* DDSpanContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpanContext.swift; sourceTree = "<group>"; };
+		611409A7242CC07D00316215 /* DDTracerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
+		611409A9242CC08B00316215 /* DatadogTracingMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogTracingMocks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -329,10 +343,12 @@
 			isa = PBXGroup;
 			children = (
 				61133BBB2423979B00786299 /* Datadog.swift */,
-				61133BB62423979B00786299 /* Logger.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
+				61133BB62423979B00786299 /* Logger.swift */,
+				61140999242CC02F00316215 /* DDTracer.swift */,
 				61133B9E2423979B00786299 /* Core */,
 				61133BBC2423979B00786299 /* Logs */,
+				6114099A242CC03000316215 /* Traces */,
 				61133BB72423979B00786299 /* Utils */,
 			);
 			name = Datadog;
@@ -524,8 +540,9 @@
 			children = (
 				61133C192423990D00786299 /* Mocks */,
 				61133C412423990D00786299 /* DatadogTests.swift */,
-				61133C382423990D00786299 /* LoggerTests.swift */,
 				61133C372423990D00786299 /* DatadogConfigurationTests.swift */,
+				61133C382423990D00786299 /* LoggerTests.swift */,
+				611409A7242CC07D00316215 /* DDTracerTests.swift */,
 				61133C212423990D00786299 /* Core */,
 				61133C392423990D00786299 /* Logs */,
 				61133C352423990D00786299 /* Utils */,
@@ -542,6 +559,7 @@
 				61133C1D2423990D00786299 /* DatadogObjcMocks.swift */,
 				61133C1F2423990D00786299 /* DatadogMocks.swift */,
 				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
+				611409A9242CC08B00316215 /* DatadogTracingMocks.swift */,
 				61133C202423990D00786299 /* FoundationMocks.swift */,
 				61C3646F243B5C8300C4D4E6 /* ServerMock.swift */,
 			);
@@ -690,6 +708,25 @@
 				61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */,
 			);
 			path = DatadogPrivate;
+			sourceTree = "<group>";
+		};
+		6114099A242CC03000316215 /* Traces */ = {
+			isa = PBXGroup;
+			children = (
+				6114099B242CC03000316215 /* DDSpan.swift */,
+				6114099F242CC03000316215 /* DDSpanContext.swift */,
+				6114099C242CC03000316215 /* DDNoOps.swift */,
+				6114099D242CC03000316215 /* Utils */,
+			);
+			path = Traces;
+			sourceTree = "<group>";
+		};
+		6114099D242CC03000316215 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				6114099E242CC03000316215 /* UUID.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -881,11 +918,14 @@
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfo.swift in Sources */,
+				611409A2242CC03000316215 /* DDNoOps.swift in Sources */,
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
 				61133BD62423979B00786299 /* DataUploader.swift in Sources */,
 				61133BE52423979B00786299 /* LogBuilder.swift in Sources */,
 				61133BD42423979B00786299 /* FileReader.swift in Sources */,
+				611409A1242CC03000316215 /* DDSpan.swift in Sources */,
+				611409A0242CC03000316215 /* DDTracer.swift in Sources */,
 				61133BD32423979B00786299 /* File.swift in Sources */,
 				61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */,
 				61133BDA2423979B00786299 /* HTTPHeaders.swift in Sources */,
@@ -896,7 +936,9 @@
 				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
+				611409A4242CC03000316215 /* DDSpanContext.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
+				611409A3242CC03000316215 /* UUID.swift in Sources */,
 				61133BE22423979B00786299 /* LogsPersistenceStrategy.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
@@ -913,6 +955,8 @@
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
 				61C36470243B5C8300C4D4E6 /* ServerMock.swift in Sources */,
 				61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */,
+				611409A8242CC07D00316215 /* DDTracerTests.swift in Sources */,
+				61133C502423990D00786299 /* NetworkMocks.swift in Sources */,
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61133C512423990D00786299 /* DatadogMocks.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
@@ -942,6 +986,7 @@
 				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
 				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,
 				61133C4F2423990D00786299 /* DatadogObjcMocks.swift in Sources */,
+				611409AA242CC08B00316215 /* DatadogTracingMocks.swift in Sources */,
 				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
 				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
