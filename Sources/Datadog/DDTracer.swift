@@ -7,8 +7,13 @@
 import OpenTracing
 
 public class DDTracer: Tracer {
+    /// Writes `Span` objects to output.
+    private let spanOutput: SpanOutput
+
     // TODO: RUMM-332 Consider builder pattern to initialize the tracer
-    public init() {}
+    internal init(spanOutput: SpanOutput) {
+        self.spanOutput = spanOutput
+    }
 
     // MARK: - Open Tracing interface
 
@@ -30,7 +35,7 @@ public class DDTracer: Tracer {
         return nil
     }
 
-    // MARK: - Internal
+    // MARK: - Private Open Tracing helpers
 
     private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> Span {
         guard let datadog = Datadog.instance else {
@@ -44,5 +49,11 @@ public class DDTracer: Tracer {
             parentSpanContext: parentSpanContext,
             startTime: startTime ?? datadog.dateProvider.currentDate()
         )
+    }
+
+    // MARK: - Internal
+
+    func write(span: DDSpan, finishTime: Date) {
+        spanOutput.write(span: span, finishTime: finishTime)
     }
 }

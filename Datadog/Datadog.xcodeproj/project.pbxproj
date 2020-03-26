@@ -106,6 +106,9 @@
 		611409AA242CC08B00316215 /* DatadogTracingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409A9242CC08B00316215 /* DatadogTracingMocks.swift */; };
 		611409AC242CC10400316215 /* OpenTracing.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 61140994242CBED700316215 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		611409AF242CCE1E00316215 /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409AE242CCE1E00316215 /* DDSpanTests.swift */; };
+		611409B2242CEFB400316215 /* SpanOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B1242CEFB400316215 /* SpanOutput.swift */; };
+		611409B4242CF03300316215 /* SpanFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B3242CF03300316215 /* SpanFileOutput.swift */; };
+		611409B6242CF44500316215 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B5242CF44500316215 /* Utils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -270,6 +273,9 @@
 		611409A7242CC07D00316215 /* DDTracerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
 		611409A9242CC08B00316215 /* DatadogTracingMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogTracingMocks.swift; sourceTree = "<group>"; };
 		611409AE242CCE1E00316215 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
+		611409B1242CEFB400316215 /* SpanOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanOutput.swift; sourceTree = "<group>"; };
+		611409B3242CF03300316215 /* SpanFileOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanFileOutput.swift; sourceTree = "<group>"; };
+		611409B5242CF44500316215 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -719,6 +725,7 @@
 				6114099B242CC03000316215 /* DDSpan.swift */,
 				6114099F242CC03000316215 /* DDSpanContext.swift */,
 				6114099C242CC03000316215 /* DDNoOps.swift */,
+				611409B0242CEF8A00316215 /* SpanOutputs */,
 				6114099D242CC03000316215 /* Utils */,
 			);
 			path = Traces;
@@ -736,8 +743,18 @@
 			isa = PBXGroup;
 			children = (
 				611409AE242CCE1E00316215 /* DDSpanTests.swift */,
+				611409B5242CF44500316215 /* Utils.swift */,
 			);
 			path = Traces;
+			sourceTree = "<group>";
+		};
+		611409B0242CEF8A00316215 /* SpanOutputs */ = {
+			isa = PBXGroup;
+			children = (
+				611409B1242CEFB400316215 /* SpanOutput.swift */,
+				611409B3242CF03300316215 /* SpanFileOutput.swift */,
+			);
+			path = SpanOutputs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -928,6 +945,7 @@
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
+				611409B4242CF03300316215 /* SpanFileOutput.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfo.swift in Sources */,
 				611409A2242CC03000316215 /* DDNoOps.swift in Sources */,
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
@@ -945,6 +963,7 @@
 				61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */,
 				61133BE12423979B00786299 /* LogsUploadStrategy.swift in Sources */,
 				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
+				611409B2242CEFB400316215 /* SpanOutput.swift in Sources */,
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
 				611409A4242CC03000316215 /* DDSpanContext.swift in Sources */,
@@ -994,6 +1013,7 @@
 				61133C592423990D00786299 /* FilesOrchestratorTests.swift in Sources */,
 				61133C6D2423990D00786299 /* TestsDirectory.swift in Sources */,
 				61133C6C2423990D00786299 /* SwiftExtensions.swift in Sources */,
+				611409B6242CF44500316215 /* Utils.swift in Sources */,
 				61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */,
 				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
 				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,

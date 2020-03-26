@@ -7,10 +7,11 @@
 import OpenTracing
 
 internal class DDSpan: Span {
+    private(set) var operationName: String
     /// The `Tracer` which created this span.
     internal let issuingTracer: DDTracer
-    private(set) var operationName: String
     internal let startTime: Date
+    internal var isFinished: Bool = false
 
     init(tracer: DDTracer, operationName: String, parentSpanContext: DDSpanContext?, startTime: Date) {
         self.issuingTracer = tracer
@@ -48,10 +49,25 @@ internal class DDSpan: Span {
     }
 
     func finish(at time: Date) {
-        // TODO: RUMM-293
+        do {
+            return try finishOrThrow(time: time)
+        } catch {
+            userLogger.error("🔥 Failed to finish the span: \(error)")
+        }
     }
 
     func log(fields: [String: Codable], timestamp: Date) {
         // TODO: RUMM-292
+    }
+
+    // MARK: - Private Open Tracing helpers
+
+    private func finishOrThrow(time: Date) throws {
+        guard !isFinished else { // TODO: RUMM-340 Consider thread safety
+            throw InternalError(description: "Attempted to finish already finished span: \"\(operationName)\".")
+        }
+
+        isFinished = true // TODO: RUMM-340 Consider thread safety
+        issuingTracer.write(span: self, finishTime: time)
     }
 }

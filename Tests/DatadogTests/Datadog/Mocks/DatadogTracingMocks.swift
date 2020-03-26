@@ -23,8 +23,24 @@ extension TracingUUID {
     }
 }
 
+// MARK: - Integration
+
+/// `SpanOutput` recording received spans.
+class SpanOutputMock: SpanOutput {
+    struct Recorded {
+        let span: DDSpan
+        let finishTime: Date
+    }
+
+    var recorded: Recorded? = nil
+
+    func write(span: DDSpan, finishTime: Date) {
+        recorded = Recorded(span: span, finishTime: finishTime)
+    }
+}
+
 extension DDTracer {
     static func mockNoOp() -> DDTracer {
-        return DDTracer()
+        return DDTracer(spanOutput: SpanOutputMock())
     }
 }
