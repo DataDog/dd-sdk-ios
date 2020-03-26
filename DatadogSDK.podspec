@@ -23,4 +23,6 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 
     "SWIFT_INCLUDE_PATHS" => "$(PODS_ROOT)/DatadogSDK/Datadog/DatadogPrivate/** $(PODS_TARGET_SRCROOT)/DatadogSDK/Datadog/DatadogPrivate/**"
   }
+
+  s.dependency 'OpenTracingSwift'
 end
