@@ -19,33 +19,37 @@ class DDTracerTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItStartsSpanWithNoParent() {
+    func testGivenSpanWithNoParent_whenFinished_itIsWrittenToOutput() {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        let spanOutput = SpanOutputMock()
         Datadog.instance = .mockNoOpWith(dateProvider: dateProvider)
         defer { Datadog.instance = nil }
 
-        let tracer = DDTracer()
+        let tracer = DDTracer(spanOutput: spanOutput)
         let span = tracer.startSpan(operationName: "operation") as? DDSpan
+        span?.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
-        XCTAssertTrue(span?.tracer() as? DDTracer === tracer)
-        XCTAssertEqual(span?.operationName, "operation")
-        XCTAssertEqual(span?.startTime, .mockDecember15th2019At10AMUTC())
+        let recorded = spanOutput.recorded
+        XCTAssertTrue(recorded?.span.tracer() as? DDTracer === tracer)
+        XCTAssertEqual(recorded?.span.operationName, "operation")
+        XCTAssertEqual(recorded?.span.startTime, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(recorded?.finishTime, .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
     }
 
-    func testItStartsSpanWithParent() {
+    func testGivenSpanWithParent_whenFinished_itIsWrittenToOutput() {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        let spanOutput = SpanOutputMock()
         Datadog.instance = .mockNoOpWith(dateProvider: dateProvider)
         defer { Datadog.instance = nil }
 
-        let tracer = DDTracer()
+        let tracer = DDTracer(spanOutput: spanOutput)
         let parentSpan = tracer.startSpan(operationName: "operation 1") as? DDSpan
         let span = tracer.startSpan(operationName: "operation 2", childOf: parentSpan?.context) as? DDSpan
+        span?.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
-        XCTAssertTrue(span?.tracer() as? DDTracer === tracer)
-        XCTAssertEqual(span?.operationName, "operation 2")
-        XCTAssertEqual(span?.startTime, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual((span?.context as? DDSpanContext)?.traceID, (parentSpan?.context as? DDSpanContext)?.traceID)
-        XCTAssertNotEqual((span?.context as? DDSpanContext)?.spanID, (parentSpan?.context as? DDSpanContext)?.spanID)
+        let recorded = spanOutput.recorded
+        XCTAssertEqual(recorded?.span.context.dd.traceID, parentSpan?.context.dd.traceID)
+        XCTAssertNotEqual(recorded?.span.context.dd.spanID, parentSpan?.context.dd.spanID)
     }
 
     // MARK: - Initialization
@@ -58,7 +62,7 @@ class DDTracerTests: XCTestCase {
 
         XCTAssertNil(Datadog.instance)
 
-        let tracer = DDTracer()
+        let tracer = DDTracer(spanOutput: SpanOutputMock())
         let fixtures: [(() -> Void, String)] = [
             ({ _ = tracer.startSpan(operationName: .mockAny()) }, "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
         ]

@@ -8,9 +8,37 @@ import XCTest
 @testable import Datadog
 
 class DDSpanTests: XCTestCase {
-    func testSettingOperationName() {
-        let span = DDSpan(tracer: .mockNoOp(), operationName: "initial", parentSpanContext: nil, startTime: .mockAny())
+    func testOverwritingOperationName() {
+        let span = DDSpan(
+            tracer: .mockNoOp(),
+            operationName: "initial",
+            parentSpanContext: nil,
+            startTime: .mockAny()
+        )
         span.setOperationName("new")
         XCTAssertEqual(span.operationName, "new")
+    }
+
+    func testGivenFinishedSpan_whenAttemptingToFinishItAgain_itPrintsError() {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = Logger(logOutput: output, identifier: "sdk-user")
+
+        let span = DDSpan(
+            tracer: .mockNoOp(),
+            operationName: "the span",
+            parentSpanContext: nil,
+            startTime: .mockAny()
+        )
+        span.finish()
+        span.finish()
+
+        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(
+            output.recordedLog?.message,
+            "🔥 Failed to finish the span: Attempted to finish already finished span: \"the span\"."
+        )
     }
 }
