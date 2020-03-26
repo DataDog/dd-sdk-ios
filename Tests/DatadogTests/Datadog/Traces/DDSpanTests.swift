@@ -9,36 +9,40 @@ import XCTest
 
 class DDSpanTests: XCTestCase {
     func testOverwritingOperationName() {
-        let span = DDSpan(
-            tracer: .mockNoOp(),
-            operationName: "initial",
-            parentSpanContext: nil,
-            startTime: .mockAny()
-        )
+        let span: DDSpan = .mockWith(operationName: "initial")
         span.setOperationName("new")
         XCTAssertEqual(span.operationName, "new")
     }
 
-    func testGivenFinishedSpan_whenAttemptingToFinishItAgain_itPrintsError() {
+    func testCallingMethodsOnSpanInstanceAfterItIsFinished() {
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
         userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
-        let span = DDSpan(
-            tracer: .mockNoOp(),
-            operationName: "the span",
-            parentSpanContext: nil,
-            startTime: .mockAny()
-        )
-        span.finish()
+        let span: DDSpan = .mockWith(operationName: "the span")
         span.finish()
 
-        XCTAssertEqual(output.recordedLog?.level, .error)
-        XCTAssertEqual(
-            output.recordedLog?.message,
-            "🔥 Failed to finish the span: Attempted to finish already finished span: \"the span\"."
-        )
+        let fixtures: [(() -> Void, String)] = [
+            ({ _ = span.setOperationName(.mockAny()) },
+            "🔥 Calling `setOperationName(_:)` on a finished span (\"the span\") is not allowed."),
+            ({ _ = span.setTag(key: .mockAny(), value: 0) },
+            "🔥 Calling `setTag(key:value:)` on a finished span (\"the span\") is not allowed."),
+            ({ _ = span.setBaggageItem(key: .mockAny(), value: .mockAny()) },
+            "🔥 Calling `setBaggageItem(key:value:)` on a finished span (\"the span\") is not allowed."),
+            ({ _ = span.baggageItem(withKey: .mockAny()) },
+            "🔥 Calling `baggageItem(withKey:)` on a finished span (\"the span\") is not allowed."),
+            ({ _ = span.finish(at: .mockAny()) },
+            "🔥 Calling `finish(at:)` on a finished span (\"the span\") is not allowed."),
+            ({ _ = span.log(fields: [:], timestamp: .mockAny()) },
+            "🔥 Calling `log(fields:timestamp:)` on a finished span (\"the span\") is not allowed."),
+        ]
+
+        fixtures.forEach { tracerMethod, expectedConsoleWarning in
+            tracerMethod()
+            XCTAssertEqual(output.recordedLog?.level, .warn)
+            XCTAssertEqual(output.recordedLog?.message, expectedConsoleWarning)
+        }
     }
 }

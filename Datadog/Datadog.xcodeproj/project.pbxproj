@@ -109,6 +109,7 @@
 		611409B2242CEFB400316215 /* SpanOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B1242CEFB400316215 /* SpanOutput.swift */; };
 		611409B4242CF03300316215 /* SpanFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B3242CF03300316215 /* SpanFileOutput.swift */; };
 		611409B6242CF44500316215 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B5242CF44500316215 /* Utils.swift */; };
+		611409B8242D098700316215 /* SpansMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611409B7242D098700316215 /* SpansMocks.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -276,6 +277,7 @@
 		611409B1242CEFB400316215 /* SpanOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanOutput.swift; sourceTree = "<group>"; };
 		611409B3242CF03300316215 /* SpanFileOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanFileOutput.swift; sourceTree = "<group>"; };
 		611409B5242CF44500316215 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		611409B7242D098700316215 /* SpansMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpansMocks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -563,6 +565,7 @@
 			isa = PBXGroup;
 			children = (
 				61133C1A2423990D00786299 /* LogsMocks.swift */,
+				611409B7242D098700316215 /* SpansMocks.swift */,
 				61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */,
 				61133C1C2423990D00786299 /* UIKitMocks.swift */,
 				61133C1D2423990D00786299 /* DatadogObjcMocks.swift */,
@@ -984,6 +987,7 @@
 			files = (
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
 				61C36470243B5C8300C4D4E6 /* ServerMock.swift in Sources */,
+				611409B8242D098700316215 /* SpansMocks.swift in Sources */,
 				61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */,
 				611409A8242CC07D00316215 /* DDTracerTests.swift in Sources */,
 				61133C502423990D00786299 /* NetworkMocks.swift in Sources */,

@@ -64,7 +64,8 @@ class DDTracerTests: XCTestCase {
 
         let tracer = DDTracer(spanOutput: SpanOutputMock())
         let fixtures: [(() -> Void, String)] = [
-            ({ _ = tracer.startSpan(operationName: .mockAny()) }, "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
+            ({ _ = tracer.startSpan(operationName: .mockAny()) },
+             "`Datadog.initialize()` must be called prior to `startSpan(...)`."),
         ]
 
         fixtures.forEach { tracerMethod, expectedConsoleError in
