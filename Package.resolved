@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OpenTracing",
+        "repositoryURL": "https://github.com/DataDog/opentracing-swift.git",
+        "state": {
+          "branch": "master",
+          "revision": "0aa614e30b3cc01f7b26200480fe9b2d08945189",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
