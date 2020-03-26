@@ -5,6 +5,7 @@
  */
 
 import OpenTracing
+import Foundation
 
 private struct DDNoopGlobals {
     static let tracer = DDNoopTracer()
