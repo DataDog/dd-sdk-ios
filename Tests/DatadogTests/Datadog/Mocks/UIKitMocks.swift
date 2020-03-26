@@ -4,7 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#if canImport(UIKit)
 import UIKit
 
 /*
@@ -52,5 +51,3 @@ class UIDeviceMock: UIDevice {
     override var batteryState: UIDevice.BatteryState { _batteryState }
     override var batteryLevel: Float { _batteryLevel }
 }
-
-#endif

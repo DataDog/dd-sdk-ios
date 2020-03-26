@@ -291,7 +291,6 @@ extension URLRequest {
 
 // MARK: - Process
 
-#if os(iOS)
 class ProcessInfoMock: ProcessInfo {
     private var _isLowPowerModeEnabled: Bool
 
@@ -301,4 +300,3 @@ class ProcessInfoMock: ProcessInfo {
 
     override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
 }
-#endif

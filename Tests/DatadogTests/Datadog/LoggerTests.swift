@@ -86,7 +86,7 @@ class LoggerTests: XCTestCase {
                 logMatcher.assertValue(forKeyPath: "network.client.is_expensive", isTypeOf: Bool.self)
                 logMatcher.assertValue(forKeyPath: "network.client.supports_ipv4", isTypeOf: Bool.self)
                 logMatcher.assertValue(forKeyPath: "network.client.supports_ipv6", isTypeOf: Bool.self)
-                if #available(iOS 13.0, macOS 10.15, *) {
+                if #available(iOS 13.0, *) {
                     logMatcher.assertValue(forKeyPath: "network.client.is_constrained", isTypeOf: Bool.self)
                 }
             }

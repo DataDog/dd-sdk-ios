@@ -4,10 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Foundation
-#if canImport(UIKit)
 import UIKit
-#endif
 
 /// Describes current mobile device.
 internal class MobileDevice {
@@ -55,7 +52,6 @@ internal class MobileDevice {
         self.currentBatteryStatus = currentBatteryStatus
     }
 
-    #if canImport(UIKit)
     convenience init(uiDevice: UIDevice, processInfo: ProcessInfo) {
         let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
         self.init(
@@ -73,32 +69,26 @@ internal class MobileDevice {
             }
         )
     }
-    #endif
 
     /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
     static var current: MobileDevice? {
-        #if canImport(UIKit)
-            #if !targetEnvironment(simulator)
-            // Real device
-            return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
-            #else
-            // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
-            return MobileDevice(
-                model: UIDevice.current.model,
-                osName: UIDevice.current.systemName,
-                osVersion: UIDevice.current.systemVersion,
-                enableBatteryStatusMonitoring: {},
-                resetBatteryStatusMonitoring: {},
-                currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
-            )
-            #endif
+        #if !targetEnvironment(simulator)
+        // Real device
+        return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
         #else
-        return nil
+        // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+        return MobileDevice(
+            model: UIDevice.current.model,
+            osName: UIDevice.current.systemName,
+            osVersion: UIDevice.current.systemVersion,
+            enableBatteryStatusMonitoring: {},
+            resetBatteryStatusMonitoring: {},
+            currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+        )
         #endif
     }
 
-    #if canImport(UIKit)
     private static func toBatteryState(_ uiDeviceBatteryState: UIDevice.BatteryState) -> BatteryStatus.State {
         switch uiDeviceBatteryState {
         case .unknown:      return .unknown
@@ -108,5 +98,4 @@ internal class MobileDevice {
         @unknown default:   return.unknown
         }
     }
-    #endif
 }
