@@ -8,7 +8,7 @@ import Foundation
 @testable import Datadog
 
 /*
-A collection of mocks for Logs objects.
+A collection of mocks for `Log` objects.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 

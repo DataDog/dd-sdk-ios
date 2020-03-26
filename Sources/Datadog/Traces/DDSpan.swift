@@ -32,42 +32,57 @@ internal class DDSpan: Span {
     }
 
     func setOperationName(_ operationName: String) {
+        guard warnIfFinished("setOperationName(_:)") else {
+            return
+        }
         self.operationName = operationName
     }
 
     func setTag(key: String, value: Codable) {
+        guard warnIfFinished("setTag(key:value:)") else {
+            return
+        }
         // TODO: RUMM-292
     }
 
     func setBaggageItem(key: String, value: String) {
+        guard warnIfFinished("setBaggageItem(key:value:)") else {
+            return
+        }
         // TODO: RUMM-292
     }
 
     func baggageItem(withKey key: String) -> String? {
+        guard warnIfFinished("baggageItem(withKey:)") else {
+            return nil
+        }
         // TODO: RUMM-292
         return nil
     }
 
     func finish(at time: Date) {
-        do {
-            return try finishOrThrow(time: time)
-        } catch {
-            userLogger.error("🔥 Failed to finish the span: \(error)")
+        guard warnIfFinished("finish(at:)") else {
+            return
         }
+        isFinished = true // TODO: RUMM-340 Consider thread safety
+        issuingTracer.write(span: self, finishTime: time)
     }
 
     func log(fields: [String: Codable], timestamp: Date) {
+        guard warnIfFinished("log(fields:timestamp:)") else {
+            return
+        }
         // TODO: RUMM-292
     }
 
-    // MARK: - Private Open Tracing helpers
+    // MARK: - Private
 
-    private func finishOrThrow(time: Date) throws {
-        guard !isFinished else { // TODO: RUMM-340 Consider thread safety
-            throw InternalError(description: "Attempted to finish already finished span: \"\(operationName)\".")
+    private func warnIfFinished(_ methodName: String) -> Bool {
+        if isFinished { // TODO: RUMM-340 Consider thread safety
+            userLogger.warn("🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed.")
+            return false
+        } else {
+            return true
         }
-
-        isFinished = true // TODO: RUMM-340 Consider thread safety
-        issuingTracer.write(span: self, finishTime: time)
     }
 }
