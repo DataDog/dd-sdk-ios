@@ -4,12 +4,7 @@ else
 		GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
-EXPECTED_FRAMEWORKS := \
-	Carthage/Build/iOS/Datadog.framework \
-	Carthage/Build/iOS/DatadogObjc.framework \
-	Carthage/Build/iOS/OpenTracing.framework
-
-FRAMEWORKS_MISSING := $(shell $(foreach framework,$(EXPECTED_FRAMEWORKS),test -e "$(framework)" || echo "$(framework)";))
+PWD := $(shell pwd)
 
 test:
 		@echo "⚙️  Testing Carthage for remote branch: '${GIT_BRANCH}'..."
@@ -17,12 +12,10 @@ test:
 		@rm -rf Carthage/
 
 		@echo "🧪 Run 'carthage update'"
-		carthage update
+		@carthage update
 
-		@echo "🧪 Check if expected frameworks exist"
-ifneq ($(FRAMEWORKS_MISSING),)
-	@echo "🔥 Frameworks missing: $(FRAMEWORKS_MISSING)"
-	@echo "🧪 FAILED"
-	@false
-endif
+		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/iOS"
+		@[ -e "Carthage/Build/iOS/Datadog.framework" ] && echo "Datadog.framework - OK" || { echo "Datadog.framework - missing"; false; }
+		@[ -e "Carthage/Build/iOS/DatadogObjc.framework" ] && echo "DatadogObjc.framework - OK" || { echo "DatadogObjc.framework - missing"; false; }
+		@[ -e "Carthage/Build/iOS/OpenTracing.framework" ] && echo "OpenTracing.framework - OK" || { echo "OpenTracing.framework - missing"; false; }
 		@echo "🧪 SUCCEEDED"
