@@ -54,7 +54,7 @@ public class DDTracer: Tracer {
 
     // MARK: - Internal
 
-    func write(span: DDSpan, finishTime: Date) {
+    internal func write(span: DDSpan, finishTime: Date) {
         spanOutput.write(span: span, finishTime: finishTime)
     }
 }
