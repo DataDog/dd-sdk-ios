@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/DataDog/opentracing-swift.git",
         "state": {
           "branch": "master",
-          "revision": "0aa614e30b3cc01f7b26200480fe9b2d08945189",
+          "revision": "bdd65d768aa41a58a78e00d3401cacc352dfc406",
           "version": null
         }
       }
