@@ -1,10 +1,19 @@
-all: dependencies xcodeproj-httpservermock templates examples benchmark
-.PHONY : examples
+all: tools dependencies xcodeproj-httpservermock templates examples benchmark
+.PHONY : examples tools
 
-dependencies:
-		@echo "⚙️  Validating dependencies..."
+tools:
+		@echo "⚙️  Installing tools..."
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@echo "OK 👌"
+
+dependencies:
+ifneq ("$(wildcard ./Cartfile)","")
+		@echo "⚙️  Cartfile found, bootstrapping..."
+		@carthage bootstrap --platform iOS
+else
+		@echo "⚙️  Cartfile not found, ignoring."
+		@echo "OK 👌"	
+endif
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
