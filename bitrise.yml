@@ -16,6 +16,7 @@ workflows:
     - run_benchmarks
     - check_dependency_managers
     - check_example_projects
+    - _deploy_artifacts
 
   _make_dependencies:
     description: |-
@@ -28,6 +29,12 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make dependencies
+
+  _deploy_artifacts:
+    description: |-
+        Uploads artifacts to associate them with build log on Bitrise.io.
+    steps:
+    - deploy-to-bitrise-io: {}
 
   run_linter:
     description: |-
@@ -71,7 +78,6 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog/Datadog.xcodeproj
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
-    - deploy-to-bitrise-io: {}
     - script@1.1.6:
         title: Generate HTTPServerMock.xcodeproj
         inputs:
@@ -85,7 +91,6 @@ workflows:
         - scheme: HTTPServerMock-Package
         - destination: platform=OS X,arch=x86_64
         - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
-    #- deploy-to-bitrise-io: # deploying test artifact from `xcode-test-mac` is not yet supported
 
   run_integration_tests:
     description: |-
@@ -99,7 +104,6 @@ workflows:
         - is_clean_build: 'yes'
         - project_path: instrumented-tests/Integration/Integration.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Integration-tests.html"
-    - deploy-to-bitrise-io: {}
 
   run_benchmarks:
     description: |-
@@ -123,7 +127,6 @@ workflows:
         - is_clean_build: 'yes'
         - project_path: instrumented-tests/Benchmark/Benchmark.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmarks-result.html"
-    - deploy-to-bitrise-io: {}
 
   check_dependency_managers:
     description: |-
@@ -170,7 +173,6 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/examples/iOS-app-example-cocoapods/iOS-app-example-cocoapods.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Cocoapods-example-ui-tests.html"
-    - deploy-to-bitrise-io: {}
     - xcode-test:
         title: Run SPM's example UITests
         inputs:
@@ -179,4 +181,3 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/examples/iOS-app-example-spm/iOS-app-example-spm.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPM-example-ui-tests.html"
-    - deploy-to-bitrise-io: {}
