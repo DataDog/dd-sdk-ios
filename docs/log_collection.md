@@ -18,7 +18,7 @@ Send logs to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` cli
 
 You can use [CocoaPods][6] to install `dd-sdk-ios`:
 ```
-pod 'Datadog'
+pod 'DatadogSDK'
 ```
 
     {{% /tab %}}
