@@ -2,6 +2,6 @@ platform :ios, '12.0'
 
 target 'iOS-app-example-objc' do
   use_frameworks!
-  pod 'Datadog', :path => '../../Datadog.podspec'
-  pod 'DatadogObjc', path: '../..'
+  pod 'DatadogSDK', :path => '../../'
+  pod 'DatadogSDKObjc', path: '../..'
 end
