@@ -74,7 +74,7 @@ Datadog.initialize(
     {{% /tab %}}
     {{< /tabs >}}
 
-     When writing your application, you can enable development logs. All internal messages in the library with a priority equal to  or higher than the provided level are then logged to console logs.
+     When writing your application, you can enable development logs. All internal messages in the library with a priority equal to or higher than the provided level are then logged to console logs.
 
     ```swift
     Datadog.verbosityLevel = .debug
