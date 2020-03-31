@@ -1,12 +1,11 @@
 # Datadog SDK for iOS
 
-> Swift library to interact with Datadog. Supports iOS only.
-
-⚠️ This is an **alpha version** of the SDK and source breaking changes might be introduced in `1.0.0`. 
+> Swift and Objective-C libraries to interact with Datadog on iOS.
 
 ## Getting Started
 
-TBD
+See the dedicated [Datadog iOS log collection](https://docs.datadoghq.com/logs/log_collection/ios/?tab=us) documentation to learn how to send logs from your iOS application to Datadog.
+
 
 ## Example Projects
 
