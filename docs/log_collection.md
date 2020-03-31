@@ -21,6 +21,8 @@ You can use [CocoaPods][6] to install `dd-sdk-ios`:
 pod 'DatadogSDK'
 ```
 
+[6]: https://cocoapods.org/
+
     {{% /tab %}}
     {{% tab "Swift Package Manager (SPM)" %}}
 
@@ -36,6 +38,8 @@ You can use [Carthage][7] to install `dd-sdk-ios`:
 ```
 github "DataDog/dd-sdk-ios"
 ```
+
+[7]: https://github.com/Carthage/Carthage
 
     {{% /tab %}}
     {{< /tabs >}}
@@ -185,5 +189,4 @@ logger.removeAttribute("device-model")
 [3]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [4]: https://docs.datadoghq.com/logs/processing/attributes_naming_convention/
 [5]: https://docs.datadoghq.com/tagging/
-[6]: https://cocoapods.org/
-[7]: https://github.com/Carthage/Carthage
+
