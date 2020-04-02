@@ -20,10 +20,14 @@ let package = Package(
     targets: [
         .target(
             name: "Datadog",
-            dependencies: []),
+            dependencies: ["_Datadog_Private"]),
         .target(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
+        .target(
+            name: "_Datadog_Private",
+            path: "Datadog/DatadogPrivate"
+        ),
         .testTarget(
             name: "DatadogTests",
             dependencies: ["Datadog", "DatadogObjc"]),

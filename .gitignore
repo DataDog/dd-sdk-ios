@@ -3,3 +3,6 @@
 /.build
 /.swiftpm
 xcuserdata/
+
+# SPM-generated .xcodedproj
+Datadog.xcodeproj
