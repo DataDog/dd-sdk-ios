@@ -89,6 +89,9 @@
 		61133C712423993200786299 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		616A62D024349BA700D1BE12 /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */; };
 		616A62D62434A3C500D1BE12 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */; };
+		61C363802436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */; };
+		61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */; };
+		61C3638524361E9200C4D4E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
 		9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E085879242519FF001A3583 /* NetworkPathMonitor.swift */; };
 /* End PBXBuildFile section */
 
@@ -217,6 +220,9 @@
 		616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
 		616A62DF2434BEF200D1BE12 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjcExceptionHandlerTests.swift; sourceTree = "<group>"; };
+		61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogPrivateMocks.swift; sourceTree = "<group>"; };
+		61C3638424361E9200C4D4E6 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -369,6 +375,7 @@
 		61133BB72423979B00786299 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				61C3638424361E9200C4D4E6 /* Globals.swift */,
 				61133BB82423979B00786299 /* InternalLoggers.swift */,
 				61133BB92423979B00786299 /* CompilationConditions.swift */,
 				61133BBA2423979B00786299 /* SwiftExtensions.swift */,
@@ -461,6 +468,7 @@
 			children = (
 				61133C182423990D00786299 /* Datadog */,
 				61133C132423990D00786299 /* DatadogObjc */,
+				61C3637E2436163400C4D4E6 /* DatadogPrivate */,
 				61133C422423990D00786299 /* Matchers */,
 				61133C442423990D00786299 /* Helpers */,
 			);
@@ -501,6 +509,7 @@
 				61133C1C2423990D00786299 /* UIKitMocks.swift */,
 				61133C1D2423990D00786299 /* DatadogObjcMocks.swift */,
 				61133C1F2423990D00786299 /* DatadogMocks.swift */,
+				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
 				61133C202423990D00786299 /* FoundationMocks.swift */,
 			);
 			path = Mocks;
@@ -627,6 +636,14 @@
 				616A62DF2434BEF200D1BE12 /* module.modulemap */,
 				616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */,
 				616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */,
+			);
+			path = DatadogPrivate;
+			sourceTree = "<group>";
+		};
+		61C3637E2436163400C4D4E6 /* DatadogPrivate */ = {
+			isa = PBXGroup;
+			children = (
+				61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */,
 			);
 			path = DatadogPrivate;
 			sourceTree = "<group>";
@@ -812,6 +829,7 @@
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
 				9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */,
 				61133BCA2423979B00786299 /* EncodableValue.swift in Sources */,
+				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				616A62D024349BA700D1BE12 /* ObjcExceptionHandler.m in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
@@ -854,9 +872,11 @@
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
+				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
 				61133C4C2423990D00786299 /* LogsMocks.swift in Sources */,
 				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,
 				61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */,
+				61C363802436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift in Sources */,
 				61133C602423990D00786299 /* HTTPHeadersTests.swift in Sources */,
 				61133C632423990D00786299 /* DatadogConfigurationTests.swift in Sources */,
 				61133C572423990D00786299 /* FileReaderTests.swift in Sources */,

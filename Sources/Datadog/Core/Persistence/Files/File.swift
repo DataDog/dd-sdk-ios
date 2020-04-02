@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import _Datadog_Private
 
 /// Provides convenient interface for reading metadata and appending data to the file.
 internal protocol WritableFile {
@@ -15,7 +16,7 @@ internal protocol WritableFile {
     func size() throws -> UInt64
 
     /// Synchronously appends given data at the end of this file.
-    func append(transaction: ((Data) -> Void) -> Void) throws
+    func append(transaction: ((Data) throws -> Void) throws -> Void) throws
 }
 
 /// Provides convenient interface for reading contents and metadata of the file.
@@ -42,27 +43,24 @@ internal struct File: WritableFile, ReadableFile {
     }
 
     /// Appends given data at the end of this file.
-    func append(transaction: ((Data) -> Void) -> Void) throws {
+    func append(transaction: ((Data) throws -> Void) throws -> Void) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
         defer { fileHandle.closeFile() }
-        fileHandle.seekToEndOfFile()
+
+        try objcExceptionHandler.rethrowToSwift {
+            fileHandle.seekToEndOfFile()
+        }
 
         // Writes given data at the end of the file.
-        func appendData(_ data: Data) {
-            /*
-             Apple documentation https://developer.apple.com/documentation/foundation/filehandle/1410936-write says
-             that `fileHandle.write()` raises an exception if no free space is left on the file system,
-             or if any other writing error occurs. Those are unchecked exceptions impossible to handle in Swift.
-
-             It was already escalated to Apple in Swift open source project discussion:
-             https://forums.swift.org/t/pitch-replacement-for-filehandle/5177
-
-             Until better replacement is provided by Apple, the SDK sticks to this API. To mitigate the risk of
-             crashing client applications, other precautions are implemented carefuly.
-             */
-            fileHandle.write(data)
+        func appendData(_ data: Data) throws {
+            try objcExceptionHandler.rethrowToSwift {
+                fileHandle.write(data)
+            }
         }
-        transaction(appendData)
+
+        try transaction { chunkOfData in
+            try appendData(chunkOfData)
+        }
     }
 
     func read() throws -> Data {
