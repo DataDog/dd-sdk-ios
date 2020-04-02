@@ -27,7 +27,7 @@ class FileReaderTests: XCTestCase {
         )
         _ = try temporaryDirectory
             .createFile(named: .mockAnyFileName())
-            .append { write in write("ABCD".utf8Data) }
+            .append { write in try write("ABCD".utf8Data) }
 
         let batch = reader.readNextBatch()
 
@@ -46,13 +46,13 @@ class FileReaderTests: XCTestCase {
             queue: queue
         )
         let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file1.append { write in write("1".utf8Data) }
+        try file1.append { write in try write("1".utf8Data) }
 
         let file2 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file2.append { write in write("2".utf8Data) }
+        try file2.append { write in try write("2".utf8Data) }
 
         let file3 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file3.append { write in write("3".utf8Data) }
+        try file3.append { write in try write("3".utf8Data) }
 
         var batch: Batch
         batch = try reader.readNextBatch().unwrapOrThrow()
