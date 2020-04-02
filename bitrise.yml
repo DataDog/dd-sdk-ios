@@ -15,7 +15,10 @@ workflows:
     - run_integration_tests
     - run_benchmarks
     - check_dependency_managers
-    - check_example_projects
+    # I disable it for now, as this would require supporting local pod installation
+    # of `DatadogSDK.podspec` in CP example project. This effort will be lost as in `RUMM-334`
+    # we're going to re-do sample apps layout and not use local pod anymore.
+    # - check_example_projects
     - _deploy_artifacts
 
   _make_dependencies:
@@ -140,6 +143,14 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-spm ci=true
+    - xcode-test:
+        title: Run SPMProject UITests
+        inputs:
+        - scheme: SPMProject
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-ui-tests.html"
     - script@1.1.6:
         title: Test Carthage compatibility
         inputs:
@@ -147,6 +158,22 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-carthage ci=true
+    # TODO: RUMM-334 add UITests for Carthage project
+    - script@1.1.6:
+        title: Test Cocoapods compatibility
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            make test-cocoapods ci=true
+    - xcode-test:
+        title: Run CPProject UITests
+        inputs:
+        - scheme: CPProject
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ui-tests.html"
 
   check_example_projects:
     description: |-

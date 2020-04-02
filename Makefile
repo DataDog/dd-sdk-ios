@@ -40,3 +40,7 @@ test-spm:
 # Tests if current branch ships a valid Carthage project.
 test-carthage:
 		@cd dependency-manager-tests/carthage && $(MAKE)
+
+# Tests if current branch ships a valid Cocoapods project.
+test-cocoapods:
+		@cd dependency-manager-tests/cocoapods && $(MAKE)
