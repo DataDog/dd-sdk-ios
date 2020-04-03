@@ -8,6 +8,8 @@ import UIKit
 import Datadog
 
 class ViewController: UIViewController {
+    private var logger: Logger!
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -18,7 +20,12 @@ class ViewController: UIViewController {
                 .build()
         )
 
-        let logger = Logger.builder.build()
+        self.logger = Logger.builder
+            .sendLogsToDatadog(false)
+            .printLogsToConsole(true)
+            .build()
+
         logger.info("It works")
     }
 }
+

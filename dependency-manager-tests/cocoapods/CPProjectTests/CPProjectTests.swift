@@ -8,6 +8,9 @@ import XCTest
 @testable import CPProject
 
 class CPProjectTests: XCTestCase {
-    func testExample() throws {
+    func testCallingLogicThatLoadsSDK() throws {
+        let viewController = ViewController()
+        viewController.viewDidLoad()
+        XCTAssertNotNil(viewController.view)
     }
 }
