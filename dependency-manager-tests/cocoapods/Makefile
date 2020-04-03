@@ -5,7 +5,7 @@ else
 endif
 
 test:
-		@echo "⚙️  Testing Cocoapods for remote branch: '${GIT_BRANCH}'..."
+		@echo "⚙️  Configuring CPProject with remote branch: '${GIT_BRANCH}'..."
 		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" Podfile.src > Podfile
 		@rm -rf Pods/
 		pod update
