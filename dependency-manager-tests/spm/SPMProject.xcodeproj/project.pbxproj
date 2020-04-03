@@ -634,7 +634,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = "ncreated/RUMM-346-unify-dependency-manager-tests";
+				branch = master;
 				kind = branch;
 			};
 		};
