@@ -5,9 +5,26 @@
 */
 
 import UIKit
+import Datadog
 
 class ViewController: UIViewController {
+    private var logger: Logger!
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        Datadog.initialize(
+            appContext: .init(),
+            configuration: Datadog.Configuration
+                .builderUsing(clientToken: "abc")
+                .build()
+        )
+
+        self.logger = Logger.builder
+            .sendLogsToDatadog(false)
+            .printLogsToConsole(true)
+            .build()
+
+        logger.info("It works")
     }
 }
