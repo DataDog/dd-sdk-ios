@@ -4,11 +4,10 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-import XCTest
+import UIKit
 
-class SPMProjectUITests: XCTestCase {
-    func testExample() throws {
-        let app = XCUIApplication()
-        app.launch()
+class ViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
     }
 }

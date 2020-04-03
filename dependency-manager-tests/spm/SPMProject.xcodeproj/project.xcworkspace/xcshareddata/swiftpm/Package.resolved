@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Datadog",
+        "repositoryURL": "https://github.com/DataDog/dd-sdk-ios",
+        "state": {
+          "branch": "master",
+          "revision": "44f013c0e2ce8c00c70afaeef309ff33a1cef205",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
