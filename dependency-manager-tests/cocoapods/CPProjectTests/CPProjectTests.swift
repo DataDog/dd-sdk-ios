@@ -5,10 +5,9 @@
 */
 
 import XCTest
+@testable import CPProject
 
-class CPProjectUITests: XCTestCase {
+class CPProjectTests: XCTestCase {
     func testExample() throws {
-        let app = XCUIApplication()
-        app.launch()
     }
 }
