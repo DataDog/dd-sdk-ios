@@ -7,8 +7,9 @@
 import XCTest
 
 class CTProjectUITests: XCTestCase {
-  func testExample() throws {
+  func testDisplayingUI() throws {
         let app = XCUIApplication()
         app.launch()
+        XCTAssert(app.staticTexts["Testing..."].exists)
     }
 }
