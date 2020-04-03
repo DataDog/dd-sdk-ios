@@ -161,6 +161,7 @@
 				61C3638C2436318E00C4D4E6 /* Frameworks */,
 				61C3638D2436318E00C4D4E6 /* Resources */,
 				E9D5FEEB347D68D026118CC9 /* [CP] Embed Pods Frameworks */,
+				61C3645E24376AEF00C4D4E6 /* ⚙️ Run linter */,
 			);
 			buildRules = (
 			);
@@ -277,6 +278,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		61C3645E24376AEF00C4D4E6 /* ⚙️ Run linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/../../\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
 		B5E3E8D262C8003866F38F23 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

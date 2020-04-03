@@ -7,8 +7,8 @@
 import UIKit
 import Datadog
 
-class ViewController: UIViewController {
-    private var logger: Logger!
+internal class ViewController: UIViewController {
+    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,4 +28,3 @@ class ViewController: UIViewController {
         logger.info("It works")
     }
 }
-
