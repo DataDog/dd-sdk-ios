@@ -144,13 +144,13 @@ workflows:
             set -e
             make test-spm ci=true
     - xcode-test:
-        title: Run SPMProject UITests
+        title: Run SPMProject tests
         inputs:
         - scheme: SPMProject
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-ui-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
     - script@1.1.6:
         title: Test Carthage compatibility
         inputs:
@@ -158,7 +158,14 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-carthage ci=true
-    # TODO: RUMM-334 add UITests for Carthage project
+    - xcode-test:
+        title: Run CTProject tests
+        inputs:
+        - scheme: CTProject
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tests.html"
     - script@1.1.6:
         title: Test Cocoapods compatibility
         inputs:
@@ -167,13 +174,13 @@ workflows:
             set -e
             make test-cocoapods ci=true
     - xcode-test:
-        title: Run CPProject UITests
+        title: Run CPProject tests
         inputs:
         - scheme: CPProject
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ui-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
 
   check_example_projects:
     description: |-

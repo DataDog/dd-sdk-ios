@@ -1,4 +1,6 @@
 .DS_Store
+/.build
+xcuserdata/
 /Pods
 
 # Ignore `Podfile.lock` and `Podfile` as they will be re-created for every test run.
