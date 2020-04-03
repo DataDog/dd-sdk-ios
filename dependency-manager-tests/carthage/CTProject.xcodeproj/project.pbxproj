@@ -64,6 +64,9 @@
 		61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTProjectUITests.swift; sourceTree = "<group>"; };
 		61C3643C243752A600C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61C3644A2437547A00C4D4E6 /* Datadog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Datadog.framework; path = Carthage/Build/iOS/Datadog.framework; sourceTree = "<group>"; };
+		61C3646224377D8A00C4D4E6 /* app-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "app-target.xcconfig"; sourceTree = "<group>"; };
+		61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "unit-tests-target.xcconfig"; sourceTree = "<group>"; };
+		61C364642437816500C4D4E6 /* datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = datadog.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +98,7 @@
 		61C3640C243752A500C4D4E6 = {
 			isa = PBXGroup;
 			children = (
+				61C3646124377D8A00C4D4E6 /* xcconfigs */,
 				61C36417243752A500C4D4E6 /* CTProject */,
 				61C3642E243752A600C4D4E6 /* CTProjectTests */,
 				61C36439243752A600C4D4E6 /* CTProjectUITests */,
@@ -150,6 +154,17 @@
 				61C3644A2437547A00C4D4E6 /* Datadog.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		61C3646124377D8A00C4D4E6 /* xcconfigs */ = {
+			isa = PBXGroup;
+			children = (
+				61C364642437816500C4D4E6 /* datadog.xcconfig */,
+				61C3646224377D8A00C4D4E6 /* app-target.xcconfig */,
+				61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */,
+			);
+			name = xcconfigs;
+			path = ../xcconfigs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -386,6 +401,7 @@
 /* Begin XCBuildConfiguration section */
 		61C3643D243752A600C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61C3646224377D8A00C4D4E6 /* app-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -446,6 +462,7 @@
 		};
 		61C3643E243752A600C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61C3646224377D8A00C4D4E6 /* app-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -503,7 +520,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -515,7 +531,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProject;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Wildcard Development";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -526,7 +542,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -538,7 +553,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProject;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -546,11 +560,11 @@
 		};
 		61C36443243752A600C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = CTProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -559,8 +573,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProjectTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CTProject.app/CTProject";
@@ -569,11 +581,11 @@
 		};
 		61C36444243752A600C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = CTProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -582,8 +594,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProjectTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CTProject.app/CTProject";
@@ -595,7 +605,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = CTProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -604,8 +613,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProjectUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = CTProject;
@@ -617,7 +624,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = CTProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -626,8 +632,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProjectUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = CTProject;
