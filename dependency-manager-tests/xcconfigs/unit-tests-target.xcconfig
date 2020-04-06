@@ -1,2 +1,2 @@
 #include "app-target.xcconfig"
-PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]=// overwrite to empty, so Xcode picks "Automatic"
+PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]=// this line overrides app-target.xcconfig and sets provisioning profile to Auto
