@@ -63,7 +63,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
     }
 
-    func testGivenErrorVerbosity_whenLogCannotBeEncoded_itPrintsError() throws {
+    func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
         let expectation = self.expectation(description: "write completed")
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -84,6 +84,32 @@ class FileWriterTests: XCTestCase {
 
         XCTAssertEqual(output.recordedLog?.level, .error)
         XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: failed to encode `FailingEncodable`.")
+    }
+
+    func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
+        let expectation = self.expectation(description: "write completed")
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+        let previousObjcExceptionHandler = objcExceptionHandler
+        defer { objcExceptionHandler = previousObjcExceptionHandler }
+
+        let output = LogOutputMock()
+        userLogger = Logger(logOutput: output, identifier: "sdk-user")
+        objcExceptionHandler = ObjcExceptionHandlerMock(throwingError: ErrorMock("I/O exception"))
+
+        let writer = FileWriter(
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            queue: queue,
+            maxWriteSize: .max
+        )
+
+        writer.write(value: ["whatever"])
+
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 1, handler: nil)
+
+        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: I/O exception")
     }
 
     private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {

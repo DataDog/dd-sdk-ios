@@ -24,7 +24,7 @@ class FileTests: XCTestCase {
         let file = try temporaryDirectory.createFile(named: "file")
 
         try file.append { write in
-            write(Data([0x41, 0x41, 0x41, 0x41, 0x41])) // 5 bytes
+            try write(Data([0x41, 0x41, 0x41, 0x41, 0x41])) // 5 bytes
         }
 
         XCTAssertEqual(
@@ -33,8 +33,8 @@ class FileTests: XCTestCase {
         )
 
         try file.append { write in
-            write(Data([0x42, 0x42, 0x42, 0x42, 0x42])) // 5 bytes
-            write(Data([0x41, 0x41, 0x41, 0x41, 0x41])) // 5 bytes
+            try write(Data([0x42, 0x42, 0x42, 0x42, 0x42])) // 5 bytes
+            try write(Data([0x41, 0x41, 0x41, 0x41, 0x41])) // 5 bytes
         }
 
         XCTAssertEqual(
@@ -51,7 +51,7 @@ class FileTests: XCTestCase {
 
     func testItReadsDataFromFile() throws {
         let file = try temporaryDirectory.createFile(named: "file")
-        try file.append { write in write("Hello 👋".utf8Data) }
+        try file.append { write in try write("Hello 👋".utf8Data) }
 
         XCTAssertEqual(try file.read().utf8String, "Hello 👋")
     }
@@ -68,10 +68,10 @@ class FileTests: XCTestCase {
     func testItReturnsFileSize() throws {
         let file = try temporaryDirectory.createFile(named: "file")
 
-        try file.append { write in write(.mock(ofSize: 5)) }
+        try file.append { write in try write(.mock(ofSize: 5)) }
         XCTAssertEqual(try file.size(), 5)
 
-        try file.append { write in write(.mock(ofSize: 10)) }
+        try file.append { write in try write(.mock(ofSize: 10)) }
         XCTAssertEqual(try file.size(), 15)
     }
 }
