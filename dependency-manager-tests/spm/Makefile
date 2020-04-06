@@ -7,4 +7,5 @@ endif
 test:
 		@echo "⚙️  Configuring SPMProject with remote branch: '${GIT_BRANCH}'..."
 		@sed -i "" "s|branch = master;|branch = ${GIT_BRANCH};|g" SPMProject.xcodeproj/project.pbxproj
+		@rm -rf SPMProject.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
 		@echo "OK 👌"
