@@ -5,11 +5,12 @@
 */
 
 import XCTest
+@testable import CPProject
 
-class SPMProjectUITests: XCTestCase {
-    func testDisplayingUI() throws {
-        let app = XCUIApplication()
-        app.launch()
-        XCTAssert(app.staticTexts["Testing..."].exists)
+class CPProjectTests: XCTestCase {
+    func testCallingLogicThatLoadsSDK() throws {
+        let viewController = ViewController()
+        viewController.viewDidLoad()
+        XCTAssertNotNil(viewController.view)
     }
 }

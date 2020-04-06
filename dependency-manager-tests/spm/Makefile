@@ -5,6 +5,8 @@ else
 endif
 
 test:
-		@echo "⚙️  Testing SPM for remote branch: '${GIT_BRANCH}'..."
-		@sed -i "" "s|branch = *.;|branch = ${GIT_BRANCH};|g" SPMProject.xcodeproj/project.pbxproj
+		@echo "⚙️  Configuring SPMProject with remote branch: '${GIT_BRANCH}'..."
+		@rm -rf SPMProject.xcodeproj
+		@cp -r SPMProject.xcodeproj.src SPMProject.xcodeproj
+		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" SPMProject.xcodeproj.src/project.pbxproj > SPMProject.xcodeproj/project.pbxproj
 		@echo "OK 👌"

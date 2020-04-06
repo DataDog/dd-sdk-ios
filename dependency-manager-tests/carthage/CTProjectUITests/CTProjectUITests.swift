@@ -6,7 +6,7 @@
 
 import XCTest
 
-class SPMProjectUITests: XCTestCase {
+class CTProjectUITests: XCTestCase {
     func testDisplayingUI() throws {
         let app = XCUIApplication()
         app.launch()

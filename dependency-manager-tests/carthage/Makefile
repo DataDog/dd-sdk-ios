@@ -5,8 +5,8 @@ else
 endif
 
 test:
-		@echo "⚙️  Testing Carthage for remote branch: '${GIT_BRANCH}'..."
+		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_BRANCH}'..."
 		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" Cartfile.src > Cartfile
-		rm -rf Carthage/
+		@rm -rf Carthage/
 		carthage update
 		@echo "OK 👌"
