@@ -1,6 +1,0 @@
-.DS_Store
-/.build
-xcuserdata/
-
-# Ignore `Package.resolved` as it will be re-created for every test run.
-Package.resolved
