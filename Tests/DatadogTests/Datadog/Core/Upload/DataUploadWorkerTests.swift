@@ -31,10 +31,10 @@ class DataUploadWorkerTests: XCTestCase {
         )
         let writer = FileWriter(orchestrator: orchestrator, queue: fileReadWriteQueue, maxWriteSize: .max)
         let reader = FileReader(orchestrator: orchestrator, queue: fileReadWriteQueue)
-        let requestsRecorder = RequestsRecorder()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestsRecorder),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
 
@@ -52,12 +52,11 @@ class DataUploadWorkerTests: XCTestCase {
             delay: .mockConstantDelay(of: 0.1)
         )
 
-        Thread.sleep(forTimeInterval: 1) // 1 second is enough to send 3 logs with 0.1 second interval
-
-        XCTAssertEqual(requestsRecorder.requestsSent.count, 3)
-        XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k1":"v1"}]"#.utf8Data))
-        XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k2":"v2"}]"#.utf8Data))
-        XCTAssertTrue(requestsRecorder.containsRequestWith(body: #"[{"k3":"v3"}]"#.utf8Data))
+        let timeout: TimeInterval = 1 // enough to send 3 logs with 0.1 second interval
+        let recordedRequests = server.waitAndReturnRequests(count: 3, timeout: timeout)
+        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
+        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
+        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
 
         _ = uploadWorker // keep the strong reference

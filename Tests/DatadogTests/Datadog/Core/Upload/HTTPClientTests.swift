@@ -9,10 +9,9 @@ import XCTest
 
 class HTTPClientTests: XCTestCase {
     func testWhenRequestIsDelivered_itReturnsHTTPResponse() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let expectation = self.expectation(description: "receive response")
-        let client = HTTPClient(
-            session: .mockDeliverySuccess(data: .mockAny(), response: .mockResponseWith(statusCode: 200))
-        )
+        let client = HTTPClient(session: server.urlSession)
 
         client.send(request: .mockAny()) { result in
             switch result {
@@ -25,13 +24,13 @@ class HTTPClientTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1, handler: nil)
+        server.waitFor(requestsCompletion: 1)
     }
 
     func testWhenRequestIsNotDelivered_itReturnsHTTPRequestDeliveryError() {
+        let server = ServerMock(delivery: .failure(error: ErrorMock("no internet connection")))
         let expectation = self.expectation(description: "receive response")
-        let client = HTTPClient(
-            session: .mockDeliveryFailure(error: ErrorMock("no internet connection"))
-        )
+        let client = HTTPClient(session: server.urlSession)
 
         client.send(request: .mockAny()) { result in
             switch result {
@@ -44,5 +43,6 @@ class HTTPClientTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1, handler: nil)
+        server.waitFor(requestsCompletion: 1)
     }
 }

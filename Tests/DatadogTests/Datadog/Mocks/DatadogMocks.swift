@@ -169,34 +169,7 @@ extension FileReader {
     }
 }
 
-// MARK: - URLRequests delivery
-
-typealias RequestsRecorder = URLSessionRequestRecorder
-
-extension HTTPClient {
-    static func mockAny() -> HTTPClient {
-        return HTTPClient(session: .mockAny())
-    }
-
-    static func mockDeliverySuccessWith(responseStatusCode: Int, requestsRecorder: RequestsRecorder? = nil) -> HTTPClient {
-        return HTTPClient(
-            session: .mockDeliverySuccess(
-                data: Data(),
-                response: .mockResponseWith(statusCode: responseStatusCode),
-                requestsRecorder: requestsRecorder
-            )
-        )
-    }
-
-    static func mockDeliveryFailureWith(error: Error, requestsRecorder: RequestsRecorder? = nil) -> HTTPClient {
-        return HTTPClient(
-            session: .mockDeliveryFailure(
-                error: error,
-                requestsRecorder: requestsRecorder
-            )
-        )
-    }
-}
+// MARK: - HTTP
 
 extension HTTPHeaders {
     static func mockAny() -> HTTPHeaders {
@@ -461,6 +434,12 @@ extension DataUploader {
     }
 }
 
+extension HTTPClient {
+    static func mockAny() -> HTTPClient {
+        return HTTPClient(session: URLSession())
+    }
+}
+
 extension DataUploadWorker {
     static func mockAny() -> DataUploadWorker {
         return .mockWith()
@@ -531,13 +510,11 @@ extension LogsUploadStrategy {
 
     /// Mocks upload strategy where:
     /// * batches are read with given `interval` of seconds using `fileReader`;
-    /// * `URLRequest` passed to underlying `URLSession` are recorded on given `requestsRecorder`;
-    /// * underlying `URLSession` mock responds with 200 OK status code.
-    static func mockUploadBatchesInConstantDelayWith200ResponseStatusCode(
+    static func mockUploadBatchesInConstantDelay(
         interval: TimeInterval,
         using fileReader: FileReader,
-        andRecordRequestsOn requestsRecorder: RequestsRecorder?,
-        uploadConditions: DataUploadConditions
+        uploadConditions: DataUploadConditions,
+        urlSession: URLSession
     ) -> LogsUploadStrategy {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-tests-logs-upload",
@@ -549,10 +526,7 @@ extension LogsUploadStrategy {
                 fileReader: fileReader,
                 dataUploader: DataUploader(
                     url: .mockAny(),
-                    httpClient: .mockDeliverySuccessWith(
-                        responseStatusCode: 200,
-                        requestsRecorder: requestsRecorder
-                    ),
+                    httpClient: HTTPClient(session: urlSession),
                     httpHeaders: .mockAny()
                 ),
                 uploadConditions: uploadConditions,
@@ -710,12 +684,12 @@ extension Datadog {
 ///         .destroy()
 ///
 class DatadogInstanceMock {
-    private let requestsRecorder = RequestsRecorder()
-    private let logsUploadInterval: TimeInterval = 0.05
+    static let dataUploadInterval: TimeInterval = 0.05
 
+    private let server: ServerMock
     private var runClosure: (() -> Void)? = nil
     private var waitClosure: (() -> Void)? = nil
-    private var waitExpectation: XCTestExpectation?
+    private var recordedRequests: [URLRequest] = []
 
     static var builder: Builder { Builder() }
 
@@ -769,6 +743,7 @@ class DatadogInstanceMock {
         carrierInfoProvider: CarrierInfoProviderType?,
         batteryStatusProvider: BatteryStatusProviderType
     ) {
+        self.server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
             in: temporaryDirectory,
             using: RelativeDateProvider(
@@ -776,14 +751,14 @@ class DatadogInstanceMock {
                 advancingBySeconds: dateProvider.timeInterval
             )
         )
-        let logsUploadStrategy: LogsUploadStrategy = .mockUploadBatchesInConstantDelayWith200ResponseStatusCode(
-            interval: logsUploadInterval,
+        let logsUploadStrategy: LogsUploadStrategy = .mockUploadBatchesInConstantDelay(
+            interval: DatadogInstanceMock.dataUploadInterval,
             using: logsPersistenceStrategy.reader,
-            andRecordRequestsOn: requestsRecorder,
             uploadConditions: DataUploadConditions(
                 batteryStatus: batteryStatusProvider,
                 networkConnectionInfo: networkConnectionInfoProvider
-            )
+            ),
+            urlSession: server.urlSession
         )
 
         // Instantiate `Datadog` object configured for sending one log per request.
@@ -804,42 +779,16 @@ class DatadogInstanceMock {
     }
 
     func waitUntil(numberOfLogsSent: Int, file: StaticString = #file, line: UInt = #line) -> DatadogInstanceMock {
-        // Configure asynchronous expectation to be fulfilled `numberOfLogsSent` times
-        // as mocked `Datadog.instance` will be sending one log per request.
-        let expectation = XCTestExpectation(description: "Send \(numberOfLogsSent) logs")
-        expectation.expectedFulfillmentCount = numberOfLogsSent
+        // Set the timeout to 20 times more than expected (arbitrary).
+        let timeout = DatadogInstanceMock.dataUploadInterval * Double(numberOfLogsSent) * 20
 
-        // Fulfill the expectation on every request sent.
-        requestsRecorder.onNewRequest = { [expectation] _ in expectation.fulfill() }
-
-        // Set the timeout to 8 times more than expected (arbitrary).
-        let waitTime = logsUploadInterval * Double(numberOfLogsSent) * 8
-
-        waitExpectation = expectation
-        waitClosure = { [requestsRecorder] in
-            let result = XCTWaiter().wait(for: [expectation], timeout: waitTime)
-
-            switch result {
-            case .completed:
-                break
-            case .incorrectOrder, .interrupted:
-                fatalError("Can't happen.")
-            case .timedOut:
-                XCTFail(
-                    "Exceeded timeout with sending only \(requestsRecorder.requestsSent.count) out of \(numberOfLogsSent) expected logs.",
-                    file: file,
-                    line: line
-                )
-            case .invertedFulfillment:
-                XCTFail(
-                    "\(requestsRecorder.requestsSent.count) requeste were sent, but not expected.",
-                    file: file,
-                    line: line
-                )
-            @unknown default:
-                fatalError()
+        waitClosure = { [weak self] in
+            guard let self = self else {
+                return
             }
+            self.recordedRequests = self.server.waitAndReturnRequests(count: numberOfLogsSent, timeout: timeout)
         }
+
         return self
     }
 
@@ -851,7 +800,7 @@ class DatadogInstanceMock {
         runClosure?()
         waitClosure?()
 
-        let logMatchers = try requestsRecorder.requestsSent
+        let logMatchers = try recordedRequests
             .map { request in try request.httpBody.unwrapOrThrow() }
             .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
 
@@ -867,18 +816,14 @@ class DatadogInstanceMock {
         }
     }
 
-    func verifyNoLogsSent(file: StaticString = #file, line: UInt = #line) throws -> DatadogInstanceMock {
+    func verifyNoLogsSent(within time: TimeInterval, file: StaticString = #file, line: UInt = #line) throws -> DatadogInstanceMock {
         precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
-        precondition(waitClosure != nil, "`.wait {}` must preceed `.verify {}`")
-
-        waitExpectation?.isInverted = true
+        precondition(waitClosure == nil, "`.wait {}` cannot be used with `.verifyNoLogsSent {}`")
 
         runClosure?()
-        waitClosure?()
 
-        if requestsRecorder.requestsSent.count > 0 {
-            XCTFail("\(requestsRecorder.requestsSent.count) requests were / was sent. ", file: file, line: line)
-        }
+        let requests = server.waitAndReturnRequests(count: 0, timeout: time)
+        XCTAssertEqual(requests.count, 0, file: file, line: line)
 
         return self
     }

@@ -59,3 +59,31 @@ extension String {
 extension Data {
     var utf8String: String { String(data: self, encoding: .utf8)! }
 }
+
+extension InputStream {
+    func readAllBytes(expectedSize: Int) -> Data {
+        var data = Data()
+
+        open()
+
+        let buffer: UnsafeMutablePointer<UInt8> = .allocate(capacity: expectedSize)
+        while hasBytesAvailable {
+            let bytesRead = self.read(buffer, maxLength: expectedSize)
+
+            guard bytesRead >= 0 else {
+                fatalError("Stream error occured.")
+            }
+
+            if bytesRead == 0 {
+                break
+            }
+
+            data.append(buffer, count: bytesRead)
+        }
+
+        buffer.deallocate()
+        close()
+
+        return data
+    }
+}

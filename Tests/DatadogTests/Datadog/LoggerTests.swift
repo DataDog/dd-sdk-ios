@@ -375,7 +375,7 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Sending logs with different network and battery conditions
 
-    func testGivenBadBatteryConditions_itDoesntTryToSendLogs() throws {
+    func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
         try DatadogInstanceMock.builder
             .with(
                 batteryStatusProvider: BatteryStatusProviderMock.mockWith(
@@ -387,8 +387,7 @@ class LoggerTests: XCTestCase {
                 let logger = Logger.builder.build()
                 logger.debug("message")
             }
-            .waitUntil(numberOfLogsSent: 1)
-            .verifyNoLogsSent()
+            .verifyNoLogsSent(within: DatadogInstanceMock.dataUploadInterval * 10)
             .destroy()
     }
 
@@ -404,8 +403,7 @@ class LoggerTests: XCTestCase {
                 let logger = Logger.builder.build()
                 logger.debug("message")
             }
-            .waitUntil(numberOfLogsSent: 1)
-            .verifyNoLogsSent()
+            .verifyNoLogsSent(within: DatadogInstanceMock.dataUploadInterval * 10)
             .destroy()
     }
 
