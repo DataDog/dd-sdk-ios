@@ -779,8 +779,9 @@ class DatadogInstanceMock {
     }
 
     func waitUntil(numberOfLogsSent: Int, file: StaticString = #file, line: UInt = #line) -> DatadogInstanceMock {
-        // Set the timeout to 20 times more than expected (arbitrary).
-        let timeout = DatadogInstanceMock.dataUploadInterval * Double(numberOfLogsSent) * 20
+        // Set the timeout to 40 times more than expected.
+        // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
+        let timeout = DatadogInstanceMock.dataUploadInterval * Double(numberOfLogsSent) * 40
 
         waitClosure = { [weak self] in
             guard let self = self else {
