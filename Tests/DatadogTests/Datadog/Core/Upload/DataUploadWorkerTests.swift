@@ -57,6 +57,10 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
+
+        uploaderQueue.sync {} // wait until last "process upload" operation completes (to make sure "delete file" was requested)
+        fileReadWriteQueue.sync {} // wait until last scheduled "delete file" operation completed
+
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
 
         _ = uploadWorker // keep the strong reference
