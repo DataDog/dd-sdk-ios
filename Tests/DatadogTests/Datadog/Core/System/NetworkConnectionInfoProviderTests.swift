@@ -35,7 +35,7 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
             _ = NetworkConnectionInfoProvider(pathMonitor)
             weakRef = pathMonitor
         }
-        Thread.sleep(forTimeInterval: 0.01)
+        Thread.sleep(forTimeInterval: 0.5)
 
         XCTAssertNil(weakRef, "path monitor should be deallocated and nil")
     }
@@ -47,7 +47,7 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
             let pathMonitor = NWPathMonitor()
             weakRef = pathMonitor
         }
-        Thread.sleep(forTimeInterval: 0.01)
+        Thread.sleep(forTimeInterval: 0.5)
 
         XCTAssertNotNil(weakRef, "iOS 12 did not use to release NWPathMonitor unless cancel is called, now it is fixed 🙌")
     }
