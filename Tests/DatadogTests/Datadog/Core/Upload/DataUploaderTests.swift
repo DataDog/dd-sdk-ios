@@ -33,79 +33,90 @@ class DataUploaderTests: XCTestCase {
     // MARK: - Upload Status
 
     func testWhenDataIsSentWith200Code_itReturnsDataUploadStatus_success() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .success)
+        server.waitFor(requestsCompletion: 1)
     }
 
     func testWhenDataIsSentWith300Code_itReturnsDataUploadStatus_redirection() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 300)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 300),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .redirection)
+        server.waitFor(requestsCompletion: 1)
     }
 
     func testWhenDataIsSentWith400Code_itReturnsDataUploadStatus_clientError() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 400)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 400),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .clientError)
+        server.waitFor(requestsCompletion: 1)
     }
 
     func testWhenDataIsSentWith500Code_itReturnsDataUploadStatus_serverError() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 500),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .serverError)
+        server.waitFor(requestsCompletion: 1)
     }
 
     func testWhenDataIsNotSentDueToNetworkError_itReturnsDataUploadStatus_networkError() {
-        let error = ErrorMock("network error")
+        let server = ServerMock(delivery: .failure(error: ErrorMock("network error")))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliveryFailureWith(error: error),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .networkError)
+        server.waitFor(requestsCompletion: 1)
     }
 
     func testWhenDataIsNotSentDueToUnknownStatusCode_itReturnsDataUploadStatus_unknown() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: -1)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: -1),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
         XCTAssertEqual(status, .unknown)
+        server.waitFor(requestsCompletion: 1)
     }
 
     // MARK: - HTTP Headers
 
     func testWhenSendingFromMobileDevice_itSetsMobileHeaders() {
-        let requestRecorder = RequestsRecorder()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestRecorder),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: HTTPHeaders(
                 appContext: .mockWith(
                     bundleVersion: "1.0.0",
@@ -117,18 +128,16 @@ class DataUploaderTests: XCTestCase {
 
         _ = uploader.upload(data: .mockAny())
 
-        XCTAssertEqual(requestRecorder.requestsSent.count, 1)
-
-        let request = requestRecorder.requestsSent[0]
+        let request = server.waitAndReturnRequests(count: 1)[0]
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
         XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "app-name/1.0.0 CFNetwork (iPhone; iOS/13.3.1)")
     }
 
     func testWhenSendingFromOtherDevice_itSetsDefaultHeaders() {
-        let requestRecorder = RequestsRecorder()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let uploader = DataUploader(
             url: .mockAny(),
-            httpClient: .mockDeliverySuccessWith(responseStatusCode: 200, requestsRecorder: requestRecorder),
+            httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: HTTPHeaders(
                 appContext: .mockWith(
                     bundleVersion: "1.0.0",
@@ -140,9 +149,7 @@ class DataUploaderTests: XCTestCase {
 
         _ = uploader.upload(data: .mockAny())
 
-        XCTAssertEqual(requestRecorder.requestsSent.count, 1)
-
-        let request = requestRecorder.requestsSent[0]
+        let request = server.waitAndReturnRequests(count: 1)[0]
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
         XCTAssertNil(request.allHTTPHeaderFields?["User-Agent"])
     }
