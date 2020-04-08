@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
   s.source_files = "Sources/Datadog/**/*.swift", "Datadog/DatadogPrivate/*.m"
-  s.preserve_paths = "Datadog/DatadogPrivate/*.{modulemap,h}"
+  s.preserve_paths = "Datadog/DatadogPrivate/*.h", "Datadog/DatadogPrivate/include/*.modulemap"
   s.pod_target_xcconfig = { 
     "SWIFT_INCLUDE_PATHS" => "$(PODS_ROOT)/DatadogSDK/Datadog/DatadogPrivate/** $(PODS_TARGET_SRCROOT)/DatadogSDK/Datadog/DatadogPrivate/**"
   }
