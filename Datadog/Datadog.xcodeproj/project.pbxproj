@@ -218,9 +218,11 @@
 		61133C452423990D00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		61133C462423990D00786299 /* TestsDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		61133C472423990D00786299 /* DatadogExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogExtensions.swift; sourceTree = "<group>"; };
+		61545C9C243DD2610017B6D5 /* module.private.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.private.modulemap; sourceTree = "<group>"; };
+		61545C9D243DD2610017B6D5 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		61545C9F243DD35C0017B6D5 /* SPMHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPMHeaders.h; sourceTree = "<group>"; };
 		616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
-		616A62DF2434BEF200D1BE12 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjcExceptionHandlerTests.swift; sourceTree = "<group>"; };
 		61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogPrivateMocks.swift; sourceTree = "<group>"; };
 		61C3638424361E9200C4D4E6 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
@@ -633,10 +635,20 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		61545C9A243DD2610017B6D5 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				61545C9F243DD35C0017B6D5 /* SPMHeaders.h */,
+				61545C9C243DD2610017B6D5 /* module.private.modulemap */,
+				61545C9D243DD2610017B6D5 /* module.modulemap */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
 		616A626824335D4900D1BE12 /* DatadogPrivate */ = {
 			isa = PBXGroup;
 			children = (
-				616A62DF2434BEF200D1BE12 /* module.modulemap */,
+				61545C9A243DD2610017B6D5 /* include */,
 				616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */,
 				616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */,
 			);
