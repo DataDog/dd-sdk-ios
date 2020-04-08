@@ -6,11 +6,34 @@
 
 import Foundation
 
-/// URL of the endpoint for data uploads. It's being validated during its creation.
-internal struct DataUploadURL {
-    let url: URL
+/// Creates URL and adds query items before providing them
+internal class UploadURLProvider {
+    private let rawURL: URL
+    private let dateProvider: DateProvider
 
-    init(endpointURL: String, clientToken: String) throws {
+    private var queryItems: [URLQueryItem] {
+        // batch_time
+        let currentTimeMillis = dateProvider.currentDate().currentTimeMillis
+        let batchTimeQueryItem = URLQueryItem(name: "batch_time", value: "\(currentTimeMillis)")
+        // ddsource
+        let ddSourceQueryItem = URLQueryItem(name: "ddsource", value: "mobile")
+
+        return [ddSourceQueryItem, batchTimeQueryItem]
+    }
+
+    var url: URL {
+        var urlComponents = URLComponents(url: rawURL, resolvingAgainstBaseURL: false)
+        urlComponents?.percentEncodedQueryItems = queryItems
+
+        guard let url = urlComponents?.url else {
+            userLogger.error("🔥 Failed to create URL from \(rawURL) with \(queryItems)")
+            developerLogger?.error("🔥 Failed to create URL from \(rawURL) with \(queryItems)")
+            return rawURL
+        }
+        return url
+    }
+
+    init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
         guard !endpointURL.isEmpty, let endpointURL = URL(string: endpointURL) else {
             throw ProgrammerError(description: "`endpointURL` cannot be empty.")
         }
@@ -18,21 +41,22 @@ internal struct DataUploadURL {
             throw ProgrammerError(description: "`clientToken` cannot be empty.")
         }
         let endpointURLWithClientToken = endpointURL.appendingPathComponent(clientToken)
-        guard let url = URL(string: "\(endpointURLWithClientToken.absoluteString)?ddsource=mobile") else {
+        guard let url = URL(string: endpointURLWithClientToken.absoluteString) else {
             throw ProgrammerError(description: "Cannot build logs upload URL.")
         }
-        self.url = url
+        self.rawURL = url
+        self.dateProvider = dateProvider
     }
 }
 
 /// Synchronously uploads data to server using `HTTPClient`.
 internal final class DataUploader {
-    private let uploadURL: DataUploadURL
+    private let urlProvider: UploadURLProvider
     private let httpClient: HTTPClient
     private let httpHeaders: HTTPHeaders
 
-    init(url: DataUploadURL, httpClient: HTTPClient, httpHeaders: HTTPHeaders) {
-        self.uploadURL = url
+    init(urlProvider: UploadURLProvider, httpClient: HTTPClient, httpHeaders: HTTPHeaders) {
+        self.urlProvider = urlProvider
         self.httpClient = httpClient
         self.httpHeaders = httpHeaders
     }
@@ -63,7 +87,7 @@ internal final class DataUploader {
     }
 
     private func createRequestWith(data: Data) -> URLRequest {
-        var request = URLRequest(url: uploadURL.url)
+        var request = URLRequest(url: urlProvider.url)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = httpHeaders.all
         request.httpBody = data

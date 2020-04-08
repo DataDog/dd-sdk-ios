@@ -7,8 +7,37 @@
 import XCTest
 @testable import Datadog
 
+class DatadogConfigurationTests: XCTestCase {
+    private typealias Configuration = Datadog.Configuration
+
+    func testDefaultConfiguration() {
+        let defaultConfiguration = Configuration.builderUsing(clientToken: "abcd").build()
+        XCTAssertEqual(defaultConfiguration.clientToken, "abcd")
+        XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
+    }
+
+    // MARK: - Logs endpoint
+    func testUSLogsEndpoint() {
+        let configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .us).build()
+        XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
+    }
+
+    func testEULogsEndpoint() {
+        let configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .eu).build()
+        XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
+    }
+
+    func testCustomLogsEndpoint() {
+        let configuration = Configuration.builderUsing(clientToken: .mockAny())
+            .set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs/"))
+            .build()
+        XCTAssertEqual(configuration.logsEndpoint.url, "https://api.example.com/v1/logs/")
+    }
+}
+
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private typealias Config = Datadog.Configuration
 
     override func setUp() {
         super.setUp()
@@ -32,18 +61,19 @@ class DatadogTests: XCTestCase {
             configuration: Datadog.Configuration.builderUsing(clientToken: "abcdefghi").build()
         )
         XCTAssertNotNil(Datadog.instance)
-        try Datadog.deinitializeOrThrow()
+        XCTAssertNoThrow(try Datadog.deinitializeOrThrow())
     }
 
     func testGivenInvalidLogsUploadURL_whenInitializing_itPrintsError() throws {
         Datadog.verbosityLevel = .debug
         defer { Datadog.verbosityLevel = nil }
 
-        Datadog.initialize(appContext: .mockAny(), configuration: .mockWith(logsUploadURL: nil))
+        let invalidConfig = Config(clientToken: "", logsEndpoint: .us)
+        Datadog.initialize(appContext: .mockAny(), configuration: invalidConfig)
 
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: SDK configuration is invalid - check `logsEndpoint` and (or) `clientToken`."
+            "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
         )
         XCTAssertNil(Datadog.instance)
     }
@@ -52,8 +82,9 @@ class DatadogTests: XCTestCase {
         Datadog.verbosityLevel = .debug
         defer { Datadog.verbosityLevel = nil }
 
-        Datadog.initialize(appContext: .mockAny(), configuration: .mockAny())
-        Datadog.initialize(appContext: .mockAny(), configuration: .mockAny())
+        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us)
+        Datadog.initialize(appContext: .mockAny(), configuration: mockConfig)
+        Datadog.initialize(appContext: .mockAny(), configuration: mockConfig)
 
         XCTAssertEqual(
             printFunction.printedMessage,
@@ -66,7 +97,8 @@ class DatadogTests: XCTestCase {
     // MARK: - Defaults
 
     func testDefaultAppContext() throws {
-        Datadog.initialize(appContext: .init(), configuration: .mockAny())
+        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us)
+        Datadog.initialize(appContext: .init(), configuration: mockConfig)
 
         let appContext = Datadog.instance?.appContext
         let bundle = Bundle.main

@@ -29,8 +29,8 @@ extension Datadog {
             }
         }
 
-        /// Logs upload URL or `nil` if user configuration is invalid.
-        internal let logsUploadURL: DataUploadURL?
+        internal let clientToken: String
+        internal let logsEndpoint: LogsEndpoint
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -65,7 +65,8 @@ extension Datadog {
             /// Builds `Datadog.Configuration` object.
             public func build() -> Configuration {
                 return Configuration(
-                    logsUploadURL: try? DataUploadURL(endpointURL: logsEndpoint.url, clientToken: clientToken)
+                    clientToken: clientToken,
+                    logsEndpoint: logsEndpoint
                 )
             }
         }

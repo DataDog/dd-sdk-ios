@@ -88,12 +88,14 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        guard let logsUploadURL = configuration.logsUploadURL else {
-            throw ProgrammerError(description: "SDK configuration is invalid - check `logsEndpoint` and (or) `clientToken`.")
-        }
+        let logsUploadURLProvider = try UploadURLProvider(
+            endpointURL: configuration.logsEndpoint.url,
+            clientToken: configuration.clientToken,
+            dateProvider: SystemDateProvider()
+        )
         self.instance = try Datadog(
             appContext: appContext,
-            logsUploadURL: logsUploadURL,
+            logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: SystemDateProvider(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
@@ -103,16 +105,16 @@ public class Datadog {
 
     internal convenience init(
         appContext: AppContext,
-        logsUploadURL: DataUploadURL,
+        logsUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
         userInfoProvider: UserInfoProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType?
     ) throws {
         let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
-        let logsUploadStrategy: LogsUploadStrategy = .defalut(
+        let logsUploadStrategy: LogsUploadStrategy = .default(
             appContext: appContext,
-            logsUploadURL: logsUploadURL,
+            logsUploadURLProvider: logsUploadURLProvider,
             reader: logsPersistenceStrategy.reader,
             networkConnectionInfoProvider: networkConnectionInfoProvider
         )
