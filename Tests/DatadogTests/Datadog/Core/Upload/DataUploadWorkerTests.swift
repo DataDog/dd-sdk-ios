@@ -33,7 +33,7 @@ class DataUploadWorkerTests: XCTestCase {
         let reader = FileReader(orchestrator: orchestrator, queue: fileReadWriteQueue)
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
-            url: .mockAny(),
+            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )

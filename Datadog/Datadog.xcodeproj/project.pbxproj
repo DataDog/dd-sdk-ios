@@ -73,7 +73,6 @@
 		61133C602423990D00786299 /* HTTPHeadersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C332423990D00786299 /* HTTPHeadersTests.swift */; };
 		61133C612423990D00786299 /* HTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C342423990D00786299 /* HTTPClientTests.swift */; };
 		61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C362423990D00786299 /* InternalLoggersTests.swift */; };
-		61133C632423990D00786299 /* DatadogConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C372423990D00786299 /* DatadogConfigurationTests.swift */; };
 		61133C642423990D00786299 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C382423990D00786299 /* LoggerTests.swift */; };
 		61133C652423990D00786299 /* LogBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3B2423990D00786299 /* LogBuilderTests.swift */; };
 		61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3C2423990D00786299 /* LogSanitizerTests.swift */; };
@@ -94,6 +93,7 @@
 		61C3638524361E9200C4D4E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
 		61C36470243B5C8300C4D4E6 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3646F243B5C8300C4D4E6 /* ServerMock.swift */; };
 		9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E085879242519FF001A3583 /* NetworkPathMonitor.swift */; };
+		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -206,7 +206,6 @@
 		61133C332423990D00786299 /* HTTPHeadersTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersTests.swift; sourceTree = "<group>"; };
 		61133C342423990D00786299 /* HTTPClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClientTests.swift; sourceTree = "<group>"; };
 		61133C362423990D00786299 /* InternalLoggersTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLoggersTests.swift; sourceTree = "<group>"; };
-		61133C372423990D00786299 /* DatadogConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationTests.swift; sourceTree = "<group>"; };
 		61133C382423990D00786299 /* LoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
 		61133C3B2423990D00786299 /* LogBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogBuilderTests.swift; sourceTree = "<group>"; };
 		61133C3C2423990D00786299 /* LogSanitizerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSanitizerTests.swift; sourceTree = "<group>"; };
@@ -228,6 +227,7 @@
 		61C3638424361E9200C4D4E6 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		61C3646F243B5C8300C4D4E6 /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
 		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
+		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -497,7 +497,6 @@
 				61133C192423990D00786299 /* Mocks */,
 				61133C412423990D00786299 /* DatadogTests.swift */,
 				61133C382423990D00786299 /* LoggerTests.swift */,
-				61133C372423990D00786299 /* DatadogConfigurationTests.swift */,
 				61133C212423990D00786299 /* Core */,
 				61133C392423990D00786299 /* Logs */,
 				61133C352423990D00786299 /* Utils */,
@@ -578,6 +577,7 @@
 			isa = PBXGroup;
 			children = (
 				61133C362423990D00786299 /* InternalLoggersTests.swift */,
+				9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -894,7 +894,6 @@
 				61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */,
 				61C363802436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift in Sources */,
 				61133C602423990D00786299 /* HTTPHeadersTests.swift in Sources */,
-				61133C632423990D00786299 /* DatadogConfigurationTests.swift in Sources */,
 				61133C572423990D00786299 /* FileReaderTests.swift in Sources */,
 				61133C5F2423990D00786299 /* DataUploaderTests.swift in Sources */,
 				61133C612423990D00786299 /* HTTPClientTests.swift in Sources */,
@@ -914,6 +913,7 @@
 				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
 				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
+				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
 				61133C642423990D00786299 /* LoggerTests.swift in Sources */,
 				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,

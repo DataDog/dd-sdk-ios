@@ -372,11 +372,12 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
 
 // MARK: - Persistence and Upload
 
-extension DataUploadURL {
-    static func mockAny() -> DataUploadURL {
-        return try! DataUploadURL(
+extension UploadURLProvider {
+    static func mockAny() -> UploadURLProvider {
+        return try! UploadURLProvider(
             endpointURL: "https://app.example.com/v2/api",
-            clientToken: "abc-def-ghi"
+            clientToken: "abc-def-ghi",
+            dateProvider: RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
         )
     }
 }
@@ -427,7 +428,7 @@ extension DataUploadConditions {
 extension DataUploader {
     static func mockAny() -> DataUploader {
         return DataUploader(
-            url: .mockAny(),
+            urlProvider: .mockAny(),
             httpClient: .mockAny(),
             httpHeaders: .mockAny()
         )
@@ -525,7 +526,7 @@ extension LogsUploadStrategy {
                 queue: uploadQueue,
                 fileReader: fileReader,
                 dataUploader: DataUploader(
-                    url: .mockAny(),
+                    urlProvider: .mockAny(),
                     httpClient: HTTPClient(session: urlSession),
                     httpHeaders: .mockAny()
                 ),
@@ -615,20 +616,6 @@ class LogOutputMock: LogOutput {
 
     func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
         recordedLog = RecordedLog(level: level, message: message)
-    }
-}
-
-extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration {
-        return mockWith()
-    }
-
-    static func mockWith(
-        logsUploadURL: DataUploadURL? = .mockAny()
-    ) -> Datadog.Configuration {
-        return Datadog.Configuration(
-            logsUploadURL: logsUploadURL
-        )
     }
 }
 

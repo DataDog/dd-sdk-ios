@@ -1,36 +1,37 @@
-/*
-* Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-2020 Datadog, Inc.
-*/
-
 import XCTest
 @testable import Datadog
 @testable import DatadogObjc
 
+extension Datadog.Configuration.LogsEndpoint: Equatable {
+    public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
+        switch (lhs, rhs) {
+        case (.us, .us): return true
+        case (.eu, .eu): return true
+        case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
+        default: return false
+        }
+    }
+}
+
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
-    // MARK: - Customizing logs endpoint
+    func testItFowardsInitializationToSwift() {
+        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123")
 
-    private let swiftEndpoints: [Datadog.Configuration.LogsEndpoint] = [
-        .eu, .us, .custom(url: "https://api.example.com/v1/logs")
-    ]
-    private let objcEndpoints: [DDLogsEndpoint] = [
-        .eu(), .us(), .custom(url: "https://api.example.com/v1/logs")
-    ]
+        let swiftConfigurationDefault = objcBuilder.build().sdkConfiguration
+        XCTAssertEqual(swiftConfigurationDefault.clientToken, "abc-123")
+        XCTAssertEqual(swiftConfigurationDefault.logsEndpoint, .us)
 
-    func testItForwardsLogsEndpointToSwift() {
-        zip(swiftEndpoints, objcEndpoints).forEach { swiftEndpoint, objcEndpoint in
-            let objcBuilder = DDConfiguration.builder(clientToken: "abc-123")
-            objcBuilder.set(endpoint: objcEndpoint)
-            let objcConfiguration = objcBuilder.build()
+        objcBuilder.set(endpoint: .eu())
+        let swiftConfigurationEU = objcBuilder.build().sdkConfiguration
+        XCTAssertEqual(swiftConfigurationEU.logsEndpoint, .eu)
 
-            let expected = Datadog.Configuration
-                .builderUsing(clientToken: "abc-123")
-                .set(logsEndpoint: swiftEndpoint)
-                .build()
+        objcBuilder.set(endpoint: .us())
+        let swiftConfigurationUS = objcBuilder.build().sdkConfiguration
+        XCTAssertEqual(swiftConfigurationUS.logsEndpoint, .us)
 
-            XCTAssertEqual(objcConfiguration.sdkConfiguration.logsUploadURL?.url, expected.logsUploadURL?.url)
-        }
+        objcBuilder.set(endpoint: .custom(url: "https://api.example.com/v1/logs"))
+        let swiftConfigurationCustom = objcBuilder.build().sdkConfiguration
+        XCTAssertEqual(swiftConfigurationCustom.logsEndpoint, .custom(url: "https://api.example.com/v1/logs"))
     }
 }
