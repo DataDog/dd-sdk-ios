@@ -5,14 +5,9 @@
  */
 
 import OpenTracing
-@testable import Datadog
-
-// MARK: - OT to DD casting
 
 // swiftlint:disable identifier_name
-extension OpenTracing.SpanContext {
-    var dd: DDSpanContext {
-        return self as! DDSpanContext
-    }
+internal extension OpenTracing.SpanContext {
+    var dd: DDSpanContext? { warnIfCannotCast(value: self) }
 }
 // swiftlint:enable identifier_name

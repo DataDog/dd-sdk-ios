@@ -13,6 +13,10 @@ It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
 extension DDSpan {
+    static func mockAny() -> DDSpan {
+        return mockWith()
+    }
+
     static func mockWith(
         tracer: DDTracer = .mockNoOp(),
         operationName: String = .mockAny(),

@@ -48,8 +48,24 @@ class DDTracerTests: XCTestCase {
         span?.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
         let recorded = spanOutput.recorded
-        XCTAssertEqual(recorded?.span.context.dd.traceID, parentSpan?.context.dd.traceID)
-        XCTAssertNotEqual(recorded?.span.context.dd.spanID, parentSpan?.context.dd.spanID)
+        XCTAssertEqual(recorded?.span.context.dd!.traceID, parentSpan?.context.dd!.traceID)
+        XCTAssertNotEqual(recorded?.span.context.dd!.spanID, parentSpan?.context.dd!.spanID)
+    }
+
+    func testItInjectsSpanContextIntoHTTPHeadersWriter() {
+        let tracer = DDTracer(spanOutput: SpanOutputMock())
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2)
+
+        let httpHeadersWriter = DDHTTPHeadersWriter()
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
+
+        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+
+        let expectedHTTPHeaders = [
+            "x-datadog-trace-id": "1",
+            "x-datadog-parent-id": "2",
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
     // MARK: - Initialization
