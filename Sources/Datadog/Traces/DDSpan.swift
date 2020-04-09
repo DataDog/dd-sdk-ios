@@ -33,28 +33,28 @@ internal class DDSpan: Span {
     }
 
     func setOperationName(_ operationName: String) {
-        guard warnIfFinished("setOperationName(_:)") else {
+        guard !warnIfFinished("setOperationName(_:)") else {
             return
         }
         self.operationName = operationName
     }
 
     func setTag(key: String, value: Codable) {
-        guard warnIfFinished("setTag(key:value:)") else {
+        guard !warnIfFinished("setTag(key:value:)") else {
             return
         }
         // TODO: RUMM-292
     }
 
     func setBaggageItem(key: String, value: String) {
-        guard warnIfFinished("setBaggageItem(key:value:)") else {
+        guard !warnIfFinished("setBaggageItem(key:value:)") else {
             return
         }
         // TODO: RUMM-292
     }
 
     func baggageItem(withKey key: String) -> String? {
-        guard warnIfFinished("baggageItem(withKey:)") else {
+        guard !warnIfFinished("baggageItem(withKey:)") else {
             return nil
         }
         // TODO: RUMM-292
@@ -62,7 +62,7 @@ internal class DDSpan: Span {
     }
 
     func finish(at time: Date) {
-        guard warnIfFinished("finish(at:)") else {
+        guard !warnIfFinished("finish(at:)") else {
             return
         }
         isFinished = true // TODO: RUMM-340 Consider thread safety
@@ -70,7 +70,7 @@ internal class DDSpan: Span {
     }
 
     func log(fields: [String: Codable], timestamp: Date) {
-        guard warnIfFinished("log(fields:timestamp:)") else {
+        guard !warnIfFinished("log(fields:timestamp:)") else {
             return
         }
         // TODO: RUMM-292
@@ -79,11 +79,9 @@ internal class DDSpan: Span {
     // MARK: - Private
 
     private func warnIfFinished(_ methodName: String) -> Bool {
-        if isFinished { // TODO: RUMM-340 Consider thread safety
-            userLogger.warn("🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed.")
-            return false
-        } else {
-            return true
-        }
+        return warn(
+            if: isFinished, // TODO: RUMM-340 Consider thread safety when reading `.isFinished`
+            message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."
+        )
     }
 }

@@ -28,11 +28,11 @@ public class DDTracer: Tracer {
     }
 
     public func inject(spanContext: SpanContext, writer: FormatWriter) {
-        // TODO: RUMM-292
+        writer.inject(spanContext: spanContext)
     }
 
     public func extract(reader: FormatReader) -> SpanContext? {
-        // TODO: RUMM-292
+        // TODO: RUMM-385 - we don't need to support it now
         return nil
     }
 
@@ -43,7 +43,7 @@ public class DDTracer: Tracer {
             throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
         }
 
-        let parentSpanContext = references?.compactMap { $0.context as? DDSpanContext }.last
+        let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,
             operationName: operationName,
