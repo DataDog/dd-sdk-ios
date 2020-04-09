@@ -33,28 +33,28 @@ internal class DDSpan: Span {
     }
 
     func setOperationName(_ operationName: String) {
-        guard !warnIfFinished("setOperationName(_:)") else {
+        if warnIfFinished("setOperationName(_:)") {
             return
         }
         self.operationName = operationName
     }
 
     func setTag(key: String, value: Codable) {
-        guard !warnIfFinished("setTag(key:value:)") else {
+        if warnIfFinished("setTag(key:value:)") {
             return
         }
         // TODO: RUMM-292
     }
 
     func setBaggageItem(key: String, value: String) {
-        guard !warnIfFinished("setBaggageItem(key:value:)") else {
+        if warnIfFinished("setBaggageItem(key:value:)") {
             return
         }
         // TODO: RUMM-292
     }
 
     func baggageItem(withKey key: String) -> String? {
-        guard !warnIfFinished("baggageItem(withKey:)") else {
+        if warnIfFinished("baggageItem(withKey:)") {
             return nil
         }
         // TODO: RUMM-292
@@ -62,7 +62,7 @@ internal class DDSpan: Span {
     }
 
     func finish(at time: Date) {
-        guard !warnIfFinished("finish(at:)") else {
+        if warnIfFinished("finish(at:)") {
             return
         }
         isFinished = true // TODO: RUMM-340 Consider thread safety
@@ -70,7 +70,7 @@ internal class DDSpan: Span {
     }
 
     func log(fields: [String: Codable], timestamp: Date) {
-        guard !warnIfFinished("log(fields:timestamp:)") else {
+        if warnIfFinished("log(fields:timestamp:)") {
             return
         }
         // TODO: RUMM-292
