@@ -9,14 +9,16 @@ import Foundation
 
 internal class DDSpan: Span {
     private(set) var operationName: String
-    /// The `Tracer` which created this span.
-    internal let issuingTracer: DDTracer
+    private(set) var tags: [String: Codable]
     internal let startTime: Date
     internal var isFinished: Bool = false
+    /// The `Tracer` which created this span.
+    private let issuingTracer: DDTracer
 
-    init(tracer: DDTracer, operationName: String, parentSpanContext: DDSpanContext?, startTime: Date) {
+    init(tracer: DDTracer, operationName: String, parentSpanContext: DDSpanContext?, tags: [String: Codable], startTime: Date) {
         self.issuingTracer = tracer
         self.operationName = operationName
+        self.tags = tags
         self.startTime = startTime
         self.context = DDSpanContext(
             traceID: parentSpanContext?.traceID ?? .generateUnique(),
@@ -43,7 +45,7 @@ internal class DDSpan: Span {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
-        // TODO: RUMM-292
+        self.tags[key] = value // TODO: RUMM-340 Add thread safety when mutating `self.tags`
     }
 
     func setBaggageItem(key: String, value: String) {
@@ -80,7 +82,7 @@ internal class DDSpan: Span {
 
     private func warnIfFinished(_ methodName: String) -> Bool {
         return warn(
-            if: isFinished, // TODO: RUMM-340 Consider thread safety when reading `.isFinished`
+            if: isFinished, // TODO: RUMM-340 Add thread safety when reading `.isFinished`
             message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."
         )
     }

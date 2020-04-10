@@ -14,6 +14,18 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(span.operationName, "new")
     }
 
+    func testSettingTag() {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.tags.count, 0)
+
+        span.setTag(key: "key1", value: "value1")
+        span.setTag(key: "key2", value: "value2")
+
+        XCTAssertEqual(span.tags.count, 2)
+        XCTAssertEqual(span.tags["key1"] as? String, "value1")
+        XCTAssertEqual(span.tags["key2"] as? String, "value2")
+    }
+
     func testCallingMethodsOnSpanInstanceAfterItIsFinished() {
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
