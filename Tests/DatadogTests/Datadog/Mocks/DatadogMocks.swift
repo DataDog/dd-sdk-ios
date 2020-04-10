@@ -63,15 +63,6 @@ class RelativeDateProvider: DateProvider {
 // MARK: - Files orchestration
 
 extension WritableFileConditions {
-    static func mockAny() -> WritableFileConditions {
-        return WritableFileConditions(
-            maxDirectorySize: 0,
-            maxFileSize: 0,
-            maxFileAgeForWrite: 0,
-            maxNumberOfUsesOfFile: 0
-        )
-    }
-
     /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
     static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
@@ -94,10 +85,6 @@ extension WritableFileConditions {
 }
 
 extension ReadableFileConditions {
-    static func mockAny() -> ReadableFileConditions {
-        return ReadableFileConditions(minFileAgeForRead: 0, maxFileAgeForRead: 0)
-    }
-
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
@@ -108,11 +95,19 @@ extension ReadableFileConditions {
 }
 
 extension FilesOrchestrator {
-    static func mockAny() -> FilesOrchestrator {
+    static func mockNoOp() -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: temporaryDirectory,
-            writeConditions: .mockAny(),
-            readConditions: .mockAny(),
+            writeConditions: WritableFileConditions(
+                maxDirectorySize: 0,
+                maxFileSize: 0,
+                maxFileAgeForWrite: 0,
+                maxNumberOfUsesOfFile: 0
+            ),
+            readConditions: ReadableFileConditions(
+                minFileAgeForRead: 0,
+                maxFileAgeForRead: 0
+            ),
             dateProvider: SystemDateProvider()
         )
     }
@@ -139,9 +134,9 @@ extension FilesOrchestrator {
 }
 
 extension FileWriter {
-    static func mockAny() -> FileWriter {
+    static func mockNoOp() -> FileWriter {
         return FileWriter(
-            orchestrator: .mockAny(),
+            orchestrator: .mockNoOp(),
             queue: .global(),
             maxWriteSize: 0
         )
@@ -161,9 +156,9 @@ extension FileWriter {
 }
 
 extension FileReader {
-    static func mockAny() -> FileReader {
+    static func mockNoOp() -> FileReader {
         return FileReader(
-            orchestrator: .mockAny(),
+            orchestrator: .mockNoOp(),
             queue: .global()
         )
     }
@@ -229,10 +224,6 @@ extension BatteryStatus {
 
 struct BatteryStatusProviderMock: BatteryStatusProviderType {
     let current: BatteryStatus
-
-    static func mockAny() -> BatteryStatusProviderMock {
-        return BatteryStatusProviderMock(current: .mockAny())
-    }
 
     static func mockWith(status: BatteryStatus) -> BatteryStatusProviderMock {
         return BatteryStatusProviderMock(current: status)
@@ -399,10 +390,20 @@ extension DataUploadDelay {
 }
 
 extension DataUploadConditions {
-    static func mockAny() -> DataUploadConditions {
+    static func mockNeverPerformingUploads() -> DataUploadConditions {
         return DataUploadConditions(
-            batteryStatus: BatteryStatusProviderMock.mockAny(),
-            networkConnectionInfo: NetworkConnectionInfoProviderMock.mockAny()
+            batteryStatus: BatteryStatusProviderMock(
+                current: .mockWith(
+                    state: .unplugged,
+                    level: 0.01,
+                    isLowPowerModeEnabled: true
+                )
+            ),
+            networkConnectionInfo: NetworkConnectionInfoProviderMock.mockWith(
+                networkConnectionInfo: .mockWith(
+                    reachability: .no
+                )
+            )
         )
     }
 
@@ -442,15 +443,15 @@ extension HTTPClient {
 }
 
 extension DataUploadWorker {
-    static func mockAny() -> DataUploadWorker {
+    static func mockNoOp() -> DataUploadWorker {
         return .mockWith()
     }
 
     static func mockWith(
         queue: DispatchQueue = .global(),
-        fileReader: FileReader = .mockAny(),
+        fileReader: FileReader = .mockNoOp(),
         dataUploader: DataUploader = .mockAny(),
-        uploadConditions: DataUploadConditions = .mockAny(),
+        uploadConditions: DataUploadConditions = .mockNeverPerformingUploads(),
         delay: DataUploadDelay = .mockAny()
     ) -> DataUploadWorker {
         return DataUploadWorker(
@@ -473,8 +474,8 @@ extension DataUploadWorker {
 }
 
 extension LogsPersistenceStrategy {
-    static func mockAny() -> LogsPersistenceStrategy {
-        return LogsPersistenceStrategy(writer: .mockAny(), reader: .mockAny())
+    static func mockNeverWrittingLogs() -> LogsPersistenceStrategy {
+        return LogsPersistenceStrategy(writer: .mockNoOp(), reader: .mockNoOp())
     }
 
     /// Mocks persistence strategy where:
@@ -499,10 +500,6 @@ extension LogsPersistenceStrategy {
 }
 
 extension LogsUploadStrategy {
-    static func mockAny() -> LogsUploadStrategy {
-        return LogsUploadStrategy(uploadWorker: .mockAny())
-    }
-
     static func mockNeverPerformingUploads() -> LogsUploadStrategy {
         return LogsUploadStrategy(
             uploadWorker: .mockNeverPerformingUploads()
@@ -620,16 +617,15 @@ class LogOutputMock: LogOutput {
 }
 
 extension Datadog {
-    static func mockNeverPerformingUploads() -> Datadog {
-        return .mockWith(
-            logsUploadStrategy: .mockNeverPerformingUploads()
-        )
+    /// Mocks no-op `Datadog` instance (no writes, no uploads).
+    static func mockNoOp() -> Datadog {
+        return .mockNoOpWith()
     }
 
-    static func mockWith(
+    static func mockNoOpWith(
         appContext: AppContext = .mockAny(),
-        logsPersistenceStrategy: LogsPersistenceStrategy = .mockAny(),
-        logsUploadStrategy: LogsUploadStrategy = .mockAny(),
+        logsPersistenceStrategy: LogsPersistenceStrategy = .mockNeverWrittingLogs(),
+        logsUploadStrategy: LogsUploadStrategy = .mockNeverPerformingUploads(),
         dateProvider: DateProvider = SystemDateProvider(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
