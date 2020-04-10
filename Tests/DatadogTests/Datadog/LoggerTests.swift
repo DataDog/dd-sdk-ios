@@ -410,7 +410,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        Datadog.instance = .mockNeverPerformingUploads()
+        Datadog.instance = .mockNoOp()
+        defer { Datadog.instance = nil }
         let logger = Logger.builder.build()
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
@@ -430,7 +431,5 @@ class LoggerTests: XCTestCase {
                 break
             }
         }
-
-        Datadog.instance = nil
     }
 }
