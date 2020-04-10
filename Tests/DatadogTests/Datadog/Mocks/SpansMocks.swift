@@ -21,12 +21,14 @@ extension DDSpan {
         tracer: DDTracer = .mockNoOp(),
         operationName: String = .mockAny(),
         parentSpanContext: DDSpanContext? = nil,
+        tags: [String: Codable] = [:],
         startTime: Date = .mockAny()
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
             operationName: operationName,
             parentSpanContext: parentSpanContext,
+            tags: tags,
             startTime: startTime
         )
     }

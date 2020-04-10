@@ -19,6 +19,38 @@ class DDTracerTests: XCTestCase {
         super.tearDown()
     }
 
+    func testItCreatesBasicSpan() {
+        let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        let spanOutput = SpanOutputMock()
+        Datadog.instance = .mockNoOpWith(dateProvider: dateProvider)
+        defer { Datadog.instance = nil }
+
+        let tracer = DDTracer(spanOutput: spanOutput)
+        let span = tracer.startSpan(operationName: "operation").dd
+
+        XCTAssertEqual(span.operationName, "operation")
+        XCTAssertEqual(span.tags.count, 0)
+        XCTAssertTrue(span.tracer().dd === tracer)
+        XCTAssertEqual(span.startTime, dateProvider.currentDate())
+        XCTAssertFalse(span.isFinished)
+    }
+
+    func testItCreatesCustomizedSpan() {
+        let spanOutput = SpanOutputMock()
+        Datadog.instance = .mockNoOpWith(dateProvider: SystemDateProvider())
+        defer { Datadog.instance = nil }
+
+        let tracer = DDTracer(spanOutput: spanOutput)
+        let span = tracer.startSpan(operationName: "operation", tags: ["tag1": "value1"], startTime: .mockDecember15th2019At10AMUTC()).dd
+
+        XCTAssertEqual(span.operationName, "operation")
+        XCTAssertEqual(span.tags.count, 1)
+        XCTAssertEqual(span.tags["tag1"] as? String, "value1")
+        XCTAssertTrue(span.tracer().dd === tracer)
+        XCTAssertEqual(span.startTime, .mockDecember15th2019At10AMUTC())
+        XCTAssertFalse(span.isFinished)
+    }
+
     func testGivenSpanWithNoParent_whenFinished_itIsWrittenToOutput() {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         let spanOutput = SpanOutputMock()
@@ -30,7 +62,6 @@ class DDTracerTests: XCTestCase {
         span?.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
         let recorded = spanOutput.recorded
-        XCTAssertTrue(recorded?.span.tracer() as? DDTracer === tracer)
         XCTAssertEqual(recorded?.span.operationName, "operation")
         XCTAssertEqual(recorded?.span.startTime, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(recorded?.finishTime, .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))

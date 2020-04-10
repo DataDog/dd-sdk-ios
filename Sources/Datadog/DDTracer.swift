@@ -42,12 +42,12 @@ public class DDTracer: Tracer {
         guard let datadog = Datadog.instance else {
             throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
         }
-
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,
             operationName: operationName,
             parentSpanContext: parentSpanContext,
+            tags: tags ?? [:],
             startTime: startTime ?? datadog.dateProvider.currentDate()
         )
     }
