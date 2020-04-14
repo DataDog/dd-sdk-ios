@@ -5,6 +5,6 @@ if [ ! -f "Package.swift" ]; then
 fi
 
 SERVER_ADDRESS=$(./instrumented-tests/http-server-mock/python/server_address.py)
-XCCONFIG_FILE="./instrumented-tests/http-server-mock.xcconfig"
+XCCONFIG_FILE="./Datadog/TargetSupport/DatadogIntegrationTests/DatadogIntegrationTests.xcconfig"
 
 echo "MOCK_SERVER_ADDRESS=${SERVER_ADDRESS}" > "${XCCONFIG_FILE}"

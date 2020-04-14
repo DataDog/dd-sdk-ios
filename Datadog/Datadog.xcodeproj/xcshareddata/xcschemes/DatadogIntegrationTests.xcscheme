@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1130"
+   LastUpgradeVersion = "1140"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -10,38 +10,22 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/../..&quot;&#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./tools/config/generate-http-server-mock-config.sh&#10;">
+               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/..&quot;&#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./tools/config/generate-http-server-mock-config.sh&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "610CCB88240527F300C4FE79"
-                     BuildableName = "IntegrationTests.xctest"
-                     BlueprintName = "IntegrationTests"
-                     ReferencedContainer = "container:Integration.xcodeproj">
+                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BuildableName = "DatadogIntegrationTests.xctest"
+                     BlueprintName = "DatadogIntegrationTests"
+                     ReferencedContainer = "container:Datadog.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
          </ExecutionAction>
       </PreActions>
-      <BuildActionEntries>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "610CCB72240527F100C4FE79"
-               BuildableName = "Integration.app"
-               BlueprintName = "Integration"
-               ReferencedContainer = "container:Integration.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-      </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Integration"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -50,14 +34,14 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/../..&quot;&#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./instrumented-tests/http-server-mock/python/start_mock_server.py&amp;&#10;">
+               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/..&quot;&#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./instrumented-tests/http-server-mock/python/start_mock_server.py&amp;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "610CCB88240527F300C4FE79"
-                     BuildableName = "IntegrationTests.xctest"
-                     BlueprintName = "IntegrationTests"
-                     ReferencedContainer = "container:Integration.xcodeproj">
+                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BuildableName = "DatadogIntegrationTests.xctest"
+                     BlueprintName = "DatadogIntegrationTests"
+                     ReferencedContainer = "container:Datadog.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -68,7 +52,16 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "pkill -f start_mock_server.py&#10;">
+               scriptText = "pkill -f start_mock_server.py;&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BuildableName = "DatadogIntegrationTests.xctest"
+                     BlueprintName = "DatadogIntegrationTests"
+                     ReferencedContainer = "container:Datadog.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
             </ActionContent>
          </ExecutionAction>
       </PostActions>
@@ -77,10 +70,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "610CCB88240527F300C4FE79"
-               BuildableName = "IntegrationTests.xctest"
-               BlueprintName = "IntegrationTests"
-               ReferencedContainer = "container:Integration.xcodeproj">
+               BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+               BuildableName = "DatadogIntegrationTests.xctest"
+               BlueprintName = "DatadogIntegrationTests"
+               ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -95,16 +88,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "610CCB72240527F100C4FE79"
-            BuildableName = "Integration.app"
-            BlueprintName = "Integration"
-            ReferencedContainer = "container:Integration.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -112,16 +95,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "610CCB72240527F100C4FE79"
-            BuildableName = "Integration.app"
-            BlueprintName = "Integration"
-            ReferencedContainer = "container:Integration.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

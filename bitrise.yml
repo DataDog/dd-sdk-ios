@@ -13,7 +13,6 @@ workflows:
     - run_linter
     - run_unit_tests
     - run_integration_tests
-    - run_benchmarks
     - check_dependency_managers
     # I disable it for now, as this would require supporting local pod installation
     # of `DatadogSDK.podspec` in CP example project. This effort will be lost as in `RUMM-334`
@@ -73,13 +72,13 @@ workflows:
         Runs unit tests for HTTPServerMock package on macOS.
     steps:
     - xcode-test@2.4.5:
-        title: Run unit tests for Datadog.xcodeproj - iOS Simulator
+        title: Run unit tests for Datadog - iOS Simulator
         inputs:
         - scheme: Datadog
-        - simulator_device: iPhone Xs Max
+        - simulator_device: iPhone 11
         - is_clean_build: 'yes'
         - generate_code_coverage_files: 'yes'
-        - project_path: Datadog/Datadog.xcodeproj
+        - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
     - script@1.1.6:
         title: Generate HTTPServerMock.xcodeproj
@@ -97,40 +96,18 @@ workflows:
 
   run_integration_tests:
     description: |-
-        Runs integration tests from instrumented Integration.xcworkspace.
+        Runs integration tests from Datadog.xcworkspace.
     steps:
     - xcode-test:
-        title: Run integration tests - Integration.xcworkspace on iOS Simulator
+        title: Run integration tests - DatadogIntegrationTests on iOS Simulator
         inputs:
-        - scheme: Integration
+        - scheme: DatadogIntegrationTests
         - simulator_device: iPhone 11
-        - is_clean_build: 'yes'
-        - project_path: instrumented-tests/Integration/Integration.xcworkspace
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Integration-tests.html"
-
-  run_benchmarks:
-    description: |-
-        Runs benchmark tests from instrumented Benchmark.xcworkspace.
-        Results are ignored, because we tests are not run on a real device.
-        The aim of this workflow is to only ensure that benchmarks can be run.
-    steps:
-    - script@1.1.6:
-        title: Configure Benchmark.xcworkspace
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            make benchmark
-    - xcode-test:
-        title: Check benchmarks - Benchmark.xcworkspace on iOS Simulator
-        inputs:
-        - scheme: Benchmark
-        - simulator_device: iPhone 11
-        - is_clean_build: 'yes'
-        - project_path: instrumented-tests/Benchmark/Benchmark.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmarks-result.html"
-
   check_dependency_managers:
     description: |-
         Uses supported dependency managers to fetch, install and link the SDK

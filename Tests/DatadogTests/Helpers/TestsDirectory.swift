@@ -7,6 +7,11 @@
 import Foundation
 @testable import Datadog
 
+func clearPersistedLogs() throws {
+    let directory = try Directory(withSubdirectoryPath: LogsPersistenceStrategy.Constants.logFilesSubdirectory)
+    try FileManager.default.removeItem(at: directory.url)
+}
+
 /// Creates `Directory` pointing to unique subfolder in `/var/folders/`.
 /// Does not create the subfolder - it must be later created with `.create()`.
 func obtainUniqueTemporaryDirectory() -> Directory {

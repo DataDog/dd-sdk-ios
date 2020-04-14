@@ -8,7 +8,27 @@ import Datadog
 import HTTPServerMock
 import XCTest
 
+fileprivate func clearPersistedLogs() throws {
+    let logFilesSubdirectory = "com.datadoghq.logs/v1"
+    let cachesDirectoryURL = FileManager.default.urls(
+        for: .cachesDirectory,
+        in: .userDomainMask
+    ).first
+    let subdirectoryURL = cachesDirectoryURL?.appendingPathComponent(
+        logFilesSubdirectory,
+        isDirectory: true
+    )
+    if let dirToRemove = subdirectoryURL {
+        try FileManager.default.removeItem(at: dirToRemove)
+    }
+}
+
 class LoggingIntegrationTests: IntegrationTests {
+    override func setUp() {
+        super.setUp()
+        try? clearPersistedLogs()
+    }
+
     private struct Constants {
         /// Time needed for logs to be uploaded to mock server.
         static let logsDeliveryTime: TimeInterval = 30
@@ -20,7 +40,7 @@ class LoggingIntegrationTests: IntegrationTests {
 
         // Initialize SDK
         Datadog.initialize(
-            appContext: .init(mainBundle: .main),
+            appContext: .init(mainBundle: Bundle.init(for: type(of: self))),
             configuration: Datadog.Configuration.builderUsing(clientToken: "client-token")
                 .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
                 .build()
@@ -82,7 +102,7 @@ class LoggingIntegrationTests: IntegrationTests {
             matcher.assertServiceName(equals: "service-name")
             matcher.assertLoggerName(equals: "logger-name")
             matcher.assertLoggerVersion(matches: { version in version.split(separator: ".").count == 3 })
-            matcher.assertApplicationVersion(equals: "1.0.0")
+            matcher.assertApplicationVersion(equals: "1.0")
             matcher.assertThreadName(equals: "main")
             matcher.assertAttributes(
                 equal: [

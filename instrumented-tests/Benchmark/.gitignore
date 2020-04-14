@@ -1,7 +1,0 @@
-xcuserdata/
-build/
-
-# Ignore `Datadog.xcodeproj` generated for `Benchmark.xcworkspace`.
-# Generating `Datadog.xcodeproj` with SPM automatically enables testability for `Release` configuration,
-# which is required for running benchmarks testing non-public APIs.
-Datadog.xcodeproj

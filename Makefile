@@ -31,7 +31,7 @@ examples:
 		@echo "OK 👌"
 
 benchmark:
-		@cd instrumented-tests/Benchmark && $(MAKE)
+		@xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogIntegrationTests" test -destination "name=iPhone 11 Pro Max"
 
 # Tests if current branch ships a valid SPM package.
 test-spm:
