@@ -29,19 +29,19 @@ internal func createSDKDeveloperLogger(
         return nil
     }
 
-    guard let datadog = Datadog.instance else {
+    guard let loggingFeature = LoggingFeature.instance else {
         return nil
     }
 
     let consoleOutput = LogConsoleOutput(
         logBuilder: LogBuilder(
-            appContext: datadog.appContext,
+            appContext: loggingFeature.appContext,
             serviceName: "sdk-developer",
             loggerName: "sdk-developer",
             dateProvider: dateProvider,
-            userInfoProvider: datadog.userInfoProvider,
-            networkConnectionInfoProvider: datadog.networkConnectionInfoProvider,
-            carrierInfoProvider: datadog.carrierInfoProvider
+            userInfoProvider: loggingFeature.userInfoProvider,
+            networkConnectionInfoProvider: loggingFeature.networkConnectionInfoProvider,
+            carrierInfoProvider: loggingFeature.carrierInfoProvider
         ),
         format: .shortWith(prefix: "🐶 → "),
         printingFunction: consolePrintFunction,
@@ -56,19 +56,19 @@ internal func createSDKUserLogger(
     dateProvider: DateProvider = SystemDateProvider(),
     timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
-    guard let datadog = Datadog.instance else {
+    guard let loggingFeature = LoggingFeature.instance else {
         return Logger(logOutput: NoOpLogOutput(), identifier: "no-op")
     }
 
     let consoleOutput = LogConsoleOutput(
         logBuilder: LogBuilder(
-            appContext: datadog.appContext,
+            appContext: loggingFeature.appContext,
             serviceName: "sdk-user",
             loggerName: "sdk-user",
             dateProvider: dateProvider,
-            userInfoProvider: datadog.userInfoProvider,
-            networkConnectionInfoProvider: datadog.networkConnectionInfoProvider,
-            carrierInfoProvider: datadog.carrierInfoProvider
+            userInfoProvider: loggingFeature.userInfoProvider,
+            networkConnectionInfoProvider: loggingFeature.networkConnectionInfoProvider,
+            carrierInfoProvider: loggingFeature.carrierInfoProvider
         ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
         printingFunction: consolePrintFunction,

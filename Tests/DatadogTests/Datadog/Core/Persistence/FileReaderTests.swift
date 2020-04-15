@@ -29,6 +29,7 @@ class FileReaderTests: XCTestCase {
             .createFile(named: .mockAnyFileName())
             .append { write in try write("ABCD".utf8Data) }
 
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let batch = reader.readNextBatch()
 
         XCTAssertEqual(batch?.data, "[ABCD]".utf8Data)
@@ -39,8 +40,8 @@ class FileReaderTests: XCTestCase {
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
-                readConditions: LogsPersistenceStrategy.defaultReadConditions,
+                writeConditions: WritableFileConditions(performance: .mockUnitTestsPerformancePreset()),
+                readConditions: ReadableFileConditions(performance: .mockUnitTestsPerformancePreset()),
                 dateProvider: dateProvider
             ),
             queue: queue

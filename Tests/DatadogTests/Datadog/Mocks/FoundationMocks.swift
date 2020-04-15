@@ -49,14 +49,15 @@ extension Data {
 
 extension Array where Element == Data {
     /// Returns chunks of mocked data. Accumulative size of all chunks equals `totalSize`.
-    static func mockChunksOf(totalSize: UInt64) -> [Data] {
+    static func mockChunksOf(totalSize: UInt64, maxChunkSize: UInt64) -> [Data] {
         var chunks: [Data] = []
         var bytesWritten: UInt64 = 0
 
         while bytesWritten < totalSize {
             let bytesLeft = totalSize - bytesWritten
-            let nextChunkSize: Int = bytesLeft > Int.max ? Int.max : Int(bytesLeft) // prevent `Int` overflow
-            chunks.append(.mockRepeating(byte: 0x1, times: nextChunkSize))
+            var nextChunkSize: UInt64 = bytesLeft > Int.max ? UInt64(Int.max) : bytesLeft // prevents `Int` overflow
+            nextChunkSize = nextChunkSize > maxChunkSize ? maxChunkSize : nextChunkSize // caps the next chunk to its max size
+            chunks.append(.mockRepeating(byte: 0x1, times: Int(nextChunkSize)))
             bytesWritten += UInt64(nextChunkSize)
         }
 
@@ -114,6 +115,18 @@ extension String {
     }
 }
 
+extension Int {
+    static func mockAny() -> Int {
+        return 0
+    }
+}
+
+extension UInt64 {
+    static func mockAny() -> UInt64 {
+        return 0
+    }
+}
+
 extension Bool {
     static func mockAny() -> Bool {
         return false
@@ -124,6 +137,14 @@ extension Float {
     static func mockAny() -> Float {
         return 0
     }
+}
+
+extension TimeInterval {
+    static func mockAny() -> TimeInterval {
+        return 0
+    }
+
+    static let distantFuture = TimeInterval(integerLiteral: .max)
 }
 
 struct ErrorMock: Error, CustomStringConvertible {
@@ -145,6 +166,22 @@ struct FailingEncodableMock: Encodable {
 extension Bundle {
     static func mockAny() -> Bundle {
         return Bundle.main
+    }
+
+    class AppBundleMock: Bundle {
+        override var bundlePath: String { "mock.app" }
+    }
+
+    class AppExtensionBundleMock: Bundle {
+        override var bundlePath: String { "mock.appex" }
+    }
+
+    static func mockAppBundle() -> Bundle {
+        return AppBundleMock()
+    }
+
+    static func mockAppExtensionBundle() -> Bundle {
+        return AppExtensionBundleMock()
     }
 }
 

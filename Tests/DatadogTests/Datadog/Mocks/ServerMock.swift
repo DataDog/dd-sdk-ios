@@ -6,6 +6,7 @@
 
 import Foundation
 import XCTest
+@testable import Datadog
 
 private class ServerMockProtocol: URLProtocol {
     override class func canInit(with request: URLRequest) -> Bool {
@@ -149,9 +150,15 @@ class ServerMock {
         case .incorrectOrder, .interrupted:
             fatalError("Can't happen.")
         case .timedOut:
-            XCTFail("Exceeded timeout with receiving only \(requests.count) out of \(count) expected requests.", file: file, line: line)
+            XCTFail("Exceeded timeout of \(timeout)s with receiving \(requests.count) out of \(count) expected requests.", file: file, line: line)
+            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // printing the above error.
+            return Array(repeating: .mockAny(), count: count)
         case .invertedFulfillment:
             XCTFail("\(requests.count) requests were sent, but not expected.", file: file, line: line)
+            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // printing the above error.
+            return queue.sync { requests }
         @unknown default:
             fatalError()
         }
@@ -163,5 +170,28 @@ class ServerMock {
     /// Calling this method guarantees that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
     func waitFor(requestsCompletion requestsCount: Int, timeout: TimeInterval = 1, file: StaticString = #file, line: UInt = #line) {
         _ = waitAndReturnRequests(count: requestsCount, timeout: 1)
+    }
+
+    /// Returns recommended timeout for delivering given number of requests if `.mockUnitTestsPerformancePreset()` is used for upload.
+    func recommendedTimeoutFor(numberOfRequestsMade: Int) -> TimeInterval {
+        let performancePresetForTests: PerformancePreset = .mockUnitTestsPerformancePreset()
+        // Set the timeout to 40 times more than expected.
+        // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
+        return performancePresetForTests.defaultLogsUploadDelay * Double(numberOfRequestsMade) * 40
+    }
+}
+
+// MARK: - Logging feature helpers
+
+extension ServerMock {
+    func waitAndReturnLogMatchers(count: Int, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        try waitAndReturnRequests(
+            count: count,
+            timeout: recommendedTimeoutFor(numberOfRequestsMade: count),
+            file: file,
+            line: line
+        )
+            .map { request in try request.httpBody.unwrapOrThrow() }
+            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
     }
 }

@@ -13,7 +13,7 @@ internal final class HTTPClient {
     convenience init() {
         let configuration: URLSessionConfiguration = .ephemeral
         // TODO: RUMM-123 Optimize `URLSessionConfiguration` for good traffic performance
-        // and move session configuration constants to `LogsUploadStrategy`.
+        // and move session configuration constants to `PerformancePreset`.
         self.init(session: URLSession(configuration: configuration))
     }
 
