@@ -40,51 +40,24 @@ $ make
 
 ### Repo structure
 
-<details>
-<summary>Datadog/</summary>
+#### Datadog
 
-- Datadog.xcodeproj
-- Datadog
-- DatadogTests
-- DatadogObjC
+1. Datadog.xcodeproj
+2. DatadogPrivate _(can be moved to `Sources`)_
+  * ObjC -> Swift bridge module
 
-</details>
+#### Sources
 
-<details>
-<summary>Example/</summary>
+`Datadog` and `DatadogObjC` source files
 
-- Shopist.xcodeproj
-  - It also contains Datadog.xcodeproj as sub-project
-- Shopist
-  - Example project using the SDK
-- ShopistTests
-- ShopistUITests
+#### Tests
 
-</details>
+`DatadogTests` (unit tests) and `DatadogIntegrationTests` source files
 
-<details>
-<summary>SanityChecks/</summary>
+#### Dependency manager tests
 
-- Integration
-- Cocoapods
-- Carthage
-- SPM
+Isolated example apps using `cocoapods`, `carthage` and `spm` to ensure SDK is well integrated with all supported dependency managers.
+  
+#### Examples (to be removed)
 
-</details>
-
-<details>
-<summary>Tools/</summary>
-
-A set of command-line tools to automate development tasks, used by CI and `Makefile`
-
-</details>
-
-<details>
-<summary>docs/</summary>
-
-### IMPORTANT
-
-The files in this folder are deployed to Datadog website.
-Please do NOT add anything to this folder without approval!
-
-</details>
+Example apps for different package managers

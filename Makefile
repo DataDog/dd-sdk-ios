@@ -30,9 +30,6 @@ examples:
 		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
 
-benchmark:
-		@xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogIntegrationTests" test -destination "name=iPhone 11 Pro Max"
-
 # Tests if current branch ships a valid SPM package.
 test-spm:
 		@cd dependency-manager-tests/spm && $(MAKE)

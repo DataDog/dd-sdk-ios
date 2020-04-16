@@ -23,7 +23,7 @@ class LoggingIOBenchmarkTests: XCTestCase {
     }
 
     override func tearDown() {
-        try! FileManager.default.removeItem(at: directory.url)
+        self.directory.delete()
         queue = nil
         directory = nil
         strategy = nil

@@ -18,6 +18,7 @@ class IntegrationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         server = try! connectToServer()
+        logsDirectory.delete()
     }
 
     override func tearDown() {

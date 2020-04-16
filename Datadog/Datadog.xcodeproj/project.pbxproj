@@ -97,6 +97,7 @@
 		9E2FB2722447660E001C9B7B /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		9EA6A539244897A900621535 /* LoggingIOBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6A538244897A900621535 /* LoggingIOBenchmarkTests.swift */; };
+		9EA6A53E24489DC800621535 /* TestsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C462423990D00786299 /* TestsDirectory.swift */; };
 		9EF49F0F24476D0C004F2CA0 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 9EF49F0E24476D0C004F2CA0 /* HTTPServerMock */; };
 		9EF49F1024476D96004F2CA0 /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FB27C24476707001C9B7B /* BenchmarkTests.swift */; };
 		9EF49F1124476D96004F2CA0 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FB27D24476707001C9B7B /* IntegrationTests.swift */; };
@@ -250,6 +251,8 @@
 		9E2FB27C24476707001C9B7B /* BenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		9E2FB27D24476707001C9B7B /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
+		9E4195742449D739000AB0DB /* app-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "app-target.xcconfig"; sourceTree = "<group>"; };
+		9E4195752449D739000AB0DB /* unit-tests-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "unit-tests-target.xcconfig"; sourceTree = "<group>"; };
 		9EA6A538244897A900621535 /* LoggingIOBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingIOBenchmarkTests.swift; sourceTree = "<group>"; };
 		9EF49F1624476FBD004F2CA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
@@ -476,6 +479,7 @@
 		61133C07242397F200786299 /* TargetSupport */ = {
 			isa = PBXGroup;
 			children = (
+				9E4195732449D739000AB0DB /* xcconfigs */,
 				61133B84242393DE00786299 /* Datadog */,
 				61133BF1242397DA00786299 /* DatadogObjc */,
 				61133B8F242393DE00786299 /* DatadogTests */,
@@ -711,6 +715,16 @@
 			path = ../Tests/DatadogIntegrationTests;
 			sourceTree = "<group>";
 		};
+		9E4195732449D739000AB0DB /* xcconfigs */ = {
+			isa = PBXGroup;
+			children = (
+				9E4195742449D739000AB0DB /* app-target.xcconfig */,
+				9E4195752449D739000AB0DB /* unit-tests-target.xcconfig */,
+			);
+			name = xcconfigs;
+			path = "../../dependency-manager-tests/xcconfigs";
+			sourceTree = "<group>";
+		};
 		9EA6A53A2448982800621535 /* Benchmark */ = {
 			isa = PBXGroup;
 			children = (
@@ -788,6 +802,7 @@
 				61133B87242393DE00786299 /* Sources */,
 				61133B88242393DE00786299 /* Frameworks */,
 				61133B89242393DE00786299 /* Resources */,
+				9EA6A53C24489AB100621535 /* ⚙️ Run linter */,
 			);
 			buildRules = (
 			);
@@ -827,6 +842,7 @@
 				9E2FB2462447660E001C9B7B /* Sources */,
 				9E2FB2712447660E001C9B7B /* Frameworks */,
 				9E2FB2732447660E001C9B7B /* Resources */,
+				9EA6A53D24489AE800621535 /* ⚙️ Run linter */,
 			);
 			buildRules = (
 			);
@@ -916,6 +932,44 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		61133C772423A4C300786299 /* ⚙️ Run linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		9EA6A53C24489AB100621535 /* ⚙️ Run linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		9EA6A53D24489AE800621535 /* ⚙️ Run linter */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1050,6 +1104,7 @@
 				9EA6A539244897A900621535 /* LoggingIOBenchmarkTests.swift in Sources */,
 				9EF49F1324476D96004F2CA0 /* LoggingIntegrationTests.swift in Sources */,
 				9EF49F1424476DD6004F2CA0 /* LogMatcher.swift in Sources */,
+				9EA6A53E24489DC800621535 /* TestsDirectory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

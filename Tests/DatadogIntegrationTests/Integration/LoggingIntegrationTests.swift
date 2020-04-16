@@ -8,27 +8,7 @@ import Datadog
 import HTTPServerMock
 import XCTest
 
-fileprivate func clearPersistedLogs() throws {
-    let logFilesSubdirectory = "com.datadoghq.logs/v1"
-    let cachesDirectoryURL = FileManager.default.urls(
-        for: .cachesDirectory,
-        in: .userDomainMask
-    ).first
-    let subdirectoryURL = cachesDirectoryURL?.appendingPathComponent(
-        logFilesSubdirectory,
-        isDirectory: true
-    )
-    if let dirToRemove = subdirectoryURL {
-        try FileManager.default.removeItem(at: dirToRemove)
-    }
-}
-
 class LoggingIntegrationTests: IntegrationTests {
-    override func setUp() {
-        super.setUp()
-        try? clearPersistedLogs()
-    }
-
     private struct Constants {
         /// Time needed for logs to be uploaded to mock server.
         static let logsDeliveryTime: TimeInterval = 30
