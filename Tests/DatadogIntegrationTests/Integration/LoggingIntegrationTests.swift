@@ -20,7 +20,7 @@ class LoggingIntegrationTests: IntegrationTests {
 
         // Initialize SDK
         Datadog.initialize(
-            appContext: .init(mainBundle: .main),
+            appContext: .init(mainBundle: Bundle.init(for: type(of: self))),
             configuration: Datadog.Configuration.builderUsing(clientToken: "client-token")
                 .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
                 .build()
@@ -82,7 +82,7 @@ class LoggingIntegrationTests: IntegrationTests {
             matcher.assertServiceName(equals: "service-name")
             matcher.assertLoggerName(equals: "logger-name")
             matcher.assertLoggerVersion(matches: { version in version.split(separator: ".").count == 3 })
-            matcher.assertApplicationVersion(equals: "1.0.0")
+            matcher.assertApplicationVersion(equals: "1.0")
             matcher.assertThreadName(equals: "main")
             matcher.assertAttributes(
                 equal: [

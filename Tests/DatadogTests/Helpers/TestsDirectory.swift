@@ -20,6 +20,10 @@ func obtainUniqueTemporaryDirectory() -> Directory {
 /// The subfolder does not exist and can be created and deleted by calling `.create()` and `.delete()`.
 let temporaryDirectory = obtainUniqueTemporaryDirectory()
 
+/// Default URL where logs persist in
+/// logsDirectory.delete() can be useful in tests when logs need to be cleared
+let logsDirectory = try! Directory(withSubdirectoryPath: LogsPersistenceStrategy.Constants.logFilesSubdirectory)
+
 /// Extends `Directory` with set of utilities for convenient work with files in tests.
 /// Provides handy methods to create / delete files and directires.
 extension Directory {

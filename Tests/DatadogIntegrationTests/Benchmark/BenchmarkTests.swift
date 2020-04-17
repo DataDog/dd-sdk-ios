@@ -8,10 +8,6 @@ import XCTest
 import HTTPServerMock
 @testable import Datadog
 
-struct ServerConnectionError: Error {
-    let description: String
-}
-
 /// Shared server instance for all test cases.
 private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 /// Shared server session for all test cases.

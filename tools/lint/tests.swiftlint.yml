@@ -77,8 +77,6 @@ custom_rules:
 
 included:
   - Tests
-  - instrumented-tests/Integration/IntegrationTests
-  - instrumented-tests/Benchmark/BenchmarkTests
   - instrumented-tests/http-server-mock/Test
   - dependency-manager-tests/carthage/CTProjectTests
   - dependency-manager-tests/carthage/CTProjectUITests

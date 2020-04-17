@@ -3,4 +3,4 @@ CODE_SIGN_IDENTITY[sdk=iphoneos*]=// use your own Sign Identity
 PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]=// use your own Provisioning Profile
 
 // If `datadog.xcconfig` is present, overwrite all settings
-#include? "datadog.xcconfig"
+#include? "datadog.local.xcconfig"

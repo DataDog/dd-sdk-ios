@@ -1,8 +1,10 @@
-/*
- * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
- */
+//
+//  LoggingIOBenchmarkTests.swift
+//  DatadogTests
+//
+//  Created by Mert Buran on 15/04/2020.
+//  Copyright © 2020 Datadog. All rights reserved.
+//
 
 import XCTest
 @testable import Datadog

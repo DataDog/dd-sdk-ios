@@ -30,9 +30,6 @@ examples:
 		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
 
-benchmark:
-		@cd instrumented-tests/Benchmark && $(MAKE)
-
 # Tests if current branch ships a valid SPM package.
 test-spm:
 		@cd dependency-manager-tests/spm && $(MAKE)
