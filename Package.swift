@@ -25,8 +25,7 @@ let package = Package(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
         .target(
-            name: "_Datadog_Private",
-            path: "Datadog/DatadogPrivate"
+            name: "_Datadog_Private"
         ),
         .testTarget(
             name: "DatadogTests",

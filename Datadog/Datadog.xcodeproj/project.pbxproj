@@ -86,8 +86,6 @@
 		61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C472423990D00786299 /* DatadogExtensions.swift */; };
 		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		61133C712423993200786299 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		616A62D024349BA700D1BE12 /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */; };
-		616A62D62434A3C500D1BE12 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */; };
 		61C363802436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */; };
 		61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */; };
 		61C3638524361E9200C4D4E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
@@ -96,6 +94,8 @@
 		9E2FB23E24475EAE001C9B7B /* LoggingIOBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FB23D24475EAE001C9B7B /* LoggingIOBenchmarkTests.swift */; };
 		9E2FB2722447660E001C9B7B /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
+		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
+		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9EA6A539244897A900621535 /* LoggingIOBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6A538244897A900621535 /* LoggingIOBenchmarkTests.swift */; };
 		9EA6A53E24489DC800621535 /* TestsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C462423990D00786299 /* TestsDirectory.swift */; };
 		9EF49F0F24476D0C004F2CA0 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 9EF49F0E24476D0C004F2CA0 /* HTTPServerMock */; };
@@ -234,11 +234,6 @@
 		61133C452423990D00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		61133C462423990D00786299 /* TestsDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		61133C472423990D00786299 /* DatadogExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogExtensions.swift; sourceTree = "<group>"; };
-		61545C9C243DD2610017B6D5 /* module.private.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.private.modulemap; sourceTree = "<group>"; };
-		61545C9D243DD2610017B6D5 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
-		61545C9F243DD35C0017B6D5 /* SPMHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPMHeaders.h; sourceTree = "<group>"; };
-		616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
-		616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
 		61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjcExceptionHandlerTests.swift; sourceTree = "<group>"; };
 		61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogPrivateMocks.swift; sourceTree = "<group>"; };
 		61C3638424361E9200C4D4E6 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
@@ -253,6 +248,9 @@
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
 		9E4195742449D739000AB0DB /* app-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "app-target.xcconfig"; sourceTree = "<group>"; };
 		9E4195752449D739000AB0DB /* unit-tests-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "unit-tests-target.xcconfig"; sourceTree = "<group>"; };
+		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
+		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
+		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
 		9EA6A538244897A900621535 /* LoggingIOBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingIOBenchmarkTests.swift; sourceTree = "<group>"; };
 		9EF49F1624476FBD004F2CA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
@@ -299,7 +297,7 @@
 			children = (
 				61133B9C2423979B00786299 /* Datadog */,
 				61133C082423983800786299 /* DatadogObjc */,
-				616A626824335D4900D1BE12 /* DatadogPrivate */,
+				9E68FB52244707FD0013A8AA /* _Datadog_Private */,
 				61133C122423990D00786299 /* DatadogTests */,
 				9E2FB279244766CF001C9B7B /* DatadogIntegrationTests */,
 				61133C07242397F200786299 /* TargetSupport */,
@@ -339,6 +337,7 @@
 		61133B9C2423979B00786299 /* Datadog */ = {
 			isa = PBXGroup;
 			children = (
+				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
 				61133BBB2423979B00786299 /* Datadog.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
@@ -677,26 +676,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		61545C9A243DD2610017B6D5 /* include */ = {
-			isa = PBXGroup;
-			children = (
-				61545C9F243DD35C0017B6D5 /* SPMHeaders.h */,
-				61545C9C243DD2610017B6D5 /* module.private.modulemap */,
-				61545C9D243DD2610017B6D5 /* module.modulemap */,
-			);
-			path = include;
-			sourceTree = "<group>";
-		};
-		616A626824335D4900D1BE12 /* DatadogPrivate */ = {
-			isa = PBXGroup;
-			children = (
-				61545C9A243DD2610017B6D5 /* include */,
-				616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */,
-				616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */,
-			);
-			path = DatadogPrivate;
-			sourceTree = "<group>";
-		};
 		61C3637E2436163400C4D4E6 /* DatadogPrivate */ = {
 			isa = PBXGroup;
 			children = (
@@ -723,6 +702,24 @@
 			);
 			name = xcconfigs;
 			path = "../../dependency-manager-tests/xcconfigs";
+			sourceTree = "<group>";
+		};
+		9E47010324471027000073A4 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		9E68FB52244707FD0013A8AA /* _Datadog_Private */ = {
+			isa = PBXGroup;
+			children = (
+				9E47010324471027000073A4 /* include */,
+				9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */,
+			);
+			name = _Datadog_Private;
+			path = ../Sources/_Datadog_Private;
 			sourceTree = "<group>";
 		};
 		9EA6A53A2448982800621535 /* Benchmark */ = {
@@ -761,7 +758,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61133B93242393DE00786299 /* Datadog.h in Headers */,
-				616A62D62434A3C500D1BE12 /* ObjcExceptionHandler.h in Headers */,
+				9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1003,8 +1000,8 @@
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
 				9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */,
 				61133BCA2423979B00786299 /* EncodableValue.swift in Sources */,
+				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
-				616A62D024349BA700D1BE12 /* ObjcExceptionHandler.m in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
@@ -1271,11 +1268,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MODULEMAP_FILE = "$(SRCROOT)/../Sources/Datadog/Datadog.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/DatadogPrivate";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1296,11 +1293,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MODULEMAP_FILE = "$(SRCROOT)/../Sources/Datadog/Datadog.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/DatadogPrivate";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1516,11 +1513,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MODULEMAP_FILE = "$(SRCROOT)/../Sources/Datadog/Datadog.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/DatadogPrivate";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
