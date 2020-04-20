@@ -11,11 +11,25 @@ internal struct WritableFileConditions {
     let maxFileSize: UInt64
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
+    let maxWriteSize: UInt64
+
+    init(performance: PerformancePreset) {
+        self.maxDirectorySize = performance.maxSizeOfLogsDirectory
+        self.maxFileSize = performance.maxBatchSize
+        self.maxFileAgeForWrite = performance.maxFileAgeForWrite
+        self.maxNumberOfUsesOfFile = performance.maxLogsPerBatch
+        self.maxWriteSize = performance.maxLogSize
+    }
 }
 
 internal struct ReadableFileConditions {
     let minFileAgeForRead: TimeInterval
     let maxFileAgeForRead: TimeInterval
+
+    init(performance: PerformancePreset) {
+        minFileAgeForRead = performance.minFileAgeForRead
+        maxFileAgeForRead = performance.maxFileAgeForRead
+    }
 }
 
 internal class FilesOrchestrator {
@@ -47,6 +61,10 @@ internal class FilesOrchestrator {
     // MARK: - `WritableFile` orchestration
 
     func getWritableFile(writeSize: UInt64) throws -> WritableFile {
+        if writeSize > writeConditions.maxWriteSize {
+            throw InternalError(description: "data exceeds the maximum size of \(writeConditions.maxWriteSize) bytes.")
+        }
+
         try purgeFilesDirectoryIfNeeded()
 
         let lastWritableFileOrNil = reuseLastWritableFileIfPossible(writeSize: writeSize)

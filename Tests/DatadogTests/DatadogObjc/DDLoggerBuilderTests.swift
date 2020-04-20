@@ -16,60 +16,58 @@ class DDLoggerBuilderTests: XCTestCase {
     // MARK: - Default logger
 
     func testBuildingDefaultLogger() throws {
-        try DatadogInstanceMock.builder
-            .with(appContext: appContext)
-            .with(networkConnectionInfoProvider: networkConnectionInfoProvider)
-            .with(carrierInfoProvider: carrierInfoProvider)
-            .initialize()
-            .verifyBlock {
-                let logger = DDLogger.builder().build().sdkLogger
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            appContext: appContext,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+        defer { LoggingFeature.instance = nil }
 
-                guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
-                    XCTFail()
-                    return
-                }
+        let logger = DDLogger.builder().build().sdkLogger
 
-                XCTAssertEqual(logBuilder.serviceName, "ios")
-                XCTAssertEqual(logBuilder.loggerName, "com.datadog.sdk-unit-tests")
-                XCTAssertNil(logBuilder.networkConnectionInfoProvider)
-                XCTAssertNil(logBuilder.carrierInfoProvider)
-            }
-            .destroy()
+        guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(logBuilder.serviceName, "ios")
+        XCTAssertEqual(logBuilder.loggerName, "com.datadog.sdk-unit-tests")
+        XCTAssertNil(logBuilder.networkConnectionInfoProvider)
+        XCTAssertNil(logBuilder.carrierInfoProvider)
     }
 
     // MARK: - Customized logger
 
     func testBuildingCustomizedLogger() throws {
-        try DatadogInstanceMock.builder
-            .with(appContext: appContext)
-            .with(networkConnectionInfoProvider: networkConnectionInfoProvider)
-            .with(carrierInfoProvider: carrierInfoProvider)
-            .initialize()
-            .verifyBlock {
-                let builder = DDLogger.builder()
-                _ = builder.set(serviceName: "custom service name")
-                _ = builder.set(loggerName: "custom logger name")
-                _ = builder.sendNetworkInfo(true)
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            appContext: appContext,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+        defer { LoggingFeature.instance = nil }
 
-                let objcLogger = builder.build()
-                let logger = objcLogger.sdkLogger
+        let builder = DDLogger.builder()
+        _ = builder.set(serviceName: "custom service name")
+        _ = builder.set(loggerName: "custom logger name")
+        _ = builder.sendNetworkInfo(true)
 
-                guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
-                    XCTFail()
-                    return
-                }
+        let objcLogger = builder.build()
+        let logger = objcLogger.sdkLogger
 
-                XCTAssertEqual(logBuilder.serviceName, "custom service name")
-                XCTAssertEqual(logBuilder.loggerName, "custom logger name")
-                XCTAssertNotNil(logBuilder.networkConnectionInfoProvider)
-                XCTAssertNotNil(logBuilder.carrierInfoProvider)
-            }
-            .destroy()
+        guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(logBuilder.serviceName, "custom service name")
+        XCTAssertEqual(logBuilder.loggerName, "custom logger name")
+        XCTAssertNotNil(logBuilder.networkConnectionInfoProvider)
+        XCTAssertNotNil(logBuilder.carrierInfoProvider)
     }
 
     func testUsingDifferentOutputs() throws {
-        Datadog.instance = .mockNoOp()
-        defer { Datadog.instance = nil }
+        LoggingFeature.instance = .mockNoOp()
+        defer { LoggingFeature.instance = nil }
 
         assertThat(
             logger: {

@@ -60,26 +60,106 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
+// MARK: - PerformancePreset
+
+extension PerformancePreset {
+    /// Mocks performance preset which results with no writes and no uploads.
+    static func mockNoOp() -> PerformancePreset {
+        return .mockWith(
+            maxBatchSize: 0,
+            maxSizeOfLogsDirectory: 0,
+            maxFileAgeForWrite: 0,
+            minFileAgeForRead: 0,
+            maxFileAgeForRead: 0,
+            maxLogsPerBatch: 0,
+            maxLogSize: 0,
+            initialLogsUploadDelay: 0,
+            defaultLogsUploadDelay: 0,
+            minLogsUploadDelay: 0,
+            maxLogsUploadDelay: 0,
+            logsUploadDelayDecreaseFactor: 1
+        )
+    }
+
+    /// Mocks performance preset which optimizes read / write / upload time for fast unit tests execution.
+    static func mockUnitTestsPerformancePreset() -> PerformancePreset {
+        return PerformancePreset(
+            // persistence
+            maxBatchSize: .max, // unlimited
+            maxSizeOfLogsDirectory: .max, // unlimited
+            maxFileAgeForWrite: 0, // write each data to new file
+            minFileAgeForRead: -1, // read all files
+            maxFileAgeForRead: .distantFuture, // read all files
+            maxLogsPerBatch: 1, // write each data to new file
+            maxLogSize: .max, // unlimited
+
+            // upload
+            initialLogsUploadDelay: 0.05,
+            defaultLogsUploadDelay: 0.05,
+            minLogsUploadDelay: 0.05,
+            maxLogsUploadDelay: 0.05,
+            logsUploadDelayDecreaseFactor: 1
+        )
+    }
+
+    /// Partial mock for performance preset optimized for different write / reads / upload use cases in unit tests.
+    static func mockWith(
+        maxBatchSize: UInt64 = .mockAny(),
+        maxSizeOfLogsDirectory: UInt64 = .mockAny(),
+        maxFileAgeForWrite: TimeInterval = .mockAny(),
+        minFileAgeForRead: TimeInterval = .mockAny(),
+        maxFileAgeForRead: TimeInterval = .mockAny(),
+        maxLogsPerBatch: Int = .mockAny(),
+        maxLogSize: UInt64 = .mockAny(),
+        initialLogsUploadDelay: TimeInterval = .mockAny(),
+        defaultLogsUploadDelay: TimeInterval = .mockAny(),
+        minLogsUploadDelay: TimeInterval = .mockAny(),
+        maxLogsUploadDelay: TimeInterval = .mockAny(),
+        logsUploadDelayDecreaseFactor: Double = .mockAny()
+    ) -> PerformancePreset {
+        return PerformancePreset(
+            maxBatchSize: maxBatchSize,
+            maxSizeOfLogsDirectory: maxSizeOfLogsDirectory,
+            maxFileAgeForWrite: maxFileAgeForWrite,
+            minFileAgeForRead: minFileAgeForRead,
+            maxFileAgeForRead: maxFileAgeForRead,
+            maxLogsPerBatch: maxLogsPerBatch,
+            maxLogSize: maxLogSize,
+            initialLogsUploadDelay: initialLogsUploadDelay,
+            defaultLogsUploadDelay: defaultLogsUploadDelay,
+            minLogsUploadDelay: minLogsUploadDelay,
+            maxLogsUploadDelay: maxLogsUploadDelay,
+            logsUploadDelayDecreaseFactor: logsUploadDelayDecreaseFactor
+        )
+    }
+}
+
 // MARK: - Files orchestration
 
 extension WritableFileConditions {
     /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
     static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
-            maxDirectorySize: .max,
-            maxFileSize: .max,
-            maxFileAgeForWrite: .greatestFiniteMagnitude,
-            maxNumberOfUsesOfFile: .max
+            performance: .mockWith(
+                maxBatchSize: .max,
+                maxSizeOfLogsDirectory: .max,
+                maxFileAgeForWrite: .distantFuture,
+                maxLogsPerBatch: .max,
+                maxLogSize: .max
+            )
         )
     }
 
     /// Write conditions causing `FilesOrchestrator` to create new file for each write.
     static func mockWriteToNewFileEachTime() -> WritableFileConditions {
         return WritableFileConditions(
-            maxDirectorySize: .max,
-            maxFileSize: .max,
-            maxFileAgeForWrite: .greatestFiniteMagnitude,
-            maxNumberOfUsesOfFile: 1
+            performance: .mockWith(
+                maxBatchSize: .max,
+                maxSizeOfLogsDirectory: .max,
+                maxFileAgeForWrite: .distantFuture,
+                maxLogsPerBatch: 1,
+                maxLogSize: .max
+            )
         )
     }
 }
@@ -88,8 +168,10 @@ extension ReadableFileConditions {
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
-            minFileAgeForRead: -1,
-            maxFileAgeForRead: .greatestFiniteMagnitude
+            performance: .mockWith(
+                minFileAgeForRead: -1,
+                maxFileAgeForRead: .distantFuture
+            )
         )
     }
 }
@@ -99,14 +181,18 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: temporaryDirectory,
             writeConditions: WritableFileConditions(
-                maxDirectorySize: 0,
-                maxFileSize: 0,
-                maxFileAgeForWrite: 0,
-                maxNumberOfUsesOfFile: 0
+                performance: .mockWith(
+                    maxBatchSize: 0,
+                    maxSizeOfLogsDirectory: 0,
+                    maxFileAgeForWrite: .distantFuture,
+                    maxLogsPerBatch: 0
+                )
             ),
             readConditions: ReadableFileConditions(
-                minFileAgeForRead: 0,
-                maxFileAgeForRead: 0
+                performance: .mockWith(
+                    minFileAgeForRead: .distantFuture,
+                    maxFileAgeForRead: .distantFuture
+                )
             ),
             dateProvider: SystemDateProvider()
         )
@@ -117,7 +203,7 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: .mockWriteToSingleFile(),
-            readConditions: LogsPersistenceStrategy.defaultReadConditions,
+            readConditions: ReadableFileConditions(performance: .mockUnitTestsPerformancePreset()),
             dateProvider: SystemDateProvider()
         )
     }
@@ -126,7 +212,7 @@ extension FilesOrchestrator {
     static func mockReadAllFiles(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
-            writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
+            writeConditions: WritableFileConditions(performance: .mockUnitTestsPerformancePreset()),
             readConditions: .mockReadAllFiles(),
             dateProvider: SystemDateProvider()
         )
@@ -137,8 +223,7 @@ extension FileWriter {
     static func mockNoOp() -> FileWriter {
         return FileWriter(
             orchestrator: .mockNoOp(),
-            queue: .global(),
-            maxWriteSize: 0
+            queue: .global()
         )
     }
 
@@ -149,8 +234,7 @@ extension FileWriter {
     ) -> FileWriter {
         return FileWriter(
             orchestrator: .mockWriteToSingleFile(in: directory),
-            queue: queue,
-            maxWriteSize: .max
+            queue: queue
         )
     }
 }
@@ -375,16 +459,19 @@ extension UploadURLProvider {
 
 extension DataUploadDelay {
     static func mockAny() -> DataUploadDelay {
-        return DataUploadDelay(default: 0, min: 0, max: 0, decreaseFactor: 0)
+        return DataUploadDelay(performance: .mockNoOp())
     }
 
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
     static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
         return DataUploadDelay(
-            default: seconds,
-            min: seconds,
-            max: seconds,
-            decreaseFactor: 1
+            performance: .mockWith(
+                initialLogsUploadDelay: seconds,
+                defaultLogsUploadDelay: seconds,
+                minLogsUploadDelay: seconds,
+                maxLogsUploadDelay: seconds,
+                logsUploadDelayDecreaseFactor: 1
+            )
         )
     }
 }
@@ -473,66 +560,71 @@ extension DataUploadWorker {
     }
 }
 
-extension LogsPersistenceStrategy {
-    static func mockNeverWrittingLogs() -> LogsPersistenceStrategy {
-        return LogsPersistenceStrategy(writer: .mockNoOp(), reader: .mockNoOp())
-    }
+//extension LogsPersistenceStrategy {
+//    static func mockNeverWrittingLogs() -> LogsPersistenceStrategy {
+//        return LogsPersistenceStrategy(writer: .mockNoOp(), reader: .mockNoOp())
+//    }
+//
+//    /// Mocks persistence strategy where:
+//    /// * new file is created for each write (so every log is written to new file);
+//    /// * file age is ignored when reading (so every file can be read immediately after writting);
+//    /// This strategy is valid, because `.default` strategy uses single thread to synchronize Writes and Reads.
+//    static func mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
+//        in directory: Directory,
+//        using dateProvider: DateProvider
+//    ) -> LogsPersistenceStrategy {
+//        let readWriteQueue = DispatchQueue(
+//            label: "com.datadoghq.ios-sdk-logs-read-write",
+//            target: .global(qos: .utility)
+//        )
+//        let orchestrator = FilesOrchestrator(
+//            directory: directory,
+//            writeConditions: .mockWriteToNewFileEachTime(),
+//            readConditions: .mockReadAllFiles(),
+//            dateProvider: dateProvider
+//        )
+//
+//        return LogsPersistenceStrategy(
+//            writer: FileWriter(orchestrator: orchestrator, queue: readWriteQueue, maxWriteSize: .max),
+//            reader: FileReader(orchestrator: orchestrator, queue: readWriteQueue)
+//        )
+//    }
+//}
 
-    /// Mocks persistence strategy where:
-    /// * new file is created for each write (so every log is written to new file);
-    /// * file age is ignored when reading (so every file can be read immediately after writting);
-    /// This strategy is valid, because `.default` strategy uses single thread to synchronize Writes and Reads.
-    static func mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
-        in directory: Directory,
-        using dateProvider: DateProvider
-    ) -> LogsPersistenceStrategy {
-        return .default(
-            in: directory,
-            using: dateProvider,
-            readWriteQueue: DispatchQueue(
-                label: "com.datadoghq.ios-sdk-logs-read-write",
-                target: .global(qos: .utility)
-            ),
-            writeConditions: .mockWriteToNewFileEachTime(),
-            readConditions: .mockReadAllFiles()
-        )
-    }
-}
-
-extension LogsUploadStrategy {
-    static func mockNeverPerformingUploads() -> LogsUploadStrategy {
-        return LogsUploadStrategy(
-            uploadWorker: .mockNeverPerformingUploads()
-        )
-    }
-
-    /// Mocks upload strategy where:
-    /// * batches are read with given `interval` of seconds using `fileReader`;
-    static func mockUploadBatchesInConstantDelay(
-        interval: TimeInterval,
-        using fileReader: FileReader,
-        uploadConditions: DataUploadConditions,
-        urlSession: URLSession
-    ) -> LogsUploadStrategy {
-        let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-tests-logs-upload",
-            target: .global(qos: .utility)
-        )
-        return LogsUploadStrategy(
-            uploadWorker: DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: fileReader,
-                dataUploader: DataUploader(
-                    urlProvider: .mockAny(),
-                    httpClient: HTTPClient(session: urlSession),
-                    httpHeaders: .mockAny()
-                ),
-                uploadConditions: uploadConditions,
-                delay: .mockConstantDelay(of: interval)
-            )
-        )
-    }
-}
+//extension LogsUploadStrategy {
+//    static func mockNeverPerformingUploads() -> LogsUploadStrategy {
+//        return LogsUploadStrategy(
+//            uploadWorker: .mockNeverPerformingUploads()
+//        )
+//    }
+//
+//    /// Mocks upload strategy where:
+//    /// * batches are read with given `interval` of seconds using `fileReader`;
+//    static func mockUploadBatchesInConstantDelay(
+//        interval: TimeInterval,
+//        using fileReader: FileReader,
+//        uploadConditions: DataUploadConditions,
+//        urlSession: URLSession
+//    ) -> LogsUploadStrategy {
+//        let uploadQueue = DispatchQueue(
+//            label: "com.datadoghq.ios-sdk-tests-logs-upload",
+//            target: .global(qos: .utility)
+//        )
+//        return LogsUploadStrategy(
+//            uploadWorker: DataUploadWorker(
+//                queue: uploadQueue,
+//                fileReader: fileReader,
+//                dataUploader: DataUploader(
+//                    urlProvider: .mockAny(),
+//                    httpClient: HTTPClient(session: urlSession),
+//                    httpHeaders: .mockAny()
+//                ),
+//                uploadConditions: uploadConditions,
+//                delay: .mockConstantDelay(of: interval)
+//            )
+//        )
+//    }
+//}
 
 // MARK: - Integration
 
@@ -556,6 +648,7 @@ extension AppContext {
     }
 
     static func mockWith(
+        environment: Environment = .iOSApp,
         bundleIdentifier: String? = nil,
         bundleVersion: String? = nil,
         bundleShortVersion: String? = nil,
@@ -563,6 +656,7 @@ extension AppContext {
         mobileDevice: MobileDevice? = nil
     ) -> AppContext {
         return AppContext(
+            environment: environment,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
             bundleShortVersion: bundleShortVersion,
@@ -617,31 +711,34 @@ class LogOutputMock: LogOutput {
 }
 
 extension Datadog {
-    /// Mocks no-op `Datadog` instance (no writes, no uploads).
-    static func mockNoOp() -> Datadog {
-        return .mockNoOpWith()
-    }
-
-    static func mockNoOpWith(
-        appContext: AppContext = .mockAny(),
-        logsPersistenceStrategy: LogsPersistenceStrategy = .mockNeverWrittingLogs(),
-        logsUploadStrategy: LogsUploadStrategy = .mockNeverPerformingUploads(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType? = CarrierInfoProviderMock.mockAny()
-    ) -> Datadog {
-        return Datadog(
-            appContext: appContext,
-            logsPersistenceStrategy: logsPersistenceStrategy,
-            logsUploadStrategy: logsUploadStrategy,
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
-    }
+    /// Mocks no-op `Datadog` instance.
+//    static func mockNoOp() -> Datadog {
+//        return Datadog(
+//            userInfoProvider: UserInfoProvider()
+//        )
+//    }
 }
+//
+//    static func mockNoOpWith(
+//        appContext: AppContext = .mockAny(),
+//        logsPersistenceStrategy: LogsPersistenceStrategy = .mockNeverWrittingLogs(),
+//        logsUploadStrategy: LogsUploadStrategy = .mockNeverPerformingUploads(),
+//        dateProvider: DateProvider = SystemDateProvider(),
+//        userInfoProvider: UserInfoProvider = .mockAny(),
+//        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+//        carrierInfoProvider: CarrierInfoProviderType? = CarrierInfoProviderMock.mockAny()
+//    ) -> Datadog {
+//        return Datadog(
+//            appContext: appContext,
+//            logsPersistenceStrategy: logsPersistenceStrategy,
+//            logsUploadStrategy: logsUploadStrategy,
+//            dateProvider: dateProvider,
+//            userInfoProvider: userInfoProvider,
+//            networkConnectionInfoProvider: networkConnectionInfoProvider,
+//            carrierInfoProvider: carrierInfoProvider
+//        )
+//    }
+//}
 
 /// Wraps and mocks `Datadog.initialize(...)` to configure SDK in tests.
 /// All underlying componetns are instantiated and properly mocked.
@@ -666,159 +763,159 @@ extension Datadog {
 ///         }
 ///         .destroy()
 ///
-class DatadogInstanceMock {
-    static let dataUploadInterval: TimeInterval = 0.05
-
-    private let server: ServerMock
-    private var runClosure: (() -> Void)? = nil
-    private var waitClosure: (() -> Void)? = nil
-    private var recordedRequests: [URLRequest] = []
-
-    static var builder: Builder { Builder() }
-
-    class Builder {
-        private var appContext: AppContext = .mockAny()
-        private var dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        private var networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockGoodConnection()
-        private var carrierInfoProvider: CarrierInfoProviderType? = nil
-        private var batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockFullBattery()
-
-        func with(appContext: AppContext) -> Builder {
-            self.appContext = appContext
-            return self
-        }
-
-        func with(dateProvider: RelativeDateProvider) -> Builder {
-            self.dateProvider = dateProvider
-            return self
-        }
-
-        func with(networkConnectionInfoProvider: NetworkConnectionInfoProviderType) -> Builder {
-            self.networkConnectionInfoProvider = networkConnectionInfoProvider
-            return self
-        }
-
-        func with(carrierInfoProvider: CarrierInfoProviderType?) -> Builder {
-            self.carrierInfoProvider = carrierInfoProvider
-            return self
-        }
-
-        func with(batteryStatusProvider: BatteryStatusProviderType) -> Builder {
-            self.batteryStatusProvider = batteryStatusProvider
-            return self
-        }
-
-        func initialize() -> DatadogInstanceMock {
-            return DatadogInstanceMock(
-                appContext: appContext,
-                dateProvider: dateProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider,
-                batteryStatusProvider: batteryStatusProvider
-            )
-        }
-    }
-
-    private init(
-        appContext: AppContext,
-        dateProvider: RelativeDateProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType?,
-        batteryStatusProvider: BatteryStatusProviderType
-    ) {
-        self.server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
-            in: temporaryDirectory,
-            using: RelativeDateProvider(
-                startingFrom: dateProvider.date,
-                advancingBySeconds: dateProvider.timeInterval
-            )
-        )
-        let logsUploadStrategy: LogsUploadStrategy = .mockUploadBatchesInConstantDelay(
-            interval: DatadogInstanceMock.dataUploadInterval,
-            using: logsPersistenceStrategy.reader,
-            uploadConditions: DataUploadConditions(
-                batteryStatus: batteryStatusProvider,
-                networkConnectionInfo: networkConnectionInfoProvider
-            ),
-            urlSession: server.urlSession
-        )
-
-        // Instantiate `Datadog` object configured for sending one log per request.
-        Datadog.instance = Datadog(
-            appContext: appContext,
-            logsPersistenceStrategy: logsPersistenceStrategy,
-            logsUploadStrategy: logsUploadStrategy,
-            dateProvider: dateProvider,
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
-    }
-
-    func run(closure: @escaping () -> Void) -> DatadogInstanceMock {
-        runClosure = closure
-        return self
-    }
-
-    func waitUntil(numberOfLogsSent: Int, file: StaticString = #file, line: UInt = #line) -> DatadogInstanceMock {
-        // Set the timeout to 40 times more than expected.
-        // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
-        let timeout = DatadogInstanceMock.dataUploadInterval * Double(numberOfLogsSent) * 40
-
-        waitClosure = { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.recordedRequests = self.server.waitAndReturnRequests(count: numberOfLogsSent, timeout: timeout)
-        }
-
-        return self
-    }
-
-    /// Use to verify all logs sent.
-    func verifyAll(closure: @escaping ([LogMatcher]) throws -> Void) throws -> DatadogInstanceMock {
-        precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
-        precondition(waitClosure != nil, "`.wait {}` must preceed `.verify {}`")
-
-        runClosure?()
-        waitClosure?()
-
-        let logMatchers = try recordedRequests
-            .map { request in try request.httpBody.unwrapOrThrow() }
-            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
-
-        try closure(logMatchers)
-
-        return self
-    }
-
-    /// Use to verify the first log sent.
-    func verifyFirst(closure: @escaping (LogMatcher) throws -> Void) throws -> DatadogInstanceMock {
-        try verifyAll { allMatchers in
-            try closure(allMatchers[0])
-        }
-    }
-
-    func verifyNoLogsSent(within time: TimeInterval, file: StaticString = #file, line: UInt = #line) throws -> DatadogInstanceMock {
-        precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
-        precondition(waitClosure == nil, "`.wait {}` cannot be used with `.verifyNoLogsSent {}`")
-
-        runClosure?()
-
-        let requests = server.waitAndReturnRequests(count: 0, timeout: time)
-        XCTAssertEqual(requests.count, 0, file: file, line: line)
-
-        return self
-    }
-
-    /// Verifies given block without running `run()` and `wait()`.
-    func verifyBlock(closure: @escaping () throws -> Void) throws -> DatadogInstanceMock {
-        try closure()
-        return self
-    }
-
-    func destroy() throws {
-        try Datadog.deinitializeOrThrow()
-    }
-}
+//class DatadogInstanceMock {
+//    static let dataUploadInterval: TimeInterval = 0.05
+//
+//    private let server: ServerMock
+//    private var runClosure: (() -> Void)? = nil
+//    private var waitClosure: (() -> Void)? = nil
+//    private var recordedRequests: [URLRequest] = []
+//
+//    static var builder: Builder { Builder() }
+//
+//    class Builder {
+//        private var appContext: AppContext = .mockAny()
+//        private var dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+//        private var networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockGoodConnection()
+//        private var carrierInfoProvider: CarrierInfoProviderType? = nil
+//        private var batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockFullBattery()
+//
+//        func with(appContext: AppContext) -> Builder {
+//            self.appContext = appContext
+//            return self
+//        }
+//
+//        func with(dateProvider: RelativeDateProvider) -> Builder {
+//            self.dateProvider = dateProvider
+//            return self
+//        }
+//
+//        func with(networkConnectionInfoProvider: NetworkConnectionInfoProviderType) -> Builder {
+//            self.networkConnectionInfoProvider = networkConnectionInfoProvider
+//            return self
+//        }
+//
+//        func with(carrierInfoProvider: CarrierInfoProviderType?) -> Builder {
+//            self.carrierInfoProvider = carrierInfoProvider
+//            return self
+//        }
+//
+//        func with(batteryStatusProvider: BatteryStatusProviderType) -> Builder {
+//            self.batteryStatusProvider = batteryStatusProvider
+//            return self
+//        }
+//
+//        func initialize() -> DatadogInstanceMock {
+//            return DatadogInstanceMock(
+//                appContext: appContext,
+//                dateProvider: dateProvider,
+//                networkConnectionInfoProvider: networkConnectionInfoProvider,
+//                carrierInfoProvider: carrierInfoProvider,
+//                batteryStatusProvider: batteryStatusProvider
+//            )
+//        }
+//    }
+//
+//    private init(
+//        appContext: AppContext,
+//        dateProvider: RelativeDateProvider,
+//        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+//        carrierInfoProvider: CarrierInfoProviderType?,
+//        batteryStatusProvider: BatteryStatusProviderType
+//    ) {
+//        self.server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+//        let logsPersistenceStrategy: LogsPersistenceStrategy = .mockUseNewFileForEachWriteAndReadFilesIgnoringTheirAge(
+//            in: temporaryDirectory,
+//            using: RelativeDateProvider(
+//                startingFrom: dateProvider.date,
+//                advancingBySeconds: dateProvider.timeInterval
+//            )
+//        )
+//        let logsUploadStrategy: LogsUploadStrategy = .mockUploadBatchesInConstantDelay(
+//            interval: DatadogInstanceMock.dataUploadInterval,
+//            using: logsPersistenceStrategy.reader,
+//            uploadConditions: DataUploadConditions(
+//                batteryStatus: batteryStatusProvider,
+//                networkConnectionInfo: networkConnectionInfoProvider
+//            ),
+//            urlSession: server.urlSession
+//        )
+//
+//        // Instantiate `Datadog` object configured for sending one log per request.
+//        Datadog.instance = Datadog(
+//            appContext: appContext,
+//            logsPersistenceStrategy: logsPersistenceStrategy,
+//            logsUploadStrategy: logsUploadStrategy,
+//            dateProvider: dateProvider,
+//            userInfoProvider: .mockAny(),
+//            networkConnectionInfoProvider: networkConnectionInfoProvider,
+//            carrierInfoProvider: carrierInfoProvider
+//        )
+//    }
+//
+//    func run(closure: @escaping () -> Void) -> DatadogInstanceMock {
+//        runClosure = closure
+//        return self
+//    }
+//
+//    func waitUntil(numberOfLogsSent: Int, file: StaticString = #file, line: UInt = #line) -> DatadogInstanceMock {
+//        // Set the timeout to 40 times more than expected.
+//        // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
+//        let timeout = DatadogInstanceMock.dataUploadInterval * Double(numberOfLogsSent) * 40
+//
+//        waitClosure = { [weak self] in
+//            guard let self = self else {
+//                return
+//            }
+//            self.recordedRequests = self.server.waitAndReturnRequests(count: numberOfLogsSent, timeout: timeout)
+//        }
+//
+//        return self
+//    }
+//
+//    /// Use to verify all logs sent.
+//    func verifyAll(closure: @escaping ([LogMatcher]) throws -> Void) throws -> DatadogInstanceMock {
+//        precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
+//        precondition(waitClosure != nil, "`.wait {}` must preceed `.verify {}`")
+//
+//        runClosure?()
+//        waitClosure?()
+//
+//        let logMatchers = try recordedRequests
+//            .map { request in try request.httpBody.unwrapOrThrow() }
+//            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
+//
+//        try closure(logMatchers)
+//
+//        return self
+//    }
+//
+//    /// Use to verify the first log sent.
+//    func verifyFirst(closure: @escaping (LogMatcher) throws -> Void) throws -> DatadogInstanceMock {
+//        try verifyAll { allMatchers in
+//            try closure(allMatchers[0])
+//        }
+//    }
+//
+//    func verifyNoLogsSent(within time: TimeInterval, file: StaticString = #file, line: UInt = #line) throws -> DatadogInstanceMock {
+//        precondition(runClosure != nil, "`.run {}` must preceed `.verify {}`")
+//        precondition(waitClosure == nil, "`.wait {}` cannot be used with `.verifyNoLogsSent {}`")
+//
+//        runClosure?()
+//
+//        let requests = server.waitAndReturnRequests(count: 0, timeout: time)
+//        XCTAssertEqual(requests.count, 0, file: file, line: line)
+//
+//        return self
+//    }
+//
+//    /// Verifies given block without running `run()` and `wait()`.
+//    func verifyBlock(closure: @escaping () throws -> Void) throws -> DatadogInstanceMock {
+//        try closure()
+//        return self
+//    }
+//
+//    func destroy() throws {
+//        try Datadog.deinitializeOrThrow()
+//    }
+//}

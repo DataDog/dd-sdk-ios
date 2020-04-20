@@ -8,7 +8,7 @@ function files {
 	find -E . \
 		-iregex '.*\.(swift|h|m)$' \
 		-type f \( ! -name "Package.swift" \) \
-		-not -path "./.build/*" \
+		-not -path "*/.build/*" \
 		-not -path "*Pods*" \
 		-print0	
 }

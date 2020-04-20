@@ -22,7 +22,7 @@ let temporaryDirectory = obtainUniqueTemporaryDirectory()
 
 /// Default URL where logs persist in
 /// logsDirectory.delete() can be useful in tests when logs need to be cleared
-let logsDirectory = try! Directory(withSubdirectoryPath: LogsPersistenceStrategy.Constants.logFilesSubdirectory)
+let logsDirectory = try! obtainLoggingFeatureDirectory()
 
 /// Extends `Directory` with set of utilities for convenient work with files in tests.
 /// Provides handy methods to create / delete files and directires.

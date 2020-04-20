@@ -29,7 +29,7 @@ class DataUploadWorkerTests: XCTestCase {
             readConditions: .mockReadAllFiles(),
             dateProvider: dateProvider
         )
-        let writer = FileWriter(orchestrator: orchestrator, queue: fileReadWriteQueue, maxWriteSize: .max)
+        let writer = FileWriter(orchestrator: orchestrator, queue: fileReadWriteQueue)
         let reader = FileReader(orchestrator: orchestrator, queue: fileReadWriteQueue)
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(

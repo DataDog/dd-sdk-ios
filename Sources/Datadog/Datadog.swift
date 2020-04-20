@@ -14,6 +14,7 @@ internal let sdkVersion = "1.1.0"
 public class Datadog {
     /// Provides information about the app.
     public struct AppContext {
+        internal let environment: Environment
         internal let bundleIdentifier: String?
         internal let bundleVersion: String?
         internal let bundleShortVersion: String?
@@ -23,6 +24,7 @@ public class Datadog {
 
         public init(mainBundle: Bundle = Bundle.main) {
             self.init(
+                environment: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
                 bundleIdentifier: mainBundle.bundleIdentifier,
                 bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
                 bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
@@ -32,12 +34,14 @@ public class Datadog {
         }
 
         internal init(
+            environment: Environment,
             bundleIdentifier: String?,
             bundleVersion: String?,
             bundleShortVersion: String?,
             executableName: String?,
             mobileDevice: MobileDevice?
         ) {
+            self.environment = environment
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleShortVersion = bundleShortVersion
@@ -75,14 +79,7 @@ public class Datadog {
 
     internal static var instance: Datadog?
 
-    internal let appContext: AppContext
-    internal let dateProvider: DateProvider
     internal let userInfoProvider: UserInfoProvider
-    internal let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    internal let carrierInfoProvider: CarrierInfoProviderType?
-
-    internal let logsPersistenceStrategy: LogsPersistenceStrategy
-    internal let logsUploadStrategy: LogsUploadStrategy
 
     private static func initializeOrThrow(appContext: AppContext, configuration: Configuration) throws {
         guard Datadog.instance == nil else {
@@ -93,35 +90,27 @@ public class Datadog {
             clientToken: configuration.clientToken,
             dateProvider: SystemDateProvider()
         )
-        self.instance = try Datadog(
-            appContext: appContext,
-            logsUploadURLProvider: logsUploadURLProvider,
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: UserInfoProvider(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider()
-        )
-    }
 
-    internal convenience init(
-        appContext: AppContext,
-        logsUploadURLProvider: UploadURLProvider,
-        dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType?
-    ) throws {
-        let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
-        let logsUploadStrategy: LogsUploadStrategy = .default(
-            appContext: appContext,
-            logsUploadURLProvider: logsUploadURLProvider,
-            reader: logsPersistenceStrategy.reader,
-            networkConnectionInfoProvider: networkConnectionInfoProvider
+        let performance = PerformancePreset.best(for: appContext.environment)
+        let dateProvider = SystemDateProvider()
+        let userInfoProvider = UserInfoProvider()
+        let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
+        let carrierInfoProvider = CarrierInfoProvider()
+
+        self.instance = Datadog(
+            userInfoProvider: userInfoProvider
         )
-        self.init(
+
+        // Initialize features:
+
+        let httpClient = HTTPClient()
+
+        LoggingFeature.instance = LoggingFeature(
+            directory: try obtainLoggingFeatureDirectory(),
             appContext: appContext,
-            logsPersistenceStrategy: logsPersistenceStrategy,
-            logsUploadStrategy: logsUploadStrategy,
+            performance: performance,
+            httpClient: httpClient,
+            logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
@@ -129,22 +118,8 @@ public class Datadog {
         )
     }
 
-    internal init(
-        appContext: AppContext,
-        logsPersistenceStrategy: LogsPersistenceStrategy,
-        logsUploadStrategy: LogsUploadStrategy,
-        dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType?
-    ) {
-        self.appContext = appContext
-        self.dateProvider = dateProvider
-        self.logsPersistenceStrategy = logsPersistenceStrategy
-        self.logsUploadStrategy = logsUploadStrategy
+    internal init(userInfoProvider: UserInfoProvider) {
         self.userInfoProvider = userInfoProvider
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
     }
 
     /// Internal feature made only for tests purpose.
@@ -152,6 +127,10 @@ public class Datadog {
         guard Datadog.instance != nil else {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
+
+        // Deinitialize features:
+
+        LoggingFeature.instance = nil
         Datadog.instance = nil
     }
 }

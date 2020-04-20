@@ -12,11 +12,13 @@ class LoggerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(Datadog.instance)
+        XCTAssertNil(LoggingFeature.instance)
         temporaryDirectory.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
+        XCTAssertNil(LoggingFeature.instance)
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -24,394 +26,416 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending logs
 
     func testSendingMinimalLogWithDefaultLogger() throws {
-        try DatadogInstanceMock.builder
-            .with(
-                appContext: .mockWith(
-                    bundleIdentifier: "com.datadoghq.ios-sdk",
-                    bundleVersion: "1.0.0",
-                    bundleShortVersion: "1.0.0"
-                )
-            )
-            .with(
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            )
-            .with(networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny())
-            .with(carrierInfoProvider: CarrierInfoProviderMock.mockAny())
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
-                logger.debug("message")
-            }
-            .waitUntil(numberOfLogsSent: 1)
-            .verifyFirst { logMatcher in
-                try logMatcher.assertItFullyMatches(jsonString: """
-                {
-                  "status" : "DEBUG",
-                  "message" : "message",
-                  "service" : "ios",
-                  "logger.name" : "com.datadoghq.ios-sdk",
-                  "logger.version": "\(sdkVersion)",
-                  "logger.thread_name" : "main",
-                  "date" : "2019-12-15T10:00:00Z",
-                  "application.version": "1.0.0"
-                }
-                """)
-            }
-            .destroy()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server,
+            appContext: .mockWith(
+                bundleIdentifier: "com.datadoghq.ios-sdk",
+                bundleVersion: "1.0.0",
+                bundleShortVersion: "1.0.0"
+            ),
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.debug("message")
+
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        try logMatcher.assertItFullyMatches(jsonString: """
+        {
+          "status" : "DEBUG",
+          "message" : "message",
+          "service" : "ios",
+          "logger.name" : "com.datadoghq.ios-sdk",
+          "logger.version": "\(sdkVersion)",
+          "logger.thread_name" : "main",
+          "date" : "2019-12-15T10:00:00Z",
+          "application.version": "1.0.0"
+        }
+        """)
     }
 
     func testSendingLogWithCustomizedLogger() throws {
-        try DatadogInstanceMock.builder
-            .with(networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny())
-            .with(carrierInfoProvider: CarrierInfoProviderMock.mockAny())
-            .initialize()
-            .run {
-                let logger = Logger.builder
-                    .set(serviceName: "custom-service-name")
-                    .set(loggerName: "custom-logger-name")
-                    .sendNetworkInfo(true)
-                    .build()
-                logger.debug("message")
-            }
-            .waitUntil(numberOfLogsSent: 1)
-            .verifyFirst { logMatcher in
-                logMatcher.assertServiceName(equals: "custom-service-name")
-                logMatcher.assertLoggerName(equals: "custom-logger-name")
-                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.name", isTypeOf: String.self)
-                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.iso_country", isTypeOf: String.self)
-                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.technology", isTypeOf: String.self)
-                logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", isTypeOf: Bool.self)
-                logMatcher.assertValue(forKeyPath: "network.client.available_interfaces", isTypeOf: [String].self)
-                logMatcher.assertValue(forKeyPath: "network.client.reachability", isTypeOf: String.self)
-                logMatcher.assertValue(forKeyPath: "network.client.is_expensive", isTypeOf: Bool.self)
-                logMatcher.assertValue(forKeyPath: "network.client.supports_ipv4", isTypeOf: Bool.self)
-                logMatcher.assertValue(forKeyPath: "network.client.supports_ipv6", isTypeOf: Bool.self)
-                if #available(iOS 13.0, *) {
-                    logMatcher.assertValue(forKeyPath: "network.client.is_constrained", isTypeOf: Bool.self)
-                }
-            }
-            .destroy()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder
+            .set(serviceName: "custom-service-name")
+            .set(loggerName: "custom-logger-name")
+            .sendNetworkInfo(true)
+            .build()
+        logger.debug("message")
+
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+
+        logMatcher.assertServiceName(equals: "custom-service-name")
+        logMatcher.assertLoggerName(equals: "custom-logger-name")
+        logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.name", isTypeOf: String.self)
+        logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.iso_country", isTypeOf: String.self)
+        logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.technology", isTypeOf: String.self)
+        logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", isTypeOf: Bool.self)
+        logMatcher.assertValue(forKeyPath: "network.client.available_interfaces", isTypeOf: [String].self)
+        logMatcher.assertValue(forKeyPath: "network.client.reachability", isTypeOf: String.self)
+        logMatcher.assertValue(forKeyPath: "network.client.is_expensive", isTypeOf: Bool.self)
+        logMatcher.assertValue(forKeyPath: "network.client.supports_ipv4", isTypeOf: Bool.self)
+        logMatcher.assertValue(forKeyPath: "network.client.supports_ipv6", isTypeOf: Bool.self)
+        if #available(iOS 13.0, *) {
+            logMatcher.assertValue(forKeyPath: "network.client.is_constrained", isTypeOf: Bool.self)
+        }
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        try DatadogInstanceMock.builder
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
-                logger.debug("message")
-                logger.info("message")
-                logger.notice("message")
-                logger.warn("message")
-                logger.error("message")
-                logger.critical("message")
-            }
-            .waitUntil(numberOfLogsSent: 6)
-            .verifyAll { logMatchers in
-                logMatchers[0].assertStatus(equals: "DEBUG")
-                logMatchers[1].assertStatus(equals: "INFO")
-                logMatchers[2].assertStatus(equals: "NOTICE")
-                logMatchers[3].assertStatus(equals: "WARN")
-                logMatchers[4].assertStatus(equals: "ERROR")
-                logMatchers[5].assertStatus(equals: "CRITICAL")
-            }
-            .destroy()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.debug("message")
+        logger.info("message")
+        logger.notice("message")
+        logger.warn("message")
+        logger.error("message")
+        logger.critical("message")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 6)
+        logMatchers[0].assertStatus(equals: "DEBUG")
+        logMatchers[1].assertStatus(equals: "INFO")
+        logMatchers[2].assertStatus(equals: "NOTICE")
+        logMatchers[3].assertStatus(equals: "WARN")
+        logMatchers[4].assertStatus(equals: "ERROR")
+        logMatchers[5].assertStatus(equals: "CRITICAL")
     }
 
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        try DatadogInstanceMock.builder
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
-                logger.debug("message with no user info")
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        Datadog.instance = Datadog(
+            userInfoProvider: UserInfoProvider()
+        )
+        defer { Datadog.instance = nil }
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server,
+            userInfoProvider: Datadog.instance!.userInfoProvider
+        )
+        defer { LoggingFeature.instance = nil }
 
-                Datadog.setUserInfo(id: "abc-123", name: "Foo")
-                logger.debug("message with user `id` and `name`")
+        let logger = Logger.builder.build()
+        logger.debug("message with no user info")
 
-                Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
-                logger.debug("message with user `id`, `name` and `email`")
+        Datadog.setUserInfo(id: "abc-123", name: "Foo")
+        logger.debug("message with user `id` and `name`")
 
-                Datadog.setUserInfo(id: nil, name: nil, email: nil)
-                logger.debug("message with no user info")
-            }
-            .waitUntil(numberOfLogsSent: 4)
-            .verifyAll { logMatchers in
-                logMatchers[0].assertUserInfo(equals: nil)
-                logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
-                logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com"))
-                logMatchers[3].assertUserInfo(equals: nil)
-            }
-            .destroy()
+        Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
+        logger.debug("message with user `id`, `name` and `email`")
+
+        Datadog.setUserInfo(id: nil, name: nil, email: nil)
+        logger.debug("message with no user info")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 4)
+        logMatchers[0].assertUserInfo(equals: nil)
+        logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
+        logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com"))
+        logMatchers[3].assertUserInfo(equals: nil)
     }
 
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-        try DatadogInstanceMock.builder
-            .with(carrierInfoProvider: carrierInfoProvider)
-            .initialize()
-            .run {
-                let logger = Logger.builder
-                    .sendNetworkInfo(true)
-                    .build()
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server,
+            carrierInfoProvider: carrierInfoProvider
+        )
+        defer { LoggingFeature.instance = nil }
 
-                // simulate entering cellular service range
-                carrierInfoProvider.current = .mockWith(
-                    carrierName: "Carrier",
-                    carrierISOCountryCode: "US",
-                    carrierAllowsVOIP: true,
-                    radioAccessTechnology: .LTE
-                )
+        let logger = Logger.builder
+            .sendNetworkInfo(true)
+            .build()
 
-                logger.debug("message")
+        // simulate entering cellular service range
+        carrierInfoProvider.current = .mockWith(
+            carrierName: "Carrier",
+            carrierISOCountryCode: "US",
+            carrierAllowsVOIP: true,
+            radioAccessTechnology: .LTE
+        )
 
-                // simulate leaving cellular service range
-                carrierInfoProvider.current = nil
+        logger.debug("message")
 
-                logger.debug("message")
-            }
-            .waitUntil(numberOfLogsSent: 2)
-            .verifyAll { logMatchers in
-                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.name", equals: "Carrier")
-                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.iso_country", equals: "US")
-                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.technology", equals: "LTE")
-                logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", equals: true)
-                logMatchers[1].assertNoValue(forKeyPath: "network.client.sim_carrier")
-            }
-            .destroy()
+        // simulate leaving cellular service range
+        carrierInfoProvider.current = nil
+
+        logger.debug("message")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
+        logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.name", equals: "Carrier")
+        logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.iso_country", equals: "US")
+        logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.technology", equals: "LTE")
+        logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.allows_voip", equals: true)
+        logMatchers[1].assertNoValue(forKeyPath: "network.client.sim_carrier")
     }
 
     // MARK: - Sending network info
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-        try DatadogInstanceMock.builder
-            .with(networkConnectionInfoProvider: networkConnectionInfoProvider)
-            .initialize()
-            .run {
-                let logger = Logger.builder
-                    .sendNetworkInfo(true)
-                    .build()
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server,
+            networkConnectionInfoProvider: networkConnectionInfoProvider
+        )
+        defer { LoggingFeature.instance = nil }
 
-                // simulate reachable network
-                networkConnectionInfoProvider.current = .mockWith(
-                    reachability: .yes,
-                    availableInterfaces: [.wifi, .cellular],
-                    supportsIPv4: true,
-                    supportsIPv6: true,
-                    isExpensive: false,
-                    isConstrained: false
-                )
+        let logger = Logger.builder
+            .sendNetworkInfo(true)
+            .build()
 
-                logger.debug("message")
+        // simulate reachable network
+        networkConnectionInfoProvider.current = .mockWith(
+            reachability: .yes,
+            availableInterfaces: [.wifi, .cellular],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: false,
+            isConstrained: false
+        )
 
-                // simulate unreachable network
-                networkConnectionInfoProvider.current = .mockWith(
-                    reachability: .no,
-                    availableInterfaces: [],
-                    supportsIPv4: false,
-                    supportsIPv6: false,
-                    isExpensive: false,
-                    isConstrained: false
-                )
+        logger.debug("message")
 
-                logger.debug("message")
+        // simulate unreachable network
+        networkConnectionInfoProvider.current = .mockWith(
+            reachability: .no,
+            availableInterfaces: [],
+            supportsIPv4: false,
+            supportsIPv6: false,
+            isExpensive: false,
+            isConstrained: false
+        )
 
-                // put the network back online so last log can be send
-                networkConnectionInfoProvider.current = .mockWith(reachability: .yes)
-            }
-            .waitUntil(numberOfLogsSent: 2)
-            .verifyAll { logMatchers in
-                logMatchers[0].assertValue(forKeyPath: "network.client.reachability", equals: "yes")
-                logMatchers[0].assertValue(forKeyPath: "network.client.available_interfaces", equals: ["wifi", "cellular"])
-                logMatchers[0].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
-                logMatchers[0].assertValue(forKeyPath: "network.client.is_expensive", equals: false)
-                logMatchers[0].assertValue(forKeyPath: "network.client.supports_ipv4", equals: true)
-                logMatchers[0].assertValue(forKeyPath: "network.client.supports_ipv6", equals: true)
+        logger.debug("message")
 
-                logMatchers[1].assertValue(forKeyPath: "network.client.reachability", equals: "no")
-                logMatchers[1].assertValue(forKeyPath: "network.client.available_interfaces", equals: [String]())
-                logMatchers[1].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
-                logMatchers[1].assertValue(forKeyPath: "network.client.is_expensive", equals: false)
-                logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv4", equals: false)
-                logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv6", equals: false)
-            }
-            .destroy()
+        // put the network back online so last log can be send
+        networkConnectionInfoProvider.current = .mockWith(reachability: .yes)
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
+        logMatchers[0].assertValue(forKeyPath: "network.client.reachability", equals: "yes")
+        logMatchers[0].assertValue(forKeyPath: "network.client.available_interfaces", equals: ["wifi", "cellular"])
+        logMatchers[0].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
+        logMatchers[0].assertValue(forKeyPath: "network.client.is_expensive", equals: false)
+        logMatchers[0].assertValue(forKeyPath: "network.client.supports_ipv4", equals: true)
+        logMatchers[0].assertValue(forKeyPath: "network.client.supports_ipv6", equals: true)
+
+        logMatchers[1].assertValue(forKeyPath: "network.client.reachability", equals: "no")
+        logMatchers[1].assertValue(forKeyPath: "network.client.available_interfaces", equals: [String]())
+        logMatchers[1].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
+        logMatchers[1].assertValue(forKeyPath: "network.client.is_expensive", equals: false)
+        logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv4", equals: false)
+        logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv6", equals: false)
     }
 
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        try DatadogInstanceMock.builder
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server
+        )
+        defer { LoggingFeature.instance = nil }
 
-                // string literal
-                logger.addAttribute(forKey: "string", value: "hello")
+        let logger = Logger.builder.build()
 
-                // boolean literal
-                logger.addAttribute(forKey: "bool", value: true)
+        // string literal
+        logger.addAttribute(forKey: "string", value: "hello")
 
-                // integer literal
-                logger.addAttribute(forKey: "int", value: 10)
+        // boolean literal
+        logger.addAttribute(forKey: "bool", value: true)
 
-                // Typed 8-bit unsigned Integer
-                logger.addAttribute(forKey: "uint-8", value: UInt8(10))
+        // integer literal
+        logger.addAttribute(forKey: "int", value: 10)
 
-                // double-precision, floating-point value
-                logger.addAttribute(forKey: "double", value: 10.5)
+        // Typed 8-bit unsigned Integer
+        logger.addAttribute(forKey: "uint-8", value: UInt8(10))
 
-                // array of `Encodable` integer
-                logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
+        // double-precision, floating-point value
+        logger.addAttribute(forKey: "double", value: 10.5)
 
-                // dictionary of `Encodable` date types
-                logger.addAttribute(forKey: "dictionary-of-date", value: [
-                    "date1": Date.mockDecember15th2019At10AMUTC(),
-                    "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
-                ])
+        // array of `Encodable` integer
+        logger.addAttribute(forKey: "array-of-int", value: [1, 2, 3])
 
-                struct Person: Codable {
-                    let name: String
-                    let age: Int
-                    let nationality: String
-                }
+        // dictionary of `Encodable` date types
+        logger.addAttribute(forKey: "dictionary-of-date", value: [
+            "date1": Date.mockDecember15th2019At10AMUTC(),
+            "date2": Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 60 * 60)
+        ])
 
-                // custom `Encodable` structure
-                logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+        struct Person: Codable {
+            let name: String
+            let age: Int
+            let nationality: String
+        }
 
-                // nested string literal
-                logger.addAttribute(forKey: "nested.string", value: "hello")
+        // custom `Encodable` structure
+        logger.addAttribute(forKey: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
 
-                logger.info("message")
-            }
-            .waitUntil(numberOfLogsSent: 1)
-            .verifyFirst { logMatcher in
-                logMatcher.assertValue(forKey: "string", equals: "hello")
-                logMatcher.assertValue(forKey: "bool", equals: true)
-                logMatcher.assertValue(forKey: "int", equals: 10)
-                logMatcher.assertValue(forKey: "uint-8", equals: UInt8(10))
-                logMatcher.assertValue(forKey: "double", equals: 10.5)
-                logMatcher.assertValue(forKey: "array-of-int", equals: [1, 2, 3])
-                logMatcher.assertValue(forKeyPath: "dictionary-of-date.date1", equals: "2019-12-15T10:00:00Z")
-                logMatcher.assertValue(forKeyPath: "dictionary-of-date.date2", equals: "2019-12-15T11:00:00Z")
-                logMatcher.assertValue(forKeyPath: "person.name", equals: "Adam")
-                logMatcher.assertValue(forKeyPath: "person.age", equals: 30)
-                logMatcher.assertValue(forKeyPath: "person.nationality", equals: "Polish")
-                logMatcher.assertValue(forKeyPath: "nested.string", equals: "hello")
-            }
-            .destroy()
+        // nested string literal
+        logger.addAttribute(forKey: "nested.string", value: "hello")
+
+        logger.info("message")
+
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        logMatcher.assertValue(forKey: "string", equals: "hello")
+        logMatcher.assertValue(forKey: "bool", equals: true)
+        logMatcher.assertValue(forKey: "int", equals: 10)
+        logMatcher.assertValue(forKey: "uint-8", equals: UInt8(10))
+        logMatcher.assertValue(forKey: "double", equals: 10.5)
+        logMatcher.assertValue(forKey: "array-of-int", equals: [1, 2, 3])
+        logMatcher.assertValue(forKeyPath: "dictionary-of-date.date1", equals: "2019-12-15T10:00:00Z")
+        logMatcher.assertValue(forKeyPath: "dictionary-of-date.date2", equals: "2019-12-15T11:00:00Z")
+        logMatcher.assertValue(forKeyPath: "person.name", equals: "Adam")
+        logMatcher.assertValue(forKeyPath: "person.age", equals: 30)
+        logMatcher.assertValue(forKeyPath: "person.nationality", equals: "Polish")
+        logMatcher.assertValue(forKeyPath: "nested.string", equals: "hello")
     }
 
     func testSendingMessageAttributes() throws {
-        try DatadogInstanceMock.builder
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server
+        )
+        defer { LoggingFeature.instance = nil }
 
-                // add logger attribute
-                logger.addAttribute(forKey: "attribute", value: "logger's value")
+        let logger = Logger.builder.build()
 
-                // send message with no attributes
-                logger.info("info message 1")
+        // add logger attribute
+        logger.addAttribute(forKey: "attribute", value: "logger's value")
 
-                // send message with attribute overriding logger's attribute
-                logger.info("info message 2", attributes: ["attribute": "message's value"])
+        // send message with no attributes
+        logger.info("info message 1")
 
-                // remove logger attribute
-                logger.removeAttribute(forKey: "attribute")
+        // send message with attribute overriding logger's attribute
+        logger.info("info message 2", attributes: ["attribute": "message's value"])
 
-                // send message
-                logger.info("info message 3")
-            }
-            .waitUntil(numberOfLogsSent: 3)
-            .verifyAll { logMatchers in
-                logMatchers[0].assertValue(forKey: "attribute", equals: "logger's value")
-                logMatchers[1].assertValue(forKey: "attribute", equals: "message's value")
-                logMatchers[2].assertNoValue(forKey: "attribute")
-            }
-            .destroy()
+        // remove logger attribute
+        logger.removeAttribute(forKey: "attribute")
+
+        // send message
+        logger.info("info message 3")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
+        logMatchers[0].assertValue(forKey: "attribute", equals: "logger's value")
+        logMatchers[1].assertValue(forKey: "attribute", equals: "message's value")
+        logMatchers[2].assertNoValue(forKey: "attribute")
     }
 
     // MARK: - Sending tags
 
     func testSendingTags() throws {
-        try DatadogInstanceMock.builder
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server
+        )
+        defer { LoggingFeature.instance = nil }
 
-                // add tag
-                logger.add(tag: "tag1")
+        let logger = Logger.builder.build()
 
-                // send message
-                logger.info("info message 1")
+        // add tag
+        logger.add(tag: "tag1")
 
-                // add tag with key
-                logger.addTag(withKey: "tag2", value: "abcd")
+        // send message
+        logger.info("info message 1")
 
-                // send message
-                logger.info("info message 2")
+        // add tag with key
+        logger.addTag(withKey: "tag2", value: "abcd")
 
-                // remove tag with key
-                logger.removeTag(withKey: "tag2")
+        // send message
+        logger.info("info message 2")
 
-                // remove tag
-                logger.remove(tag: "tag1")
+        // remove tag with key
+        logger.removeTag(withKey: "tag2")
 
-                // send message
-                logger.info("info message 3")
-            }
-            .waitUntil(numberOfLogsSent: 3)
-            .verifyAll { logMatchers in
-                logMatchers[0].assertTags(equal: ["tag1"])
-                logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd"])
-                logMatchers[2].assertNoValue(forKey: LogEncoder.StaticCodingKeys.tags.rawValue)
-            }
-            .destroy()
+        // remove tag
+        logger.remove(tag: "tag1")
+
+        // send message
+        logger.info("info message 3")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
+        logMatchers[0].assertTags(equal: ["tag1"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd"])
+        logMatchers[2].assertNoValue(forKey: LogEncoder.StaticCodingKeys.tags.rawValue)
     }
 
     // MARK: - Sending logs with different network and battery conditions
 
     func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
-        try DatadogInstanceMock.builder
-            .with(
-                batteryStatusProvider: BatteryStatusProviderMock.mockWith(
-                    status: .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server,
+            appContext: .mockWith(
+                mobileDevice: .mockWith(
+                    currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
+                        .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
+                    }
                 )
             )
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
-                logger.debug("message")
-            }
-            .verifyNoLogsSent(within: DatadogInstanceMock.dataUploadInterval * 10)
-            .destroy()
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.debug("message")
+
+        let requests = server.waitAndReturnRequests(
+            count: 0,
+            timeout: PerformancePreset.mockUnitTestsPerformancePreset().defaultLogsUploadDelay * 10
+        )
+        XCTAssertEqual(requests.count, 0)
     }
 
     func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
-        try DatadogInstanceMock.builder
-            .with(
-                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .no)
-                )
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            directory: temporaryDirectory,
+            server: server,
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+                networkConnectionInfo: .mockWith(reachability: .no)
             )
-            .initialize()
-            .run {
-                let logger = Logger.builder.build()
-                logger.debug("message")
-            }
-            .verifyNoLogsSent(within: DatadogInstanceMock.dataUploadInterval * 10)
-            .destroy()
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.debug("message")
+
+        let requests = server.waitAndReturnRequests(
+            count: 0,
+            timeout: PerformancePreset.mockUnitTestsPerformancePreset().defaultLogsUploadDelay * 10
+        )
+        XCTAssertEqual(requests.count, 0)
     }
 
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        Datadog.instance = .mockNoOp()
-        defer { Datadog.instance = nil }
+        LoggingFeature.instance = .mockWorkingFeatureWith(directory: temporaryDirectory)
+        defer { LoggingFeature.instance = nil }
+
         let logger = Logger.builder.build()
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
