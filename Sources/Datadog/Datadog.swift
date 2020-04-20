@@ -8,7 +8,7 @@ import Foundation
 
 /// SDK version associated with logs.
 /// Should be synced with SDK releases.
-internal let sdkVersion = "1.0.2"
+internal let sdkVersion = "1.1.0"
 
 /// Datadog SDK configuration object.
 public class Datadog {
