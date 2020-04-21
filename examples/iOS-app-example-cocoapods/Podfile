@@ -1,6 +1,0 @@
-platform :ios, '12.0'
-
-target 'iOS-app-example-cocoapods' do
-  use_frameworks!
-  pod 'DatadogSDK', path: '../..'
-end
