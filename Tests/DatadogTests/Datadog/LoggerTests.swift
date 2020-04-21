@@ -28,8 +28,8 @@ class LoggerTests: XCTestCase {
     func testSendingMinimalLogWithDefaultLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
             server: server,
+            directory: temporaryDirectory,
             appContext: .mockWith(
                 bundleIdentifier: "com.datadoghq.ios-sdk",
                 bundleVersion: "1.0.0",
@@ -60,8 +60,8 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithCustomizedLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -93,8 +93,8 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -124,8 +124,8 @@ class LoggerTests: XCTestCase {
         )
         defer { Datadog.instance = nil }
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
             server: server,
+            directory: temporaryDirectory,
             userInfoProvider: Datadog.instance!.userInfoProvider
         )
         defer { LoggingFeature.instance = nil }
@@ -155,8 +155,8 @@ class LoggerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
             server: server,
+            directory: temporaryDirectory,
             carrierInfoProvider: carrierInfoProvider
         )
         defer { LoggingFeature.instance = nil }
@@ -166,17 +166,19 @@ class LoggerTests: XCTestCase {
             .build()
 
         // simulate entering cellular service range
-        carrierInfoProvider.current = .mockWith(
-            carrierName: "Carrier",
-            carrierISOCountryCode: "US",
-            carrierAllowsVOIP: true,
-            radioAccessTechnology: .LTE
+        carrierInfoProvider.set(
+            current: .mockWith(
+                carrierName: "Carrier",
+                carrierISOCountryCode: "US",
+                carrierAllowsVOIP: true,
+                radioAccessTechnology: .LTE
+            )
         )
 
         logger.debug("message")
 
         // simulate leaving cellular service range
-        carrierInfoProvider.current = nil
+        carrierInfoProvider.set(current: nil)
 
         logger.debug("message")
 
@@ -194,8 +196,8 @@ class LoggerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
             server: server,
+            directory: temporaryDirectory,
             networkConnectionInfoProvider: networkConnectionInfoProvider
         )
         defer { LoggingFeature.instance = nil }
@@ -205,31 +207,35 @@ class LoggerTests: XCTestCase {
             .build()
 
         // simulate reachable network
-        networkConnectionInfoProvider.current = .mockWith(
-            reachability: .yes,
-            availableInterfaces: [.wifi, .cellular],
-            supportsIPv4: true,
-            supportsIPv6: true,
-            isExpensive: false,
-            isConstrained: false
+        networkConnectionInfoProvider.set(
+            current: .mockWith(
+                reachability: .yes,
+                availableInterfaces: [.wifi, .cellular],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: false,
+                isConstrained: false
+            )
         )
 
         logger.debug("message")
 
         // simulate unreachable network
-        networkConnectionInfoProvider.current = .mockWith(
-            reachability: .no,
-            availableInterfaces: [],
-            supportsIPv4: false,
-            supportsIPv6: false,
-            isExpensive: false,
-            isConstrained: false
+        networkConnectionInfoProvider.set(
+            current: .mockWith(
+                reachability: .no,
+                availableInterfaces: [],
+                supportsIPv4: false,
+                supportsIPv6: false,
+                isExpensive: false,
+                isConstrained: false
+            )
         )
 
         logger.debug("message")
 
         // put the network back online so last log can be send
-        networkConnectionInfoProvider.current = .mockWith(reachability: .yes)
+        networkConnectionInfoProvider.set(current: .mockWith(reachability: .yes))
 
         let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(forKeyPath: "network.client.reachability", equals: "yes")
@@ -252,8 +258,8 @@ class LoggerTests: XCTestCase {
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -315,8 +321,8 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -348,8 +354,8 @@ class LoggerTests: XCTestCase {
     func testSendingTags() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -387,8 +393,8 @@ class LoggerTests: XCTestCase {
     func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
             server: server,
+            directory: temporaryDirectory,
             appContext: .mockWith(
                 mobileDevice: .mockWith(
                     currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
@@ -402,18 +408,14 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         logger.debug("message")
 
-        let requests = server.waitAndReturnRequests(
-            count: 0,
-            timeout: PerformancePreset.mockUnitTestsPerformancePreset().defaultLogsUploadDelay * 10
-        )
-        XCTAssertEqual(requests.count, 0)
+        server.waitAndAssertNoRequestsSent()
     }
 
     func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
             server: server,
+            directory: temporaryDirectory,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                 networkConnectionInfo: .mockWith(reachability: .no)
             )
@@ -423,20 +425,20 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         logger.debug("message")
 
-        let requests = server.waitAndReturnRequests(
-            count: 0,
-            timeout: PerformancePreset.mockUnitTestsPerformancePreset().defaultLogsUploadDelay * 10
-        )
-        XCTAssertEqual(requests.count, 0)
+        server.waitAndAssertNoRequestsSent()
     }
 
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        LoggingFeature.instance = .mockNoOp()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
-        let logger = Logger.builder.build()
+        let logger = Logger.builder
+            .sendLogsToDatadog(false)
+            .printLogsToConsole(false)
+            .build()
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
             let modulo = iteration % 3
@@ -455,5 +457,7 @@ class LoggerTests: XCTestCase {
                 break
             }
         }
+
+        server.waitAndAssertNoRequestsSent()
     }
 }

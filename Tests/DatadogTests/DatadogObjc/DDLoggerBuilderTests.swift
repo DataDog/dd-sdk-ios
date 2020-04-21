@@ -13,10 +13,23 @@ class DDLoggerBuilderTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
+    }
+
+    override func tearDown() {
+        temporaryDirectory.delete()
+        super.tearDown()
+    }
+
     // MARK: - Default logger
 
     func testBuildingDefaultLogger() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
             appContext: appContext,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
@@ -34,12 +47,17 @@ class DDLoggerBuilderTests: XCTestCase {
         XCTAssertEqual(logBuilder.loggerName, "com.datadog.sdk-unit-tests")
         XCTAssertNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNil(logBuilder.carrierInfoProvider)
+
+        server.waitAndAssertNoRequestsSent()
     }
 
     // MARK: - Customized logger
 
     func testBuildingCustomizedLogger() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
             appContext: appContext,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
@@ -63,10 +81,13 @@ class DDLoggerBuilderTests: XCTestCase {
         XCTAssertEqual(logBuilder.loggerName, "custom logger name")
         XCTAssertNotNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNotNil(logBuilder.carrierInfoProvider)
+
+        server.waitAndAssertNoRequestsSent()
     }
 
     func testUsingDifferentOutputs() throws {
-        LoggingFeature.instance = .mockNoOp()
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         assertThat(
@@ -144,6 +165,8 @@ class DDLoggerBuilderTests: XCTestCase {
             }(),
             usesOutput: NoOpLogOutput.self
         )
+
+        server.waitAndAssertNoRequestsSent()
     }
 
     // MARK: - Initialization

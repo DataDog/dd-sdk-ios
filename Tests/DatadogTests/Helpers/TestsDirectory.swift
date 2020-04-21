@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import XCTest
 @testable import Datadog
 
 /// Creates `Directory` pointing to unique subfolder in `/var/folders/`.
@@ -28,23 +29,23 @@ let logsDirectory = try! obtainLoggingFeatureDirectory()
 /// Provides handy methods to create / delete files and directires.
 extension Directory {
     /// Creates empty directory with given attributes .
-    func create(attributes: [FileAttributeKey: Any]? = nil) {
+    func create(attributes: [FileAttributeKey: Any]? = nil, file: StaticString = #file, line: UInt = #line) {
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: attributes)
             let initialFilesCount = try files().count
-            precondition(initialFilesCount == 0) // ensure it's empty
+            XCTAssert(initialFilesCount == 0, "🔥 `TestsDirectory` is not empty: \(url)", file: file, line: line)
         } catch {
-            fatalError("🔥 Failed to create `TestsDirectory`: \(error)")
+            XCTFail("🔥 Failed to create `TestsDirectory`: \(error)", file: file, line: line)
         }
     }
 
     /// Deletes entire directory with its content.
-    func delete() {
+    func delete(file: StaticString = #file, line: UInt = #line) {
         if FileManager.default.fileExists(atPath: url.path) {
             do {
                 try FileManager.default.removeItem(at: url)
             } catch {
-                fatalError("🔥 Failed to delete `TestsDirectory`: \(error)")
+                XCTFail("🔥 Failed to delete `TestsDirectory`: \(error)", file: file, line: line)
             }
         }
     }
