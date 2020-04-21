@@ -44,32 +44,11 @@ extension Log {
             tags: tags
         )
     }
-
-    static func mockRandom() -> Log {
-        return mockWith(
-            date: .mockRandomInThePast(),
-            status: .mockRandom(),
-            message: .mockRandom(length: 20),
-            serviceName: .mockRandom(),
-            loggerName: .mockRandom(),
-            loggerVersion: .mockRandom(),
-            threadName: .mockRandom(),
-            applicationVersion: .mockRandom(),
-            userInfo: .mockRandom(),
-            networkConnectionInfo: .mockRandom(),
-            mobileCarrierInfo: .mockRandom()
-        )
-    }
 }
 
 extension Log.Status {
     static func mockAny() -> Log.Status {
         return .info
-    }
-
-    static func mockRandom() -> Log.Status {
-        let statuses: [Log.Status] = [.debug, .info, .notice, .warn, .error, .critical]
-        return statuses.randomElement()!
     }
 }
 
