@@ -26,8 +26,8 @@ class DDLoggerTests: XCTestCase {
     func testSendingLogWithCustomizedLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -48,8 +48,8 @@ class DDLoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 
@@ -76,8 +76,8 @@ class DDLoggerTests: XCTestCase {
     func testSendingLoggerAttributes() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
-            directory: temporaryDirectory,
-            server: server
+            server: server,
+            directory: temporaryDirectory
         )
         defer { LoggingFeature.instance = nil }
 

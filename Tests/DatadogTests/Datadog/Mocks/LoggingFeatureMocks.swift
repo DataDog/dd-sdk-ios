@@ -9,7 +9,7 @@
 /// Collection of mocks for logging feature.
 extension LoggingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp() -> LoggingFeature {
+    static func mockNoOp(temporaryDirectory: Directory) -> LoggingFeature {
         return LoggingFeature(
             directory: temporaryDirectory,
             appContext: .mockAny(),
@@ -18,36 +18,43 @@ extension LoggingFeature {
             logsUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
             userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+                networkConnectionInfo: .mockWith(
+                    reachability: .no // so it doesn't meet the upload condition
+                )
+            ),
             carrierInfoProvider: CarrierInfoProviderMock.mockAny()
         )
     }
 
     /// Mocks feature instance which performs uploads to given `ServerMock` with performance optimized for fast delivery in unit tests.
     static func mockWorkingFeatureWith(
-        directory: Directory = temporaryDirectory,
-        server: ServerMock? = nil,
-        appContext: AppContext = .mockAny(),
+        server: ServerMock,
+        directory: Directory,
+        appContext: AppContext = .mockWith(
+            mobileDevice: nil // so it doesn't rely on battery status for the upload condition
+        ),
         performance: PerformancePreset = .mockUnitTestsPerformancePreset(),
         logsUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> LoggingFeature {
-        let httpClient: HTTPClient
-
-        if let server = server {
-            httpClient = HTTPClient(session: server.urlSession)
-        } else {
-            httpClient = .mockAny()
-        }
-
         return LoggingFeature(
             directory: directory,
             appContext: appContext,
             performance: performance,
-            httpClient: httpClient,
+            httpClient: HTTPClient(session: server.urlSession),
             logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,

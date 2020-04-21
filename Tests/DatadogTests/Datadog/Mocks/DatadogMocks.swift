@@ -73,10 +73,10 @@ extension PerformancePreset {
             maxFileAgeForRead: 0,
             maxLogsPerBatch: 0,
             maxLogSize: 0,
-            initialLogsUploadDelay: 0,
-            defaultLogsUploadDelay: 0,
-            minLogsUploadDelay: 0,
-            maxLogsUploadDelay: 0,
+            initialLogsUploadDelay: .distantFuture,
+            defaultLogsUploadDelay: .distantFuture,
+            minLogsUploadDelay: .distantFuture,
+            maxLogsUploadDelay: .distantFuture,
             logsUploadDelayDecreaseFactor: 1
         )
     }
@@ -310,11 +310,24 @@ extension NetworkConnectionInfo {
 }
 
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
-    var current: NetworkConnectionInfo
+    private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
+    private var _current: NetworkConnectionInfo
 
     init(networkConnectionInfo: NetworkConnectionInfo) {
-        self.current = networkConnectionInfo
+        _current = networkConnectionInfo
     }
+
+    func set(current: NetworkConnectionInfo) {
+        queue.async { self._current = current }
+    }
+
+    // MARK: - NetworkConnectionInfoProviderType
+
+    var current: NetworkConnectionInfo {
+        queue.sync { _current }
+    }
+
+    // MARK: - Mocking
 
     static func mockAny() -> NetworkConnectionInfoProviderMock {
         return mockWith()
@@ -352,11 +365,24 @@ extension CarrierInfo {
 }
 
 class CarrierInfoProviderMock: CarrierInfoProviderType {
-    var current: CarrierInfo?
+    private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
+    private var _current: CarrierInfo?
 
     init(carrierInfo: CarrierInfo?) {
-        self.current = carrierInfo
+        _current = carrierInfo
     }
+
+    func set(current: CarrierInfo?) {
+        queue.async { self._current = current }
+    }
+
+    // MARK: - CarrierInfoProviderType
+
+    var current: CarrierInfo? {
+        queue.sync { _current }
+    }
+
+    // MARK: - Mocking
 
     static func mockAny() -> CarrierInfoProviderMock {
         return mockWith()

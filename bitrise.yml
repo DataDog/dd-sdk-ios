@@ -10,15 +10,29 @@ workflows:
   push_to_any_branch:
     after_run:
     - _make_dependencies
-    - run_linter
+    # - run_linter
     - run_unit_tests
-    - run_integration_tests
-    - check_dependency_managers
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests # 10x
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    # - run_integration_tests
+    # - check_dependency_managers
     # I disable it for now, as this would require supporting local pod installation
     # of `DatadogSDK.podspec` in CP example project. This effort will be lost as in `RUMM-334`
     # we're going to re-do sample apps layout and not use local pod anymore.
     # - check_example_projects
-    - _deploy_artifacts
+    # - _deploy_artifacts
 
   _make_dependencies:
     description: |-
@@ -76,23 +90,24 @@ workflows:
         inputs:
         - scheme: Datadog
         - simulator_device: iPhone 11
-        - is_clean_build: 'yes'
-        - generate_code_coverage_files: 'yes'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'no'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
-    - script@1.1.6:
-        title: Generate HTTPServerMock.xcodeproj
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            make xcodeproj-httpservermock
-    - xcode-test-mac:
-        title: Run unit tests for HTTPServerMock.xcodeproj - macOS
-        inputs:
-        - scheme: HTTPServerMock-Package
-        - destination: platform=OS X,arch=x86_64
-        - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
+        - output_tool: xcodebuild
+        # - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
+    # - script@1.1.6:
+    #     title: Generate HTTPServerMock.xcodeproj
+    #     inputs:
+    #     - content: |-
+    #         #!/usr/bin/env bash
+    #         set -e
+    #         make xcodeproj-httpservermock
+    # - xcode-test-mac:
+    #     title: Run unit tests for HTTPServerMock.xcodeproj - macOS
+    #     inputs:
+    #     - scheme: HTTPServerMock-Package
+    #     - destination: platform=OS X,arch=x86_64
+    #     - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
 
   run_integration_tests:
     description: |-

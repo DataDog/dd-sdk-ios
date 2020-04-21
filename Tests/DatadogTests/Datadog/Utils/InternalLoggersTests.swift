@@ -13,7 +13,8 @@ class InternalLoggersTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        LoggingFeature.instance = .mockNoOp()
+        temporaryDirectory.create()
+        LoggingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
         printedMessages = []
         userLogger = createSDKUserLogger(
             consolePrintFunction: { [weak self] in self?.printedMessages.append($0) },
@@ -27,6 +28,7 @@ class InternalLoggersTests: XCTestCase {
         userLogger = nil
         Datadog.verbosityLevel = nil
         LoggingFeature.instance = nil
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
