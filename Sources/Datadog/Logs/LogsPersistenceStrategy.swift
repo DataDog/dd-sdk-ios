@@ -49,7 +49,7 @@ internal struct LogsPersistenceStrategy {
     )
 
     /// Default strategy which uses single GCD queue for read and write file access.
-    static func `defalut`(using dateProvider: DateProvider) throws -> LogsPersistenceStrategy {
+    static func `default`(using dateProvider: DateProvider) throws -> LogsPersistenceStrategy {
         let directory = try Directory(withSubdirectoryPath: Constants.logFilesSubdirectory)
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-read-write",

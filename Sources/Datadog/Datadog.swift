@@ -111,7 +111,7 @@ public class Datadog {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType?
     ) throws {
-        let logsPersistenceStrategy: LogsPersistenceStrategy = try .defalut(using: dateProvider)
+        let logsPersistenceStrategy: LogsPersistenceStrategy = try .default(using: dateProvider)
         let logsUploadStrategy: LogsUploadStrategy = .default(
             appContext: appContext,
             logsUploadURLProvider: logsUploadURLProvider,
