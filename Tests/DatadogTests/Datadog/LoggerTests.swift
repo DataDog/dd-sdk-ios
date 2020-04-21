@@ -433,7 +433,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        LoggingFeature.instance = .mockWorkingFeatureWith(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
