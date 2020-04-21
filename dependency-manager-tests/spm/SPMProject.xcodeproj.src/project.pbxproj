@@ -15,6 +15,7 @@
 		61C363F124374D6100C4D4E6 /* SPMProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363F024374D6100C4D4E6 /* SPMProjectTests.swift */; };
 		61C363FC24374D6100C4D4E6 /* SPMProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* SPMProjectUITests.swift */; };
 		61C3640B24374DF200C4D4E6 /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61C3640A24374DF200C4D4E6 /* Datadog */; };
+		9E1F996A244DDABE00BD10FC /* Datadog in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 61C3640A24374DF200C4D4E6 /* Datadog */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,6 +34,20 @@
 			remoteInfo = SPMProject;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9E1F996B244DDABE00BD10FC /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				9E1F996A244DDABE00BD10FC /* Datadog in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		61C363D624374D5F00C4D4E6 /* SPMProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SPMProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -153,6 +168,7 @@
 				61C363D324374D5F00C4D4E6 /* Frameworks */,
 				61C363D424374D5F00C4D4E6 /* Resources */,
 				61C3645F24376B3400C4D4E6 /* ⚙️ Run linter */,
+				9E1F996B244DDABE00BD10FC /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

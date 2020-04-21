@@ -10,9 +10,11 @@ let package = Package(
     products: [
         .library(
             name: "Datadog",
+            type: .dynamic,
             targets: ["Datadog"]),
         .library(
             name: "DatadogObjc",
+            type: .dynamic,
             targets: ["DatadogObjc"]),
     ],
     dependencies: [
