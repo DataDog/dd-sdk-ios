@@ -175,6 +175,8 @@ class LoggerTests: XCTestCase {
 
         logger.debug("message")
 
+        server.waitForNextRequests(count: 1)
+
         // simulate leaving cellular service range
         carrierInfoProvider.current = nil
 
@@ -216,6 +218,8 @@ class LoggerTests: XCTestCase {
 
         logger.debug("message")
 
+        server.waitForNextRequests(count: 1)
+
         // simulate unreachable network
         networkConnectionInfoProvider.current = .mockWith(
             reachability: .no,
@@ -227,6 +231,8 @@ class LoggerTests: XCTestCase {
         )
 
         logger.debug("message")
+
+        server.waitForNextRequests(count: 0)
 
         // put the network back online so last log can be send
         networkConnectionInfoProvider.current = .mockWith(reachability: .yes)
@@ -402,11 +408,7 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         logger.debug("message")
 
-        let requests = server.waitAndReturnRequests(
-            count: 0,
-            timeout: PerformancePreset.mockUnitTestsPerformancePreset().defaultLogsUploadDelay * 10
-        )
-        XCTAssertEqual(requests.count, 0)
+        server.waitForNextRequests(count: 0)
     }
 
     func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
@@ -423,11 +425,7 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         logger.debug("message")
 
-        let requests = server.waitAndReturnRequests(
-            count: 0,
-            timeout: PerformancePreset.mockUnitTestsPerformancePreset().defaultLogsUploadDelay * 10
-        )
-        XCTAssertEqual(requests.count, 0)
+        server.waitForNextRequests(count: 0)
     }
 
     // MARK: - Thread safety

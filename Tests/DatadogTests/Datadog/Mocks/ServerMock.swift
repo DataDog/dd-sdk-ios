@@ -118,30 +118,75 @@ class ServerMock {
     fileprivate func record(newRequest: URLRequest) {
         queue.async {
             self.requests.append(newRequest)
-            self.waitingExpectation?.fulfill()
+            self.waitForNextRequestsExpectation?.fulfill()
+            self.waitAndReturnRequestsExpectation?.fulfill()
         }
     }
 
     private var requests: [URLRequest] = []
-    private var waitingExpectation: XCTestExpectation?
+    private var waitForNextRequestsExpectation: XCTestExpectation?
+    private var waitAndReturnRequestsExpectation: XCTestExpectation?
 
-    /// Waits until given number of request callbacks is completed and returns that requests.
+    // MARK: - Waiting for next requests
+
+    /// Waits until given number of request callbacks is completed (after this call on this instance of `ServerMock`).
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
+    /// Pass `count: 0` to wait and expect no request is made expected time.
     /// Calling this method guarantees also that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
-    func waitAndReturnRequests(count: Int, timeout: TimeInterval = 1, file: StaticString = #file, line: UInt = #line) -> [URLRequest] {
-        precondition(waitingExpectation == nil, "The `ServerMock` is already waiting.")
+    func waitForNextRequests(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) {
+        precondition(waitForNextRequestsExpectation == nil, "The `ServerMock` is already waiting on `waitForNextRequestsExpectation`.")
 
-        let expectation = XCTestExpectation(description: "Receive \(count) requests.")
+        let expectation = XCTestExpectation(description: "Receive \(count) next requests.")
         if count > 0 {
-            expectation.expectedFulfillmentCount = count
+            expectation.expectedFulfillmentCount = Int(count)
         } else {
             expectation.isInverted = true
         }
 
         queue.sync {
-            self.waitingExpectation = expectation
+            self.waitForNextRequestsExpectation = expectation
+        }
+
+        let timeout = timeout ?? recommendedTimeoutFor(numberOfRequestsMade: max(count, 1))
+        let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
+
+        queue.sync {
+            self.waitForNextRequestsExpectation = nil
+        }
+
+        switch result {
+        case .completed:
+            break
+        case .incorrectOrder, .interrupted:
+            fatalError("Can't happen.")
+        case .timedOut:
+            XCTFail("Exceeded timeout of \(timeout)s with not receiving \(count) expected requests.", file: file, line: line)
+            return
+        case .invertedFulfillment:
+            XCTFail("Received more than \(count) expected requests.", file: file, line: line)
+            return
+        @unknown default:
+            fatalError()
+        }
+    }
+
+    // MARK: - Waiting for total number of requests
+
+    /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`) and returns that requests.
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
+    /// Calling this method guarantees also that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
+    func waitAndReturnRequests(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [URLRequest] {
+        precondition(waitAndReturnRequestsExpectation == nil, "The `ServerMock` is already waiting on `waitAndReturnRequests`.")
+
+        let expectation = XCTestExpectation(description: "Receive \(count) total requests.")
+        expectation.expectedFulfillmentCount = Int(count)
+
+        queue.sync {
+            self.waitAndReturnRequestsExpectation = expectation
             self.requests.forEach { _ in expectation.fulfill() } // fulfill already recorded
         }
 
+        let timeout = timeout ?? recommendedTimeoutFor(numberOfRequestsMade: count)
         let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
 
         switch result {
@@ -153,7 +198,7 @@ class ServerMock {
             XCTFail("Exceeded timeout of \(timeout)s with receiving \(requests.count) out of \(count) expected requests.", file: file, line: line)
             // Return array of dummy requests, so the crash will happen leter in the test code, properly
             // printing the above error.
-            return Array(repeating: .mockAny(), count: count)
+            return Array(repeating: .mockAny(), count: Int(count))
         case .invertedFulfillment:
             XCTFail("\(requests.count) requests were sent, but not expected.", file: file, line: line)
             // Return array of dummy requests, so the crash will happen leter in the test code, properly
@@ -166,14 +211,17 @@ class ServerMock {
         return queue.sync { requests }
     }
 
-    /// Waits until given number of request callbacks is completed.
+    /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`).
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
     /// Calling this method guarantees that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
-    func waitFor(requestsCompletion requestsCount: Int, timeout: TimeInterval = 1, file: StaticString = #file, line: UInt = #line) {
-        _ = waitAndReturnRequests(count: requestsCount, timeout: 1)
+    func waitFor(requestsCompletion requestsCount: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) {
+        _ = waitAndReturnRequests(count: requestsCount, timeout: timeout)
     }
 
+    // MARK: - Utils
+
     /// Returns recommended timeout for delivering given number of requests if `.mockUnitTestsPerformancePreset()` is used for upload.
-    func recommendedTimeoutFor(numberOfRequestsMade: Int) -> TimeInterval {
+    func recommendedTimeoutFor(numberOfRequestsMade: UInt) -> TimeInterval {
         let performancePresetForTests: PerformancePreset = .mockUnitTestsPerformancePreset()
         // Set the timeout to 40 times more than expected.
         // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
@@ -184,7 +232,7 @@ class ServerMock {
 // MARK: - Logging feature helpers
 
 extension ServerMock {
-    func waitAndReturnLogMatchers(count: Int, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
         try waitAndReturnRequests(
             count: count,
             timeout: recommendedTimeoutFor(numberOfRequestsMade: count),
