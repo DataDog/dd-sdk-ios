@@ -2,9 +2,6 @@
 .build
 xcuserdata
 
-# Ignore code signing setup
-xcconfigs/datadog.xcconfig
-
 # Carthage test
 # - ignore `Cartfile.resolved` and `Cartfile` as they will be re-created for every test run
 /carthage/Carthage

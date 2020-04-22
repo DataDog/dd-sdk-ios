@@ -39,7 +39,7 @@ public class DDTracer: Tracer {
     // MARK: - Private Open Tracing helpers
 
     private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> Span {
-        guard let datadog = Datadog.instance else {
+        guard let tracingFeature = TracingFeature.instance else {
             throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
         }
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
@@ -48,7 +48,7 @@ public class DDTracer: Tracer {
             operationName: operationName,
             parentSpanContext: parentSpanContext,
             tags: tags ?? [:],
-            startTime: startTime ?? datadog.dateProvider.currentDate()
+            startTime: startTime ?? tracingFeature.dateProvider.currentDate()
         )
     }
 

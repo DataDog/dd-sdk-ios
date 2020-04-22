@@ -3,8 +3,6 @@
 /.build
 /.swiftpm
 xcuserdata/
-
-# SPM-generated .xcodedproj
-Datadog.xcodeproj
-
 Carthage/
+
+*.local.xcconfig

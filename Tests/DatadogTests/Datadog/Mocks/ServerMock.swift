@@ -6,6 +6,7 @@
 
 import Foundation
 import XCTest
+@testable import Datadog
 
 private class ServerMockProtocol: URLProtocol {
     override class func canInit(with request: URLRequest) -> Bool {
@@ -111,36 +112,42 @@ class ServerMock {
         ///        // <-- no reference to `server` exists and it processed all callbacks, so it will be safely deallocated
         ///     }
         ///
+        /// NOTE: one of the `wait*` methods **must be called** within the test using `ServerMock`.
+        ///
         precondition(Thread.isMainThread, "`ServerMock` should be deinitialized on the main thread.")
     }
 
     fileprivate func record(newRequest: URLRequest) {
         queue.async {
             self.requests.append(newRequest)
-            self.waitingExpectation?.fulfill()
+            self.waitAndReturnRequestsExpectation?.fulfill()
         }
     }
 
     private var requests: [URLRequest] = []
-    private var waitingExpectation: XCTestExpectation?
+    private var waitAndReturnRequestsExpectation: XCTestExpectation?
 
-    /// Waits until given number of request callbacks is completed and returns that requests.
+    // MARK: - Waiting for total number of requests
+
+    /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`) and returns that requests.
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
     /// Calling this method guarantees also that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
-    func waitAndReturnRequests(count: Int, timeout: TimeInterval = 1, file: StaticString = #file, line: UInt = #line) -> [URLRequest] {
-        precondition(waitingExpectation == nil, "The `ServerMock` is already waiting.")
+    func waitAndReturnRequests(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [URLRequest] {
+        precondition(waitAndReturnRequestsExpectation == nil, "The `ServerMock` is already waiting on `waitAndReturnRequests`.")
 
         let expectation = XCTestExpectation(description: "Receive \(count) requests.")
         if count > 0 {
-            expectation.expectedFulfillmentCount = count
+            expectation.expectedFulfillmentCount = Int(count)
         } else {
             expectation.isInverted = true
         }
 
         queue.sync {
-            self.waitingExpectation = expectation
+            self.waitAndReturnRequestsExpectation = expectation
             self.requests.forEach { _ in expectation.fulfill() } // fulfill already recorded
         }
 
+        let timeout = timeout ?? recommendedTimeoutFor(numberOfRequestsMade: max(count, 1))
         let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
 
         switch result {
@@ -149,9 +156,15 @@ class ServerMock {
         case .incorrectOrder, .interrupted:
             fatalError("Can't happen.")
         case .timedOut:
-            XCTFail("Exceeded timeout with receiving only \(requests.count) out of \(count) expected requests.", file: file, line: line)
+            XCTFail("Exceeded timeout of \(timeout)s with receiving \(requests.count) out of \(count) expected requests.", file: file, line: line)
+            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // printing the above error.
+            return Array(repeating: .mockAny(), count: Int(count))
         case .invertedFulfillment:
             XCTFail("\(requests.count) requests were sent, but not expected.", file: file, line: line)
+            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // printing the above error.
+            return queue.sync { requests }
         @unknown default:
             fatalError()
         }
@@ -159,9 +172,40 @@ class ServerMock {
         return queue.sync { requests }
     }
 
-    /// Waits until given number of request callbacks is completed.
+    /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`).
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
     /// Calling this method guarantees that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
-    func waitFor(requestsCompletion requestsCount: Int, timeout: TimeInterval = 1, file: StaticString = #file, line: UInt = #line) {
-        _ = waitAndReturnRequests(count: requestsCount, timeout: 1)
+    func waitFor(requestsCompletion requestsCount: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) {
+        _ = waitAndReturnRequests(count: requestsCount, timeout: timeout)
+    }
+
+    /// Waits an arbitrary amount of time and asserts that no requests were sent to `ServerMock`. 
+    func waitAndAssertNoRequestsSent(file: StaticString = #file, line: UInt = #line) {
+        waitFor(requestsCompletion: 0)
+    }
+
+    // MARK: - Utils
+
+    /// Returns recommended timeout for delivering given number of requests if `.mockUnitTestsPerformancePreset()` is used for upload.
+    func recommendedTimeoutFor(numberOfRequestsMade: UInt) -> TimeInterval {
+        let performancePresetForTests: PerformancePreset = .mockUnitTestsPerformancePreset()
+        // Set the timeout to 40 times more than expected.
+        // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
+        return performancePresetForTests.defaultLogsUploadDelay * Double(numberOfRequestsMade) * 40
+    }
+}
+
+// MARK: - Logging feature helpers
+
+extension ServerMock {
+    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        try waitAndReturnRequests(
+            count: count,
+            timeout: recommendedTimeoutFor(numberOfRequestsMade: count),
+            file: file,
+            line: line
+        )
+            .map { request in try request.httpBody.unwrapOrThrow() }
+            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
     }
 }

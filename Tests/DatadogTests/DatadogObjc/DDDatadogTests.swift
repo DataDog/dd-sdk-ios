@@ -13,10 +13,12 @@ class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(Datadog.instance)
+        XCTAssertNil(LoggingFeature.instance)
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
+        XCTAssertNil(LoggingFeature.instance)
         super.tearDown()
     }
 
@@ -36,7 +38,7 @@ class DDDatadogTests: XCTestCase {
     func testItBuildsDefaultSwiftAppContext() throws {
         DDDatadog.initialize(appContext: .init(), configuration: .mockAny())
 
-        let objcAppContext = Datadog.instance?.appContext
+        let objcAppContext = LoggingFeature.instance?.appContext
         let swiftAppContext = Datadog.AppContext()
 
         XCTAssertEqual(objcAppContext?.bundleIdentifier, swiftAppContext.bundleIdentifier)

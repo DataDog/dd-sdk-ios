@@ -57,7 +57,7 @@ extension CarrierInfo.RadioAccessTechnology {
 internal class CarrierInfoProvider: CarrierInfoProviderType {
     private let networkInfo: CTTelephonyNetworkInfo
 
-    init?(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
+    init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
         self.networkInfo = networkInfo
     }
 

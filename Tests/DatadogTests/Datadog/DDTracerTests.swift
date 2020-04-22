@@ -22,8 +22,8 @@ class DDTracerTests: XCTestCase {
     func testItCreatesBasicSpan() {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         let spanOutput = SpanOutputMock()
-        Datadog.instance = .mockNoOpWith(dateProvider: dateProvider)
-        defer { Datadog.instance = nil }
+        TracingFeature.instance = TracingFeature(dateProvider: dateProvider)
+        defer { TracingFeature.instance = nil }
 
         let tracer = DDTracer(spanOutput: spanOutput)
         let span = tracer.startSpan(operationName: "operation").dd
@@ -37,8 +37,8 @@ class DDTracerTests: XCTestCase {
 
     func testItCreatesCustomizedSpan() {
         let spanOutput = SpanOutputMock()
-        Datadog.instance = .mockNoOpWith(dateProvider: SystemDateProvider())
-        defer { Datadog.instance = nil }
+        TracingFeature.instance = TracingFeature(dateProvider: SystemDateProvider())
+        defer { TracingFeature.instance = nil }
 
         let tracer = DDTracer(spanOutput: spanOutput)
         let span = tracer.startSpan(operationName: "operation", tags: ["tag1": "value1"], startTime: .mockDecember15th2019At10AMUTC()).dd
@@ -54,8 +54,8 @@ class DDTracerTests: XCTestCase {
     func testGivenSpanWithNoParent_whenFinished_itIsWrittenToOutput() {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         let spanOutput = SpanOutputMock()
-        Datadog.instance = .mockNoOpWith(dateProvider: dateProvider)
-        defer { Datadog.instance = nil }
+        TracingFeature.instance = TracingFeature(dateProvider: dateProvider)
+        defer { TracingFeature.instance = nil }
 
         let tracer = DDTracer(spanOutput: spanOutput)
         let span = tracer.startSpan(operationName: "operation") as? DDSpan
@@ -70,8 +70,8 @@ class DDTracerTests: XCTestCase {
     func testGivenSpanWithParent_whenFinished_itIsWrittenToOutput() {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         let spanOutput = SpanOutputMock()
-        Datadog.instance = .mockNoOpWith(dateProvider: dateProvider)
-        defer { Datadog.instance = nil }
+        TracingFeature.instance = TracingFeature(dateProvider: dateProvider)
+        defer { TracingFeature.instance = nil }
 
         let tracer = DDTracer(spanOutput: spanOutput)
         let parentSpan = tracer.startSpan(operationName: "operation 1") as? DDSpan

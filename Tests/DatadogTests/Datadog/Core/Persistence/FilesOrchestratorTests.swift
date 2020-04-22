@@ -8,8 +8,8 @@ import XCTest
 @testable import Datadog
 
 class FilesOrchestratorTests: XCTestCase {
-    private let defaultWriteConditions = LogsPersistenceStrategy.defaultWriteConditions
-    private let defaultReadConditions = LogsPersistenceStrategy.defaultReadConditions
+    private let defaultWriteConditions = WritableFileConditions(performance: .default)
+    private let defaultReadConditions = ReadableFileConditions(performance: .default)
 
     override func setUp() {
         super.setUp()
@@ -70,9 +70,12 @@ class FilesOrchestratorTests: XCTestCase {
 
     func testGivenDefaultWriteConditions_whenFileHasNoRoomForMore_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
-        let chunkedData: [Data] = .mockChunksOf(totalSize: defaultWriteConditions.maxFileSize)
+        let chunkedData: [Data] = .mockChunksOf(
+            totalSize: defaultWriteConditions.maxFileSize,
+            maxChunkSize: defaultWriteConditions.maxWriteSize
+        )
 
-        let file1 = try orchestrator.getWritableFile(writeSize: defaultWriteConditions.maxFileSize)
+        let file1 = try orchestrator.getWritableFile(writeSize: UInt64(defaultWriteConditions.maxWriteSize))
         try file1.append { write in try chunkedData.forEach { chunk in try write(chunk) } }
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
@@ -118,13 +121,16 @@ class FilesOrchestratorTests: XCTestCase {
     func testWhenFilesDirectorySizeIsBig_itKeepsItUnderLimit_byRemovingOldestFilesFirst() throws {
         let oneMB: UInt64 = 1_024 * 1_024
 
-        let orchestrator = FilesOrchestrator(
+            let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
-            writeConditions: .init(
-                maxDirectorySize: 3 * oneMB, // 3MB
-                maxFileSize: oneMB, // 1MB
-                maxFileAgeForWrite: .greatestFiniteMagnitude,
-                maxNumberOfUsesOfFile: 1 // create new file each time
+            writeConditions: WritableFileConditions(
+                performance: .mockWith(
+                    maxBatchSize: oneMB, // 1MB
+                    maxSizeOfLogsDirectory: 3 * oneMB, // 3MB,
+                    maxFileAgeForWrite: .distantFuture,
+                    maxLogsPerBatch: 1, // create new file each time
+                    maxLogSize: .max
+                )
             ),
             readConditions: defaultReadConditions,
             dateProvider: RelativeDateProvider(advancingBySeconds: 1)

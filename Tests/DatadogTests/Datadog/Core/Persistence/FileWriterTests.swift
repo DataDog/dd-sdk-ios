@@ -24,8 +24,7 @@ class FileWriterTests: XCTestCase {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
-            queue: queue,
-            maxWriteSize: .max
+            queue: queue
         )
 
         writer.write(value: ["key1": "value1"])
@@ -41,13 +40,31 @@ class FileWriterTests: XCTestCase {
         )
     }
 
-    func testItDropsData_whenItExceedsMaxWriteSize() throws {
-        let expectation1 = self.expectation(description: "first write completed")
+    func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
+        let expectation1 = self.expectation(description: "write completed")
         let expectation2 = self.expectation(description: "second write completed")
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = Logger(logOutput: output, identifier: "sdk-user")
+
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
-            queue: queue,
-            maxWriteSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                writeConditions: WritableFileConditions(
+                    performance: .mockWith(
+                        maxBatchSize: .max,
+                        maxSizeOfLogsDirectory: .max,
+                        maxFileAgeForWrite: .distantFuture,
+                        maxLogsPerBatch: .max,
+                        maxLogSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
+                    )
+                ),
+                readConditions: .mockReadAllFiles(),
+                dateProvider: SystemDateProvider()
+            ),
+            queue: queue
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
@@ -61,6 +78,8 @@ class FileWriterTests: XCTestCase {
         waitForWritesCompletion(on: queue, thenFulfill: expectation2)
         wait(for: [expectation2], timeout: 1)
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
+        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: data exceeds the maximum size of 17 bytes.")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
@@ -73,8 +92,7 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
-            queue: queue,
-            maxWriteSize: .max
+            queue: queue
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
@@ -99,8 +117,7 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
-            queue: queue,
-            maxWriteSize: .max
+            queue: queue
         )
 
         writer.write(value: ["whatever"])

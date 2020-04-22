@@ -20,7 +20,7 @@ internal struct LogBuilder {
     let userInfoProvider: UserInfoProvider
     /// Shared network connection info provider (or `nil` if disabled for given logger).
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
-    /// Shared mobile carrier info provider (or `nil` if not available on current platform or disabled for given logger).
+    /// Shared mobile carrier info provider (or `nil` if disabled for given logger).
     let carrierInfoProvider: CarrierInfoProviderType?
 
     func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) -> Log {
