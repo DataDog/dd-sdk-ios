@@ -335,25 +335,25 @@ public class Logger {
         }
 
         private func buildOrThrow() throws -> Logger {
-            guard let datadog = Datadog.instance else {
+            guard let loggingFeature = LoggingFeature.instance else {
                 throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`.")
             }
 
             return Logger(
-                logOutput: resolveLogsOutput(using: datadog),
-                identifier: resolveLoggerName(using: datadog)
+                logOutput: resolveLogsOutput(for: loggingFeature),
+                identifier: resolveLoggerName(for: loggingFeature)
             )
         }
 
-        private func resolveLogsOutput(using datadog: Datadog) -> LogOutput {
+        private func resolveLogsOutput(for loggingFeature: LoggingFeature) -> LogOutput {
             let logBuilder = LogBuilder(
-                appContext: datadog.appContext,
+                appContext: loggingFeature.appContext,
                 serviceName: serviceName,
-                loggerName: resolveLoggerName(using: datadog),
-                dateProvider: datadog.dateProvider,
-                userInfoProvider: datadog.userInfoProvider,
-                networkConnectionInfoProvider: sendNetworkInfo ? datadog.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: sendNetworkInfo ? datadog.carrierInfoProvider : nil
+                loggerName: resolveLoggerName(for: loggingFeature),
+                dateProvider: loggingFeature.dateProvider,
+                userInfoProvider: loggingFeature.userInfoProvider,
+                networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil
             )
 
             switch (useFileOutput, useConsoleLogFormat) {
@@ -362,7 +362,7 @@ public class Logger {
                     combine: [
                         LogFileOutput(
                             logBuilder: logBuilder,
-                            fileWriter: datadog.logsPersistenceStrategy.writer
+                            fileWriter: loggingFeature.storage.writer
                         ),
                         LogConsoleOutput(
                             logBuilder: logBuilder,
@@ -373,7 +373,7 @@ public class Logger {
             case (true, nil):
                 return LogFileOutput(
                     logBuilder: logBuilder,
-                    fileWriter: datadog.logsPersistenceStrategy.writer
+                    fileWriter: loggingFeature.storage.writer
                 )
             case (false, let format?):
                 return LogConsoleOutput(
@@ -385,8 +385,8 @@ public class Logger {
             }
         }
 
-        private func resolveLoggerName(using datadog: Datadog) -> String {
-            return loggerName ?? datadog.appContext.bundleIdentifier ?? ""
+        private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
+            return loggerName ?? loggingFeature.appContext.bundleIdentifier ?? ""
         }
     }
 }

@@ -13,15 +13,12 @@ internal final class FileWriter {
     private let orchestrator: FilesOrchestrator
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
-    /// Max size of encoded value that can be written to file. If this size is exceeded, the write is skipped..
-    private let maxWriteSize: Int
     /// Queue used to synchronize files access (read / write) and perform decoding on background thread.
     private let queue: DispatchQueue
 
-    init(orchestrator: FilesOrchestrator, queue: DispatchQueue, maxWriteSize: Int) {
+    init(orchestrator: FilesOrchestrator, queue: DispatchQueue) {
         self.orchestrator = orchestrator
         self.queue = queue
-        self.maxWriteSize = maxWriteSize
         self.jsonEncoder = JSONEncoder()
         jsonEncoder.dateEncodingStrategy = .iso8601
         if #available(iOS 13.0, OSX 10.15, *) {
@@ -42,12 +39,6 @@ internal final class FileWriter {
     private func synchronizedWrite<T: Encodable>(value: T) {
         do {
             let data = try jsonEncoder.encode(value)
-
-            if data.count > maxWriteSize {
-                userLogger.error("Cannot persist data because it is too big.")
-                return
-            }
-
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
 
             if try file.size() == 0 {

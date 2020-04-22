@@ -35,6 +35,16 @@ class DatadogConfigurationTests: XCTestCase {
     }
 }
 
+class AppContextTests: XCTestCase {
+    func testGivenAppBundle_itSetsAppEnvironment() {
+        XCTAssertEqual(AppContext(mainBundle: .mockAppBundle()).environment, .iOSApp)
+    }
+
+    func testGivenAppExtensionBundle_itSetsAppExtensionEnvironment() {
+        XCTAssertEqual(AppContext(mainBundle: .mockAppExtensionBundle()).environment, .iOSAppExtension)
+    }
+}
+
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private typealias Config = Datadog.Configuration
@@ -96,29 +106,23 @@ class DatadogTests: XCTestCase {
 
     // MARK: - Defaults
 
-    func testDefaultAppContext() throws {
-        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us)
-        Datadog.initialize(appContext: .init(), configuration: mockConfig)
-
-        let appContext = Datadog.instance?.appContext
-        let bundle = Bundle.main
-
-        XCTAssertNotNil(appContext)
-        XCTAssertEqual(appContext?.bundleIdentifier, bundle.bundleIdentifier)
-        XCTAssertEqual(appContext?.bundleVersion, bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
-        XCTAssertEqual(appContext?.bundleShortVersion, bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
-        XCTAssertEqual(appContext?.executableName, bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String)
-
-        if MobileDevice.current != nil {
-            XCTAssertNotNil(appContext?.mobileDevice)
-        } else {
-            XCTAssertNil(appContext?.mobileDevice)
-        }
-
-        try Datadog.deinitializeOrThrow()
-    }
-
     func testDefaultVerbosityLevel() {
         XCTAssertNil(Datadog.verbosityLevel)
+    }
+
+    func testDefaultAppContext() throws {
+        let appContext = AppContext()
+        let bundle = Bundle.main
+
+        XCTAssertEqual(appContext.bundleIdentifier, bundle.bundleIdentifier)
+        XCTAssertEqual(appContext.bundleVersion, bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
+        XCTAssertEqual(appContext.bundleShortVersion, bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
+        XCTAssertEqual(appContext.executableName, bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String)
+
+        if MobileDevice.current != nil {
+            XCTAssertNotNil(appContext.mobileDevice)
+        } else {
+            XCTAssertNil(appContext.mobileDevice)
+        }
     }
 }
