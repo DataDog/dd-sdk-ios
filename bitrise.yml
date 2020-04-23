@@ -12,12 +12,9 @@ workflows:
     - _make_dependencies
     - run_linter
     - run_unit_tests
+    - run_ui_tests
     - run_integration_tests
     - check_dependency_managers
-    # I disable it for now, as this would require supporting local pod installation
-    # of `DatadogSDK.podspec` in CP example project. This effort will be lost as in `RUMM-334`
-    # we're going to re-do sample apps layout and not use local pod anymore.
-    # - check_example_projects
     - _deploy_artifacts
 
   _make_dependencies:
@@ -94,6 +91,26 @@ workflows:
         - destination: platform=OS X,arch=x86_64
         - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
 
+  run_ui_tests:
+    description: |-
+        Runs UI tests for Shopist app on iOS Simulator.
+    steps:
+    - script@1.1.6:
+        title: Generate client token for Shopist
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            cd Shopist && make
+    - xcode-test@2.4.5:
+        title: Run UI tests for Shopist - iOS Simulator
+        inputs:
+        - scheme: Shopist
+        - simulator_device: iPhone 11
+        - generate_code_coverage_files: 'yes'
+        - project_path: Shopist/Shopist.xcodeproj
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Shopist-UI-tests.html"
+
   run_integration_tests:
     description: |-
         Runs integration tests from Datadog.xcworkspace.
@@ -158,37 +175,3 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
-
-  check_example_projects:
-    description: |-
-        Links SDK to example projects using supported dependency
-        managers (SPM and Cocoapods). With UITests it checks if example apps start with
-        no dylib error.
-    steps:
-    - cocoapods-install:
-        inputs:
-        - is_cache_disabled: 'true'
-        - source_root_path: "$BITRISE_SOURCE_DIR/examples/iOS-app-example-cocoapods"
-    - script@1.1.6:
-        title: Generate fake Client Token
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            make examples
-    - xcode-test:
-        title: Run CP's example UITests
-        inputs:
-        - scheme: iOS-app-example-cocoapods
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/examples/iOS-app-example-cocoapods/iOS-app-example-cocoapods.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Cocoapods-example-ui-tests.html"
-    - xcode-test:
-        title: Run SPM's example UITests
-        inputs:
-        - scheme: iOS-app-example-spm
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/examples/iOS-app-example-spm/iOS-app-example-spm.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPM-example-ui-tests.html"
