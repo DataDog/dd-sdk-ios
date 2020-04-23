@@ -1,4 +1,4 @@
-all: tools dependencies xcodeproj-httpservermock templates examples benchmark
+all: tools dependencies xcodeproj-httpservermock templates
 .PHONY : examples tools
 
 tools:
@@ -23,11 +23,6 @@ xcodeproj-httpservermock:
 templates:
 		@echo "⚙️  Installing Xcode templates..."
 		./tools/xcode-templates/install-xcode-templates.sh
-		@echo "OK 👌"
-
-examples:
-		@echo "⚙️  Generating 'examples/examples-secret.xcconfig' file..."
-		./tools/config/generate-examples-config-template.sh
 		@echo "OK 👌"
 
 # Tests if current branch ships a valid SPM package.

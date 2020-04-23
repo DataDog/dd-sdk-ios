@@ -4,10 +4,11 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if DEBUG
+
 /// Below `@testable import` is only for SDK debug purposes, to easily override internal `consolePrint` function and display
 /// the output of the `Logger` in UI. Should be never used in client's application code.
 @testable import Datadog
-import Foundation
 import UIKit
 
 class ConsoleOutputInterceptor {
@@ -49,3 +50,12 @@ func startDisplayingDebugInfo(in textView: UITextView) {
         textView?.text = newContents
     }
 }
+
+#else
+
+import UIKit.UITextView
+
+func installConsoleOutputInterceptor() { }
+func startDisplayingDebugInfo(in textView: UITextView) { }
+
+#endif
