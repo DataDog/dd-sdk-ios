@@ -12,10 +12,14 @@ internal struct TracingUUID: Equatable {
     let rawValue: UInt64
 
     static func generateUnique() -> TracingUUID {
-        // TODO: RUMM-333 Add boundaries to trace & span ID generation
+        // TODO: RUMM-333 Add boundaries to trace & span ID generation, keeping in mind that `0` is reserved (ref: DDTracer.java#L600)
         return TracingUUID(
-            rawValue: .random(in: UInt64.min...UInt64.max)
+            rawValue: .random(in: 1...UInt64.max)
         )
+    }
+
+    var toHexadecimalString: String {
+        return String(rawValue, radix: 16, uppercase: true)
     }
 }
 

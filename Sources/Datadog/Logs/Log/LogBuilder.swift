@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Builds `Log` representation as it was received from the user (without sanitization).
+/// Builds `Log` representation (for later serialization) from data received from user.
 internal struct LogBuilder {
     /// App information context.
     let appContext: AppContext

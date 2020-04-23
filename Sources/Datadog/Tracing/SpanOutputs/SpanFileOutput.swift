@@ -8,7 +8,15 @@ import Foundation
 
 /// `SpanOutput` which saves spans to file.
 internal struct SpanFileOutput: SpanOutput {
-    func write(span: DDSpan, finishTime: Date) {
-        // TODO: RUMM-298 Write spans to file
+    let spanBuilder: SpanBuilder
+    let fileWriter: FileWriter
+
+    func write(ddspan: DDSpan, finishTime: Date) {
+        do {
+            let span = try spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
+            fileWriter.write(value: span)
+        } catch {
+            userLogger.error("🔥 Failed to build span: \(error)")
+        }
     }
 }

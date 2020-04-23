@@ -12,6 +12,24 @@ A collection of mocks for `DDSpan` objects.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+extension DDSpanContext {
+    static func mockAny() -> DDSpanContext {
+        return mockWith()
+    }
+
+    static func mockWith(
+        traceID: TracingUUID = .mockAny(),
+        spanID: TracingUUID = .mockAny(),
+        parentSpanID: TracingUUID? = .mockAny()
+    ) -> DDSpanContext {
+        return DDSpanContext(
+            traceID: traceID,
+            spanID: spanID,
+            parentSpanID: parentSpanID
+        )
+    }
+}
+
 extension DDSpan {
     static func mockAny() -> DDSpan {
         return mockWith()
@@ -19,17 +37,39 @@ extension DDSpan {
 
     static func mockWith(
         tracer: DDTracer = .mockNoOp(),
+        context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
-        parentSpanContext: DDSpanContext? = nil,
-        tags: [String: Codable] = [:],
-        startTime: Date = .mockAny()
+        startTime: Date = .mockAny(),
+        tags: [String: Codable] = [:]
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
+            context: context,
             operationName: operationName,
-            parentSpanContext: parentSpanContext,
-            tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            tags: tags
+        )
+    }
+}
+
+extension SpanBuilder {
+    static func mockAny() -> SpanBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        appContext: AppContext = .mockAny(),
+        serviceName: String = .mockAny(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> SpanBuilder {
+        return SpanBuilder(
+            appContext: appContext,
+            serviceName: serviceName,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
         )
     }
 }
