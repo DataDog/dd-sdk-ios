@@ -34,8 +34,8 @@ class SpanOutputMock: SpanOutput {
 
     var recorded: Recorded? = nil
 
-    func write(span: DDSpan, finishTime: Date) {
-        recorded = Recorded(span: span, finishTime: finishTime)
+    func write(ddspan: DDSpan, finishTime: Date) {
+        recorded = Recorded(span: ddspan, finishTime: finishTime)
     }
 }
 

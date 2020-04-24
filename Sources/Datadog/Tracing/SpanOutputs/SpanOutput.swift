@@ -8,5 +8,5 @@ import Foundation
 
 /// Type writting spans to some destination.
 internal protocol SpanOutput {
-    func write(span: DDSpan, finishTime: Date)
+    func write(ddspan: DDSpan, finishTime: Date)
 }

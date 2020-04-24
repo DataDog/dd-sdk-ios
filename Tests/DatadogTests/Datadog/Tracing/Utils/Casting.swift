@@ -7,6 +7,14 @@
 import OpenTracing
 @testable import Datadog
 
+/*
+ NOTE: The casting methods defined here do shadow the ones defined in `Datadog.Casting`.
+ The difference is that here in tests we do force unwrapping (`as!`), whereas in `Datadog` we do `as?` with a warning.
+
+ This is needed for expressiveness in testing, where i.e. `XCTAssertNil(span.context.dd?.parentID)` may give a false positive
+ without considering if the `parentID` is `nil`. Using `span.context.dd.parentID` mitigates it.
+ */
+
 // swiftlint:disable identifier_name
 internal extension OpenTracing.Tracer {
     var dd: DDTracer { self as! DDTracer }
@@ -14,5 +22,9 @@ internal extension OpenTracing.Tracer {
 
 internal extension OpenTracing.Span {
     var dd: DDSpan { self as! DDSpan }
+}
+
+internal extension OpenTracing.SpanContext {
+    var dd: DDSpanContext { self as! DDSpanContext }
 }
 // swiftlint:enable identifier_name

@@ -18,7 +18,7 @@ public class DDTracer: Tracer {
 
     // MARK: - Open Tracing interface
 
-    public func startSpan(operationName: String, references: [Reference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> Span {
+    public func startSpan(operationName: String, references: [Reference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OpenTracing.Span {
         do {
             return try startSpanOrThrow(operationName: operationName, references: references, tags: tags, startTime: startTime)
         } catch {
@@ -38,23 +38,27 @@ public class DDTracer: Tracer {
 
     // MARK: - Private Open Tracing helpers
 
-    private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> Span {
+    private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> OpenTracing.Span {
         guard let tracingFeature = TracingFeature.instance else {
             throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
         }
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,
+            context: DDSpanContext(
+                traceID: parentSpanContext?.traceID ?? .generateUnique(),
+                spanID: .generateUnique(),
+                parentSpanID: parentSpanContext?.spanID
+            ),
             operationName: operationName,
-            parentSpanContext: parentSpanContext,
-            tags: tags ?? [:],
-            startTime: startTime ?? tracingFeature.dateProvider.currentDate()
+            startTime: startTime ?? tracingFeature.dateProvider.currentDate(),
+            tags: tags ?? [:]
         )
     }
 
     // MARK: - Internal
 
     internal func write(span: DDSpan, finishTime: Date) {
-        spanOutput.write(span: span, finishTime: finishTime)
+        spanOutput.write(ddspan: span, finishTime: finishTime)
     }
 }

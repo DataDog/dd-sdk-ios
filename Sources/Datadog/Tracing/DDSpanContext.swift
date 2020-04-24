@@ -6,9 +6,13 @@
 
 import OpenTracing
 
-internal struct DDSpanContext: SpanContext {
+internal struct DDSpanContext: OpenTracing.SpanContext {
+    /// This span's trace ID.
     let traceID: TracingUUID
+    /// This span ID.
     let spanID: TracingUUID
+    /// The ID of the parent span or `nil` if this span is the root span.
+    let parentSpanID: TracingUUID?
 
     // MARK: - Open Tracing interface
 

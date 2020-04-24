@@ -7,22 +7,41 @@
 import XCTest
 @testable import Datadog
 
-class DateExtensionTests: XCTestCase {
-    func testCurrentMillis() {
+class TimeIntervalExtensionTests: XCTestCase {
+    func testTimeIntervalSince1970InMilliseconds() {
         let date15Dec2019 = Date.mockDecember15th2019At10AMUTC()
-        XCTAssertEqual(date15Dec2019.currentTimeMillis, 1_576_404_000_000)
+        XCTAssertEqual(date15Dec2019.timeIntervalSince1970.toMilliseconds, 1_576_404_000_000)
 
         let dateAdvanced = date15Dec2019 + 9.999
-        XCTAssertEqual(dateAdvanced.currentTimeMillis, 1_576_404_009_999)
+        XCTAssertEqual(dateAdvanced.timeIntervalSince1970.toMilliseconds, 1_576_404_009_999)
 
         let dateAgo = date15Dec2019 - 0.001
-        XCTAssertEqual(dateAgo.currentTimeMillis, 1_576_403_999_999)
+        XCTAssertEqual(dateAgo.timeIntervalSince1970.toMilliseconds, 1_576_403_999_999)
 
         let overflownDate = Date(timeIntervalSinceReferenceDate: .greatestFiniteMagnitude)
-        XCTAssertEqual(overflownDate.currentTimeMillis, UInt64.max)
+        XCTAssertEqual(overflownDate.timeIntervalSince1970.toMilliseconds, UInt64.max)
 
         let uInt64MaxDate = Date(timeIntervalSinceReferenceDate: TimeInterval(UInt64.max))
-        XCTAssertEqual(uInt64MaxDate.currentTimeMillis, UInt64.max)
+        XCTAssertEqual(uInt64MaxDate.timeIntervalSince1970.toMilliseconds, UInt64.max)
+    }
+
+    func testTimeIntervalSince1970InNanoseconds() {
+        let date15Dec2019 = Date.mockDecember15th2019At10AMUTC()
+        XCTAssertEqual(date15Dec2019.timeIntervalSince1970.toNanoseconds, 1_576_404_000_000_000_000)
+
+        // As `TimeInterval` yields sub-millisecond precision this rounds up to the nearest millisecond:
+        let dateAdvanced = date15Dec2019 + 9.999_999_999
+        XCTAssertEqual(dateAdvanced.timeIntervalSince1970.toNanoseconds, 1_576_404_010_000_000_000)
+
+        // As `TimeInterval` yields sub-millisecond precision this rounds up to the nearest millisecond:
+        let dateAgo = date15Dec2019 - 0.000_000_001
+        XCTAssertEqual(dateAgo.timeIntervalSince1970.toNanoseconds, 1_576_404_000_000_000_000)
+
+        let overflownDate = Date(timeIntervalSinceReferenceDate: .greatestFiniteMagnitude)
+        XCTAssertEqual(overflownDate.timeIntervalSince1970.toNanoseconds, UInt64.max)
+
+        let uInt64MaxDate = Date(timeIntervalSinceReferenceDate: TimeInterval(UInt64.max))
+        XCTAssertEqual(uInt64MaxDate.timeIntervalSince1970.toNanoseconds, UInt64.max)
     }
 }
 

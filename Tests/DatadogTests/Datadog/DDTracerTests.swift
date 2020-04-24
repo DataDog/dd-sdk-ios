@@ -43,6 +43,7 @@ class DDTracerTests: XCTestCase {
         let tracer = DDTracer(spanOutput: spanOutput)
         let span = tracer.startSpan(operationName: "operation", tags: ["tag1": "value1"], startTime: .mockDecember15th2019At10AMUTC()).dd
 
+        XCTAssertNil(span.context.dd.parentSpanID)
         XCTAssertEqual(span.operationName, "operation")
         XCTAssertEqual(span.tags.count, 1)
         XCTAssertEqual(span.tags["tag1"] as? String, "value1")
@@ -61,10 +62,11 @@ class DDTracerTests: XCTestCase {
         let span = tracer.startSpan(operationName: "operation") as? DDSpan
         span?.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
-        let recorded = spanOutput.recorded
-        XCTAssertEqual(recorded?.span.operationName, "operation")
-        XCTAssertEqual(recorded?.span.startTime, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(recorded?.finishTime, .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
+        let recorded = spanOutput.recorded!
+        XCTAssertNil(recorded.span.context.dd.parentSpanID)
+        XCTAssertEqual(recorded.span.operationName, "operation")
+        XCTAssertEqual(recorded.span.startTime, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(recorded.finishTime, .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
     }
 
     func testGivenSpanWithParent_whenFinished_itIsWrittenToOutput() {
@@ -78,14 +80,15 @@ class DDTracerTests: XCTestCase {
         let span = tracer.startSpan(operationName: "operation 2", childOf: parentSpan?.context) as? DDSpan
         span?.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
-        let recorded = spanOutput.recorded
-        XCTAssertEqual(recorded?.span.context.dd!.traceID, parentSpan?.context.dd!.traceID)
-        XCTAssertNotEqual(recorded?.span.context.dd!.spanID, parentSpan?.context.dd!.spanID)
+        let recorded = spanOutput.recorded!
+        XCTAssertEqual(recorded.span.context.dd.parentSpanID, parentSpan?.context.dd.spanID)
+        XCTAssertEqual(recorded.span.context.dd.traceID, parentSpan?.context.dd.traceID)
+        XCTAssertNotEqual(recorded.span.context.dd.spanID, parentSpan?.context.dd.spanID)
     }
 
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
         let tracer = DDTracer(spanOutput: SpanOutputMock())
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2)
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny())
 
         let httpHeadersWriter = DDHTTPHeadersWriter()
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])

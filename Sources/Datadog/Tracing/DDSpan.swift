@@ -7,7 +7,7 @@
 import OpenTracing
 import Foundation
 
-internal class DDSpan: Span {
+internal class DDSpan: OpenTracing.Span {
     private(set) var operationName: String
     private(set) var tags: [String: Codable]
     internal let startTime: Date
@@ -15,20 +15,23 @@ internal class DDSpan: Span {
     /// The `Tracer` which created this span.
     private let issuingTracer: DDTracer
 
-    init(tracer: DDTracer, operationName: String, parentSpanContext: DDSpanContext?, tags: [String: Codable], startTime: Date) {
+    init(
+        tracer: DDTracer,
+        context: DDSpanContext,
+        operationName: String,
+        startTime: Date,
+        tags: [String: Codable]
+    ) {
         self.issuingTracer = tracer
+        self.context = context
         self.operationName = operationName
-        self.tags = tags
         self.startTime = startTime
-        self.context = DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? .generateUnique(),
-            spanID: .generateUnique()
-        )
+        self.tags = tags
     }
 
     // MARK: - Open Tracing interface
 
-    let context: SpanContext
+    let context: OpenTracing.SpanContext
 
     func tracer() -> Tracer {
         return issuingTracer
