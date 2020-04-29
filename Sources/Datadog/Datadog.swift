@@ -85,11 +85,6 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        let logsUploadURLProvider = try UploadURLProvider(
-            endpointURL: configuration.logsEndpoint.url,
-            clientToken: configuration.clientToken,
-            dateProvider: SystemDateProvider()
-        )
 
         let performance = PerformancePreset.best(for: appContext.environment)
         let dateProvider = SystemDateProvider()
@@ -97,13 +92,15 @@ public class Datadog {
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
 
-        self.instance = Datadog(
-            userInfoProvider: userInfoProvider
-        )
-
         // Initialize features:
 
         let httpClient = HTTPClient()
+
+        let logsUploadURLProvider = try UploadURLProvider(
+            endpointURL: configuration.logsEndpoint.url,
+            clientToken: configuration.clientToken,
+            dateProvider: SystemDateProvider()
+        )
 
         LoggingFeature.instance = LoggingFeature(
             directory: try obtainLoggingFeatureDirectory(),
@@ -117,8 +114,28 @@ public class Datadog {
             carrierInfoProvider: carrierInfoProvider
         )
 
+        let tracesUploadURLProvider = try UploadURLProvider(
+            endpointURL: configuration.tracesEndpoint.url,
+            clientToken: configuration.clientToken,
+            dateProvider: SystemDateProvider()
+        )
+
         TracingFeature.instance = TracingFeature(
-            dateProvider: dateProvider
+            directory: try obtainTracingFeatureDirectory(),
+            appContext: appContext,
+            performance: performance,
+            httpClient: httpClient,
+            tracesUploadURLProvider: tracesUploadURLProvider,
+            dateProvider: dateProvider,
+            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+
+        // Only after all features were initialized with no error thrown:
+        self.instance = Datadog(
+            userInfoProvider: userInfoProvider
         )
     }
 

@@ -65,7 +65,7 @@ class RelativeDateProvider: DateProvider {
 extension PerformancePreset {
     /// Mocks performance preset which results with no writes and no uploads.
     static func mockNoOp() -> PerformancePreset {
-        return .mockWith(
+        return PerformancePreset(
             maxBatchSize: 0,
             maxSizeOfLogsDirectory: 0,
             maxFileAgeForWrite: 0,
@@ -102,20 +102,20 @@ extension PerformancePreset {
         )
     }
 
-    /// Partial mock for performance preset optimized for different write / reads / upload use cases in unit tests.
-    static func mockWith(
-        maxBatchSize: UInt64 = .mockAny(),
-        maxSizeOfLogsDirectory: UInt64 = .mockAny(),
-        maxFileAgeForWrite: TimeInterval = .mockAny(),
-        minFileAgeForRead: TimeInterval = .mockAny(),
-        maxFileAgeForRead: TimeInterval = .mockAny(),
-        maxLogsPerBatch: Int = .mockAny(),
-        maxLogSize: UInt64 = .mockAny(),
-        initialLogsUploadDelay: TimeInterval = .mockAny(),
-        defaultLogsUploadDelay: TimeInterval = .mockAny(),
-        minLogsUploadDelay: TimeInterval = .mockAny(),
-        maxLogsUploadDelay: TimeInterval = .mockAny(),
-        logsUploadDelayDecreaseFactor: Double = .mockAny()
+    /// Partial variant of `mockUnitTestsPerformancePreset()`.
+    static func mockUnitTestsPerformancePresetByOverwritting(
+        maxBatchSize: UInt64 = mockUnitTestsPerformancePreset().maxBatchSize,
+        maxSizeOfLogsDirectory: UInt64 = mockUnitTestsPerformancePreset().maxSizeOfLogsDirectory,
+        maxFileAgeForWrite: TimeInterval = mockUnitTestsPerformancePreset().maxFileAgeForWrite,
+        minFileAgeForRead: TimeInterval = mockUnitTestsPerformancePreset().minFileAgeForRead,
+        maxFileAgeForRead: TimeInterval = mockUnitTestsPerformancePreset().maxFileAgeForRead,
+        maxLogsPerBatch: Int = mockUnitTestsPerformancePreset().maxLogsPerBatch,
+        maxLogSize: UInt64 = mockUnitTestsPerformancePreset().maxLogSize,
+        initialLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().initialLogsUploadDelay,
+        defaultLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().defaultLogsUploadDelay,
+        minLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().minLogsUploadDelay,
+        maxLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().maxLogsUploadDelay,
+        logsUploadDelayDecreaseFactor: Double = mockUnitTestsPerformancePreset().logsUploadDelayDecreaseFactor
     ) -> PerformancePreset {
         return PerformancePreset(
             maxBatchSize: maxBatchSize,
@@ -136,11 +136,29 @@ extension PerformancePreset {
 
 // MARK: - Files orchestration
 
+extension DataFormat {
+    static func mockAny() -> DataFormat {
+        return mockWith()
+    }
+
+    static func mockWith(
+        prefix: String = .mockAny(),
+        suffix: String = .mockAny(),
+        separator: String = .mockAny()
+    ) -> DataFormat {
+        return DataFormat(
+            prefix: prefix,
+            suffix: suffix,
+            separator: separator
+        )
+    }
+}
+
 extension WritableFileConditions {
     /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
     static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
-            performance: .mockWith(
+            performance: .mockUnitTestsPerformancePresetByOverwritting(
                 maxBatchSize: .max,
                 maxSizeOfLogsDirectory: .max,
                 maxFileAgeForWrite: .distantFuture,
@@ -153,7 +171,7 @@ extension WritableFileConditions {
     /// Write conditions causing `FilesOrchestrator` to create new file for each write.
     static func mockWriteToNewFileEachTime() -> WritableFileConditions {
         return WritableFileConditions(
-            performance: .mockWith(
+            performance: .mockUnitTestsPerformancePresetByOverwritting(
                 maxBatchSize: .max,
                 maxSizeOfLogsDirectory: .max,
                 maxFileAgeForWrite: .distantFuture,
@@ -168,7 +186,7 @@ extension ReadableFileConditions {
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
-            performance: .mockWith(
+            performance: .mockUnitTestsPerformancePresetByOverwritting(
                 minFileAgeForRead: -1,
                 maxFileAgeForRead: .distantFuture
             )
@@ -205,6 +223,7 @@ extension FileWriter {
         on queue: DispatchQueue
     ) -> FileWriter {
         return FileWriter(
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: .mockWriteToSingleFile(in: directory),
             queue: queue
         )
@@ -215,7 +234,7 @@ extension FileWriter {
 
 extension HTTPHeaders {
     static func mockAny() -> HTTPHeaders {
-        return HTTPHeaders(appContext: .mockAny())
+        return HTTPHeaders(headers: [])
     }
 }
 
@@ -411,7 +430,7 @@ extension DataUploadDelay {
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
     static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
         return DataUploadDelay(
-            performance: .mockWith(
+            performance: .mockUnitTestsPerformancePresetByOverwritting(
                 initialLogsUploadDelay: seconds,
                 defaultLogsUploadDelay: seconds,
                 minLogsUploadDelay: seconds,
@@ -521,5 +540,15 @@ class LogOutputMock: LogOutput {
 
     func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
         recordedLog = RecordedLog(level: level, message: message)
+    }
+}
+
+extension Datadog.Configuration {
+    static func mockAny() -> Datadog.Configuration {
+        return Datadog.Configuration(
+            clientToken: URL.mockAny().absoluteString,
+            logsEndpoint: .us,
+            tracesEndpoint: .us
+        )
     }
 }

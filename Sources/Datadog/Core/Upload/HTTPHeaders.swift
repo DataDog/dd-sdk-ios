@@ -8,30 +8,45 @@ import Foundation
 
 /// HTTP headers associated with requests send by SDK.
 internal struct HTTPHeaders {
-    private struct Constants {
-        static let contentTypeField = "Content-Type"
-        static let contentTypeValue = "application/json"
-        static let userAgentField = "User-Agent"
+    enum ContentType: String {
+        case applicationJSON = "application/json"
+        case textPlainUTF8 = "text/plain;charset=UTF-8"
+    }
+
+    struct HTTPHeader {
+        let field: String
+        let value: String
+
+        // MARK: - Supported headers
+
+        static func contentTypeHeader(contentType: ContentType) -> HTTPHeader {
+            return HTTPHeader(field: "Content-Type", value: contentType.rawValue)
+        }
+
+        static func userAgentHeader(for mobileDevice: MobileDevice, appName: String?, appVersion: String?) -> HTTPHeader {
+            let appName = appName ?? "Datadog"
+            let appVersion = appVersion ?? sdkVersion
+            return HTTPHeader(
+                field: "User-Agent",
+                value: "\(appName)/\(appVersion) CFNetwork (\(mobileDevice.model); \(mobileDevice.osName)/\(mobileDevice.osVersion))"
+            )
+        }
+
+        // MARK: - Initialization
+
+        private init(field: String, value: String) {
+            self.field = field
+            self.value = value
+        }
     }
 
     let all: [String: String]
 
-    init(appContext: AppContext) {
-        // When running on mobile, `User-Agent` header is customized (e.x. `app-name/1 CFNetwork (iPhone; iOS/13.3)`).
-        // Other platforms will fall back to default UA header set by OS.
-        if let mobileDevice = appContext.mobileDevice {
-            let appName = appContext.executableName ?? "Datadog"
-            let appVersion = appContext.bundleVersion ?? sdkVersion
-            let device = mobileDevice
-
-            self.all = [
-                Constants.contentTypeField: Constants.contentTypeValue,
-                Constants.userAgentField: "\(appName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))"
-            ]
-        } else {
-            self.all = [
-                Constants.contentTypeField: Constants.contentTypeValue
-            ]
+    init(headers: [HTTPHeader]) {
+        self.all = headers.reduce([:]) { acc, next in
+            var dictionary = acc
+            dictionary[next.field] = next.value
+            return dictionary
         }
     }
 }

@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class DataUploadDelayTests: XCTestCase {
-    private let mockPerformancePreset: PerformancePreset = .mockWith(
+    private let mockPerformancePreset: PerformancePreset = .mockUnitTestsPerformancePresetByOverwritting(
         initialLogsUploadDelay: 3,
         defaultLogsUploadDelay: 5,
         minLogsUploadDelay: 1,

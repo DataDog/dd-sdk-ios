@@ -7,8 +7,8 @@
 import Foundation
 
 internal final class FileWriter {
-    /// Comma separator used to separate data values written to file.
-    private let commaSeparatorData: Data = ",".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
+    /// Data writting format.
+    private let dataFormat: DataFormat
     /// Orchestrator producing reference to writable file.
     private let orchestrator: FilesOrchestrator
     /// JSON encoder used to encode data.
@@ -16,7 +16,8 @@ internal final class FileWriter {
     /// Queue used to synchronize files access (read / write) and perform decoding on background thread.
     private let queue: DispatchQueue
 
-    init(orchestrator: FilesOrchestrator, queue: DispatchQueue) {
+    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator, queue: DispatchQueue) {
+        self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.queue = queue
         self.jsonEncoder = JSONEncoder()
@@ -47,7 +48,7 @@ internal final class FileWriter {
                 }
             } else {
                 try file.append { write in
-                    try write(commaSeparatorData)
+                    try write(dataFormat.separatorData)
                     try write(data)
                 }
             }

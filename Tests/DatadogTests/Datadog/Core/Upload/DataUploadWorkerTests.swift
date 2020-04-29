@@ -21,7 +21,7 @@ class DataUploadWorkerTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItUploadsAllLogs() throws {
+    func testItUploadsAllData() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
@@ -29,8 +29,16 @@ class DataUploadWorkerTests: XCTestCase {
             readConditions: .mockReadAllFiles(),
             dateProvider: dateProvider
         )
-        let writer = FileWriter(orchestrator: orchestrator, queue: fileReadWriteQueue)
-        let reader = FileReader(orchestrator: orchestrator, queue: fileReadWriteQueue)
+        let writer = FileWriter(
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
+            orchestrator: orchestrator,
+            queue: fileReadWriteQueue
+        )
+        let reader = FileReader(
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
+            orchestrator: orchestrator,
+            queue: fileReadWriteQueue
+        )
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
             urlProvider: .mockAny(),
@@ -49,7 +57,8 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: dataUploader,
             uploadConditions: .mockAlwaysPerformingUpload(),
-            delay: .mockConstantDelay(of: 0.1)
+            delay: .mockConstantDelay(of: 0.1),
+            featureName: .mockAny()
         )
 
         let timeout: TimeInterval = 1 // enough to send 3 logs with 0.1 second interval

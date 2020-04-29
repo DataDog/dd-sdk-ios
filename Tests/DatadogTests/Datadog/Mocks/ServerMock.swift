@@ -195,7 +195,7 @@ class ServerMock {
     }
 }
 
-// MARK: - Logging feature helpers
+// MARK: - Feature helpers
 
 extension ServerMock {
     func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
@@ -206,6 +206,23 @@ extension ServerMock {
             line: line
         )
             .map { request in try request.httpBody.unwrapOrThrow() }
-            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
+            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody, file: file, line: line) }
+    }
+}
+
+// MARK: - Tracing feature helpers
+
+extension ServerMock {
+    func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        return try waitAndReturnRequests(
+            count: count,
+            timeout: recommendedTimeoutFor(numberOfRequestsMade: count),
+            file: file,
+            line: line
+        )
+        .map { request in try request.httpBody.unwrapOrThrow() }
+        .flatMap { requestBody in
+            try SpanMatcher.fromNewlineSeparatedJSONObjectsData(requestBody)
+        }
     }
 }

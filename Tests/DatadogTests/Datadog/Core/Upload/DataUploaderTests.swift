@@ -145,48 +145,4 @@ class DataUploaderTests: XCTestCase {
         XCTAssertEqual(status, .unknown)
         server.waitFor(requestsCompletion: 1)
     }
-
-    // MARK: - HTTP Headers
-
-    func testWhenSendingFromMobileDevice_itSetsMobileHeaders() {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let uploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.urlSession),
-            httpHeaders: HTTPHeaders(
-                appContext: .mockWith(
-                    bundleVersion: "1.0.0",
-                    executableName: "app-name",
-                    mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
-                )
-            )
-        )
-
-        _ = uploader.upload(data: .mockAny())
-
-        let request = server.waitAndReturnRequests(count: 1)[0]
-        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
-        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "app-name/1.0.0 CFNetwork (iPhone; iOS/13.3.1)")
-    }
-
-    func testWhenSendingFromOtherDevice_itSetsDefaultHeaders() {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let uploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.urlSession),
-            httpHeaders: HTTPHeaders(
-                appContext: .mockWith(
-                    bundleVersion: "1.0.0",
-                    executableName: "app-name",
-                    mobileDevice: nil
-                )
-            )
-        )
-
-        _ = uploader.upload(data: .mockAny())
-
-        let request = server.waitAndReturnRequests(count: 1)[0]
-        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
-        XCTAssertNil(request.allHTTPHeaderFields?["User-Agent"])
-    }
 }

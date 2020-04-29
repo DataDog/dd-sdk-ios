@@ -124,7 +124,7 @@ class FilesOrchestratorTests: XCTestCase {
             let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
             writeConditions: WritableFileConditions(
-                performance: .mockWith(
+                performance: .mockUnitTestsPerformancePresetByOverwritting(
                     maxBatchSize: oneMB, // 1MB
                     maxSizeOfLogsDirectory: 3 * oneMB, // 3MB,
                     maxFileAgeForWrite: .distantFuture,

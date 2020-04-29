@@ -11,7 +11,24 @@ public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
     private let spanOutput: SpanOutput
 
-    // TODO: RUMM-332 Consider builder pattern to initialize the tracer
+    // MARK: - Initialization
+
+    // TODO: RUMM-332 Provide public API for tracer initializzation
+    internal convenience init(tracingFeature: TracingFeature) {
+        self.init(
+            spanOutput: SpanFileOutput(
+                spanBuilder: SpanBuilder(
+                    appContext: tracingFeature.appContext,
+                    serviceName: "ios", // TODO: RUMM-420 `serviceName` can be customized
+                    userInfoProvider: tracingFeature.userInfoProvider,
+                    networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
+                    carrierInfoProvider: tracingFeature.carrierInfoProvider
+                ),
+                fileWriter: tracingFeature.storage.writer
+            )
+        )
+    }
+
     internal init(spanOutput: SpanOutput) {
         self.spanOutput = spanOutput
     }
@@ -46,8 +63,8 @@ public class DDTracer: Tracer {
         return DDSpan(
             tracer: self,
             context: DDSpanContext(
-                traceID: parentSpanContext?.traceID ?? .generateUnique(),
-                spanID: .generateUnique(),
+                traceID: parentSpanContext?.traceID ?? tracingFeature.tracingUUIDGenerator.generateUnique(),
+                spanID: tracingFeature.tracingUUIDGenerator.generateUnique(),
                 parentSpanID: parentSpanContext?.spanID
             ),
             operationName: operationName,

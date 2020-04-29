@@ -23,12 +23,7 @@ extension DDConfiguration {
         return mockWith()
     }
 
-    static func mockWith(
-        logsUploadURLProvider: UploadURLProvider? = .mockAny()
-    ) -> DDConfiguration {
-        let mockConfiguration = Datadog.Configuration(clientToken: "mockClientToken", logsEndpoint: .us)
-        return DDConfiguration(
-            sdkConfiguration: mockConfiguration
-        )
+    static func mockWith(sdkConfiguration: Datadog.Configuration = .mockAny()) -> DDConfiguration {
+        return DDConfiguration(sdkConfiguration: sdkConfiguration)
     }
 }

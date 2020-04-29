@@ -42,12 +42,9 @@ internal final class LoggingFeature {
         init(
             directory: Directory,
             performance: PerformancePreset,
-            dateProvider: DateProvider
+            dateProvider: DateProvider,
+            readWriteQueue: DispatchQueue
         ) {
-            let readWriteQueue = DispatchQueue(
-                label: "com.datadoghq.ios-sdk-logs-read-write",
-                target: .global(qos: .utility)
-            )
             let orchestrator = FilesOrchestrator(
                 directory: directory,
                 writeConditions: WritableFileConditions(performance: performance),
@@ -55,14 +52,17 @@ internal final class LoggingFeature {
                 dateProvider: dateProvider
             )
 
-            self.writer = FileWriter(orchestrator: orchestrator, queue: readWriteQueue)
-            self.reader = FileReader(orchestrator: orchestrator, queue: readWriteQueue)
+            // NOTE: any change to logs data format requires updating the logs directory url to be unique
+            let dataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
+
+            self.writer = FileWriter(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
+            self.reader = FileReader(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
         }
     }
 
     /// Encapsulates upload stack setup for `LoggingFeature`.
     class Upload {
-        /// Uploads logs server.
+        /// Uploads logs to server.
         let uploader: DataUploadWorker
 
         init(
@@ -71,39 +71,49 @@ internal final class LoggingFeature {
             performance: PerformancePreset,
             httpClient: HTTPClient,
             logsUploadURLProvider: UploadURLProvider,
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+            uploadQueue: DispatchQueue
         ) {
+            let httpHeaders: HTTPHeaders
+            let uploadConditions: DataUploadConditions
+
+            if let mobileDevice = appContext.mobileDevice { // mobile device
+                httpHeaders = HTTPHeaders(
+                    headers: [
+                        .contentTypeHeader(contentType: .applicationJSON),
+                        .userAgentHeader(for: mobileDevice, appName: appContext.executableName, appVersion: appContext.bundleVersion)
+                    ]
+                )
+                uploadConditions = DataUploadConditions(
+                    batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
+                    networkConnectionInfo: networkConnectionInfoProvider
+                )
+            } else { // other device (i.e. iOS Simulator)
+                httpHeaders = HTTPHeaders(
+                    headers: [
+                        .contentTypeHeader(contentType: .applicationJSON)
+                        // UA http header will default to the one produced by the OS
+                    ]
+                )
+                uploadConditions = DataUploadConditions(
+                    batteryStatus: nil, // uploads do not depend on battery status
+                    networkConnectionInfo: networkConnectionInfoProvider
+                )
+            }
+
             let dataUploader = DataUploader(
                 urlProvider: logsUploadURLProvider,
                 httpClient: httpClient,
-                httpHeaders: HTTPHeaders(appContext: appContext)
+                httpHeaders: httpHeaders
             )
-
-            let uploadQueue = DispatchQueue(
-                label: "com.datadoghq.ios-sdk-logs-upload",
-                target: .global(qos: .utility)
-            )
-
-            let uploadConditions: DataUploadConditions = {
-                if let mobileDevice = appContext.mobileDevice {
-                    return DataUploadConditions(
-                        batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                        networkConnectionInfo: networkConnectionInfoProvider
-                    )
-                } else {
-                    return DataUploadConditions(
-                        batteryStatus: nil,
-                        networkConnectionInfo: networkConnectionInfoProvider
-                    )
-                }
-            }()
 
             self.uploader = DataUploadWorker(
                 queue: uploadQueue,
                 fileReader: storage.reader,
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
-                delay: DataUploadDelay(performance: performance)
+                delay: DataUploadDelay(performance: performance),
+                featureName: "logging"
             )
         }
     }
@@ -129,10 +139,20 @@ internal final class LoggingFeature {
         self.carrierInfoProvider = carrierInfoProvider
 
         // Initialize components
+        let readWriteQueue = DispatchQueue(
+            label: "com.datadoghq.ios-sdk-logs-read-write",
+            target: .global(qos: .utility)
+        )
         self.storage = Storage(
             directory: directory,
             performance: performance,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            readWriteQueue: readWriteQueue
+        )
+
+        let uploadQueue = DispatchQueue(
+            label: "com.datadoghq.ios-sdk-logs-upload",
+            target: .global(qos: .utility)
         )
         self.upload = Upload(
             storage: self.storage,
@@ -140,7 +160,8 @@ internal final class LoggingFeature {
             performance: performance,
             httpClient: httpClient,
             logsUploadURLProvider: logsUploadURLProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            uploadQueue: uploadQueue
         )
     }
 }

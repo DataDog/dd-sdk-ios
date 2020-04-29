@@ -23,6 +23,7 @@ class FileWriterTests: XCTestCase {
     func testItWritesDataToSingleFile() throws {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
             queue: queue
         )
@@ -50,10 +51,11 @@ class FileWriterTests: XCTestCase {
         userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
         let writer = FileWriter(
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 writeConditions: WritableFileConditions(
-                    performance: .mockWith(
+                    performance: .mockUnitTestsPerformancePresetByOverwritting(
                         maxBatchSize: .max,
                         maxSizeOfLogsDirectory: .max,
                         maxFileAgeForWrite: .distantFuture,
@@ -91,6 +93,7 @@ class FileWriterTests: XCTestCase {
         userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
         let writer = FileWriter(
+            dataFormat: .mockAny(),
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
             queue: queue
         )
@@ -116,6 +119,7 @@ class FileWriterTests: XCTestCase {
         objcExceptionHandler = ObjcExceptionHandlerMock(throwingError: ErrorMock("I/O exception"))
 
         let writer = FileWriter(
+            dataFormat: .mockAny(),
             orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
             queue: queue
         )

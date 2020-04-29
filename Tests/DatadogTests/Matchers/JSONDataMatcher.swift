@@ -14,20 +14,11 @@ internal class JSONDataMatcher {
 
     // MARK: - Initialization
 
-    class func fromJSONObjectData<M: JSONDataMatcher>(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> M {
-        return M(from: try data.toJSONObject(file: file, line: line))
-    }
-
-    class func fromArrayOfJSONObjectsData<M: JSONDataMatcher>(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> [M] {
-        return try data.toArrayOfJSONObjects(file: file, line: line)
-            .map { jsonObject in M(from: jsonObject) }
-    }
-
-    required init(from jsonObject: [String: Any]) {
+    init(from jsonObject: [String: Any]) {
         self.json = jsonObject
     }
 
-    // MARK: Full match
+    // MARK: - Full match
 
     func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {
         let thisJSON = json as NSDictionary
@@ -91,9 +82,30 @@ internal class JSONDataMatcher {
         let dictionaryValue = dictionary.value(forKeyPath: keyPath)
         XCTAssertTrue((dictionaryValue as? T) != nil, file: file, line: line)
     }
+
+    // MARK: - Values extraction
+
+    internal struct Exception: Error {
+        let description: String
+    }
+
+    func value<T>(forKeyPath keyPath: String) throws -> T {
+        let dictionary = json as NSDictionary
+        guard let anyValue = dictionary.value(forKeyPath: keyPath) else {
+            throw Exception(
+                description: "No value for key path `\(keyPath)`"
+            )
+        }
+        guard let tValue = anyValue as? T else {
+            throw Exception(
+                description: "Cannot cast value for key path `\(keyPath)` to type `\(T.self)`: \(String(describing: anyValue))"
+            )
+        }
+        return tValue
+    }
 }
 
-private extension Data {
+internal extension Data {
     func toArrayOfJSONObjects(file: StaticString = #file, line: UInt = #line) throws -> [[String: Any]] {
         guard let jsonArray = try? JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]] else {
             XCTFail("Cannot decode array of JSON objects from data.", file: file, line: line)

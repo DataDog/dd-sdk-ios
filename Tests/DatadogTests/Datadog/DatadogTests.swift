@@ -14,24 +14,33 @@ class DatadogConfigurationTests: XCTestCase {
         let defaultConfiguration = Configuration.builderUsing(clientToken: "abcd").build()
         XCTAssertEqual(defaultConfiguration.clientToken, "abcd")
         XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
+        XCTAssertEqual(defaultConfiguration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
     }
 
-    // MARK: - Logs endpoint
-    func testUSLogsEndpoint() {
-        let configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .us).build()
+    func testLoggingEndpoints() {
+        var configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .us).build()
         XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
-    }
 
-    func testEULogsEndpoint() {
-        let configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .eu).build()
+        configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .eu).build()
         XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
-    }
 
-    func testCustomLogsEndpoint() {
-        let configuration = Configuration.builderUsing(clientToken: .mockAny())
+        configuration = Configuration.builderUsing(clientToken: .mockAny())
             .set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs/"))
             .build()
         XCTAssertEqual(configuration.logsEndpoint.url, "https://api.example.com/v1/logs/")
+    }
+
+    func testTracingEndpoints() {
+        var configuration = Configuration.builderUsing(clientToken: .mockAny()).set(tracesEndpoint: .us).build()
+        XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
+
+        configuration = Configuration.builderUsing(clientToken: .mockAny()).set(tracesEndpoint: .eu).build()
+        XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/")
+
+        configuration = Configuration.builderUsing(clientToken: .mockAny())
+            .set(tracesEndpoint: .custom(url: "https://api.example.com/v1/logs/"))
+            .build()
+        XCTAssertEqual(configuration.tracesEndpoint.url, "https://api.example.com/v1/logs/")
     }
 }
 
@@ -74,11 +83,11 @@ class DatadogTests: XCTestCase {
         XCTAssertNoThrow(try Datadog.deinitializeOrThrow())
     }
 
-    func testGivenInvalidLogsUploadURL_whenInitializing_itPrintsError() throws {
+    func testGivenInvalidConfiguration_whenInitializing_itPrintsError() throws {
         Datadog.verbosityLevel = .debug
         defer { Datadog.verbosityLevel = nil }
 
-        let invalidConfig = Config(clientToken: "", logsEndpoint: .us)
+        let invalidConfig = Config(clientToken: "", logsEndpoint: .us, tracesEndpoint: .us)
         Datadog.initialize(appContext: .mockAny(), configuration: invalidConfig)
 
         XCTAssertEqual(
@@ -92,7 +101,7 @@ class DatadogTests: XCTestCase {
         Datadog.verbosityLevel = .debug
         defer { Datadog.verbosityLevel = nil }
 
-        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us)
+        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us, tracesEndpoint: .us)
         Datadog.initialize(appContext: .mockAny(), configuration: mockConfig)
         Datadog.initialize(appContext: .mockAny(), configuration: mockConfig)
 
