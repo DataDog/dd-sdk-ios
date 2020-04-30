@@ -24,7 +24,15 @@ class SpanFileOutputTests: XCTestCase {
             spanBuilder: .mockWith(
                 appContext: .mockWith(bundleVersion: "1.0.0")
             ),
-            fileWriter: .mockWrittingToSingleFile(in: temporaryDirectory, on: queue)
+            fileWriter: FileWriter(
+                dataFormat: TracingFeature.Storage.dataFormat,
+                orchestrator: FilesOrchestrator(
+                    directory: temporaryDirectory,
+                    performance: PerformancePreset.default,
+                    dateProvider: SystemDateProvider()
+                ),
+                queue: queue
+            )
         )
 
         let ddspan: DDSpan = .mockWith(

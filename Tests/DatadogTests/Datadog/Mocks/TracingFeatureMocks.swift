@@ -12,7 +12,7 @@ extension TracingFeature {
         return TracingFeature(
             directory: temporaryDirectory,
             appContext: .mockAny(),
-            performance: .mockNoOp(),
+            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
             httpClient: .mockAny(),
             tracesUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
@@ -34,7 +34,10 @@ extension TracingFeature {
         appContext: AppContext = .mockWith(
             mobileDevice: nil // so it doesn't rely on battery status for the upload condition
         ),
-        performance: PerformancePreset = .mockUnitTestsPerformancePreset(),
+        performance: PerformancePreset = .combining(
+            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+            uploadPerformance: .veryQuick
+        ),
         logsUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),

@@ -89,10 +89,23 @@ class LoggingFeatureTests: XCTestCase {
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            performance: .mockUnitTestsPerformancePresetByOverwritting(
-                maxFileAgeForWrite: .distantFuture, // write all logs to single file
-                maxLogsPerBatch: 3, // write 3 logs to payload
-                initialLogsUploadDelay: 0.5 // wait enough until logs are written
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until spans are written,
+                    defaultUploadDelay: 1,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayDecreaseFactor: 1
+                )
             )
         )
         defer { LoggingFeature.instance = nil }

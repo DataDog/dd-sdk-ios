@@ -25,8 +25,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
-            writeConditions: .mockWriteToNewFileEachTime(),
-            readConditions: .mockReadAllFiles(),
+            performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
             dateProvider: dateProvider
         )
         let writer = FileWriter(
@@ -45,6 +44,15 @@ class DataUploadWorkerTests: XCTestCase {
             httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
+        let constantUploadDelay = DataUploadDelay(
+            performance: UploadPerformanceMock(
+                initialUploadDelay: 0.1,
+                defaultUploadDelay: 0.1,
+                minUploadDelay: 0.1,
+                maxUploadDelay: 0.1,
+                uploadDelayDecreaseFactor: 1
+            )
+        )
 
         // Write 3 files
         writer.write(value: ["k1": "v1"])
@@ -57,7 +65,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: dataUploader,
             uploadConditions: .mockAlwaysPerformingUpload(),
-            delay: .mockConstantDelay(of: 0.1),
+            delay: constantUploadDelay,
             featureName: .mockAny()
         )
 

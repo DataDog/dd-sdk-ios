@@ -6,63 +6,34 @@
 
 import Foundation
 
-internal struct WritableFileConditions {
-    let maxDirectorySize: UInt64
-    let maxFileSize: UInt64
-    let maxFileAgeForWrite: TimeInterval
-    let maxNumberOfUsesOfFile: Int
-    let maxWriteSize: UInt64
-
-    init(performance: PerformancePreset) {
-        self.maxDirectorySize = performance.maxSizeOfLogsDirectory
-        self.maxFileSize = performance.maxBatchSize
-        self.maxFileAgeForWrite = performance.maxFileAgeForWrite
-        self.maxNumberOfUsesOfFile = performance.maxLogsPerBatch
-        self.maxWriteSize = performance.maxLogSize
-    }
-}
-
-internal struct ReadableFileConditions {
-    let minFileAgeForRead: TimeInterval
-    let maxFileAgeForRead: TimeInterval
-
-    init(performance: PerformancePreset) {
-        minFileAgeForRead = performance.minFileAgeForRead
-        maxFileAgeForRead = performance.maxFileAgeForRead
-    }
-}
-
 internal class FilesOrchestrator {
     /// Directory where files are stored.
     private let directory: Directory
     /// Date provider.
     private let dateProvider: DateProvider
-    /// Conditions for picking up writable file.
-    private let writeConditions: WritableFileConditions
-    /// Conditions for picking up readable file.
-    private let readConditions: ReadableFileConditions
+    /// Performance rules for writing and reading files.
+    private let performance: StoragePerformancePreset
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
+    /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
     private var lastWritableFileUsesCount: Int = 0
 
     init(
         directory: Directory,
-        writeConditions: WritableFileConditions,
-        readConditions: ReadableFileConditions,
+        performance: StoragePerformancePreset,
         dateProvider: DateProvider
     ) {
         self.directory = directory
-        self.writeConditions = writeConditions
-        self.readConditions = readConditions
+        self.performance = performance
         self.dateProvider = dateProvider
     }
 
     // MARK: - `WritableFile` orchestration
 
     func getWritableFile(writeSize: UInt64) throws -> WritableFile {
-        if writeSize > writeConditions.maxWriteSize {
-            throw InternalError(description: "data exceeds the maximum size of \(writeConditions.maxWriteSize) bytes.")
+        if writeSize > performance.maxObjectSize {
+            throw InternalError(description: "data exceeds the maximum size of \(performance.maxObjectSize) bytes.")
         }
 
         try purgeFilesDirectoryIfNeeded()
@@ -88,9 +59,9 @@ internal class FilesOrchestrator {
                 let lastFileCreationDate = fileCreationDateFrom(fileName: lastFile.name)
                 let lastFileAge = dateProvider.currentDate().timeIntervalSince(lastFileCreationDate)
 
-                let fileIsRecentEnough = lastFileAge <= writeConditions.maxFileAgeForWrite
-                let fileHasRoomForMore = (try lastFile.size() + writeSize) <= writeConditions.maxFileSize
-                let fileCanBeUsedMoreTimes = (lastWritableFileUsesCount + 1) <= writeConditions.maxNumberOfUsesOfFile
+                let fileIsRecentEnough = lastFileAge <= performance.maxFileAgeForWrite
+                let fileHasRoomForMore = (try lastFile.size() + writeSize) <= performance.maxFileSize
+                let fileCanBeUsedMoreTimes = (lastWritableFileUsesCount + 1) <= performance.maxObjectsInFile
 
                 if fileIsRecentEnough && fileHasRoomForMore && fileCanBeUsedMoreTimes {
                     return lastFile
@@ -120,7 +91,7 @@ internal class FilesOrchestrator {
             }
 
             let oldestFileAge = dateProvider.currentDate().timeIntervalSince(creationDate)
-            let fileIsOldEnough = oldestFileAge >= readConditions.minFileAgeForRead
+            let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
@@ -150,8 +121,8 @@ internal class FilesOrchestrator {
 
         let accumulatedFilesSize = filesWithSizeSortedByCreationDate.map { $0.size }.reduce(0, +)
 
-        if accumulatedFilesSize > writeConditions.maxDirectorySize {
-            let sizeToFree = accumulatedFilesSize - writeConditions.maxDirectorySize
+        if accumulatedFilesSize > performance.maxDirectorySize {
+            let sizeToFree = accumulatedFilesSize - performance.maxDirectorySize
             var sizeFreed: UInt64 = 0
 
             while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
@@ -165,7 +136,7 @@ internal class FilesOrchestrator {
     private func deleteFileIfItsObsolete(file: File, fileCreationDate: Date) throws -> (file: File, creationDate: Date)? {
         let fileAge = dateProvider.currentDate().timeIntervalSince(fileCreationDate)
 
-        if fileAge > readConditions.maxFileAgeForRead {
+        if fileAge > performance.maxFileAgeForRead {
             try file.delete()
             return nil
         } else {
