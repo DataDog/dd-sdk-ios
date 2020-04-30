@@ -39,6 +39,9 @@ internal final class LoggingFeature {
         /// Reads logs from files.
         let reader: FileReader
 
+        /// NOTE: any change to logs data format requires updating the logs directory url to be unique
+        static let dataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
+
         init(
             directory: Directory,
             performance: PerformancePreset,
@@ -47,16 +50,12 @@ internal final class LoggingFeature {
         ) {
             let orchestrator = FilesOrchestrator(
                 directory: directory,
-                writeConditions: WritableFileConditions(performance: performance),
-                readConditions: ReadableFileConditions(performance: performance),
+                performance: performance,
                 dateProvider: dateProvider
             )
 
-            // NOTE: any change to logs data format requires updating the logs directory url to be unique
-            let dataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
-
-            self.writer = FileWriter(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-            self.reader = FileReader(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
+            self.writer = FileWriter(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
+            self.reader = FileReader(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
         }
     }
 

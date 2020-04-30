@@ -23,7 +23,11 @@ class FileReaderTests: XCTestCase {
     func testItReadsSingleBatch() throws {
         let reader = FileReader(
             dataFormat: .mockWith(prefix: "[", suffix: "]"),
-            orchestrator: .mockReadAllFiles(in: temporaryDirectory),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: StoragePerformanceMock.readAllFiles,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
         _ = try temporaryDirectory
@@ -42,8 +46,7 @@ class FileReaderTests: XCTestCase {
             dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: WritableFileConditions(performance: .mockUnitTestsPerformancePreset()),
-                readConditions: ReadableFileConditions(performance: .mockUnitTestsPerformancePreset()),
+                performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: dateProvider
             ),
             queue: queue

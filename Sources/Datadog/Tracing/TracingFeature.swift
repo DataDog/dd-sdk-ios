@@ -40,6 +40,9 @@ internal final class TracingFeature {
         /// Reads spans from files.
         let reader: FileReader
 
+        /// NOTE: any change to tracing data format requires updating the tracing directory url to be unique
+        static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
+
         init(
             directory: Directory,
             performance: PerformancePreset,
@@ -48,20 +51,12 @@ internal final class TracingFeature {
         ) {
             let orchestrator = FilesOrchestrator(
                 directory: directory,
-                writeConditions: WritableFileConditions(performance: performance),
-                readConditions: ReadableFileConditions(performance: performance),
+                performance: performance,
                 dateProvider: dateProvider
             )
 
-            // NOTE: any change to tracing data format requires updating the tracing directory url to be unique
-            let dataFormat = DataFormat(
-                prefix: "",
-                suffix: "",
-                separator: "\n"
-            )
-
-            self.writer = FileWriter(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-            self.reader = FileReader(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
+            self.writer = FileWriter(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
+            self.reader = FileReader(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
         }
     }
 

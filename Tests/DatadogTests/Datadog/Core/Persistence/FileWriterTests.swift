@@ -24,7 +24,11 @@ class FileWriterTests: XCTestCase {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
             dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
@@ -54,16 +58,15 @@ class FileWriterTests: XCTestCase {
             dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: WritableFileConditions(
-                    performance: .mockUnitTestsPerformancePresetByOverwritting(
-                        maxBatchSize: .max,
-                        maxSizeOfLogsDirectory: .max,
-                        maxFileAgeForWrite: .distantFuture,
-                        maxLogsPerBatch: .max,
-                        maxLogSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
-                    )
+                performance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture,
+                    minFileAgeForRead: .mockAny(),
+                    maxFileAgeForRead: .mockAny(),
+                    maxObjectsInFile: .max,
+                    maxObjectSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
                 ),
-                readConditions: .mockReadAllFiles(),
                 dateProvider: SystemDateProvider()
             ),
             queue: queue
@@ -94,7 +97,11 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             dataFormat: .mockAny(),
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
@@ -120,7 +127,11 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             dataFormat: .mockAny(),
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 

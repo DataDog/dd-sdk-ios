@@ -62,79 +62,90 @@ class RelativeDateProvider: DateProvider {
 
 // MARK: - PerformancePreset
 
+struct StoragePerformanceMock: StoragePerformancePreset {
+    let maxFileSize: UInt64
+    let maxDirectorySize: UInt64
+    let maxFileAgeForWrite: TimeInterval
+    let minFileAgeForRead: TimeInterval
+    let maxFileAgeForRead: TimeInterval
+    let maxObjectsInFile: Int
+    let maxObjectSize: UInt64
+
+    static let noOp = StoragePerformanceMock(
+        maxFileSize: 0,
+        maxDirectorySize: 0,
+        maxFileAgeForWrite: 0,
+        minFileAgeForRead: 0,
+        maxFileAgeForRead: 0,
+        maxObjectsInFile: 0,
+        maxObjectSize: 0
+    )
+
+    static let readAllFiles = StoragePerformanceMock(
+        maxFileSize: .max,
+        maxDirectorySize: .max,
+        maxFileAgeForWrite: 0,
+        minFileAgeForRead: -1, // make all files eligible for read
+        maxFileAgeForRead: .distantFuture, // make all files eligible for read
+        maxObjectsInFile: .max,
+        maxObjectSize: .max
+    )
+
+    static let writeEachObjectToNewFileAndReadAllFiles = StoragePerformanceMock(
+        maxFileSize: .max,
+        maxDirectorySize: .max,
+        maxFileAgeForWrite: 0, // always return new file for writting
+        minFileAgeForRead: readAllFiles.minFileAgeForRead,
+        maxFileAgeForRead: readAllFiles.maxFileAgeForRead,
+        maxObjectsInFile: 1, // write each data to new file
+        maxObjectSize: .max
+    )
+}
+
+struct UploadPerformanceMock: UploadPerformancePreset {
+    let initialUploadDelay: TimeInterval
+    let defaultUploadDelay: TimeInterval
+    let minUploadDelay: TimeInterval
+    let maxUploadDelay: TimeInterval
+    let uploadDelayDecreaseFactor: Double
+
+    static let noOp = UploadPerformanceMock(
+        initialUploadDelay: .distantFuture,
+        defaultUploadDelay: .distantFuture,
+        minUploadDelay: .distantFuture,
+        maxUploadDelay: .distantFuture,
+        uploadDelayDecreaseFactor: 1
+    )
+
+    static let veryQuick = UploadPerformanceMock(
+        initialUploadDelay: 0.05,
+        defaultUploadDelay: 0.05,
+        minUploadDelay: 0.05,
+        maxUploadDelay: 0.05,
+        uploadDelayDecreaseFactor: 1
+    )
+}
+
 extension PerformancePreset {
-    /// Mocks performance preset which results with no writes and no uploads.
-    static func mockNoOp() -> PerformancePreset {
-        return PerformancePreset(
-            maxBatchSize: 0,
-            maxSizeOfLogsDirectory: 0,
-            maxFileAgeForWrite: 0,
-            minFileAgeForRead: 0,
-            maxFileAgeForRead: 0,
-            maxLogsPerBatch: 0,
-            maxLogSize: 0,
-            initialLogsUploadDelay: .distantFuture,
-            defaultLogsUploadDelay: .distantFuture,
-            minLogsUploadDelay: .distantFuture,
-            maxLogsUploadDelay: .distantFuture,
-            logsUploadDelayDecreaseFactor: 1
-        )
-    }
-
-    /// Mocks performance preset which optimizes read / write / upload time for fast unit tests execution.
-    static func mockUnitTestsPerformancePreset() -> PerformancePreset {
-        return PerformancePreset(
-            // persistence
-            maxBatchSize: .max, // unlimited
-            maxSizeOfLogsDirectory: .max, // unlimited
-            maxFileAgeForWrite: 0, // write each data to new file
-            minFileAgeForRead: -1, // read all files
-            maxFileAgeForRead: .distantFuture, // read all files
-            maxLogsPerBatch: 1, // write each data to new file
-            maxLogSize: .max, // unlimited
-
-            // upload
-            initialLogsUploadDelay: 0.05,
-            defaultLogsUploadDelay: 0.05,
-            minLogsUploadDelay: 0.05,
-            maxLogsUploadDelay: 0.05,
-            logsUploadDelayDecreaseFactor: 1
-        )
-    }
-
-    /// Partial variant of `mockUnitTestsPerformancePreset()`.
-    static func mockUnitTestsPerformancePresetByOverwritting(
-        maxBatchSize: UInt64 = mockUnitTestsPerformancePreset().maxBatchSize,
-        maxSizeOfLogsDirectory: UInt64 = mockUnitTestsPerformancePreset().maxSizeOfLogsDirectory,
-        maxFileAgeForWrite: TimeInterval = mockUnitTestsPerformancePreset().maxFileAgeForWrite,
-        minFileAgeForRead: TimeInterval = mockUnitTestsPerformancePreset().minFileAgeForRead,
-        maxFileAgeForRead: TimeInterval = mockUnitTestsPerformancePreset().maxFileAgeForRead,
-        maxLogsPerBatch: Int = mockUnitTestsPerformancePreset().maxLogsPerBatch,
-        maxLogSize: UInt64 = mockUnitTestsPerformancePreset().maxLogSize,
-        initialLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().initialLogsUploadDelay,
-        defaultLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().defaultLogsUploadDelay,
-        minLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().minLogsUploadDelay,
-        maxLogsUploadDelay: TimeInterval = mockUnitTestsPerformancePreset().maxLogsUploadDelay,
-        logsUploadDelayDecreaseFactor: Double = mockUnitTestsPerformancePreset().logsUploadDelayDecreaseFactor
-    ) -> PerformancePreset {
-        return PerformancePreset(
-            maxBatchSize: maxBatchSize,
-            maxSizeOfLogsDirectory: maxSizeOfLogsDirectory,
-            maxFileAgeForWrite: maxFileAgeForWrite,
-            minFileAgeForRead: minFileAgeForRead,
-            maxFileAgeForRead: maxFileAgeForRead,
-            maxLogsPerBatch: maxLogsPerBatch,
-            maxLogSize: maxLogSize,
-            initialLogsUploadDelay: initialLogsUploadDelay,
-            defaultLogsUploadDelay: defaultLogsUploadDelay,
-            minLogsUploadDelay: minLogsUploadDelay,
-            maxLogsUploadDelay: maxLogsUploadDelay,
-            logsUploadDelayDecreaseFactor: logsUploadDelayDecreaseFactor
+    static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> PerformancePreset {
+        PerformancePreset(
+            maxFileSize: storage.maxFileSize,
+            maxDirectorySize: storage.maxDirectorySize,
+            maxFileAgeForWrite: storage.maxFileAgeForWrite,
+            minFileAgeForRead: storage.minFileAgeForRead,
+            maxFileAgeForRead: storage.maxFileAgeForRead,
+            maxObjectsInFile: storage.maxObjectsInFile,
+            maxObjectSize: storage.maxObjectSize,
+            initialUploadDelay: upload.initialUploadDelay,
+            defaultUploadDelay: upload.defaultUploadDelay,
+            minUploadDelay: upload.minUploadDelay,
+            maxUploadDelay: upload.maxUploadDelay,
+            uploadDelayDecreaseFactor: upload.uploadDelayDecreaseFactor
         )
     }
 }
 
-// MARK: - Files orchestration
+// MARK: - DataFormat
 
 extension DataFormat {
     static func mockAny() -> DataFormat {
@@ -154,83 +165,7 @@ extension DataFormat {
     }
 }
 
-extension WritableFileConditions {
-    /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
-    static func mockWriteToSingleFile() -> WritableFileConditions {
-        return WritableFileConditions(
-            performance: .mockUnitTestsPerformancePresetByOverwritting(
-                maxBatchSize: .max,
-                maxSizeOfLogsDirectory: .max,
-                maxFileAgeForWrite: .distantFuture,
-                maxLogsPerBatch: .max,
-                maxLogSize: .max
-            )
-        )
-    }
-
-    /// Write conditions causing `FilesOrchestrator` to create new file for each write.
-    static func mockWriteToNewFileEachTime() -> WritableFileConditions {
-        return WritableFileConditions(
-            performance: .mockUnitTestsPerformancePresetByOverwritting(
-                maxBatchSize: .max,
-                maxSizeOfLogsDirectory: .max,
-                maxFileAgeForWrite: .distantFuture,
-                maxLogsPerBatch: 1,
-                maxLogSize: .max
-            )
-        )
-    }
-}
-
-extension ReadableFileConditions {
-    /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
-    static func mockReadAllFiles() -> ReadableFileConditions {
-        return ReadableFileConditions(
-            performance: .mockUnitTestsPerformancePresetByOverwritting(
-                minFileAgeForRead: -1,
-                maxFileAgeForRead: .distantFuture
-            )
-        )
-    }
-}
-
-extension FilesOrchestrator {
-    /// Mocks `FilesOrchestrator` which always returns the same file for `getWritableFile()`.
-    static func mockWriteToSingleFile(in directory: Directory) -> FilesOrchestrator {
-        return FilesOrchestrator(
-            directory: directory,
-            writeConditions: .mockWriteToSingleFile(),
-            readConditions: ReadableFileConditions(performance: .mockUnitTestsPerformancePreset()),
-            dateProvider: SystemDateProvider()
-        )
-    }
-
-    /// Mocks `FilesOrchestrator` which does not perform age classification for `getReadableFile()`.
-    static func mockReadAllFiles(in directory: Directory) -> FilesOrchestrator {
-        return FilesOrchestrator(
-            directory: directory,
-            writeConditions: WritableFileConditions(performance: .mockUnitTestsPerformancePreset()),
-            readConditions: .mockReadAllFiles(),
-            dateProvider: SystemDateProvider()
-        )
-    }
-}
-
-extension FileWriter {
-    /// Mocks `FileWriter` writting data to single file with given name.
-    static func mockWrittingToSingleFile(
-        in directory: Directory,
-        on queue: DispatchQueue
-    ) -> FileWriter {
-        return FileWriter(
-            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
-            orchestrator: .mockWriteToSingleFile(in: directory),
-            queue: queue
-        )
-    }
-}
-
-// MARK: - HTTP
+// MARK: - HTTPHeaders
 
 extension HTTPHeaders {
     static func mockAny() -> HTTPHeaders {
@@ -422,21 +357,6 @@ extension UploadURLProvider {
             endpointURL: "https://app.example.com/v2/api",
             clientToken: "abc-def-ghi",
             dateProvider: RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
-        )
-    }
-}
-
-extension DataUploadDelay {
-    /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
-    static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
-        return DataUploadDelay(
-            performance: .mockUnitTestsPerformancePresetByOverwritting(
-                initialLogsUploadDelay: seconds,
-                defaultLogsUploadDelay: seconds,
-                minLogsUploadDelay: seconds,
-                maxLogsUploadDelay: seconds,
-                logsUploadDelayDecreaseFactor: 1
-            )
         )
     }
 }

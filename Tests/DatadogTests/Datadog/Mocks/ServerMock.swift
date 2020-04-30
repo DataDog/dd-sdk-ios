@@ -188,10 +188,10 @@ class ServerMock {
 
     /// Returns recommended timeout for delivering given number of requests if `.mockUnitTestsPerformancePreset()` is used for upload.
     func recommendedTimeoutFor(numberOfRequestsMade: UInt) -> TimeInterval {
-        let performancePresetForTests: PerformancePreset = .mockUnitTestsPerformancePreset()
+        let uploadPerformanceForTests = UploadPerformanceMock.veryQuick
         // Set the timeout to 40 times more than expected.
         // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
-        return performancePresetForTests.defaultLogsUploadDelay * Double(numberOfRequestsMade) * 40
+        return uploadPerformanceForTests.defaultUploadDelay * Double(numberOfRequestsMade) * 40
     }
 }
 

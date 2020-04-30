@@ -22,7 +22,15 @@ class LogFileOutputTests: XCTestCase {
         let queue = DispatchQueue(label: "any")
         let output = LogFileOutput(
             logBuilder: .mockWith(date: .mockAny()),
-            fileWriter: .mockWrittingToSingleFile(in: temporaryDirectory, on: queue)
+            fileWriter: FileWriter(
+                dataFormat: LoggingFeature.Storage.dataFormat,
+                orchestrator: FilesOrchestrator(
+                    directory: temporaryDirectory,
+                    performance: PerformancePreset.default,
+                    dateProvider: SystemDateProvider()
+                ),
+                queue: queue
+            )
         )
 
         output.writeLogWith(level: .info, message: "log message", attributes: [:], tags: [])

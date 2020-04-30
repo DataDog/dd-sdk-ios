@@ -13,7 +13,7 @@ extension LoggingFeature {
         return LoggingFeature(
             directory: temporaryDirectory,
             appContext: .mockAny(),
-            performance: .mockNoOp(),
+            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
             httpClient: .mockAny(),
             logsUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
@@ -34,7 +34,10 @@ extension LoggingFeature {
         appContext: AppContext = .mockWith(
             mobileDevice: nil // so it doesn't rely on battery status for the upload condition
         ),
-        performance: PerformancePreset = .mockUnitTestsPerformancePreset(),
+        performance: PerformancePreset = .combining(
+            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+            uploadPerformance: .veryQuick
+        ),
         logsUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         userInfoProvider: UserInfoProvider = .mockAny(),
