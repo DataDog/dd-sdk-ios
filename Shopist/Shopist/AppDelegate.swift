@@ -5,21 +5,22 @@
  */
 
 import UIKit
-import Datadog
+@testable import Datadog // TODO: RUMM-332 Remove `@testable` import after `DDTracer` initializer is `public`
+import OpenTracing
 
 fileprivate(set) var logger: Logger!
 
+let appConfig = ExampleAppConfig(serviceName: "ios-sdk-example-app")
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    private lazy var config = ExampleAppConfig()
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: config.clientToken) // use your own client token obtained on Datadog website)
+                .builderUsing(clientToken: appConfig.clientToken) // use your own client token obtained on Datadog website)
                 .build()
         )
 
@@ -28,9 +29,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Create logger instance
         logger = Logger.builder
-            .set(serviceName: "ios-sdk-example-app")
+            .set(serviceName: appConfig.serviceName)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
+
+        // Register global tracer
+        Global.sharedTracer = DDTracer(tracingFeature: TracingFeature.instance!) // TODO: RUMM-332 Use public `DDTracer` initializer
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug

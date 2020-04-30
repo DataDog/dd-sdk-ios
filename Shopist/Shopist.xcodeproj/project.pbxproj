@@ -7,10 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		61441B84245B15AF003D8BB8 /* DebugTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441B83245B15AF003D8BB8 /* DebugTracingViewController.swift */; };
+		61441B8C245B20DF003D8BB8 /* UIButton+Disabling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441B8B245B20DF003D8BB8 /* UIButton+Disabling.swift */; };
+		617CEB41245719E200AD4669 /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617CEB3C245719E200AD4669 /* OpenTracing.framework */; };
+		617CEB42245719E200AD4669 /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617CEB3C245719E200AD4669 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */; };
 		9E6ABAD4244F43BD003AE249 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACE244F43BD003AE249 /* ConsoleOutputInterceptor.swift */; };
 		9E6ABAD5244F43BD003AE249 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACF244F43BD003AE249 /* UIViewController+KeyboardControlling.swift */; };
-		9E6ABAD6244F43BD003AE249 /* SendMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD0244F43BD003AE249 /* SendMessageViewController.swift */; };
+		9E6ABAD6244F43BD003AE249 /* DebugLoggingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD0244F43BD003AE249 /* DebugLoggingViewController.swift */; };
 		9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */; };
 		9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */; };
 		9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADF244F43E2003AE249 /* Assets.xcassets */; };
@@ -68,6 +72,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */,
+				617CEB42245719E200AD4669 /* OpenTracing.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -75,10 +80,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		61441B83245B15AF003D8BB8 /* DebugTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTracingViewController.swift; sourceTree = "<group>"; };
+		61441B8B245B20DF003D8BB8 /* UIButton+Disabling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIButton+Disabling.swift"; sourceTree = "<group>"; };
+		617CEB3C245719E200AD4669 /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = ../Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
 		9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
 		9E6ABACE244F43BD003AE249 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
 		9E6ABACF244F43BD003AE249 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
-		9E6ABAD0244F43BD003AE249 /* SendMessageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendMessageViewController.swift; sourceTree = "<group>"; };
+		9E6ABAD0244F43BD003AE249 /* DebugLoggingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DebugLoggingViewController.swift; sourceTree = "<group>"; };
 		9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD9244F43D4003AE249 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -99,6 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */,
+				617CEB41245719E200AD4669 /* OpenTracing.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,6 +126,7 @@
 			children = (
 				9E6ABACE244F43BD003AE249 /* ConsoleOutputInterceptor.swift */,
 				9E6ABACF244F43BD003AE249 /* UIViewController+KeyboardControlling.swift */,
+				61441B8B245B20DF003D8BB8 /* UIButton+Disabling.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -159,7 +169,8 @@
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
 				9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */,
 				9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */,
-				9E6ABAD0244F43BD003AE249 /* SendMessageViewController.swift */,
+				9E6ABAD0244F43BD003AE249 /* DebugLoggingViewController.swift */,
+				61441B83245B15AF003D8BB8 /* DebugTracingViewController.swift */,
 				9E6ABAE0244F440B003AE249 /* Resources */,
 				9E6ABACD244F43BD003AE249 /* Utils */,
 			);
@@ -189,6 +200,7 @@
 		9EE2AA30244F3A4500A2C252 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				617CEB3C245719E200AD4669 /* OpenTracing.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -334,10 +346,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E6ABAD6244F43BD003AE249 /* SendMessageViewController.swift in Sources */,
+				9E6ABAD6244F43BD003AE249 /* DebugLoggingViewController.swift in Sources */,
 				9E6ABAD5244F43BD003AE249 /* UIViewController+KeyboardControlling.swift in Sources */,
+				61441B84245B15AF003D8BB8 /* DebugTracingViewController.swift in Sources */,
 				9E6ABAD4244F43BD003AE249 /* ConsoleOutputInterceptor.swift in Sources */,
 				9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */,
+				61441B8C245B20DF003D8BB8 /* UIButton+Disabling.swift in Sources */,
 				9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */,
 				9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */,
 			);
@@ -484,6 +498,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = Shopist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -503,6 +518,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = Shopist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
