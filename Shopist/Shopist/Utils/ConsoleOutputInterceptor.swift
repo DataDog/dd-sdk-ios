@@ -15,7 +15,7 @@ class ConsoleOutputInterceptor {
     /// Max length of output log to notify. Content exceeding this length will be truncated at beginning.
     private let maxContentsLength = 2_048
 
-    private var contents: String = ""
+    private(set) var contents: String = ""
 
     var notifyContentsChange: ((String) -> Void)?
 
@@ -32,8 +32,7 @@ class ConsoleOutputInterceptor {
         let newContents = contents + "\n" + newLog
         contents = String(newContents.suffix(maxContentsLength))
         DispatchQueue.main.async {
-            let reversedContents = self.contents.split(separator: "\n").reversed().joined(separator: "\n")
-            self.notifyContentsChange?(reversedContents)
+            self.notifyContentsChange?(reverseLinesOrder(self.contents))
         }
     }
 }
@@ -46,9 +45,15 @@ func installConsoleOutputInterceptor() {
 }
 
 func startDisplayingDebugInfo(in textView: UITextView) {
+    textView.text = reverseLinesOrder(consoleOutput.contents)
+
     consoleOutput.notifyContentsChange = { [weak textView] newContents in
         textView?.text = newContents
     }
+}
+
+private func reverseLinesOrder(_ string: String) -> String {
+    return string.split(separator: "\n").reversed().joined(separator: "\n")
 }
 
 #else
