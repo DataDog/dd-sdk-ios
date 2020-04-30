@@ -44,15 +44,6 @@ class DataUploadWorkerTests: XCTestCase {
             httpClient: HTTPClient(session: server.urlSession),
             httpHeaders: .mockAny()
         )
-        let constantUploadDelay = DataUploadDelay(
-            performance: UploadPerformanceMock(
-                initialUploadDelay: 0.1,
-                defaultUploadDelay: 0.1,
-                minUploadDelay: 0.1,
-                maxUploadDelay: 0.1,
-                uploadDelayDecreaseFactor: 1
-            )
-        )
 
         // Write 3 files
         writer.write(value: ["k1": "v1"])
@@ -65,12 +56,11 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: dataUploader,
             uploadConditions: .mockAlwaysPerformingUpload(),
-            delay: constantUploadDelay,
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny()
         )
 
-        let timeout: TimeInterval = 1 // enough to send 3 logs with 0.1 second interval
-        let recordedRequests = server.waitAndReturnRequests(count: 3, timeout: timeout)
+        let recordedRequests = server.waitAndReturnRequests(count: 3)
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
