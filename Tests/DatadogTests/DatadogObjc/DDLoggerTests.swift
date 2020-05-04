@@ -110,8 +110,8 @@ class DDLoggerTests: XCTestCase {
         logMatcher.assertValue(forKeyPath: "nsnull", isTypeOf: Optional<Any>.self)
         logMatcher.assertValue(forKey: "nsurl", equals: "http://apple.com")
         logMatcher.assertValue(forKey: "nsarray-of-int", equals: [1, 2, 3])
-        logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date1", equals: "2019-12-15T10:00:00Z")
-        logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date2", equals: "2019-12-15T11:00:00Z")
+        logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date1", equals: "2019-12-15T10:00:00.000Z")
+        logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date2", equals: "2019-12-15T11:00:00.000Z")
     }
 }
 // swiftlint:enable multiline_arguments_brackets

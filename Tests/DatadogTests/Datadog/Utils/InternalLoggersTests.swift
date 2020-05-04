@@ -44,12 +44,12 @@ class InternalLoggersTests: XCTestCase {
     }
 
     private let expectedMessages = [
-        "[DATADOG SDK] 🐶 → 10:00:00 [DEBUG] message",
-        "[DATADOG SDK] 🐶 → 10:00:00 [INFO] message",
-        "[DATADOG SDK] 🐶 → 10:00:00 [NOTICE] message",
-        "[DATADOG SDK] 🐶 → 10:00:00 [WARN] message",
-        "[DATADOG SDK] 🐶 → 10:00:00 [ERROR] message",
-        "[DATADOG SDK] 🐶 → 10:00:00 [CRITICAL] message"
+        "[DATADOG SDK] 🐶 → 10:00:00.000Z [DEBUG] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000Z [INFO] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000Z [NOTICE] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000Z [WARN] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000Z [ERROR] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000Z [CRITICAL] message"
     ]
 
     func testUserLoggerDoesNothingWithDefaultVerbosityLevel() {
@@ -120,6 +120,6 @@ class InternalLoggersTests: XCTestCase {
         developerLogger?.info("It works.")
 
         XCTAssertNotNil(developerLogger)
-        XCTAssertEqual(printedMessage, "🐶 → 10:00:00 [INFO] It works.")
+        XCTAssertEqual(printedMessage, "🐶 → 10:00:00.000Z [INFO] It works.")
     }
 }

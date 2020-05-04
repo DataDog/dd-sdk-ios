@@ -23,7 +23,7 @@ internal var userLogger = createSDKUserLogger()
 internal func createSDKDeveloperLogger(
     consolePrintFunction: @escaping (String) -> Void = { consolePrint($0) },
     dateProvider: DateProvider = SystemDateProvider(),
-    timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
+    timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger? {
     if CompilationConditions.isSDKCompiledForDevelopment == false {
         return nil
@@ -54,7 +54,7 @@ internal func createSDKDeveloperLogger(
 internal func createSDKUserLogger(
     consolePrintFunction: @escaping (String) -> Void = { consolePrint($0) },
     dateProvider: DateProvider = SystemDateProvider(),
-    timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
+    timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
     guard let loggingFeature = LoggingFeature.instance else {
         return Logger(logOutput: NoOpLogOutput(), identifier: "no-op")
