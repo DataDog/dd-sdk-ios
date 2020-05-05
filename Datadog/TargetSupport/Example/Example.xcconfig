@@ -1,0 +1,8 @@
+// Get codesign settings from app-target.xcconfig
+#include "../../../dependency-manager-tests/xcconfigs/app-target.xcconfig"
+
+// Read client token
+#include? "../../../Shopist/Shopist/shopist-secrets.local.xcconfig"
+
+// or create your own on https://datadoghq.com if you don't yet have one:
+// DATADOG_CLIENT_TOKEN="your-client-token"

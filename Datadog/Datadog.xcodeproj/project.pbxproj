@@ -98,11 +98,11 @@
 		61441C4A24618052003D8BB8 /* LogMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C432423990D00786299 /* LogMatcher.swift */; };
 		61441C4B24618052003D8BB8 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61441C4D24619498003D8BB8 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
-		61441C4E24619498003D8BB8 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61441C52246194FC003D8BB8 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		61441C562461956A003D8BB8 /* OpenTracing.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61C5A8732450989E00DA608C /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61441C5724619618003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		61441C5824619692003D8BB8 /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61C5A8732450989E00DA608C /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		61441C5824619692003D8BB8 /* OpenTracing.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61C5A8732450989E00DA608C /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61441C5B24619AF5003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61441C5C24619AF5003D8BB8 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61441C6D24619FE4003D8BB8 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; platformFilter = ios; };
@@ -111,6 +111,12 @@
 		61441C7C2461A244003D8BB8 /* TestsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C462423990D00786299 /* TestsDirectory.swift */; };
 		61441C822461A3C8003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61441C832461A3C8003D8BB8 /* OpenTracing.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61C5A8732450989E00DA608C /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */; };
+		61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C912461A648003D8BB8 /* UIButton+Disabling.swift */; };
+		61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */; };
+		61441C982461A649003D8BB8 /* DebugTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C932461A649003D8BB8 /* DebugTracingViewController.swift */; };
+		61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */; };
+		61441C9D2461A796003D8BB8 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C9C2461A796003D8BB8 /* AppConfig.swift */; };
 		614E9EB3244719FA007EE3E1 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* Environment.swift */; };
 		617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
@@ -207,16 +213,16 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		61441C5124619499003D8BB8 /* Embed Frameworks */ = {
+		61441C5124619499003D8BB8 /* ⚙️ Embed Framework Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				61441C5824619692003D8BB8 /* OpenTracing.framework in Embed Frameworks */,
-				61441C4E24619498003D8BB8 /* Datadog.framework in Embed Frameworks */,
+				61441C5824619692003D8BB8 /* OpenTracing.framework in ⚙️ Embed Framework Dependencies */,
+				61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
 			);
-			name = "Embed Frameworks";
+			name = "⚙️ Embed Framework Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		61441C5424619543003D8BB8 /* ⚙️ Embed Framework Dependencies */ = {
@@ -365,6 +371,13 @@
 		61441C6C24619FE4003D8BB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61441C782461A204003D8BB8 /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
 		61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
+		61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
+		61441C912461A648003D8BB8 /* UIButton+Disabling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIButton+Disabling.swift"; sourceTree = "<group>"; };
+		61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
+		61441C932461A649003D8BB8 /* DebugTracingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DebugTracingViewController.swift; sourceTree = "<group>"; };
+		61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DebugLoggingViewController.swift; sourceTree = "<group>"; };
+		61441C9C2461A796003D8BB8 /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		61441C9F2461B1C3003D8BB8 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		617CEB382456BC3A00AD4669 /* TracingUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUID.swift; sourceTree = "<group>"; };
 		61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeatureMocks.swift; sourceTree = "<group>"; };
@@ -668,6 +681,7 @@
 				61133B8F242393DE00786299 /* DatadogTests */,
 				61441C762461A01D003D8BB8 /* DatadogBenchmarkTests */,
 				9EF49F1524476FBD004F2CA0 /* DatadogIntegrationTests */,
+				61441C9E2461AF4D003D8BB8 /* Example */,
 			);
 			path = TargetSupport;
 			sourceTree = "<group>";
@@ -874,11 +888,13 @@
 		61441C0324616DE9003D8BB8 /* Example */ = {
 			isa = PBXGroup;
 			children = (
+				61441C9C2461A796003D8BB8 /* AppConfig.swift */,
+				61441C9A2461A64F003D8BB8 /* Debugging */,
+				61441C8F2461A648003D8BB8 /* Utils */,
 				61441C0424616DE9003D8BB8 /* AppDelegate.swift */,
 				61441C0A24616DE9003D8BB8 /* Main.storyboard */,
 				61441C0D24616DEC003D8BB8 /* Assets.xcassets */,
 				61441C0F24616DEC003D8BB8 /* LaunchScreen.storyboard */,
-				61441C1224616DEC003D8BB8 /* Info.plist */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -909,6 +925,34 @@
 			);
 			name = DatadogBenchmarkTests;
 			path = ../Tests/DatadogBenchmarkTests;
+			sourceTree = "<group>";
+		};
+		61441C8F2461A648003D8BB8 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */,
+				61441C912461A648003D8BB8 /* UIButton+Disabling.swift */,
+				61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		61441C9A2461A64F003D8BB8 /* Debugging */ = {
+			isa = PBXGroup;
+			children = (
+				61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */,
+				61441C932461A649003D8BB8 /* DebugTracingViewController.swift */,
+			);
+			path = Debugging;
+			sourceTree = "<group>";
+		};
+		61441C9E2461AF4D003D8BB8 /* Example */ = {
+			isa = PBXGroup;
+			children = (
+				61441C9F2461B1C3003D8BB8 /* Example.xcconfig */,
+				61441C1224616DEC003D8BB8 /* Info.plist */,
+			);
+			path = Example;
 			sourceTree = "<group>";
 		};
 		617CEB372456BC2200AD4669 /* UUIDs */ = {
@@ -1153,7 +1197,7 @@
 				61441BFE24616DE9003D8BB8 /* Sources */,
 				61441BFF24616DE9003D8BB8 /* Frameworks */,
 				61441C0024616DE9003D8BB8 /* Resources */,
-				61441C5124619499003D8BB8 /* Embed Frameworks */,
+				61441C5124619499003D8BB8 /* ⚙️ Embed Framework Dependencies */,
 			);
 			buildRules = (
 			);
@@ -1494,7 +1538,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61441C982461A649003D8BB8 /* DebugTracingViewController.swift in Sources */,
+				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
+				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
+				61441C9D2461A796003D8BB8 /* AppConfig.swift in Sources */,
 				61441C0524616DE9003D8BB8 /* AppDelegate.swift in Sources */,
+				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
+				61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1850,11 +1900,12 @@
 		};
 		61441C1424616DEC003D8BB8 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9E4195742449D739000AB0DB /* app-target.xcconfig */;
+			baseConfigurationReference = 61441C9F2461B1C3003D8BB8 /* Example.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Manual;
-				INFOPLIST_FILE = Example/Info.plist;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
+				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1868,11 +1919,12 @@
 		};
 		61441C1524616DEC003D8BB8 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9E4195742449D739000AB0DB /* app-target.xcconfig */;
+			baseConfigurationReference = 61441C9F2461B1C3003D8BB8 /* Example.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Manual;
-				INFOPLIST_FILE = Example/Info.plist;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
+				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1885,11 +1937,12 @@
 		};
 		61441C1624616DEC003D8BB8 /* Integration */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9E4195742449D739000AB0DB /* app-target.xcconfig */;
+			baseConfigurationReference = 61441C9F2461B1C3003D8BB8 /* Example.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Manual;
-				INFOPLIST_FILE = Example/Info.plist;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
+				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

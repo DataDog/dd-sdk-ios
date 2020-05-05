@@ -5,12 +5,56 @@
 */
 
 import UIKit
+import Datadog
+import OpenTracing
+
+var logger: Logger!
+let appConfig: AppConfig = currentAppConfig()
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+        // Initialize Datadog SDK
+        Datadog.initialize(
+            appContext: .init(),
+            configuration: Datadog.Configuration
+                .builderUsing(clientToken: appConfig.clientToken)
+                .build()
+        )
+
+        // Set user information
+        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com")
+
+        // Create logger instance
+        logger = Logger.builder
+            .set(serviceName: appConfig.serviceName)
+            .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
+            .build()
+
+        // Register global tracer
+        Global.sharedTracer = DDTracer()
+
+        // Set highest verbosity level to see internal actions made in SDK
+        Datadog.verbosityLevel = .debug
+
+        // Add attributes
+        logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
+
+        // Add tags
+        #if DEBUG
+        logger.addTag(withKey: "build_configuration", value: "debug")
+        #else
+        logger.addTag(withKey: "build_configuration", value: "release")
+        #endif
+
+        return true
+    }
+
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        installConsoleOutputInterceptor()
         return true
     }
 }

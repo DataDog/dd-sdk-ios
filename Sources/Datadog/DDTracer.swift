@@ -14,6 +14,10 @@ public class DDTracer: Tracer {
     // MARK: - Initialization
 
     // TODO: RUMM-332 Provide public API for tracer initializzation
+    public convenience init() {
+        self.init(tracingFeature: TracingFeature.instance!) // swiftlint:disable:this force_unwrapping
+    }
+
     internal convenience init(tracingFeature: TracingFeature) {
         self.init(
             spanOutput: SpanFileOutput(
