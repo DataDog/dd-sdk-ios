@@ -22,11 +22,15 @@ class ObjcExceptionHandlerTests: XCTestCase {
             reason: "reason",
             userInfo: ["user-info": "some"]
         )
+        let expectedUserInfo = [
+            "user-info": "some",
+            "reason": "reason"
+        ]
 
         XCTAssertThrowsError(try exceptionHandler.rethrowToSwift { nsException.raise() }) { error in
             XCTAssertEqual((error as NSError).domain, "name")
             XCTAssertEqual((error as NSError).code, 0)
-            XCTAssertEqual((error as NSError).userInfo as? [String: String], ["user-info": "some"])
+            XCTAssertEqual((error as NSError).userInfo as? [String: String], expectedUserInfo)
         }
     }
 }

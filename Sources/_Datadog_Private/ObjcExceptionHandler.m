@@ -15,7 +15,11 @@
         return YES;
     }
     @catch (NSException *exception) {
-        *error = [[NSError alloc] initWithDomain:exception.name code:0 userInfo:exception.userInfo];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
+        if (exception.reason != nil) {
+            [userInfo setObject:exception.reason forKey:@"reason"];
+        }
+        *error = [[NSError alloc] initWithDomain:exception.name code:0 userInfo:userInfo];
         return NO;
     }
 }
