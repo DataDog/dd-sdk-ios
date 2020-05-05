@@ -17,6 +17,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
+        if isRunningUnitTests() {
+            window = nil
+            return false
+        }
+
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
@@ -57,4 +62,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         installConsoleOutputInterceptor()
         return true
     }
+}
+
+private func isRunningUnitTests() -> Bool {
+    return ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UNIT_TESTS")
 }

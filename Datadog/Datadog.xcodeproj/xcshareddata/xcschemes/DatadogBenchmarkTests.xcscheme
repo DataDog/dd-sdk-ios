@@ -10,7 +10,13 @@
       buildConfiguration = "Integration"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "NO">
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "IS_RUNNING_UNIT_TESTS"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <Testables>
          <TestableReference
             skipped = "NO">
