@@ -14,11 +14,9 @@ internal protocol ConsoleLogFormatter {
 /// `LogOutput` which prints logs to console.
 internal struct LogConsoleOutput: LogOutput {
     /// Time formatter used for `.short` output format.
-    static func shortTimeFormatter(calendar: Calendar = .current, timeZone: TimeZone = .current) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.timeZone = timeZone
-        formatter.dateFormat = "HH:mm:ss"
+    static func shortTimeFormatter(calendar: Calendar = .current, timeZone: TimeZone = .current) -> Formatter {
+        let formatter = ISO8601DateFormatter.default()
+        formatter.formatOptions = [.withFractionalSeconds, .withFullTime]
         return formatter
     }
 
@@ -30,7 +28,7 @@ internal struct LogConsoleOutput: LogOutput {
         logBuilder: LogBuilder,
         format: Logger.Builder.ConsoleLogFormat,
         printingFunction: @escaping (String) -> Void = { consolePrint($0) },
-        timeFormatter: DateFormatter = LogConsoleOutput.shortTimeFormatter()
+        timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
     ) {
         switch format {
         case .short:
@@ -60,8 +58,7 @@ private struct JSONLogFormatter: ConsoleLogFormatter {
     private let prefix: String
 
     init(prefix: String = "") {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        let encoder = JSONEncoder.default()
         encoder.outputFormatting = .prettyPrinted
         self.encoder = encoder
         self.prefix = prefix
@@ -79,17 +76,17 @@ private struct JSONLogFormatter: ConsoleLogFormatter {
 
 /// Formats log as custom short string.
 private struct ShortLogFormatter: ConsoleLogFormatter {
-    private let timeFormatter: DateFormatter
+    private let timeFormatter: Formatter
     private let prefix: String
 
-    init(timeFormatter: DateFormatter, prefix: String = "") {
+    init(timeFormatter: Formatter, prefix: String = "") {
         self.timeFormatter = timeFormatter
         self.prefix = prefix
     }
 
     func format(log: Log) -> String {
-        let time = timeFormatter.string(from: log.date)
+        let time = timeFormatter.string(for: log.date)
         let status = log.status.rawValue.uppercased()
-        return "\(prefix)\(time) [\(status)] \(log.message)"
+        return "\(prefix)\(time ?? "null") [\(status)] \(log.message)"
     }
 }

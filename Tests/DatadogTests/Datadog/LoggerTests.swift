@@ -51,7 +51,7 @@ class LoggerTests: XCTestCase {
           "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
-          "date" : "2019-12-15T10:00:00Z",
+          "date" : "2019-12-15T10:00:00.000Z",
           "application.version": "1.0.0"
         }
         """)
@@ -310,8 +310,8 @@ class LoggerTests: XCTestCase {
         logMatcher.assertValue(forKey: "uint-8", equals: UInt8(10))
         logMatcher.assertValue(forKey: "double", equals: 10.5)
         logMatcher.assertValue(forKey: "array-of-int", equals: [1, 2, 3])
-        logMatcher.assertValue(forKeyPath: "dictionary-of-date.date1", equals: "2019-12-15T10:00:00Z")
-        logMatcher.assertValue(forKeyPath: "dictionary-of-date.date2", equals: "2019-12-15T11:00:00Z")
+        logMatcher.assertValue(forKeyPath: "dictionary-of-date.date1", equals: "2019-12-15T10:00:00.000Z")
+        logMatcher.assertValue(forKeyPath: "dictionary-of-date.date2", equals: "2019-12-15T11:00:00.000Z")
         logMatcher.assertValue(forKeyPath: "person.name", equals: "Adam")
         logMatcher.assertValue(forKeyPath: "person.age", equals: 30)
         logMatcher.assertValue(forKeyPath: "person.nationality", equals: "Polish")

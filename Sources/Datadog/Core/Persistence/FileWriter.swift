@@ -19,11 +19,7 @@ internal final class FileWriter {
     init(orchestrator: FilesOrchestrator, queue: DispatchQueue) {
         self.orchestrator = orchestrator
         self.queue = queue
-        self.jsonEncoder = JSONEncoder()
-        jsonEncoder.dateEncodingStrategy = .iso8601
-        if #available(iOS 13.0, OSX 10.15, *) {
-            jsonEncoder.outputFormatting = [.withoutEscapingSlashes]
-        }
+        self.jsonEncoder = JSONEncoder.default()
     }
 
     // MARK: - Writing data
