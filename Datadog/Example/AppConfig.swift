@@ -5,19 +5,20 @@
  */
 
 import Foundation
+import Datadog
 
 protocol AppConfig {
-    /// Client token obtained on Datadog website.
-    var clientToken: String { get }
     /// Service name used for logs and traces.
     var serviceName: String { get }
+    /// SDK configuration
+    var datadogConfiguration: Datadog.Configuration { get }
 }
 
 struct ExampleAppConfig: AppConfig {
-    /// Client token read from `datadog.local.xcconfig`.
-    let clientToken: String
     /// Service name used for logs and traces.
     let serviceName = "ios-sdk-example-app"
+    /// Configuration for uploading logs to Datadog servers
+    let datadogConfiguration: Datadog.Configuration
 
     init() {
         guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
@@ -29,21 +30,33 @@ struct ExampleAppConfig: AppConfig {
             """)
         }
 
-        self.clientToken = clientToken
+        self.datadogConfiguration = Datadog.Configuration
+            .builderUsing(clientToken: clientToken)
+            .build()
     }
 }
 
 struct UITestAppConfig: AppConfig {
-    /// Mocked client token for UITests
-    let clientToken = "uitests-client-token"
     /// Mocked service name for UITests
-    let serviceName = "uitests-service-name"
+    let serviceName = "ui-tests-service-name"
+    /// Configuration for uploading logs to mock servers
+    let datadogConfiguration: Datadog.Configuration
+
+    init(mockServerURL: String) {
+        self.datadogConfiguration = Datadog.Configuration
+            .builderUsing(clientToken: "ui-tests-client-token")
+            .set(logsEndpoint: .custom(url: mockServerURL))
+            .set(tracesEndpoint: .custom(url: mockServerURL))
+            .build()
+    }
 }
 
 /// Returns different `AppConfig` when running in UI Tests or launching directly.
 func currentAppConfig() -> AppConfig {
     if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
-        return UITestAppConfig()
+        return UITestAppConfig(
+            mockServerURL: ProcessInfo.processInfo.environment["DD_MOCK_SERVER_URL"]!
+        )
     } else {
         return ExampleAppConfig()
     }

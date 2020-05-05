@@ -25,9 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: appConfig.clientToken)
-                .build()
+            configuration: appConfig.datadogConfiguration
         )
 
         // Set user information
@@ -36,6 +34,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Create logger instance
         logger = Logger.builder
             .set(serviceName: appConfig.serviceName)
+            .set(loggerName: "logger-name")
+            .sendNetworkInfo(true)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
 
