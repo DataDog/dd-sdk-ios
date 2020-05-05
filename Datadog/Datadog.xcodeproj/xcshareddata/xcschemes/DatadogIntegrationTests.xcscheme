@@ -28,7 +28,7 @@
       buildConfiguration = "Integration"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "NO">
       <PreActions>
          <ExecutionAction
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
@@ -65,6 +65,12 @@
             </ActionContent>
          </ExecutionAction>
       </PostActions>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "IS_RUNNING_UI_TESTS"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <Testables>
          <TestableReference
             skipped = "NO">

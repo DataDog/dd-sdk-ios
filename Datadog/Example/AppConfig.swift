@@ -42,7 +42,7 @@ struct UITestAppConfig: AppConfig {
 
 /// Returns different `AppConfig` when running in UI Tests or launching directly.
 func currentAppConfig() -> AppConfig {
-    if ProcessInfo.processInfo.arguments.contains("is-running-ui-tests") {
+    if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
         return UITestAppConfig()
     } else {
         return ExampleAppConfig()
