@@ -7,7 +7,7 @@
 import Foundation
 
 struct ExampleAppConfig {
-    /// Client token read from `shopist-secrets.local.xcconfig`.
+    /// Client token read from `Datadog.xcconfig`.
     let clientToken: String
     /// Service name used for logs and traces.
     let serviceName: String
@@ -16,8 +16,8 @@ struct ExampleAppConfig {
         guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `DATADOG_CLIENT_TOKEN` from `Info.plist` dictionary.
-            Please create `shopist-secrets.local.xcconfig` in the same folder with `Shopist.xcconfig`
-            and declare your `DATADOG_CLIENT_TOKEN="your-client-token"`
+            Please update `Datadog.xcconfig` in the repository root with your own
+            client token obtained on datadoghq.com.
             You might need to run `Product > Clean Build Folder` before retrying.
             """)
         }

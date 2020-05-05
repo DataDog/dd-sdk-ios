@@ -23,7 +23,8 @@ struct ExampleAppConfig: AppConfig {
         guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `DATADOG_CLIENT_TOKEN` from `Info.plist` dictionary.
-            Please specify your own Datadog client token in `Example.xcconfig`.
+            Please update `Datadog.xcconfig` in the repository root with your own
+            client token obtained on datadoghq.com.
             You might need to run `Product > Clean Build Folder` before retrying.
             """)
         }

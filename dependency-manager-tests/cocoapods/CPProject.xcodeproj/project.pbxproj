@@ -49,9 +49,8 @@
 		61C364522437568300C4D4E6 /* CPProjectTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPProjectTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C364542437568300C4D4E6 /* CPProjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPProjectTests.swift; sourceTree = "<group>"; };
 		61C364562437568300C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		61C36466243782B000C4D4E6 /* datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = datadog.xcconfig; sourceTree = "<group>"; };
-		61C36467243782B000C4D4E6 /* app-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "app-target.xcconfig"; sourceTree = "<group>"; };
-		61C36468243782B000C4D4E6 /* unit-tests-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "unit-tests-target.xcconfig"; sourceTree = "<group>"; };
+		61ED26E42461D29E00752D66 /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		61ED26E52461D29E00752D66 /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
 		A18949628C7A45A21789F71F /* Pods_CPProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CPProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7DE97263B77DC87F0FC27F0 /* Pods-CPProject.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CPProject.release.xcconfig"; path = "Target Support Files/Pods-CPProject/Pods-CPProject.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -94,7 +93,7 @@
 		61C363862436318E00C4D4E6 = {
 			isa = PBXGroup;
 			children = (
-				61C36465243782B000C4D4E6 /* xcconfigs */,
+				61ED26E32461D29E00752D66 /* xcconfigs */,
 				61C363912436318E00C4D4E6 /* CPProject */,
 				61C364532437568300C4D4E6 /* CPProjectTests */,
 				61C363A82436319000C4D4E6 /* CPProjectUITests */,
@@ -145,15 +144,14 @@
 			path = CPProjectTests;
 			sourceTree = "<group>";
 		};
-		61C36465243782B000C4D4E6 /* xcconfigs */ = {
+		61ED26E32461D29E00752D66 /* xcconfigs */ = {
 			isa = PBXGroup;
 			children = (
-				61C36466243782B000C4D4E6 /* datadog.xcconfig */,
-				61C36467243782B000C4D4E6 /* app-target.xcconfig */,
-				61C36468243782B000C4D4E6 /* unit-tests-target.xcconfig */,
+				61ED26E42461D29E00752D66 /* Datadog.xcconfig */,
+				61ED26E52461D29E00752D66 /* Datadog.local.xcconfig */,
 			);
 			name = xcconfigs;
-			path = ../xcconfigs;
+			path = ../../xcconfigs;
 			sourceTree = "<group>";
 		};
 		A0508E6A3FA3F45E84391D24 /* Frameworks */ = {
@@ -417,7 +415,7 @@
 /* Begin XCBuildConfiguration section */
 		61C363AC2436319000C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C36467243782B000C4D4E6 /* app-target.xcconfig */;
+			baseConfigurationReference = 61ED26E42461D29E00752D66 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -478,7 +476,7 @@
 		};
 		61C363AD2436319000C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C36467243782B000C4D4E6 /* app-target.xcconfig */;
+			baseConfigurationReference = 61ED26E42461D29E00752D66 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -536,7 +534,7 @@
 			baseConfigurationReference = 5AD49F84C2EA2EE5CB99586F /* Pods-CPProject.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CPProject/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -554,7 +552,7 @@
 			baseConfigurationReference = C7DE97263B77DC87F0FC27F0 /* Pods-CPProject.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CPProject/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -571,7 +569,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CPProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -590,7 +588,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CPProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -607,10 +605,9 @@
 		};
 		61C364592437568300C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C36468243782B000C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CPProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -627,10 +624,9 @@
 		};
 		61C3645A2437568300C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C36468243782B000C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CPProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -15,7 +15,6 @@
 		9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADF244F43E2003AE249 /* Assets.xcassets */; };
 		9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */; };
 		9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADE244F43E2003AE249 /* Main.storyboard */; };
-		9EE0E1B7244F65B30030DC52 /* Shopist.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */; };
 		9EE2AA14244F38E000A2C252 /* ShopistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */; };
 		9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EE2AA29244F3A3300A2C252 /* Datadog.framework */; };
 		9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9EE2AA29244F3A3300A2C252 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -89,6 +88,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		611E133E2461D75D007B7552 /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		611E133F2461D75D007B7552 /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
 		617CEB3C245719E200AD4669 /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = ../Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
 		9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
 		9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -97,7 +98,6 @@
 		9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9E6ABADE244F43E2003AE249 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		9E6ABADF244F43E2003AE249 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shopist.xcconfig; sourceTree = "<group>"; };
 		9EE2A9EE244F38DE00A2C252 /* Shopist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shopist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA0F244F38E000A2C252 /* ShopistUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShopistUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITests.swift; sourceTree = "<group>"; };
@@ -125,6 +125,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		611E133D2461D75D007B7552 /* xcconfigs */ = {
+			isa = PBXGroup;
+			children = (
+				611E133E2461D75D007B7552 /* Datadog.xcconfig */,
+				611E133F2461D75D007B7552 /* Datadog.local.xcconfig */,
+			);
+			name = xcconfigs;
+			path = ../xcconfigs;
+			sourceTree = "<group>";
+		};
 		9E6ABAE0244F440B003AE249 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -139,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */,
+				611E133D2461D75D007B7552 /* xcconfigs */,
 				9EE2A9F0244F38DE00A2C252 /* Shopist */,
 				9EE2AA12244F38E000A2C252 /* ShopistUITests */,
 				9EE2A9EF244F38DE00A2C252 /* Products */,
@@ -158,7 +169,6 @@
 		9EE2A9F0244F38DE00A2C252 /* Shopist */ = {
 			isa = PBXGroup;
 			children = (
-				9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */,
 				9E6ABAD9244F43D4003AE249 /* Info.plist */,
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
 				9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */,
@@ -333,7 +343,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */,
-				9EE0E1B7244F65B30030DC52 /* Shopist.xcconfig in Resources */,
 				9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */,
 				9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */,
 			);
@@ -380,7 +389,7 @@
 /* Begin XCBuildConfiguration section */
 		9EE2AA16244F38E000A2C252 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */;
+			baseConfigurationReference = 611E133E2461D75D007B7552 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -441,7 +450,7 @@
 		};
 		9EE2AA17244F38E000A2C252 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */;
+			baseConfigurationReference = 611E133E2461D75D007B7552 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
