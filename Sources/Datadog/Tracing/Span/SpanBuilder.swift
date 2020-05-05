@@ -15,7 +15,7 @@ internal struct SpanBuilder {
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
     /// Shared network connection info provider.
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType // TODO: RUMM-422 Make `nil` if network info is disabled for tracer
     /// Shared mobile carrier info provider.
     let carrierInfoProvider: CarrierInfoProviderType
 
@@ -42,7 +42,6 @@ internal struct SpanBuilder {
         )
     }
 
-    // TODO: RUMM-299 Consider sharing `getApplicationVersion` between `SpanBuilder` and `LogBuilder` when tests are ready
     private func getApplicationVersion() -> String {
         if let shortVersion = appContext.bundleShortVersion {
             return shortVersion

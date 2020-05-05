@@ -10,11 +10,13 @@ import Foundation
 internal struct SpanFileOutput: SpanOutput {
     let spanBuilder: SpanBuilder
     let fileWriter: FileWriter
+    let environment: String = "staging" // TODO: RUMM-409 Receive `env` value from the user
 
     func write(ddspan: DDSpan, finishTime: Date) {
         do {
             let span = try spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
-            fileWriter.write(value: span)
+            let envelope = SpanEnvelope(span: span, environment: environment)
+            fileWriter.write(value: envelope)
         } catch {
             userLogger.error("🔥 Failed to build span: \(error)")
         }

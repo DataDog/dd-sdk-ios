@@ -8,46 +8,46 @@ import XCTest
 @testable import Datadog
 
 class DataUploadDelayTests: XCTestCase {
-    private let mockPerformancePreset: PerformancePreset = .mockWith(
-        initialLogsUploadDelay: 3,
-        defaultLogsUploadDelay: 5,
-        minLogsUploadDelay: 1,
-        maxLogsUploadDelay: 20,
-        logsUploadDelayDecreaseFactor: 0.9
+    private let mockPerformance = UploadPerformanceMock(
+        initialUploadDelay: 3,
+        defaultUploadDelay: 5,
+        minUploadDelay: 1,
+        maxUploadDelay: 20,
+        uploadDelayDecreaseFactor: 0.9
     )
 
     func testWhenNotModified_itReturnsInitialDelay() {
-        var delay = DataUploadDelay(performance: mockPerformancePreset)
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformancePreset.initialLogsUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformancePreset.initialLogsUploadDelay)
+        var delay = DataUploadDelay(performance: mockPerformance)
+        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.initialUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.initialUploadDelay)
     }
 
     func testWhenDecreasing_itGoesDownToMinimumDelay() {
-        var delay = DataUploadDelay(performance: mockPerformancePreset)
+        var delay = DataUploadDelay(performance: mockPerformance)
         var previousValue: TimeInterval = delay.nextUploadDelay()
 
-        while previousValue != mockPerformancePreset.minLogsUploadDelay {
+        while previousValue != mockPerformance.minUploadDelay {
             delay.decrease()
 
             let nextValue = delay.nextUploadDelay()
             XCTAssertEqual(
                 nextValue / previousValue,
-                mockPerformancePreset.logsUploadDelayDecreaseFactor,
+                mockPerformance.uploadDelayDecreaseFactor,
                 accuracy: 0.1
             )
-            XCTAssertLessThanOrEqual(nextValue, max(previousValue, mockPerformancePreset.minLogsUploadDelay))
+            XCTAssertLessThanOrEqual(nextValue, max(previousValue, mockPerformance.minUploadDelay))
 
             previousValue = nextValue
         }
     }
 
     func testWhenIncreasedOnce_itReturnsMaximumDelayOnceThenGoesBackToDefaultDelay() {
-        var delay = DataUploadDelay(performance: mockPerformancePreset)
+        var delay = DataUploadDelay(performance: mockPerformance)
         delay.decrease()
         delay.increaseOnce()
 
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformancePreset.maxLogsUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformancePreset.defaultLogsUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformancePreset.defaultLogsUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.maxUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.defaultUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.defaultUploadDelay)
     }
 }

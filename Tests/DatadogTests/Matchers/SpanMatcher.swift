@@ -6,125 +6,142 @@
 
 import Foundation
 
+/// Implemented by types allowed to represent span attribute `.*` value in JSON.
+protocol AllowedSpanAttributeValue {}
+/// Implemented by types allowed to represent span `metrics.*` value in JSON.
+protocol AllowedSpanMetricValue {}
+/// Implemented by types allowed to represent span `meta.*` value in JSON.
+protocol AllowedSpanMetaValue {}
+
+// All JSON-convertible values are allowed for `span.*`.
+extension String: AllowedSpanAttributeValue {}
+extension UInt64: AllowedSpanAttributeValue {}
+extension Int: AllowedSpanAttributeValue {}
+
+// Only numeric values are allowed for `span.metrics.*`.
+extension Int: AllowedSpanMetricValue {}
+
+// Only string values are allowed for `span.meta.*`.
+extension String: AllowedSpanMetaValue {}
+
 /// Provides set of assertions for single `Span` JSON object or collection of `[Span]`.
 /// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
-internal class SpanMatcher: JSONDataMatcher {
-    /// Span JSON keys.
-    struct JSONKey {
-        static let traceID = "trace_id"
-        static let spanID = "span_id"
-        static let parentID = "parent_id"
-        static let operationName = "name"
-        static let serviceName = "service"
-        static let resource = "resource"
-        static let type = "type"
-        static let startTime = "start"
-        static let duration = "duration"
-        static let isError = "error"
-
-        // MARK: - Metrics
-
-        static let isRootSpan = "metrics._top_level"
-
-        // MARK: - Meta
-
-        static let source = "meta._dd.source"
-
-        // MARK: - Application info
-
-        static let applicationVersion = "meta.application.version"
-
-        // MARK: - Tracer info
-
-        static let tracerVersion = "meta.tracer.version"
-
-        // MARK: - User info
-
-        static let userId = "meta.usr.id"
-        static let userName = "meta.usr.name"
-        static let userEmail = "meta.usr.email"
-
-        // MARK: - Network connection info
-
-        static let networkReachability = "meta.network.client.reachability"
-        static let networkAvailableInterfaces = "meta.network.client.available_interfaces"
-        static let networkConnectionSupportsIPv4 = "meta.network.client.supports_ipv4"
-        static let networkConnectionSupportsIPv6 = "meta.network.client.supports_ipv6"
-        static let networkConnectionIsExpensive = "meta.network.client.is_expensive"
-        static let networkConnectionIsConstrained = "meta.network.client.is_constrained"
-
-        // MARK: - Mobile carrier info
-
-        static let mobileNetworkCarrierName = "meta.network.client.sim_carrier.name"
-        static let mobileNetworkCarrierISOCountryCode = "meta.network.client.sim_carrier.iso_country"
-        static let mobileNetworkCarrierRadioTechnology = "meta.network.client.sim_carrier.technology"
-        static let mobileNetworkCarrierAllowsVoIP = "meta.network.client.sim_carrier.allows_voip"
-    }
-
-    /// Allowed values for `network.client.available_interfaces` attribute.
-    static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
-    /// Allowed values for `network.client.reachability` attribute.
-    static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
-
+internal class SpanMatcher {
     // MARK: - Initialization
 
-    class func fromJSONObjectData(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> SpanMatcher {
-        return try super.fromJSONObjectData(data, file: file, line: line)
+    /// Returns "Span A" matcher for data representing string:
+    ///
+    ///     { "spans": [ { /* Span A json */ } ] }
+    ///
+    /// **NOTE:** If `spans` array contains more than one span JSON, only the first one will be described by the matcher.
+    /// Current implementation of `SpanEnvelope` doesn't allow for more than one span in the array.
+    ///
+    /// **See Also**: `SpanEnvelope`
+    ///
+    class func fromJSONObjectData(_ data: Data) throws -> SpanMatcher {
+        return try SpanMatcher(from: try data.toJSONObject())
     }
 
-    class func fromArrayOfJSONObjectsData(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        return try super.fromArrayOfJSONObjectsData(data, file: file, line: line)
+    /// Returns array containing Span A, Span B and Span C matchers for data representing string:
+    ///
+    ///     ```
+    ///     { "spans": [ { /* Span A json */ } ] }
+    ///     { "spans": [ { /* Span B json */ } ] }
+    ///     { "spans": [ { /* Span C json */ } ] }
+    ///     ```
+    ///
+    /// **See Also** `SpanMatcher.fromJSONObjectData(_:)`
+    ///
+    class func fromNewlineSeparatedJSONObjectsData(_ data: Data) throws -> [SpanMatcher] {
+        let separator = "\n".data(using: .utf8)![0]
+        let spansData = data.split(separator: separator).map { Data($0) }
+        return try spansData.map { spanJSONData in try SpanMatcher.fromJSONObjectData(spanJSONData) }
     }
 
-    // MARK: Partial matches
+    /// Matcher for the whole `SpanEnvelope`.
+    private let envelope: JSONDataMatcher
+    /// Matcher for the first `Span` from envelope.
+    private let span: JSONDataMatcher
 
-    func assertTraceID(equals traceIDString: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.traceID, equals: traceIDString, file: file, line: line)
+    private init(from jsonObject: [String: Any]) throws {
+        self.envelope = JSONDataMatcher(from: jsonObject)
+        self.span = JSONDataMatcher(from: try self.envelope.value(forKeyPath: "spans.@firstObject"))
     }
 
-    func assertSpanID(equals spanIDString: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.spanID, equals: spanIDString, file: file, line: line)
+    // MARK: - Full match
+
+    func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {
+        try self.envelope.assertItFullyMatches(jsonString: jsonString, file: file, line: line)
     }
 
-    func assertParentSpanID(equals parentSpanIDString: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.parentID, equals: parentSpanIDString, file: file, line: line)
+    // MARK: - Attributes matching
+
+    func traceID()          throws -> String { try attribute(forKeyPath: "trace_id") }
+    func spanID()           throws -> String { try attribute(forKeyPath: "span_id") }
+    func parentSpanID()     throws -> String { try attribute(forKeyPath: "parent_id") }
+    func operationName()    throws -> String { try attribute(forKeyPath: "name") }
+    func serviceName()      throws -> String { try attribute(forKeyPath: "service") }
+    func resource()         throws -> String { try attribute(forKeyPath: "resource") }
+    func type()             throws -> String { try attribute(forKeyPath: "type") }
+    func startTime()        throws -> UInt64 { try attribute(forKeyPath: "start") }
+    func duration()         throws -> UInt64 { try attribute(forKeyPath: "duration") }
+    func isError()          throws -> Int { try attribute(forKeyPath: "error") }
+    func environment()      throws -> String { try envelope.value(forKeyPath: "env") }
+
+    // MARK: - Metrics matching
+
+    var metrics: Metrics { Metrics(matcher: self) }
+
+    struct Metrics {
+        fileprivate let matcher: SpanMatcher
+
+        func isRootSpan()       throws -> Int { try matcher.metric(forKeyPath: "metrics._top_level") }
+        func samplingPriority() throws -> Int { try matcher.metric(forKeyPath: "metrics._sampling_priority_v1") }
     }
 
-    func assertOperationName(equals operationName: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.operationName, equals: operationName, file: file, line: line)
+    // MARK: - Meta matching
+
+    var meta: Meta { Meta(matcher: self) }
+
+    struct Meta {
+        fileprivate let matcher: SpanMatcher
+
+        func source()               throws -> String { try matcher.meta(forKeyPath: "meta._dd.source") }
+        func applicationVersion()   throws -> String { try matcher.meta(forKeyPath: "meta.application.version") }
+        func tracerVersion()        throws -> String { try matcher.meta(forKeyPath: "meta.tracer.version") }
+
+        func userID()               throws -> String { try matcher.meta(forKeyPath: "meta.usr.id") }
+        func userName()             throws -> String { try matcher.meta(forKeyPath: "meta.usr.name") }
+        func userEmail()            throws -> String { try matcher.meta(forKeyPath: "meta.usr.email") }
+
+        func networkReachability()            throws -> String { try matcher.meta(forKeyPath: "meta.network.client.reachability") }
+        func networkAvailableInterfaces()     throws -> String { try matcher.meta(forKeyPath: "meta.network.client.available_interfaces") }
+        func networkConnectionSupportsIPv4()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.supports_ipv4") }
+        func networkConnectionSupportsIPv6()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.supports_ipv6") }
+        func networkConnectionIsExpensive()   throws -> String { try matcher.meta(forKeyPath: "meta.network.client.is_expensive") }
+        func networkConnectionIsConstrained() throws -> String { try matcher.meta(forKeyPath: "meta.network.client.is_constrained") }
+
+        func mobileNetworkCarrierName()            throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.name") }
+        func mobileNetworkCarrierISOCountryCode()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.iso_country") }
+        func mobileNetworkCarrierRadioTechnology() throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.technology") }
+        func mobileNetworkCarrierAllowsVoIP()      throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.allows_voip") }
     }
 
-    func assertServiceName(equals serviceName: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.serviceName, equals: serviceName, file: file, line: line)
+    // MARK: - Private
+
+    private func attribute<T: AllowedSpanAttributeValue & Equatable>(forKeyPath keyPath: String) throws -> T {
+        precondition(!keyPath.hasPrefix("metrics."), "use specialized `metric(forKeyPath:)`")
+        precondition(!keyPath.hasPrefix("meta."), "use specialized `meta(forKeyPath:)`")
+        return try span.value(forKeyPath: keyPath)
     }
 
-    func assertResource(equals resource: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.resource, equals: resource, file: file, line: line)
+    private func metric<T: AllowedSpanMetricValue & Equatable>(forKeyPath keyPath: String) throws -> T {
+        precondition(keyPath.hasPrefix("metrics."))
+        return try span.value(forKeyPath: keyPath)
     }
 
-    func assertStartTime(equals timeIntervalSince1970InNanoseconds: UInt64, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.startTime, equals: timeIntervalSince1970InNanoseconds, file: file, line: line)
-    }
-
-    func assertDuration(equals timeIntervalInNanoseconds: UInt64, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.duration, equals: timeIntervalInNanoseconds, file: file, line: line)
-    }
-
-    func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {
-        if let id = userInfo?.id { // swiftlint:disable:this identifier_name
-            assertValue(forKey: JSONKey.userId, equals: id, file: file, line: line)
-        } else {
-            assertNoValue(forKey: JSONKey.userId, file: file, line: line)
-        }
-        if let name = userInfo?.name {
-            assertValue(forKey: JSONKey.userName, equals: name, file: file, line: line)
-        } else {
-            assertNoValue(forKey: JSONKey.userName, file: file, line: line)
-        }
-        if let email = userInfo?.email {
-            assertValue(forKey: JSONKey.userEmail, equals: email, file: file, line: line)
-        } else {
-            assertNoValue(forKey: JSONKey.userEmail, file: file, line: line)
-        }
+    private func meta<T: AllowedSpanMetaValue & Equatable>(forKeyPath keyPath: String) throws -> T {
+        precondition(keyPath.hasPrefix("meta."))
+        return try span.value(forKeyPath: keyPath)
     }
 }

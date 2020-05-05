@@ -29,8 +29,29 @@ extension Datadog {
             }
         }
 
+        /// Determines server to which traces are sent.
+        public enum TracesEndpoint {
+            /// US based servers.
+            /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us // swiftlint:disable:this identifier_name
+            /// Europe based servers.
+            /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu // swiftlint:disable:this identifier_name
+            /// User-defined server.
+            case custom(url: String)
+
+            internal var url: String {
+                switch self {
+                case .us: return "https://public-trace-http-intake.logs.datadoghq.com/v1/input/"
+                case .eu: return "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/"
+                case let .custom(url: url): return url
+                }
+            }
+        }
+
         internal let clientToken: String
         internal let logsEndpoint: LogsEndpoint
+        internal let tracesEndpoint: TracesEndpoint
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -49,10 +70,12 @@ extension Datadog {
         public class Builder {
             private let clientToken: String
             private var logsEndpoint: LogsEndpoint
+            private var tracesEndpoint: TracesEndpoint
 
             internal init(clientToken: String) {
                 self.clientToken = clientToken
                 self.logsEndpoint = .us
+                self.tracesEndpoint = .us
             }
 
             /// Sets the server endpoint to which logs are sent.
@@ -62,11 +85,19 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the server endpoint to which traces are sent.
+            /// - Parameter tracesEndpoint: server endpoint (default value is `TracesEndpoint.us` )
+            public func set(tracesEndpoint: TracesEndpoint) -> Builder {
+                self.tracesEndpoint = tracesEndpoint
+                return self
+            }
+
             /// Builds `Datadog.Configuration` object.
             public func build() -> Configuration {
                 return Configuration(
                     clientToken: clientToken,
-                    logsEndpoint: logsEndpoint
+                    logsEndpoint: logsEndpoint,
+                    tracesEndpoint: tracesEndpoint
                 )
             }
         }

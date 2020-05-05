@@ -60,11 +60,16 @@ internal class LogMatcher: JSONDataMatcher {
     // MARK: - Initialization
 
     class func fromJSONObjectData(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> LogMatcher {
-        return try super.fromJSONObjectData(data, file: file, line: line)
+        return LogMatcher(from: try data.toJSONObject(file: file, line: line))
     }
 
     class func fromArrayOfJSONObjectsData(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        return try super.fromArrayOfJSONObjectsData(data, file: file, line: line)
+        return try data.toArrayOfJSONObjects(file: file, line: line)
+            .map { LogMatcher(from: $0) }
+    }
+
+    override private init(from jsonObject: [String: Any]) {
+        super.init(from: jsonObject)
     }
 
     // MARK: Partial matches

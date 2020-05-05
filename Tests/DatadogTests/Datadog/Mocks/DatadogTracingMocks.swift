@@ -13,9 +13,27 @@ A collection of SDK object mocks for Tracing.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
+    private(set) var uuid: TracingUUID
+    internal let count: UInt64
+    private let queue = DispatchQueue(label: "queue-RelativeTracingUUIDGenerator-\(UUID().uuidString)")
+
+    init(startingFrom uuid: TracingUUID, advancingByCount count: UInt64 = 1) {
+        self.uuid = uuid
+        self.count = count
+    }
+
+    func generateUnique() -> TracingUUID {
+        return queue.sync {
+            defer { uuid = TracingUUID(rawValue: uuid.rawValue + count) }
+            return uuid
+        }
+    }
+}
+
 extension TracingUUID {
     static func mockAny() -> TracingUUID {
-        return .generateUnique()
+        return TracingUUID(rawValue: .mockAny())
     }
 
     static func mock(_ rawValue: UInt64) -> TracingUUID {

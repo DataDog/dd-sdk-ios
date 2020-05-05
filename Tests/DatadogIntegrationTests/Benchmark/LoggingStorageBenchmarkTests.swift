@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-class LoggingIOBenchmarkTests: XCTestCase {
+class LoggingStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     private var queue: DispatchQueue!
     private var directory: Directory!
@@ -20,15 +20,15 @@ class LoggingIOBenchmarkTests: XCTestCase {
         self.queue = DispatchQueue(label: "com.datadoghq.benchmark-logs-io", target: .global(qos: .utility))
         self.directory = try! Directory(withSubdirectoryPath: "logging-benchmark")
 
-        let orchestrator = FilesOrchestrator(
+        let storage = LoggingFeature.Storage(
             directory: directory,
-            writeConditions: WritableFileConditions(performance: .default),
-            readConditions: ReadableFileConditions(performance: .default),
-            dateProvider: SystemDateProvider()
+            performance: .default,
+            dateProvider: SystemDateProvider(),
+            readWriteQueue: queue
         )
 
-        self.writer = FileWriter(orchestrator: orchestrator, queue: queue)
-        self.reader = FileReader(orchestrator: orchestrator, queue: queue)
+        self.writer = storage.writer
+        self.reader = storage.reader
 
         XCTAssertTrue(try! directory.files().count == 0)
     }

@@ -20,6 +20,8 @@ internal class DataUploadWorker {
     private let acceptableUploadStatuses: Set<DataUploadStatus> = [
         .success, .redirection, .clientError, .unknown
     ]
+    /// Name of the feature this worker is performing uploads for.
+    private let featureName: String
 
     /// Delay used to schedule consecutive uploads.
     private var delay: DataUploadDelay
@@ -29,13 +31,15 @@ internal class DataUploadWorker {
         fileReader: FileReader,
         dataUploader: DataUploader,
         uploadConditions: DataUploadConditions,
-        delay: DataUploadDelay
+        delay: DataUploadDelay,
+        featureName: String
     ) {
         self.queue = queue
         self.fileReader = fileReader
         self.uploadConditions = uploadConditions
         self.dataUploader = dataUploader
         self.delay = delay
+        self.featureName = featureName
 
         scheduleNextUpload(after: self.delay.nextUploadDelay())
     }
@@ -46,33 +50,33 @@ internal class DataUploadWorker {
                 return
             }
 
-            developerLogger?.info("⏳ Checking for next batch...")
+            developerLogger?.info("⏳ (\(self.featureName)) Checking for next batch...")
 
             let isSystemReady = self.uploadConditions.canPerformUpload()
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
 
             if let batch = nextBatch {
-                developerLogger?.info("⏳ Uploading batch...")
-                userLogger.debug("⏳ Uploading batch...")
+                developerLogger?.info("⏳ (\(self.featureName)) Uploading batch...")
+                userLogger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
                 let shouldBeAccepted = self.acceptableUploadStatuses.contains(uploadStatus)
 
                 if shouldBeAccepted {
                     self.fileReader.markBatchAsRead(batch)
-                    developerLogger?.info("   → accepted, won't be retransmitted: \(uploadStatus)")
-                    userLogger.debug("   → accepted, won't be retransmitted: \(uploadStatus)")
+                    developerLogger?.info("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
+                    userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                 } else {
-                    developerLogger?.info("  → not delivered, will be retransmitted: \(uploadStatus)")
-                    userLogger.debug("   → not delivered, will be retransmitted: \(uploadStatus)")
+                    developerLogger?.info("  → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
+                    userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                 }
 
                 self.delay.decrease()
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
                 let systemLabel = isSystemReady ? "✅" : "❌"
-                developerLogger?.info("💡 No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
-                userLogger.debug("💡 No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
+                developerLogger?.info("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
+                userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
 
                 self.delay.increaseOnce()
             }

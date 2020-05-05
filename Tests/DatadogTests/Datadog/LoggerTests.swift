@@ -57,7 +57,7 @@ class LoggerTests: XCTestCase {
         """)
     }
 
-    func testSendingLogWithCustomizedLogger() throws {
+    func testSendingMinimalLogWithCustomizedLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -461,3 +461,4 @@ class LoggerTests: XCTestCase {
         server.waitAndAssertNoRequestsSent()
     }
 }
+// swiftlint:enable multiline_arguments_brackets

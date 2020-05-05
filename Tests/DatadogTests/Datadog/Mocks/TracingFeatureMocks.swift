@@ -6,17 +6,17 @@
 
 @testable import Datadog
 
-/// Collection of mocks for logging feature.
-extension LoggingFeature {
+extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(temporaryDirectory: Directory) -> LoggingFeature {
-        return LoggingFeature(
+    static func mockNoOp(temporaryDirectory: Directory) -> TracingFeature {
+        return TracingFeature(
             directory: temporaryDirectory,
             appContext: .mockAny(),
             performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
             httpClient: .mockAny(),
-            logsUploadURLProvider: .mockAny(),
+            tracesUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
+            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                 networkConnectionInfo: .mockWith(
@@ -40,6 +40,7 @@ extension LoggingFeature {
         ),
         logsUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -52,14 +53,15 @@ extension LoggingFeature {
             )
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
-    ) -> LoggingFeature {
-        return LoggingFeature(
+    ) -> TracingFeature {
+        return TracingFeature(
             directory: directory,
             appContext: appContext,
             performance: performance,
             httpClient: HTTPClient(session: server.urlSession),
-            logsUploadURLProvider: logsUploadURLProvider,
+            tracesUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,
+            tracingUUIDGenerator: tracingUUIDGenerator,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider

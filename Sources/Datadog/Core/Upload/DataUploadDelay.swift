@@ -15,12 +15,12 @@ internal struct DataUploadDelay {
 
     private var delay: TimeInterval
 
-    init(performance: PerformancePreset) {
-        self.defaultDelay = performance.defaultLogsUploadDelay
-        self.minDelay = performance.minLogsUploadDelay
-        self.maxDelay = performance.maxLogsUploadDelay
-        self.decreaseFactor = performance.logsUploadDelayDecreaseFactor
-        self.delay = performance.initialLogsUploadDelay
+    init(performance: UploadPerformancePreset) {
+        self.defaultDelay = performance.defaultUploadDelay
+        self.minDelay = performance.minUploadDelay
+        self.maxDelay = performance.maxUploadDelay
+        self.decreaseFactor = performance.uploadDelayDecreaseFactor
+        self.delay = performance.initialUploadDelay
     }
 
     mutating func nextUploadDelay() -> TimeInterval {

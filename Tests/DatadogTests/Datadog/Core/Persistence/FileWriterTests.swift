@@ -23,7 +23,12 @@ class FileWriterTests: XCTestCase {
     func testItWritesDataToSingleFile() throws {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
@@ -50,18 +55,18 @@ class FileWriterTests: XCTestCase {
         userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
         let writer = FileWriter(
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: WritableFileConditions(
-                    performance: .mockWith(
-                        maxBatchSize: .max,
-                        maxSizeOfLogsDirectory: .max,
-                        maxFileAgeForWrite: .distantFuture,
-                        maxLogsPerBatch: .max,
-                        maxLogSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
-                    )
+                performance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture,
+                    minFileAgeForRead: .mockAny(),
+                    maxFileAgeForRead: .mockAny(),
+                    maxObjectsInFile: .max,
+                    maxObjectSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
                 ),
-                readConditions: .mockReadAllFiles(),
                 dateProvider: SystemDateProvider()
             ),
             queue: queue
@@ -91,7 +96,12 @@ class FileWriterTests: XCTestCase {
         userLogger = Logger(logOutput: output, identifier: "sdk-user")
 
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            dataFormat: .mockAny(),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
@@ -116,7 +126,12 @@ class FileWriterTests: XCTestCase {
         objcExceptionHandler = ObjcExceptionHandlerMock(throwingError: ErrorMock("I/O exception"))
 
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            dataFormat: .mockAny(),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
