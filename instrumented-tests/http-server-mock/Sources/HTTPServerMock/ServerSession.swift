@@ -12,6 +12,8 @@ public class ServerSession {
     public struct POSTRequestDetails {
         /// Original path of the request, i.e. `/something/1` for `POST /something/1`.
         public let path: String
+        /// Original http headers of this request.
+        public let httpHeaders: [String]
         /// Original body of this request.
         public let httpBody: Data
     }
@@ -37,6 +39,7 @@ public class ServerSession {
             .map { requestInfo in
                 return POSTRequestDetails(
                     path: requestInfo.path,
+                    httpHeaders: try server.getRecordedRequestHeaders(requestInfo),
                     httpBody: try server.getRecordedRequestBody(requestInfo)
                 )
             }

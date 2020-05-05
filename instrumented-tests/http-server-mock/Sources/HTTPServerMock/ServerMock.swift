@@ -28,13 +28,16 @@ public class ServerMock {
         let path: String
         /// HTTP method of this request.
         let httpMethod: String
+        /// Follow-up path to fetch HTTP headers associated with this request.
+        let httpHeadersInspectionPath: String
         /// Follow-up path to fetch HTTP body associated with this request.
         let httpBodyInspectionPath: String
 
         enum CodingKeys: String, CodingKey {
             case path = "request_path"
             case httpMethod = "request_method"
-            case httpBodyInspectionPath = "inspection_path"
+            case httpHeadersInspectionPath = "headers_inspection_path"
+            case httpBodyInspectionPath = "body_inspection_path"
         }
     }
 
@@ -51,5 +54,12 @@ public class ServerMock {
     internal func getRecordedRequestBody(_ requestInfo: RequestInfo) throws -> Data {
         let bodyURL = baseURL.appendingPathComponent(requestInfo.httpBodyInspectionPath)
         return try Data(contentsOf: bodyURL)
+    }
+
+    /// Fetches HTTP headers of particular request recorded by the server.
+    internal func getRecordedRequestHeaders(_ requestInfo: RequestInfo) throws -> [String] {
+        let headersURL = baseURL.appendingPathComponent(requestInfo.httpHeadersInspectionPath)
+        let headersString = try String(data: Data(contentsOf: headersURL), encoding: .utf8)
+        return headersString?.split(separator: "\r\n").map { String($0) } ?? []
     }
 }

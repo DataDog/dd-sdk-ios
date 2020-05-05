@@ -32,6 +32,7 @@ class TracingIntegrationTests: IntegrationTests {
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
             XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=mobile"))
+            XCTAssertTrue(request.httpHeaders.contains("Content-Type: text/plain;charset=UTF-8"))
         }
 
         let testEndTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
