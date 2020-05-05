@@ -7,7 +7,7 @@
 import Datadog
 import XCTest
 
-class LoggingBenchmarkTests: BenchmarkTests {
+class LoggingBenchmarkTests: XCTestCase {
     private let message = "foobar-message"
 
     func testCreatingOneLog() {
