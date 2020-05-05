@@ -9,6 +9,8 @@ import Datadog
 import OpenTracing
 
 var logger: Logger!
+var tracer: OpenTracing.Tracer { Global.sharedTracer }
+
 let appConfig: AppConfig = currentAppConfig()
 
 @UIApplicationMain

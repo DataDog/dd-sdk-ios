@@ -27,12 +27,13 @@ class LoggingIntegrationTests: IntegrationTests {
         // Wait for delivery
         Thread.sleep(forTimeInterval: Constants.logsDeliveryTime)
 
-        // Assert
+        // Assert requests
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
             XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=mobile"))
         }
 
+        // Assert logs
         let logMatchers = try recordedRequests
             .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
 

@@ -127,6 +127,11 @@ internal class SpanMatcher {
         func mobileNetworkCarrierAllowsVoIP()      throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.allows_voip") }
     }
 
+    /// Allowed values for `meta.network.client.available_interfaces` attribute.
+    static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
+    /// Allowed values for `meta.network.client.reachability` attribute.
+    static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
+
     // MARK: - Private
 
     private func attribute<T: AllowedSpanAttributeValue & Equatable>(forKeyPath keyPath: String) throws -> T {
