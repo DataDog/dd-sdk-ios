@@ -112,7 +112,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            cd Shopist && make
+            echo 'DATADOG_CLIENT_TOKEN="fake-client-token-for-shopist"' > xcconfigs/Datadog.local.xcconfig
     - xcode-test@2.4.5:
         title: Run UI tests for Shopist - iOS Simulator
         inputs:
