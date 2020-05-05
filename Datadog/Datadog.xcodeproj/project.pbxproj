@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -91,7 +91,16 @@
 		61441C0C24616DE9003D8BB8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0A24616DE9003D8BB8 /* Main.storyboard */; };
 		61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0D24616DEC003D8BB8 /* Assets.xcassets */; };
 		61441C1124616DEC003D8BB8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0F24616DEC003D8BB8 /* LaunchScreen.storyboard */; };
-		61441C2D24616F1D003D8BB8 /* DatadogIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C2C24616F1D003D8BB8 /* DatadogIntegrationTests.swift */; };
+		61441C3D24617013003D8BB8 /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3724617013003D8BB8 /* BenchmarkTests.swift */; };
+		61441C3E24617013003D8BB8 /* LoggingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3824617013003D8BB8 /* LoggingBenchmarkTests.swift */; };
+		61441C3F24617013003D8BB8 /* LoggingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3924617013003D8BB8 /* LoggingStorageBenchmarkTests.swift */; };
+		61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3B24617013003D8BB8 /* IntegrationTests.swift */; };
+		61441C4124617013003D8BB8 /* LoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3C24617013003D8BB8 /* LoggingIntegrationTests.swift */; };
+		61441C44246174CE003D8BB8 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61441C43246174CE003D8BB8 /* HTTPServerMock */; };
+		61441C4624617508003D8BB8 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61441C4524617508003D8BB8 /* HTTPServerMock */; };
+		61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
+		61441C4A24618052003D8BB8 /* LogMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C432423990D00786299 /* LogMatcher.swift */; };
+		61441C4B24618052003D8BB8 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		614E9EB3244719FA007EE3E1 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* Environment.swift */; };
 		617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
@@ -166,6 +175,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 61441C0124616DE9003D8BB8;
 			remoteInfo = Example;
+		};
+		61441C472461752E003D8BB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133B81242393DE00786299;
+			remoteInfo = Datadog;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -296,8 +312,11 @@
 		61441C1024616DEC003D8BB8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		61441C1224616DEC003D8BB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61441C2A24616F1D003D8BB8 /* DatadogIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		61441C2C24616F1D003D8BB8 /* DatadogIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogIntegrationTests.swift; sourceTree = "<group>"; };
-		61441C2E24616F1D003D8BB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61441C3724617013003D8BB8 /* BenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
+		61441C3824617013003D8BB8 /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
+		61441C3924617013003D8BB8 /* LoggingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
+		61441C3B24617013003D8BB8 /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
+		61441C3C24617013003D8BB8 /* LoggingIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingIntegrationTests.swift; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		617CEB382456BC3A00AD4669 /* TracingUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUID.swift; sourceTree = "<group>"; };
 		61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeatureMocks.swift; sourceTree = "<group>"; };
@@ -376,6 +395,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61441C4624617508003D8BB8 /* HTTPServerMock in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +403,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61441C44246174CE003D8BB8 /* HTTPServerMock in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,7 +417,7 @@
 				61133C082423983800786299 /* DatadogObjc */,
 				9E68FB52244707FD0013A8AA /* _Datadog_Private */,
 				61133C122423990D00786299 /* DatadogTests */,
-				61441C2B24616F1D003D8BB8 /* DatadogIntegrationTests */,
+				61441C3524617013003D8BB8 /* DatadogIntegrationTests */,
 				61133C07242397F200786299 /* TargetSupport */,
 				61441C0324616DE9003D8BB8 /* Example */,
 				61133B83242393DE00786299 /* Products */,
@@ -802,13 +823,33 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
-		61441C2B24616F1D003D8BB8 /* DatadogIntegrationTests */ = {
+		61441C3524617013003D8BB8 /* DatadogIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
-				61441C2C24616F1D003D8BB8 /* DatadogIntegrationTests.swift */,
-				61441C2E24616F1D003D8BB8 /* Info.plist */,
+				61441C3624617013003D8BB8 /* Benchmark */,
+				61441C3A24617013003D8BB8 /* Integration */,
 			);
-			path = DatadogIntegrationTests;
+			name = DatadogIntegrationTests;
+			path = ../Tests/DatadogIntegrationTests;
+			sourceTree = "<group>";
+		};
+		61441C3624617013003D8BB8 /* Benchmark */ = {
+			isa = PBXGroup;
+			children = (
+				61441C3724617013003D8BB8 /* BenchmarkTests.swift */,
+				61441C3824617013003D8BB8 /* LoggingBenchmarkTests.swift */,
+				61441C3924617013003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
+			);
+			path = Benchmark;
+			sourceTree = "<group>";
+		};
+		61441C3A24617013003D8BB8 /* Integration */ = {
+			isa = PBXGroup;
+			children = (
+				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
+				61441C3C24617013003D8BB8 /* LoggingIntegrationTests.swift */,
+			);
+			path = Integration;
 			sourceTree = "<group>";
 		};
 		617CEB372456BC2200AD4669 /* UUIDs */ = {
@@ -1060,6 +1101,9 @@
 			dependencies = (
 			);
 			name = Example;
+			packageProductDependencies = (
+				61441C4524617508003D8BB8 /* HTTPServerMock */,
+			);
 			productName = Example;
 			productReference = 61441C0224616DE9003D8BB8 /* Example.app */;
 			productType = "com.apple.product-type.application";
@@ -1075,9 +1119,13 @@
 			buildRules = (
 			);
 			dependencies = (
+				61441C482461752E003D8BB8 /* PBXTargetDependency */,
 				61441C3024616F1D003D8BB8 /* PBXTargetDependency */,
 			);
 			name = DatadogIntegrationTests;
+			packageProductDependencies = (
+				61441C43246174CE003D8BB8 /* HTTPServerMock */,
+			);
 			productName = DatadogIntegrationTests;
 			productReference = 61441C2A24616F1D003D8BB8 /* DatadogIntegrationTests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -1363,7 +1411,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61441C2D24616F1D003D8BB8 /* DatadogIntegrationTests.swift in Sources */,
+				61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */,
+				61441C4124617013003D8BB8 /* LoggingIntegrationTests.swift in Sources */,
+				61441C4B24618052003D8BB8 /* SpanMatcher.swift in Sources */,
+				61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */,
+				61441C3D24617013003D8BB8 /* BenchmarkTests.swift in Sources */,
+				61441C3E24617013003D8BB8 /* LoggingBenchmarkTests.swift in Sources */,
+				61441C4A24618052003D8BB8 /* LogMatcher.swift in Sources */,
+				61441C3F24617013003D8BB8 /* LoggingStorageBenchmarkTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1389,6 +1444,11 @@
 			isa = PBXTargetDependency;
 			target = 61441C0124616DE9003D8BB8 /* Example */;
 			targetProxy = 61441C2F24616F1D003D8BB8 /* PBXContainerItemProxy */;
+		};
+		61441C482461752E003D8BB8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61133B81242393DE00786299 /* Datadog */;
+			targetProxy = 61441C472461752E003D8BB8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1755,7 +1815,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
-				INFOPLIST_FILE = DatadogIntegrationTests/Info.plist;
+				INFOPLIST_FILE = TargetSupport/DatadogIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1776,7 +1836,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
-				INFOPLIST_FILE = DatadogIntegrationTests/Info.plist;
+				INFOPLIST_FILE = TargetSupport/DatadogIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1793,10 +1853,11 @@
 		};
 		61441C3424616F1D003D8BB8 /* Integration */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
-				INFOPLIST_FILE = DatadogIntegrationTests/Info.plist;
+				INFOPLIST_FILE = TargetSupport/DatadogIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2013,6 +2074,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		61441C43246174CE003D8BB8 /* HTTPServerMock */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HTTPServerMock;
+		};
+		61441C4524617508003D8BB8 /* HTTPServerMock */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HTTPServerMock;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 61133B79242393DE00786299 /* Project object */;
 }

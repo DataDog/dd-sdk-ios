@@ -14,16 +14,19 @@ struct ServerConnectionError: Error {
 /// Base class providing mock server instrumentation.
 class IntegrationTests: XCTestCase {
     private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    var serverSession: ServerSession! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         server = try! connectToServer()
-        logsDirectory.delete()
+        serverSession = server.obtainUniqueRecordingSession()
     }
 
-    override func tearDown() {
+    override func tearDownWithError() throws {
         server = nil
-        super.tearDown()
+        serverSession = nil
+
+        try super.tearDownWithError()
     }
 
     // MARK: - `HTTPServerMock` connection
