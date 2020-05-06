@@ -24,6 +24,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
 
+        if isRunningUITests() {
+            deletePersistedSDKData()
+        }
+
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
@@ -68,4 +72,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 private func isRunningUnitTests() -> Bool {
     return ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UNIT_TESTS")
+}
+
+private func isRunningUITests() -> Bool {
+    return appConfig is UITestAppConfig
+}
+
+private func deletePersistedSDKData() {
+    guard let cachesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+        return
+    }
+
+    do {
+        let dataDirectories = try FileManager.default
+            .contentsOfDirectory(at: cachesDirectoryURL, includingPropertiesForKeys: [.isDirectoryKey, .canonicalPathKey])
+            .filter { $0.absoluteString.contains("com.datadoghq") }
+
+        try dataDirectories.forEach { url in
+            try FileManager.default.removeItem(at: url)
+            print("🧹 Deleted SDK data directory: \(url)")
+        }
+    } catch {
+        print("🔥 Failed to delete SDK data directory: \(error)")
+    }
 }

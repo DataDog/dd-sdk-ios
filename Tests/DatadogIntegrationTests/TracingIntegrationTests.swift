@@ -13,11 +13,6 @@ class TracingIntegrationTests: IntegrationTests {
         static let tracesDeliveryTime: TimeInterval = 30
     }
 
-    override func setUp() {
-        super.setUp()
-        Springboard().deleteExampleAppIfExists()
-    }
-
     func testLaunchTheAppAndSendTraces() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 

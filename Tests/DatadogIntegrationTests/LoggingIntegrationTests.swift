@@ -14,11 +14,6 @@ class LoggingIntegrationTests: IntegrationTests {
         static let logsDeliveryTime: TimeInterval = 30
     }
 
-    override func setUp() {
-        super.setUp()
-        Springboard().deleteExampleAppIfExists()
-    }
-
     func testLaunchTheAppAndSendLogs() throws {
         let app = ExampleApplication()
         app.launchWith(mockServerURL: serverSession.recordingURL)

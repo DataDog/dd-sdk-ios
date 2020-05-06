@@ -6,22 +6,6 @@
 
 import XCTest
 
-/// Convenient interface to navigate through iOS springboard.
-class Springboard: XCUIApplication {
-    override init() {
-        super.init(bundleIdentifier: "com.apple.springboard")
-    }
-
-    func deleteExampleAppIfExists() {
-        let icon = icons["Example"]
-        if icon.exists {
-            icon.press(forDuration: 1.3)
-            buttons.element(boundBy: 0).tap() // tap "Delete App" button
-            buttons.element(boundBy: 1).tap() // tap "Delete" button
-        }
-    }
-}
-
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
     func launchWith(mockServerURL: URL) {
