@@ -326,7 +326,7 @@ public class Logger {
             do {
                 return try buildOrThrow()
             } catch {
-                consolePrint("🔥 \(error)")
+                consolePrint("\(error)")
                 return Logger(
                     logOutput: NoOpLogOutput(),
                     identifier: "no-op"

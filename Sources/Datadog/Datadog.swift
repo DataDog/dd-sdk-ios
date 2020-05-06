@@ -58,7 +58,7 @@ public class Datadog {
         do {
             try initializeOrThrow(appContext: appContext, configuration: configuration)
         } catch {
-            consolePrint("🔥 \(error)")
+            consolePrint("\(error)")
         }
     }
 
@@ -165,7 +165,7 @@ internal typealias AppContext = Datadog.AppContext
 /// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
 /// and if you do not call any other SDK methods before it returns.
 internal struct ProgrammerError: Error, CustomStringConvertible {
-    init(description: String) { self.description = "Datadog SDK usage error: \(description)" }
+    init(description: String) { self.description = "🔥 Datadog SDK usage error: \(description)" }
     let description: String
 }
 

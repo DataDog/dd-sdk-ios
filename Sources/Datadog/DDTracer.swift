@@ -31,7 +31,7 @@ public class DDTracer: Tracer {
         do {
             return try initializeOrThrow(configuration: configuration)
         } catch {
-            consolePrint("🔥 \(error)")
+            consolePrint("\(error)")
             return DDNoopTracer()
         }
     }
@@ -68,7 +68,7 @@ public class DDTracer: Tracer {
         do {
             return try startSpanOrThrow(operationName: operationName, references: references, tags: tags, startTime: startTime)
         } catch {
-            consolePrint("🔥 \(error)")
+            consolePrint("\(error)")
             return DDNoopSpan()
         }
     }
