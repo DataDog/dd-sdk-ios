@@ -47,7 +47,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Register global tracer
         Global.sharedTracer = DDTracer.initialize(
-            configuration: DDTracer.Configuration()
+            configuration: DDTracer.Configuration(
+                serviceName: appConfig.serviceName
+            )
         )
 
         // Set highest verbosity level to see internal actions made in SDK
