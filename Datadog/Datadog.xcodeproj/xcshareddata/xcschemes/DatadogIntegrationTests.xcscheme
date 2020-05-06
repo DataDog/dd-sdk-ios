@@ -25,7 +25,7 @@
       </PreActions>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Integration"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
