@@ -260,7 +260,7 @@ public class Logger {
     ///           .build()
     ///
     public class Builder {
-        private var serviceName: String = "ios"
+        private var serviceName: String = Datadog.Configuration.Defaults.serviceName
         private var loggerName: String?
         private var sendNetworkInfo: Bool = false
         private var useFileOutput = true

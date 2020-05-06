@@ -8,22 +8,47 @@ import OpenTracing
 import Foundation
 
 public class DDTracer: Tracer {
+    /// Datadog Tracer configuration.
+    public struct Configuration {
+        internal let serviceName: String
+
+        /// Initializes the Datadog Tracer configuration.
+        /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, default value is used: "ios").
+        public init(serviceName: String? = nil) {
+            self.serviceName = serviceName ?? Datadog.Configuration.Defaults.serviceName
+        }
+    }
+
     /// Writes `Span` objects to output.
     private let spanOutput: SpanOutput
 
     // MARK: - Initialization
 
-    // TODO: RUMM-332 Provide public API for tracer initializzation
-    public convenience init() {
-        self.init(tracingFeature: TracingFeature.instance!) // swiftlint:disable:this force_unwrapping
+    /// Initializes the Datadog Tracer.
+    /// - Parameters:
+    ///   - configuration: the tracer configuration obtained using `DDTracer.Configuration()`.
+    public static func initialize(configuration: Configuration) -> OpenTracing.Tracer {
+        do {
+            return try initializeOrThrow(configuration: configuration)
+        } catch {
+            consolePrint("🔥 \(error)")
+            return DDNoopTracer()
+        }
     }
 
-    internal convenience init(tracingFeature: TracingFeature) {
+    internal static func initializeOrThrow(configuration: Configuration) throws -> DDTracer {
+        guard let tracingFeature = TracingFeature.instance else {
+            throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `DDTracer.initialize()`.")
+        }
+        return DDTracer(tracingFeature: tracingFeature, tracerConfiguration: configuration)
+    }
+
+    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
                     appContext: tracingFeature.appContext,
-                    serviceName: "ios", // TODO: RUMM-420 `serviceName` can be customized
+                    serviceName: tracerConfiguration.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
                     carrierInfoProvider: tracingFeature.carrierInfoProvider
