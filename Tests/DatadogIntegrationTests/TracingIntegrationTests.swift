@@ -56,7 +56,7 @@ class TracingIntegrationTests: IntegrationTests {
             XCTAssertGreaterThan(try matcher.startTime(), testBeginTimeInNanoseconds)
             XCTAssertLessThan(try matcher.startTime(), testEndTimeInNanoseconds)
 
-            XCTAssertEqual(try matcher.serviceName(), "ios")
+            XCTAssertEqual(try matcher.serviceName(), "ui-tests-service-name")
             XCTAssertEqual(try matcher.resource(), try matcher.operationName())
             XCTAssertEqual(try matcher.type(), "custom")
             XCTAssertEqual(try matcher.isError(), 0)
