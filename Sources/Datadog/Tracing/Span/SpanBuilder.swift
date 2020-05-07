@@ -19,10 +19,19 @@ internal struct SpanBuilder {
     /// Shared mobile carrier info provider.
     let carrierInfoProvider: CarrierInfoProviderType
 
+    /// Encodes tag `Span` tag values as JSON string
+    private let tagsJSONEncoder = JSONEncoder()
+
     func createSpan(from ddspan: DDSpan, finishTime: Date) throws -> Span {
         guard let context = ddspan.context.dd else {
             throw InternalError(description: "`SpanBuilder` inconsistency - unrecognized span context.")
         }
+
+        let jsonStringEncodedTags = Dictionary(
+            uniqueKeysWithValues: ddspan.tags.map { name, value in
+                (name, JSONStringEncodableValue(value, encodedUsing: tagsJSONEncoder))
+            }
+        )
 
         return Span(
             traceID: context.traceID,
@@ -38,7 +47,8 @@ internal struct SpanBuilder {
             applicationVersion: getApplicationVersion(),
             networkConnectionInfo: networkConnectionInfoProvider.current,
             mobileCarrierInfo: carrierInfoProvider.current,
-            userInfo: userInfoProvider.value
+            userInfo: userInfoProvider.value,
+            tags: jsonStringEncodedTags
         )
     }
 

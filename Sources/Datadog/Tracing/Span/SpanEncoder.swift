@@ -49,6 +49,9 @@ internal struct Span: Encodable {
     let mobileCarrierInfo: CarrierInfo?
     let userInfo: UserInfo
 
+    /// Custom tags, received from user
+    let tags: [String: JSONStringEncodableValue]
+
     func encode(to encoder: Encoder) throws {
         try SpanEncoder().encode(self, to: encoder)
     }
@@ -99,6 +102,15 @@ internal struct SpanEncoder {
         case mobileNetworkCarrierAllowsVoIP = "meta.network.client.sim_carrier.allows_voip"
     }
 
+    /// Coding keys for dynamic `Span` attributes specified by user.
+    private struct DynamicCodingKey: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+        init?(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+        init(_ string: String) { self.stringValue = string }
+    }
+
     func encode(_ span: Span, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
         try container.encode(span.traceID.toHexadecimalString, forKey: .traceID)
@@ -118,23 +130,25 @@ internal struct SpanEncoder {
         let isError = span.isError ? 1 : 0
         try container.encode(isError, forKey: .isError)
 
-        try encodeMetrics(span, to: &container)
-        try encodeMeta(span, to: &container)
+        try encodeDefaultMetrics(span, to: &container)
+        try encodeDefaultMeta(span, to: &container)
+
+        var customAttributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        // TODO: RUMM-402 Encode custom metrics from `DDSpan` (coding key: `metrics.*`)
+        try encodeCustomMeta(span, to: &customAttributesContainer)
     }
 
-    /// Encodes `metrics.*` attributes
-    private func encodeMetrics(_ span: Span, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
+    /// Encodes default `metrics.*` attributes
+    private func encodeDefaultMetrics(_ span: Span, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
         // NOTE: RUMM-299 only numeric values are supported for `metrics.*` attributes
         if span.parentID == nil {
             try container.encode(1, forKey: .isRootSpan)
         }
         try container.encode(1, forKey: .samplingPriority)
-
-        // TODO: RUMM-402 Encode custom metrics from `DDSpan` (coding key: `metrics.*`)
     }
 
-    /// Encodes `meta.*` attributes
-    private func encodeMeta(_ span: Span, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
+    /// Encodes default `meta.*` attributes
+    private func encodeDefaultMeta(_ span: Span, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
         // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
         try container.encode("mobile", forKey: .source)
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
@@ -176,7 +190,14 @@ internal struct SpanEncoder {
             try container.encode(carrierInfo.radioAccessTechnology, forKey: .mobileNetworkCarrierRadioTechnology)
             try container.encode(carrierInfo.carrierAllowsVOIP ? "1" : "0", forKey: .mobileNetworkCarrierAllowsVoIP)
         }
+    }
 
-        // TODO: RUMM-403 Encode custom meta from `DDSpan` (as String values!), including `span.tags` (coding key: `meta.*`)
+    /// Encodes `meta.*` attributes coming from user
+    private func encodeCustomMeta(_ span: Span, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
+        // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        try span.tags.forEach {
+            let metaKey = "meta.\($0.key)"
+            try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+        }
     }
 }

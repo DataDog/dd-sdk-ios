@@ -18,3 +18,35 @@ internal struct EncodableValue: Encodable {
         try value.encode(to: encoder)
     }
 }
+
+/// Value type converting any `Encodable` to its lossless JSON string representation.
+///
+/// For example:
+/// * it encodes `"abc"` string as `"abc"` JSON string value
+/// * it encodes `1` integer as `"1"` JSON string value
+/// * it encodes `true` boolean as `"true"` JSON string value
+/// * it encodes `Person(name: "foo")` encodable struct as `"{\"name\": \"foo\"}"` JSON string value
+///
+/// This encoding doesn't happen instantly. Instead, it is deferred to the actual `encoder.encode(jsonStringEncodableValue)` call.
+internal struct JSONStringEncodableValue: Encodable {
+    /// Encoder used to encode `encodable` as JSON String value.
+    /// It is invoked lazily at `encoder.encode(jsonStringEncodableValue)` so its encoding errors can be propagated in master-type encoding.
+    private let jsonEncoder: JSONEncoder
+    private let encodable: EncodableValue
+
+    init(_ value: Encodable, encodedUsing jsonEncoder: JSONEncoder) {
+        self.jsonEncoder = jsonEncoder
+        self.encodable = EncodableValue(value)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        if let stringValue = encodable.value as? String {
+            try stringValue.encode(to: encoder)
+        } else {
+            let jsonData = try jsonEncoder.encode(encodable)
+            if let stringValue = String(data: jsonData, encoding: .utf8) {
+                try stringValue.encode(to: encoder)
+            }
+        }
+    }
+}
