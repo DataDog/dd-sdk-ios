@@ -15,7 +15,22 @@ internal struct EncodableValue: Encodable {
     }
 
     func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
+        if let urlValue = value as? URL {
+            /**
+             "URL itself prefers a keyed container which allows it to encode its base and relative string separately (...)"
+             Discussion: https:forums.swift.org/t/how-to-encode-objects-of-unknown-type/12253/11
+
+             It means that following code:
+             ```
+             try EncodableValue(URL(string: "https:example.com")!).encode(to: encoder)
+             ```
+             encodes the KVO representation of the URL: `{"relative":"https:example.com"}`.
+             As we very much prefer `"https:example.com"`, here we switch to encode `.absoluteString` directly.
+             */
+            try urlValue.absoluteString.encode(to: encoder)
+        } else {
+            try value.encode(to: encoder)
+        }
     }
 }
 
@@ -42,6 +57,9 @@ internal struct JSONStringEncodableValue: Encodable {
     func encode(to encoder: Encoder) throws {
         if let stringValue = encodable.value as? String {
             try stringValue.encode(to: encoder)
+        } else if let urlValue = encodable.value as? URL {
+            // Switch to encode `url.absoluteString` directly - see the comment in `EncodableValue`
+            try urlValue.absoluteString.encode(to: encoder)
         } else {
             let jsonData = try jsonEncoder.encode(encodable)
             if let stringValue = String(data: jsonData, encoding: .utf8) {

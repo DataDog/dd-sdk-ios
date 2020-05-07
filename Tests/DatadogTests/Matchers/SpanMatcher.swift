@@ -125,6 +125,8 @@ internal class SpanMatcher {
         func mobileNetworkCarrierISOCountryCode()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.iso_country") }
         func mobileNetworkCarrierRadioTechnology() throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.technology") }
         func mobileNetworkCarrierAllowsVoIP()      throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.allows_voip") }
+
+        func custom(keyPath: String) throws -> String { try matcher.meta(forKeyPath: keyPath) }
     }
 
     /// Allowed values for `meta.network.client.available_interfaces` attribute.

@@ -301,6 +301,9 @@ class LoggerTests: XCTestCase {
         // nested string literal
         logger.addAttribute(forKey: "nested.string", value: "hello")
 
+        // URL
+        logger.addAttribute(forKey: "url", value: URL(string: "https://example.com/image.png")!)
+
         logger.info("message")
 
         let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
@@ -316,6 +319,8 @@ class LoggerTests: XCTestCase {
         logMatcher.assertValue(forKeyPath: "person.age", equals: 30)
         logMatcher.assertValue(forKeyPath: "person.nationality", equals: "Polish")
         logMatcher.assertValue(forKeyPath: "nested.string", equals: "hello")
+        /// URLs are encoded explicitly as `String` - see the comment in `EncodableValue`
+        logMatcher.assertValue(forKeyPath: "url", equals: "https://example.com/image.png")
     }
 
     func testSendingMessageAttributes() throws {

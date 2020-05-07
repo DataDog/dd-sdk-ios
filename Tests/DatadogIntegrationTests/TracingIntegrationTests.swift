@@ -52,6 +52,10 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertNil(try? spanMatchers[1].metrics.isRootSpan())
         XCTAssertEqual(try spanMatchers[2].metrics.isRootSpan(), 1)
 
+        // "downloading" span's tags
+        XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.kind"), "image")
+        XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.url"), "https://example.com/image.png")
+
         try spanMatchers.forEach { matcher in
             XCTAssertGreaterThan(try matcher.startTime(), testBeginTimeInNanoseconds)
             XCTAssertLessThan(try matcher.startTime(), testEndTimeInNanoseconds)

@@ -94,15 +94,22 @@ class DDTracerTests: XCTestCase {
 
         let tracer = DDTracer.initialize(configuration: .init()).dd
 
-        let span = tracer.startSpan(operationName: "operation", tags: ["tag1": "value1"], startTime: .mockDecember15th2019At10AMUTC())
+        let span = tracer.startSpan(
+            operationName: "operation",
+            tags: ["tag1": "string value"],
+            startTime: .mockDecember15th2019At10AMUTC()
+        )
+        span.setTag(key: "tag2", value: 123)
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
         let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
         XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
         XCTAssertEqual(try spanMatcher.duration(), 500_000_000)
-        // TODO: RUMM-402 assert custom `meta.*`
-        // TODO: RUMM-403 assert custom `metrics.*`
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag1"), "string value")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag2"), "123")
+
+        // TODO: RUMM-402 assert custom `metrics.*`
     }
 
     func testSendingSpanWithParent() throws {
@@ -341,6 +348,80 @@ class DDTracerTests: XCTestCase {
         tracer.startSpan(operationName: .mockAny()).finish()
 
         server.waitAndAssertNoRequestsSent()
+    }
+
+    // MARK: - Sending tags
+
+    func testSendingSpanTagsOfDifferentEncodableValues() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = DDTracer.initialize(configuration: .init()).dd
+
+        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: .mockDecember15th2019At10AMUTC())
+
+        // string literal
+        span.setTag(key: "string", value: "hello")
+
+        // boolean literal
+        span.setTag(key: "bool", value: true)
+
+        // integer literal
+        span.setTag(key: "int", value: 10)
+
+        // Typed 8-bit unsigned Integer
+        span.setTag(key: "uint-8", value: UInt8(10))
+
+        // double-precision, floating-point value
+        span.setTag(key: "double", value: 10.5)
+
+        // array of `Encodable` integer
+        span.setTag(key: "array-of-int", value: [1, 2, 3])
+
+        // dictionary of `Encodable` date types
+        span.setTag(key: "dictionary-with-date", value: [
+            "date": Date.mockDecember15th2019At10AMUTC(),
+        ])
+
+        struct Person: Codable {
+            let name: String
+            let age: Int
+            let nationality: String
+        }
+
+        // custom `Encodable` structure
+        span.setTag(key: "person", value: Person(name: "Adam", age: 30, nationality: "Polish"))
+
+        // nested string literal
+        span.setTag(key: "nested.string", value: "hello")
+
+        // URL
+        span.setTag(key: "url", value: URL(string: "https://example.com/image.png")!)
+
+        span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
+
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertEqual(try spanMatcher.operationName(), "operation")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.string"), "hello")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.bool"), "true")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.int"), "10")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.uint-8"), "10")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.double"), "10.5")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.array-of-int"), "[1,2,3]")
+        XCTAssertEqual(
+            try spanMatcher.meta.custom(keyPath: "meta.dictionary-with-date"),
+            #"{"date":598096800}"#
+        )
+        XCTAssertEqual(
+            try spanMatcher.meta.custom(keyPath: "meta.person"),
+            #"{"name":"Adam","age":30,"nationality":"Polish"}"#
+        )
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.nested.string"), "hello")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.url"), "https://example.com/image.png")
     }
 
     // MARK: - Injecting span context into carrier

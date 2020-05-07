@@ -20,7 +20,7 @@ internal struct SpanBuilder {
     let carrierInfoProvider: CarrierInfoProviderType
 
     /// Encodes tag `Span` tag values as JSON string
-    private let tagsJSONEncoder = JSONEncoder()
+    private let tagsJSONEncoder: JSONEncoder = .default()
 
     func createSpan(from ddspan: DDSpan, finishTime: Date) throws -> Span {
         guard let context = ddspan.context.dd else {
@@ -60,5 +60,17 @@ internal struct SpanBuilder {
         } else {
             return ""
         }
+    }
+}
+
+extension JSONEncoder {
+    // NOTE: RUMM-403 This will conflict with `JSONEncoder.default` after merging `master` into `tracing`.
+    // Use `master's` one and remove this extension.
+    static func `default`() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        if #available(iOS 13.0, OSX 10.15, *) {
+            encoder.outputFormatting = [.withoutEscapingSlashes]
+        }
+        return encoder
     }
 }
