@@ -52,7 +52,7 @@ $ make
 
 #### Tests
 
-`DatadogTests` (unit tests) and `DatadogIntegrationTests` (integration tests) and `DatadogBenchmarkTests` (benchmarks) source files
+`DatadogTests` (unit tests), `DatadogIntegrationTests` (integration tests), and `DatadogBenchmarkTests` (benchmarks) source files
 
 #### Dependency manager tests
 
