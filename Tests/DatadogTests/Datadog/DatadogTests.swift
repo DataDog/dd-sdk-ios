@@ -36,12 +36,55 @@ class DatadogConfigurationTests: XCTestCase {
 }
 
 class AppContextTests: XCTestCase {
-    func testGivenAppBundle_itSetsAppEnvironment() {
-        XCTAssertEqual(AppContext(mainBundle: .mockAppBundle()).environment, .iOSApp)
+    func testEnvironment() {
+        let iOSAppBundle: Bundle = .mockWith(bundlePath: "mock.app")
+        let iOSAppExtensionBundle: Bundle = .mockWith(bundlePath: "mock.appex")
+        XCTAssertEqual(AppContext(mainBundle: iOSAppBundle).environment, .iOSApp)
+        XCTAssertEqual(AppContext(mainBundle: iOSAppExtensionBundle).environment, .iOSAppExtension)
     }
 
-    func testGivenAppExtensionBundle_itSetsAppExtensionEnvironment() {
-        XCTAssertEqual(AppContext(mainBundle: .mockAppExtensionBundle()).environment, .iOSAppExtension)
+    func testBundleIdentifier() throws {
+        XCTAssertEqual(AppContext(mainBundle: .mockWith(bundleIdentifier: "com.abc.app")).bundleIdentifier, "com.abc.app")
+        XCTAssertEqual(AppContext(mainBundle: .mockWith(bundleIdentifier: nil)).bundleIdentifier, "unknown")
+    }
+
+    func testBundleVersion() throws {
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: "1.0", CFBundleShortVersionString: "1.0.0")).bundleVersion,
+            "1.0.0"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: nil, CFBundleShortVersionString: "1.0.0")).bundleVersion,
+            "1.0.0"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: "1.0", CFBundleShortVersionString: nil)).bundleVersion,
+            "1.0"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: nil, CFBundleShortVersionString: nil)).bundleVersion,
+            "0.0.0"
+        )
+    }
+
+    func testBundleName() throws {
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(bundlePath: .mockAny(), CFBundleExecutable: "FooApp")).bundleName,
+            "FooApp"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(bundlePath: "mock.app", CFBundleExecutable: nil)).bundleName,
+            "iOSApp"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(bundlePath: "mock.appex", CFBundleExecutable: nil)).bundleName,
+            "iOSAppExtension"
+        )
+    }
+
+    func testMobileDevice() throws {
+        let context = AppContext(mainBundle: .main)
+        XCTAssertTrue((context.mobileDevice == nil) == (MobileDevice.current == nil))
     }
 }
 
@@ -108,21 +151,5 @@ class DatadogTests: XCTestCase {
 
     func testDefaultVerbosityLevel() {
         XCTAssertNil(Datadog.verbosityLevel)
-    }
-
-    func testDefaultAppContext() throws {
-        let appContext = AppContext()
-        let bundle = Bundle.main
-
-        XCTAssertEqual(appContext.bundleIdentifier, bundle.bundleIdentifier)
-        XCTAssertEqual(appContext.bundleVersion, bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
-        XCTAssertEqual(appContext.bundleShortVersion, bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
-        XCTAssertEqual(appContext.executableName, bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String)
-
-        if MobileDevice.current != nil {
-            XCTAssertNotNil(appContext.mobileDevice)
-        } else {
-            XCTAssertNil(appContext.mobileDevice)
-        }
     }
 }

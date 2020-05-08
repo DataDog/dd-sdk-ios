@@ -65,7 +65,7 @@ extension LogBuilder {
 
     static func mockWith(
         date: Date = .mockAny(),
-        appContext: AppContext = .mockAny(),
+        applicationVersion: String = .mockAny(),
         serviceName: String = .mockAny(),
         loggerName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -73,7 +73,7 @@ extension LogBuilder {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> LogBuilder {
         return LogBuilder(
-            appContext: appContext,
+            applicationVersion: applicationVersion,
             serviceName: serviceName,
             loggerName: loggerName,
             dateProvider: RelativeDateProvider(using: date),

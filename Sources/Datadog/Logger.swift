@@ -347,7 +347,7 @@ public class Logger {
 
         private func resolveLogsOutput(for loggingFeature: LoggingFeature) -> LogOutput {
             let logBuilder = LogBuilder(
-                appContext: loggingFeature.appContext,
+                applicationVersion: loggingFeature.appContext.bundleVersion,
                 serviceName: serviceName,
                 loggerName: resolveLoggerName(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
@@ -386,7 +386,7 @@ public class Logger {
         }
 
         private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
-            return loggerName ?? loggingFeature.appContext.bundleIdentifier ?? ""
+            return loggerName ?? loggingFeature.appContext.bundleIdentifier
         }
     }
 }

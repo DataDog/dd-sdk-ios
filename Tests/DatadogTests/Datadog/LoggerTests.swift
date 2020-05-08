@@ -32,8 +32,7 @@ class LoggerTests: XCTestCase {
             directory: temporaryDirectory,
             appContext: .mockWith(
                 bundleIdentifier: "com.datadoghq.ios-sdk",
-                bundleVersion: "1.0.0",
-                bundleShortVersion: "1.0.0"
+                bundleVersion: "1.0.0"
             ),
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )

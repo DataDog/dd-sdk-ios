@@ -12,7 +12,7 @@ class HTTPHeadersTests: XCTestCase {
         let headers = HTTPHeaders(
             appContext: .mockWith(
                 bundleVersion: "1.0.0",
-                executableName: "app-name",
+                bundleName: "app-name",
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )

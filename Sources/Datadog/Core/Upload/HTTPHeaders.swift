@@ -20,8 +20,8 @@ internal struct HTTPHeaders {
         // When running on mobile, `User-Agent` header is customized (e.x. `app-name/1 CFNetwork (iPhone; iOS/13.3)`).
         // Other platforms will fall back to default UA header set by OS.
         if let mobileDevice = appContext.mobileDevice {
-            let appName = appContext.executableName ?? "Datadog"
-            let appVersion = appContext.bundleVersion ?? sdkVersion
+            let appName = appContext.bundleName
+            let appVersion = appContext.bundleVersion
             let device = mobileDevice
 
             self.all = [

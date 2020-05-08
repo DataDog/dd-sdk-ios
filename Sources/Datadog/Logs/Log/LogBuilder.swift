@@ -8,8 +8,8 @@ import Foundation
 
 /// Builds `Log` representation as it was received from the user (without sanitization).
 internal struct LogBuilder {
-    /// App information context.
-    let appContext: AppContext
+    /// Application version to write in log.
+    let applicationVersion: String
     /// Service name to write in log.
     let serviceName: String
     /// Logger name to write in log.
@@ -36,7 +36,7 @@ internal struct LogBuilder {
             loggerName: loggerName,
             loggerVersion: sdkVersion,
             threadName: getCurrentThreadName(),
-            applicationVersion: getApplicationVersion(),
+            applicationVersion: applicationVersion,
             userInfo: userInfoProvider.value,
             networkConnectionInfo: networkConnectionInfoProvider?.current,
             mobileCarrierInfo: carrierInfoProvider?.current,
@@ -61,16 +61,6 @@ internal struct LogBuilder {
             return customName
         } else {
             return Thread.isMainThread ? "main" : "background"
-        }
-    }
-
-    private func getApplicationVersion() -> String {
-        if let shortVersion = appContext.bundleShortVersion {
-            return shortVersion
-        } else if let version = appContext.bundleVersion {
-            return version
-        } else {
-            return ""
         }
     }
 }

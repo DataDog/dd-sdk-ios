@@ -41,10 +41,10 @@ class DDDatadogTests: XCTestCase {
         let objcAppContext = LoggingFeature.instance?.appContext
         let swiftAppContext = Datadog.AppContext()
 
+        XCTAssertEqual(objcAppContext?.environment, swiftAppContext.environment)
         XCTAssertEqual(objcAppContext?.bundleIdentifier, swiftAppContext.bundleIdentifier)
         XCTAssertEqual(objcAppContext?.bundleVersion, swiftAppContext.bundleVersion)
-        XCTAssertEqual(objcAppContext?.bundleShortVersion, swiftAppContext.bundleShortVersion)
-        XCTAssertEqual(objcAppContext?.executableName, swiftAppContext.executableName)
+        XCTAssertEqual(objcAppContext?.bundleName, swiftAppContext.bundleName)
         XCTAssertEqual(objcAppContext?.mobileDevice != nil, swiftAppContext.mobileDevice != nil)
 
         try Datadog.deinitializeOrThrow()

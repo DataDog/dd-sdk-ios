@@ -7,7 +7,7 @@
 import Foundation
 
 /// An environment running the SDK.
-internal enum Environment: Equatable {
+internal enum Environment: String {
     case iOSApp
     case iOSAppExtension
 }

@@ -471,18 +471,16 @@ extension AppContext {
 
     static func mockWith(
         environment: Environment = .iOSApp,
-        bundleIdentifier: String? = nil,
-        bundleVersion: String? = nil,
-        bundleShortVersion: String? = nil,
-        executableName: String? = nil,
+        bundleIdentifier: String = .mockAny(),
+        bundleVersion: String = .mockAny(),
+        bundleName: String = .mockAny(),
         mobileDevice: MobileDevice? = nil
     ) -> AppContext {
         return AppContext(
             environment: environment,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
-            bundleShortVersion: bundleShortVersion,
-            executableName: executableName,
+            bundleName: bundleName,
             mobileDevice: mobileDevice
         )
     }

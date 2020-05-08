@@ -15,37 +15,42 @@ public class Datadog {
     /// Provides information about the app.
     public struct AppContext {
         internal let environment: Environment
-        internal let bundleIdentifier: String?
-        internal let bundleVersion: String?
-        internal let bundleShortVersion: String?
-        internal let executableName: String?
+        internal let bundleIdentifier: String
+        /// Executable version (i.e. application version or app extension version)
+        internal let bundleVersion: String
+        /// Executable name (i.e. application name or app extension name)
+        internal let bundleName: String
         /// Describes current mobile device if SDK runs on a platform that supports `UIKit`.
         internal let mobileDevice: MobileDevice?
 
         public init(mainBundle: Bundle = Bundle.main) {
+            let environment: Environment = mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
+            let bundleIdentifier = mainBundle.bundleIdentifier
+            let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            let executableName = mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+            let mobileDevice = MobileDevice.current
+
             self.init(
-                environment: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
-                bundleIdentifier: mainBundle.bundleIdentifier,
-                bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
-                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-                executableName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
-                mobileDevice: MobileDevice.current
+                environment: environment,
+                bundleIdentifier: bundleIdentifier ?? "unknown",
+                bundleVersion: bundleShortVersion ?? bundleVersion ?? "0.0.0",
+                bundleName: executableName ?? environment.rawValue,
+                mobileDevice: mobileDevice
             )
         }
 
         internal init(
             environment: Environment,
-            bundleIdentifier: String?,
-            bundleVersion: String?,
-            bundleShortVersion: String?,
-            executableName: String?,
+            bundleIdentifier: String,
+            bundleVersion: String,
+            bundleName: String,
             mobileDevice: MobileDevice?
         ) {
             self.environment = environment
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
-            self.bundleShortVersion = bundleShortVersion
-            self.executableName = executableName
+            self.bundleName = bundleName
             self.mobileDevice = mobileDevice
         }
     }
