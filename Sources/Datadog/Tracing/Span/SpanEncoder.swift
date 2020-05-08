@@ -134,7 +134,6 @@ internal struct SpanEncoder {
         try encodeDefaultMeta(span, to: &container)
 
         var customAttributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        // TODO: RUMM-402 Encode custom metrics from `DDSpan` (coding key: `metrics.*`)
         try encodeCustomMeta(span, to: &customAttributesContainer)
     }
 

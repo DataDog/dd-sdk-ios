@@ -108,8 +108,6 @@ class DDTracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.duration(), 500_000_000)
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag1"), "string value")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag2"), "123")
-
-        // TODO: RUMM-402 assert custom `metrics.*`
     }
 
     func testSendingSpanWithParent() throws {
