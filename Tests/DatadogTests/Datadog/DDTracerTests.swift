@@ -8,20 +8,6 @@ import XCTest
 import OpenTracing
 @testable import Datadog
 
-class DDTracerConfigurationTests: XCTestCase {
-    private typealias Configuration = DDTracer.Configuration
-
-    func testDefaultConfiguration() {
-        let defaultConfiguration = Configuration()
-        XCTAssertEqual(defaultConfiguration.serviceName, Datadog.Configuration.Defaults.serviceName)
-    }
-
-    func testCustomConfiguration() {
-        let defaultConfiguration = Configuration(serviceName: "abc")
-        XCTAssertEqual(defaultConfiguration.serviceName, "abc")
-    }
-}
-
 // swiftlint:disable multiline_arguments_brackets
 // swiftlint:disable trailing_closure
 class DDTracerTests: XCTestCase {

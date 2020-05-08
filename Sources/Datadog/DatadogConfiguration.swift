@@ -9,12 +9,6 @@ import Foundation
 extension Datadog {
     /// Datadog SDK configuration.
     public struct Configuration {
-        /// Set of default values for SDK componetns which provide distinct way of initialization (i.e. `Logger` or `DDTracer`).
-        /// NOTE: changing any of this defaults requires corresponding change to public documentation comment.
-        internal struct Defaults {
-            internal static let serviceName: String = "ios"
-        }
-
         /// Determines server to which logs are sent.
         public enum LogsEndpoint {
             /// US based servers.

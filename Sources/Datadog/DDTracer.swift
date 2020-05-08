@@ -8,17 +8,6 @@ import OpenTracing
 import Foundation
 
 public class DDTracer: Tracer {
-    /// Datadog Tracer configuration.
-    public struct Configuration {
-        internal let serviceName: String
-
-        /// Initializes the Datadog Tracer configuration.
-        /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, default value is used: "ios").
-        public init(serviceName: String? = nil) {
-            self.serviceName = serviceName ?? Datadog.Configuration.Defaults.serviceName
-        }
-    }
-
     /// Writes `Span` objects to output.
     private let spanOutput: SpanOutput
 
@@ -40,10 +29,13 @@ public class DDTracer: Tracer {
         guard let tracingFeature = TracingFeature.instance else {
             throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `DDTracer.initialize()`.")
         }
-        return DDTracer(tracingFeature: tracingFeature, tracerConfiguration: configuration)
+        return DDTracer(
+            tracingFeature: tracingFeature,
+            tracerConfiguration: ResolvedConfiguration(tracerConfiguration: configuration)
+        )
     }
 
-    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
+    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: ResolvedConfiguration) {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
