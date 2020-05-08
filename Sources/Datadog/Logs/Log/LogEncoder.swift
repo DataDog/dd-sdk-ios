@@ -49,7 +49,7 @@ internal struct LogEncoder {
 
         // MARK: - Application info
 
-        case applicationVersion = "application.version"
+        case applicationVersion = "version"
 
         // MARK: - Logger info
 
