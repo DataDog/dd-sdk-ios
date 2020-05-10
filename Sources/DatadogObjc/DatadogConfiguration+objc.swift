@@ -32,9 +32,9 @@ public class DDConfiguration: NSObject {
 
     // MARK: - Public
 
-    public static func builder(clientToken: String) -> DDConfigurationBuilder {
+    public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder {
         return DDConfigurationBuilder(
-            sdkBuilder: Datadog.Configuration.builderUsing(clientToken: clientToken)
+            sdkBuilder: Datadog.Configuration.builderUsing(clientToken: clientToken, environment: environment)
         )
     }
 }
@@ -51,6 +51,10 @@ public class DDConfigurationBuilder: NSObject {
 
     public func set(endpoint: DDLogsEndpoint) {
         _ = sdkBuilder.set(logsEndpoint: endpoint.sdkEndpoint)
+    }
+
+    public func set(serviceName: String) {
+        _ = sdkBuilder.set(serviceName: serviceName)
     }
 
     public func build() -> DDConfiguration {

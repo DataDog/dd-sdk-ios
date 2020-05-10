@@ -10,6 +10,8 @@ import Foundation
 internal struct LogBuilder {
     /// Application version to write in log.
     let applicationVersion: String
+    /// Environment to write in log.
+    let environment: String
     /// Service name to write in log.
     let serviceName: String
     /// Logger name to write in log.
@@ -33,6 +35,7 @@ internal struct LogBuilder {
             status: logStatus(for: level),
             message: message,
             serviceName: serviceName,
+            environment: environment,
             loggerName: loggerName,
             loggerVersion: sdkVersion,
             threadName: getCurrentThreadName(),

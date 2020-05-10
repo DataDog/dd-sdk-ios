@@ -72,7 +72,7 @@ internal class MobileDevice {
 
     /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
-    static var current: MobileDevice? {
+    static var current: MobileDevice {
         #if !targetEnvironment(simulator)
         // Real device
         return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)

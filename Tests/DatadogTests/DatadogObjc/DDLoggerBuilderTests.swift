@@ -9,7 +9,6 @@ import XCTest
 @testable import DatadogObjc
 
 class DDLoggerBuilderTests: XCTestCase {
-    private let appContext: AppContext = .mockWith(bundleIdentifier: "com.datadog.sdk-unit-tests")
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
@@ -30,7 +29,11 @@ class DDLoggerBuilderTests: XCTestCase {
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: appContext,
+            configuration: .mockWith(
+                applicationBundleIdentifier: "com.datadog.sdk-unit-tests",
+                serviceName: "default-service-name",
+                environment: "tests"
+            ),
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
@@ -43,7 +46,8 @@ class DDLoggerBuilderTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(logBuilder.serviceName, "ios")
+        XCTAssertEqual(logBuilder.serviceName, "default-service-name")
+        XCTAssertEqual(logBuilder.environment, "tests")
         XCTAssertEqual(logBuilder.loggerName, "com.datadog.sdk-unit-tests")
         XCTAssertNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNil(logBuilder.carrierInfoProvider)
@@ -58,15 +62,15 @@ class DDLoggerBuilderTests: XCTestCase {
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: appContext,
+            configuration: .mockAny(),
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
         defer { LoggingFeature.instance = nil }
 
         let builder = DDLogger.builder()
-        _ = builder.set(serviceName: "custom service name")
-        _ = builder.set(loggerName: "custom logger name")
+        _ = builder.set(serviceName: "custom-service-name")
+        _ = builder.set(loggerName: "custom-logger-name")
         _ = builder.sendNetworkInfo(true)
 
         let objcLogger = builder.build()
@@ -77,8 +81,8 @@ class DDLoggerBuilderTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(logBuilder.serviceName, "custom service name")
-        XCTAssertEqual(logBuilder.loggerName, "custom logger name")
+        XCTAssertEqual(logBuilder.serviceName, "custom-service-name")
+        XCTAssertEqual(logBuilder.loggerName, "custom-logger-name")
         XCTAssertNotNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNotNil(logBuilder.carrierInfoProvider)
 

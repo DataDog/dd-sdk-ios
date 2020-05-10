@@ -14,44 +14,35 @@ internal let sdkVersion = "1.1.0"
 public class Datadog {
     /// Provides information about the app.
     public struct AppContext {
-        internal let environment: Environment
-        internal let bundleIdentifier: String
+        internal let bundleType: BundleType
+        internal let bundleIdentifier: String?
         /// Executable version (i.e. application version or app extension version)
-        internal let bundleVersion: String
+        internal let bundleVersion: String?
         /// Executable name (i.e. application name or app extension name)
-        internal let bundleName: String
-        /// Describes current mobile device if SDK runs on a platform that supports `UIKit`.
-        internal let mobileDevice: MobileDevice?
+        internal let bundleName: String?
 
         public init(mainBundle: Bundle = Bundle.main) {
-            let environment: Environment = mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
-            let bundleIdentifier = mainBundle.bundleIdentifier
             let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-            let executableName = mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
-            let mobileDevice = MobileDevice.current
 
             self.init(
-                environment: environment,
-                bundleIdentifier: bundleIdentifier ?? "unknown",
-                bundleVersion: bundleShortVersion ?? bundleVersion ?? "0.0.0",
-                bundleName: executableName ?? environment.rawValue,
-                mobileDevice: mobileDevice
+                bundleType: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
+                bundleIdentifier: mainBundle.bundleIdentifier,
+                bundleVersion: bundleShortVersion ?? bundleVersion,
+                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
             )
         }
 
         internal init(
-            environment: Environment,
-            bundleIdentifier: String,
-            bundleVersion: String,
-            bundleName: String,
-            mobileDevice: MobileDevice?
+            bundleType: BundleType,
+            bundleIdentifier: String?,
+            bundleVersion: String?,
+            bundleName: String?
         ) {
-            self.environment = environment
+            self.bundleType = bundleType
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleName = bundleName
-            self.mobileDevice = mobileDevice
         }
     }
 
@@ -90,13 +81,17 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        let logsUploadURLProvider = try UploadURLProvider(
-            endpointURL: configuration.logsEndpoint.url,
-            clientToken: configuration.clientToken,
+        let validConfiguration = try ValidConfiguration(
+            configuration: configuration,
+            appContext: appContext
+        )
+
+        let logsUploadURLProvider = UploadURLProvider(
+            urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
             dateProvider: SystemDateProvider()
         )
 
-        let performance = PerformancePreset.best(for: appContext.environment)
+        let performance = PerformancePreset.best(for: appContext.bundleType)
         let dateProvider = SystemDateProvider()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -112,8 +107,9 @@ public class Datadog {
 
         LoggingFeature.instance = LoggingFeature(
             directory: try obtainLoggingFeatureDirectory(),
-            appContext: appContext,
+            configuration: validConfiguration,
             performance: performance,
+            mobileDevice: MobileDevice.current,
             httpClient: httpClient,
             logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,

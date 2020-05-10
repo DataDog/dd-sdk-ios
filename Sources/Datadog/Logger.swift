@@ -260,14 +260,14 @@ public class Logger {
     ///           .build()
     ///
     public class Builder {
-        private var serviceName: String = "ios"
+        private var serviceName: String?
         private var loggerName: String?
         private var sendNetworkInfo: Bool = false
         private var useFileOutput = true
         private var useConsoleLogFormat: ConsoleLogFormat?
 
         /// Sets the service name that will appear in logs.
-        /// - Parameter serviceName: the service name (default value is "ios")
+        /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
         public func set(serviceName: String) -> Builder {
             self.serviceName = serviceName
             return self
@@ -347,8 +347,9 @@ public class Logger {
 
         private func resolveLogsOutput(for loggingFeature: LoggingFeature) -> LogOutput {
             let logBuilder = LogBuilder(
-                applicationVersion: loggingFeature.appContext.bundleVersion,
-                serviceName: serviceName,
+                applicationVersion: loggingFeature.configuration.applicationVersion,
+                environment: loggingFeature.configuration.environment,
+                serviceName: serviceName ?? loggingFeature.configuration.serviceName,
                 loggerName: resolveLoggerName(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
                 userInfoProvider: loggingFeature.userInfoProvider,
@@ -386,7 +387,7 @@ public class Logger {
         }
 
         private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
-            return loggerName ?? loggingFeature.appContext.bundleIdentifier
+            return loggerName ?? loggingFeature.configuration.applicationBundleIdentifier
         }
     }
 }

@@ -13,7 +13,7 @@ class LoggingFeatureTests: XCTestCase {
         Datadog.initialize(
             appContext: appContext,
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc")
+                .builderUsing(clientToken: "abc", environment: "tests")
                 .build()
         )
 

@@ -17,9 +17,12 @@ internal final class LoggingFeature {
     /// Single, shared instance of `LoggingFeature`.
     internal static var instance: LoggingFeature?
 
+    // MARK: - Configuration
+
+    let configuration: Datadog.ValidConfiguration
+
     // MARK: - Dependencies
 
-    let appContext: AppContext
     let dateProvider: DateProvider
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
@@ -67,8 +70,9 @@ internal final class LoggingFeature {
 
         init(
             storage: Storage,
-            appContext: AppContext,
+            configuration: Datadog.ValidConfiguration,
             performance: PerformancePreset,
+            mobileDevice: MobileDevice,
             httpClient: HTTPClient,
             logsUploadURLProvider: UploadURLProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderType
@@ -76,7 +80,11 @@ internal final class LoggingFeature {
             let dataUploader = DataUploader(
                 urlProvider: logsUploadURLProvider,
                 httpClient: httpClient,
-                httpHeaders: HTTPHeaders(appContext: appContext)
+                httpHeaders: HTTPHeaders(
+                    appName: configuration.applicationName,
+                    appVersion: configuration.applicationVersion,
+                    device: mobileDevice
+                )
             )
 
             let uploadQueue = DispatchQueue(
@@ -84,19 +92,10 @@ internal final class LoggingFeature {
                 target: .global(qos: .utility)
             )
 
-            let uploadConditions: DataUploadConditions = {
-                if let mobileDevice = appContext.mobileDevice {
-                    return DataUploadConditions(
-                        batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                        networkConnectionInfo: networkConnectionInfoProvider
-                    )
-                } else {
-                    return DataUploadConditions(
-                        batteryStatus: nil,
-                        networkConnectionInfo: networkConnectionInfoProvider
-                    )
-                }
-            }()
+            let uploadConditions = DataUploadConditions(
+                batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
+                networkConnectionInfo: networkConnectionInfoProvider
+            )
 
             self.uploader = DataUploadWorker(
                 queue: uploadQueue,
@@ -112,8 +111,9 @@ internal final class LoggingFeature {
 
     init(
         directory: Directory,
-        appContext: AppContext,
+        configuration: Datadog.ValidConfiguration,
         performance: PerformancePreset,
+        mobileDevice: MobileDevice,
         httpClient: HTTPClient,
         logsUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
@@ -121,8 +121,10 @@ internal final class LoggingFeature {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType
     ) {
+        // Configuration
+        self.configuration = configuration
+
         // Bundle dependencies
-        self.appContext = appContext
         self.dateProvider = dateProvider
         self.userInfoProvider = userInfoProvider
         self.networkConnectionInfoProvider = networkConnectionInfoProvider
@@ -136,8 +138,9 @@ internal final class LoggingFeature {
         )
         self.upload = Upload(
             storage: self.storage,
-            appContext: appContext,
+            configuration: configuration,
             performance: performance,
+            mobileDevice: mobileDevice,
             httpClient: httpClient,
             logsUploadURLProvider: logsUploadURLProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider

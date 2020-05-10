@@ -18,6 +18,7 @@ extension Log {
         status: Log.Status = .mockAny(),
         message: String = .mockAny(),
         serviceName: String = .mockAny(),
+        environment: String = .mockAny(),
         loggerName: String = .mockAny(),
         loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
@@ -33,6 +34,7 @@ extension Log {
             status: status,
             message: message,
             serviceName: serviceName,
+            environment: environment,
             loggerName: loggerName,
             loggerVersion: loggerVersion,
             threadName: threadName,
@@ -66,6 +68,7 @@ extension LogBuilder {
     static func mockWith(
         date: Date = .mockAny(),
         applicationVersion: String = .mockAny(),
+        environment: String = .mockAny(),
         serviceName: String = .mockAny(),
         loggerName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -74,6 +77,7 @@ extension LogBuilder {
     ) -> LogBuilder {
         return LogBuilder(
             applicationVersion: applicationVersion,
+            environment: environment,
             serviceName: serviceName,
             loggerName: loggerName,
             dateProvider: RelativeDateProvider(using: date),

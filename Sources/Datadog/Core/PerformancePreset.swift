@@ -96,8 +96,8 @@ internal struct PerformancePreset: Equatable {
         logsUploadDelayDecreaseFactor: 0.5 // reduce significantly for more uploads in short-lived extensions
     )
 
-    static func best(for environment: Environment) -> PerformancePreset {
-        switch environment {
+    static func best(for bundleType: BundleType) -> PerformancePreset {
+        switch bundleType {
         case .iOSApp: return `default`
         case .iOSAppExtension: return instantDataDelivery
         }
