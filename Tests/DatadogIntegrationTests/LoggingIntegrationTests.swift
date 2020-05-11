@@ -63,6 +63,7 @@ class LoggingIntegrationTests: IntegrationTests {
                     "logger-attribute1": "string value",
                     "logger-attribute2": 1_000,
                     "attribute": "value",
+                    "some-url": "https://example.com/image.png"
                 ]
             )
             matcher.assertTags(equal: ["build_configuration:release", "tag1:tag-value", "tag2"])

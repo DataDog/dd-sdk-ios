@@ -16,6 +16,7 @@ internal class SendLogsFixtureViewController: UIViewController {
 
         logger.addAttribute(forKey: "logger-attribute1", value: "string value")
         logger.addAttribute(forKey: "logger-attribute2", value: 1_000)
+        logger.addAttribute(forKey: "some-url", value: URL(string: "https://example.com/image.png")!)
 
         logger.debug("debug message", attributes: ["attribute": "value"])
         logger.info("info message", attributes: ["attribute": "value"])

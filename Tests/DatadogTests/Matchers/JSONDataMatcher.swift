@@ -22,7 +22,8 @@ internal class JSONDataMatcher {
 
     func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {
         let thisJSON = json as NSDictionary
-        let theirJSON = try jsonString.data(using: .utf8)!.toJSONObject() as NSDictionary // swiftlint:disable:this force_unwrapping
+        let theirJSON = try jsonString.data(using: .utf8)!
+            .toJSONObject(file: file, line: line) as NSDictionary // swiftlint:disable:this force_unwrapping
 
         XCTAssertEqual(thisJSON, theirJSON, file: file, line: line)
     }

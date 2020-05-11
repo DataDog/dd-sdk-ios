@@ -22,6 +22,8 @@ internal class SendTracesFixtureViewController: UIViewController {
             operationName: "data downloading",
             childOf: viewAppearingSpan.context
         )
+        dataDownloadingSpan.setTag(key: "data.kind", value: "image")
+        dataDownloadingSpan.setTag(key: "data.url", value: URL(string: "https://example.com/image.png")!)
 
         downloadSomeData { [weak self] data in
             dataDownloadingSpan.finish()
