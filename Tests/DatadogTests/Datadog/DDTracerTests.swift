@@ -412,7 +412,7 @@ class DDTracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.array-of-int"), "[1,2,3]")
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.dictionary-with-date"),
-            #"{"date":598096800}"#
+            #"{"date":"2019-12-15T10:00:00.000Z"}"#
         )
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.person"),

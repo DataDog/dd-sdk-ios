@@ -166,6 +166,9 @@
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
 		9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E085879242519FF001A3583 /* NetworkPathMonitor.swift */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
+		9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */; };
+		9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
+		9E58E8E324615EDA008E5063 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* EncodingTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 /* End PBXBuildFile section */
@@ -433,6 +436,9 @@
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
 		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
+		9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DateFormatter.swift; sourceTree = "<group>"; };
+		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
+		9E58E8E224615EDA008E5063 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
 		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
@@ -575,6 +581,8 @@
 			isa = PBXGroup;
 			children = (
 				61133BA02423979B00786299 /* EncodableValue.swift */,
+				9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */,
+				9E58E8E024615C75008E5063 /* JSONEncoder.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -840,6 +848,7 @@
 			children = (
 				61133C362423990D00786299 /* InternalLoggersTests.swift */,
 				9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */,
+				9E58E8E224615EDA008E5063 /* EncodingTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1448,6 +1457,7 @@
 				9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */,
 				61C5A8A724509FAA00DA608C /* SpanBuilder.swift in Sources */,
 				61AD4E3824531500006E34EA /* DataFormat.swift in Sources */,
+				9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */,
 				61133BCA2423979B00786299 /* EncodableValue.swift in Sources */,
 				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
 				617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */,
@@ -1459,6 +1469,7 @@
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61C5A8A624509FAA00DA608C /* SpanEncoder.swift in Sources */,
 				61C5A88E24509A1F00DA608C /* DDTracer.swift in Sources */,
+				9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfo.swift in Sources */,
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
@@ -1529,6 +1540,7 @@
 				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
 				61133C5E2423990D00786299 /* LogsUploadDelayTests.swift in Sources */,
 				61133C5C2423990D00786299 /* DataUploadWorkerTests.swift in Sources */,
+				9E58E8E324615EDA008E5063 /* EncodingTests.swift in Sources */,
 				61133C692423990D00786299 /* LogFileOutputTests.swift in Sources */,
 				61133C682423990D00786299 /* LogUtilityOutputsTests.swift in Sources */,
 				61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */,

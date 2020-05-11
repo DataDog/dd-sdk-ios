@@ -9,7 +9,11 @@ import XCTest
 /// Provides set of assertions for single `Log` JSON object or collection of `[Log]`.
 /// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
 internal class LogMatcher: JSONDataMatcher {
-    private static let dateFormatter = ISO8601DateFormatter()
+    private static let dateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions.insert(.withFractionalSeconds)
+        return formatter
+    }()
 
     /// Log JSON keys.
     struct JSONKey {

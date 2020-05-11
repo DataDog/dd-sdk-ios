@@ -62,15 +62,3 @@ internal struct SpanBuilder {
         }
     }
 }
-
-extension JSONEncoder {
-    // NOTE: RUMM-403 This will conflict with `JSONEncoder.default` after merging `master` into `tracing`.
-    // Use `master's` one and remove this extension.
-    static func `default`() -> JSONEncoder {
-        let encoder = JSONEncoder()
-        if #available(iOS 13.0, OSX 10.15, *) {
-            encoder.outputFormatting = [.withoutEscapingSlashes]
-        }
-        return encoder
-    }
-}
