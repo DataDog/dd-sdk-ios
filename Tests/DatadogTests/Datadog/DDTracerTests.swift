@@ -42,7 +42,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         let span = tracer.startSpan(operationName: "operation")
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
@@ -92,7 +92,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         let span = tracer.startSpan(operationName: "operation", tags: ["tag1": "value1"], startTime: .mockDecember15th2019At10AMUTC())
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
@@ -113,7 +113,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         let rootSpan = tracer.startSpan(operationName: "root operation")
         let childSpan = tracer.startSpan(operationName: "child operation", childOf: rootSpan.context)
@@ -166,7 +166,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         tracer.startSpan(operationName: "span with no user info").finish()
 
@@ -209,7 +209,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         // simulate entering cellular service range
         carrierInfoProvider.set(
@@ -252,7 +252,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         // simulate reachable network
         networkConnectionInfoProvider.set(
@@ -318,7 +318,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         tracer.startSpan(operationName: .mockAny()).finish()
 
@@ -336,7 +336,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         tracer.startSpan(operationName: .mockAny()).finish()
 
@@ -362,6 +362,22 @@ class DDTracerTests: XCTestCase {
     }
 
     // MARK: - Initialization
+
+    // TODO: RUMM-339 Move this test to obj-c wrapper tests, similarly to what we do for `DDLoggerBuilderTests`
+    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        XCTAssertNil(Datadog.instance)
+
+        let tracer = DDTracer.initialize(configuration: .init())
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
+        )
+        XCTAssertTrue(tracer is DDNoopTracer)
+    }
 
     // TODO: RUMM-339 Move this test to obj-c wrapper tests, similarly to what we do for `DDLoggerBuilderTests`
     func testGivenDatadogNotInitialized_whenUsingTracer_itPrintsError() {

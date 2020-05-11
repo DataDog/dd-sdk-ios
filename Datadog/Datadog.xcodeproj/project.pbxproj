@@ -159,6 +159,8 @@
 		61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */; };
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
+		61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* DDTracerConfiguration.swift */; };
+		61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */; };
 		61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
 		9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E085879242519FF001A3583 /* NetworkPathMonitor.swift */; };
@@ -423,6 +425,8 @@
 		61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanFileOutputTests.swift; sourceTree = "<group>"; };
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		61E45ED02451A8730061DAC7 /* SpanMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanMatcher.swift; sourceTree = "<group>"; };
+		61E917D02465423600E6C631 /* DDTracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfiguration.swift; sourceTree = "<group>"; };
+		61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfigurationTests.swift; sourceTree = "<group>"; };
 		61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureMocks.swift; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
 		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
@@ -541,6 +545,7 @@
 				61133BBB2423979B00786299 /* Datadog.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
 				61C5A88D24509A1F00DA608C /* DDTracer.swift */,
+				61E917D02465423600E6C631 /* DDTracerConfiguration.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133B9E2423979B00786299 /* Core */,
 				61133BBC2423979B00786299 /* Logs */,
@@ -744,6 +749,7 @@
 				61133C412423990D00786299 /* DatadogTests.swift */,
 				61133C382423990D00786299 /* LoggerTests.swift */,
 				61C5A89524509BF600DA608C /* DDTracerTests.swift */,
+				61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */,
 				61133C212423990D00786299 /* Core */,
 				61133C392423990D00786299 /* Logs */,
 				61C5A89724509C1100DA608C /* Tracing */,
@@ -1421,6 +1427,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */,
 				61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
@@ -1492,6 +1499,7 @@
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
+				61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */,
 				61C5A89D24509C1100DA608C /* DDSpanTests.swift in Sources */,
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
 				61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */,

@@ -22,13 +22,13 @@ class DataUploadURLProviderTests: XCTestCase {
 
     func testWhenClientTokenIsInvalid_itThrowsProgrammerError() {
         XCTAssertThrowsError(try UploadURLProvider(endpointURL: "https://api.example.com/v1/endpoint", clientToken: "", dateProvider: dateProvider)) { error in
-            XCTAssertEqual((error as? ProgrammerError)?.description, "Datadog SDK usage error: `clientToken` cannot be empty.")
+            XCTAssertEqual((error as? ProgrammerError)?.description, "🔥 Datadog SDK usage error: `clientToken` cannot be empty.")
         }
     }
 
     func testWhenEndpointURLIsInvalid_itThrowsProgrammerError() {
         XCTAssertThrowsError(try UploadURLProvider(endpointURL: "", clientToken: "abc", dateProvider: dateProvider)) { error in
-            XCTAssertEqual((error as? ProgrammerError)?.description, "Datadog SDK usage error: `endpointURL` cannot be empty.")
+            XCTAssertEqual((error as? ProgrammerError)?.description, "🔥 Datadog SDK usage error: `endpointURL` cannot be empty.")
         }
     }
 

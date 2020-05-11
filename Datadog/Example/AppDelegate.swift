@@ -46,7 +46,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .build()
 
         // Register global tracer
-        Global.sharedTracer = DDTracer()
+        Global.sharedTracer = DDTracer.initialize(
+            configuration: DDTracer.Configuration(
+                serviceName: appConfig.serviceName
+            )
+        )
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug

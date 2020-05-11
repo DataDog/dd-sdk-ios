@@ -53,7 +53,7 @@ class TracingFeatureTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         let span = tracer.startSpan(operationName: "operation 1")
         span.finish()
@@ -76,7 +76,7 @@ class TracingFeatureTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         let span = tracer.startSpan(operationName: "operation 1")
         span.finish()
@@ -114,7 +114,7 @@ class TracingFeatureTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer(tracingFeature: TracingFeature.instance!)
+        let tracer = DDTracer.initialize(configuration: .init()).dd
 
         tracer.startSpan(operationName: "operation 1").finish()
         tracer.startSpan(operationName: "operation 2").finish()

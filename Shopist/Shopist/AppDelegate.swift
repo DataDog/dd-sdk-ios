@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .build()
 
         // Register global tracer
-        Global.sharedTracer = DDTracer(tracingFeature: TracingFeature.instance!) // TODO: RUMM-332 Use public `DDTracer` initializer
+        Global.sharedTracer = DDTracer.initialize(configuration: .init(serviceName: appConfig.serviceName))
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
