@@ -260,11 +260,11 @@ public class Logger {
     ///           .build()
     ///
     public class Builder {
-        private var serviceName: String?
-        private var loggerName: String?
-        private var sendNetworkInfo: Bool = false
-        private var useFileOutput = true
-        private var useConsoleLogFormat: ConsoleLogFormat?
+        internal var serviceName: String?
+        internal var loggerName: String?
+        internal var sendNetworkInfo: Bool = false
+        internal var useFileOutput = true
+        internal var useConsoleLogFormat: ConsoleLogFormat?
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
@@ -285,7 +285,7 @@ public class Logger {
         /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
         /// - Parameter enabled: `false` by default
         public func sendNetworkInfo(_ enabled: Bool) -> Builder {
-            sendNetworkInfo = true
+            sendNetworkInfo = enabled
             return self
         }
 
