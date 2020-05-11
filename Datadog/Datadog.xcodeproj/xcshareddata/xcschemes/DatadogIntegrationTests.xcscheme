@@ -14,7 +14,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "DatadogIntegrationTests.xctest"
                      BlueprintName = "DatadogIntegrationTests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
@@ -28,7 +28,7 @@
       buildConfiguration = "Integration"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "NO">
       <PreActions>
          <ExecutionAction
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
@@ -38,7 +38,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "DatadogIntegrationTests.xctest"
                      BlueprintName = "DatadogIntegrationTests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
@@ -56,7 +56,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "DatadogIntegrationTests.xctest"
                      BlueprintName = "DatadogIntegrationTests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
@@ -65,12 +65,18 @@
             </ActionContent>
          </ExecutionAction>
       </PostActions>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "IS_RUNNING_UI_TESTS"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+               BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                BuildableName = "DatadogIntegrationTests.xctest"
                BlueprintName = "DatadogIntegrationTests"
                ReferencedContainer = "container:Datadog.xcodeproj">

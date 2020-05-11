@@ -6,41 +6,33 @@
 
 import XCTest
 import HTTPServerMock
-@testable import Datadog
 
-/// Shared server instance for all test cases.
-private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
-/// Shared server session for all test cases.
-private(set) var serverSession: ServerSession! // swiftlint:disable:this implicitly_unwrapped_optional
+struct ServerConnectionError: Error {
+    let description: String
+}
 
 /// Base class providing mock server instrumentation.
-class BenchmarkTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        if server == nil { server = try! setUpMockServerConnection() }
-        if serverSession == nil { serverSession = server.obtainUniqueRecordingSession() }
-    }
+class IntegrationTests: XCTestCase {
+    private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    var serverSession: ServerSession! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        Datadog.initialize(
-            appContext: Datadog.AppContext(mainBundle: Bundle.main),
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "client-token")
-                .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
-                .build()
-        )
+        server = try! connectToServer()
+        serverSession = server.obtainUniqueRecordingSession()
     }
 
-    override func tearDown() {
-        try! Datadog.deinitializeOrThrow()
-        super.tearDown()
+    override func tearDownWithError() throws {
+        server = nil
+        serverSession = nil
+
+        try super.tearDownWithError()
     }
 
     // MARK: - `HTTPServerMock` connection
 
-    private static func setUpMockServerConnection() throws -> ServerMock {
-        let testsBundle = Bundle(for: BenchmarkTests.self)
+    func connectToServer() throws -> ServerMock {
+        let testsBundle = Bundle(for: IntegrationTests.self)
         guard let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String else {
             throw ServerConnectionError(description: "Cannot obtain `MockServerAddress` from `Info.plist`")
         }

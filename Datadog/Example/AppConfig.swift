@@ -6,13 +6,20 @@
 
 import Foundation
 
-struct ExampleAppConfig {
-    /// Client token read from `Datadog.xcconfig`.
+protocol AppConfig {
+    /// Client token obtained on Datadog website.
+    var clientToken: String { get }
+    /// Service name used for logs and traces.
+    var serviceName: String { get }
+}
+
+struct ExampleAppConfig: AppConfig {
+    /// Client token read from `datadog.local.xcconfig`.
     let clientToken: String
     /// Service name used for logs and traces.
-    let serviceName: String
+    let serviceName = "ios-sdk-example-app"
 
-    init(serviceName: String) {
+    init() {
         guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `DATADOG_CLIENT_TOKEN` from `Info.plist` dictionary.
@@ -23,6 +30,21 @@ struct ExampleAppConfig {
         }
 
         self.clientToken = clientToken
-        self.serviceName = serviceName
+    }
+}
+
+struct UITestAppConfig: AppConfig {
+    /// Mocked client token for UITests
+    let clientToken = "uitests-client-token"
+    /// Mocked service name for UITests
+    let serviceName = "uitests-service-name"
+}
+
+/// Returns different `AppConfig` when running in UI Tests or launching directly.
+func currentAppConfig() -> AppConfig {
+    if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
+        return UITestAppConfig()
+    } else {
+        return ExampleAppConfig()
     }
 }

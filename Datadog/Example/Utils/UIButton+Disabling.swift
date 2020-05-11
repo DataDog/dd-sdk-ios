@@ -11,7 +11,11 @@ extension UIButton {
         let originalBackgroundColor = self.backgroundColor
 
         self.isEnabled = false
-        self.backgroundColor = .systemGray4
+        if #available(iOS 13.0, *) {
+            self.backgroundColor = .systemGray4
+        } else {
+            self.backgroundColor = .systemGray
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
             self?.isEnabled = true

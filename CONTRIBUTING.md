@@ -52,12 +52,8 @@ $ make
 
 #### Tests
 
-`DatadogTests` (unit tests) and `DatadogIntegrationTests` source files
+`DatadogTests` (unit tests), `DatadogIntegrationTests` (integration tests), and `DatadogBenchmarkTests` (benchmarks) source files
 
 #### Dependency manager tests
 
 Isolated example apps using `cocoapods`, `carthage` and `spm` to ensure SDK is well integrated with all supported dependency managers.
-  
-#### Examples (to be removed)
-
-Example apps for different package managers

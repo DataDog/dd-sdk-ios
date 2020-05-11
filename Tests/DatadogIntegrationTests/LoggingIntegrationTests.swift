@@ -4,7 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Datadog
+@testable import Datadog // TODO RUMM-299 change to regular import after fixtures are moved to host app
 import HTTPServerMock
 import XCTest
 
