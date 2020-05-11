@@ -8,7 +8,7 @@ import Foundation
 
 /// Returns `true` if the warning was raised. `false` otherwise.
 internal func warn(if condition: @autoclosure () -> Bool, message: String) -> Bool {
-    if condition() { // TODO: RUMM-340 Consider thread safety
+    if condition() {
         userLogger.warn(message)
         return true
     } else {

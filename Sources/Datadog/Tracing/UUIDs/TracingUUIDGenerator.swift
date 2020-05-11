@@ -13,7 +13,7 @@ internal protocol TracingUUIDGenerator {
 internal struct DefaultTracingUUIDGenerator: TracingUUIDGenerator {
     func generateUnique() -> TracingUUID {
        // TODO: RUMM-333 Add boundaries to trace & span ID generation, keeping in mind that `0` is reserved (ref: DDTracer.java#L600)
-       // TODO: RUMM-340 Consider thread safety
+       // NOTE: RUMM-340 Consider thread safety if the generation will depend on local state
        return TracingUUID(rawValue: .random(in: 1...UInt64.max))
    }
 }

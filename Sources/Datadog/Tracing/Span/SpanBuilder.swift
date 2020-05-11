@@ -23,10 +23,6 @@ internal struct SpanBuilder {
     private let tagsJSONEncoder: JSONEncoder = .default()
 
     func createSpan(from ddspan: DDSpan, finishTime: Date) throws -> Span {
-        guard let context = ddspan.context.dd else {
-            throw InternalError(description: "`SpanBuilder` inconsistency - unrecognized span context.")
-        }
-
         let jsonStringEncodedTags = Dictionary(
             uniqueKeysWithValues: ddspan.tags.map { name, value in
                 (name, JSONStringEncodableValue(value, encodedUsing: tagsJSONEncoder))
@@ -34,9 +30,9 @@ internal struct SpanBuilder {
         )
 
         return Span(
-            traceID: context.traceID,
-            spanID: context.spanID,
-            parentID: context.parentSpanID,
+            traceID: ddspan.ddContext.traceID,
+            spanID: ddspan.ddContext.spanID,
+            parentID: ddspan.ddContext.parentSpanID,
             operationName: ddspan.operationName,
             serviceName: serviceName,
             resource: ddspan.operationName, // TODO: RUMM-400 use `resourceName`: `resource: ddspan.resourceName ?? ddspan.operationName`

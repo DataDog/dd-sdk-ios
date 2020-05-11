@@ -477,6 +477,40 @@ class DDTracerTests: XCTestCase {
             XCTAssertEqual(printFunction.printedMessage, "🔥 Datadog SDK usage error: \(expectedConsoleError)")
         }
     }
+
+    // MARK: - Thread safety
+
+    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        let tracer = DDTracer.initialize(configuration: .init())
+        var spans: [DDSpan] = []
+        let queue = DispatchQueue(label: "spans-array-sync")
+
+        // Start 20 spans concurrently
+        DispatchQueue.concurrentPerform(iterations: 20) { iteration in
+            let span = tracer.startSpan(operationName: "operation \(iteration)", childOf: nil).dd
+            queue.async { spans.append(span) }
+        }
+
+        queue.sync {} // wait for all spans in the array
+
+        /// Calls given closure on each span cuncurrently
+        func testThreadSafety(closure: @escaping (DDSpan) -> Void) {
+            DispatchQueue.concurrentPerform(iterations: 100) { iteration in
+                closure(spans[iteration % spans.count])
+            }
+        }
+
+        testThreadSafety { span in span.setTag(key: .mockRandom(among: "abcde", length: 1), value: "value") }
+        testThreadSafety { span in span.setBaggageItem(key: .mockRandom(among: "abcde", length: 1), value: "value") }
+        testThreadSafety { span in span.log(fields: [.mockRandom(among: "abcde", length: 1): "value"]) }
+        testThreadSafety { span in span.finish() }
+
+        server.waitAndAssertNoRequestsSent()
+    }
 }
 // swiftlint:enable multiline_arguments_brackets
 // swiftlint:enable trailing_closure
