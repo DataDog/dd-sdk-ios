@@ -2,12 +2,13 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="gra-d4-cht">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Features-->
+        <!--Testing-->
         <scene sceneID="2o7-u6-GFX">
             <objects>
                 <tableViewController id="inJ-zN-6Pz" sceneMemberID="viewController">
@@ -16,12 +17,12 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <view key="tableFooterView" contentMode="scaleToFill" id="wle-IX-rUl">
-                            <rect key="frame" x="0.0" y="143" width="414" height="0.0"/>
+                            <rect key="frame" x="0.0" y="286" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         </view>
                         <sections>
-                            <tableViewSection id="tgY-ka-MYv">
+                            <tableViewSection headerTitle="Debug features:" id="tgY-ka-MYv">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="xoO-Hn-N29" style="IBUITableViewCellStyleDefault" id="2Id-yJ-iEw">
                                         <rect key="frame" x="0.0" y="28" width="414" height="43.5"/>
@@ -33,7 +34,7 @@
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Logging" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="xoO-Hn-N29">
                                                     <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
-                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
@@ -53,7 +54,7 @@
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Tracing" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="NMa-2j-8ux">
                                                     <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
-                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
@@ -65,13 +66,57 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="UITest scenarios:" id="6Zm-Kj-Vxy">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="cup-8g-amw" style="IBUITableViewCellStyleDefault" id="0R8-Cw-D1v">
+                                        <rect key="frame" x="0.0" y="171" width="414" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0R8-Cw-D1v" id="qW4-7f-cXH">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Send logs for UI Tests" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="cup-8g-amw">
+                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="6cL-Sc-vbm" kind="show" id="65A-jA-yIE"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="Mfa-d4-bXd" style="IBUITableViewCellStyleDefault" id="TY6-N9-9Dp">
+                                        <rect key="frame" x="0.0" y="214.5" width="414" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="TY6-N9-9Dp" id="1CW-VC-avL">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Send traces for UI Tests" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mfa-d4-bXd">
+                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="dQd-PO-4F8" kind="show" id="A9W-uP-Mly"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="inJ-zN-6Pz" id="5kv-dC-RIj"/>
                             <outlet property="delegate" destination="inJ-zN-6Pz" id="bp5-F3-8qt"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Features" id="JeY-0H-yif"/>
+                    <navigationItem key="navigationItem" title="Testing" id="JeY-0H-yif"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RfY-1e-1pV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -96,7 +141,7 @@
         <!--Debug Logging View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="DebugLoggingViewController" customModule="Shopist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="DebugLoggingViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -309,12 +354,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-57" y="123"/>
+            <point key="canvasLocation" x="-99" y="-410"/>
         </scene>
         <!--Debug Tracing View Controller-->
         <scene sceneID="qsy-Bu-n9m">
             <objects>
-                <viewController id="FaI-gu-eql" customClass="DebugTracingViewController" customModule="Shopist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="FaI-gu-eql" customClass="DebugTracingViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eNX-qG-oNX">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -586,7 +631,65 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LiQ-0O-emZ" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-58" y="785"/>
+            <point key="canvasLocation" x="264" y="252"/>
+        </scene>
+        <!--Send Logs Fixture View Controller-->
+        <scene sceneID="pAJ-JA-qyP">
+            <objects>
+                <viewController id="6cL-Sc-vbm" customClass="SendLogsFixtureViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="uJg-Zj-2p8">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending logs... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eN3-26-Att">
+                                <rect key="frame" x="146" y="437.5" width="122" height="21"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="eN3-26-Att" firstAttribute="centerY" secondItem="uJg-Zj-2p8" secondAttribute="centerY" id="TYh-qt-WSq"/>
+                            <constraint firstItem="eN3-26-Att" firstAttribute="centerX" secondItem="uJg-Zj-2p8" secondAttribute="centerX" id="bAc-FS-DpA"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="9il-94-ccy"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Obr-1g-kOD"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8d2-uk-OiR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="259" y="915"/>
+        </scene>
+        <!--Send Traces Fixture View Controller-->
+        <scene sceneID="LEY-wo-4ju">
+            <objects>
+                <viewController id="dQd-PO-4F8" customClass="SendTracesFixtureViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="iEH-Jh-wcF">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending traces... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OQc-SX-UQJ">
+                                <rect key="frame" x="138" y="437.5" width="138" height="21"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="OQc-SX-UQJ" firstAttribute="centerX" secondItem="iEH-Jh-wcF" secondAttribute="centerX" id="Mme-MH-jDz"/>
+                            <constraint firstItem="OQc-SX-UQJ" firstAttribute="centerY" secondItem="iEH-Jh-wcF" secondAttribute="centerY" id="tS3-bZ-ee7"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="5fD-Q8-BQ1"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="ap5-Ws-Q2y"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6qc-vU-hqo" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-309" y="1611"/>
         </scene>
     </scenes>
 </document>

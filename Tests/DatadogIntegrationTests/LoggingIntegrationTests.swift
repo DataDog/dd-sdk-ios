@@ -4,58 +4,32 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-@testable import Datadog // TODO RUMM-299 change to regular import after fixtures are moved to host app
 import HTTPServerMock
 import XCTest
 
+// swiftlint:disable trailing_closure
 class LoggingIntegrationTests: IntegrationTests {
     private struct Constants {
         /// Time needed for logs to be uploaded to mock server.
         static let logsDeliveryTime: TimeInterval = 30
     }
 
-    // swiftlint:disable trailing_closure
-    func testLogsAreUploadedToServer() throws {
-        let serverSession = server.obtainUniqueRecordingSession()
-
-        // Initialize SDK
-        Datadog.initialize(
-            appContext: .init(mainBundle: Bundle.init(for: type(of: self))),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "client-token")
-                .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
-                .build()
-        )
-
-        // Create logger
-        let logger = Logger.builder
-            .set(serviceName: "service-name")
-            .set(loggerName: "logger-name")
-            .sendNetworkInfo(true)
-            .build()
-
-        // Send logs
-        logger.addTag(withKey: "tag1", value: "tag-value")
-        logger.add(tag: "tag2")
-
-        logger.addAttribute(forKey: "logger-attribute1", value: "string value")
-        logger.addAttribute(forKey: "logger-attribute2", value: 1_000)
-
-        logger.debug("debug message", attributes: ["attribute": "value"])
-        logger.info("info message", attributes: ["attribute": "value"])
-        logger.notice("notice message", attributes: ["attribute": "value"])
-        logger.warn("warn message", attributes: ["attribute": "value"])
-        logger.error("error message", attributes: ["attribute": "value"])
-        logger.critical("critical message", attributes: ["attribute": "value"])
+    func testLaunchTheAppAndSendLogs() throws {
+        let app = ExampleApplication()
+        app.launchWith(mockServerURL: serverSession.recordingURL)
+        app.tapSendLogsForUITests()
 
         // Wait for delivery
         Thread.sleep(forTimeInterval: Constants.logsDeliveryTime)
 
-        // Assert
+        // Assert requests
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
-            XCTAssertTrue(request.path.contains("/client-token?ddsource=mobile"))
+            XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=mobile"))
+            XCTAssertTrue(request.httpHeaders.contains("Content-Type: application/json"))
         }
 
+        // Assert logs
         let logMatchers = try recordedRequests
             .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
 
@@ -79,7 +53,7 @@ class LoggingIntegrationTests: IntegrationTests {
 
         logMatchers.forEach { matcher in
             matcher.assertDate(matches: { Date().timeIntervalSince($0) < Constants.logsDeliveryTime * 2 })
-            matcher.assertServiceName(equals: "service-name")
+            matcher.assertServiceName(equals: "ui-tests-service-name")
             matcher.assertLoggerName(equals: "logger-name")
             matcher.assertLoggerVersion(matches: { version in version.split(separator: ".").count == 3 })
             matcher.assertApplicationVersion(equals: "1.0")
@@ -91,7 +65,7 @@ class LoggingIntegrationTests: IntegrationTests {
                     "attribute": "value",
                 ]
             )
-            matcher.assertTags(equal: ["tag1:tag-value", "tag2"])
+            matcher.assertTags(equal: ["build_configuration:release", "tag1:tag-value", "tag2"])
 
             matcher.assertValue(
                 forKeyPath: LogMatcher.JSONKey.networkReachability,
@@ -126,5 +100,5 @@ class LoggingIntegrationTests: IntegrationTests {
             #endif
         }
     }
-    // swiftlint:enable trailing_closure
 }
+// swiftlint:enable trailing_closure

@@ -9,6 +9,8 @@ import Datadog
 import OpenTracing
 
 var logger: Logger!
+var tracer: OpenTracing.Tracer { Global.sharedTracer }
+
 let appConfig: AppConfig = currentAppConfig()
 
 @UIApplicationMain
@@ -22,12 +24,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
 
+        if isRunningUITests() {
+            deletePersistedSDKData()
+        }
+
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: appConfig.clientToken)
-                .build()
+            configuration: appConfig.datadogConfiguration
         )
 
         // Set user information
@@ -36,6 +40,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Create logger instance
         logger = Logger.builder
             .set(serviceName: appConfig.serviceName)
+            .set(loggerName: "logger-name")
+            .sendNetworkInfo(true)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
 
@@ -66,4 +72,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 private func isRunningUnitTests() -> Bool {
     return ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UNIT_TESTS")
+}
+
+private func isRunningUITests() -> Bool {
+    return appConfig is UITestAppConfig
+}
+
+private func deletePersistedSDKData() {
+    guard let cachesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+        return
+    }
+
+    do {
+        let dataDirectories = try FileManager.default
+            .contentsOfDirectory(at: cachesDirectoryURL, includingPropertiesForKeys: [.isDirectoryKey, .canonicalPathKey])
+            .filter { $0.absoluteString.contains("com.datadoghq") }
+
+        try dataDirectories.forEach { url in
+            try FileManager.default.removeItem(at: url)
+            print("🧹 Deleted SDK data directory: \(url)")
+        }
+    } catch {
+        print("🔥 Failed to delete SDK data directory: \(error)")
+    }
 }
