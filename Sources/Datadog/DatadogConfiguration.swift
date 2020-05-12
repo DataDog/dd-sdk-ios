@@ -31,34 +31,48 @@ extension Datadog {
 
         internal let clientToken: String
         internal let logsEndpoint: LogsEndpoint
+        internal let serviceName: String?
+        internal let environment: String
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
-        public static func builderUsing(clientToken: String) -> Builder {
-            return Builder(clientToken: clientToken)
+        /// - Parameter environment: the environment name which will be sent to Datadog. This can be used
+        ///  to filter events on different environments (e.g. "staging" or "production").
+        public static func builderUsing(clientToken: String, environment: String) -> Builder {
+            return Builder(clientToken: clientToken, environment: environment)
         }
 
         /// `Datadog.Configuration` builder.
         ///
         /// Usage:
         ///
-        ///     Datadog.Configuration.builderUsing(clientToken: "<client token>")
+        ///     Datadog.Configuration.builderUsing(clientToken: "<client token>", environment: "<env name>")
         ///                           ... // customize using builder methods
         ///                          .build()
         ///
         public class Builder {
-            private let clientToken: String
-            private var logsEndpoint: LogsEndpoint
+            internal let clientToken: String
+            internal let environment: String
+            internal var serviceName: String? = nil
+            internal var logsEndpoint: LogsEndpoint = .us
 
-            internal init(clientToken: String) {
+            internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
-                self.logsEndpoint = .us
+                self.environment = environment
             }
 
             /// Sets the server endpoint to which logs are sent.
-            /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us` )
+            /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
             public func set(logsEndpoint: LogsEndpoint) -> Builder {
                 self.logsEndpoint = logsEndpoint
+                return self
+            }
+
+            /// Sets the default service name associated with data send to Datadog.
+            /// NOTE: The `serviceName` can be also overwriten by each `Logger` instance.
+            /// - Parameter serviceName: the service name (default value is set to application bundle identifier)
+            public func set(serviceName: String) -> Builder {
+                self.serviceName = serviceName
                 return self
             }
 
@@ -66,9 +80,63 @@ extension Datadog {
             public func build() -> Configuration {
                 return Configuration(
                     clientToken: clientToken,
-                    logsEndpoint: logsEndpoint
+                    logsEndpoint: logsEndpoint,
+                    serviceName: serviceName,
+                    environment: environment
                 )
             }
         }
     }
+
+    /// Valid SDK configuration, passed to the features.
+    ///
+    /// It takes two types received from the user: `Datadog.Configuration` and `AppContext` and blends them together
+    /// with resolving defaults and ensuring the configuration consistency.
+    internal struct ValidConfiguration {
+        internal let applicationName: String
+        internal let applicationVersion: String
+        internal let applicationBundleIdentifier: String
+        internal let serviceName: String
+        internal let environment: String
+
+        internal let logsUploadURLWithClientToken: URL
+    }
+}
+
+extension Datadog.ValidConfiguration {
+    init(configuration: Datadog.Configuration, appContext: AppContext) throws {
+        self.init(
+            applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
+            applicationVersion: appContext.bundleVersion ?? "0.0.0",
+            applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
+            serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
+            environment: try ifValid(environment: configuration.environment),
+            logsUploadURLWithClientToken: try ifValid(
+                endpointURLString: configuration.logsEndpoint.url,
+                clientToken: configuration.clientToken
+            )
+        )
+    }
+}
+
+private func ifValid(environment: String) throws -> String {
+    let regex = #"^[a-zA-Z0-9_]+$"#
+    if environment.range(of: regex, options: .regularExpression, range: nil, locale: nil) == nil {
+        throw ProgrammerError(description: "`environment` contains illegal characters (only alphanumerics and `_` are allowed)")
+    }
+    return environment
+}
+
+private func ifValid(endpointURLString: String, clientToken: String) throws -> URL {
+    guard let endpointURL = URL(string: endpointURLString) else {
+        throw ProgrammerError(description: "The `url` in `.custom(url:)` must be a valid URL string.")
+    }
+    guard !clientToken.isEmpty else {
+        throw ProgrammerError(description: "`clientToken` cannot be empty.")
+    }
+    let endpointURLWithClientToken = endpointURL.appendingPathComponent(clientToken)
+    guard let url = URL(string: endpointURLWithClientToken.absoluteString) else {
+        throw ProgrammerError(description: "Cannot build upload URL.")
+    }
+    return url
 }

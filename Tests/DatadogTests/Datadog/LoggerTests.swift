@@ -30,10 +30,11 @@ class LoggerTests: XCTestCase {
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: .mockWith(
-                bundleIdentifier: "com.datadoghq.ios-sdk",
-                bundleVersion: "1.0.0",
-                bundleShortVersion: "1.0.0"
+            configuration: .mockWith(
+                applicationVersion: "1.0.0",
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+                serviceName: "default-service-name",
+                environment: "tests"
             ),
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
@@ -47,12 +48,13 @@ class LoggerTests: XCTestCase {
         {
           "status" : "DEBUG",
           "message" : "message",
-          "service" : "ios",
+          "service" : "default-service-name",
           "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "\(sdkVersion)",
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00.000Z",
-          "application.version": "1.0.0"
+          "version": "1.0.0",
+          "ddtags": "env:tests"
         }
         """)
     }
@@ -355,7 +357,8 @@ class LoggerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
-            directory: temporaryDirectory
+            directory: temporaryDirectory,
+            configuration: .mockWith(environment: "tests")
         )
         defer { LoggingFeature.instance = nil }
 
@@ -383,9 +386,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
-        logMatchers[0].assertTags(equal: ["tag1"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd"])
-        logMatchers[2].assertNoValue(forKey: LogEncoder.StaticCodingKeys.tags.rawValue)
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests"])
+        logMatchers[2].assertTags(equal: ["env:tests"])
     }
 
     // MARK: - Sending logs with different network and battery conditions
@@ -395,12 +398,10 @@ class LoggerTests: XCTestCase {
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: .mockWith(
-                mobileDevice: .mockWith(
-                    currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
-                        .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
-                    }
-                )
+            mobileDevice: .mockWith(
+                currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
+                    .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
+                }
             )
         )
         defer { LoggingFeature.instance = nil }

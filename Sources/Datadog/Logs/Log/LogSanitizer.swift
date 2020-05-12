@@ -29,7 +29,7 @@ internal struct LogSanitizer {
         /// Tag keys reserved for Datadog.
         /// If any of those is used by user, the tag will be ignored.
         static let reservedTagKeys: Set<String> = [
-            "host", "device", "source", "service"
+            "host", "device", "source", "service", "env"
         ]
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
@@ -42,6 +42,7 @@ internal struct LogSanitizer {
             status: log.status,
             message: log.message,
             serviceName: log.serviceName,
+            environment: log.environment,
             loggerName: log.loggerName,
             loggerVersion: log.loggerVersion,
             threadName: log.threadName,

@@ -7,47 +7,53 @@
 import XCTest
 @testable import Datadog
 
-class DatadogConfigurationTests: XCTestCase {
-    private typealias Configuration = Datadog.Configuration
-
-    func testDefaultConfiguration() {
-        let defaultConfiguration = Configuration.builderUsing(clientToken: "abcd").build()
-        XCTAssertEqual(defaultConfiguration.clientToken, "abcd")
-        XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
-    }
-
-    // MARK: - Logs endpoint
-    func testUSLogsEndpoint() {
-        let configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .us).build()
-        XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
-    }
-
-    func testEULogsEndpoint() {
-        let configuration = Configuration.builderUsing(clientToken: .mockAny()).set(logsEndpoint: .eu).build()
-        XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
-    }
-
-    func testCustomLogsEndpoint() {
-        let configuration = Configuration.builderUsing(clientToken: .mockAny())
-            .set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs/"))
-            .build()
-        XCTAssertEqual(configuration.logsEndpoint.url, "https://api.example.com/v1/logs/")
-    }
-}
-
 class AppContextTests: XCTestCase {
-    func testGivenAppBundle_itSetsAppEnvironment() {
-        XCTAssertEqual(AppContext(mainBundle: .mockAppBundle()).environment, .iOSApp)
+    func testBundleType() {
+        let iOSAppBundle: Bundle = .mockWith(bundlePath: "mock.app")
+        let iOSAppExtensionBundle: Bundle = .mockWith(bundlePath: "mock.appex")
+        XCTAssertEqual(AppContext(mainBundle: iOSAppBundle).bundleType, .iOSApp)
+        XCTAssertEqual(AppContext(mainBundle: iOSAppExtensionBundle).bundleType, .iOSAppExtension)
     }
 
-    func testGivenAppExtensionBundle_itSetsAppExtensionEnvironment() {
-        XCTAssertEqual(AppContext(mainBundle: .mockAppExtensionBundle()).environment, .iOSAppExtension)
+    func testBundleIdentifier() throws {
+        XCTAssertEqual(AppContext(mainBundle: .mockWith(bundleIdentifier: "com.abc.app")).bundleIdentifier, "com.abc.app")
+        XCTAssertNil(AppContext(mainBundle: .mockWith(bundleIdentifier: nil)).bundleIdentifier)
+    }
+
+    func testBundleVersion() throws {
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: "1.0", CFBundleShortVersionString: "1.0.0")).bundleVersion,
+            "1.0.0"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: nil, CFBundleShortVersionString: "1.0.0")).bundleVersion,
+            "1.0.0"
+        )
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: "1.0", CFBundleShortVersionString: nil)).bundleVersion,
+            "1.0"
+        )
+        XCTAssertNil(
+            AppContext(mainBundle: .mockWith(CFBundleVersion: nil, CFBundleShortVersionString: nil)).bundleVersion
+        )
+    }
+
+    func testBundleName() throws {
+        XCTAssertEqual(
+            AppContext(mainBundle: .mockWith(bundlePath: .mockAny(), CFBundleExecutable: "FooApp")).bundleName,
+            "FooApp"
+        )
     }
 }
 
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
-    private typealias Config = Datadog.Configuration
+    private let validConfiguration = Datadog.Configuration(
+        clientToken: "abc-def",
+        logsEndpoint: .us,
+        serviceName: "service-name",
+        environment: "tests"
+    )
 
     override func setUp() {
         super.setUp()
@@ -66,19 +72,14 @@ class DatadogTests: XCTestCase {
     // MARK: - Initializing with configuration
 
     func testGivenValidConfiguration_itCanBeInitialized() throws {
-        Datadog.initialize(
-            appContext: .mockAny(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abcdefghi").build()
-        )
+        Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
+
         XCTAssertNotNil(Datadog.instance)
         XCTAssertNoThrow(try Datadog.deinitializeOrThrow())
     }
 
-    func testGivenInvalidLogsUploadURL_whenInitializing_itPrintsError() throws {
-        Datadog.verbosityLevel = .debug
-        defer { Datadog.verbosityLevel = nil }
-
-        let invalidConfig = Config(clientToken: "", logsEndpoint: .us)
+    func testGivenInvalidConfiguration_whenInitializing_itPrintsError() throws {
+        let invalidConfig: Datadog.Configuration = .mockWith(clientToken: "")
         Datadog.initialize(appContext: .mockAny(), configuration: invalidConfig)
 
         XCTAssertEqual(
@@ -88,13 +89,9 @@ class DatadogTests: XCTestCase {
         XCTAssertNil(Datadog.instance)
     }
 
-    func testGivenVerbosityLevelSetToLowest_whenInitializingDatadogMoreThanOnce_itPrintsError() throws {
-        Datadog.verbosityLevel = .debug
-        defer { Datadog.verbosityLevel = nil }
-
-        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us)
-        Datadog.initialize(appContext: .mockAny(), configuration: mockConfig)
-        Datadog.initialize(appContext: .mockAny(), configuration: mockConfig)
+    func testWhenInitializedMoreThanOnce_itPrintsError() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
+        Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
 
         XCTAssertEqual(
             printFunction.printedMessage,
@@ -108,21 +105,5 @@ class DatadogTests: XCTestCase {
 
     func testDefaultVerbosityLevel() {
         XCTAssertNil(Datadog.verbosityLevel)
-    }
-
-    func testDefaultAppContext() throws {
-        let appContext = AppContext()
-        let bundle = Bundle.main
-
-        XCTAssertEqual(appContext.bundleIdentifier, bundle.bundleIdentifier)
-        XCTAssertEqual(appContext.bundleVersion, bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
-        XCTAssertEqual(appContext.bundleShortVersion, bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
-        XCTAssertEqual(appContext.executableName, bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String)
-
-        if MobileDevice.current != nil {
-            XCTAssertNotNil(appContext.mobileDevice)
-        } else {
-            XCTAssertNil(appContext.mobileDevice)
-        }
     }
 }

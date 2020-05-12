@@ -260,14 +260,14 @@ public class Logger {
     ///           .build()
     ///
     public class Builder {
-        private var serviceName: String = "ios"
-        private var loggerName: String?
-        private var sendNetworkInfo: Bool = false
-        private var useFileOutput = true
-        private var useConsoleLogFormat: ConsoleLogFormat?
+        internal var serviceName: String?
+        internal var loggerName: String?
+        internal var sendNetworkInfo: Bool = false
+        internal var useFileOutput = true
+        internal var useConsoleLogFormat: ConsoleLogFormat?
 
         /// Sets the service name that will appear in logs.
-        /// - Parameter serviceName: the service name (default value is "ios")
+        /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
         public func set(serviceName: String) -> Builder {
             self.serviceName = serviceName
             return self
@@ -285,7 +285,7 @@ public class Logger {
         /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
         /// - Parameter enabled: `false` by default
         public func sendNetworkInfo(_ enabled: Bool) -> Builder {
-            sendNetworkInfo = true
+            sendNetworkInfo = enabled
             return self
         }
 
@@ -347,8 +347,9 @@ public class Logger {
 
         private func resolveLogsOutput(for loggingFeature: LoggingFeature) -> LogOutput {
             let logBuilder = LogBuilder(
-                appContext: loggingFeature.appContext,
-                serviceName: serviceName,
+                applicationVersion: loggingFeature.configuration.applicationVersion,
+                environment: loggingFeature.configuration.environment,
+                serviceName: serviceName ?? loggingFeature.configuration.serviceName,
                 loggerName: resolveLoggerName(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
                 userInfoProvider: loggingFeature.userInfoProvider,
@@ -386,7 +387,7 @@ public class Logger {
         }
 
         private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
-            return loggerName ?? loggingFeature.appContext.bundleIdentifier ?? ""
+            return loggerName ?? loggingFeature.configuration.applicationBundleIdentifier
         }
     }
 }

@@ -26,7 +26,7 @@ class BenchmarkTests: XCTestCase {
         Datadog.initialize(
             appContext: Datadog.AppContext(mainBundle: Bundle.main),
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: "client-token")
+                .builderUsing(clientToken: "client-token", environment: "benchmarks")
                 .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
                 .build()
         )

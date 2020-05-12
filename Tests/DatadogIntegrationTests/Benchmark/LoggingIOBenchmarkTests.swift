@@ -81,6 +81,7 @@ class LoggingIOBenchmarkTests: XCTestCase {
             status: .info,
             message: "message \(Int.random(in: 0..<100))",
             serviceName: "service-name",
+            environment: "benchmarks",
             loggerName: "logger-name",
             loggerVersion: "0.0.0",
             threadName: "main",

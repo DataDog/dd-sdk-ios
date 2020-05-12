@@ -26,26 +26,13 @@ class DDDatadogTests: XCTestCase {
 
     func testItFowardsInitializationToSwift() throws {
         DDDatadog.initialize(
-            appContext: .mockAny(),
-            configuration: DDConfiguration.builder(clientToken: "abcefghi").build()
+            appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
+            configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
         XCTAssertNotNil(Datadog.instance)
-
-        try Datadog.deinitializeOrThrow()
-    }
-
-    func testItBuildsDefaultSwiftAppContext() throws {
-        DDDatadog.initialize(appContext: .init(), configuration: .mockAny())
-
-        let objcAppContext = LoggingFeature.instance?.appContext
-        let swiftAppContext = Datadog.AppContext()
-
-        XCTAssertEqual(objcAppContext?.bundleIdentifier, swiftAppContext.bundleIdentifier)
-        XCTAssertEqual(objcAppContext?.bundleVersion, swiftAppContext.bundleVersion)
-        XCTAssertEqual(objcAppContext?.bundleShortVersion, swiftAppContext.bundleShortVersion)
-        XCTAssertEqual(objcAppContext?.executableName, swiftAppContext.executableName)
-        XCTAssertEqual(objcAppContext?.mobileDevice != nil, swiftAppContext.mobileDevice != nil)
+        XCTAssertEqual(LoggingFeature.instance?.configuration.applicationName, "app-name")
+        XCTAssertEqual(LoggingFeature.instance?.configuration.environment, "tests")
 
         try Datadog.deinitializeOrThrow()
     }
@@ -53,7 +40,10 @@ class DDDatadogTests: XCTestCase {
     // MARK: - Setting user info
 
     func testItForwardsUserInfoToSwift() throws {
-        DDDatadog.initialize(appContext: .init(), configuration: .mockAny())
+        DDDatadog.initialize(
+            appContext: .init(),
+            configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
+        )
         let userInfo = Datadog.instance?.userInfoProvider
 
         DDDatadog.setUserInfo(id: "id", name: "name", email: "email")

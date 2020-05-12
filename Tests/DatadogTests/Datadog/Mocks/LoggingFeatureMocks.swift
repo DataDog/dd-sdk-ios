@@ -12,8 +12,9 @@ extension LoggingFeature {
     static func mockNoOp(temporaryDirectory: Directory) -> LoggingFeature {
         return LoggingFeature(
             directory: temporaryDirectory,
-            appContext: .mockAny(),
+            configuration: .mockAny(),
             performance: .mockNoOp(),
+            mobileDevice: .mockAny(),
             httpClient: .mockAny(),
             logsUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
@@ -31,10 +32,14 @@ extension LoggingFeature {
     static func mockWorkingFeatureWith(
         server: ServerMock,
         directory: Directory,
-        appContext: AppContext = .mockWith(
-            mobileDevice: nil // so it doesn't rely on battery status for the upload condition
-        ),
+        configuration: Datadog.ValidConfiguration = .mockAny(),
         performance: PerformancePreset = .mockUnitTestsPerformancePreset(),
+        mobileDevice: MobileDevice = .mockWith(
+            currentBatteryStatus: {
+                // Mock full battery, so it doesn't rely on battery condition for the upload
+                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
+            }
+        ),
         logsUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -52,8 +57,9 @@ extension LoggingFeature {
     ) -> LoggingFeature {
         return LoggingFeature(
             directory: directory,
-            appContext: appContext,
+            configuration: configuration,
             performance: performance,
+            mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
             logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,

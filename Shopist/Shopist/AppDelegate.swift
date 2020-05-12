@@ -19,7 +19,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.initialize(
             appContext: .init(),
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: config.clientToken) // use your own client token obtained on Datadog website)
+                .builderUsing(
+                    clientToken: config.clientToken, // use your own client token obtained on Datadog website
+                    environment: "tests"
+                )
                 .build()
         )
 
