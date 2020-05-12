@@ -133,7 +133,6 @@
 		61C3638524361E9200C4D4E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
 		61C36470243B5C8300C4D4E6 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3646F243B5C8300C4D4E6 /* ServerMock.swift */; };
 		61C5A8742450989E00DA608C /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61C5A8732450989E00DA608C /* OpenTracing.framework */; };
-		61C5A8752450989E00DA608C /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61C5A8732450989E00DA608C /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87824509A0C00DA608C /* DDSpan.swift */; };
 		61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		61C5A88624509A0C00DA608C /* TracingUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */; };
@@ -258,17 +257,6 @@
 				61441C832461A3C8003D8BB8 /* OpenTracing.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		61C5A8762450989E00DA608C /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				61C5A8752450989E00DA608C /* OpenTracing.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		61C5A8A124509C9100DA608C /* ⚙️ Embed Framework Dependencies */ = {
@@ -1186,7 +1174,6 @@
 				61133B7F242393DE00786299 /* Frameworks */,
 				61133B80242393DE00786299 /* Resources */,
 				61133C772423A4C300786299 /* ⚙️ Run linter */,
-				61C5A8762450989E00DA608C /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
