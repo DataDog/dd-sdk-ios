@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		615519352461D121002A85CF /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615519342461D121002A85CF /* OpenTracing.framework */; };
-		615519362461D121002A85CF /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615519342461D121002A85CF /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
 		61C3641B243752A500C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641A243752A500C4D4E6 /* SceneDelegate.swift */; };
 		61C3641D243752A500C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
@@ -17,7 +16,6 @@
 		61C36430243752A600C4D4E6 /* CTProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3642F243752A600C4D4E6 /* CTProjectTests.swift */; };
 		61C3643B243752A600C4D4E6 /* CTProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */; };
 		61C3644B2437547A00C4D4E6 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61C3644A2437547A00C4D4E6 /* Datadog.framework */; };
-		61C3644C2437547A00C4D4E6 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61C3644A2437547A00C4D4E6 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,21 +34,6 @@
 			remoteInfo = CTProject;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		61C3644D2437547A00C4D4E6 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				61C3644C2437547A00C4D4E6 /* Datadog.framework in Embed Frameworks */,
-				615519362461D121002A85CF /* OpenTracing.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		615519322461CDB4002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
@@ -182,7 +165,6 @@
 				61C36412243752A500C4D4E6 /* Frameworks */,
 				61C36413243752A500C4D4E6 /* Resources */,
 				61C364482437544F00C4D4E6 /* ⚙️ Carthage */,
-				61C3644D2437547A00C4D4E6 /* Embed Frameworks */,
 				61C3645C243768FC00C4D4E6 /* ⚙️ Run linter */,
 			);
 			buildRules = (
@@ -309,6 +291,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/Datadog.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/OpenTracing.framework",
 			);
 			name = "⚙️ Carthage";
 			outputFileListPaths = (
