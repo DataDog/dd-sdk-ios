@@ -10,6 +10,8 @@ import Foundation
 public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
     private let spanOutput: SpanOutput
+    /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
+    internal let queue: DispatchQueue
 
     // MARK: - Initialization
 
@@ -52,6 +54,10 @@ public class DDTracer: Tracer {
 
     internal init(spanOutput: SpanOutput) {
         self.spanOutput = spanOutput
+        self.queue = DispatchQueue(
+            label: "com.datadoghq.tracer",
+            target: .global(qos: .userInteractive)
+        )
     }
 
     // MARK: - Open Tracing interface

@@ -8,12 +8,33 @@ import OpenTracing
 import Foundation
 
 internal class DDSpan: OpenTracing.Span {
-    private(set) var operationName: String
-    private(set) var tags: [String: Codable]
-    internal let startTime: Date
-    internal var isFinished: Bool = false
     /// The `Tracer` which created this span.
-    private let issuingTracer: DDTracer
+    private let ddTracer: DDTracer
+    /// Span context.
+    internal let ddContext: DDSpanContext
+    /// Span creation date
+    internal let startTime: Date
+
+    /// Unsynchronized span operation name. Use `self.operationName` setter & getter.
+    private var unsafeOperationName: String
+    private(set) var operationName: String {
+        get { ddTracer.queue.sync { unsafeOperationName } }
+        set { ddTracer.queue.async { self.unsafeOperationName = newValue } }
+    }
+
+    /// Unsynchronized span tags. Use `self.tags` setter & getter.
+    private var unsafeTags: [String: Codable]
+    private(set) var tags: [String: Codable] {
+        get { ddTracer.queue.sync { unsafeTags } }
+        set { ddTracer.queue.async { self.unsafeTags = newValue } }
+    }
+
+    /// Unsychronized span completion. Use `self.isFinished` setter & getter.
+    private var unsafeIsFinished: Bool
+    private(set) var isFinished: Bool {
+        get { ddTracer.queue.sync { unsafeIsFinished } }
+        set { ddTracer.queue.async { self.unsafeIsFinished = newValue } }
+    }
 
     init(
         tracer: DDTracer,
@@ -22,19 +43,22 @@ internal class DDSpan: OpenTracing.Span {
         startTime: Date,
         tags: [String: Codable]
     ) {
-        self.issuingTracer = tracer
-        self.context = context
-        self.operationName = operationName
+        self.ddTracer = tracer
+        self.ddContext = context
         self.startTime = startTime
-        self.tags = tags
+        self.unsafeOperationName = operationName
+        self.unsafeTags = tags
+        self.unsafeIsFinished = false
     }
 
     // MARK: - Open Tracing interface
 
-    let context: OpenTracing.SpanContext
+    var context: OpenTracing.SpanContext {
+        return ddContext
+    }
 
     func tracer() -> Tracer {
-        return issuingTracer
+        return ddTracer
     }
 
     func setOperationName(_ operationName: String) {
@@ -48,7 +72,7 @@ internal class DDSpan: OpenTracing.Span {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
-        self.tags[key] = value // TODO: RUMM-340 Add thread safety when mutating `self.tags`
+        self.tags[key] = value
     }
 
     func setBaggageItem(key: String, value: String) {
@@ -70,8 +94,8 @@ internal class DDSpan: OpenTracing.Span {
         if warnIfFinished("finish(at:)") {
             return
         }
-        isFinished = true // TODO: RUMM-340 Consider thread safety
-        issuingTracer.write(span: self, finishTime: time)
+        isFinished = true
+        ddTracer.write(span: self, finishTime: time)
     }
 
     func log(fields: [String: Codable], timestamp: Date) {
@@ -85,7 +109,7 @@ internal class DDSpan: OpenTracing.Span {
 
     private func warnIfFinished(_ methodName: String) -> Bool {
         return warn(
-            if: isFinished, // TODO: RUMM-340 Add thread safety when reading `.isFinished`
+            if: isFinished,
             message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."
         )
     }
