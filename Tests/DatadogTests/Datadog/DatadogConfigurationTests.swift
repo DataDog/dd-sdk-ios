@@ -204,7 +204,12 @@ class DatadogValidConfigurationTests: XCTestCase {
         verify(
             clientToken: "abc",
             logsEndpoint: .custom(url: ""),
-            expectedError: "Datadog SDK usage error: `endpointURL` cannot be empty."
+            expectedError: "Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
+        )
+        verify(
+            clientToken: "abc",
+            logsEndpoint: .custom(url: "not a valid url string"),
+            expectedError: "Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
         )
     }
 }

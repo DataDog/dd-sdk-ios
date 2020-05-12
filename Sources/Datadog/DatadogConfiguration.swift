@@ -100,50 +100,36 @@ extension Datadog {
         internal let environment: String
 
         internal let logsUploadURLWithClientToken: URL
+    }
+}
 
-        init(configuration: Datadog.Configuration, appContext: AppContext) throws {
-            self.init(
-                applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
-                applicationVersion: appContext.bundleVersion ?? "0.0.0",
-                applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
-                serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
-                environment: try ifValid(environment: configuration.environment),
-                logsUploadURLWithClientToken: try ifValid(
-                    endpointURL: configuration.logsEndpoint.url,
-                    clientToken: configuration.clientToken
-                )
+extension Datadog.ValidConfiguration {
+    init(configuration: Datadog.Configuration, appContext: AppContext) throws {
+        self.init(
+            applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
+            applicationVersion: appContext.bundleVersion ?? "0.0.0",
+            applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
+            serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
+            environment: try ifValid(environment: configuration.environment),
+            logsUploadURLWithClientToken: try ifValid(
+                endpointURLString: configuration.logsEndpoint.url,
+                clientToken: configuration.clientToken
             )
-        }
-
-        init(
-            applicationName: String,
-            applicationVersion: String,
-            applicationBundleIdentifier: String,
-            serviceName: String,
-            environment: String,
-            logsUploadURLWithClientToken: URL
-        ) {
-            self.applicationName = applicationName
-            self.applicationVersion = applicationVersion
-            self.applicationBundleIdentifier = applicationBundleIdentifier
-            self.serviceName = serviceName
-            self.environment = environment
-            self.logsUploadURLWithClientToken = logsUploadURLWithClientToken
-        }
+        )
     }
 }
 
 private func ifValid(environment: String) throws -> String {
     let regex = #"^[a-zA-Z0-9_]+$"#
-    guard environment.range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil else {
+    if environment.range(of: regex, options: .regularExpression, range: nil, locale: nil) == nil {
         throw ProgrammerError(description: "`environment` contains illegal characters (only alphanumerics and `_` are allowed)")
     }
     return environment
 }
 
-private func ifValid(endpointURL: String, clientToken: String) throws -> URL {
-    guard !endpointURL.isEmpty, let endpointURL = URL(string: endpointURL) else {
-        throw ProgrammerError(description: "`endpointURL` cannot be empty.")
+private func ifValid(endpointURLString: String, clientToken: String) throws -> URL {
+    guard let endpointURL = URL(string: endpointURLString) else {
+        throw ProgrammerError(description: "The `url` in `.custom(url:)` must be a valid URL string.")
     }
     guard !clientToken.isEmpty else {
         throw ProgrammerError(description: "`clientToken` cannot be empty.")
