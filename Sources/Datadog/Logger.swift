@@ -85,7 +85,10 @@ public class Logger {
 
     init(logOutput: LogOutput, identifier: String) {
         self.logOutput = logOutput
-        self.queue = DispatchQueue(label: "com.datadoghq.logger-\(identifier)", qos: .userInteractive)
+        self.queue = DispatchQueue(
+            label: "com.datadoghq.logger-\(identifier)",
+            target: .global(qos: .userInteractive)
+        )
     }
 
     // MARK: - Logging

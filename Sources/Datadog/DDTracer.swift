@@ -54,7 +54,10 @@ public class DDTracer: Tracer {
 
     internal init(spanOutput: SpanOutput) {
         self.spanOutput = spanOutput
-        self.queue = DispatchQueue(label: "com.datadoghq.tracer", qos: .userInteractive)
+        self.queue = DispatchQueue(
+            label: "com.datadoghq.tracer",
+            target: .global(qos: .userInteractive)
+        )
     }
 
     // MARK: - Open Tracing interface
