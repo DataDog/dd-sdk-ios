@@ -16,7 +16,7 @@ internal class SendTracesFixtureViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        viewAppearingSpan = tracer.startSpan(operationName: "view appearing", childOf: nil)
+        viewAppearingSpan = tracer.startSpan(operationName: "view appearing")
 
         let dataDownloadingSpan = tracer.startSpan(
             operationName: "data downloading",
