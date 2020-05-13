@@ -5,7 +5,7 @@
  */
 
 import UIKit
-@testable import Datadog // TODO: RUMM-332 Remove `@testable` import after `DDTracer` initializer is `public`
+import Datadog
 import OpenTracing
 
 fileprivate(set) var logger: Logger!
