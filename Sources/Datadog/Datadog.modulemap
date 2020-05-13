@@ -8,4 +8,6 @@ framework module Datadog {
 framework module _Datadog_Private {
   export *
   header "ObjcExceptionHandler.h"
+  header "Swizzler.h"
+  header "SwizzlerError.h"
 }
