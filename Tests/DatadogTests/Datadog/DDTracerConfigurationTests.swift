@@ -8,14 +8,67 @@ import XCTest
 @testable import Datadog
 
 class DDTracerConfigurationTests: XCTestCase {
-    private typealias Configuration = DDTracer.Configuration
+    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
+    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
+    private var mockServer: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
+
+        mockServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: mockServer,
+            directory: temporaryDirectory,
+            configuration: .mockWith(
+                applicationVersion: "1.2.3",
+                serviceName: "service-name",
+                environment: "tests"
+            ),
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+
+    override func tearDown() {
+        mockServer.waitAndAssertNoRequestsSent()
+        TracingFeature.instance = nil
+        mockServer = nil
+
+        temporaryDirectory.delete()
+        super.tearDown()
+    }
 
     func testDefaultTracer() {
-        // TODO: RUMM-409 write test
+        let tracer = DDTracer.initialize(configuration: .init()).dd
+
+        guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(spanBuilder.serviceName, "service-name")
+        XCTAssertEqual(spanBuilder.environment, "tests")
+        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider) // TODO: RUMM-422 Assert it's `nil` by default
+        XCTAssertNotNil(spanBuilder.carrierInfoProvider) // TODO: RUMM-422 Assert it's `nil` by default
     }
 
     func testCustomizedTracer() {
-        // TODO: RUMM-409 write test
+        let tracer = DDTracer.initialize(
+            configuration: .init(serviceName: "custom-service-name")
+        ).dd
+
+        guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(spanBuilder.serviceName, "custom-service-name")
+        XCTAssertEqual(spanBuilder.environment, "tests")
+        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider) // TODO: RUMM-422 Disable network info and assert it's `nil`
+        XCTAssertNotNil(spanBuilder.carrierInfoProvider) // TODO: RUMM-422 Disable network info and assert it's `nil`
     }
 }
 

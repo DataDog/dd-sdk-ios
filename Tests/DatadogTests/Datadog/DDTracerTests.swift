@@ -36,7 +36,7 @@ class DDTracerTests: XCTestCase {
                 applicationVersion: "1.0.0",
                 applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                 serviceName: "default-service-name",
-                environment: "tests"
+                environment: "custom"
             ),
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
@@ -57,14 +57,14 @@ class DDTracerTests: XCTestCase {
               "span_id": "2",
               "parent_id": "0",
               "name": "operation",
-              "service": "ios",
+              "service": "default-service-name",
               "resource": "operation",
               "start": 1576404000000000000,
               "duration": 500000000,
               "error": 0,
               "type": "custom",
               "meta.tracer.version": "\(sdkVersion)",
-              "meta.application.version": "1.0.0",
+              "meta.version": "1.0.0",
               "meta._dd.source": "mobile",
               "meta.network.client.available_interfaces": "wifi",
               "meta.network.client.is_constrained": "0",
@@ -80,7 +80,7 @@ class DDTracerTests: XCTestCase {
               "metrics._sampling_priority_v1": 1
             }
           ],
-          "env": "staging"
+          "env": "custom"
         }
         """) // TOOD: RUMM-422 Network info is not send by default with spans
     }

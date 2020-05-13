@@ -9,7 +9,7 @@ import Foundation
 
 public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
-    private let spanOutput: SpanOutput
+    internal let spanOutput: SpanOutput
     /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
 
@@ -43,7 +43,7 @@ public class DDTracer: Tracer {
                 spanBuilder: SpanBuilder(
                     applicationVersion: tracingFeature.configuration.applicationVersion,
                     environment: tracingFeature.configuration.environment,
-                    serviceName: tracerConfiguration.serviceName ?? "ios", // TODO: RUMM-409 use default service name
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
                     carrierInfoProvider: tracingFeature.carrierInfoProvider

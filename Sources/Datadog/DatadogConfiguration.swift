@@ -130,7 +130,7 @@ extension Datadog {
         internal let environment: String
 
         internal let logsUploadURLWithClientToken: URL
-        internal let tracesUploadURLWithClientToken: URL // TODO: RUMM-409 add tests
+        internal let tracesUploadURLWithClientToken: URL
     }
 }
 
