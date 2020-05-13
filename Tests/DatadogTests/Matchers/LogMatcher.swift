@@ -25,7 +25,7 @@ internal class LogMatcher: JSONDataMatcher {
 
         // MARK: - Application info
 
-        static let applicationVersion = "application.version"
+        static let applicationVersion = "version"
 
         // MARK: - Logger info
 

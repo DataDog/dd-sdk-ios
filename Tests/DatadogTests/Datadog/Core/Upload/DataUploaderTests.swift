@@ -8,60 +8,15 @@ import XCTest
 @testable import Datadog
 
 class DataUploadURLProviderTests: XCTestCase {
-    private let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
-
     func testItBuildsValidURL() throws {
-        let validURL1 = try UploadURLProvider(endpointURL: "https://api.example.com/v1/endpoint", clientToken: "abc", dateProvider: dateProvider)
-        XCTAssertEqual(validURL1.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=mobile&batch_time=1576404000000"))
-
+        let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
+        let urlProvider = UploadURLProvider(
+            urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
+            dateProvider: dateProvider
+        )
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=mobile&batch_time=1576404000000"))
         dateProvider.advance(bySeconds: 9.999)
-
-        let validURL2 = try UploadURLProvider(endpointURL: "https://api.example.com/v1/endpoint/", clientToken: "abc", dateProvider: dateProvider)
-        XCTAssertEqual(validURL2.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=mobile&batch_time=1576404009999"))
-    }
-
-    func testWhenClientTokenIsInvalid_itThrowsProgrammerError() {
-        XCTAssertThrowsError(try UploadURLProvider(endpointURL: "https://api.example.com/v1/endpoint", clientToken: "", dateProvider: dateProvider)) { error in
-            XCTAssertEqual((error as? ProgrammerError)?.description, "🔥 Datadog SDK usage error: `clientToken` cannot be empty.")
-        }
-    }
-
-    func testWhenEndpointURLIsInvalid_itThrowsProgrammerError() {
-        XCTAssertThrowsError(try UploadURLProvider(endpointURL: "", clientToken: "abc", dateProvider: dateProvider)) { error in
-            XCTAssertEqual((error as? ProgrammerError)?.description, "🔥 Datadog SDK usage error: `endpointURL` cannot be empty.")
-        }
-    }
-
-    // MARK: - Logs endpoint
-
-    func testUSLogsEndpoint() {
-        let urlUS = Datadog.Configuration.LogsEndpoint.us.url
-        let urlProvider = try! UploadURLProvider(
-            endpointURL: urlUS,
-            clientToken: "abc",
-            dateProvider: dateProvider
-        )
-        XCTAssertEqual(urlProvider.url.host, "mobile-http-intake.logs.datadoghq.com")
-    }
-
-    func testEULogsEndpoint() {
-        let urlEU = Datadog.Configuration.LogsEndpoint.eu.url
-        let urlProvider = try! UploadURLProvider(
-            endpointURL: urlEU,
-            clientToken: "abc",
-            dateProvider: dateProvider
-        )
-        XCTAssertEqual(urlProvider.url.host, "mobile-http-intake.logs.datadoghq.eu")
-    }
-
-    func testCustomLogsEndpoint() {
-        let urlCustom = Datadog.Configuration.LogsEndpoint.custom(url: "scheme://foo.bar").url
-        let urlProvider = try! UploadURLProvider(
-            endpointURL: urlCustom,
-            clientToken: "abc",
-            dateProvider: dateProvider
-        )
-        XCTAssertEqual(urlProvider.url.host, "foo.bar")
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=mobile&batch_time=1576404009999"))
     }
 }
 

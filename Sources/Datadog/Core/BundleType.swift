@@ -6,8 +6,8 @@
 
 import Foundation
 
-/// An environment running the SDK.
-internal enum Environment: Equatable {
+/// A type of the bundle running the SDK.
+internal enum BundleType: String {
     case iOSApp
     case iOSAppExtension
 }

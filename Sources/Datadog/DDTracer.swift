@@ -33,16 +33,17 @@ public class DDTracer: Tracer {
         }
         return DDTracer(
             tracingFeature: tracingFeature,
-            tracerConfiguration: ResolvedConfiguration(tracerConfiguration: configuration)
+            tracerConfiguration: configuration
         )
     }
 
-    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: ResolvedConfiguration) {
+    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
-                    appContext: tracingFeature.appContext,
-                    serviceName: tracerConfiguration.serviceName,
+                    applicationVersion: tracingFeature.configuration.applicationVersion,
+                    environment: tracingFeature.configuration.environment,
+                    serviceName: tracerConfiguration.serviceName ?? "ios", // TODO: RUMM-409 use default service name
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
                     carrierInfoProvider: tracingFeature.carrierInfoProvider

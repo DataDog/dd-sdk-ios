@@ -82,7 +82,7 @@ internal struct SpanEncoder {
         // MARK: - Meta
 
         case source = "meta._dd.source"
-        case applicationVersion = "meta.application.version"
+        case applicationVersion = "meta.application.version" // TODO: RUMM-409 Change to `meta.version`? - check with Android
         case tracerVersion = "meta.tracer.version"
 
         case userId = "meta.usr.id"

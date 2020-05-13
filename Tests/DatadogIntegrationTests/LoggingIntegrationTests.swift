@@ -66,7 +66,12 @@ class LoggingIntegrationTests: IntegrationTests {
                     "some-url": "https://example.com/image.png"
                 ]
             )
-            matcher.assertTags(equal: ["build_configuration:release", "tag1:tag-value", "tag2"])
+
+            #if DEBUG
+            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2"])
+            #else
+            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2"])
+            #endif
 
             matcher.assertValue(
                 forKeyPath: LogMatcher.JSONKey.networkReachability,

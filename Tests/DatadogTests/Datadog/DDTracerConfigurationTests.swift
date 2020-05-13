@@ -9,33 +9,48 @@ import XCTest
 
 class DDTracerConfigurationTests: XCTestCase {
     private typealias Configuration = DDTracer.Configuration
-    private typealias ResolvedConfiguration = DDTracer.ResolvedConfiguration
 
-    func testDefaultConfiguration() {
-        func verify(configuration: Configuration) {
-            let resolvedConfiguration = ResolvedConfiguration(tracerConfiguration: configuration)
-
-            XCTAssertEqual(resolvedConfiguration.serviceName, "ios")
-        }
-
-        verify(configuration: Configuration())
-
-        var configuration = Configuration()
-        configuration.serviceName = nil
-        verify(configuration: configuration)
+    func testDefaultTracer() {
+        // TODO: RUMM-409 write test
     }
 
-    func testCustomServiceName() {
-        func verify(configuration: Configuration) {
-            let resolvedConfiguration = ResolvedConfiguration(tracerConfiguration: configuration)
+    func testCustomizedTracer() {
+        // TODO: RUMM-409 write test
+    }
+}
 
-            XCTAssertEqual(resolvedConfiguration.serviceName, "custom")
+class DDTracerErrorTests: XCTestCase {
+    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        XCTAssertNil(Datadog.instance)
+
+        let tracer = DDTracer.initialize(configuration: .init())
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
+        )
+        XCTAssertTrue(tracer is DDNoopTracer)
+    }
+
+    func testGivenDatadogNotInitialized_whenUsingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        XCTAssertNil(Datadog.instance)
+
+        let tracer = DDTracer(spanOutput: SpanOutputMock())
+        let fixtures: [(() -> Void, String)] = [
+            ({ _ = tracer.startSpan(operationName: .mockAny()) },
+             "`Datadog.initialize()` must be called prior to `startSpan(...)`."),
+        ]
+
+        fixtures.forEach { tracerMethod, expectedConsoleError in
+            tracerMethod()
+            XCTAssertEqual(printFunction.printedMessage, "🔥 Datadog SDK usage error: \(expectedConsoleError)")
         }
-
-        verify(configuration: Configuration(serviceName: "custom"))
-
-        var configuration = Configuration()
-        configuration.serviceName = "custom"
-        verify(configuration: configuration)
     }
 }

@@ -14,39 +14,35 @@ internal let sdkVersion = "1.1.0"
 public class Datadog {
     /// Provides information about the app.
     public struct AppContext {
-        internal let environment: Environment
+        internal let bundleType: BundleType
         internal let bundleIdentifier: String?
+        /// Executable version (i.e. application version or app extension version)
         internal let bundleVersion: String?
-        internal let bundleShortVersion: String?
-        internal let executableName: String?
-        /// Describes current mobile device if SDK runs on a platform that supports `UIKit`.
-        internal let mobileDevice: MobileDevice?
+        /// Executable name (i.e. application name or app extension name)
+        internal let bundleName: String?
 
         public init(mainBundle: Bundle = Bundle.main) {
+            let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+
             self.init(
-                environment: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
+                bundleType: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
                 bundleIdentifier: mainBundle.bundleIdentifier,
-                bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
-                bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-                executableName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
-                mobileDevice: MobileDevice.current
+                bundleVersion: bundleShortVersion ?? bundleVersion,
+                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
             )
         }
 
         internal init(
-            environment: Environment,
+            bundleType: BundleType,
             bundleIdentifier: String?,
             bundleVersion: String?,
-            bundleShortVersion: String?,
-            executableName: String?,
-            mobileDevice: MobileDevice?
+            bundleName: String?
         ) {
-            self.environment = environment
+            self.bundleType = bundleType
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
-            self.bundleShortVersion = bundleShortVersion
-            self.executableName = executableName
-            self.mobileDevice = mobileDevice
+            self.bundleName = bundleName
         }
     }
 
@@ -85,8 +81,12 @@ public class Datadog {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
+        let validConfiguration = try ValidConfiguration(
+            configuration: configuration,
+            appContext: appContext
+        )
 
-        let performance = PerformancePreset.best(for: appContext.environment)
+        let performance = PerformancePreset.best(for: appContext.bundleType)
         let dateProvider = SystemDateProvider()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -95,37 +95,34 @@ public class Datadog {
         // Initialize features:
 
         let httpClient = HTTPClient()
-
-        let logsUploadURLProvider = try UploadURLProvider(
-            endpointURL: configuration.logsEndpoint.url,
-            clientToken: configuration.clientToken,
-            dateProvider: SystemDateProvider()
-        )
+        let mobieDevice = MobileDevice.current
 
         LoggingFeature.instance = LoggingFeature(
             directory: try obtainLoggingFeatureDirectory(),
-            appContext: appContext,
+            configuration: validConfiguration,
             performance: performance,
+            mobileDevice: mobieDevice,
             httpClient: httpClient,
-            logsUploadURLProvider: logsUploadURLProvider,
+            logsUploadURLProvider: UploadURLProvider(
+                urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
+                dateProvider: dateProvider
+            ),
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
 
-        let tracesUploadURLProvider = try UploadURLProvider(
-            endpointURL: configuration.tracesEndpoint.url,
-            clientToken: configuration.clientToken,
-            dateProvider: SystemDateProvider()
-        )
-
         TracingFeature.instance = TracingFeature(
             directory: try obtainTracingFeatureDirectory(),
-            appContext: appContext,
+            configuration: validConfiguration,
             performance: performance,
+            mobileDevice: mobieDevice,
             httpClient: httpClient,
-            tracesUploadURLProvider: tracesUploadURLProvider,
+            tracesUploadURLProvider: UploadURLProvider(
+                urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
+                dateProvider: dateProvider
+            ),
             dateProvider: dateProvider,
             tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
             userInfoProvider: userInfoProvider,

@@ -32,10 +32,11 @@ class DDTracerTests: XCTestCase {
         TracingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: .mockWith(
-                bundleIdentifier: "com.datadoghq.ios-sdk",
-                bundleVersion: "1.0.0",
-                bundleShortVersion: "1.0.0"
+            configuration: .mockWith(
+                applicationVersion: "1.0.0",
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+                serviceName: "default-service-name",
+                environment: "tests"
             ),
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
@@ -313,12 +314,10 @@ class DDTracerTests: XCTestCase {
         TracingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: .mockWith(
-                mobileDevice: .mockWith(
-                    currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
-                        .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
-                    }
-                )
+            mobileDevice: .mockWith(
+                currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
+                    .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
+                }
             )
         )
         defer { TracingFeature.instance = nil }
@@ -438,44 +437,6 @@ class DDTracerTests: XCTestCase {
             "x-datadog-parent-id": "2",
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
-    }
-
-    // MARK: - Initialization
-
-    // TODO: RUMM-339 Move this test to obj-c wrapper tests, similarly to what we do for `DDLoggerBuilderTests`
-    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let tracer = DDTracer.initialize(configuration: .init())
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
-        )
-        XCTAssertTrue(tracer is DDNoopTracer)
-    }
-
-    // TODO: RUMM-339 Move this test to obj-c wrapper tests, similarly to what we do for `DDLoggerBuilderTests`
-    func testGivenDatadogNotInitialized_whenUsingTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let tracer = DDTracer(spanOutput: SpanOutputMock())
-        let fixtures: [(() -> Void, String)] = [
-            ({ _ = tracer.startSpan(operationName: .mockAny()) },
-             "`Datadog.initialize()` must be called prior to `startSpan(...)`."),
-        ]
-
-        fixtures.forEach { tracerMethod, expectedConsoleError in
-            tracerMethod()
-            XCTAssertEqual(printFunction.printedMessage, "🔥 Datadog SDK usage error: \(expectedConsoleError)")
-        }
     }
 
     // MARK: - Thread safety

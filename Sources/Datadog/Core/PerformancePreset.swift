@@ -114,8 +114,8 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
         uploadDelayDecreaseFactor: 0.5 // reduce significantly for more uploads in short-lived app extensions
     )
 
-    static func best(for environment: Environment) -> PerformancePreset {
-        switch environment {
+    static func best(for bundleType: BundleType) -> PerformancePreset {
+        switch bundleType {
         case .iOSApp: return `default`
         case .iOSAppExtension: return instantDataDelivery
         }

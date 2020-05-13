@@ -16,7 +16,7 @@ internal class ViewController: UIViewController {
         Datadog.initialize(
             appContext: .init(),
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc")
+                .builderUsing(clientToken: "abc", environment: "tests")
                 .build()
         )
 

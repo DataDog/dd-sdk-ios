@@ -19,21 +19,13 @@ class HTTPHeadersTests: XCTestCase {
     }
 
     func testUserAgentHeader() {
-        var userAgent = HTTPHeaders.HTTPHeader.userAgentHeader(
-            for: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
+        let userAgent = HTTPHeaders.HTTPHeader.userAgentHeader(
             appName: "FoobarApp",
-            appVersion: "1.2.3"
+            appVersion: "1.2.3",
+            device: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
         )
         XCTAssertEqual(userAgent.field, "User-Agent")
         XCTAssertEqual(userAgent.value, "FoobarApp/1.2.3 CFNetwork (iPhone; iOS/13.3.1)")
-
-        userAgent = HTTPHeaders.HTTPHeader.userAgentHeader(
-            for: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
-            appName: nil,
-            appVersion: nil
-        )
-        XCTAssertEqual(userAgent.field, "User-Agent")
-        XCTAssertEqual(userAgent.value, "Datadog/\(sdkVersion) CFNetwork (iPhone; iOS/13.3.1)")
     }
 
     func testComposingHeaders() {
@@ -41,9 +33,9 @@ class HTTPHeadersTests: XCTestCase {
             headers: [
                 .contentTypeHeader(contentType: .applicationJSON),
                 .userAgentHeader(
-                    for: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
                     appName: "FoobarApp",
-                    appVersion: "1.2.3"
+                    appVersion: "1.2.3",
+                    device: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
                 )
             ]
         )
