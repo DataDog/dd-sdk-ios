@@ -21,9 +21,7 @@ class SpanFileOutputTests: XCTestCase {
     func testItWritesSpanToFileAsJSON() throws {
         let queue = DispatchQueue(label: "any")
         let output = SpanFileOutput(
-            spanBuilder: .mockWith(
-                appContext: .mockWith(bundleVersion: "1.0.0")
-            ),
+            spanBuilder: .mockAny(),
             fileWriter: FileWriter(
                 dataFormat: TracingFeature.Storage.dataFormat,
                 orchestrator: FilesOrchestrator(

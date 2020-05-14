@@ -11,8 +11,9 @@ extension TracingFeature {
     static func mockNoOp(temporaryDirectory: Directory) -> TracingFeature {
         return TracingFeature(
             directory: temporaryDirectory,
-            appContext: .mockAny(),
+            configuration: .mockAny(),
             performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
+            mobileDevice: .mockAny(),
             httpClient: .mockAny(),
             tracesUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
@@ -31,14 +32,18 @@ extension TracingFeature {
     static func mockWorkingFeatureWith(
         server: ServerMock,
         directory: Directory,
-        appContext: AppContext = .mockWith(
-            mobileDevice: nil // so it doesn't rely on battery status for the upload condition
-        ),
+        configuration: Datadog.ValidConfiguration = .mockAny(),
         performance: PerformancePreset = .combining(
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
         ),
-        logsUploadURLProvider: UploadURLProvider = .mockAny(),
+        mobileDevice: MobileDevice = .mockWith(
+            currentBatteryStatus: {
+                // Mock full battery, so it doesn't rely on battery condition for the upload
+                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
+            }
+        ),
+        tracesUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -56,10 +61,11 @@ extension TracingFeature {
     ) -> TracingFeature {
         return TracingFeature(
             directory: directory,
-            appContext: appContext,
+            configuration: configuration,
             performance: performance,
+            mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
-            tracesUploadURLProvider: logsUploadURLProvider,
+            tracesUploadURLProvider: tracesUploadURLProvider,
             dateProvider: dateProvider,
             tracingUUIDGenerator: tracingUUIDGenerator,
             userInfoProvider: userInfoProvider,

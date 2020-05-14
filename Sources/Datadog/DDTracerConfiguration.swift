@@ -18,15 +18,4 @@ extension DDTracer {
             self.serviceName = serviceName
         }
     }
-
-    /// Datadog Tracer configuration resolved with defaults coming from the other source.
-    internal struct ResolvedConfiguration {
-        internal let serviceName: String
-
-        /// TODO: RUMM-409 Defaults should be resolved using `Datadog.instance`. I don't do it now, because the SDK-wide `serviceName`
-        ///  must be first done on `master` branch, then merged to `tracing` and update here.
-        init(tracerConfiguration: Configuration) {
-            self.serviceName = tracerConfiguration.serviceName ?? "ios"
-        }
-    }
 }

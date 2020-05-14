@@ -64,7 +64,7 @@ class TracingIntegrationTests: IntegrationTests {
             XCTAssertEqual(try matcher.resource(), try matcher.operationName())
             XCTAssertEqual(try matcher.type(), "custom")
             XCTAssertEqual(try matcher.isError(), 0)
-            XCTAssertEqual(try matcher.environment(), "staging")
+            XCTAssertEqual(try matcher.environment(), "integration")
 
             XCTAssertEqual(try matcher.meta.source(), "mobile")
             XCTAssertEqual(try matcher.meta.tracerVersion().split(separator: ".").count, 3)

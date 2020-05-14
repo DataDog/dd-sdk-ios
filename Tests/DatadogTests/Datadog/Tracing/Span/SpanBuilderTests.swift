@@ -32,30 +32,4 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertFalse(span.isError) // TODO: RUMM-401 Add separate test for the case when `ddspan.isError == true`
         XCTAssertEqual(span.tracerVersion, sdkVersion)
     }
-
-    func testItSetsApplicationVersionAttribute() throws {
-        func createSpanUsing(appContext: AppContext) throws -> Span {
-            let builder: SpanBuilder = .mockWith(appContext: appContext)
-            return try builder.createSpan(
-                from: .mockAny(),
-                finishTime: .mockAny()
-            )
-        }
-
-        // When only `bundle.version` is available
-        var span = try createSpanUsing(appContext: .mockWith(bundleVersion: "version", bundleShortVersion: nil))
-        XCTAssertEqual(span.applicationVersion, "version")
-
-        // When only `bundle.shortVersion` is available
-        span = try createSpanUsing(appContext: .mockWith(bundleVersion: nil, bundleShortVersion: "shortVersion"))
-        XCTAssertEqual(span.applicationVersion, "shortVersion")
-
-        // When both `bundle.version` and `bundle.shortVersion` are available
-        span = try createSpanUsing(appContext: .mockWith(bundleVersion: "version", bundleShortVersion: "shortVersion"))
-        XCTAssertEqual(span.applicationVersion, "shortVersion")
-
-        // When neither of `bundle.version` and `bundle.shortVersion` is available
-        span = try createSpanUsing(appContext: .mockWith(bundleVersion: nil, bundleShortVersion: nil))
-        XCTAssertEqual(span.applicationVersion, "")
-    }
 }

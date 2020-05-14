@@ -11,6 +11,7 @@ class LogBuilderTests: XCTestCase {
     func testItBuildsBasicLog() {
         let builder: LogBuilder = .mockWith(
             date: .mockDecember15th2019At10AMUTC(),
+            applicationVersion: "1.2.3",
             serviceName: "test-service-name",
             loggerName: "test-logger-name"
         )
@@ -22,6 +23,7 @@ class LogBuilderTests: XCTestCase {
         )
 
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(log.applicationVersion, "1.2.3")
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
         XCTAssertEqual(log.serviceName, "test-service-name")
@@ -73,28 +75,5 @@ class LogBuilderTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1, handler: nil)
-    }
-
-    func testItSetsApplicationVersionAttribute() {
-        func createLogUsing(appContext: AppContext) -> Log {
-            let builder: LogBuilder = .mockWith(appContext: appContext)
-            return builder.createLogWith(level: .debug, message: "", attributes: [:], tags: [])
-        }
-
-        // When only `bundle.version` is available
-        var log = createLogUsing(appContext: .mockWith(bundleVersion: "version", bundleShortVersion: nil))
-        XCTAssertEqual(log.applicationVersion, "version")
-
-        // When only `bundle.shortVersion` is available
-        log = createLogUsing(appContext: .mockWith(bundleVersion: nil, bundleShortVersion: "shortVersion"))
-        XCTAssertEqual(log.applicationVersion, "shortVersion")
-
-        // When both `bundle.version` and `bundle.shortVersion` are available
-        log = createLogUsing(appContext: .mockWith(bundleVersion: "version", bundleShortVersion: "shortVersion"))
-        XCTAssertEqual(log.applicationVersion, "shortVersion")
-
-        // When neither of `bundle.version` and `bundle.shortVersion` is available
-        log = createLogUsing(appContext: .mockWith(bundleVersion: nil, bundleShortVersion: nil))
-        XCTAssertEqual(log.applicationVersion, "")
     }
 }
