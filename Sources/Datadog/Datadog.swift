@@ -95,13 +95,13 @@ public class Datadog {
         // Initialize features:
 
         let httpClient = HTTPClient()
-        let mobieDevice = MobileDevice.current
+        let mobileDevice = MobileDevice.current
 
         LoggingFeature.instance = LoggingFeature(
             directory: try obtainLoggingFeatureDirectory(),
             configuration: validConfiguration,
             performance: performance,
-            mobileDevice: mobieDevice,
+            mobileDevice: mobileDevice,
             httpClient: httpClient,
             logsUploadURLProvider: UploadURLProvider(
                 urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
@@ -117,7 +117,7 @@ public class Datadog {
             directory: try obtainTracingFeatureDirectory(),
             configuration: validConfiguration,
             performance: performance,
-            mobileDevice: mobieDevice,
+            mobileDevice: mobileDevice,
             httpClient: httpClient,
             tracesUploadURLProvider: UploadURLProvider(
                 urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
