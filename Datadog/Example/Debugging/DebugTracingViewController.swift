@@ -39,7 +39,7 @@ class DebugTracingViewController: UIViewController {
         let spanName = singleSpanOperationName
 
         queue1.async {
-            let span = Global.sharedTracer.startSpan(operationName: spanName, childOf: nil)
+            let span = Global.sharedTracer.startSpan(operationName: spanName)
             wait(seconds: 1)
             span.finish()
         }
@@ -59,7 +59,7 @@ class DebugTracingViewController: UIViewController {
         queue1.async { [weak self] in
             guard let self = self else { return }
 
-            let rootSpan = Global.sharedTracer.startSpan(operationName: spanName, childOf: nil)
+            let rootSpan = Global.sharedTracer.startSpan(operationName: spanName)
             wait(seconds: 0.5)
 
             self.queue2.sync {
