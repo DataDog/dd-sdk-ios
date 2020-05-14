@@ -17,9 +17,12 @@ internal final class LoggingFeature {
     /// Single, shared instance of `LoggingFeature`.
     internal static var instance: LoggingFeature?
 
+    // MARK: - Configuration
+
+    let configuration: Datadog.ValidConfiguration
+
     // MARK: - Dependencies
 
-    let appContext: AppContext
     let dateProvider: DateProvider
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
@@ -66,39 +69,28 @@ internal final class LoggingFeature {
 
         init(
             storage: Storage,
-            appContext: AppContext,
+            configuration: Datadog.ValidConfiguration,
             performance: PerformancePreset,
+            mobileDevice: MobileDevice,
             httpClient: HTTPClient,
             logsUploadURLProvider: UploadURLProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
             uploadQueue: DispatchQueue
         ) {
-            let httpHeaders: HTTPHeaders
-            let uploadConditions: DataUploadConditions
-
-            if let mobileDevice = appContext.mobileDevice { // mobile device
-                httpHeaders = HTTPHeaders(
-                    headers: [
-                        .contentTypeHeader(contentType: .applicationJSON),
-                        .userAgentHeader(for: mobileDevice, appName: appContext.executableName, appVersion: appContext.bundleVersion)
-                    ]
-                )
-                uploadConditions = DataUploadConditions(
-                    batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                    networkConnectionInfo: networkConnectionInfoProvider
-                )
-            } else { // other device (i.e. iOS Simulator)
-                httpHeaders = HTTPHeaders(
-                    headers: [
-                        .contentTypeHeader(contentType: .applicationJSON)
-                        // UA http header will default to the one produced by the OS
-                    ]
-                )
-                uploadConditions = DataUploadConditions(
-                    batteryStatus: nil, // uploads do not depend on battery status
-                    networkConnectionInfo: networkConnectionInfoProvider
-                )
-            }
+            let httpHeaders = HTTPHeaders(
+                headers: [
+                    .contentTypeHeader(contentType: .applicationJSON),
+                    .userAgentHeader(
+                        appName: configuration.applicationName,
+                        appVersion: configuration.applicationVersion,
+                        device: mobileDevice
+                    )
+                ]
+            )
+            let uploadConditions = DataUploadConditions(
+                batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
+                networkConnectionInfo: networkConnectionInfoProvider
+            )
 
             let dataUploader = DataUploader(
                 urlProvider: logsUploadURLProvider,
@@ -121,8 +113,9 @@ internal final class LoggingFeature {
 
     init(
         directory: Directory,
-        appContext: AppContext,
+        configuration: Datadog.ValidConfiguration,
         performance: PerformancePreset,
+        mobileDevice: MobileDevice,
         httpClient: HTTPClient,
         logsUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
@@ -130,8 +123,10 @@ internal final class LoggingFeature {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType
     ) {
+        // Configuration
+        self.configuration = configuration
+
         // Bundle dependencies
-        self.appContext = appContext
         self.dateProvider = dateProvider
         self.userInfoProvider = userInfoProvider
         self.networkConnectionInfoProvider = networkConnectionInfoProvider
@@ -155,8 +150,9 @@ internal final class LoggingFeature {
         )
         self.upload = Upload(
             storage: self.storage,
-            appContext: appContext,
+            configuration: configuration,
             performance: performance,
+            mobileDevice: mobileDevice,
             httpClient: httpClient,
             logsUploadURLProvider: logsUploadURLProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,

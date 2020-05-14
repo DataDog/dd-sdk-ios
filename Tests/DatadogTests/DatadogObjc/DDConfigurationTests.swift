@@ -22,11 +22,13 @@ extension Datadog.Configuration.LogsEndpoint: Equatable {
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
     func testItFowardsInitializationToSwift() {
-        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123")
+        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
 
         let swiftConfigurationDefault = objcBuilder.build().sdkConfiguration
         XCTAssertEqual(swiftConfigurationDefault.clientToken, "abc-123")
         XCTAssertEqual(swiftConfigurationDefault.logsEndpoint, .us)
+        XCTAssertEqual(swiftConfigurationDefault.environment, "tests")
+        XCTAssertNil(swiftConfigurationDefault.serviceName)
 
         objcBuilder.set(endpoint: .eu())
         let swiftConfigurationEU = objcBuilder.build().sdkConfiguration
@@ -39,5 +41,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(endpoint: .custom(url: "https://api.example.com/v1/logs"))
         let swiftConfigurationCustom = objcBuilder.build().sdkConfiguration
         XCTAssertEqual(swiftConfigurationCustom.logsEndpoint, .custom(url: "https://api.example.com/v1/logs"))
+
+        objcBuilder.set(serviceName: "service-name")
+        let swiftConfigurationServiceName = objcBuilder.build().sdkConfiguration
+        XCTAssertEqual(swiftConfigurationServiceName.serviceName, "service-name")
     }
 }

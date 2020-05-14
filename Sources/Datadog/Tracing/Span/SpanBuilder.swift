@@ -8,8 +8,10 @@ import Foundation
 
 /// Builds `Span` representation (for later serialization) from `DDSpan`.
 internal struct SpanBuilder {
-    /// App information context.
-    let appContext: AppContext
+    /// Application version to encode in span.
+    let applicationVersion: String
+    /// Environment to encode in span.
+    let environment: String
     /// Service name to encode in span.
     let serviceName: String
     /// Shared user info provider.
@@ -40,21 +42,11 @@ internal struct SpanBuilder {
             duration: finishTime.timeIntervalSince(ddspan.startTime),
             isError: false, // TODO: RUMM-401 use error flag from `ddspan`
             tracerVersion: sdkVersion,
-            applicationVersion: getApplicationVersion(),
+            applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfoProvider.current,
             mobileCarrierInfo: carrierInfoProvider.current,
             userInfo: userInfoProvider.value,
             tags: jsonStringEncodedTags
         )
-    }
-
-    private func getApplicationVersion() -> String {
-        if let shortVersion = appContext.bundleShortVersion {
-            return shortVersion
-        } else if let version = appContext.bundleVersion {
-            return version
-        } else {
-            return ""
-        }
     }
 }

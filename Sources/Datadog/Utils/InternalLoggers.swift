@@ -35,7 +35,8 @@ internal func createSDKDeveloperLogger(
 
     let consoleOutput = LogConsoleOutput(
         logBuilder: LogBuilder(
-            appContext: loggingFeature.appContext,
+            applicationVersion: loggingFeature.configuration.applicationVersion,
+            environment: loggingFeature.configuration.environment,
             serviceName: "sdk-developer",
             loggerName: "sdk-developer",
             dateProvider: dateProvider,
@@ -62,7 +63,8 @@ internal func createSDKUserLogger(
 
     let consoleOutput = LogConsoleOutput(
         logBuilder: LogBuilder(
-            appContext: loggingFeature.appContext,
+            applicationVersion: loggingFeature.configuration.applicationVersion,
+            environment: loggingFeature.configuration.environment,
             serviceName: "sdk-user",
             loggerName: "sdk-user",
             dateProvider: dateProvider,

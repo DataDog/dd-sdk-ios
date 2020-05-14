@@ -8,34 +8,102 @@ import XCTest
 @testable import Datadog
 
 class DDTracerConfigurationTests: XCTestCase {
-    private typealias Configuration = DDTracer.Configuration
-    private typealias ResolvedConfiguration = DDTracer.ResolvedConfiguration
+    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
+    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
+    private var mockServer: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
-    func testDefaultConfiguration() {
-        func verify(configuration: Configuration) {
-            let resolvedConfiguration = ResolvedConfiguration(tracerConfiguration: configuration)
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
 
-            XCTAssertEqual(resolvedConfiguration.serviceName, "ios")
-        }
-
-        verify(configuration: Configuration())
-
-        var configuration = Configuration()
-        configuration.serviceName = nil
-        verify(configuration: configuration)
+        mockServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: mockServer,
+            directory: temporaryDirectory,
+            configuration: .mockWith(
+                applicationVersion: "1.2.3",
+                serviceName: "service-name",
+                environment: "tests"
+            ),
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
     }
 
-    func testCustomServiceName() {
-        func verify(configuration: Configuration) {
-            let resolvedConfiguration = ResolvedConfiguration(tracerConfiguration: configuration)
+    override func tearDown() {
+        mockServer.waitAndAssertNoRequestsSent()
+        TracingFeature.instance = nil
+        mockServer = nil
 
-            XCTAssertEqual(resolvedConfiguration.serviceName, "custom")
+        temporaryDirectory.delete()
+        super.tearDown()
+    }
+
+    func testDefaultTracer() {
+        let tracer = DDTracer.initialize(configuration: .init()).dd
+
+        guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
+            XCTFail()
+            return
         }
 
-        verify(configuration: Configuration(serviceName: "custom"))
+        XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(spanBuilder.serviceName, "service-name")
+        XCTAssertEqual(spanBuilder.environment, "tests")
+        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider) // TODO: RUMM-422 Assert it's `nil` by default
+        XCTAssertNotNil(spanBuilder.carrierInfoProvider) // TODO: RUMM-422 Assert it's `nil` by default
+    }
 
-        var configuration = Configuration()
-        configuration.serviceName = "custom"
-        verify(configuration: configuration)
+    func testCustomizedTracer() {
+        let tracer = DDTracer.initialize(
+            configuration: .init(serviceName: "custom-service-name")
+        ).dd
+
+        guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(spanBuilder.serviceName, "custom-service-name")
+        XCTAssertEqual(spanBuilder.environment, "tests")
+        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider) // TODO: RUMM-422 Disable network info and assert it's `nil`
+        XCTAssertNotNil(spanBuilder.carrierInfoProvider) // TODO: RUMM-422 Disable network info and assert it's `nil`
+    }
+}
+
+class DDTracerErrorTests: XCTestCase {
+    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        XCTAssertNil(Datadog.instance)
+
+        let tracer = DDTracer.initialize(configuration: .init())
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
+        )
+        XCTAssertTrue(tracer is DDNoopTracer)
+    }
+
+    func testGivenDatadogNotInitialized_whenUsingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        XCTAssertNil(Datadog.instance)
+
+        let tracer = DDTracer(spanOutput: SpanOutputMock())
+        let fixtures: [(() -> Void, String)] = [
+            ({ _ = tracer.startSpan(operationName: .mockAny()) },
+             "`Datadog.initialize()` must be called prior to `startSpan(...)`."),
+        ]
+
+        fixtures.forEach { tracerMethod, expectedConsoleError in
+            tracerMethod()
+            XCTAssertEqual(printFunction.printedMessage, "🔥 Datadog SDK usage error: \(expectedConsoleError)")
+        }
     }
 }

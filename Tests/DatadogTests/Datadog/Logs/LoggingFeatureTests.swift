@@ -29,7 +29,7 @@ class LoggingFeatureTests: XCTestCase {
         Datadog.initialize(
             appContext: appContext,
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc")
+                .builderUsing(clientToken: "abc", environment: "tests")
                 .build()
         )
 
@@ -40,16 +40,16 @@ class LoggingFeatureTests: XCTestCase {
 
     // MARK: - HTTP Headers
 
-    func testItUsesExpectedHTTPHeadersForMobileDevice() throws {
+    func testItUsesExpectedHTTPHeaders() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
-            appContext: .mockWith(
-                bundleVersion: "2.1.0",
-                executableName: "FoobarApp",
-                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
-            )
+            configuration: .mockWith(
+                applicationName: "FoobarApp",
+                applicationVersion: "2.1.0"
+            ),
+            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
         )
         defer { LoggingFeature.instance = nil }
 
@@ -58,27 +58,6 @@ class LoggingFeatureTests: XCTestCase {
 
         let httpHeaders = server.waitAndReturnRequests(count: 1)[0].allHTTPHeaderFields
         XCTAssertEqual(httpHeaders?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
-        XCTAssertEqual(httpHeaders?["Content-Type"], "application/json")
-    }
-
-    func testItUsesExpectedHTTPHeadersForOtherDevices() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory,
-            appContext: .mockWith(
-                bundleVersion: "2.1.0",
-                executableName: "FoobarApp",
-                mobileDevice: nil
-            )
-        )
-        defer { LoggingFeature.instance = nil }
-
-        let logger = Logger.builder.build()
-        logger.debug("message")
-
-        let httpHeaders = server.waitAndReturnRequests(count: 1)[0].allHTTPHeaderFields
-        XCTAssertNil(httpHeaders!["User-Agent"]) // UA header is set to system default later by the OS
         XCTAssertEqual(httpHeaders?["Content-Type"], "application/json")
     }
 

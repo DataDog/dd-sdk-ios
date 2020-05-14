@@ -9,7 +9,7 @@ import Foundation
 
 public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
-    private let spanOutput: SpanOutput
+    internal let spanOutput: SpanOutput
     /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
 
@@ -33,16 +33,17 @@ public class DDTracer: Tracer {
         }
         return DDTracer(
             tracingFeature: tracingFeature,
-            tracerConfiguration: ResolvedConfiguration(tracerConfiguration: configuration)
+            tracerConfiguration: configuration
         )
     }
 
-    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: ResolvedConfiguration) {
+    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
-                    appContext: tracingFeature.appContext,
-                    serviceName: tracerConfiguration.serviceName,
+                    applicationVersion: tracingFeature.configuration.applicationVersion,
+                    environment: tracingFeature.configuration.environment,
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
                     carrierInfoProvider: tracingFeature.carrierInfoProvider

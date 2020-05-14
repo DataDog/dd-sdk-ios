@@ -31,7 +31,7 @@ struct ExampleAppConfig: AppConfig {
         }
 
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(clientToken: clientToken)
+            .builderUsing(clientToken: clientToken, environment: "tests")
             .build()
     }
 }
@@ -44,7 +44,7 @@ struct UITestAppConfig: AppConfig {
 
     init(mockServerURL: String) {
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(clientToken: "ui-tests-client-token")
+            .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
             .set(logsEndpoint: .custom(url: mockServerURL))
             .set(tracesEndpoint: .custom(url: mockServerURL))
             .build()

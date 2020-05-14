@@ -23,12 +23,10 @@ internal struct HTTPHeaders {
             return HTTPHeader(field: "Content-Type", value: contentType.rawValue)
         }
 
-        static func userAgentHeader(for mobileDevice: MobileDevice, appName: String?, appVersion: String?) -> HTTPHeader {
-            let appName = appName ?? "Datadog"
-            let appVersion = appVersion ?? sdkVersion
+        static func userAgentHeader(appName: String, appVersion: String, device: MobileDevice) -> HTTPHeader {
             return HTTPHeader(
                 field: "User-Agent",
-                value: "\(appName)/\(appVersion) CFNetwork (\(mobileDevice.model); \(mobileDevice.osName)/\(mobileDevice.osVersion))"
+                value: "\(appName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))"
             )
         }
 

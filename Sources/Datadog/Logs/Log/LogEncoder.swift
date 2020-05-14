@@ -21,6 +21,7 @@ internal struct Log: Encodable {
     let status: Status
     let message: String
     let serviceName: String
+    let environment: String
     let loggerName: String
     let loggerVersion: String
     let threadName: String
@@ -49,7 +50,7 @@ internal struct LogEncoder {
 
         // MARK: - Application info
 
-        case applicationVersion = "application.version"
+        case applicationVersion = "version"
 
         // MARK: - Logger info
 
@@ -140,9 +141,9 @@ internal struct LogEncoder {
         }
 
         // Encode tags
-        if let tags = log.tags {
-            let tagsString = tags.joined(separator: ",")
-            try container.encode(tagsString, forKey: .tags)
-        }
+        var tags = log.tags ?? []
+        tags.append("env:\(log.environment)") // include default tag
+        let tagsString = tags.joined(separator: ",")
+        try container.encode(tagsString, forKey: .tags)
     }
 }

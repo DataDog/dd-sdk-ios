@@ -82,7 +82,7 @@ internal struct SpanEncoder {
         // MARK: - Meta
 
         case source = "meta._dd.source"
-        case applicationVersion = "meta.application.version"
+        case applicationVersion = "meta.version"
         case tracerVersion = "meta.tracer.version"
 
         case userId = "meta.usr.id"

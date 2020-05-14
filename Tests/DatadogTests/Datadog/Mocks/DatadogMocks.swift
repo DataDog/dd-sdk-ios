@@ -353,9 +353,8 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
 
 extension UploadURLProvider {
     static func mockAny() -> UploadURLProvider {
-        return try! UploadURLProvider(
-            endpointURL: "https://app.example.com/v2/api",
-            clientToken: "abc-def-ghi",
+        return UploadURLProvider(
+            urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
             dateProvider: RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
         )
     }
@@ -389,6 +388,54 @@ extension HTTPClient {
 
 // MARK: - Integration
 
+extension Datadog.Configuration {
+    static func mockAny() -> Datadog.Configuration {
+        return .mockWith()
+    }
+
+    static func mockWith(
+        clientToken: String = .mockAny(),
+        logsEndpoint: LogsEndpoint = .us,
+        tracesEndpoint: TracesEndpoint = .us,
+        serviceName: String? = .mockAny(),
+        environment: String = .mockAny()
+    ) -> Datadog.Configuration {
+        return Datadog.Configuration(
+            clientToken: clientToken,
+            logsEndpoint: logsEndpoint,
+            tracesEndpoint: tracesEndpoint,
+            serviceName: serviceName,
+            environment: environment
+        )
+    }
+}
+
+extension Datadog.ValidConfiguration {
+    static func mockAny() -> Datadog.ValidConfiguration {
+        return mockWith()
+    }
+
+    static func mockWith(
+        applicationName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        applicationBundleIdentifier: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        environment: String = .mockAny(),
+        logsUploadURLWithClientToken: URL = .mockAny(),
+        tracesUploadURLWithClientToken: URL = .mockAny()
+    ) -> Datadog.ValidConfiguration {
+        return Datadog.ValidConfiguration(
+            applicationName: applicationName,
+            applicationVersion: applicationVersion,
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            serviceName: serviceName,
+            environment: environment,
+            logsUploadURLWithClientToken: logsUploadURLWithClientToken,
+            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken
+        )
+    }
+}
+
 /// Mock which can be used to intercept messages printed by `developerLogger` or
 /// `userLogger` by overwritting `Datadog.consolePrint` function:
 ///
@@ -409,20 +456,16 @@ extension AppContext {
     }
 
     static func mockWith(
-        environment: Environment = .iOSApp,
-        bundleIdentifier: String? = nil,
-        bundleVersion: String? = nil,
-        bundleShortVersion: String? = nil,
-        executableName: String? = nil,
-        mobileDevice: MobileDevice? = nil
+        bundleType: BundleType = .iOSApp,
+        bundleIdentifier: String? = .mockAny(),
+        bundleVersion: String? = .mockAny(),
+        bundleName: String? = .mockAny()
     ) -> AppContext {
         return AppContext(
-            environment: environment,
+            bundleType: bundleType,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
-            bundleShortVersion: bundleShortVersion,
-            executableName: executableName,
-            mobileDevice: mobileDevice
+            bundleName: bundleName
         )
     }
 }
@@ -460,15 +503,5 @@ class LogOutputMock: LogOutput {
 
     func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
         recordedLog = RecordedLog(level: level, message: message)
-    }
-}
-
-extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration {
-        return Datadog.Configuration(
-            clientToken: URL.mockAny().absoluteString,
-            logsEndpoint: .us,
-            tracesEndpoint: .us
-        )
     }
 }

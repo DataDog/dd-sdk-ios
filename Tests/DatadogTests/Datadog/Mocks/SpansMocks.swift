@@ -58,14 +58,16 @@ extension SpanBuilder {
     }
 
     static func mockWith(
-        appContext: AppContext = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        environment: String = .mockAny(),
         serviceName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> SpanBuilder {
         return SpanBuilder(
-            appContext: appContext,
+            applicationVersion: applicationVersion,
+            environment: environment,
             serviceName: serviceName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,

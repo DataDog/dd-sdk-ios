@@ -107,7 +107,7 @@ internal class SpanMatcher {
         fileprivate let matcher: SpanMatcher
 
         func source()               throws -> String { try matcher.meta(forKeyPath: "meta._dd.source") }
-        func applicationVersion()   throws -> String { try matcher.meta(forKeyPath: "meta.application.version") }
+        func applicationVersion()   throws -> String { try matcher.meta(forKeyPath: "meta.version") }
         func tracerVersion()        throws -> String { try matcher.meta(forKeyPath: "meta.tracer.version") }
 
         func userID()               throws -> String { try matcher.meta(forKeyPath: "meta.usr.id") }

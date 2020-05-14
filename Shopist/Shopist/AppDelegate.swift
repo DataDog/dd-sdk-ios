@@ -5,7 +5,7 @@
  */
 
 import UIKit
-@testable import Datadog // TODO: RUMM-332 Remove `@testable` import after `DDTracer` initializer is `public`
+import Datadog
 import OpenTracing
 
 fileprivate(set) var logger: Logger!
@@ -20,7 +20,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.initialize(
             appContext: .init(),
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: appConfig.clientToken) // use your own client token obtained on Datadog website)
+                .builderUsing(
+                    clientToken: appConfig.clientToken, // use your own client token obtained on Datadog website
+                    environment: "tests"
+                )
                 .build()
         )
 

@@ -17,9 +17,12 @@ internal final class TracingFeature {
     /// Single, shared instance of `TracingFeatureFeature`.
     internal static var instance: TracingFeature?
 
+    // MARK: - Configuration
+
+    let configuration: Datadog.ValidConfiguration
+
     // MARK: - Dependencies
 
-    let appContext: AppContext
     let dateProvider: DateProvider
     let tracingUUIDGenerator: TracingUUIDGenerator
     let userInfoProvider: UserInfoProvider
@@ -67,39 +70,28 @@ internal final class TracingFeature {
 
         init(
             storage: Storage,
-            appContext: AppContext,
+            configuration: Datadog.ValidConfiguration,
             performance: PerformancePreset,
+            mobileDevice: MobileDevice,
             httpClient: HTTPClient,
             tracesUploadURLProvider: UploadURLProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
             uploadQueue: DispatchQueue
         ) {
-            let httpHeaders: HTTPHeaders
-            let uploadConditions: DataUploadConditions
-
-            if let mobileDevice = appContext.mobileDevice { // mobile device
-                httpHeaders = HTTPHeaders(
-                    headers: [
-                        .contentTypeHeader(contentType: .textPlainUTF8),
-                        .userAgentHeader(for: mobileDevice, appName: appContext.executableName, appVersion: appContext.bundleVersion)
-                    ]
-                )
-                uploadConditions = DataUploadConditions(
-                    batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                    networkConnectionInfo: networkConnectionInfoProvider
-                )
-            } else { // other device (i.e. iOS Simulator)
-                httpHeaders = HTTPHeaders(
-                    headers: [
-                        .contentTypeHeader(contentType: .textPlainUTF8)
-                        // UA http header will default to the one produced by the OS
-                    ]
-                )
-                uploadConditions = DataUploadConditions(
-                    batteryStatus: nil, // uploads do not depend on battery status
-                    networkConnectionInfo: networkConnectionInfoProvider
-                )
-            }
+            let httpHeaders = HTTPHeaders(
+                headers: [
+                    .contentTypeHeader(contentType: .textPlainUTF8),
+                    .userAgentHeader(
+                        appName: configuration.applicationName,
+                        appVersion: configuration.applicationVersion,
+                        device: mobileDevice
+                    )
+                ]
+            )
+            let uploadConditions = DataUploadConditions(
+                batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
+                networkConnectionInfo: networkConnectionInfoProvider
+            )
 
             let dataUploader = DataUploader(
                 urlProvider: tracesUploadURLProvider,
@@ -122,8 +114,9 @@ internal final class TracingFeature {
 
     init(
         directory: Directory,
-        appContext: AppContext,
+        configuration: Datadog.ValidConfiguration,
         performance: PerformancePreset,
+        mobileDevice: MobileDevice,
         httpClient: HTTPClient,
         tracesUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
@@ -132,8 +125,10 @@ internal final class TracingFeature {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType
     ) {
+        // Configuration
+        self.configuration = configuration
+
         // Bundle dependencies
-        self.appContext = appContext
         self.dateProvider = dateProvider
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.userInfoProvider = userInfoProvider
@@ -158,8 +153,9 @@ internal final class TracingFeature {
         )
         self.upload = Upload(
             storage: self.storage,
-            appContext: appContext,
+            configuration: configuration,
             performance: performance,
+            mobileDevice: mobileDevice,
             httpClient: httpClient,
             tracesUploadURLProvider: tracesUploadURLProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
