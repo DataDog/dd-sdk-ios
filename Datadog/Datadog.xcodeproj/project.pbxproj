@@ -168,17 +168,20 @@
 		9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E085879242519FF001A3583 /* NetworkPathMonitor.swift */; };
 		9E323DBB246C35F8004C9FA1 /* Swizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E323DB9246C35F8004C9FA1 /* Swizzler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9E323DBC246C35F8004C9FA1 /* SwizzlerError.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E323DBA246C35F8004C9FA1 /* SwizzlerError.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		9E323DBE246C3604004C9FA1 /* TemplateURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E323DBD246C3604004C9FA1 /* TemplateURLSession.h */; };
-		9E323DC0246C360A004C9FA1 /* TemplateURLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E323DBF246C3609004C9FA1 /* TemplateURLSession.m */; };
 		9E323DC3246C3611004C9FA1 /* SwizzlerError.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E323DC1246C3611004C9FA1 /* SwizzlerError.m */; };
 		9E323DC4246C3611004C9FA1 /* Swizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E323DC2246C3611004C9FA1 /* Swizzler.m */; };
-		9E323DC6246C361F004C9FA1 /* SessionTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E323DC5246C361F004C9FA1 /* SessionTracer.swift */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */; };
 		9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
 		9E58E8E324615EDA008E5063 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* EncodingTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		9E7231FC246EBDDE006AA2F5 /* NSObject+Swizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E7231FA246EBDDE006AA2F5 /* NSObject+Swizzler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		9E7231FD246EBDDE006AA2F5 /* NSObject+Swizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E7231FB246EBDDE006AA2F5 /* NSObject+Swizzler.m */; };
+		9E7231FF246EBE7E006AA2F5 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7231FE246EBE7E006AA2F5 /* URLSessionSwizzlerTests.swift */; };
+		9E723202246EC7A2006AA2F5 /* TemplateURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E723200246EC7A2006AA2F5 /* TemplateURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		9E723203246EC7A2006AA2F5 /* TemplateURLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E723201246EC7A2006AA2F5 /* TemplateURLSession.m */; };
+		9E723205246EDBFD006AA2F5 /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E723204246EDBFC006AA2F5 /* URLSessionSwizzler.swift */; };
 		9E822041246C3CA200A5E29E /* SwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E822040246C3CA200A5E29E /* SwizzlerTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -447,17 +450,20 @@
 		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
 		9E323DB9246C35F8004C9FA1 /* Swizzler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Swizzler.h; sourceTree = "<group>"; };
 		9E323DBA246C35F8004C9FA1 /* SwizzlerError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwizzlerError.h; sourceTree = "<group>"; };
-		9E323DBD246C3604004C9FA1 /* TemplateURLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateURLSession.h; sourceTree = "<group>"; };
-		9E323DBF246C3609004C9FA1 /* TemplateURLSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TemplateURLSession.m; sourceTree = "<group>"; };
 		9E323DC1246C3611004C9FA1 /* SwizzlerError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SwizzlerError.m; sourceTree = "<group>"; };
 		9E323DC2246C3611004C9FA1 /* Swizzler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Swizzler.m; sourceTree = "<group>"; };
-		9E323DC5246C361F004C9FA1 /* SessionTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTracer.swift; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
 		9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DateFormatter.swift; sourceTree = "<group>"; };
 		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		9E58E8E224615EDA008E5063 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
+		9E7231FA246EBDDE006AA2F5 /* NSObject+Swizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+Swizzler.h"; sourceTree = "<group>"; };
+		9E7231FB246EBDDE006AA2F5 /* NSObject+Swizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+Swizzler.m"; sourceTree = "<group>"; };
+		9E7231FE246EBE7E006AA2F5 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
+		9E723200246EC7A2006AA2F5 /* TemplateURLSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TemplateURLSession.h; sourceTree = "<group>"; };
+		9E723201246EC7A2006AA2F5 /* TemplateURLSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TemplateURLSession.m; sourceTree = "<group>"; };
+		9E723204246EDBFC006AA2F5 /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
 		9E822040246C3CA200A5E29E /* SwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwizzlerTests.swift; sourceTree = "<group>"; };
 		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
 		9EF49F1624476FBD004F2CA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -585,7 +591,6 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				9E323DC5246C361F004C9FA1 /* SessionTracer.swift */,
 				614E9EB2244719FA007EE3E1 /* Environment.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
 				61133B9F2423979B00786299 /* Utils */,
@@ -1043,6 +1048,7 @@
 			children = (
 				61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */,
 				9E822040246C3CA200A5E29E /* SwizzlerTests.swift */,
+				9E7231FE246EBE7E006AA2F5 /* URLSessionSwizzlerTests.swift */,
 			);
 			path = DatadogPrivate;
 			sourceTree = "<group>";
@@ -1068,6 +1074,7 @@
 			children = (
 				61C5A87C24509A0C00DA608C /* Casting.swift */,
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
+				9E723204246EDBFC006AA2F5 /* URLSessionSwizzler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1148,9 +1155,11 @@
 		9E47010324471027000073A4 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */,
 				9E323DB9246C35F8004C9FA1 /* Swizzler.h */,
 				9E323DBA246C35F8004C9FA1 /* SwizzlerError.h */,
-				9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */,
+				9E7231FA246EBDDE006AA2F5 /* NSObject+Swizzler.h */,
+				9E723200246EC7A2006AA2F5 /* TemplateURLSession.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -1160,10 +1169,10 @@
 			children = (
 				9E47010324471027000073A4 /* include */,
 				9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */,
-				9E323DBD246C3604004C9FA1 /* TemplateURLSession.h */,
-				9E323DBF246C3609004C9FA1 /* TemplateURLSession.m */,
 				9E323DC2246C3611004C9FA1 /* Swizzler.m */,
 				9E323DC1246C3611004C9FA1 /* SwizzlerError.m */,
+				9E7231FB246EBDDE006AA2F5 /* NSObject+Swizzler.m */,
+				9E723201246EC7A2006AA2F5 /* TemplateURLSession.m */,
 			);
 			name = _Datadog_Private;
 			path = ../Sources/_Datadog_Private;
@@ -1185,10 +1194,11 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E723202246EC7A2006AA2F5 /* TemplateURLSession.h in Headers */,
 				61133B93242393DE00786299 /* Datadog.h in Headers */,
 				9E323DBC246C35F8004C9FA1 /* SwizzlerError.h in Headers */,
-				9E323DBE246C3604004C9FA1 /* TemplateURLSession.h in Headers */,
 				9E323DBB246C35F8004C9FA1 /* Swizzler.h in Headers */,
+				9E7231FC246EBDDE006AA2F5 /* NSObject+Swizzler.h in Headers */,
 				9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1479,6 +1489,7 @@
 			files = (
 				61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */,
 				61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */,
+				9E723203246EC7A2006AA2F5 /* TemplateURLSession.m in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
@@ -1495,9 +1506,7 @@
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
 				9E323DC3246C3611004C9FA1 /* SwizzlerError.m in Sources */,
-				9E323DC6246C361F004C9FA1 /* SessionTracer.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
-				9E323DC0246C360A004C9FA1 /* TemplateURLSession.m in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61C5A8A624509FAA00DA608C /* SpanEncoder.swift in Sources */,
@@ -1519,6 +1528,7 @@
 				61133BE82423979B00786299 /* LogFileOutput.swift in Sources */,
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
 				61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */,
+				9E7231FD246EBDDE006AA2F5 /* NSObject+Swizzler.m in Sources */,
 				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
 				61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */,
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
@@ -1529,6 +1539,7 @@
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
 				612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */,
+				9E723205246EDBFD006AA2F5 /* URLSessionSwizzler.swift in Sources */,
 				61133BE92423979B00786299 /* LogOutput.swift in Sources */,
 				61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */,
 				61C5A88624509A0C00DA608C /* TracingUUIDGenerator.swift in Sources */,
@@ -1555,6 +1566,7 @@
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
+				9E7231FF246EBE7E006AA2F5 /* URLSessionSwizzlerTests.swift in Sources */,
 				61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */,
 				61C5A89D24509C1100DA608C /* DDSpanTests.swift in Sources */,
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,

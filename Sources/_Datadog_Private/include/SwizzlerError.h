@@ -21,9 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)classSizeIsDifferentWithPreviousClass:(Class)prevClass
                                              newClass:(Class)newClass;
 
-+ (instancetype)dynamicClassAlreadyExists:(Class)dynamicClass;
-+ (instancetype)objectWasNotSwizzled:(NSObject *)object;
++ (instancetype)dynamicClassAlreadyExistsWith:(NSString *)prefix
+                                      basedOn:(NSString *)superclassName;
++ (instancetype)objectWasNotSwizzled:(NSObject *)object
+                          withPrefix:(nullable NSString *)prefix;
 + (instancetype)objectIsNil;
++ (instancetype)objectDoesNotHaveAClass;
++ (instancetype)selector:(NSString *)selector wasAlreadyAddedToClass:(Class)klass;
++ (instancetype)selector:(NSString *)selector doesNotExistInClass:(Class)klass;
 @end
 
 NS_ASSUME_NONNULL_END

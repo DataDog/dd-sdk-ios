@@ -2,7 +2,7 @@
 //  TemplateURLSession.m
 //  Datadog
 //
-//  Created by Mert Buran on 13/05/2020.
+//  Created by Mert Buran on 15/05/2020.
 //  Copyright © 2020 Datadog. All rights reserved.
 //
 
@@ -11,6 +11,7 @@
 
 id (*objc_msgSendSuper_URLRequest)(struct objc_super *, SEL, NSURLRequest *) = (void *)&objc_msgSendSuper;
 id (*objc_msgSendSuper_URLRequestWithCompletionHandler)(struct objc_super *, SEL, NSURLRequest *, void(^)(NSData *, NSURLResponse *, NSError *)) = (void *)&objc_msgSendSuper;
+
 struct objc_super superStruct(id sself) {
     struct objc_super blockSuper = {
         .receiver = sself,
@@ -22,8 +23,6 @@ struct objc_super superStruct(id sself) {
 // IMPORTANT NOTE: TemplateURLSession should NOT have "ivar"s other than what NSURLSession has
 // Ivars change the memory layout of the class and needs to be added very carefully unless if it MUST be added
 @implementation TemplateURLSession
-
-// MARK: - Injected method placeholders
 
 - (NSURLRequest *)injected_interceptRequest:(NSURLRequest *)request {
     NSAssert(false, @"This method should not be run at runtime!");

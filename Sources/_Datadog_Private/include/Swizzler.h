@@ -10,20 +10,34 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// NOTE: Swizzler methods are not thread-safe
+
 @interface Swizzler : NSObject
-
-+ (BOOL)    swizzle:(NSURLSession *)session
- requestInterceptor:(NSURLRequest *(^)(NSURLRequest *))requestInterceptor
-       taskObserver:(void(^)(NSURLSessionTask *))taskObserver
-enforceDynamicClassCreation:(BOOL)enforceCreateNewClass
-              error:(NSError **)error;
-
-+ (BOOL)    unswizzle:(nullable NSURLSession *)swizzledSession
-andRemoveDynamicClass:(BOOL)removeDynamicClass
-                error:(NSError **)error;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
+
++ (BOOL)swizzle:(NSObject *)object
+           with:(Class)newClass
+          error:(NSError **)error;
+
++ (BOOL)     unswizzle:(NSObject *)swizzledObject
+            ifPrefixed:(nullable NSString *)prefix
+andDisposeDynamicClass:(BOOL)disposeDynamicClass
+                 error:(NSError **)error;
+
++ (nullable Class)dynamicClassWith:(NSString *)dynamicClassPrefix
+                        superclass:(Class)superklass
+                         configure:(BOOL(^)(Class newClass))configure;
+
++ (BOOL)addMethodsOf:(Class)templateClass
+                  to:(Class)newClass
+               error:(NSError **)error;
+
++ (BOOL)setBlock:(id)blockIMP
+implementationOf:(SEL)selector
+         inClass:(Class)klass
+           error:(NSError **)error;
 
 @end
 
