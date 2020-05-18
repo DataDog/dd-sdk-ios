@@ -48,15 +48,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         let originalKlassName = String(fromUnsafePtr: class_getName(originalKlass))
         let requestInterceptor: RequestInterceptor = { return $1 }
         let taskObserver: TaskObserver = { _, _ in }
-        do {
+
+        XCTAssertNoThrow(
             try URLSessionSwizzler.swizzle(
                 session,
                 requestInterceptor: requestInterceptor,
                 taskObserver: taskObserver
             )
-        } catch {
-            XCTAssertNil(error)
-        }
+        )
 
         guard let klass: AnyClass = object_getClass(session), let superklass: AnyClass = class_getSuperclass(klass) else {
             XCTFail("New class of session instance should be obtained")
@@ -156,16 +155,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         defer {
             try! URLSessionSwizzler.unswizzle(session, disposeDynamicClass: true)
         }
-        do {
-            for _ in 0...5 {
+        for _ in 0...5 {
+            XCTAssertNoThrow(
                 try URLSessionSwizzler.swizzle(
                     session,
                     requestInterceptor: interceptor,
                     taskObserver: observer
                 )
-            }
-        } catch {
-            XCTAssertNil(error)
+            )
         }
     }
 
@@ -179,73 +176,43 @@ class URLSessionSwizzlerTests: XCTestCase {
         let session2 = URLSession(configuration: .default)
         let session3 = URLSession(configuration: .default)
 
-        do {
-            try URLSessionSwizzler.swizzle(
-                session1,
-                requestInterceptor: { $1 },
-                taskObserver: { _, _ in },
-                enforceNewClassConfiguration: true
+        try! [session1, session2, session3].forEach { session in
+            XCTAssertNoThrow(
+                try URLSessionSwizzler.swizzle(
+                    session,
+                    requestInterceptor: { $1 },
+                    taskObserver: { _, _ in }
+                )
             )
-            try URLSessionSwizzler.swizzle(
-                session2,
-                requestInterceptor: { $1 },
-                taskObserver: { _, _ in },
-                enforceNewClassConfiguration: false
-            )
-            try URLSessionSwizzler.swizzle(
-                session3,
-                requestInterceptor: { $1 },
-                taskObserver: { _, _ in },
-                enforceNewClassConfiguration: true
-            )
-            XCTFail("session3 swizzling with enforceDynamicClassCreation should throw!")
-        } catch {
-            let className1 = NSStringFromClass(object_getClass(session1)!)
-            let className2 = NSStringFromClass(object_getClass(session2)!)
-            let className3 = NSStringFromClass(object_getClass(session3)!)
-
-            XCTAssertTrue(className1.contains("_Datadog"))
-            XCTAssertEqual(className1, className2)
-            XCTAssertFalse(className3.contains("_Datadog"))
-            XCTAssertNotNil(error)
         }
 
-        // tearDownTracedSession(session1/2) would result in EXC_BAD_ACCESS
-        // Because tearDownTracedSession removes dynamic class by default
-        // If we tearDown one of those instances, the other would be class-less -> EXC_BAD_ACCESS
-        try! URLSessionSwizzler.unswizzle(
-            session1,
-            disposeDynamicClass: false
-        )
-        try! URLSessionSwizzler.unswizzle(
-            session2,
-            disposeDynamicClass: true
-        )
+        tearDownTracedSession(session1)
+        tearDownTracedSession(session2)
         tearDownTracedSession(session3)
     }
 
-//    func testConcurrentSwizzling() {
-//        let requestInterceptor: RequestInterceptor = { $1 }
-//        let taskObserver: TaskObserver = { _, _ in }
-//        let iterationCount = 100
-//        let url = URL(string: "http://foo.bar")!
-//        let swizzledSessions: [(URLSession, XCTestExpectation)]
-//        swizzledSessions = (0..<iterationCount).map { _ in
-//            return (URLSession(configuration: .default), expectation(description: "concurrent expectation \(UUID().uuidString)"))
-//        }
-//        DispatchQueue.concurrentPerform(iterations: iterationCount) { iteration in
-//            do {
-//                try URLSessionSwizzler.swizzle(swizzledSessions[iteration].0, requestInterceptor: requestInterceptor, taskObserver: taskObserver)
-//                let task = swizzledSessions[iteration].0.dataTask(with: url)
-//
-//                XCTAssertNotNil(task)
-//                swizzledSessions[iteration].1.fulfill()
-//            } catch {
-//                XCTAssertNil(error)
-//            }
-//        }
-//        waitForExpectations(timeout: 0.5, handler: nil)
-//    }
+    func testConcurrentSwizzling() {
+        let requestInterceptor: RequestInterceptor = { $1 }
+        let taskObserver: TaskObserver = { _, _ in }
+        let iterationCount = 5
+        let url = URL(string: "http://foo.bar")!
+        let swizzledSessions: [(URLSession, XCTestExpectation)]
+        swizzledSessions = (0..<iterationCount).map { _ in
+            return (URLSession(configuration: .default), expectation(description: "concurrent expectation \(UUID().uuidString)"))
+        }
+        DispatchQueue.concurrentPerform(iterations: iterationCount) { iteration in
+            do {
+                try URLSessionSwizzler.swizzle(swizzledSessions[iteration].0, requestInterceptor: requestInterceptor, taskObserver: taskObserver)
+            } catch {
+                XCTAssertNil(error)
+            }
+            let task = swizzledSessions[iteration].0.dataTask(with: url)
+
+            XCTAssertNotNil(task)
+            swizzledSessions[iteration].1.fulfill()
+        }
+        waitForExpectations(timeout: 0.5, handler: nil)
+    }
 
     // MARK: - URLSessionDataTask methods
     func testDataTaskWithURL() {

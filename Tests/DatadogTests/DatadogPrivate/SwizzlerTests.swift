@@ -32,88 +32,83 @@ class SwizzlerTests: XCTestCase {
 
     func testSwizzleWithWrongInstanceSize() {
         let obj = NSObject()
-        do {
-            try Swizzler.swizzle(obj, with: DummySubclassWithIvars.self)
-        } catch {
-            XCTAssertNotNil(error)
-        }
 
+        XCTAssertThrowsError(try Swizzler.swizzle(obj, with: DummySubclassWithIvars.self))
         XCTAssertNotEqual(obj.description, dummyDescription)
     }
 
     func testUnswizzleSimpleObject() {
         let obj = NSObject()
-        do {
-            try Swizzler.unswizzle(obj, ifPrefixed: nil, andDisposeDynamicClass: false)
-            XCTFail("Unswizzling non-swizzled object should throw")
-        } catch {
-            XCTAssertNotNil(error)
-        }
+
+        XCTAssertThrowsError(try Swizzler.unswizzle(obj, ifPrefixed: nil, andDisposeDynamicClass: false))
     }
 
     func testUnswizzleSwizzledObject() {
         let obj = NSObject()
         try! Swizzler.swizzle(obj, with: DummySubclass.self)
-        do {
-            try Swizzler.unswizzle(obj, ifPrefixed: nil, andDisposeDynamicClass: false)
-        } catch {
-            XCTAssertNil(error)
-        }
+
+        XCTAssertNoThrow(try Swizzler.unswizzle(obj, ifPrefixed: nil, andDisposeDynamicClass: false))
+        XCTAssertNotEqual(obj.description, dummyDescription)
     }
 
     func testUnswizzleObjectWithWrongPrefix() {
         let obj = NSObject()
         try! Swizzler.swizzle(obj, with: DummySubclass.self)
-        do {
-            try Swizzler.unswizzle(obj, ifPrefixed: "wrong_prefix", andDisposeDynamicClass: false)
-            XCTFail("Wrong prefix should throw")
-        } catch {
-            XCTAssertNotNil(error)
-        }
+
+        XCTAssertThrowsError(try Swizzler.unswizzle(obj, ifPrefixed: "wrong_prefix", andDisposeDynamicClass: false))
     }
 
-    func testSimpleClassCreation() {
-        let newClass: AnyClass?
-        newClass = Swizzler.dynamicClass(
-            with: "SwizzlerTests_",
+    func testCreateMultipleDynamicClasses() {
+        // swiftlint:disable multiline_arguments_brackets
+        let fooPrefixedClass1: AnyClass? = Swizzler.createClass(
+            with: "Foo",
             superclass: NSObject.self
-        ) { _ in
-            return true
-        }
-
-        XCTAssertNotNil(newClass, "New class should be created successfully")
-    }
-
-    func testClassLookup() {
-        var firstClassConfigured = false
-        var secondClassConfigured = false
-
-        let newClass: AnyClass?
-        newClass = Swizzler.dynamicClass(
-            with: "SwizzlerTests_",
+        ) { _ in return true }
+        let fooPrefixedClass2: AnyClass? = Swizzler.createClass(
+            with: "Foo",
             superclass: NSObject.self
-        ) { _ in
-            firstClassConfigured = true
-            return true
-        }
-
-        let lookedUpClass: AnyClass?
-        lookedUpClass = Swizzler.dynamicClass(
-            with: "SwizzlerTests_",
+        ) { _ in return true }
+        let fooPrefixedClass3: AnyClass? = Swizzler.createClass(
+            with: "Foo",
             superclass: NSObject.self
-        ) { _ in
-            secondClassConfigured = true
-            return true
-        }
+        ) { _ in return true }
+
+        let barPrefixedClass1: AnyClass? = Swizzler.createClass(
+            with: "Bar",
+            superclass: NSObject.self
+        ) { _ in return true }
+        let barPrefixedClass2: AnyClass? = Swizzler.createClass(
+            with: "Bar",
+            superclass: NSObject.self
+        ) { _ in return true }
+        // swiftlint:enable multiline_arguments_brackets
 
         defer {
-            objc_disposeClassPair(lookedUpClass!)
+            objc_disposeClassPair(fooPrefixedClass1!)
+            objc_disposeClassPair(fooPrefixedClass2!)
+            objc_disposeClassPair(fooPrefixedClass3!)
         }
 
-        XCTAssertNotNil(newClass)
-        XCTAssertNotNil(lookedUpClass)
-        XCTAssertTrue(firstClassConfigured)
-        XCTAssertFalse(secondClassConfigured)
+        XCTAssertNotNil(fooPrefixedClass1)
+        XCTAssertNotNil(fooPrefixedClass2)
+        XCTAssertNotNil(fooPrefixedClass3)
+        let fooClassName1 = NSStringFromClass(fooPrefixedClass1!)
+        let fooClassName2 = NSStringFromClass(fooPrefixedClass2!)
+        let fooClassName3 = NSStringFromClass(fooPrefixedClass3!)
+        XCTAssertNotEqual(fooClassName1, fooClassName2)
+        XCTAssertNotEqual(fooClassName1, fooClassName3)
+        XCTAssertNotEqual(fooClassName2, fooClassName3)
+        XCTAssertTrue(fooClassName1.hasPrefix("Foo"))
+        XCTAssertTrue(fooClassName2.hasPrefix("Foo"))
+        XCTAssertTrue(fooClassName3.hasPrefix("Foo"))
+
+        XCTAssertNotNil(barPrefixedClass1)
+        XCTAssertNotNil(barPrefixedClass2)
+        let barClassName1 = NSStringFromClass(barPrefixedClass1!)
+        let barClassName2 = NSStringFromClass(barPrefixedClass2!)
+        XCTAssertNotEqual(barClassName1, barClassName2)
+        XCTAssertTrue(barClassName1.hasPrefix("Bar"))
+        XCTAssertTrue(barClassName2.hasPrefix("Bar"))
     }
 
     func testConfigurationFailure() {
@@ -121,7 +116,7 @@ class SwizzlerTests: XCTestCase {
         var secondClassConfigured = false
 
         let firstClass: AnyClass?
-        firstClass = Swizzler.dynamicClass(
+        firstClass = Swizzler.createClass(
             with: "SwizzlerTests_",
             superclass: NSObject.self
         ) { _ in
@@ -130,7 +125,7 @@ class SwizzlerTests: XCTestCase {
         }
 
         let secondClass: AnyClass?
-        secondClass = Swizzler.dynamicClass(
+        secondClass = Swizzler.createClass(
             with: "SwizzlerTests_",
             superclass: NSObject.self
         ) { _ in
@@ -148,10 +143,35 @@ class SwizzlerTests: XCTestCase {
         XCTAssertTrue(secondClassConfigured)
     }
 
-// TODO: RUMM-300
-//    + (BOOL)addMethodsOf:(Class)templateClass
-//                      to:(Class)newClass
-//                   error:(NSError **)error;
+    // MARK: - Swizzler.addMethods(of: templateClass, to: newClass)
+
+    func testAddingMethodsToDynamicClass() {
+        let dynamicClass: AnyClass?
+        dynamicClass = Swizzler.createClass(
+            with: "SwizzlerAddMethods_",
+            superclass: NSObject.self
+        ) { newClass in
+            do {
+                try Swizzler.addMethods(of: DummySubclass.self, to: newClass)
+                return true
+            } catch {
+                XCTAssertNil(error)
+                return false
+            }
+        }
+
+        guard let newClass = dynamicClass else {
+            XCTFail("newClass cannot be nil")
+            return
+        }
+
+        let obj = NSObject()
+        XCTAssertNotEqual(obj.description, dummyDescription)
+
+        try! Swizzler.swizzle(obj, with: newClass)
+
+        XCTAssertEqual(obj.description, dummyDescription)
+    }
 
 //    + (BOOL)setBlock:(id)blockIMP
 //    implementationOf:(SEL)selector
