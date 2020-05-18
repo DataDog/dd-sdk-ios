@@ -10,63 +10,79 @@ import SystemConfiguration
 @testable import Datadog
 
 class NetworkConnectionInfoProviderTests: XCTestCase {
+    /// Constantly pulls the `NetworkConnectionInfo` from given provider and fulfills the expectation if value is received.
+    private func pullNetworkConnectionInfo(
+        from provider: NetworkConnectionInfoProviderType,
+        on queue: DispatchQueue,
+        thenFulfill expectation: XCTestExpectation
+    ) {
+        if provider.current != nil {
+            expectation.fulfill()
+        } else {
+            queue.async { self.pullNetworkConnectionInfo(from: provider, on: queue, thenFulfill: expectation) }
+        }
+    }
+
+    // MARK: - iOS 12+
+
     @available(iOS 12, *)
-    func testProviderRetainsNWPathMonitor() {
-        let isStarted: (NWPathMonitor) -> Bool = { monitor in
-            return monitor.queue != nil
-        }
+    func testNWPathNetworkConnectionInfoProviderGivesValue() {
+        let provider = NWPathNetworkConnectionInfoProvider()
 
-        var provider: NetworkConnectionInfoProvider?
-        autoreleasepool {
-            let pathMonitor = NWPathMonitor()
-            XCTAssertFalse(isStarted(pathMonitor))
-            provider = NetworkConnectionInfoProvider(pathMonitor)
-            XCTAssertTrue(isStarted(pathMonitor))
-        }
+        pullNetworkConnectionInfo(
+            from: provider,
+            on: DispatchQueue(label: "com.datadoghq.pulling-NWPathNetworkConnectionInfoProvider", target: .global(qos: .utility)),
+            thenFulfill: expectation(description: "Receive `NetworkConnectionInfo` from `NWPathNetworkConnectionInfoProvider`")
+        )
 
-        XCTAssertNotNil(provider?.current, "provider should be working")
+        waitForExpectations(timeout: 1, handler: nil)
     }
 
     @available(iOS 12, *)
-    func testProviderReleasesNWPathMonitor() {
-        weak var weakRef: NWPathMonitor? = nil
-        autoreleasepool {
-            let pathMonitor = NWPathMonitor()
-            _ = NetworkConnectionInfoProvider(pathMonitor)
-            weakRef = pathMonitor
+    func testNWPathNetworkConnectionInfoProviderCanBeSafelyAccessedFromConcurrentThreads() {
+        let provider = NWPathNetworkConnectionInfoProvider()
+
+        DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
+            _ = provider.current
         }
+    }
+
+    @available(iOS 12, *)
+    func testNWPathMonitorHandling() {
+        weak var nwPathMonitorWeakReference: NWPathMonitor?
+
+        autoreleasepool {
+            let nwPathMonitor = NWPathMonitor()
+            _ = NWPathNetworkConnectionInfoProvider(monitor: nwPathMonitor)
+            nwPathMonitorWeakReference = nwPathMonitor
+            XCTAssertNotNil(nwPathMonitor.queue, "`NWPathMonitor` is started with synchronization queue")
+        }
+
         Thread.sleep(forTimeInterval: 0.5)
 
-        XCTAssertNil(weakRef, "path monitor should be deallocated and nil")
+        XCTAssertNil(nwPathMonitorWeakReference, "`NWPathMonitor` is deallocated with `NWPathNetworkConnectionInfoProvider`")
     }
 
-    @available(iOS 12, *)
-    func testNWPathMonitorUndocumentedBehavior() {
-        weak var weakRef: NWPathMonitor? = nil
-        autoreleasepool {
-            let pathMonitor = NWPathMonitor()
-            weakRef = pathMonitor
+    // MARK: - iOS 11
+
+    func testiOS11NetworkConnectionInfoProviderGivesValue() {
+        let provider = iOS11NetworkConnectionInfoProvider()
+
+        pullNetworkConnectionInfo(
+            from: provider,
+            on: DispatchQueue(label: "com.datadoghq.pulling-iOS11NetworkConnectionInfoProvider", target: .global(qos: .utility)),
+            thenFulfill: expectation(description: "Receive `NetworkConnectionInfo` from `iOS11NetworkConnectionInfoProvider`")
+        )
+
+        waitForExpectations(timeout: 1, handler: nil)
+    }
+
+    func testiOS11NetworkConnectionInfoProviderCanBeSafelyAccessedFromConcurrentThreads() {
+        let provider = iOS11NetworkConnectionInfoProvider()
+
+        DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
+            _ = provider.current
         }
-        Thread.sleep(forTimeInterval: 0.5)
-
-        XCTAssertNotNil(weakRef, "iOS 12 did not use to release NWPathMonitor unless cancel is called, now it is fixed 🙌")
-    }
-
-    func testItStartsAndCancelsLegacyPathMonitor() {
-        var pathMonitor: iOS11PathMonitor? = iOS11PathMonitor()
-        weak var weakMonitor: iOS11PathMonitor? = pathMonitor
-
-        var provider: NetworkConnectionInfoProvider? = NetworkConnectionInfoProvider(pathMonitor!)
-
-        pathMonitor = nil
-
-        XCTAssertNotNil(weakMonitor, "provider should retain pathMonitor")
-        XCTAssertNotNil(provider!.current, "provider should be working")
-
-        provider = nil // `cancel()` when deinitialized
-
-        XCTAssertNil(provider)
-        XCTAssertNil(weakMonitor, "path monitor should be cancelled and released")
     }
 }
 
@@ -85,6 +101,7 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
     func testNWInterface() {
         XCTAssertEqual(Array(fromInterfaceTypes: []), [])
         XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
+        XCTAssertEqual(Array(fromInterfaceTypes: [.wiredEthernet]), [.wiredEthernet])
         XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .wifi]), [.wifi, .wifi])
         XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .cellular]), [.wifi, .cellular])
         XCTAssertEqual(Array(fromInterfaceTypes: [.loopback, .other]), [.loopback, .other])

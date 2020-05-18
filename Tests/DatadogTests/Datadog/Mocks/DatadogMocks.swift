@@ -265,19 +265,19 @@ extension NetworkConnectionInfo {
 
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
-    private var _current: NetworkConnectionInfo
+    private var _current: NetworkConnectionInfo?
 
-    init(networkConnectionInfo: NetworkConnectionInfo) {
+    init(networkConnectionInfo: NetworkConnectionInfo?) {
         _current = networkConnectionInfo
     }
 
-    func set(current: NetworkConnectionInfo) {
+    func set(current: NetworkConnectionInfo?) {
         queue.async { self._current = current }
     }
 
     // MARK: - NetworkConnectionInfoProviderType
 
-    var current: NetworkConnectionInfo {
+    var current: NetworkConnectionInfo? {
         queue.sync { _current }
     }
 
@@ -288,7 +288,7 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     }
 
     static func mockWith(
-        networkConnectionInfo: NetworkConnectionInfo = .mockAny()
+        networkConnectionInfo: NetworkConnectionInfo? = .mockAny()
     ) -> NetworkConnectionInfoProviderMock {
         return NetworkConnectionInfoProviderMock(networkConnectionInfo: networkConnectionInfo)
     }
