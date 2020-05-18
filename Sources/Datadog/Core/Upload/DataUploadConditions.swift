@@ -18,7 +18,9 @@ internal struct DataUploadConditions {
 
     func canPerformUpload() -> Bool {
         let batteryStatus = self.batteryStatus?.current
-        let networkConnectionInfo = self.networkConnectionInfo.current
+        guard let networkConnectionInfo = self.networkConnectionInfo.current else {
+            return false // when `NetworkConnectionInfo` is not yet available
+        }
 
         if let batteryStatus = batteryStatus {
             return shouldUploadFor(networkConnectionInfo: networkConnectionInfo) && shouldUploadFor(batteryStatus: batteryStatus)

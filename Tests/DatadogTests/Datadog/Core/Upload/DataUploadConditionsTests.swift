@@ -11,7 +11,7 @@ class DataUploadConditionsTests: XCTestCase {
     private typealias Constants = DataUploadConditions.Constants
 
     func testItSaysToUploadOnCertainConditions() {
-        randomize(times: 100) {
+        `repeat`(times: 100) {
             assert(
                 canPerformUploadReturns: true,
                 forBattery: .mockWith(
@@ -45,7 +45,7 @@ class DataUploadConditionsTests: XCTestCase {
     }
 
     func testItSaysToNotUploadOnCertainConditions() {
-        randomize(times: 100) {
+        `repeat`(times: 100) {
             assert(
                 canPerformUploadReturns: false,
                 forBattery: .mockWith(
@@ -56,6 +56,15 @@ class DataUploadConditionsTests: XCTestCase {
                 forNetwork: .mockWith(
                     networkConnectionInfo: .mockWith(reachability: .no)
                 )
+            )
+            assert(
+                canPerformUploadReturns: false,
+                forBattery: .mockWith(
+                    status: BatteryStatus(
+                        state: .mockRandom(), level: .random(in: 0...100), isLowPowerModeEnabled: .random()
+                    )
+                ),
+                forNetwork: .mockWith(networkConnectionInfo: nil)
             )
             assert(
                 canPerformUploadReturns: false,
@@ -106,7 +115,7 @@ class DataUploadConditionsTests: XCTestCase {
         )
     }
 
-    private func randomize(times: Int, block: () -> Void) {
+    private func `repeat`(times: Int, block: () -> Void) {
         (0..<times).forEach { _ in block() }
     }
 }
