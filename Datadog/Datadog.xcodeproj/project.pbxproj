@@ -95,7 +95,6 @@
 		61F8CC092469295500FE2908 /* DatadogConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */; };
 		61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
-		9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E085879242519FF001A3583 /* NetworkPathMonitor.swift */; };
 		9E2FB2722447660E001C9B7B /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */; };
@@ -250,7 +249,6 @@
 		61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationTests.swift; sourceTree = "<group>"; };
 		61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureMocks.swift; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
-		9E085879242519FF001A3583 /* NetworkPathMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPathMonitor.swift; sourceTree = "<group>"; };
 		9E2FB2772447660E001C9B7B /* DatadogIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E2FB27A24476707001C9B7B /* LoggingIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingIntegrationTests.swift; sourceTree = "<group>"; };
 		9E2FB27B24476707001C9B7B /* LoggingBenchmarkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingBenchmarkTests.swift; sourceTree = "<group>"; };
@@ -393,7 +391,6 @@
 				61133BA22423979B00786299 /* CarrierInfoProvider.swift */,
 				61133BA32423979B00786299 /* MobileDevice.swift */,
 				61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */,
-				9E085879242519FF001A3583 /* NetworkPathMonitor.swift */,
 				61133BA52423979B00786299 /* BatteryStatusProvider.swift */,
 			);
 			path = System;
@@ -1019,7 +1016,6 @@
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
 				61133BCF2423979B00786299 /* FileWriter.swift in Sources */,
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
-				9E08587A242519FF001A3583 /* NetworkPathMonitor.swift in Sources */,
 				9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */,
 				61133BCA2423979B00786299 /* EncodableValue.swift in Sources */,
 				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
