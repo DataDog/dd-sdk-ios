@@ -39,8 +39,13 @@ internal struct Directory {
 
     /// Returns all files of this directory.
     func files() throws -> [File] {
+        var keys: [URLResourceKey] = [.isRegularFileKey]
+        if #available(OSX 10.12, *) {
+            keys.append(.canonicalPathKey)
+        }
+
         return try FileManager.default
-            .contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])
+            .contentsOfDirectory(at: url, includingPropertiesForKeys: keys)
             .map { url in File(url: url) }
     }
 }

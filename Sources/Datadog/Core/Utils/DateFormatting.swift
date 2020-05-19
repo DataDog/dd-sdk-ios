@@ -18,7 +18,7 @@ extension DateFormatter: DateFormatterType {}
 internal let iso8601DateFormatter: DateFormatterType = {
     // As there is a known crash in iOS 11.0 and 11.1 when using `.withFractionalSeconds` option in `ISO8601DateFormatter`,
     // we use different `DateFormatterType` implementation depending on the OS version. The problem was fixed by Apple in iOS 11.2.
-    if #available(iOS 11.2, *) {
+    if #available(iOS 11.2, OSX 10.14, *) {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions.insert(.withFractionalSeconds)
         return formatter

@@ -1,0 +1,117 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+
+  before_all do |lane, options|
+    ENV["FL_DERIVED_DATA_OUTPUT"] = "fastlaneDerivedDataOutput/#{ENV["FASTLANE_PLATFORM_NAME"]}"
+    ENV["FL_LANE_OUTPUT"] = "fastlaneOutput/#{ENV["FASTLANE_PLATFORM_NAME"]}/#{lane}"
+    ENV["FL_TEST_DEVICE"] = options[:device_name].to_s.empty? ? 'iPad Pro (9.7-inch)' : options[:device_name]
+    ENV["FL_LATEST_OS_VERSION"] = "#{ENV["FL_CI_IOS_VERSION"]}".empty? ? '13.3' : ENV["FL_CI_IOS_VERSION"]
+    ENV["FL_TEST_OS_VERSION"] = options[:os].to_s.empty? ? ENV["FL_LATEST_OS_VERSION"] : options[:os]
+    ENV["FL_DEVICE_DESTINATION"] = "platform=iOS Simulator,name=#{ENV["FL_TEST_DEVICE"]},OS=#{ENV["FL_TEST_OS_VERSION"]}"
+    ENV["XCTESTRUN_OS_VERSION"] = "#{ENV["XCTESTRUN_CI_IOS_VERSION"]}".empty? ? '13.2' : ENV["XCTESTRUN_CI_IOS_VERSION"]
+    ENV["XCTESTRUN_FILE_NAME"] = "Datadog_iphonesimulator#{ENV["XCTESTRUN_OS_VERSION"]}-x86_64.xctestrun"
+    ENV["XCTESTRUN_FILE_PATH"] = "./#{ENV["FL_DERIVED_DATA_OUTPUT"]}/Build/Products/#{ENV["XCTESTRUN_FILE_NAME"]}"
+  end
+
+################################### TESTING ####################################
+
+  desc "Create an iOS build which can be used to execute ui and unit tests"
+  lane :build_for_testing do |options|
+      build(options.merge(scheme: 'Datadog', test_build: true))
+  end
+
+  desc "Run iOS unit tests with the option to rerun the build or use the previous one"
+  lane :unit_test do |options|
+    test(options.merge(scheme: 'Datadog', test_bundle: 'DatadogTests'))
+  end
+
+end
+
+platform :mac do
+
+  before_all do |lane, options|
+    ENV["FL_DERIVED_DATA_OUTPUT"] = "fastlaneDerivedDataOutput/#{ENV["FASTLANE_PLATFORM_NAME"]}"
+    ENV["FL_LANE_OUTPUT"] = "fastlaneOutput/#{ENV["FASTLANE_PLATFORM_NAME"]}/#{lane}"
+    ENV["FL_LATEST_OS_VERSION"] = "#{ENV["FL_CI_MACOS_VERSION"]}".empty? ? '10.15' : ENV["FL_CI_MACOS_VERSION"]
+    ENV["FL_DEVICE_DESTINATION"] = 'platform=macOS,arch=x86_64'
+    ENV["XCTESTRUN_OS_VERSION"] = "#{ENV["XCTESTRUN_CI_MACOS_VERSION"]}".empty? ? ENV["FL_LATEST_OS_VERSION"] : ENV["XCTESTRUN_CI_MACOS_VERSION"]
+    ENV["XCTESTRUN_FILE_NAME"] = "Datadog_macOS_macosx#{ENV["XCTESTRUN_OS_VERSION"]}-x86_64.xctestrun"
+    ENV["XCTESTRUN_FILE_PATH"] = "./#{ENV["FL_DERIVED_DATA_OUTPUT"]}/Build/Products/#{ENV["XCTESTRUN_FILE_NAME"]}"
+  end
+
+################################### TESTING ####################################
+
+  desc "Create a macOS build which can be used to execute ui and unit tests"
+  lane :build_for_testing do |options|
+    build(options.merge(scheme: 'Datadog_macOS', test_build: true))
+  end
+
+  desc "Run macOS unit tests with the option to rerun the build or use the previous one"
+  lane :unit_test do |options|
+    test(options.merge(scheme: 'Datadog_macOS', test_bundle: 'DatadogTests_macOS'))
+  end
+
+end
+
+############################### PRIVATE LANES ##################################
+
+desc "Make a build"
+private_lane :build do |options|
+  scan(
+    clean: options[:clean],
+    build_for_testing: options[:test_build],
+    destination: ENV["FL_DEVICE_DESTINATION"],
+    scheme: options[:scheme],
+    code_coverage: 'yes',
+    derived_data_path: ENV["FL_DERIVED_DATA_OUTPUT"],
+    xcargs: "CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO"
+  )
+end
+
+desc "Run tests with the option to rerun the build or use the previous one"
+private_lane :test do |options|
+  if options[:build].nil? || options[:build]
+      build(options.merge(test_build: true))
+  end
+
+  parallelization(options.merge(enabled: false))
+
+  sh("rm", "-rf", "../#{ENV["FL_LANE_OUTPUT"]}/results")
+  scan(
+      destination: ENV["FL_DEVICE_DESTINATION"],
+      scheme: options[:scheme],
+      xctestrun: ENV["XCTESTRUN_FILE_PATH"],
+      only_testing: options[:test_bundle],
+      output_directory: ENV["FL_LANE_OUTPUT"],
+      xcargs: "-resultBundlePath ./#{ENV["FL_LANE_OUTPUT"]}/results"
+  )
+end
+
+desc "Set the ParallelizationEnabled key for the xctestrun plist file"
+private_lane :parallelization do |options|
+  if !options[:enabled].to_s.empty?
+    set_info_plist_value(
+      path: ENV["XCTESTRUN_FILE_PATH"],
+      key: options[:test_bundle],
+      subkey: 'ParallelizationEnabled',
+      value: options[:enabled]
+    )
+    UI.message "Parallelization in test bundle #{options[:test_bundle]} is set to #{options[:enabled]}"
+  end
+end

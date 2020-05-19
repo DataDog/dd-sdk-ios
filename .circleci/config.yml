@@ -1,0 +1,93 @@
+# iOS CircleCI 2.1 configuration file
+version: 2.1
+
+orbs:
+  tb-services: touchbistro/tb-services@volatile
+
+################################################################################
+#################################### JOBS ######################################
+################################################################################
+jobs:
+
+  ############################### BUILDING #####################################
+  build:
+    executor: tb-services/macos-vm
+    environment:
+      FL_PLATFORM: ios
+    steps:
+      - checkout
+      - tb-services/bundle-install
+      - run:
+          name: Build with Fastlane
+          command: bundle exec fastlane $FL_PLATFORM build_for_testing $FL_OPTIONS
+          environment:
+            LC_ALL: en_US.UTF-8
+            LANG: en_US.UTF-8
+      - run:
+          name: Organize build artifacts
+          command: ~/project/.circleci/organize_build_artifacts.sh
+          when: always
+      - store_artifacts:
+          path: fastlaneBuildLogs
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - fastlaneDerivedDataOutput
+
+  build_mac:
+    executor: tb-services/macos-vm
+    environment:
+      FL_PLATFORM: mac
+    steps:
+      - checkout
+      - tb-services/bundle-install
+      - run:
+          name: Build with Fastlane
+          command: bundle exec fastlane $FL_PLATFORM build_for_testing $FL_OPTIONS
+          environment:
+            LC_ALL: en_US.UTF-8
+            LANG: en_US.UTF-8
+      - run:
+          name: Organize build artifacts
+          command: ~/project/.circleci/organize_build_artifacts.sh
+          when: always
+      - store_artifacts:
+          path: fastlaneBuildLogs
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - fastlaneDerivedDataOutput
+
+  ################################ TESTING #####################################
+  unit_test:
+    executor: tb-services/macos-vm
+    environment:
+      FL_PLATFORM: ios
+      FL_LANE: unit_test
+    steps:
+      - checkout
+      - tb-services/fastlane-test
+
+  unit_test_mac:
+    executor: tb-services/macos-vm
+    environment:
+      FL_PLATFORM: mac
+      FL_LANE: unit_test
+    steps:
+      - checkout
+      - tb-services/fastlane-test
+
+################################################################################
+################################## WORKFLOWS ###################################
+################################################################################
+workflows:
+  build-and-test:
+    jobs:
+      - build
+      - build_mac
+      - unit_test:
+          requires:
+            - build
+      - unit_test_mac:
+          requires:
+            - build_mac
