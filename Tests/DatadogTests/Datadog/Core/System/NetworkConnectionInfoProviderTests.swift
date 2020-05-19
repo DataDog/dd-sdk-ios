@@ -119,8 +119,10 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
     }
 
     func testSCInterface() {
+        #if !os(OSX)
         let cellular = SCNetworkReachabilityFlags(arrayLiteral: .isWWAN)
         XCTAssertEqual(Array(fromReachabilityFlags: cellular), [.cellular])
+        #endif
 
         let null: SCNetworkReachabilityFlags? = nil
         XCTAssertNil(Array(fromReachabilityFlags: null))

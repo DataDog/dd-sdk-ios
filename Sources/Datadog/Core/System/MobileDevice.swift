@@ -4,7 +4,9 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// Describes current mobile device.
 internal class MobileDevice {
@@ -52,6 +54,7 @@ internal class MobileDevice {
         self.currentBatteryStatus = currentBatteryStatus
     }
 
+    #if canImport(UIKit)
     convenience init(uiDevice: UIDevice, processInfo: ProcessInfo) {
         let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
         self.init(
@@ -69,19 +72,37 @@ internal class MobileDevice {
             }
         )
     }
+    #endif
 
     /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
     static var current: MobileDevice {
-        #if !targetEnvironment(simulator)
-        // Real device
-        return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
+        #if canImport(UIKit)
+            #if !targetEnvironment(simulator)
+            // Real device
+            return MobileDevice(uiDevice: UIDevice.current, processInfo: ProcessInfo.processInfo)
+            #else
+            // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+            return MobileDevice(
+                model: UIDevice.current.model,
+                osName: UIDevice.current.systemName,
+                osVersion: UIDevice.current.systemVersion,
+                enableBatteryStatusMonitoring: {},
+                resetBatteryStatusMonitoring: {},
+                currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+            )
+            #endif
         #else
-        // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+        var sysinfo = utsname()
+        uname(&sysinfo)
+        let deviceName = String(bytes: Data(bytes: &sysinfo.machine, count: Int(_SYS_NAMELEN)), encoding: .ascii)?.trimmingCharacters(in: .controlCharacters)
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        let osVersionStr = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
+
         return MobileDevice(
-            model: UIDevice.current.model,
-            osName: UIDevice.current.systemName,
-            osVersion: UIDevice.current.systemVersion,
+            model: deviceName ?? "",
+            osName: "macOS",
+            osVersion: osVersionStr,
             enableBatteryStatusMonitoring: {},
             resetBatteryStatusMonitoring: {},
             currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
@@ -89,6 +110,7 @@ internal class MobileDevice {
         #endif
     }
 
+    #if canImport(UIKit)
     private static func toBatteryState(_ uiDeviceBatteryState: UIDevice.BatteryState) -> BatteryStatus.State {
         switch uiDeviceBatteryState {
         case .unknown:      return .unknown
@@ -98,4 +120,5 @@ internal class MobileDevice {
         @unknown default:   return.unknown
         }
     }
+    #endif
 }

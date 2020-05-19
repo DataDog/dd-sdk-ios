@@ -35,6 +35,7 @@ internal protocol CarrierInfoProviderType {
     var current: CarrierInfo? { get }
 }
 
+#if os(iOS)
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
@@ -53,15 +54,19 @@ extension CarrierInfo.RadioAccessTechnology {
         }
     }
 }
+#endif
 
 internal class CarrierInfoProvider: CarrierInfoProviderType {
+    #if os(iOS)
     private let networkInfo: CTTelephonyNetworkInfo
 
     init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
         self.networkInfo = networkInfo
     }
+    #endif
 
     var current: CarrierInfo? {
+        #if os(iOS)
         let carrier: CTCarrier?
         let radioTechnology: String?
 
@@ -87,5 +92,8 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
             carrierAllowsVOIP: currentCTCarrier.allowsVOIP,
             radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
         )
+        #else
+        return nil
+        #endif
     }
 }

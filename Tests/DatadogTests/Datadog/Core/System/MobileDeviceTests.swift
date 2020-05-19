@@ -5,7 +5,9 @@
  */
 
 import XCTest
+#if canImport(UIKit)
 import UIKit
+#endif
 @testable import Datadog
 
 class MobileDeviceTests: XCTestCase {
@@ -13,6 +15,7 @@ class MobileDeviceTests: XCTestCase {
         XCTAssertNotNil(MobileDevice.current)
     }
 
+    #if canImport(UIKit)
     func testWhenRunningOnMobile_itUsesUIDeviceInfo() {
         let uiDevice = UIDeviceMock(
             model: "model mock",
@@ -71,4 +74,5 @@ class MobileDeviceTests: XCTestCase {
         mobileDevice.resetBatteryStatusMonitoring()
         XCTAssertFalse(uiDevice.isBatteryMonitoringEnabled)
     }
+    #endif
 }

@@ -229,5 +229,7 @@ class ProcessInfoMock: ProcessInfo {
         _isLowPowerModeEnabled = isLowPowerModeEnabled
     }
 
+    #if !os(OSX)
     override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+    #endif
 }
