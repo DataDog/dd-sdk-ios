@@ -14,9 +14,9 @@ class DataUploadURLProviderTests: XCTestCase {
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
             dateProvider: dateProvider
         )
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=mobile&batch_time=1576404000000"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404000000"))
         dateProvider.advance(bySeconds: 9.999)
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=mobile&batch_time=1576404009999"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404009999"))
     }
 }
 

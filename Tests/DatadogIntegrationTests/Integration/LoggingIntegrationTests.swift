@@ -53,7 +53,7 @@ class LoggingIntegrationTests: IntegrationTests {
         // Assert
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
-            XCTAssertTrue(request.path.contains("/client-token?ddsource=mobile"))
+            XCTAssertTrue(request.path.contains("/client-token?ddsource=ios"))
         }
 
         let logMatchers = try recordedRequests

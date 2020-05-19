@@ -16,7 +16,7 @@ internal class UploadURLProvider {
         let currentTimeMillis = dateProvider.currentDate().currentTimeMillis
         let batchTimeQueryItem = URLQueryItem(name: "batch_time", value: "\(currentTimeMillis)")
         // ddsource
-        let ddSourceQueryItem = URLQueryItem(name: "ddsource", value: "mobile")
+        let ddSourceQueryItem = URLQueryItem(name: "ddsource", value: "ios")
 
         return [ddSourceQueryItem, batchTimeQueryItem]
     }
