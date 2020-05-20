@@ -26,7 +26,9 @@ class TracingIntegrationTests: IntegrationTests {
         // Assert requests
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
-            XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=mobile"))
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?batch_time=1589969230153`
+            let pathRegexp = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#
+            XCTAssertNotNil(request.path.range(of: pathRegexp, options: .regularExpression, range: nil, locale: nil))
             XCTAssertTrue(request.httpHeaders.contains("Content-Type: text/plain;charset=UTF-8"))
         }
 
@@ -66,7 +68,7 @@ class TracingIntegrationTests: IntegrationTests {
             XCTAssertEqual(try matcher.isError(), 0)
             XCTAssertEqual(try matcher.environment(), "integration")
 
-            XCTAssertEqual(try matcher.meta.source(), "mobile")
+            XCTAssertEqual(try matcher.meta.source(), "ios")
             XCTAssertEqual(try matcher.meta.tracerVersion().split(separator: ".").count, 3)
             XCTAssertEqual(try matcher.meta.applicationVersion(), "1.0")
 

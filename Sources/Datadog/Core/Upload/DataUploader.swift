@@ -9,21 +9,28 @@ import Foundation
 /// Creates URL and adds query items before providing them
 internal class UploadURLProvider {
     private let urlWithClientToken: URL
-    private let dateProvider: DateProvider
+    private let queryItems: [QueryItem]
 
-    private var queryItems: [URLQueryItem] {
-        // batch_time
-        let timestamp = dateProvider.currentDate().timeIntervalSince1970.toMilliseconds
-        let batchTimeQueryItem = URLQueryItem(name: "batch_time", value: "\(timestamp)")
-        // ddsource
-        let ddSourceQueryItem = URLQueryItem(name: "ddsource", value: "ios")
+    struct QueryItem {
+        let value: () -> URLQueryItem
 
-        return [ddSourceQueryItem, batchTimeQueryItem]
+        /// Creates `batch_time=...` query item adding current timestamp (in milliseconds) to the URL.
+        static func batchTime(using dateProvider: DateProvider) -> QueryItem {
+            return QueryItem {
+                let timestamp = dateProvider.currentDate().timeIntervalSince1970.toMilliseconds
+                return URLQueryItem(name: "batch_time", value: "\(timestamp)")
+            }
+        }
+
+        /// Creates `ddsource=ios` query item.
+        static func ddsource() -> QueryItem {
+            return QueryItem { URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource) }
+        }
     }
 
     var url: URL {
         var urlComponents = URLComponents(url: urlWithClientToken, resolvingAgainstBaseURL: false)
-        urlComponents?.percentEncodedQueryItems = queryItems
+        urlComponents?.percentEncodedQueryItems = queryItems.map { $0.value() }
 
         guard let url = urlComponents?.url else {
             userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItems)")
@@ -33,9 +40,9 @@ internal class UploadURLProvider {
         return url
     }
 
-    init(urlWithClientToken: URL, dateProvider: DateProvider) {
+    init(urlWithClientToken: URL, queryItems: [QueryItem]) {
         self.urlWithClientToken = urlWithClientToken
-        self.dateProvider = dateProvider
+        self.queryItems = queryItems
     }
 }
 

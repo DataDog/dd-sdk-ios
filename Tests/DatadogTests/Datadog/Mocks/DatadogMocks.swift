@@ -355,7 +355,7 @@ extension UploadURLProvider {
     static func mockAny() -> UploadURLProvider {
         return UploadURLProvider(
             urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
-            dateProvider: RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
+            queryItems: []
         )
     }
 }

@@ -105,7 +105,10 @@ public class Datadog {
             httpClient: httpClient,
             logsUploadURLProvider: UploadURLProvider(
                 urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-                dateProvider: dateProvider
+                queryItems: [
+                    .ddsource(),
+                    .batchTime(using: dateProvider)
+                ]
             ),
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
@@ -121,7 +124,9 @@ public class Datadog {
             httpClient: httpClient,
             tracesUploadURLProvider: UploadURLProvider(
                 urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
-                dateProvider: dateProvider
+                queryItems: [
+                    .batchTime(using: dateProvider)
+                ]
             ),
             dateProvider: dateProvider,
             tracingUUIDGenerator: DefaultTracingUUIDGenerator(),

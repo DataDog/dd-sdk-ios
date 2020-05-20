@@ -8,12 +8,40 @@ import XCTest
 @testable import Datadog
 
 class DataUploadURLProviderTests: XCTestCase {
-    func testItBuildsValidURL() throws {
+    func testDDSourceQueryItem() {
+        let item: UploadURLProvider.QueryItem = .ddsource()
+
+        XCTAssertEqual(item.value().name, "ddsource")
+        XCTAssertEqual(item.value().value, "ios")
+    }
+
+    func testBatchTimeQueryItem() {
+        let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
+        let item: UploadURLProvider.QueryItem = .batchTime(using: dateProvider)
+
+        XCTAssertEqual(item.value().name, "batch_time")
+        XCTAssertEqual(item.value().value, "1576404000000")
+        dateProvider.advance(bySeconds: 9.999)
+        XCTAssertEqual(item.value().name, "batch_time")
+        XCTAssertEqual(item.value().value, "1576404009999")
+    }
+
+    func testItBuildsValidURLUsingNoQueryItems() throws {
+        let urlProvider = UploadURLProvider(
+            urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
+            queryItems: []
+        )
+
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?"))
+    }
+
+    func testItBuildsValidURLUsingAllQueryItems() throws {
         let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
-            dateProvider: dateProvider
+            queryItems: [.ddsource(), .batchTime(using: dateProvider)]
         )
+
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404000000"))
         dateProvider.advance(bySeconds: 9.999)
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404009999"))

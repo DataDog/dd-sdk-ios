@@ -65,7 +65,7 @@ class DDTracerTests: XCTestCase {
               "type": "custom",
               "meta.tracer.version": "\(sdkVersion)",
               "meta.version": "1.0.0",
-              "meta._dd.source": "mobile",
+              "meta._dd.source": "ios",
               "meta.network.client.available_interfaces": "wifi",
               "meta.network.client.is_constrained": "0",
               "meta.network.client.is_expensive": "1",
