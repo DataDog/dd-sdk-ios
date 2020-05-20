@@ -92,6 +92,28 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    func testSendingLogsWithDifferentDates() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.info("message 1")
+        logger.info("message 2")
+        logger.info("message 3")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
+        // swiftlint:disable trailing_closure
+        logMatchers[0].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC() })
+        logMatchers[1].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1) })
+        logMatchers[2].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2) })
+        // swiftlint:enable trailing_closure
+    }
+
     func testSendingLogsWithDifferentLevels() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(

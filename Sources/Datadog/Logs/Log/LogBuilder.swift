@@ -16,8 +16,6 @@ internal struct LogBuilder {
     let serviceName: String
     /// Logger name to write in log.
     let loggerName: String
-    /// Current date to write in log.
-    let dateProvider: DateProvider
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
     /// Shared network connection info provider (or `nil` if disabled for given logger).
@@ -25,13 +23,13 @@ internal struct LogBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given logger).
     let carrierInfoProvider: CarrierInfoProviderType?
 
-    func createLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) -> Log {
+    func createLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) -> Log {
         let encodableAttributes = Dictionary(
             uniqueKeysWithValues: attributes.map { name, value in (name, EncodableValue(value)) }
         )
 
         return Log(
-            date: dateProvider.currentDate(),
+            date: date,
             status: logStatus(for: level),
             message: message,
             serviceName: serviceName,

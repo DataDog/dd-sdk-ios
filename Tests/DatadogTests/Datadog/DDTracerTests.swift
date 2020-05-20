@@ -9,7 +9,6 @@ import OpenTracing
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets
-// swiftlint:disable trailing_closure
 class DDTracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -474,4 +473,3 @@ class DDTracerTests: XCTestCase {
     }
 }
 // swiftlint:enable multiline_arguments_brackets
-// swiftlint:enable trailing_closure

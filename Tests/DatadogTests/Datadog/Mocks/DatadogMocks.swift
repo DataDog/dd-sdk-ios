@@ -497,11 +497,12 @@ class LogOutputMock: LogOutput {
     struct RecordedLog: Equatable {
         let level: LogLevel
         let message: String
+        let date: Date
     }
 
     var recordedLog: RecordedLog? = nil
 
-    func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
-        recordedLog = RecordedLog(level: level, message: message)
+    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) {
+        recordedLog = RecordedLog(level: level, message: message, date: date)
     }
 }
