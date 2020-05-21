@@ -25,7 +25,7 @@ class LoggingIntegrationTests: IntegrationTests {
         // Assert requests
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
-            XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=mobile"))
+            XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=ios"))
             XCTAssertTrue(request.httpHeaders.contains("Content-Type: application/json"))
         }
 
