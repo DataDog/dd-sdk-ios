@@ -9,40 +9,41 @@ import Foundation
 /// Creates URL and adds query items before providing them
 internal class UploadURLProvider {
     private let urlWithClientToken: URL
-    private let queryItems: [QueryItem]
+    private let queryItemProviders: [QueryItemProvider]
 
-    struct QueryItem {
+    struct QueryItemProvider {
         let value: () -> URLQueryItem
 
         /// Creates `batch_time=...` query item adding current timestamp (in milliseconds) to the URL.
-        static func batchTime(using dateProvider: DateProvider) -> QueryItem {
-            return QueryItem {
+        static func batchTime(using dateProvider: DateProvider) -> QueryItemProvider {
+            return QueryItemProvider {
                 let timestamp = dateProvider.currentDate().timeIntervalSince1970.toMilliseconds
                 return URLQueryItem(name: "batch_time", value: "\(timestamp)")
             }
         }
 
         /// Creates `ddsource=ios` query item.
-        static func ddsource() -> QueryItem {
-            return QueryItem { URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource) }
+        static func ddsource() -> QueryItemProvider {
+            let queryItem = URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource)
+            return QueryItemProvider { queryItem }
         }
     }
 
     var url: URL {
         var urlComponents = URLComponents(url: urlWithClientToken, resolvingAgainstBaseURL: false)
-        urlComponents?.percentEncodedQueryItems = queryItems.map { $0.value() }
+        urlComponents?.percentEncodedQueryItems = queryItemProviders.map { $0.value() }
 
         guard let url = urlComponents?.url else {
-            userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItems)")
-            developerLogger?.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItems)")
+            userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItemProviders)")
+            developerLogger?.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItemProviders)")
             return urlWithClientToken
         }
         return url
     }
 
-    init(urlWithClientToken: URL, queryItems: [QueryItem]) {
+    init(urlWithClientToken: URL, queryItemProviders: [QueryItemProvider]) {
         self.urlWithClientToken = urlWithClientToken
-        self.queryItems = queryItems
+        self.queryItemProviders = queryItemProviders
     }
 }
 

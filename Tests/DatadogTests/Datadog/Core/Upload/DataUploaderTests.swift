@@ -9,7 +9,7 @@ import XCTest
 
 class DataUploadURLProviderTests: XCTestCase {
     func testDDSourceQueryItem() {
-        let item: UploadURLProvider.QueryItem = .ddsource()
+        let item: UploadURLProvider.QueryItemProvider = .ddsource()
 
         XCTAssertEqual(item.value().name, "ddsource")
         XCTAssertEqual(item.value().value, "ios")
@@ -17,7 +17,7 @@ class DataUploadURLProviderTests: XCTestCase {
 
     func testBatchTimeQueryItem() {
         let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
-        let item: UploadURLProvider.QueryItem = .batchTime(using: dateProvider)
+        let item: UploadURLProvider.QueryItemProvider = .batchTime(using: dateProvider)
 
         XCTAssertEqual(item.value().name, "batch_time")
         XCTAssertEqual(item.value().value, "1576404000000")
@@ -29,7 +29,7 @@ class DataUploadURLProviderTests: XCTestCase {
     func testItBuildsValidURLUsingNoQueryItems() throws {
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
-            queryItems: []
+            queryItemProviders: []
         )
 
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?"))
@@ -39,7 +39,7 @@ class DataUploadURLProviderTests: XCTestCase {
         let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
-            queryItems: [.ddsource(), .batchTime(using: dateProvider)]
+            queryItemProviders: [.ddsource(), .batchTime(using: dateProvider)]
         )
 
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404000000"))
