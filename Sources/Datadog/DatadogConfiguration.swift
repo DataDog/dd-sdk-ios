@@ -13,10 +13,10 @@ extension Datadog {
         public enum LogsEndpoint {
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us // swiftlint:disable:this identifier_name
+            case us
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu // swiftlint:disable:this identifier_name
+            case eu
             /// User-defined server.
             case custom(url: String)
 
@@ -33,10 +33,10 @@ extension Datadog {
         public enum TracesEndpoint {
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us // swiftlint:disable:this identifier_name
+            case us
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu // swiftlint:disable:this identifier_name
+            case eu
             /// User-defined server.
             case custom(url: String)
 

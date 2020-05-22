@@ -15,7 +15,7 @@ internal struct NetworkConnectionInfo {
         /// The network might be reachable after trying.
         case maybe
         /// The network is not reachable.
-        case no // swiftlint:disable:this identifier_name
+        case no
     }
 
     /// Network connection interfaces.

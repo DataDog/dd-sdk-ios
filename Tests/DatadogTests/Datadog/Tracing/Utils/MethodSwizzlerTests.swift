@@ -64,16 +64,15 @@ class MethodSwizzlerTests: XCTestCase {
         typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
 
         let sel = #selector(BaseClass.methodToSwizzle as (BaseClass) -> () -> String)
-        let swizzledReturnValue = "this is swizzled imp"
         let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return swizzledReturnValue
+            return .mockAny()
         }
         let newImp = imp_implementationWithBlock(newBlockImp)
 
         let obj = BaseClass()
 
         XCTAssertNoThrow(try swizzler.swizzle(selector: sel, in: BaseClass.self, with: newImp))
-        XCTAssertEqual(obj.perform(sel)?.takeUnretainedValue() as? String, swizzledReturnValue)
+        XCTAssertEqual(obj.perform(sel)?.takeUnretainedValue() as? String, String.mockAny())
     }
 
     func testUnswizzling() {
@@ -81,9 +80,8 @@ class MethodSwizzlerTests: XCTestCase {
         typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
 
         let sel = #selector(BaseClass.methodToSwizzle as (BaseClass) -> () -> String)
-        let swizzledReturnValue = "this is swizzled imp"
         let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return swizzledReturnValue
+            return .mockAny()
         }
         let newImp = imp_implementationWithBlock(newBlockImp)
 
@@ -101,19 +99,18 @@ class MethodSwizzlerTests: XCTestCase {
 
         let klass: AnyClass = EmptySubclass.self
         let sel = #selector(EmptySubclass.methodToSwizzle as (EmptySubclass) -> () -> String)
-        let swizzledReturnValue = "this is swizzled imp"
         let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return swizzledReturnValue
+            return .mockAny()
         }
         let newImp = imp_implementationWithBlock(newBlockImp)
 
-        do {
-            try swizzler.swizzle(selector: sel, in: klass, with: newImp)
-        } catch SwizzlingError.methodNotFound(let unfoundSelector, let searchedClassName) {
+        XCTAssertThrowsError(try swizzler.swizzle(selector: sel, in: klass, with: newImp), "Method should NOT be found") { error in
+            guard case SwizzlingError.methodNotFound(let unfoundSelector, let searchedClassName) = error else {
+                XCTFail("Expected `SwizzlingError.methodNotFound`: \(error)")
+                return
+            }
             XCTAssertEqual(unfoundSelector, NSStringFromSelector(sel))
             XCTAssertEqual(searchedClassName, NSStringFromClass(klass))
-        } catch {
-            XCTAssertNil(error)
         }
     }
 
@@ -123,18 +120,17 @@ class MethodSwizzlerTests: XCTestCase {
 
         let klass: AnyClass = NonNSObjectSubclass.self
         let sel = #selector(NonNSObjectSubclass.methodToSwizzle as (NonNSObjectSubclass) -> () -> String)
-        let swizzledReturnValue = "this is swizzled imp"
         let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return swizzledReturnValue
+            return .mockAny()
         }
         let newImp = imp_implementationWithBlock(newBlockImp)
 
-        do {
-            try swizzler.swizzle(selector: sel, in: klass, with: newImp)
-        } catch SwizzlingError.classIsNotNSObjectSubclass(let className) {
+        XCTAssertThrowsError(try swizzler.swizzle(selector: sel, in: klass, with: newImp), "Method should NOT be found") { error in
+            guard case SwizzlingError.classIsNotNSObjectSubclass(let className) = error else {
+                XCTFail("Expected `SwizzlingError.classIsNotNSObjectSubclass`: \(error)")
+                return
+            }
             XCTAssertEqual(className, NSStringFromClass(klass))
-        } catch {
-            XCTAssertNil(error)
         }
     }
 
@@ -143,9 +139,8 @@ class MethodSwizzlerTests: XCTestCase {
         typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
 
         let sel = #selector(BaseClass.methodToSwizzle as (BaseClass) -> () -> String)
-        let swizzledReturnValue = "this is swizzled imp"
         let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return swizzledReturnValue
+            return .mockAny()
         }
         let newImp = imp_implementationWithBlock(newBlockImp)
 
@@ -157,7 +152,7 @@ class MethodSwizzlerTests: XCTestCase {
         thirdPartySwizzler.swizzleMethodToSwizzle()
 
         let returnValue: String = obj.perform(sel)?.takeUnretainedValue() as! String
-        XCTAssertNotEqual(returnValue, swizzledReturnValue)
-        XCTAssert(returnValue.contains(swizzledReturnValue))
+        XCTAssertNotEqual(returnValue, String.mockAny())
+        XCTAssert(returnValue.contains(String.mockAny()))
     }
 }
