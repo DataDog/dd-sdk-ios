@@ -7,6 +7,11 @@
 import Foundation
 
 extension Datadog {
+    internal struct Constants {
+        /// Value for `ddsource` send by different features.
+        static let ddsource = "ios"
+    }
+
     /// Datadog SDK configuration.
     public struct Configuration {
         /// Determines server to which logs are sent.

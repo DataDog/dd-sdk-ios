@@ -25,7 +25,9 @@ class LoggingIntegrationTests: IntegrationTests {
         // Assert requests
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
-            XCTAssertTrue(request.path.contains("/ui-tests-client-token?ddsource=ios"))
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`
+            let pathRegexp = #"^(.*)(/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)$"#
+            XCTAssertNotNil(request.path.range(of: pathRegexp, options: .regularExpression, range: nil, locale: nil))
             XCTAssertTrue(request.httpHeaders.contains("Content-Type: application/json"))
         }
 
