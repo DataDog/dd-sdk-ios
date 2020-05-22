@@ -13,7 +13,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     func test_swizzleDataTaskWithURL() {
         defer {
             try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.sel_DataTaskWithURL,
+                selector: URLSessionSwizzler.Selectors.DataTaskWithURL,
                 in: URLSessionSwizzler.subjectClass
             )
         }
@@ -39,7 +39,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(task.originalRequest?.url, url)
 
         try! MethodSwizzler.shared.unswizzle(
-            selector: URLSessionSwizzler.sel_DataTaskWithURL,
+            selector: URLSessionSwizzler.Selectors.DataTaskWithURL,
             in: URLSessionSwizzler.subjectClass
         )
 
@@ -50,7 +50,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     func test_swizzleDataTaskWithRequest() {
         defer {
             try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.sel_DataTaskWithRequest,
+                selector: URLSessionSwizzler.Selectors.DataTaskWithRequest,
                 in: URLSessionSwizzler.subjectClass
             )
         }
@@ -69,7 +69,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     func test_swizzleDataTaskWithURLCompletion() {
         defer {
             try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.sel_DataTaskWithURLCompletion,
+                selector: URLSessionSwizzler.Selectors.DataTaskWithURLCompletion,
                 in: URLSessionSwizzler.subjectClass
             )
         }
@@ -91,7 +91,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     func test_swizzleDataTaskWithRequestCompletion() {
         defer {
             try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.sel_DataTaskWithRequestCompletion,
+                selector: URLSessionSwizzler.Selectors.DataTaskWithRequestCompletion,
                 in: URLSessionSwizzler.subjectClass
             )
         }

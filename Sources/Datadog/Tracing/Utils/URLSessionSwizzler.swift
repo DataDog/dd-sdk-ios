@@ -9,26 +9,29 @@ import Foundation
 // TODO: RUMM-300 plug DDTracer into swizzled methods
 
 internal class URLSessionSwizzler {
+    enum Selectors {
+        static let DataTaskWithURL = #selector(URLSession.dataTask(with:) as (URLSession) -> (URL) -> URLSessionDataTask)
+        static let DataTaskWithRequest = #selector(URLSession.dataTask(with:) as (URLSession) -> (URLRequest) -> URLSessionDataTask)
+        static let DataTaskWithURLCompletion = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URL, @escaping CompletionHandler) -> URLSessionDataTask)
+        static let DataTaskWithRequestCompletion = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask)
+    }
+
+    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+    enum TypedIMPs {
+        typealias DataTaskWithURL = @convention(c) (URLSession, Selector, URL) -> URLSessionDataTask
+        typealias DataTaskWithRequest = @convention(c) (URLSession, Selector, URLRequest) -> URLSessionDataTask
+        typealias DataTaskWithURLCompletion = @convention(c) (URLSession, Selector, URL, @escaping CompletionHandler) -> URLSessionDataTask
+        typealias DataTaskWithURLRequestCompletion = @convention(c) (URLSession, Selector, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
+    }
+    enum TypedBlocks {
+        typealias DataTaskWithURL = @convention(block) (URLSession, URL) -> URLSessionDataTask
+        typealias DataTaskWithRequest = @convention(block) (URLSession, URLRequest) -> URLSessionDataTask
+        typealias DataTaskWithURLCompletion = @convention(block) (URLSession, URL, @escaping CompletionHandler) -> URLSessionDataTask
+        typealias DataTaskWithRequestCompletion = @convention(block) (URLSession, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
+    }
+
     static let subjectClass = URLSession.self
-
-    private typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
-
-    static let sel_DataTaskWithURL = #selector(URLSession.dataTask(with:) as (URLSession) -> (URL) -> URLSessionDataTask)
-    static let sel_DataTaskWithRequest = #selector(URLSession.dataTask(with:) as (URLSession) -> (URLRequest) -> URLSessionDataTask)
-    static let sel_DataTaskWithURLCompletion = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URL, @escaping CompletionHandler) -> URLSessionDataTask)
-    static let sel_DataTaskWithRequestCompletion = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask)
-
     private static let swizzler = MethodSwizzler.shared
-
-    private typealias DataTaskWithURL_C = @convention(c) (AnyObject, Selector, URL) -> URLSessionDataTask
-    private typealias DataTaskWithURL_Block = @convention(block) (AnyObject, URL) -> URLSessionDataTask
-    private typealias DataTaskWithRequest_C = @convention(c) (AnyObject, Selector, URLRequest) -> URLSessionDataTask
-    private typealias DataTaskWithRequest_Block = @convention(block) (AnyObject, URLRequest) -> URLSessionDataTask
-
-    private typealias DataTaskWithURLCompletion_C = @convention(c) (AnyObject, Selector, URL, @escaping CompletionHandler) -> URLSessionDataTask
-    private typealias DataTaskWithURLCompletion_Block = @convention(block) (AnyObject, URL, @escaping CompletionHandler) -> URLSessionDataTask
-    private typealias DataTaskWithRequestCompletion_C = @convention(c) (AnyObject, Selector, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
-    private typealias DataTaskWithRequestCompletion_Block = @convention(block) (AnyObject, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
 
     static func swizzle() throws {
         try swizzleDataTaskWithURL()
@@ -38,19 +41,19 @@ internal class URLSessionSwizzler {
     }
 
     static func unswizzle() throws {
-        try swizzler.unswizzle(selector: sel_DataTaskWithURL, in: subjectClass)
-        try swizzler.unswizzle(selector: sel_DataTaskWithRequest, in: subjectClass)
-        try swizzler.unswizzle(selector: sel_DataTaskWithURLCompletion, in: subjectClass)
-        try swizzler.unswizzle(selector: sel_DataTaskWithRequestCompletion, in: subjectClass)
+        try swizzler.unswizzle(selector: Selectors.DataTaskWithURL, in: subjectClass)
+        try swizzler.unswizzle(selector: Selectors.DataTaskWithRequest, in: subjectClass)
+        try swizzler.unswizzle(selector: Selectors.DataTaskWithURLCompletion, in: subjectClass)
+        try swizzler.unswizzle(selector: Selectors.DataTaskWithRequestCompletion, in: subjectClass)
     }
 
     static func swizzleDataTaskWithURL() throws {
         // typealiases cannot be generic as C/block conventions don't support generics
         // note that _Block doesn't have Selector parameter
-        typealias TypedIMP = DataTaskWithURL_C
-        typealias TypedBlockIMP = DataTaskWithURL_Block
+        typealias TypedIMP = TypedIMPs.DataTaskWithURL
+        typealias TypedBlockIMP = TypedBlocks.DataTaskWithURL
+        let sel = Selectors.DataTaskWithURL
 
-        let sel = sel_DataTaskWithURL
         let typedOriginalImp: TypedIMP = try swizzler.currentImplementation(of: sel, in: subjectClass)
 
         let newImpBlock: TypedBlockIMP = { [impSelector = sel] impSelf, impURL -> URLSessionDataTask in
@@ -61,10 +64,10 @@ internal class URLSessionSwizzler {
     }
 
     static func swizzleDataTaskWithRequest() throws {
-        typealias TypedIMP = DataTaskWithRequest_C
-        typealias TypedBlockIMP = DataTaskWithRequest_Block
+        typealias TypedIMP = TypedIMPs.DataTaskWithRequest
+        typealias TypedBlockIMP = TypedBlocks.DataTaskWithRequest
+        let sel = Selectors.DataTaskWithRequest
 
-        let sel = sel_DataTaskWithRequest
         let typedOriginalImp: TypedIMP = try swizzler.currentImplementation(of: sel, in: subjectClass)
 
         let newImpBlock: TypedBlockIMP = { [impSelector = sel] impSelf, impURLRequest -> URLSessionDataTask in
@@ -75,10 +78,10 @@ internal class URLSessionSwizzler {
     }
 
     static func swizzleDataTaskWithURLCompletionHandler() throws {
-        typealias TypedIMP = DataTaskWithURLCompletion_C
-        typealias TypedBlockIMP = DataTaskWithURLCompletion_Block
+        typealias TypedIMP = TypedIMPs.DataTaskWithURLCompletion
+        typealias TypedBlockIMP = TypedBlocks.DataTaskWithURLCompletion
+        let sel = Selectors.DataTaskWithURLCompletion
 
-        let sel = sel_DataTaskWithURLCompletion
         let typedOriginalImp: TypedIMP = try swizzler.currentImplementation(of: sel, in: subjectClass)
 
         let newImpBlock: TypedBlockIMP = { [impSelector = sel] impSelf, impURL, impCompletion -> URLSessionDataTask in
@@ -89,10 +92,10 @@ internal class URLSessionSwizzler {
     }
 
     static func swizzleDataTaskWithRequestCompletionHandler() throws {
-        typealias TypedIMP = DataTaskWithRequestCompletion_C
-        typealias TypedBlockIMP = DataTaskWithRequestCompletion_Block
+        typealias TypedIMP = TypedIMPs.DataTaskWithURLRequestCompletion
+        typealias TypedBlockIMP = TypedBlocks.DataTaskWithRequestCompletion
+        let sel = Selectors.DataTaskWithRequestCompletion
 
-        let sel = sel_DataTaskWithRequestCompletion
         let typedOriginalImp: TypedIMP = try swizzler.currentImplementation(of: sel, in: subjectClass)
 
         let newImpBlock: TypedBlockIMP = { [impSelector = sel] impSelf, impURLRequest, impCompletion -> URLSessionDataTask in
