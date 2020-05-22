@@ -11,7 +11,7 @@ internal class UploadURLProvider {
     private let urlWithClientToken: URL
     private let queryItemProviders: [QueryItemProvider]
 
-    struct QueryItemProvider {
+    class QueryItemProvider {
         let value: () -> URLQueryItem
 
         /// Creates `batch_time=...` query item adding current timestamp (in milliseconds) to the URL.
@@ -26,6 +26,10 @@ internal class UploadURLProvider {
         static func ddsource() -> QueryItemProvider {
             let queryItem = URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource)
             return QueryItemProvider { queryItem }
+        }
+
+        private init(value: @escaping () -> URLQueryItem) {
+            self.value = value
         }
     }
 
