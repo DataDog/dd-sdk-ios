@@ -119,7 +119,7 @@ internal class LogMatcher: JSONDataMatcher {
     }
 
     func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {
-        if let id = userInfo?.id { // swiftlint:disable:this identifier_name
+        if let id = userInfo?.id {
             assertValue(forKey: JSONKey.userId, equals: id, file: file, line: line)
         } else {
             assertNoValue(forKey: JSONKey.userId, file: file, line: line)

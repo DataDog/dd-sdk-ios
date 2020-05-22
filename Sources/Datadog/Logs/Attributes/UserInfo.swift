@@ -22,7 +22,7 @@ internal class UserInfoProvider {
 
 /// Information about the user.
 internal struct UserInfo {
-    let id: String? // swiftlint:disable:this identifier_name
+    let id: String?
     let name: String?
     let email: String?
 }

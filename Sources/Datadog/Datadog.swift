@@ -64,7 +64,7 @@ public class Datadog {
     public static var verbosityLevel: LogLevel? = nil
 
     public static func setUserInfo(
-        id: String? = nil, // swiftlint:disable:this identifier_name
+        id: String? = nil,
         name: String? = nil,
         email: String? = nil
     ) {
