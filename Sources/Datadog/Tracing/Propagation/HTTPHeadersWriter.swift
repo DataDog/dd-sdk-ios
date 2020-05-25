@@ -14,6 +14,8 @@ public class DDHTTPHeadersWriter: HTTPHeadersWriter {
         // https://github.com/DataDog/dd-trace-java/blob/4ba0ca0f9da748d4018310d026b1a72b607947f1/dd-trace-ot/src/main/java/datadog/opentracing/propagation/DatadogHttpCodec.java#L23
     }
 
+    public init() {}
+
     /// The `tracePropagationHTTPHeaders` will be used by customers to add additional headers to the
     /// `URLRequest` in order to propagate the trace to Datadog-OT-instrumented backend.
     ///
