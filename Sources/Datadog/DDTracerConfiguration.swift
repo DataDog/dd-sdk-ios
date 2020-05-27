@@ -12,10 +12,21 @@ extension DDTracer {
         /// The service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
         public var serviceName: String?
 
+        /// Enriches traces with network connection info.
+        /// This means: reachability status, connection type, mobile carrier name and many more will be added to every span and span logs.
+        /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
+        /// - Parameter enabled: `false` by default
+        public var sendNetworkInfo: Bool
+
         /// Initializes the Datadog Tracer configuration.
         /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
-        public init(serviceName: String? = nil) {
+        /// - Parameter sendNetworkInfo: adds network connection info to every span and span logs (`false` by default).
+        public init(
+            serviceName: String? = nil,
+            sendNetworkInfo: Bool = false
+        ) {
             self.serviceName = serviceName
+            self.sendNetworkInfo = sendNetworkInfo
         }
     }
 }
