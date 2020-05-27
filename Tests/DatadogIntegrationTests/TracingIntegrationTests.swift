@@ -9,23 +9,29 @@ import XCTest
 
 class TracingIntegrationTests: IntegrationTests {
     private struct Constants {
-        /// Time needed for traces to be uploaded to mock server.
-        static let tracesDeliveryTime: TimeInterval = 30
+        /// Time needed for data to be uploaded to mock server.
+        static let dataDeliveryTime: TimeInterval = 30
     }
 
     func testLaunchTheAppAndSendTraces() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
+        let tracingServerSession = server.obtainUniqueRecordingSession()
+        let loggingServerSession = server.obtainUniqueRecordingSession()
+
         let app = ExampleApplication()
-        app.launchWith(mockServerURL: serverSession.recordingURL)
+        app.launchWith(
+            mockLogsEndpointURL: loggingServerSession.recordingURL,
+            mockTracesEndpointURL: tracingServerSession.recordingURL
+        )
         app.tapSendTracesForUITests()
 
         // Wait for delivery
-        Thread.sleep(forTimeInterval: Constants.tracesDeliveryTime)
+        Thread.sleep(forTimeInterval: Constants.dataDeliveryTime)
 
-        // Assert requests
-        let recordedRequests = try serverSession.getRecordedPOSTRequests()
-        recordedRequests.forEach { request in
+        // Assert tracing requests
+        let recordedTracingRequests = try tracingServerSession.getRecordedPOSTRequests()
+        recordedTracingRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?batch_time=1589969230153`
             let pathRegexp = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#
             XCTAssertNotNil(request.path.range(of: pathRegexp, options: .regularExpression, range: nil, locale: nil))
@@ -35,9 +41,10 @@ class TracingIntegrationTests: IntegrationTests {
         let testEndTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
         // Assert spans
-        let spanMatchers = try recordedRequests
+        let spanMatchers = try recordedTracingRequests
             .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
+        XCTAssertEqual(spanMatchers.count, 3)
         XCTAssertEqual(try spanMatchers[0].operationName(), "data downloading")
         XCTAssertEqual(try spanMatchers[1].operationName(), "data presentation")
         XCTAssertEqual(try spanMatchers[2].operationName(), "view appearing")
@@ -105,5 +112,30 @@ class TracingIntegrationTests: IntegrationTests {
                 XCTAssertNotNil(try? matcher.meta.mobileNetworkCarrierAllowsVoIP())
             #endif
         }
+
+        // Assert logs requests
+        let recordedLoggingRequests = try loggingServerSession.getRecordedPOSTRequests()
+
+        // Assert logs
+        let logMatchers = try recordedLoggingRequests
+            .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
+
+        XCTAssertEqual(logMatchers.count, 1)
+
+        logMatchers[0].assertStatus(equals: "INFO")
+        logMatchers[0].assertMessage(equals: "download progress")
+        logMatchers[0].assertValue(forKey: "progress", equals: 0.99)
+
+        // Assert logs are linked to "data downloading" span
+        logMatchers[0].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[0].traceID().hexadecimalNumberToDecimal)
+        logMatchers[0].assertValue(forKey: "dd.span_id", equals: try spanMatchers[0].spanID().hexadecimalNumberToDecimal)
+    }
+}
+
+private extension String {
+    /// Tracing feature uses hexadecimal representation of trace and span IDs, while Logging uses decimals.
+    /// This helper converts hexadecimal string to decimal string for comparison.
+    var hexadecimalNumberToDecimal: String {
+        return "\(UInt64(self, radix: 16)!)"
     }
 }

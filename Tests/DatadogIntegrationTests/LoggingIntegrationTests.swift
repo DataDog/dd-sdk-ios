@@ -15,6 +15,8 @@ class LoggingIntegrationTests: IntegrationTests {
     }
 
     func testLaunchTheAppAndSendLogs() throws {
+        let serverSession = server.obtainUniqueRecordingSession()
+
         let app = ExampleApplication()
         app.launchWith(mockServerURL: serverSession.recordingURL)
         app.tapSendLogsForUITests()
@@ -34,6 +36,8 @@ class LoggingIntegrationTests: IntegrationTests {
         // Assert logs
         let logMatchers = try recordedRequests
             .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
+
+        XCTAssertEqual(logMatchers.count, 6)
 
         logMatchers[0].assertStatus(equals: "DEBUG")
         logMatchers[0].assertMessage(equals: "debug message")
