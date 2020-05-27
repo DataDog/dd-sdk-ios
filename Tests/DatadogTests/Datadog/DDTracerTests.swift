@@ -241,7 +241,9 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer.initialize(configuration: .init()).dd
+        let tracer = DDTracer.initialize(
+            configuration: .init(sendNetworkInfo: true)
+        ).dd
 
         // simulate entering cellular service range
         carrierInfoProvider.set(
@@ -284,7 +286,9 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer.initialize(configuration: .init()).dd
+        let tracer = DDTracer.initialize(
+            configuration: .init(sendNetworkInfo: true)
+        ).dd
 
         // simulate reachable network
         networkConnectionInfoProvider.set(
