@@ -10,6 +10,8 @@ import Foundation
 public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput
+    /// Writes span logs to output.
+    internal let logOutput: TracingToLoggingOutput
     /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
 
@@ -38,23 +40,39 @@ public class DDTracer: Tracer {
     }
 
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
+        let serviceName = tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
                     applicationVersion: tracingFeature.configuration.applicationVersion,
                     environment: tracingFeature.configuration.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
+                    serviceName: serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
                     carrierInfoProvider: tracingFeature.carrierInfoProvider
                 ),
                 fileWriter: tracingFeature.storage.writer
+            ),
+            logOutput: TracingToLoggingOutput(
+                loggingOutput: LogFileOutput(
+                    logBuilder: LogBuilder(
+                        applicationVersion: tracingFeature.configuration.applicationVersion,
+                        environment: tracingFeature.configuration.environment,
+                        serviceName: serviceName,
+                        loggerName: "trace",
+                        userInfoProvider: tracingFeature.userInfoProvider,
+                        networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
+                        carrierInfoProvider: tracingFeature.carrierInfoProvider
+                    ),
+                    fileWriter: tracingFeature.loggingFeatureStorage.writer
+                )
             )
         )
     }
 
-    internal init(spanOutput: SpanOutput) {
+    internal init(spanOutput: SpanOutput, logOutput: TracingToLoggingOutput) {
         self.spanOutput = spanOutput
+        self.logOutput = logOutput
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
             target: .global(qos: .userInteractive)
@@ -105,5 +123,9 @@ public class DDTracer: Tracer {
 
     internal func write(span: DDSpan, finishTime: Date) {
         spanOutput.write(ddspan: span, finishTime: finishTime)
+    }
+
+    internal func writeLogWith(spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
+        logOutput.writeLogWith(spanContext: spanContext, fields: fields, date: date)
     }
 }

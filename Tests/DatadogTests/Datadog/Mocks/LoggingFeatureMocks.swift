@@ -72,3 +72,31 @@ extension LoggingFeature {
         )
     }
 }
+
+/// `LogOutput` recording received logs.
+class LogOutputMock: LogOutput {
+    struct RecordedLog: Equatable {
+        var level: LogLevel
+        var message: String
+        var date: Date
+        var attributes: [String: Encodable] = [:]
+        var tags: Set<String> = []
+
+        static func == (lhs: RecordedLog, rhs: RecordedLog) -> Bool {
+            let lhsAttributesSorted = lhs.attributes.sorted { $0.key < $1.key }
+            let rhsAttributesSorted = rhs.attributes.sorted { $0.key < $1.key }
+
+            return lhs.level == rhs.level
+                && lhs.message == rhs.message
+                && lhs.date == rhs.date
+                && String(describing: lhsAttributesSorted) == String(describing: rhsAttributesSorted)
+                && lhs.tags == rhs.tags
+        }
+    }
+
+    var recordedLog: RecordedLog? = nil
+
+    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) {
+        recordedLog = RecordedLog(level: level, message: message, date: date, attributes: attributes, tags: tags)
+    }
+}

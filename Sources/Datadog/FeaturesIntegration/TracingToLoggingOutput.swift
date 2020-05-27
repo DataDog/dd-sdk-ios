@@ -6,8 +6,9 @@
 
 import Foundation
 
-/// Bridges logs created by `Tracing` feature to `Logging` feature's output.
-internal struct TracingToLoggingOutput: TraceLogOutput {
+/// Bridges logs created by Tracing feature to Logging feature's output. This stands for the thin integration layer
+/// between Tracing and Logging features.
+internal struct TracingToLoggingOutput {
     /// Open Tracing standard log fields:
     /// https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
     struct OpenTracingFields {
