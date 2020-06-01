@@ -90,10 +90,9 @@ public class DDTracer: Tracer {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,
-            context: DDSpanContext(
-                traceID: parentSpanContext?.traceID ?? tracingFeature.tracingUUIDGenerator.generateUnique(),
-                spanID: tracingFeature.tracingUUIDGenerator.generateUnique(),
-                parentSpanID: parentSpanContext?.spanID
+            context: createSpanContext(
+                with: tracingFeature,
+                parentSpanContext: parentSpanContext
             ),
             operationName: operationName,
             startTime: startTime ?? tracingFeature.dateProvider.currentDate(),
@@ -103,7 +102,20 @@ public class DDTracer: Tracer {
 
     // MARK: - Internal
 
+    internal func createSpanContext(with tracingFeature: TracingFeature, parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+        return DDSpanContext(
+            traceID: parentSpanContext?.traceID ?? tracingFeature.tracingUUIDGenerator.generateUnique(),
+            spanID: tracingFeature.tracingUUIDGenerator.generateUnique(),
+            parentSpanID: parentSpanContext?.spanID
+        )
+    }
+
     internal func write(span: DDSpan, finishTime: Date) {
         spanOutput.write(ddspan: span, finishTime: finishTime)
+    }
+
+    // TODO: RUMM-452 Placeholder implementation
+    internal func startSpan(with context: DDSpanContext) -> DDSpan? {
+        return nil
     }
 }

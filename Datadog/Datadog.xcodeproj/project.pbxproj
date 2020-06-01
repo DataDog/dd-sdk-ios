@@ -169,6 +169,7 @@
 		9E58E8E324615EDA008E5063 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* EncodingTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		9E97A2FF247844F800C50BC5 /* URLSessionHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E97A2FE247844F800C50BC5 /* URLSessionHooks.swift */; };
 		9EB47B92247443FA004F90BE /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */; };
 /* End PBXBuildFile section */
 
@@ -398,6 +399,7 @@
 		9E58E8E224615EDA008E5063 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
+		9E97A2FE247844F800C50BC5 /* URLSessionHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionHooks.swift; sourceTree = "<group>"; };
 		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
 		9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
 		9EF49F1624476FBD004F2CA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1008,6 +1010,7 @@
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
 				9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */,
 				9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */,
+				9E97A2FE247844F800C50BC5 /* URLSessionHooks.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1420,6 +1423,7 @@
 				617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
+				9E97A2FF247844F800C50BC5 /* URLSessionHooks.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
