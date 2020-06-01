@@ -6,25 +6,18 @@
 
 import Foundation
 
-/// Bridges logs created by Tracing feature to Logging feature's output. This stands for the thin integration layer
+/// Bridges logs created by Tracing feature to Logging feature's output. This stands for a thin integration layer
 /// between Tracing and Logging features.
 internal struct TracingToLoggingOutput {
-    /// Open Tracing standard log fields:
-    /// https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
-    struct OpenTracingFields {
-        static let message = "message"
-        // TODO: RUMM-477 Support all standard OT log fields and expose them to the user
+    private struct Constants {
+        static let defaultLogMessage = "Span event"
     }
 
-    /// Datadog reserved log fields.
-    struct DatadogFields {
-        // TODO: RUMM-478 Add tracing log attributes to the list of reserved log attributes in `LogSanitizer`
+    private struct TracingAttributes {
         static let traceID = "dd.trace_id"
         static let spanID = "dd.span_id"
-    }
 
-    struct DefaultFieldValues {
-        static let message = "Span event"
+        // TODO: RUMM-478 Add tracing log attributes to the list of reserved log attributes in `LogSanitizer`
     }
 
     // MARK: - TraceLogOutput
@@ -33,12 +26,20 @@ internal struct TracingToLoggingOutput {
     let loggingOutput: LogOutput
 
     func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
-        let message = (fields[OpenTracingFields.message] as? String) ?? DefaultFieldValues.message
-        var logAttributes = fields.filter { $0.key != OpenTracingFields.message }
+        var attributes = fields
 
-        logAttributes[DatadogFields.traceID] = "\(spanContext.traceID.rawValue)"
-        logAttributes[DatadogFields.spanID] = "\(spanContext.spanID.rawValue)"
+        // get the log message
+        let message = (attributes.removeValue(forKey: OpenTracingLogFields.message) as? String) ?? Constants.defaultLogMessage
 
-        loggingOutput.writeLogWith(level: .info, message: message, date: date, attributes: logAttributes, tags: [])
+        // infer the log level
+        let isErrorEvent = fields[OpenTracingLogFields.event] as? String == "error"
+        let hasErrorKind = fields[OpenTracingLogFields.errorKind] != nil
+        let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
+
+        // set tracing attributes
+        attributes[TracingAttributes.traceID] = "\(spanContext.traceID.rawValue)"
+        attributes[TracingAttributes.spanID] = "\(spanContext.spanID.rawValue)"
+
+        loggingOutput.writeLogWith(level: level, message: message, date: date, attributes: attributes, tags: [])
     }
 }

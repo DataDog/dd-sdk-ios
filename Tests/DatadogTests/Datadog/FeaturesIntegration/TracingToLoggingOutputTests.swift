@@ -8,21 +8,14 @@ import XCTest
 @testable import Datadog
 
 class TracingToLoggingOutputTests: XCTestCase {
-    private typealias OTFields = TracingToLoggingOutput.OpenTracingFields
-    private typealias DDFields = TracingToLoggingOutput.DatadogFields
-    private typealias DefaultValues = TracingToLoggingOutput.DefaultFieldValues
-
-    func testLoggingMessageWithStandardOTFields() {
+    func testWritingLogWithOTMessageField() {
         let loggingOutput = LogOutputMock()
         let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
 
         tracingOutput.writeLog(
-            withSpanContext: .mockWith(
-                traceID: 1,
-                spanID: 2
-            ),
+            withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: [
-                OTFields.message: "hello",
+                OpenTracingLogFields.message: "hello",
                 "custom field": 123,
             ],
             date: .mockDecember15th2019At10AMUTC()
@@ -30,40 +23,70 @@ class TracingToLoggingOutputTests: XCTestCase {
 
         let expectedLog = LogOutputMock.RecordedLog(
             level: .info,
-            message: "hello", // `OTFields.message` value is used as the log message.
+            message: "hello",
             date: .mockDecember15th2019At10AMUTC(),
             attributes: [
                 "custom field": 123,
-                DDFields.spanID: "2",
-                DDFields.traceID: "1"
-                // `OTFields.message` does not appear as the attribute.
+                "dd.span_id": "2",
+                "dd.trace_id": "1"
             ]
         )
 
         XCTAssertEqual(loggingOutput.recordedLog, expectedLog)
     }
 
-    func testLoggingMessageWithoutStandardOTFields() {
+    func testWritingLogWithOTErrorField() {
         let loggingOutput = LogOutputMock()
         let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
 
         tracingOutput.writeLog(
-            withSpanContext: .mockWith(
-                traceID: 1,
-                spanID: 2
-            ),
+            withSpanContext: .mockAny(),
+            fields: [OpenTracingLogFields.event: "error"],
+            date: .mockAny()
+        )
+
+        let recordedLog1 = loggingOutput.recordedLog
+
+        tracingOutput.writeLog(
+            withSpanContext: .mockAny(),
+            fields: [OpenTracingLogFields.errorKind: "Swift error"],
+            date: .mockAny()
+        )
+
+        let recordedLog2 = loggingOutput.recordedLog
+
+        tracingOutput.writeLog(
+            withSpanContext: .mockAny(),
+            fields: [OpenTracingLogFields.event: "error", OpenTracingLogFields.errorKind: "Swift error"],
+            date: .mockAny()
+        )
+
+        let recordedLog3 = loggingOutput.recordedLog
+
+        [recordedLog1, recordedLog2, recordedLog3].forEach { log in
+            XCTAssertEqual(log?.level, .error)
+            XCTAssertEqual(log?.message, "Span event")
+        }
+    }
+
+    func testWritingCustomLogWithoutAnyOTFields() {
+        let loggingOutput = LogOutputMock()
+        let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
+
+        tracingOutput.writeLog(
+            withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: ["custom field": 123],
             date: .mockDecember15th2019At10AMUTC()
         )
 
         let expectedLog = LogOutputMock.RecordedLog(
             level: .info,
-            message: DefaultValues.message, // Default message is used.
+            message: "Span event", // default message is used.
             date: .mockDecember15th2019At10AMUTC(),
             attributes: [
                 "custom field": 123,
-                DDFields.spanID: "2",
-                DDFields.traceID: "1"
+                "dd.span_id": "2",
+                "dd.trace_id": "1"
             ]
         )
 

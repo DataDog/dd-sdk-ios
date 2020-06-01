@@ -8,18 +8,16 @@ import XCTest
 @testable import Datadog
 
 class SpanBuilderTests: XCTestCase {
-    func testItBuildsBasicSpan() throws {
-        let builder: SpanBuilder = .mockWith(
-            serviceName: "test-service-name"
+    func testBuildingBasicSpan() throws {
+        let builder: SpanBuilder = .mockWith(serviceName: "test-service-name")
+        let ddspan = DDSpan(
+            tracer: .mockNoOp(),
+            context: .mockWith(traceID: 1, spanID: 2, parentSpanID: 1),
+            operationName: "operation-name",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            tags: ["foo": "bar", "bizz": 123]
         )
-        let span = try builder.createSpan(
-            from: .mockWith(
-                context: .mockWith(traceID: 1, spanID: 2, parentSpanID: 1),
-                operationName: "operation-name",
-                startTime: .mockDecember15th2019At10AMUTC()
-            ),
-            finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5)
-        )
+        let span = try builder.createSpan(from: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
         XCTAssertEqual(span.traceID, 1)
         XCTAssertEqual(span.spanID, 2)
@@ -29,7 +27,83 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(span.resource, "operation-name") // TODO: RUMM-400 Add separate test for the case when `ddspan.resourceName != nil`
         XCTAssertEqual(span.startTime, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(span.duration, 0.50, accuracy: 0.01)
-        XCTAssertFalse(span.isError) // TODO: RUMM-401 Add separate test for the case when `ddspan.isError == true`
+        XCTAssertFalse(span.isError)
         XCTAssertEqual(span.tracerVersion, sdkVersion)
+        XCTAssertEqual(try span.tags.toEquatable(), ["foo": "bar", "bizz": "123"])
+    }
+
+    func testBuildingSpanWithErrorTagSet() throws {
+        let builder: SpanBuilder = .mockAny()
+
+        // given
+        var ddspan: DDSpan = .mockWith(tags: [OpenTracingTagKeys.error: true])
+        var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(try span.tags.toEquatable(), ["error": "true"])
+
+        // given
+        ddspan = .mockWith(tags: [OpenTracingTagKeys.error: false])
+        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertFalse(span.isError)
+        XCTAssertEqual(try span.tags.toEquatable(), ["error": "false"])
+    }
+
+    func testBuildingSpanWithErrorLogsSend() throws {
+        let builder: SpanBuilder = .mockAny()
+
+        // given
+        var ddspan: DDSpan = .mockWith(tags: [:])
+        ddspan.log(fields: [OpenTracingLogFields.errorKind: "Swift error"])
+        var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(try span.tags.toEquatable(), ["error.type": "Swift error"]) // remapped to `error.type`
+
+        // given
+        ddspan = .mockWith(tags: [:])
+        ddspan.log(
+            fields: [
+                OpenTracingLogFields.errorKind: "Swift error",
+                OpenTracingLogFields.event: "error",
+                OpenTracingLogFields.message: "Error occured",
+                OpenTracingLogFields.stack: "Foo.swift:42",
+            ]
+        )
+        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(
+            try span.tags.toEquatable(),
+            [
+                "error.type": "Swift error",    // remapped to `error.type`
+                "error.msg": "Error occured",   // remapped to `error.msg`
+                "error.stack": "Foo.swift:42",  // remapped to `error.stack`
+            ]
+        )
+
+        // given
+        ddspan = .mockWith(tags: [:])
+        ddspan.log(fields: ["foo": "bar"]) // ignored
+        ddspan.log(fields: [OpenTracingLogFields.errorKind: "Swift error 1"]) // captured
+        ddspan.log(fields: [OpenTracingLogFields.errorKind: "Swift error 2"]) // ignored
+        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(try span.tags.toEquatable(), ["error.type": "Swift error 1"]) // only first error log is captured
+    }
+}
+
+private extension Dictionary where Key == String, Value == JSONStringEncodableValue {
+    /// Converts `[String: JSONStringEncodableValue]` to `[String: String]` for equitability comparison.
+    func toEquatable() throws -> [String: String] {
+        let data = try JSONEncoder().encode(self)
+        return try data.toJSONObject().mapValues { $0 as! String }
     }
 }
