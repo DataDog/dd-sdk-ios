@@ -9,7 +9,7 @@ import OpenTracing
 
 class DebugTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!
-    @IBOutlet weak var isErrorSegmentedControl: UISegmentedControl! // TODO: RUMM-401 Set `isError` on span
+    @IBOutlet weak var isErrorSegmentedControl: UISegmentedControl!
     @IBOutlet weak var singleSpanOperationNameTextField: UITextField!
     @IBOutlet weak var sendSingleSpanButton: UIButton!
     @IBOutlet weak var complexSpanOperationNameTextField: UITextField!
@@ -27,6 +27,10 @@ class DebugTracingViewController: UIViewController {
         startDisplayingDebugInfo(in: consoleTextView)
     }
 
+    private var isError: Bool {
+        isErrorSegmentedControl.selectedSegmentIndex == 1
+    }
+
     // MARK: - Sending single span
 
     private var singleSpanOperationName: String {
@@ -37,9 +41,25 @@ class DebugTracingViewController: UIViewController {
         sendSingleSpanButton.disableFor(seconds: 0.5)
 
         let spanName = singleSpanOperationName
+        let isError = self.isError
 
         queue1.async {
             let span = Global.sharedTracer.startSpan(operationName: spanName)
+            if isError {
+                // To only mark the span as an error, use the Open Tracing `error` tag:
+                // span.setTag(key: "error", value: true)
+
+                // If you want more error information to be digested and attached to the span by Datadog,
+                // send a log containing Open Tracing log fields:
+                span.log(
+                    fields: [
+                        "event": "error",
+                        "error.kind": "Simulated error",
+                        "message": "Describe what happened",
+                        "stack": "Foo.swift:42",
+                    ]
+                )
+            }
             wait(seconds: 1)
             span.finish()
         }
