@@ -24,7 +24,7 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(span.parentID, 1)
         XCTAssertEqual(span.operationName, "operation-name")
         XCTAssertEqual(span.serviceName, "test-service-name")
-        XCTAssertEqual(span.resource, "operation-name") // TODO: RUMM-400 Add separate test for the case when `ddspan.resourceName != nil`
+        XCTAssertEqual(span.resource, "operation-name")
         XCTAssertEqual(span.startTime, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(span.duration, 0.50, accuracy: 0.01)
         XCTAssertFalse(span.isError)
@@ -97,6 +97,18 @@ class SpanBuilderTests: XCTestCase {
         // then
         XCTAssertTrue(span.isError)
         XCTAssertEqual(try span.tags.toEquatable(), ["error.type": "Swift error 1"]) // only first error log is captured
+    }
+
+    func testBuildingSpanWithResourceNameTagSet() throws {
+        let builder: SpanBuilder = .mockAny()
+
+        // given
+        let ddspan: DDSpan = .mockWith(tags: ["resource.name": "custom resource name"]) // TODO: RUMM-390 use public constant
+        let span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertEqual(span.resource, "custom resource name")
+        XCTAssertEqual(try span.tags.toEquatable(), [:])
     }
 }
 

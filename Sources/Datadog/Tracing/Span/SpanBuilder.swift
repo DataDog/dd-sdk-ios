@@ -39,7 +39,7 @@ internal struct SpanBuilder {
             parentID: ddspan.ddContext.parentSpanID,
             operationName: ddspan.operationName,
             serviceName: serviceName,
-            resource: ddspan.operationName, // TODO: RUMM-400 use `resourceName`: `resource: tagsReducer.resourceName ?? ddspan.operationName`
+            resource: tagsReducer.extractedResourceName ?? ddspan.operationName,
             startTime: ddspan.startTime,
             duration: finishTime.timeIntervalSince(ddspan.startTime),
             isError: tagsReducer.extractedIsError ?? false,

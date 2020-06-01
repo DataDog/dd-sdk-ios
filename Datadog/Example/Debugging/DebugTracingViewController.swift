@@ -11,6 +11,7 @@ class DebugTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!
     @IBOutlet weak var isErrorSegmentedControl: UISegmentedControl!
     @IBOutlet weak var singleSpanOperationNameTextField: UITextField!
+    @IBOutlet weak var singleSpanResourceNameTextField: UITextField!
     @IBOutlet weak var sendSingleSpanButton: UIButton!
     @IBOutlet weak var complexSpanOperationNameTextField: UITextField!
     @IBOutlet weak var sendComplexSpanButton: UIButton!
@@ -37,14 +38,22 @@ class DebugTracingViewController: UIViewController {
         singleSpanOperationNameTextField.text!.isEmpty ? "single span" : singleSpanOperationNameTextField.text!
     }
 
+    private var singleSpanResourceName: String? {
+        singleSpanResourceNameTextField.text!.isEmpty ? nil : singleSpanResourceNameTextField.text!
+    }
+
     @IBAction func didTapSendSingleSpan(_ sender: Any) {
         sendSingleSpanButton.disableFor(seconds: 0.5)
 
         let spanName = singleSpanOperationName
+        let resourceName = singleSpanResourceName
         let isError = self.isError
 
         queue1.async {
             let span = Global.sharedTracer.startSpan(operationName: spanName)
+            if let resourceName = resourceName {
+                span.setTag(key: "resource.name", value: resourceName) // TODO: RUMM-390 use public constant
+            }
             if isError {
                 // To only mark the span as an error, use the Open Tracing `error` tag:
                 // span.setTag(key: "error", value: true)

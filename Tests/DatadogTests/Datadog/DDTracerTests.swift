@@ -123,7 +123,11 @@ class DDTracerTests: XCTestCase {
 
         let span = tracer.startSpan(
             operationName: "operation",
-            tags: ["tag1": "string value"],
+            tags: [
+                "tag1": "string value",
+                "error": true,
+                "resource.name": "GET /foo.png"
+            ],
             startTime: .mockDecember15th2019At10AMUTC()
         )
         span.setTag(key: "tag2", value: 123)
@@ -131,8 +135,10 @@ class DDTracerTests: XCTestCase {
 
         let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
+        XCTAssertEqual(try spanMatcher.resource(), "GET /foo.png")
         XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
         XCTAssertEqual(try spanMatcher.duration(), 500_000_000)
+        XCTAssertEqual(try spanMatcher.isError(), 1)
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag1"), "string value")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag2"), "123")
     }

@@ -6,11 +6,13 @@
 
 import Foundation
 
-/// Datadog tag keys used to encode information received from the user through `OpenTracingLogFields` and `OpenTracingTagKeys`.
+/// Datadog tag keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields
+/// supported by Datadog platform.
 private struct DatadogTagKeys {
     static let errorType     = "error.type"
     static let errorMessage  = "error.msg"
     static let errorStack    = "error.stack"
+    static let resourceName  = "resource.name"
 }
 
 /// Reduces `DDSpan` tags and log attributes by extracting values that require separate handling.
@@ -32,6 +34,7 @@ internal struct SpanTagsReducer {
     // MARK: - Extracted Info
 
     private(set) var extractedIsError: Bool? = nil
+    private(set) var extractedResourceName: String? = nil
 
     // MARK: - Reducers
 
@@ -43,7 +46,8 @@ internal struct SpanTagsReducer {
 
     private static let reducers: [(inout SpanTagsReducer) -> Void] = [
         extractErrorFromLogFields,
-        extractErrorFromTags
+        extractErrorFromTags,
+        extractResourceNameFromTags
     ]
 
     private static func extractErrorFromLogFields(_ reducer: inout SpanTagsReducer) {
@@ -64,6 +68,12 @@ internal struct SpanTagsReducer {
     private static func extractErrorFromTags(_ reducer: inout SpanTagsReducer) {
         if reducer.spanTags[OpenTracingTagKeys.error] as? Bool == true {
             reducer.extractedIsError = true
+        }
+    }
+
+    private static func extractResourceNameFromTags(_ reducer: inout SpanTagsReducer) {
+        if let resourceName = reducer.spanTags.removeValue(forKey: DatadogTagKeys.resourceName) as? String {
+            reducer.extractedResourceName = resourceName
         }
     }
 }
