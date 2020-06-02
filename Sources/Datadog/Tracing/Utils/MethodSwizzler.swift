@@ -6,111 +6,119 @@
 
 import Foundation
 
-internal enum SwizzlingError: LocalizedError, Equatable {
-    case methodNotFound(selector: String, className: String)
-    case methodIsAlreadySwizzled(selector: String, targetClassName: String, swizzledClassName: String)
-    case methodWasNotSwizzled(selector: String, className: String)
+internal class MethodSwizzler {
+    struct FoundMethod: Hashable {
+        let method: Method
+        let klass: AnyClass
 
-    var errorDescription: String? {
-        switch self {
-        case .methodNotFound(let selector, let className):
-            return "\(selector) is not found in \(className)"
-        case .methodIsAlreadySwizzled(let selector, let targetClassName, let swizzledClassName):
-            return "\(selector) of \(targetClassName) is already swizzled in \(swizzledClassName)"
-        case .methodWasNotSwizzled(let selector, let className):
-            return "\(selector) in \(className) was not swizzled, thus cannot be unswizzled"
+        fileprivate init(method: Method, klass: AnyClass) {
+            self.method = method
+            self.klass = klass
+        }
+
+        static func == (lhs: MethodSwizzler.FoundMethod, rhs: MethodSwizzler.FoundMethod) -> Bool {
+            let methodParity = (lhs.method == rhs.method)
+            let classParity = (NSStringFromClass(lhs.klass) == NSStringFromClass(rhs.klass))
+            return methodParity && classParity
+        }
+
+        func hash(into hasher: inout Hasher) {
+            let methodName = NSStringFromSelector(method_getName(method))
+            let klassName = NSStringFromClass(klass)
+            let identifier = "\(methodName)|||\(klassName)"
+            hasher.combine(identifier)
         }
     }
-}
-
-internal class MethodSwizzler {
-    private typealias FoundMethod = (method: Method, klass: AnyClass)
 
     static let shared = MethodSwizzler()
     private init() { }
-    private var implementationCache = [String: IMP]()
+    private var _unsafeImplementationCache = [FoundMethod: IMP]()
+    private var implementationCache: [FoundMethod: IMP] {
+        get { return sync { return _unsafeImplementationCache } }
+        set { sync { _unsafeImplementationCache = newValue } }
+    }
 
-    func currentImplementation<TypedIMP>(of selector: Selector, in klass: AnyClass) throws -> TypedIMP {
-        return try sync {
-            let found = try findMethodRecursively(with: selector, in: klass)
+    var swizzledCount: Int { return implementationCache.count }
+
+    func findMethodRecursively(with selector: Selector, in klass: AnyClass) -> FoundMethod? {
+        return sync {
+            var headKlass: AnyClass? = klass
+            while let someKlass = headKlass {
+                if let foundMethod = findMethod(with: selector, in: someKlass) {
+                    return FoundMethod(method: foundMethod, klass: someKlass)
+                }
+                headKlass = class_getSuperclass(headKlass)
+            }
+            return nil
+        }
+    }
+
+    func currentImplementation<TypedIMP>(of found: FoundMethod) -> TypedIMP {
+        return sync {
             return unsafeBitCast(method_getImplementation(found.method), to: TypedIMP.self)
         }
     }
 
-    func originalImplementation<TypedIMP>(of selector: Selector, in klass: AnyClass) throws -> TypedIMP {
-        return try sync {
-            let found = try findMethodRecursively(with: selector, in: klass)
-            let cacheKey = methodIdentifier(for: found)
-            let originalImp: IMP = implementationCache[cacheKey] ?? method_getImplementation(found.method)
+    func originalImplementation<TypedIMP>(of found: FoundMethod) -> TypedIMP {
+        return sync {
+            let originalImp: IMP = implementationCache[found] ?? method_getImplementation(found.method)
             return unsafeBitCast(originalImp, to: TypedIMP.self)
         }
     }
 
-    func swizzle(selector: Selector, in klass: AnyClass, with implementation: IMP) throws {
-        try sync {
-            assert(isKindOfNSObject(klass), "\(klass) is not NSObject subclass: swizzling may not work!")
-            let found = try findMethodRecursively(with: selector, in: klass)
-            set(newIMP: implementation, for: found)
-        }
-    }
-
+    @discardableResult
     func swizzleIfNonSwizzled(
-        selector: Selector,
-        in klass: AnyClass,
-        with implementation: @autoclosure () throws -> IMP
-    ) throws {
-        try sync {
-            let found = try findMethodRecursively(with: selector, in: klass)
-            let methodID = methodIdentifier(for: found)
-            if implementationCache[methodID] != nil {
-                throw SwizzlingError.methodIsAlreadySwizzled(
-                    selector: NSStringFromSelector(selector),
-                    targetClassName: NSStringFromClass(klass),
-                    swizzledClassName: NSStringFromClass(found.klass)
-                )
+        foundMethod: FoundMethod,
+        with implementation: @autoclosure () -> IMP
+    ) -> Bool {
+        sync {
+            if implementationCache[foundMethod] != nil {
+                return false
             }
-            assert(isKindOfNSObject(found.klass), "\(klass) is not NSObject subclass: swizzling may not work!")
-            set(newIMP: try implementation(), for: found)
+            set(newIMP: implementation(), for: foundMethod)
+            return true
         }
     }
 
-    func unswizzle(selector: Selector, in klass: AnyClass) throws {
-        return try sync {
-            let found = try findMethodRecursively(with: selector, in: klass)
-            let cacheKey = methodIdentifier(for: found)
-            guard let originalImp = implementationCache[cacheKey] else {
-                throw SwizzlingError.methodWasNotSwizzled(selector: NSStringFromSelector(selector), className: NSStringFromClass(klass))
+    func set(newIMP: IMP, for found: FoundMethod) {
+        sync {
+            if implementationCache[found] == nil {
+                implementationCache[found] = method_getImplementation(found.method)
             }
-            method_setImplementation(found.method, originalImp)
-            implementationCache[cacheKey] = nil
+            method_setImplementation(found.method, newIMP)
+        }
+    }
+
+    // MARK: - Unsafe methods
+
+    @discardableResult
+    func unsafe_unswizzle(_ found: FoundMethod) -> Bool {
+        return sync {
+            guard let cachedImp = implementationCache[found] else {
+                return false
+            }
+            set(newIMP: cachedImp, for: found)
+            implementationCache[found] = nil
+            return true
+        }
+    }
+
+    func unsafe_unswizzleALL() {
+        return sync {
+            let cachedMethods: [FoundMethod] = Array(implementationCache.keys)
+            for foundMethod in cachedMethods {
+                unsafe_unswizzle(foundMethod)
+            }
         }
     }
 
     // MARK: - Private methods
 
-    private func sync<T>(block: () throws -> T) throws -> T {
+    @discardableResult
+    private func sync<T>(block: () -> T) -> T {
         objc_sync_enter(self)
         defer { objc_sync_exit(self) }
-        return try block()
-    }
-
-    private func set(newIMP: IMP, for found: FoundMethod) {
-        let cacheKey = methodIdentifier(for: found)
-        if implementationCache[cacheKey] == nil {
-            implementationCache[cacheKey] = method_getImplementation(found.method)
-        }
-        method_setImplementation(found.method, newIMP)
-    }
-
-    private func findMethodRecursively(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {
-        var headKlass: AnyClass? = klass
-        while let someKlass = headKlass {
-            if let foundMethod = findMethod(with: selector, in: someKlass) {
-                return (method: foundMethod, klass: someKlass)
-            }
-            headKlass = class_getSuperclass(headKlass)
-        }
-        throw SwizzlingError.methodNotFound(selector: NSStringFromSelector(selector), className: NSStringFromClass(klass))
+        return block()
     }
 
     private func findMethod(with selector: Selector, in klass: AnyClass) -> Method? {
@@ -130,48 +138,4 @@ internal class MethodSwizzler {
         }
         return nil
     }
-
-    private static let separator = "|||"
-    private func methodIdentifier(for found: FoundMethod) -> String {
-        let klassName = NSStringFromClass(found.klass)
-        let methodName = NSStringFromSelector(method_getName(found.method))
-        return "\(klassName)\(Self.separator)\(methodName)"
-    }
-
-    private func classSelectorPair(from methodIdentifier: String) -> (klass: AnyClass, selector: Selector)? {
-        let classSelectorPair = methodIdentifier.components(separatedBy: Self.separator)
-        if classSelectorPair.count == 2,
-            let klass = NSClassFromString(classSelectorPair[0]) {
-            let selector = NSSelectorFromString(classSelectorPair[1])
-            return (klass: klass, selector: selector)
-        } else {
-            return nil
-        }
-    }
-
-    private func isKindOfNSObject(_ klass: AnyClass) -> Bool {
-        let NSObjectClassName: String = NSStringFromClass(NSObject.self)
-        var head: AnyClass? = klass
-        while let headClass = head {
-            if NSStringFromClass(headClass) == NSObjectClassName {
-                return true
-            }
-            head = class_getSuperclass(head)
-        }
-        return false
-    }
-
-    // MARK: - DEBUG only
-
-    // TODO: RUMM-452 only for unit tests?
-    #if DEBUG
-    func unswizzleALL() {
-        let cachedKeys: [String] = Array(implementationCache.keys)
-        for key in cachedKeys {
-            if let classSelPair = classSelectorPair(from: key) {
-                try? unswizzle(selector: classSelPair.selector, in: classSelPair.klass)
-            }
-        }
-    }
-    #endif
 }

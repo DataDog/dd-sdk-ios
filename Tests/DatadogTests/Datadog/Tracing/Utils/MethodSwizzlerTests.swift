@@ -31,7 +31,7 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
-        MethodSwizzler.shared.unswizzleALL()
+        MethodSwizzler.shared.unsafe_unswizzleALL()
     }
 
     func test_simpleSwizzle() {
@@ -40,111 +40,102 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
         // before
         XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
         // swizzle
-        XCTAssertNoThrow(try swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString))
+        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)
+        XCTAssertNotNil(foundMethod)
+        swizzler.set(newIMP: newIMPReturnString, for: foundMethod!)
         // after
         XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
     }
 
     func test_simpleUnswizzle() {
-        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
+        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)
+        XCTAssertNotNil(foundMethod)
+        swizzler.set(newIMP: newIMPReturnString, for: foundMethod!)
+
         let obj = BaseClass()
 
         // before
         XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue)
         // unswizzle
-        XCTAssertNoThrow(try swizzler.unswizzle(selector: selToSwizzle, in: BaseClass.self))
+        XCTAssertTrue(swizzler.unsafe_unswizzle(foundMethod!))
         // after
         XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue)
     }
 
-    func test_swizzleWrongSelector() {
-        let wrongSelName = "selector_who_never_existed"
-        let wrongSelToSwizzle = Selector(wrongSelName)
+    func test_searchWrongSelector() {
+        let wrongSelToSwizzle = Selector(("selector_who_never_existed"))
 
-        let expectedError = SwizzlingError.methodNotFound(selector: wrongSelName, className: NSStringFromClass(BaseClass.self))
-        XCTAssertThrowsError(
-            try swizzler.swizzleIfNonSwizzled(selector: wrongSelToSwizzle, in: BaseClass.self, with: newIMPReturnString),
-            "Unfound selector should throw"
-        ) { err in
-            XCTAssertEqual((err as? SwizzlingError), expectedError)
-        }
+        let unfoundMethod = swizzler.findMethodRecursively(with: wrongSelToSwizzle, in: BaseClass.self)
+
+        XCTAssertNil(unfoundMethod)
     }
 
     func test_swizzleAlreadySwizzledSelector() {
-        let expectedError = SwizzlingError.methodIsAlreadySwizzled(
-            selector: NSStringFromSelector(selToSwizzle),
-            targetClassName: NSStringFromClass(BaseClass.self),
-            swizzledClassName: NSStringFromClass(BaseClass.self)
-        )
-        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
+        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+        // first swizzling
+        swizzler.set(newIMP: newIMPReturnString, for: foundMethod)
 
-        XCTAssertThrowsError(
-            try swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString),
-            "Already swizzled selector should throw"
-        ) { err in
-            XCTAssertEqual((err as? SwizzlingError), expectedError)
+        let secondSwizzlingReturnValue = "Second swizzling"
+        let newImp: () -> IMP = {
+            let newBlockImp: TypedBlockReturnString = { _ in secondSwizzlingReturnValue }
+            return imp_implementationWithBlock(newBlockImp)
         }
+        XCTAssertFalse(
+            swizzler.swizzleIfNonSwizzled(foundMethod: foundMethod, with: newImp()),
+            "Already swizzled method should not be swizzled again"
+        )
+
+        let obj = BaseClass()
+        XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, secondSwizzlingReturnValue)
     }
 
-    func test_swizzleSubclass() {
-        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
-        let expectedError = SwizzlingError.methodIsAlreadySwizzled(
-            selector: NSStringFromSelector(selToSwizzle),
-            targetClassName: NSStringFromClass(EmptySubclass.self),
-            swizzledClassName: NSStringFromClass(BaseClass.self)
-        )
+    func test_findSubclassMethod() {
+        let subclassMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: EmptySubclass.self)
 
-        XCTAssertThrowsError(
-            try swizzler.swizzleIfNonSwizzled(
-                selector: selToSwizzle,
-                in: EmptySubclass.self,
-                with: newIMPReturnString
-            ), "foo"
-        ) { err in
-            XCTAssertEqual(err as? SwizzlingError, expectedError)
-        }
+        XCTAssertNotNil(subclassMethod)
+        XCTAssertEqual(NSStringFromClass(subclassMethod!.klass), NSStringFromClass(BaseClass.self))
     }
 
     func test_lazyEvaluationOfNewIMP() {
-        let wrongSelToSwizzle = Selector(("selector_who_never_existed"))
-        let newIMPProvider: () -> IMP = {
-            XCTFail("New IMP should not be created after error")
-            let block = { }
-            return imp_implementationWithBlock(block)
-        }
+        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+        // first swizzling
+        swizzler.set(newIMP: newIMPReturnString, for: foundMethod)
 
-        XCTAssertThrowsError(
-            try swizzler.swizzleIfNonSwizzled(selector: wrongSelToSwizzle, in: BaseClass.self, with: newIMPProvider())
+        let newImp: () -> IMP = {
+            XCTFail("New IMP should not be created after error")
+            let newBlockImp: TypedBlockReturnString = { _ in "" }
+            return imp_implementationWithBlock(newBlockImp)
+        }
+        XCTAssertFalse(
+            swizzler.swizzleIfNonSwizzled(foundMethod: foundMethod, with: newImp()),
+            "Already swizzled method should not be swizzled again"
         )
     }
 
     func test_unswizzleNonSwizzledSelector() {
-        let selName = NSStringFromSelector(selToSwizzle)
+        let nonswizzledMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
 
-        let expectedError = SwizzlingError.methodWasNotSwizzled(selector: selName, className: NSStringFromClass(BaseClass.self))
-        XCTAssertThrowsError(
-            try swizzler.unswizzle(selector: selToSwizzle, in: BaseClass.self),
-            "Unswizzling a non-swizzled method should throw"
-        ) { err in
-            XCTAssertEqual((err as? SwizzlingError), expectedError)
-        }
+        let unswizzleResult = swizzler.unsafe_unswizzle(nonswizzledMethod)
+        XCTAssertFalse(unswizzleResult, "Unswizzling a non-swizzled method should return false")
     }
 
     func test_parityCurrentOriginalIMP() {
+        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+
         // before
-        let beforeOrigIMP: IMP = try! swizzler.originalImplementation(of: selToSwizzle, in: BaseClass.self)
-        let beforeCurrentIMP: IMP = try! swizzler.currentImplementation(of: selToSwizzle, in: BaseClass.self)
+        let beforeOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
+        let beforeCurrentIMP: IMP = swizzler.currentImplementation(of: foundMethod)
         // swizzle
-        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
+        swizzler.set(newIMP: newIMPReturnString, for: foundMethod)
         // after
-        let afterOrigIMP: IMP = try! swizzler.originalImplementation(of: selToSwizzle, in: BaseClass.self)
-        let afterCurrentIMP: IMP = try! swizzler.currentImplementation(of: selToSwizzle, in: BaseClass.self)
+        let afterOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
+        let afterCurrentIMP: IMP = swizzler.currentImplementation(of: foundMethod)
 
         // unswizzle
-        XCTAssertNoThrow(try swizzler.unswizzle(selector: selToSwizzle, in: BaseClass.self))
+        XCTAssertTrue(swizzler.unsafe_unswizzle(foundMethod))
         // after unswizzle
-        let unswizzledOrigIMP: IMP = try! swizzler.originalImplementation(of: selToSwizzle, in: BaseClass.self)
-        let unswizzledCurrentIMP: IMP = try! swizzler.currentImplementation(of: selToSwizzle, in: BaseClass.self)
+        let unswizzledOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
+        let unswizzledCurrentIMP: IMP = swizzler.currentImplementation(of: foundMethod)
 
         XCTAssertEqual(beforeOrigIMP, beforeCurrentIMP)
         XCTAssertEqual(beforeOrigIMP, afterOrigIMP)
