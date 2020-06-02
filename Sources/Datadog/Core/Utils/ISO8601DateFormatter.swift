@@ -10,7 +10,7 @@ import Foundation
 extension ISO8601DateFormatter {
     static func `default`() -> ISO8601DateFormatter {
         let formatter = ISO8601DateFormatter()
-        if #available(OSX 10.13, *) {
+        if #available(OSX 10.14, *) {
             formatter.formatOptions.insert(.withFractionalSeconds)
         }
         return formatter
