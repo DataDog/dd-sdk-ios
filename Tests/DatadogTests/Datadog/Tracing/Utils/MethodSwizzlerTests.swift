@@ -70,7 +70,28 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
         XCTAssertNil(unfoundMethod)
     }
 
-    func test_swizzleAlreadySwizzledSelector() {
+    func test_swizzle_alreadySwizzledSelector() {
+        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+
+        let beforeOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
+        // first swizzling
+        swizzler.set(newIMP: newIMPReturnString, for: foundMethod)
+
+        let secondSwizzlingReturnValue = "Second swizzling"
+        let newImp: IMP = {
+            let newBlockImp: TypedBlockReturnString = { _ in secondSwizzlingReturnValue }
+            return imp_implementationWithBlock(newBlockImp)
+        }()
+        swizzler.set(newIMP: newImp, for: foundMethod)
+
+        let afterOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
+
+        let obj = BaseClass()
+        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, secondSwizzlingReturnValue)
+        XCTAssertEqual(beforeOrigIMP, afterOrigIMP)
+    }
+
+    func test_swizzleIfNonSwizzled_alreadySwizzledSelector() {
         let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
         // first swizzling
         swizzler.set(newIMP: newIMPReturnString, for: foundMethod)

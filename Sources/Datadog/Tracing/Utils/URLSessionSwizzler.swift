@@ -27,57 +27,41 @@ private let swizzler = MethodSwizzler.shared
 
 internal enum URLSessionSwizzler {
     static var hasSwizzledBefore = false
-
     static func swizzleOnce(using interceptor: @escaping RequestInterceptor) throws {
-        guard let method_dataTask_URL = DataTask_URL_Completion.foundMethod,
-            let method_dataTask_request = DataTask_Request_Completion.foundMethod else {
+        guard let dataTask_URL = DataTask_URL_Completion(),
+            let dataTask_request = DataTask_Request_Completion() else {
                 throw InternalError(description: "URLSession methods could not be found, thus not swizzled")
         }
 
         if hasSwizzledBefore {
             return
         }
-
-        let newImp_URL = DataTask_URL_Completion.newIMP(
-            using: interceptor,
-            methodToSwizzle: method_dataTask_URL,
-            methodToRedirect: method_dataTask_request
-        )
-        swizzler.set(newIMP: newImp_URL, for: method_dataTask_URL)
-
-        let newImp_request = DataTask_Request_Completion.newIMP(
-            using: interceptor,
-            methodToSwizzle: method_dataTask_request
-        )
-        swizzler.set(newIMP: newImp_request, for: method_dataTask_request)
-
         hasSwizzledBefore = true
+
+        dataTask_URL.swizzle(using: interceptor)
+        dataTask_request.swizzle(using: interceptor)
     }
 
-    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+    private typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
-    private enum DataTask_URL_Completion {
-        private static let subjectClass = URLSession.self
-        private static let selector = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URL, @escaping CompletionHandler) -> URLSessionDataTask)
+    private struct DataTask_URL_Completion {
         private typealias TypedIMP = @convention(c) (URLSession, Selector, URL, @escaping CompletionHandler) -> URLSessionDataTask
         private typealias TypedBlockIMP = @convention(block) (URLSession, URL, @escaping CompletionHandler) -> URLSessionDataTask
+        private static let selector = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URL, @escaping CompletionHandler) -> URLSessionDataTask)
 
-        static let foundMethod: MethodSwizzler.FoundMethod? = {
-            return swizzler.findMethodRecursively(
-                with: selector,
-                in: subjectClass
-            )
-        }()
+        let method: MethodSwizzler.FoundMethod
+        init?() {
+            guard let foundMethod = swizzler.findMethodRecursively(
+                with: Self.selector,
+                in: URLSession.self
+                ) else {
+                    return nil
+            }
+            self.method = foundMethod
+        }
 
-        static func newIMP(
-            using interceptor: @escaping RequestInterceptor,
-            methodToSwizzle: MethodSwizzler.FoundMethod,
-            methodToRedirect: MethodSwizzler.FoundMethod
-        ) -> IMP {
-            let sel = selector
-            let typedOriginalImp: TypedIMP = swizzler.currentImplementation(of: methodToSwizzle)
-            let typedRedirectedImp: DataTask_Request_Completion.TypedIMP
-            typedRedirectedImp = swizzler.originalImplementation(of: methodToRedirect)
+        func swizzle(using interceptor: @escaping RequestInterceptor) {
+            let typedOriginalImp: TypedIMP = swizzler.currentImplementation(of: method)
 
             let newImpBlock: TypedBlockIMP = { impSelf, impURL, impCompletion -> URLSessionDataTask in
                 if let interceptionResult = interceptor(impSelf.urlRequest(with: impURL)) {
@@ -86,39 +70,39 @@ internal enum URLSessionSwizzler {
                         impCompletion(origData, origResponse, origError)
                         blockTask?.payload?(.completed)
                     }
-                    let task = typedRedirectedImp(impSelf, sel, interceptionResult.modifiedRequest, modifiedCompletion)
+                    let task = impSelf.dataTask(with: interceptionResult.modifiedRequest, completionHandler: modifiedCompletion)
                     Resume.swizzleIfNeeded(in: task)
                     task.payload = interceptionResult.taskObserver
                     blockTask = task
                     return task
                 }
 
-                return typedOriginalImp(impSelf, sel, impURL, impCompletion)
+                return typedOriginalImp(impSelf, Self.selector, impURL, impCompletion)
             }
             let newImp: IMP = imp_implementationWithBlock(newImpBlock)
-            return newImp
+
+            swizzler.set(newIMP: newImp, for: method)
         }
     }
 
-    private enum DataTask_Request_Completion {
-        private static let subjectClass = URLSession.self
-        private static let selector = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask)
-        typealias TypedIMP = @convention(c) (URLSession, Selector, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
+    private struct DataTask_Request_Completion {
+        private typealias TypedIMP = @convention(c) (URLSession, Selector, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
         private typealias TypedBlockIMP = @convention(block) (URLSession, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
+        private static let selector = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask)
 
-        static let foundMethod: MethodSwizzler.FoundMethod? = {
-            return swizzler.findMethodRecursively(
-                with: selector,
-                in: subjectClass
-            )
-        }()
+        let method: MethodSwizzler.FoundMethod
+        init?() {
+            guard let foundMethod = swizzler.findMethodRecursively(
+                with: Self.selector,
+                in: URLSession.self
+                ) else {
+                    return nil
+            }
+            self.method = foundMethod
+        }
 
-        static func newIMP(
-            using interceptor: @escaping RequestInterceptor,
-            methodToSwizzle: MethodSwizzler.FoundMethod
-        ) -> IMP {
-            let sel = selector
-            let typedOriginalImp: TypedIMP = swizzler.currentImplementation(of: methodToSwizzle)
+        func swizzle(using interceptor: @escaping RequestInterceptor) {
+            let typedOriginalImp: TypedIMP = swizzler.currentImplementation(of: method)
 
             let newImpBlock: TypedBlockIMP = { impSelf, impURLRequest, impCompletion -> URLSessionDataTask in
                 if let interceptionResult = interceptor(impURLRequest) {
@@ -129,16 +113,17 @@ internal enum URLSessionSwizzler {
                         blockTask?.payload?(.completed)
                     }
 
-                    let task = typedOriginalImp(impSelf, sel, interceptionResult.modifiedRequest, modifiedCompletion)
+                    let task = typedOriginalImp(impSelf, Self.selector, interceptionResult.modifiedRequest, modifiedCompletion)
                     Resume.swizzleIfNeeded(in: task)
                     task.payload = interceptionResult.taskObserver
                     blockTask = task
                     return task
                 }
-                return typedOriginalImp(impSelf, sel, impURLRequest, impCompletion)
+                return typedOriginalImp(impSelf, Self.selector, impURLRequest, impCompletion)
             }
             let newImp: IMP = imp_implementationWithBlock(newImpBlock)
-            return newImp
+
+            swizzler.set(newIMP: newImp, for: method)
         }
     }
 
