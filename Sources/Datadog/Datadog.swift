@@ -120,7 +120,7 @@ public class Datadog {
             directory: try obtainTracingFeatureDirectory(),
             configuration: validConfiguration,
             performance: performance,
-            loggingFeatureStorage: logging.storage,
+            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: logging),
             mobileDevice: mobileDevice,
             httpClient: httpClient,
             tracesUploadURLProvider: UploadURLProvider(

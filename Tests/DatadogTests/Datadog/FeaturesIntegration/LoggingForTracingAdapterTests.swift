@@ -7,10 +7,12 @@
 import XCTest
 @testable import Datadog
 
-class TracingToLoggingOutputTests: XCTestCase {
+class LoggingForTracingAdapterTests: XCTestCase {
+    // MARK: - LoggingForTracingAdapter.AdaptedLogOutput
+
     func testWritingLogWithOTMessageField() {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
+        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(loggingOutput: loggingOutput)
 
         tracingOutput.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
@@ -37,7 +39,7 @@ class TracingToLoggingOutputTests: XCTestCase {
 
     func testWritingLogWithOTErrorField() {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
+        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(loggingOutput: loggingOutput)
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
@@ -71,7 +73,7 @@ class TracingToLoggingOutputTests: XCTestCase {
 
     func testWritingCustomLogWithoutAnyOTFields() {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
+        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(loggingOutput: loggingOutput)
 
         tracingOutput.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),

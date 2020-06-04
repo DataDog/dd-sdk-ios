@@ -132,7 +132,7 @@ class DDTracerErrorTests: XCTestCase {
 
         let tracer = DDTracer(
             spanOutput: SpanOutputMock(),
-            logOutput: TracingToLoggingOutput(loggingOutput: LogOutputMock())
+            logOutput: .init(loggingOutput: LogOutputMock())
         )
         let fixtures: [(() -> Void, String)] = [
             ({ _ = tracer.startSpan(operationName: .mockAny()) },

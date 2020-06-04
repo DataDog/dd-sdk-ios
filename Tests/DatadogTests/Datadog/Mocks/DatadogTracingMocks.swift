@@ -61,7 +61,7 @@ extension DDTracer {
     static func mockNoOp() -> DDTracer {
         return DDTracer(
             spanOutput: SpanOutputMock(),
-            logOutput: TracingToLoggingOutput(loggingOutput: LogOutputMock())
+            logOutput: .init(loggingOutput: LogOutputMock())
         )
     }
 }
