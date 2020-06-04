@@ -13,10 +13,14 @@ class WarningsTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, identifier: "sdk-user")
+        userLogger = Logger(
+            logOutput: output,
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+            identifier: "sdk-user"
+        )
 
         XCTAssertTrue(warn(if: true, message: "message"))
-        XCTAssertEqual(output.recordedLog, .init(level: .warn, message: "message"))
+        XCTAssertEqual(output.recordedLog, .init(level: .warn, message: "message", date: .mockDecember15th2019At10AMUTC()))
 
         output.recordedLog = nil
 
@@ -27,7 +31,10 @@ class WarningsTests: XCTestCase {
 
         let failingCast: () -> DDSpan? = { warnIfCannotCast(value: DDNoopSpan()) }
         XCTAssertNil(failingCast())
-        XCTAssertEqual(output.recordedLog, .init(level: .warn, message: "🔥 Using DDNoopSpan while DDSpan was expected."))
+        XCTAssertEqual(
+            output.recordedLog,
+            .init(level: .warn, message: "🔥 Using DDNoopSpan while DDSpan was expected.", date: .mockDecember15th2019At10AMUTC())
+        )
 
         output.recordedLog = nil
 

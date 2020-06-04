@@ -102,7 +102,7 @@ internal class DDSpan: OpenTracing.Span {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }
-        // TODO: RUMM-292
+        ddTracer.writeLogWith(spanContext: ddContext, fields: fields, date: timestamp)
     }
 
     // MARK: - Private

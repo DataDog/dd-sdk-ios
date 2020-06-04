@@ -59,6 +59,9 @@ class SpanOutputMock: SpanOutput {
 
 extension DDTracer {
     static func mockNoOp() -> DDTracer {
-        return DDTracer(spanOutput: SpanOutputMock())
+        return DDTracer(
+            spanOutput: SpanOutputMock(),
+            logOutput: TracingToLoggingOutput(loggingOutput: LogOutputMock())
+        )
     }
 }

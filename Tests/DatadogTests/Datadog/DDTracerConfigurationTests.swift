@@ -47,11 +47,28 @@ class DDTracerConfigurationTests: XCTestCase {
             return
         }
 
+        let feature = TracingFeature.instance!
         XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(spanBuilder.serviceName, "service-name")
         XCTAssertEqual(spanBuilder.environment, "tests")
-        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider) // TODO: RUMM-422 Assert it's `nil` by default
-        XCTAssertNotNil(spanBuilder.carrierInfoProvider) // TODO: RUMM-422 Assert it's `nil` by default
+        XCTAssertEqual(spanBuilder.serviceName, "service-name")
+        XCTAssertTrue(spanBuilder.userInfoProvider === feature.userInfoProvider)
+        // TODO: RUMM-422 Assert `.networkConnectionInfoProvider` and `.carrierInfoProvider` are `nil` by default:
+        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider)
+        XCTAssertNotNil(spanBuilder.carrierInfoProvider)
+
+        guard let tracingLogBuilder = (tracer.logOutput.loggingOutput as? LogFileOutput)?.logBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(tracingLogBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(tracingLogBuilder.environment, "tests")
+        XCTAssertEqual(tracingLogBuilder.serviceName, "service-name")
+        XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
+        XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
+        // TODO: RUMM-422 Assert `.networkConnectionInfoProvider` and `.carrierInfoProvider` are `nil` by default:
+        XCTAssertTrue(tracingLogBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(tracingLogBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
     }
 
     func testCustomizedTracer() {
@@ -64,11 +81,26 @@ class DDTracerConfigurationTests: XCTestCase {
             return
         }
 
+        let feature = TracingFeature.instance!
         XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(spanBuilder.serviceName, "custom-service-name")
         XCTAssertEqual(spanBuilder.environment, "tests")
-        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider) // TODO: RUMM-422 Disable network info and assert it's `nil`
-        XCTAssertNotNil(spanBuilder.carrierInfoProvider) // TODO: RUMM-422 Disable network info and assert it's `nil`
+        XCTAssertTrue(spanBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+
+        guard let tracingLogBuilder = (tracer.logOutput.loggingOutput as? LogFileOutput)?.logBuilder else {
+            XCTFail()
+            return
+        }
+
+        XCTAssertEqual(tracingLogBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(tracingLogBuilder.environment, "tests")
+        XCTAssertEqual(tracingLogBuilder.serviceName, "custom-service-name")
+        XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
+        XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(tracingLogBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(tracingLogBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
     }
 }
 
@@ -95,7 +127,10 @@ class DDTracerErrorTests: XCTestCase {
 
         XCTAssertNil(Datadog.instance)
 
-        let tracer = DDTracer(spanOutput: SpanOutputMock())
+        let tracer = DDTracer(
+            spanOutput: SpanOutputMock(),
+            logOutput: TracingToLoggingOutput(loggingOutput: LogOutputMock())
+        )
         let fixtures: [(() -> Void, String)] = [
             ({ _ = tracer.startSpan(operationName: .mockAny()) },
              "`Datadog.initialize()` must be called prior to `startSpan(...)`."),

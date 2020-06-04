@@ -491,17 +491,3 @@ extension UserInfoProvider {
         return provider
     }
 }
-
-/// `LogOutput` recording received logs.
-class LogOutputMock: LogOutput {
-    struct RecordedLog: Equatable {
-        let level: LogLevel
-        let message: String
-    }
-
-    var recordedLog: RecordedLog? = nil
-
-    func writeLogWith(level: LogLevel, message: String, attributes: [String: Encodable], tags: Set<String>) {
-        recordedLog = RecordedLog(level: level, message: message)
-    }
-}

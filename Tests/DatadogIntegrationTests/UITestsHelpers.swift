@@ -8,10 +8,17 @@ import XCTest
 
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
+    /// Launches the app by mocking all feature endpoints with `mockServerURL`.
     func launchWith(mockServerURL: URL) {
+        self.launchWith(mockLogsEndpointURL: mockServerURL, mockTracesEndpointURL: mockServerURL)
+    }
+
+    /// Launches the app by mocking feature endpoints separately.
+    func launchWith(mockLogsEndpointURL: URL, mockTracesEndpointURL: URL) {
         launchArguments = ["IS_RUNNING_UI_TESTS"]
         launchEnvironment = [
-            "DD_MOCK_SERVER_URL": mockServerURL.absoluteString
+            "DD_MOCK_LOGS_ENDPOINT_URL": mockLogsEndpointURL.absoluteString,
+            "DD_MOCK_TRACES_ENDPOINT_URL": mockTracesEndpointURL.absoluteString
         ]
         super.launch()
     }

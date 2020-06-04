@@ -39,7 +39,6 @@ internal func createSDKDeveloperLogger(
             environment: loggingFeature.configuration.environment,
             serviceName: "sdk-developer",
             loggerName: "sdk-developer",
-            dateProvider: dateProvider,
             userInfoProvider: loggingFeature.userInfoProvider,
             networkConnectionInfoProvider: loggingFeature.networkConnectionInfoProvider,
             carrierInfoProvider: loggingFeature.carrierInfoProvider
@@ -49,7 +48,11 @@ internal func createSDKDeveloperLogger(
         timeFormatter: timeFormatter
     )
 
-    return Logger(logOutput: consoleOutput, identifier: "sdk-developer")
+    return Logger(
+        logOutput: consoleOutput,
+        dateProvider: dateProvider,
+        identifier: "sdk-developer"
+    )
 }
 
 internal func createSDKUserLogger(
@@ -58,7 +61,7 @@ internal func createSDKUserLogger(
     timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
 ) -> Logger {
     guard let loggingFeature = LoggingFeature.instance else {
-        return Logger(logOutput: NoOpLogOutput(), identifier: "no-op")
+        return Logger(logOutput: NoOpLogOutput(), dateProvider: SystemDateProvider(), identifier: "no-op")
     }
 
     let consoleOutput = LogConsoleOutput(
@@ -67,7 +70,6 @@ internal func createSDKUserLogger(
             environment: loggingFeature.configuration.environment,
             serviceName: "sdk-user",
             loggerName: "sdk-user",
-            dateProvider: dateProvider,
             userInfoProvider: loggingFeature.userInfoProvider,
             networkConnectionInfoProvider: loggingFeature.networkConnectionInfoProvider,
             carrierInfoProvider: loggingFeature.carrierInfoProvider
@@ -81,6 +83,7 @@ internal func createSDKUserLogger(
         logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { logLevel in
             logLevel.rawValue >= (Datadog.verbosityLevel?.rawValue ?? .max)
         },
+        dateProvider: dateProvider,
         identifier: "sdk-user"
     )
 }

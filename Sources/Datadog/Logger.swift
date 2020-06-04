@@ -76,6 +76,8 @@ public typealias AttributeValue = Encodable
 public class Logger {
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
+    /// Provides date for log creation.
+    private let dateProvider: DateProvider
     /// Attributes associated with every log.
     private var loggerAttributes: [String: Encodable] = [:]
     /// Taggs associated with every log.
@@ -83,8 +85,9 @@ public class Logger {
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
 
-    init(logOutput: LogOutput, identifier: String) {
+    init(logOutput: LogOutput, dateProvider: DateProvider, identifier: String) {
         self.logOutput = logOutput
+        self.dateProvider = dateProvider
         self.queue = DispatchQueue(
             label: "com.datadoghq.logger-\(identifier)",
             target: .global(qos: .userInteractive)
@@ -235,6 +238,7 @@ public class Logger {
     // MARK: - Private
 
     private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
+        let date = dateProvider.currentDate()
         let combinedAttributes = queue.sync {
             return self.loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
                 return messageAttributeValue // use message attribute when the same key appears also in logger attributes
@@ -244,7 +248,7 @@ public class Logger {
             return self.loggerTags
         }
 
-        logOutput.writeLogWith(level: level, message: message, attributes: combinedAttributes, tags: tags)
+        logOutput.writeLogWith(level: level, message: message, date: date, attributes: combinedAttributes, tags: tags)
     }
 
     // MARK: - Logger.Builder
@@ -332,6 +336,7 @@ public class Logger {
                 consolePrint("\(error)")
                 return Logger(
                     logOutput: NoOpLogOutput(),
+                    dateProvider: SystemDateProvider(),
                     identifier: "no-op"
                 )
             }
@@ -344,6 +349,7 @@ public class Logger {
 
             return Logger(
                 logOutput: resolveLogsOutput(for: loggingFeature),
+                dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature)
             )
         }
@@ -354,7 +360,6 @@ public class Logger {
                 environment: loggingFeature.configuration.environment,
                 serviceName: serviceName ?? loggingFeature.configuration.serviceName,
                 loggerName: resolveLoggerName(for: loggingFeature),
-                dateProvider: loggingFeature.dateProvider,
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil

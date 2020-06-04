@@ -97,7 +97,7 @@ public class Datadog {
         let httpClient = HTTPClient()
         let mobileDevice = MobileDevice.current
 
-        LoggingFeature.instance = LoggingFeature(
+        let logging = LoggingFeature(
             directory: try obtainLoggingFeatureDirectory(),
             configuration: validConfiguration,
             performance: performance,
@@ -116,10 +116,11 @@ public class Datadog {
             carrierInfoProvider: carrierInfoProvider
         )
 
-        TracingFeature.instance = TracingFeature(
+        let tracing = TracingFeature(
             directory: try obtainTracingFeatureDirectory(),
             configuration: validConfiguration,
             performance: performance,
+            loggingFeatureStorage: logging.storage,
             mobileDevice: mobileDevice,
             httpClient: httpClient,
             tracesUploadURLProvider: UploadURLProvider(
@@ -134,6 +135,9 @@ public class Datadog {
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
+
+        LoggingFeature.instance = logging
+        TracingFeature.instance = tracing
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(

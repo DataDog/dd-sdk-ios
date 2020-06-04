@@ -21,6 +21,10 @@ internal final class TracingFeature {
 
     let configuration: Datadog.ValidConfiguration
 
+    // MARK: - Integration With Other Features
+
+    let loggingFeatureStorage: LoggingFeature.Storage
+
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
@@ -116,6 +120,7 @@ internal final class TracingFeature {
         directory: Directory,
         configuration: Datadog.ValidConfiguration,
         performance: PerformancePreset,
+        loggingFeatureStorage: LoggingFeature.Storage,
         mobileDevice: MobileDevice,
         httpClient: HTTPClient,
         tracesUploadURLProvider: UploadURLProvider,
@@ -127,6 +132,9 @@ internal final class TracingFeature {
     ) {
         // Configuration
         self.configuration = configuration
+
+        // Integration with other features
+        self.loggingFeatureStorage = loggingFeatureStorage
 
         // Bundle dependencies
         self.dateProvider = dateProvider

@@ -26,6 +26,14 @@ internal class SendTracesFixtureViewController: UIViewController {
         dataDownloadingSpan.setTag(key: "data.url", value: URL(string: "https://example.com/image.png")!)
 
         downloadSomeData { [weak self] data in
+            // Simulate logging download progress
+            dataDownloadingSpan.log(
+                fields: [
+                    "message": "download progress",
+                    "progress": 0.99
+                ]
+            )
+
             dataDownloadingSpan.finish()
 
             guard let self = self else { return }
@@ -45,7 +53,7 @@ internal class SendTracesFixtureViewController: UIViewController {
         viewAppearingSpan.finish()
     }
 
-    /// Simulates some asynchronous work with completion.
+    /// Simulates doing an asynchronous work with completion.
     private func downloadSomeData(completion: @escaping (Data) -> Void) {
         backgroundQueue.async {
             Thread.sleep(forTimeInterval: 0.3)
@@ -53,7 +61,7 @@ internal class SendTracesFixtureViewController: UIViewController {
         }
     }
 
-    /// Simulates presentation of some data.
+    /// Simulates presenting some data.
     private func present(data: Data) {
         Thread.sleep(forTimeInterval: 0.06)
     }

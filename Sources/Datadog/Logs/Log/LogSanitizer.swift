@@ -10,7 +10,7 @@ import Foundation
 internal struct LogSanitizer {
     struct Constraints {
         /// Attribute names reserved for Datadog.
-        /// If any of those is used by user, the attribute will be ignored.
+        /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
             "host", "message", "status", "service", "source", "error.kind", "error.message", "error.stack", "ddtags"
         ]

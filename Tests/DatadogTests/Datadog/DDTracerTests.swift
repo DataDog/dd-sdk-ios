@@ -9,7 +9,6 @@ import OpenTracing
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets
-// swiftlint:disable trailing_closure
 class DDTracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -421,10 +420,43 @@ class DDTracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.url"), "https://example.com/image.png")
     }
 
+    // MARK: - Sending logs
+
+    func testSendingSpanLogs() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let loggingFeature = LoggingFeature.mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        )
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
+            loggingFeatureStorage: loggingFeature.storage
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = DDTracer.initialize(configuration: .init())
+
+        let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
+        span.log(fields: ["message": "hello", "custom.field": "value"])
+
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+
+        logMatcher.assertMessage(equals: "hello")
+        logMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
+        logMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        logMatcher.assertValue(forKey: "custom.field", equals: "value")
+    }
+
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
-        let tracer = DDTracer(spanOutput: SpanOutputMock())
+        let tracer = DDTracer(
+            spanOutput: SpanOutputMock(),
+            logOutput: TracingToLoggingOutput(loggingOutput: LogOutputMock())
+        )
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny())
 
         let httpHeadersWriter = DDHTTPHeadersWriter()
@@ -474,4 +506,3 @@ class DDTracerTests: XCTestCase {
     }
 }
 // swiftlint:enable multiline_arguments_brackets
-// swiftlint:enable trailing_closure

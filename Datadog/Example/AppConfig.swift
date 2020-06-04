@@ -42,11 +42,11 @@ struct UITestAppConfig: AppConfig {
     /// Configuration for uploading logs to mock servers
     let datadogConfiguration: Datadog.Configuration
 
-    init(mockServerURL: String) {
+    init(mockLogsEndpoint: String, mockTracesEndpoint: String) {
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
-            .set(logsEndpoint: .custom(url: mockServerURL))
-            .set(tracesEndpoint: .custom(url: mockServerURL))
+            .set(logsEndpoint: .custom(url: mockLogsEndpoint))
+            .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
             .build()
     }
 }
@@ -55,7 +55,8 @@ struct UITestAppConfig: AppConfig {
 func currentAppConfig() -> AppConfig {
     if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
         return UITestAppConfig(
-            mockServerURL: ProcessInfo.processInfo.environment["DD_MOCK_SERVER_URL"]!
+            mockLogsEndpoint: ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!,
+            mockTracesEndpoint: ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
         )
     } else {
         return ExampleAppConfig()
