@@ -32,31 +32,19 @@ internal class MethodSwizzler {
 
     static let shared = MethodSwizzler()
     private init() { }
-    private var _unsafeImplementationCache = [FoundMethod: IMP]()
-    private var implementationCache: [FoundMethod: IMP] {
-        get { return sync { return _unsafeImplementationCache } }
-        set { sync { _unsafeImplementationCache = newValue } }
-    }
-
-    var swizzledCount: Int { return implementationCache.count }
+    private var implementationCache = [FoundMethod: IMP]()
 
     func findMethodRecursively(with selector: Selector, in klass: AnyClass) -> FoundMethod? {
-        return sync {
-            var headKlass: AnyClass? = klass
-            while let someKlass = headKlass {
-                if let foundMethod = findMethod(with: selector, in: someKlass) {
-                    return FoundMethod(method: foundMethod, klass: someKlass)
-                }
-                headKlass = class_getSuperclass(headKlass)
+        /// NOTE: RUMM-452 as we never add/remove methods/classes at runtime,
+        /// search operation doesn't have to wrapped in sync {...} although it's visible in the interface
+        var headKlass: AnyClass? = klass
+        while let someKlass = headKlass {
+            if let foundMethod = findMethod(with: selector, in: someKlass) {
+                return FoundMethod(method: foundMethod, klass: someKlass)
             }
-            return nil
+            headKlass = class_getSuperclass(headKlass)
         }
-    }
-
-    func currentImplementation<TypedIMP>(of found: FoundMethod) -> TypedIMP {
-        return sync {
-            return unsafeBitCast(method_getImplementation(found.method), to: TypedIMP.self)
-        }
+        return nil
     }
 
     func originalImplementation<TypedIMP>(of found: FoundMethod) -> TypedIMP {
@@ -67,25 +55,23 @@ internal class MethodSwizzler {
     }
 
     @discardableResult
-    func swizzleIfNonSwizzled(
-        foundMethod: FoundMethod,
-        with implementation: @autoclosure () -> IMP
+    func swizzle<TypedCurrentIMP>(
+        _ foundMethod: FoundMethod,
+        impSignature: TypedCurrentIMP.Type,
+        impProvider: (TypedCurrentIMP) -> IMP,
+        onlyIfNonSwizzled: Bool = false
     ) -> Bool {
         sync {
-            if implementationCache[foundMethod] != nil {
+            if onlyIfNonSwizzled &&
+                implementationCache[foundMethod] != nil {
                 return false
             }
-            set(newIMP: implementation(), for: foundMethod)
-            return true
-        }
-    }
+            let currentIMP = method_getImplementation(foundMethod.method)
+            let current_typedIMP = unsafeBitCast(currentIMP, to: impSignature)
+            let newImp: IMP = impProvider(current_typedIMP)
 
-    func set(newIMP: IMP, for found: FoundMethod) {
-        sync {
-            if implementationCache[found] == nil {
-                implementationCache[found] = method_getImplementation(found.method)
-            }
-            method_setImplementation(found.method, newIMP)
+            set(newIMP: newImp, for: foundMethod)
+            return true
         }
     }
 
@@ -137,5 +123,14 @@ internal class MethodSwizzler {
             }
         }
         return nil
+    }
+
+    private func set(newIMP: IMP, for found: FoundMethod) {
+        sync {
+            if implementationCache[found] == nil {
+                implementationCache[found] = method_getImplementation(found.method)
+            }
+            method_setImplementation(found.method, newIMP)
+        }
     }
 }
