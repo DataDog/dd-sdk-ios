@@ -49,11 +49,11 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[1].operationName(), "data presentation")
         XCTAssertEqual(try spanMatchers[2].operationName(), "view appearing")
 
-        // they share the same `trace_id`
+        // All spans share the same `trace_id`
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[1].traceID())
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[2].traceID())
 
-        // "downloading" and "presentation" are childs of "view appearing"
+        // "data downloading" and "data presentation" are childs of "view appearing"
         XCTAssertEqual(try spanMatchers[0].parentSpanID(), try spanMatchers[2].spanID())
         XCTAssertEqual(try spanMatchers[1].parentSpanID(), try spanMatchers[2].spanID())
 
@@ -61,7 +61,7 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertNil(try? spanMatchers[1].metrics.isRootSpan())
         XCTAssertEqual(try spanMatchers[2].metrics.isRootSpan(), 1)
 
-        // "downloading" span's tags
+        // "data downloading" span's tags
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.kind"), "image")
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.url"), "https://example.com/image.png")
 
@@ -70,12 +70,16 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[1].isError(), 1)
         XCTAssertEqual(try spanMatchers[2].isError(), 0)
 
+        // "data downloading" span has custom resource name
+        XCTAssertEqual(try spanMatchers[0].resource(), "GET /image.png")
+        XCTAssertEqual(try spanMatchers[1].resource(), try spanMatchers[1].operationName())
+        XCTAssertEqual(try spanMatchers[2].resource(), try spanMatchers[2].operationName())
+
         try spanMatchers.forEach { matcher in
             XCTAssertGreaterThan(try matcher.startTime(), testBeginTimeInNanoseconds)
             XCTAssertLessThan(try matcher.startTime(), testEndTimeInNanoseconds)
 
             XCTAssertEqual(try matcher.serviceName(), "ui-tests-service-name")
-            XCTAssertEqual(try matcher.resource(), try matcher.operationName())
             XCTAssertEqual(try matcher.type(), "custom")
             XCTAssertEqual(try matcher.environment(), "integration")
 

@@ -24,6 +24,7 @@ internal class SendTracesFixtureViewController: UIViewController {
         )
         dataDownloadingSpan.setTag(key: "data.kind", value: "image")
         dataDownloadingSpan.setTag(key: "data.url", value: URL(string: "https://example.com/image.png")!)
+        dataDownloadingSpan.setTag(key: "resource.name", value: "GET /image.png") // TODO: RUMM-390 use public constant
 
         downloadSomeData { [weak self] data in
             // Simulate logging download progress
