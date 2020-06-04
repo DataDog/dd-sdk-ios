@@ -40,7 +40,9 @@ class DDTracerConfigurationTests: XCTestCase {
     }
 
     func testDefaultTracer() {
-        let tracer = DDTracer.initialize(configuration: .init()).dd
+        let tracer = DDTracer.initialize(
+            configuration: .init()
+        ).dd
 
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
             XCTFail()
@@ -52,9 +54,8 @@ class DDTracerConfigurationTests: XCTestCase {
         XCTAssertEqual(spanBuilder.environment, "tests")
         XCTAssertEqual(spanBuilder.serviceName, "service-name")
         XCTAssertTrue(spanBuilder.userInfoProvider === feature.userInfoProvider)
-        // TODO: RUMM-422 Assert `.networkConnectionInfoProvider` and `.carrierInfoProvider` are `nil` by default:
-        XCTAssertNotNil(spanBuilder.networkConnectionInfoProvider)
-        XCTAssertNotNil(spanBuilder.carrierInfoProvider)
+        XCTAssertNil(spanBuilder.networkConnectionInfoProvider)
+        XCTAssertNil(spanBuilder.carrierInfoProvider)
 
         guard let tracingLogBuilder = (tracer.logOutput.loggingOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
@@ -66,14 +67,16 @@ class DDTracerConfigurationTests: XCTestCase {
         XCTAssertEqual(tracingLogBuilder.serviceName, "service-name")
         XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
         XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
-        // TODO: RUMM-422 Assert `.networkConnectionInfoProvider` and `.carrierInfoProvider` are `nil` by default:
-        XCTAssertTrue(tracingLogBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(tracingLogBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        XCTAssertNil(tracingLogBuilder.networkConnectionInfoProvider)
+        XCTAssertNil(tracingLogBuilder.carrierInfoProvider)
     }
 
     func testCustomizedTracer() {
         let tracer = DDTracer.initialize(
-            configuration: .init(serviceName: "custom-service-name")
+            configuration: .init(
+                serviceName: "custom-service-name",
+                sendNetworkInfo: true
+            )
         ).dd
 
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {

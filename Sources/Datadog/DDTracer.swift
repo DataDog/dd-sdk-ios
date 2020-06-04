@@ -41,6 +41,9 @@ public class DDTracer: Tracer {
 
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         let serviceName = tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName
+        let networkConnectionInfoProvider = tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil
+        let carrierInfoProvider = tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
+
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
@@ -48,8 +51,8 @@ public class DDTracer: Tracer {
                     environment: tracingFeature.configuration.environment,
                     serviceName: serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
-                    networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
-                    carrierInfoProvider: tracingFeature.carrierInfoProvider
+                    networkConnectionInfoProvider: networkConnectionInfoProvider,
+                    carrierInfoProvider: carrierInfoProvider
                 ),
                 fileWriter: tracingFeature.storage.writer
             ),
@@ -61,8 +64,8 @@ public class DDTracer: Tracer {
                         serviceName: serviceName,
                         loggerName: "trace",
                         userInfoProvider: tracingFeature.userInfoProvider,
-                        networkConnectionInfoProvider: tracingFeature.networkConnectionInfoProvider,
-                        carrierInfoProvider: tracingFeature.carrierInfoProvider
+                        networkConnectionInfoProvider: networkConnectionInfoProvider,
+                        carrierInfoProvider: carrierInfoProvider
                     ),
                     fileWriter: tracingFeature.loggingFeatureStorage.writer
                 )

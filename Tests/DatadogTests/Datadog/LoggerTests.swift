@@ -23,9 +23,9 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Sending logs
+    // MARK: - Customizing Logger
 
-    func testSendingMinimalLogWithDefaultLogger() throws {
+    func testSendingLogWithDefaultLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -59,7 +59,7 @@ class LoggerTests: XCTestCase {
         """)
     }
 
-    func testSendingMinimalLogWithCustomizedLogger() throws {
+    func testSendingLogWithCustomizedLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -91,6 +91,8 @@ class LoggerTests: XCTestCase {
             logMatcher.assertValue(forKeyPath: "network.client.is_constrained", isTypeOf: Bool.self)
         }
     }
+
+    // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))

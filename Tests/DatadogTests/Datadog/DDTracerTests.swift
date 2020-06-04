@@ -24,9 +24,9 @@ class DDTracerTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Sending spans
+    // MARK: - Customizing DDTracer
 
-    func testSendingMinimalSpan() throws {
+    func testSendingSpanWithDefaultTracer() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -42,7 +42,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer.initialize(configuration: .init()).dd
+        let tracer = DDTracer.initialize(configuration: .init())
 
         let span = tracer.startSpan(operationName: "operation")
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
@@ -65,16 +65,6 @@ class DDTracerTests: XCTestCase {
               "meta.tracer.version": "\(sdkVersion)",
               "meta.version": "1.0.0",
               "meta._dd.source": "ios",
-              "meta.network.client.available_interfaces": "wifi",
-              "meta.network.client.is_constrained": "0",
-              "meta.network.client.is_expensive": "1",
-              "meta.network.client.reachability": "yes",
-              "meta.network.client.sim_carrier.allows_voip": "0",
-              "meta.network.client.sim_carrier.iso_country": "abc",
-              "meta.network.client.sim_carrier.name": "abc",
-              "meta.network.client.sim_carrier.technology": "LTE",
-              "meta.network.client.supports_ipv4": "1",
-              "meta.network.client.supports_ipv6": "1",
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1
             }
@@ -83,6 +73,43 @@ class DDTracerTests: XCTestCase {
         }
         """) // TOOD: RUMM-422 Network info is not send by default with spans
     }
+
+    func testSendingSpanWithCustomizedTracer() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = DDTracer.initialize(
+            configuration: .init(
+                serviceName: "custom-service-name",
+                sendNetworkInfo: true
+            )
+        )
+
+        let span = tracer.startSpan(operationName: .mockAny())
+        span.finish()
+
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+
+        XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
+        XCTAssertNoThrow(try spanMatcher.meta.networkAvailableInterfaces())
+        XCTAssertNoThrow(try spanMatcher.meta.networkConnectionIsExpensive())
+        XCTAssertNoThrow(try spanMatcher.meta.networkReachability())
+        XCTAssertNoThrow(try spanMatcher.meta.mobileNetworkCarrierAllowsVoIP())
+        XCTAssertNoThrow(try spanMatcher.meta.mobileNetworkCarrierISOCountryCode())
+        XCTAssertNoThrow(try spanMatcher.meta.mobileNetworkCarrierName())
+        XCTAssertNoThrow(try spanMatcher.meta.mobileNetworkCarrierRadioTechnology())
+        XCTAssertNoThrow(try spanMatcher.meta.networkConnectionSupportsIPv4())
+        XCTAssertNoThrow(try spanMatcher.meta.networkConnectionSupportsIPv6())
+        if #available(iOS 13.0, *) {
+            XCTAssertNoThrow(try spanMatcher.meta.networkConnectionIsConstrained())
+        }
+    }
+
+    // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
@@ -214,7 +241,9 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer.initialize(configuration: .init()).dd
+        let tracer = DDTracer.initialize(
+            configuration: .init(sendNetworkInfo: true)
+        ).dd
 
         // simulate entering cellular service range
         carrierInfoProvider.set(
@@ -257,7 +286,9 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = DDTracer.initialize(configuration: .init()).dd
+        let tracer = DDTracer.initialize(
+            configuration: .init(sendNetworkInfo: true)
+        ).dd
 
         // simulate reachable network
         networkConnectionInfoProvider.set(

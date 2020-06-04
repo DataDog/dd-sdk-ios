@@ -16,10 +16,10 @@ internal struct SpanBuilder {
     let serviceName: String
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
-    /// Shared network connection info provider.
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType // TODO: RUMM-422 Make `nil` if network info is disabled for tracer
-    /// Shared mobile carrier info provider.
-    let carrierInfoProvider: CarrierInfoProviderType
+    /// Shared network connection info provider (or `nil` if disabled for given tracer).
+    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
+    /// Shared mobile carrier info provider (or `nil` if disabled for given tracer).
+    let carrierInfoProvider: CarrierInfoProviderType?
 
     /// Encodes tag `Span` tag values as JSON string
     private let tagsJSONEncoder: JSONEncoder = .default()
@@ -43,8 +43,8 @@ internal struct SpanBuilder {
             isError: false, // TODO: RUMM-401 use error flag from `ddspan`
             tracerVersion: sdkVersion,
             applicationVersion: applicationVersion,
-            networkConnectionInfo: networkConnectionInfoProvider.current,
-            mobileCarrierInfo: carrierInfoProvider.current,
+            networkConnectionInfo: networkConnectionInfoProvider?.current,
+            mobileCarrierInfo: carrierInfoProvider?.current,
             userInfo: userInfoProvider.value,
             tags: jsonStringEncodedTags
         )
