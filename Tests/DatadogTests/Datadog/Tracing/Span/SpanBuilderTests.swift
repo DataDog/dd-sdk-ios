@@ -99,6 +99,26 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(try span.tags.toEquatable(), ["error.type": "Swift error 1"]) // only first error log is captured
     }
 
+    func testBuildingSpanWithErrorTagAndErrorLogsSend() throws {
+        let builder: SpanBuilder = .mockAny()
+
+        // given
+        var ddspan: DDSpan = .mockWith(tags: ["error": true])
+        ddspan.log(fields: [OpenTracingLogFields.event: "error"])
+        var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertTrue(span.isError)
+
+        // given
+        ddspan = .mockWith(tags: ["error": false])
+        ddspan.log(fields: [OpenTracingLogFields.event: "error"])
+        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // then
+        XCTAssertTrue(span.isError)
+    }
+
     func testBuildingSpanWithResourceNameTagSet() throws {
         let builder: SpanBuilder = .mockAny()
 

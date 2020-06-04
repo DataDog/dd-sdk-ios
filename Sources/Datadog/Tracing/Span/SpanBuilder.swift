@@ -25,10 +25,10 @@ internal struct SpanBuilder {
     private let tagsJSONEncoder: JSONEncoder = .default()
 
     func createSpan(from ddspan: DDSpan, finishTime: Date) throws -> Span {
-        let tagsReducer = SpanTagsReducer.reduce(spanTags: ddspan.tags, logFields: ddspan.logFields)
+        let tagsReducer = SpanTagsReducer(spanTags: ddspan.tags, logFields: ddspan.logFields)
 
         let jsonStringEncodedTags = Dictionary(
-            uniqueKeysWithValues: tagsReducer.spanTags.map { name, value in
+            uniqueKeysWithValues: tagsReducer.reducedSpanTags.map { name, value in
                 (name, JSONStringEncodableValue(value, encodedUsing: tagsJSONEncoder))
             }
         )
