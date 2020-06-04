@@ -32,7 +32,7 @@ internal struct TracingToLoggingOutput {
     /// `LogOutput` provided by the `Logging` feature.
     let loggingOutput: LogOutput
 
-    func writeLogWith(spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
+    func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
         let message = (fields[OpenTracingFields.message] as? String) ?? DefaultFieldValues.message
         var logAttributes = fields.filter { $0.key != OpenTracingFields.message }
 

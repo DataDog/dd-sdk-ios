@@ -126,6 +126,6 @@ public class DDTracer: Tracer {
     }
 
     internal func writeLogWith(spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
-        logOutput.writeLogWith(spanContext: spanContext, fields: fields, date: date)
+        logOutput.writeLog(withSpanContext: spanContext, fields: fields, date: date)
     }
 }

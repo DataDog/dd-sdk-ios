@@ -16,8 +16,8 @@ class TracingToLoggingOutputTests: XCTestCase {
         let loggingOutput = LogOutputMock()
         let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
 
-        tracingOutput.writeLogWith(
-            spanContext: .mockWith(
+        tracingOutput.writeLog(
+            withSpanContext: .mockWith(
                 traceID: 1,
                 spanID: 2
             ),
@@ -47,8 +47,8 @@ class TracingToLoggingOutputTests: XCTestCase {
         let loggingOutput = LogOutputMock()
         let tracingOutput = TracingToLoggingOutput(loggingOutput: loggingOutput)
 
-        tracingOutput.writeLogWith(
-            spanContext: .mockWith(
+        tracingOutput.writeLog(
+            withSpanContext: .mockWith(
                 traceID: 1,
                 spanID: 2
             ),
