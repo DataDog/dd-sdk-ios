@@ -14,7 +14,7 @@ extension TracingFeature {
             directory: temporaryDirectory,
             configuration: .mockAny(),
             performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            loggingFeatureStorage: noOpLoggingFeature.storage,
+            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: noOpLoggingFeature),
             mobileDevice: .mockAny(),
             httpClient: .mockAny(),
             tracesUploadURLProvider: .mockAny(),
@@ -39,9 +39,9 @@ extension TracingFeature {
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
         ),
-        loggingFeatureStorage: LoggingFeature.Storage = LoggingFeature.mockNoOp(
+        loggingFeature: LoggingFeature = .mockNoOp(
             temporaryDirectory: temporaryDirectory
-        ).storage,
+        ),
         mobileDevice: MobileDevice = .mockWith(
             currentBatteryStatus: {
                 // Mock full battery, so it doesn't rely on battery condition for the upload
@@ -68,7 +68,7 @@ extension TracingFeature {
             directory: directory,
             configuration: configuration,
             performance: performance,
-            loggingFeatureStorage: loggingFeatureStorage,
+            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: loggingFeature),
             mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
             tracesUploadURLProvider: tracesUploadURLProvider,

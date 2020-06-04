@@ -25,8 +25,10 @@ internal struct SpanBuilder {
     private let tagsJSONEncoder: JSONEncoder = .default()
 
     func createSpan(from ddspan: DDSpan, finishTime: Date) throws -> Span {
+        let tagsReducer = SpanTagsReducer.reduce(spanTags: ddspan.tags, logFields: ddspan.logFields)
+
         let jsonStringEncodedTags = Dictionary(
-            uniqueKeysWithValues: ddspan.tags.map { name, value in
+            uniqueKeysWithValues: tagsReducer.spanTags.map { name, value in
                 (name, JSONStringEncodableValue(value, encodedUsing: tagsJSONEncoder))
             }
         )
@@ -37,10 +39,10 @@ internal struct SpanBuilder {
             parentID: ddspan.ddContext.parentSpanID,
             operationName: ddspan.operationName,
             serviceName: serviceName,
-            resource: ddspan.operationName, // TODO: RUMM-400 use `resourceName`: `resource: ddspan.resourceName ?? ddspan.operationName`
+            resource: ddspan.operationName, // TODO: RUMM-400 use `resourceName`: `resource: tagsReducer.resourceName ?? ddspan.operationName`
             startTime: ddspan.startTime,
             duration: finishTime.timeIntervalSince(ddspan.startTime),
-            isError: false, // TODO: RUMM-401 use error flag from `ddspan`
+            isError: tagsReducer.extractedIsError ?? false,
             tracerVersion: sdkVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfoProvider?.current,

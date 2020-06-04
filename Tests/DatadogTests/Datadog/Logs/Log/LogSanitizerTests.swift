@@ -19,7 +19,6 @@ class LogSanitizerTests: XCTestCase {
                 "status": .mockAny(),
                 "service": .mockAny(),
                 "source": .mockAny(),
-                "error.kind": .mockAny(),
                 "error.message": .mockAny(),
                 "error.stack": .mockAny(),
                 "ddtags": .mockAny(),

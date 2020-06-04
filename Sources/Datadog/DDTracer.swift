@@ -11,7 +11,7 @@ public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output.
-    internal let logOutput: TracingToLoggingOutput
+    internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput
     /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
 
@@ -40,40 +40,25 @@ public class DDTracer: Tracer {
     }
 
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
-        let serviceName = tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName
-        let networkConnectionInfoProvider = tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil
-        let carrierInfoProvider = tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
-
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
                     applicationVersion: tracingFeature.configuration.applicationVersion,
                     environment: tracingFeature.configuration.environment,
-                    serviceName: serviceName,
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
-                    networkConnectionInfoProvider: networkConnectionInfoProvider,
-                    carrierInfoProvider: carrierInfoProvider
+                    networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
+                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
                 ),
                 fileWriter: tracingFeature.storage.writer
             ),
-            logOutput: TracingToLoggingOutput(
-                loggingOutput: LogFileOutput(
-                    logBuilder: LogBuilder(
-                        applicationVersion: tracingFeature.configuration.applicationVersion,
-                        environment: tracingFeature.configuration.environment,
-                        serviceName: serviceName,
-                        loggerName: "trace",
-                        userInfoProvider: tracingFeature.userInfoProvider,
-                        networkConnectionInfoProvider: networkConnectionInfoProvider,
-                        carrierInfoProvider: carrierInfoProvider
-                    ),
-                    fileWriter: tracingFeature.loggingFeatureStorage.writer
-                )
-            )
+            logOutput: tracingFeature
+                .loggingFeatureAdapter
+                .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration)
         )
     }
 
-    internal init(spanOutput: SpanOutput, logOutput: TracingToLoggingOutput) {
+    internal init(spanOutput: SpanOutput, logOutput: LoggingForTracingAdapter.AdaptedLogOutput) {
         self.spanOutput = spanOutput
         self.logOutput = logOutput
         self.queue = DispatchQueue(
@@ -128,7 +113,7 @@ public class DDTracer: Tracer {
         spanOutput.write(ddspan: span, finishTime: finishTime)
     }
 
-    internal func writeLogWith(spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
+    internal func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
         logOutput.writeLog(withSpanContext: spanContext, fields: fields, date: date)
     }
 }

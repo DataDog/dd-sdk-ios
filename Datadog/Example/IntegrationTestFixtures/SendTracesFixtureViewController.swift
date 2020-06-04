@@ -43,6 +43,7 @@ internal class SendTracesFixtureViewController: UIViewController {
                 childOf: self.viewAppearingSpan.context
             )
             self.present(data: data)
+            dataPresentationSpan.setTag(key: "error", value: true)
             dataPresentationSpan.finish()
         }
     }

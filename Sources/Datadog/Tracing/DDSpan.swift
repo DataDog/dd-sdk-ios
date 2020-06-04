@@ -36,6 +36,14 @@ internal class DDSpan: OpenTracing.Span {
         set { ddTracer.queue.async { self.unsafeIsFinished = newValue } }
     }
 
+    /// Unsychronized span log fields. Use `self.logFields` setter & getter.
+    private var unsafeLogFields: [[String: Codable]] = []
+    /// A collection of all log fields send for this span.
+    private(set) var logFields: [[String: Codable]] {
+        get { ddTracer.queue.sync { unsafeLogFields } }
+        set { ddTracer.queue.async { self.unsafeLogFields = newValue } }
+    }
+
     init(
         tracer: DDTracer,
         context: DDSpanContext,
@@ -102,7 +110,8 @@ internal class DDSpan: OpenTracing.Span {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }
-        ddTracer.writeLogWith(spanContext: ddContext, fields: fields, date: timestamp)
+        logFields.append(fields)
+        ddTracer.writeLog(withSpanContext: ddContext, fields: fields, date: timestamp)
     }
 
     // MARK: - Private

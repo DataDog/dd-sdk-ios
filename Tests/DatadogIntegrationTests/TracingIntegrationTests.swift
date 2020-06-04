@@ -65,6 +65,11 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.kind"), "image")
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.url"), "https://example.com/image.png")
 
+        // "data presentation" span contains error
+        XCTAssertEqual(try spanMatchers[0].isError(), 0)
+        XCTAssertEqual(try spanMatchers[1].isError(), 1)
+        XCTAssertEqual(try spanMatchers[2].isError(), 0)
+
         try spanMatchers.forEach { matcher in
             XCTAssertGreaterThan(try matcher.startTime(), testBeginTimeInNanoseconds)
             XCTAssertLessThan(try matcher.startTime(), testEndTimeInNanoseconds)
@@ -72,7 +77,6 @@ class TracingIntegrationTests: IntegrationTests {
             XCTAssertEqual(try matcher.serviceName(), "ui-tests-service-name")
             XCTAssertEqual(try matcher.resource(), try matcher.operationName())
             XCTAssertEqual(try matcher.type(), "custom")
-            XCTAssertEqual(try matcher.isError(), 0)
             XCTAssertEqual(try matcher.environment(), "integration")
 
             XCTAssertEqual(try matcher.meta.source(), "ios")

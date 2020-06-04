@@ -464,7 +464,7 @@ class DDTracerTests: XCTestCase {
             server: server,
             directory: temporaryDirectory,
             performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            loggingFeatureStorage: loggingFeature.storage
+            loggingFeature: loggingFeature
         )
         defer { TracingFeature.instance = nil }
 
@@ -486,7 +486,7 @@ class DDTracerTests: XCTestCase {
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
         let tracer = DDTracer(
             spanOutput: SpanOutputMock(),
-            logOutput: TracingToLoggingOutput(loggingOutput: LogOutputMock())
+            logOutput: .init(loggingOutput: LogOutputMock())
         )
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny())
 
