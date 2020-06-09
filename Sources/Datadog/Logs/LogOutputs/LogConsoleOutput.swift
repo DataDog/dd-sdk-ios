@@ -16,7 +16,11 @@ internal struct LogConsoleOutput: LogOutput {
     /// Time formatter used for `.short` output format.
     static func shortTimeFormatter(calendar: Calendar = .current, timeZone: TimeZone = .current) -> Formatter {
         let formatter = ISO8601DateFormatter.default()
-        formatter.formatOptions = [.withFractionalSeconds, .withFullTime]
+        if #available(iOS 11.2, *) {
+            formatter.formatOptions = [.withFractionalSeconds, .withFullTime]
+        } else {
+            formatter.formatOptions = [.withFullTime]
+        }
         return formatter
     }
 
