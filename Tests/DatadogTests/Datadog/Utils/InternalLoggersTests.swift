@@ -19,7 +19,7 @@ class InternalLoggersTests: XCTestCase {
         userLogger = createSDKUserLogger(
             consolePrintFunction: { [weak self] in self?.printedMessages.append($0) },
             dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC()),
-            timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
+            timeZone: .UTC
         )
     }
 
@@ -44,12 +44,12 @@ class InternalLoggersTests: XCTestCase {
     }
 
     private let expectedMessages = [
-        "[DATADOG SDK] 🐶 → 10:00:00.000Z [DEBUG] message",
-        "[DATADOG SDK] 🐶 → 10:00:00.000Z [INFO] message",
-        "[DATADOG SDK] 🐶 → 10:00:00.000Z [NOTICE] message",
-        "[DATADOG SDK] 🐶 → 10:00:00.000Z [WARN] message",
-        "[DATADOG SDK] 🐶 → 10:00:00.000Z [ERROR] message",
-        "[DATADOG SDK] 🐶 → 10:00:00.000Z [CRITICAL] message"
+        "[DATADOG SDK] 🐶 → 10:00:00.000 [DEBUG] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000 [INFO] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000 [NOTICE] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000 [WARN] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000 [ERROR] message",
+        "[DATADOG SDK] 🐶 → 10:00:00.000 [CRITICAL] message"
     ]
 
     func testUserLoggerDoesNothingWithDefaultVerbosityLevel() {
@@ -115,11 +115,11 @@ class InternalLoggersTests: XCTestCase {
         let developerLogger = createSDKDeveloperLogger(
             consolePrintFunction: { printedMessage = $0 },
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
+            timeZone: .UTC
         )
         developerLogger?.info("It works.")
 
         XCTAssertNotNil(developerLogger)
-        XCTAssertEqual(printedMessage, "🐶 → 10:00:00.000Z [INFO] It works.")
+        XCTAssertEqual(printedMessage, "🐶 → 10:00:00.000 [INFO] It works.")
     }
 }

@@ -9,7 +9,11 @@ import Foundation
 extension JSONEncoder {
     static func `default`() -> JSONEncoder {
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = ISO8601DateFormatter.encodingStrategy
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            var container = encoder.singleValueContainer()
+            let formatted = iso8601DateFormatter.string(from: date)
+            try container.encode(formatted)
+        }
         if #available(iOS 13.0, OSX 10.15, *) {
             encoder.outputFormatting = [.withoutEscapingSlashes]
         }

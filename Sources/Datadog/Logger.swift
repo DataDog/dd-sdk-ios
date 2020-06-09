@@ -367,7 +367,8 @@ public class Logger {
                         ),
                         LogConsoleOutput(
                             logBuilder: logBuilder,
-                            format: format
+                            format: format,
+                            timeZone: .current
                         )
                     ]
                 )
@@ -379,7 +380,8 @@ public class Logger {
             case (false, let format?):
                 return LogConsoleOutput(
                     logBuilder: logBuilder,
-                    format: format
+                    format: format,
+                    timeZone: .current
                 )
             case (false, nil):
                 return NoOpLogOutput()
