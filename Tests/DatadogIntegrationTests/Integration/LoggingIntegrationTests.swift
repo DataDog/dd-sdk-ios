@@ -97,19 +97,24 @@ class LoggingIntegrationTests: IntegrationTests {
                 forKeyPath: LogMatcher.JSONKey.networkReachability,
                 matches: { LogMatcher.allowedNetworkReachabilityValues.contains($0) }
             )
-            matcher.assertValue(
-                forKeyPath: LogMatcher.JSONKey.networkAvailableInterfaces,
-                matches: { (values: [String]) -> Bool in
-                    LogMatcher.allowedNetworkAvailableInterfacesValues.isSuperset(of: Set(values))
-                }
-            )
-            matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionSupportsIPv4, isTypeOf: Bool.self)
-            matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionSupportsIPv6, isTypeOf: Bool.self)
-            matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionIsExpensive, isTypeOf: Bool.self)
-            matcher.assertValue(
-                forKeyPath: LogMatcher.JSONKey.networkConnectionIsConstrained,
-                isTypeOf: Optional<Bool>.self
-            )
+
+            if #available(iOS 12.0, *) {
+                matcher.assertValue(
+                    forKeyPath: LogMatcher.JSONKey.networkAvailableInterfaces,
+                    matches: { (values: [String]) -> Bool in
+                        LogMatcher.allowedNetworkAvailableInterfacesValues.isSuperset(of: Set(values))
+                    }
+                )
+
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionSupportsIPv4, isTypeOf: Bool.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionSupportsIPv6, isTypeOf: Bool.self)
+                matcher.assertValue(forKeyPath: LogMatcher.JSONKey.networkConnectionIsExpensive, isTypeOf: Bool.self)
+
+                matcher.assertValue(
+                    forKeyPath: LogMatcher.JSONKey.networkConnectionIsConstrained,
+                    isTypeOf: Optional<Bool>.self
+                )
+            }
 
             #if targetEnvironment(simulator)
                 // When running on iOS Simulator
