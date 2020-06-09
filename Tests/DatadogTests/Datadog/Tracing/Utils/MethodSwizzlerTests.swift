@@ -22,10 +22,7 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
     private typealias TypedIMPReturnString = @convention(c) (AnyObject, Selector) -> String
     private typealias TypedBlockIMPReturnString = @convention(block) (AnyObject) -> String
     private let selToSwizzle = #selector(BaseClass.methodToSwizzle)
-    private let newIMPReturnString: IMP = {
-        let blockIMP: TypedBlockIMPReturnString = { _ in String.mockAny() }
-        return imp_implementationWithBlock(blockIMP)
-    }()
+    private let newIMPReturnString: TypedBlockIMPReturnString = { _ in String.mockAny() }
 
     private let swizzler = MethodSwizzler.shared
 
@@ -34,54 +31,39 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
         MethodSwizzler.shared.unsafe_unswizzleALL()
     }
 
-    func test_simpleSwizzle() {
+    func test_simpleSwizzle() throws {
         let obj = BaseClass()
 
         // before
         XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
         // swizzle
-        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)
-        XCTAssertNotNil(foundMethod)
-        swizzler.swizzle(foundMethod!, impSignature: IMP.self) { _ in newIMPReturnString }
+        let foundMethod = try swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
+        swizzler.swizzle(foundMethod, impSignature: IMP.self) { _ in newIMPReturnString }
         // after
         XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
-    }
-
-    func test_simpleUnswizzle() {
-        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)
-        XCTAssertNotNil(foundMethod)
-        swizzler.swizzle(foundMethod!, impSignature: IMP.self) { _ in newIMPReturnString }
-
-        let obj = BaseClass()
-
-        // before
-        XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue)
-        // unswizzle
-        XCTAssertTrue(swizzler.unsafe_unswizzle(foundMethod!))
-        // after
-        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue)
     }
 
     func test_searchWrongSelector() {
         let wrongSelToSwizzle = Selector(("selector_who_never_existed"))
 
-        let unfoundMethod = swizzler.findMethodRecursively(with: wrongSelToSwizzle, in: BaseClass.self)
-
-        XCTAssertNil(unfoundMethod)
+        let expectedError = SwizzlingError.methodNotFound(
+            selector: NSStringFromSelector(wrongSelToSwizzle),
+            className: NSStringFromClass(BaseClass.self)
+        )
+        XCTAssertThrowsError(try swizzler.findMethod(with: wrongSelToSwizzle, in: BaseClass.self), "Wrong selector should throw") { err in
+            XCTAssertEqual(err as? SwizzlingError, expectedError)
+        }
     }
 
-    func test_swizzle_alreadySwizzledSelector() {
-        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+    func test_swizzle_alreadySwizzledSelector() throws {
+        let foundMethod = try swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
 
         let beforeOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
         // first swizzling
         swizzler.swizzle(foundMethod, impSignature: IMP.self) { _ in newIMPReturnString }
 
         let secondSwizzlingReturnValue = "Second swizzling"
-        let newImp: IMP = {
-            let block: TypedBlockIMPReturnString = { _ in secondSwizzlingReturnValue }
-            return imp_implementationWithBlock(block)
-        }()
+        let newImp: TypedBlockIMPReturnString = { _ in secondSwizzlingReturnValue }
         swizzler.swizzle(foundMethod, impSignature: IMP.self) { _ in newImp }
 
         let afterOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
@@ -91,16 +73,13 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
         XCTAssertEqual(beforeOrigIMP, afterOrigIMP)
     }
 
-    func test_swizzleIfNonSwizzled_alreadySwizzledSelector() {
-        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+    func test_swizzleIfNonSwizzled_alreadySwizzledSelector() throws {
+        let foundMethod = try swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
         // first swizzling
         swizzler.swizzle(foundMethod, impSignature: IMP.self) { _ in newIMPReturnString }
 
         let secondSwizzlingReturnValue = "Second swizzling"
-        let newImp: IMP = {
-            let block: TypedBlockIMPReturnString = { _ in secondSwizzlingReturnValue }
-            return imp_implementationWithBlock(block)
-        }()
+        let newImp: TypedBlockIMPReturnString = { _ in secondSwizzlingReturnValue }
         XCTAssertFalse(
             swizzler.swizzle(foundMethod, impSignature: IMP.self, impProvider: { _ in newImp }, onlyIfNonSwizzled: true),
             "Already swizzled method should not be swizzled again"
@@ -110,15 +89,15 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
         XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, secondSwizzlingReturnValue)
     }
 
-    func test_findSubclassMethod() {
-        let subclassMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: EmptySubclass.self)
+    func test_findSubclassMethod() throws {
+        let subclassMethod = try swizzler.findMethod(with: selToSwizzle, in: EmptySubclass.self)
 
         XCTAssertNotNil(subclassMethod)
-        XCTAssertEqual(NSStringFromClass(subclassMethod!.klass), NSStringFromClass(BaseClass.self))
+        XCTAssertEqual(NSStringFromClass(subclassMethod.klass), NSStringFromClass(BaseClass.self))
     }
 
-    func test_lazyEvaluationOfNewIMP() {
-        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+    func test_lazyEvaluationOfNewIMP() throws {
+        let foundMethod = try swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
         // first swizzling
         swizzler.swizzle(foundMethod, impSignature: IMP.self) { _ in newIMPReturnString }
 
@@ -126,7 +105,7 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
             swizzler.swizzle(
                 foundMethod,
                 impSignature: IMP.self,
-                impProvider: { _ -> IMP in
+                impProvider: { _ -> TypedBlockIMPReturnString in
                     XCTFail("New IMP should not be created after error")
                     return newIMPReturnString
                 },
@@ -136,50 +115,58 @@ class RecursiveMethodSwizzlerTests: XCTestCase {
         )
     }
 
-    func test_unswizzleNonSwizzledSelector() {
-        let nonswizzledMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
-
-        let unswizzleResult = swizzler.unsafe_unswizzle(nonswizzledMethod)
-        XCTAssertFalse(unswizzleResult, "Unswizzling a non-swizzled method should return false")
-    }
-
-    func test_parityCurrentOriginalIMP() {
-        let foundMethod = swizzler.findMethodRecursively(with: selToSwizzle, in: BaseClass.self)!
+    func test_parityCurrentOriginalIMP() throws {
+        let foundMethod = try swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
 
         // before
         let beforeOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
         let beforeCurrentIMP: IMP = method_getImplementation(foundMethod.method)
         // swizzle
-        swizzler.swizzle(foundMethod, impSignature: IMP.self) { currentTypedImp -> IMP in
+        swizzler.swizzle(foundMethod, impSignature: IMP.self) { currentTypedImp -> TypedBlockIMPReturnString in
             XCTAssertEqual(currentTypedImp, beforeCurrentIMP)
-            let block: TypedBlockIMPReturnString = { _ in "first" }
-            return imp_implementationWithBlock(block)
+            return { _ in "first" }
         }
         // after
         let afterOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
         let afterCurrentIMP: IMP = method_getImplementation(foundMethod.method)
-        swizzler.swizzle(foundMethod, impSignature: IMP.self) { currentTypedImp -> IMP in
+        swizzler.swizzle(foundMethod, impSignature: IMP.self) { currentTypedImp -> TypedBlockIMPReturnString in
             XCTAssertEqual(currentTypedImp, afterCurrentIMP)
-            let block: TypedBlockIMPReturnString = { _ in "second" }
-            return imp_implementationWithBlock(block)
-        }
-
-        // unswizzle
-        XCTAssertTrue(swizzler.unsafe_unswizzle(foundMethod))
-        // after unswizzle
-        let unswizzledOrigIMP: IMP = swizzler.originalImplementation(of: foundMethod)
-        let unswizzledCurrentIMP: IMP = method_getImplementation(foundMethod.method)
-        swizzler.swizzle(foundMethod, impSignature: IMP.self) { currentTypedImp -> IMP in
-            XCTAssertEqual(currentTypedImp, unswizzledCurrentIMP)
-            let block: TypedBlockIMPReturnString = { _ in "third" }
-            return imp_implementationWithBlock(block)
+            return { _ in "second" }
         }
 
         XCTAssertEqual(beforeOrigIMP, beforeCurrentIMP)
         XCTAssertEqual(beforeOrigIMP, afterOrigIMP)
         XCTAssertNotEqual(afterOrigIMP, afterCurrentIMP)
+    }
 
-        XCTAssertEqual(beforeOrigIMP, unswizzledOrigIMP)
-        XCTAssertEqual(beforeCurrentIMP, unswizzledCurrentIMP)
+    func test_swizzleFromMultipleThreads() throws {
+        let selector = selToSwizzle
+        let foundMethod = try swizzler.findMethod(with: selector, in: BaseClass.self)
+
+        let appendString = "swizzled"
+        let iterCount = 10
+        let expectation = self.expectation(description: "concurrent expectation")
+        expectation.expectedFulfillmentCount = iterCount
+
+        DispatchQueue.concurrentPerform(iterations: iterCount) { _ in
+            swizzler.swizzle(
+                foundMethod,
+                impSignature: TypedIMPReturnString.self,
+                impProvider: { originalImp -> TypedBlockIMPReturnString in
+                    return { impSelf -> String in
+                        return originalImp(impSelf, selector).appending(appendString)
+                    }
+                },
+                onlyIfNonSwizzled: true
+            )
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 0.1) { err in
+            XCTAssertNil(err)
+
+            let returnValue = BaseClass().perform(selector)?.takeUnretainedValue() as? String
+            XCTAssertEqual(returnValue, "\(BaseClass.returnValue)\(appendString)")
+        }
     }
 }
