@@ -395,17 +395,21 @@ extension Datadog.Configuration {
 
     static func mockWith(
         clientToken: String = .mockAny(),
+        environment: String = .mockAny(),
+        loggingEnabled: Bool = false,
+        tracingEnabled: Bool = false,
         logsEndpoint: LogsEndpoint = .us,
         tracesEndpoint: TracesEndpoint = .us,
-        serviceName: String? = .mockAny(),
-        environment: String = .mockAny()
+        serviceName: String? = .mockAny()
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             clientToken: clientToken,
+            environment: environment,
+            loggingEnabled: loggingEnabled,
+            tracingEnabled: tracingEnabled,
             logsEndpoint: logsEndpoint,
             tracesEndpoint: tracesEndpoint,
-            serviceName: serviceName,
-            environment: environment
+            serviceName: serviceName
         )
     }
 }

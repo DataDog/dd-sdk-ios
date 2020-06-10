@@ -13,17 +13,24 @@ class DatadogConfigurationTests: XCTestCase {
     func testDefaultConfiguration() {
         let defaultConfiguration = Configuration.builderUsing(clientToken: "abcd", environment: "tests").build()
         XCTAssertEqual(defaultConfiguration.clientToken, "abcd")
-        XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertEqual(defaultConfiguration.environment, "tests")
+        XCTAssertTrue(defaultConfiguration.loggingEnabled)
+        XCTAssertTrue(defaultConfiguration.tracingEnabled)
+        XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
+        XCTAssertEqual(defaultConfiguration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertNil(defaultConfiguration.serviceName)
     }
 
     func testCustomConfiguration() {
         let configuration = Configuration.builderUsing(clientToken: "abcd", environment: "tests")
             .set(serviceName: "service-name")
+            .enableLogging(false)
+            .enableTracing(false)
             .build()
         XCTAssertEqual(configuration.clientToken, "abcd")
         XCTAssertEqual(configuration.environment, "tests")
+        XCTAssertFalse(configuration.loggingEnabled)
+        XCTAssertFalse(configuration.tracingEnabled)
         XCTAssertEqual(configuration.serviceName, "service-name")
     }
 

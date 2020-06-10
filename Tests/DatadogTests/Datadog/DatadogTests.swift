@@ -50,10 +50,12 @@ class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private let validConfiguration = Datadog.Configuration(
         clientToken: "abc-def",
+        environment: "tests",
+        loggingEnabled: true,
+        tracingEnabled: true,
         logsEndpoint: .us,
         tracesEndpoint: .us,
-        serviceName: "service-name",
-        environment: "tests"
+        serviceName: "service-name"
     )
 
     override func setUp() {
