@@ -92,7 +92,20 @@ public class Datadog {
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
 
-        // Initialize features:
+        // First, initialize internal loggers:
+
+        let internalLoggerConfiguration = InternalLoggerConfiguration(
+            applicationVersion: validConfiguration.applicationVersion,
+            environment: validConfiguration.environment,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+
+        userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
+        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
+
+        // Then, initialize features:
 
         let httpClient = HTTPClient()
         let mobileDevice = MobileDevice.current
@@ -155,10 +168,15 @@ public class Datadog {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
 
-        // Deinitialize features:
+        // First, reset internal loggers:
+        userLogger = createNoOpSDKUserLogger()
+        developerLogger = nil
 
+        // Then, deinitialize features:
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
+
+        // Deinitialize `Datadog`:
         Datadog.instance = nil
     }
 }

@@ -78,7 +78,8 @@ class DatadogTests: XCTestCase {
         Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
 
         XCTAssertNotNil(Datadog.instance)
-        XCTAssertNoThrow(try Datadog.deinitializeOrThrow())
+
+        try Datadog.deinitializeOrThrow()
     }
 
     func testGivenInvalidConfiguration_whenInitializing_itPrintsError() throws {
