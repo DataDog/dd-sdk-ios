@@ -15,20 +15,33 @@ class LogConsoleOutputTests: XCTestCase {
         let output1 = LogConsoleOutput(
             logBuilder: .mockAny(),
             format: .short,
-            printingFunction: { messagePrinted = $0 },
-            timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
+            timeZone: .UTC,
+            printingFunction: { messagePrinted = $0 }
         )
         output1.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
-        XCTAssertEqual(messagePrinted, "10:00:00.000Z [INFO] Info message.")
+        XCTAssertEqual(messagePrinted, "10:00:00.000 [INFO] Info message.")
 
         let output2 = LogConsoleOutput(
             logBuilder: .mockAny(),
             format: .shortWith(prefix: "🐶 "),
-            printingFunction: { messagePrinted = $0 },
-            timeFormatter: LogConsoleOutput.shortTimeFormatter(calendar: .gregorian, timeZone: .UTC)
+            timeZone: .UTC,
+            printingFunction: { messagePrinted = $0 }
         )
         output2.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
-        XCTAssertEqual(messagePrinted, "🐶 10:00:00.000Z [INFO] Info message.")
+        XCTAssertEqual(messagePrinted, "🐶 10:00:00.000 [INFO] Info message.")
+    }
+
+    func testWhenUsingShortFormat_itFormatsTimeInCurrentTimeZone() {
+        var messagePrinted: String = ""
+
+        let output = LogConsoleOutput(
+            logBuilder: .mockAny(),
+            format: .short,
+            timeZone: .EET,
+            printingFunction: { messagePrinted = $0 }
+        )
+        output.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        XCTAssertEqual(messagePrinted, "12:00:00.000 [INFO] Info message.")
     }
 
     func testItPrintsLogsUsingJSONFormat() throws {
@@ -37,6 +50,7 @@ class LogConsoleOutputTests: XCTestCase {
         let output1 = LogConsoleOutput(
             logBuilder: .mockAny(),
             format: .json,
+            timeZone: .mockAny(),
             printingFunction: { messagePrinted = $0 }
         )
         output1.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
@@ -46,6 +60,7 @@ class LogConsoleOutputTests: XCTestCase {
         let output2 = LogConsoleOutput(
             logBuilder: .mockAny(),
             format: .jsonWith(prefix: "🐶 → "),
+            timeZone: .mockAny(),
             printingFunction: { messagePrinted = $0 }
         )
         output2.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])

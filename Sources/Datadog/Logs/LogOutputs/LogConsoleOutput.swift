@@ -13,13 +13,6 @@ internal protocol ConsoleLogFormatter {
 
 /// `LogOutput` which prints logs to console.
 internal struct LogConsoleOutput: LogOutput {
-    /// Time formatter used for `.short` output format.
-    static func shortTimeFormatter(calendar: Calendar = .current, timeZone: TimeZone = .current) -> Formatter {
-        let formatter = ISO8601DateFormatter.default()
-        formatter.formatOptions = [.withFractionalSeconds, .withFullTime]
-        return formatter
-    }
-
     private let logBuilder: LogBuilder
     private let formatter: ConsoleLogFormatter
     private let printingFunction: (String) -> Void
@@ -27,14 +20,14 @@ internal struct LogConsoleOutput: LogOutput {
     init(
         logBuilder: LogBuilder,
         format: Logger.Builder.ConsoleLogFormat,
-        printingFunction: @escaping (String) -> Void = { consolePrint($0) },
-        timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
+        timeZone: TimeZone,
+        printingFunction: @escaping (String) -> Void = { consolePrint($0) }
     ) {
         switch format {
         case .short:
-            self.formatter = ShortLogFormatter(timeFormatter: timeFormatter)
+            self.formatter = ShortLogFormatter(timeZone: timeZone)
         case .shortWith(let prefix):
-            self.formatter = ShortLogFormatter(timeFormatter: timeFormatter, prefix: prefix)
+            self.formatter = ShortLogFormatter(timeZone: timeZone, prefix: prefix)
         case .json:
             self.formatter = JSONLogFormatter()
         case .jsonWith(let prefix):
@@ -76,17 +69,17 @@ private struct JSONLogFormatter: ConsoleLogFormatter {
 
 /// Formats log as custom short string.
 private struct ShortLogFormatter: ConsoleLogFormatter {
-    private let timeFormatter: Formatter
+    private let timeFormatter: DateFormatterType
     private let prefix: String
 
-    init(timeFormatter: Formatter, prefix: String = "") {
-        self.timeFormatter = timeFormatter
+    init(timeZone: TimeZone, prefix: String = "") {
+        self.timeFormatter = presentationDateFormatter(withTimeZone: timeZone)
         self.prefix = prefix
     }
 
     func format(log: Log) -> String {
-        let time = timeFormatter.string(for: log.date)
+        let time = timeFormatter.string(from: log.date)
         let status = log.status.rawValue.uppercased()
-        return "\(prefix)\(time ?? "null") [\(status)] \(log.message)"
+        return "\(prefix)\(time) [\(status)] \(log.message)"
     }
 }

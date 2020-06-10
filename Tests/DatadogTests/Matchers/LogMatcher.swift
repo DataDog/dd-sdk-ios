@@ -9,12 +9,6 @@ import XCTest
 /// Provides set of assertions for single `Log` JSON object or collection of `[Log]`.
 /// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
 internal class LogMatcher: JSONDataMatcher {
-    private static let dateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions.insert(.withFractionalSeconds)
-        return formatter
-    }()
-
     /// Log JSON keys.
     struct JSONKey {
         static let date = "date"
@@ -83,7 +77,7 @@ internal class LogMatcher: JSONDataMatcher {
             XCTFail("Cannot decode date from log JSON: \(json).", file: file, line: line)
             return
         }
-        guard let date = LogMatcher.dateFormatter.date(from: dateString) else {
+        guard let date = date(fromISO8601FormattedString: dateString) else {
             XCTFail("Date has invalid format: \(dateString).", file: file, line: line)
             return
         }
@@ -164,4 +158,13 @@ internal class LogMatcher: JSONDataMatcher {
 
         XCTAssertEqual(matcherTags, logTags, file: file, line: line)
     }
+}
+
+func date(fromISO8601FormattedString: String) -> Date? {
+    let iso8601Formatter = DateFormatter()
+    iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
+    iso8601Formatter.timeZone = TimeZone(abbreviation: "UTC")!
+    iso8601Formatter.calendar = Calendar(identifier: .gregorian)
+    iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" // ISO8601 format
+    return iso8601Formatter.date(from: fromISO8601FormattedString)
 }
