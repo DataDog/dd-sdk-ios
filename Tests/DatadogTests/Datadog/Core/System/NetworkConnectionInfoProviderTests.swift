@@ -25,42 +25,45 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
 
     // MARK: - iOS 12+
 
-    @available(iOS 12, *)
     func testNWPathNetworkConnectionInfoProviderGivesValue() {
-        let provider = NWPathNetworkConnectionInfoProvider()
+        if #available(iOS 12.0, *) {
+            let provider = NWPathNetworkConnectionInfoProvider()
 
-        pullNetworkConnectionInfo(
-            from: provider,
-            on: DispatchQueue(label: "com.datadoghq.pulling-NWPathNetworkConnectionInfoProvider", target: .global(qos: .utility)),
-            thenFulfill: expectation(description: "Receive `NetworkConnectionInfo` from `NWPathNetworkConnectionInfoProvider`")
-        )
+            pullNetworkConnectionInfo(
+                from: provider,
+                on: DispatchQueue(label: "com.datadoghq.pulling-NWPathNetworkConnectionInfoProvider", target: .global(qos: .utility)),
+                thenFulfill: expectation(description: "Receive `NetworkConnectionInfo` from `NWPathNetworkConnectionInfoProvider`")
+            )
 
-        waitForExpectations(timeout: 1, handler: nil)
+            waitForExpectations(timeout: 1, handler: nil)
+        }
     }
 
-    @available(iOS 12, *)
     func testNWPathNetworkConnectionInfoProviderCanBeSafelyAccessedFromConcurrentThreads() {
-        let provider = NWPathNetworkConnectionInfoProvider()
+        if #available(iOS 12.0, *) {
+            let provider = NWPathNetworkConnectionInfoProvider()
 
-        DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
-            _ = provider.current
+            DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
+                _ = provider.current
+            }
         }
     }
 
-    @available(iOS 12, *)
     func testNWPathMonitorHandling() {
-        weak var nwPathMonitorWeakReference: NWPathMonitor?
+        if #available(iOS 12.0, *) {
+            weak var nwPathMonitorWeakReference: NWPathMonitor?
 
-        autoreleasepool {
-            let nwPathMonitor = NWPathMonitor()
-            _ = NWPathNetworkConnectionInfoProvider(monitor: nwPathMonitor)
-            nwPathMonitorWeakReference = nwPathMonitor
-            XCTAssertNotNil(nwPathMonitor.queue, "`NWPathMonitor` is started with synchronization queue")
+            autoreleasepool {
+                let nwPathMonitor = NWPathMonitor()
+                _ = NWPathNetworkConnectionInfoProvider(monitor: nwPathMonitor)
+                nwPathMonitorWeakReference = nwPathMonitor
+                XCTAssertNotNil(nwPathMonitor.queue, "`NWPathMonitor` is started with synchronization queue")
+            }
+
+            Thread.sleep(forTimeInterval: 0.5)
+
+            XCTAssertNil(nwPathMonitorWeakReference, "`NWPathMonitor` is deallocated with `NWPathNetworkConnectionInfoProvider`")
         }
-
-        Thread.sleep(forTimeInterval: 0.5)
-
-        XCTAssertNil(nwPathMonitorWeakReference, "`NWPathMonitor` is deallocated with `NWPathNetworkConnectionInfoProvider`")
     }
 
     // MARK: - iOS 11
@@ -90,21 +93,23 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
     typealias Reachability = NetworkConnectionInfo.Reachability
     typealias Interface = NetworkConnectionInfo.Interface
 
-    @available(iOS 12, *)
     func testNWPathStatus() {
-        XCTAssertEqual(Reachability(from: .satisfied), .yes)
-        XCTAssertEqual(Reachability(from: .unsatisfied), .no)
-        XCTAssertEqual(Reachability(from: .requiresConnection), .maybe)
+        if #available(iOS 12.0, *) {
+            XCTAssertEqual(Reachability(from: .satisfied), .yes)
+            XCTAssertEqual(Reachability(from: .unsatisfied), .no)
+            XCTAssertEqual(Reachability(from: .requiresConnection), .maybe)
+        }
     }
 
-    @available(iOS 12, *)
     func testNWInterface() {
-        XCTAssertEqual(Array(fromInterfaceTypes: []), [])
-        XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
-        XCTAssertEqual(Array(fromInterfaceTypes: [.wiredEthernet]), [.wiredEthernet])
-        XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .wifi]), [.wifi, .wifi])
-        XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .cellular]), [.wifi, .cellular])
-        XCTAssertEqual(Array(fromInterfaceTypes: [.loopback, .other]), [.loopback, .other])
+        if #available(iOS 12.0, *) {
+            XCTAssertEqual(Array(fromInterfaceTypes: []), [])
+            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
+            XCTAssertEqual(Array(fromInterfaceTypes: [.wiredEthernet]), [.wiredEthernet])
+            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .wifi]), [.wifi, .wifi])
+            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .cellular]), [.wifi, .cellular])
+            XCTAssertEqual(Array(fromInterfaceTypes: [.loopback, .other]), [.loopback, .other])
+        }
     }
 
     func testSCReachability() {

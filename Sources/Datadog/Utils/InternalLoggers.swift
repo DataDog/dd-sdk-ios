@@ -23,7 +23,7 @@ internal var userLogger = createSDKUserLogger()
 internal func createSDKDeveloperLogger(
     consolePrintFunction: @escaping (String) -> Void = { consolePrint($0) },
     dateProvider: DateProvider = SystemDateProvider(),
-    timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
+    timeZone: TimeZone = .current
 ) -> Logger? {
     if CompilationConditions.isSDKCompiledForDevelopment == false {
         return nil
@@ -45,8 +45,8 @@ internal func createSDKDeveloperLogger(
             carrierInfoProvider: loggingFeature.carrierInfoProvider
         ),
         format: .shortWith(prefix: "🐶 → "),
-        printingFunction: consolePrintFunction,
-        timeFormatter: timeFormatter
+        timeZone: timeZone,
+        printingFunction: consolePrintFunction
     )
 
     return Logger(logOutput: consoleOutput, identifier: "sdk-developer")
@@ -55,7 +55,7 @@ internal func createSDKDeveloperLogger(
 internal func createSDKUserLogger(
     consolePrintFunction: @escaping (String) -> Void = { consolePrint($0) },
     dateProvider: DateProvider = SystemDateProvider(),
-    timeFormatter: Formatter = LogConsoleOutput.shortTimeFormatter()
+    timeZone: TimeZone = .current
 ) -> Logger {
     guard let loggingFeature = LoggingFeature.instance else {
         return Logger(logOutput: NoOpLogOutput(), identifier: "no-op")
@@ -73,8 +73,8 @@ internal func createSDKUserLogger(
             carrierInfoProvider: loggingFeature.carrierInfoProvider
         ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
-        printingFunction: consolePrintFunction,
-        timeFormatter: timeFormatter
+        timeZone: timeZone,
+        printingFunction: consolePrintFunction
     )
 
     return Logger(

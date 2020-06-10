@@ -39,6 +39,13 @@ class CTTelephonyNetworkInfoMock: CTTelephonyNetworkInfo {
         _serviceSubscriberCellularProviders = serviceSubscriberCellularProviders
     }
 
+    // MARK: - iOS 12+
+
     override var serviceCurrentRadioAccessTechnology: [String: String]? { _serviceCurrentRadioAccessTechnology }
     override var serviceSubscriberCellularProviders: [String: CTCarrier]? { _serviceSubscriberCellularProviders }
+
+    // MARK: - Prior to iOS 12
+
+    override var currentRadioAccessTechnology: String? { _serviceCurrentRadioAccessTechnology?.first?.value }
+    override var subscriberCellularProvider: CTCarrier? { _serviceSubscriberCellularProviders?.first?.value }
 }

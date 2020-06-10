@@ -33,9 +33,9 @@ extension Date {
 }
 
 extension TimeZone {
-    static var UTC: TimeZone {
-        return TimeZone(abbreviation: "UTC")!
-    }
+    static var UTC: TimeZone { TimeZone(abbreviation: "UTC")! }
+    static var EET: TimeZone { TimeZone(abbreviation: "EET")! }
+    static func mockAny() -> TimeZone { .EET }
 }
 
 extension Calendar {
