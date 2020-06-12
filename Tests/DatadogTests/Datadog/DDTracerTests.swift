@@ -490,10 +490,7 @@ class DDTracerTests: XCTestCase {
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
-        let tracer = DDTracer(
-            spanOutput: SpanOutputMock(),
-            logOutput: .init(loggingOutput: LogOutputMock())
-        )
+        let tracer: DDTracer = .mockAny()
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny())
 
         let httpHeadersWriter = DDHTTPHeadersWriter()
@@ -540,6 +537,77 @@ class DDTracerTests: XCTestCase {
         testThreadSafety { span in span.finish() }
 
         server.waitAndAssertNoRequestsSent()
+    }
+
+    // MARK: - Usage errors
+
+    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        XCTAssertNil(Datadog.instance)
+
+        // when
+        let tracer = DDTracer.initialize(configuration: .init())
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
+        )
+        XCTAssertTrue(tracer is DDNoopTracer)
+    }
+
+    func testGivenTracingFeatureDisabled_whenInitializingTracer_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+                .enableTracing(false)
+                .build()
+        )
+
+        // when
+        let tracer = DDTracer.initialize(configuration: .init())
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `DDTracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+        )
+        XCTAssertTrue(tracer is DDNoopTracer)
+
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testGivenLoggingFeatureDisabled_whenSendingLogFromSpan_itPrintsWarning() throws {
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+                .enableLogging(false)
+                .build()
+        )
+
+        let output = LogOutputMock()
+        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
+
+        // when
+        let tracer = DDTracer.initialize(configuration: .init())
+        let span = tracer.startSpan(operationName: "foo")
+        span.log(fields: ["bar": "bizz"])
+
+        // then
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
+
+        try Datadog.deinitializeOrThrow()
     }
 }
 // swiftlint:enable multiline_arguments_brackets

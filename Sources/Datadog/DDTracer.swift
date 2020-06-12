@@ -11,9 +11,13 @@ public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output.
-    internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput
+    /// Equals `nil` if Logging feature is disabled.
+    internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
     /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
+
+    private let dateProvider: DateProvider
+    private let tracingUUIDGenerator: TracingUUIDGenerator
 
     // MARK: - Initialization
 
@@ -31,7 +35,11 @@ public class DDTracer: Tracer {
 
     internal static func initializeOrThrow(configuration: Configuration) throws -> DDTracer {
         guard let tracingFeature = TracingFeature.instance else {
-            throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `DDTracer.initialize()`.")
+            throw ProgrammerError(
+                description: Datadog.instance == nil
+                    ? "`Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
+                    : "`DDTracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+            )
         }
         return DDTracer(
             tracingFeature: tracingFeature,
@@ -53,18 +61,27 @@ public class DDTracer: Tracer {
                 fileWriter: tracingFeature.storage.writer
             ),
             logOutput: tracingFeature
-                .loggingFeatureAdapter
-                .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration)
+                .loggingFeatureAdapter?
+                .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration),
+            dateProvider: tracingFeature.dateProvider,
+            tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator
         )
     }
 
-    internal init(spanOutput: SpanOutput, logOutput: LoggingForTracingAdapter.AdaptedLogOutput) {
+    internal init(
+        spanOutput: SpanOutput,
+        logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
+        dateProvider: DateProvider,
+        tracingUUIDGenerator: TracingUUIDGenerator
+    ) {
         self.spanOutput = spanOutput
         self.logOutput = logOutput
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
             target: .global(qos: .userInteractive)
         )
+        self.dateProvider = dateProvider
+        self.tracingUUIDGenerator = tracingUUIDGenerator
     }
 
     // MARK: - Open Tracing interface
@@ -90,19 +107,16 @@ public class DDTracer: Tracer {
     // MARK: - Private Open Tracing helpers
 
     private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> OpenTracing.Span {
-        guard let tracingFeature = TracingFeature.instance else {
-            throw ProgrammerError(description: "`Datadog.initialize()` must be called prior to `startSpan(...)`.")
-        }
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,
             context: DDSpanContext(
-                traceID: parentSpanContext?.traceID ?? tracingFeature.tracingUUIDGenerator.generateUnique(),
-                spanID: tracingFeature.tracingUUIDGenerator.generateUnique(),
+                traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+                spanID: tracingUUIDGenerator.generateUnique(),
                 parentSpanID: parentSpanContext?.spanID
             ),
             operationName: operationName,
-            startTime: startTime ?? tracingFeature.dateProvider.currentDate(),
+            startTime: startTime ?? dateProvider.currentDate(),
             tags: tags ?? [:]
         )
     }
@@ -113,7 +127,11 @@ public class DDTracer: Tracer {
         spanOutput.write(ddspan: span, finishTime: finishTime)
     }
 
-    internal func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
-        logOutput.writeLog(withSpanContext: spanContext, fields: fields, date: date)
+    internal func writeLog(for span: DDSpan, fields: [String: Encodable], date: Date) {
+        guard let logOutput = logOutput else {
+            userLogger.warn("The log for span \"\(span.operationName)\" will not be send, because the Logging feature is disabled.")
+            return
+        }
+        logOutput.writeLog(withSpanContext: span.ddContext, fields: fields, date: date)
     }
 }

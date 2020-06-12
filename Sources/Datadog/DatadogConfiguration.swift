@@ -94,7 +94,15 @@ extension Datadog {
 
             // MARK: - Features Configuration
 
-            /// Enables the logging feature.
+            /// Enables or disables the logging feature.
+            ///
+            /// This option is meant to opt-out from using Datadog Logging entirely, no matter of your environment or build configuration. If you need to
+            /// disable logging only for certain scenarios (e.g. in `DEBUG` build configuration), use `sendLogsToDatadog(false)` available
+            /// on `Logger.Builder`.
+            ///
+            /// If `enableLogging(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the logging feature. This will give you additional performance optimization if you only use tracing, but not logging.
+            ///
             /// - Parameter enabled: `true` by default
             public func enableLogging(_ enabled: Bool) -> Builder {
                 // TODO: RUMM-468 Describe the impact on Logging for Tracing integration in this method comment

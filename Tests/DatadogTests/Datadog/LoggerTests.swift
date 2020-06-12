@@ -490,5 +490,52 @@ class LoggerTests: XCTestCase {
 
         server.waitAndAssertNoRequestsSent()
     }
+
+    // MARK: - Usage errors
+
+    func testGivenDatadogNotInitialized_whenInitializingLogger_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        XCTAssertNil(Datadog.instance)
+
+        // when
+        let logger = Logger.builder.build()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+        )
+        XCTAssertTrue(logger.logOutput is NoOpLogOutput)
+    }
+
+    func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+                .enableLogging(false)
+                .build()
+        )
+
+        // when
+        let logger = Logger.builder.build()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+        )
+        XCTAssertTrue(logger.logOutput is NoOpLogOutput)
+
+        try Datadog.deinitializeOrThrow()
+    }
 }
 // swiftlint:enable multiline_arguments_brackets

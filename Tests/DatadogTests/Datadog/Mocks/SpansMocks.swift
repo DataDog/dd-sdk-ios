@@ -36,7 +36,7 @@ extension DDSpan {
     }
 
     static func mockWith(
-        tracer: DDTracer = .mockNoOp(),
+        tracer: DDTracer = .mockAny(),
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),

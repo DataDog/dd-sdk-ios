@@ -120,23 +120,6 @@ class LoggerBuilderTests: XCTestCase {
     }
 }
 
-class LoggerBuilderErrorTests: XCTestCase {
-    func testGivenDatadogNotInitialized_whenBuildingLogger_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let logger = Logger.builder.build()
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
-        )
-        assertThat(logger: logger, usesOutput: NoOpLogOutput.self)
-    }
-}
-
 // MARK: - Helpers
 
 private func assertThat(logger: Logger, usesOutput outputType: LogOutput.Type, file: StaticString = #file, line: UInt = #line) {

@@ -110,44 +110,51 @@ public class Datadog {
         let httpClient = HTTPClient()
         let mobileDevice = MobileDevice.current
 
-        let logging = LoggingFeature(
-            directory: try obtainLoggingFeatureDirectory(),
-            configuration: validConfiguration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            logsUploadURLProvider: UploadURLProvider(
-                urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-                queryItemProviders: [
-                    .ddsource(),
-                    .batchTime(using: dateProvider)
-                ]
-            ),
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
+        var logging: LoggingFeature?
+        var tracing: TracingFeature?
 
-        let tracing = TracingFeature(
-            directory: try obtainTracingFeatureDirectory(),
-            configuration: validConfiguration,
-            performance: performance,
-            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: logging),
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            tracesUploadURLProvider: UploadURLProvider(
-                urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
-                queryItemProviders: [
-                    .batchTime(using: dateProvider)
-                ]
-            ),
-            dateProvider: dateProvider,
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
+        if configuration.loggingEnabled {
+            logging = LoggingFeature(
+                directory: try obtainLoggingFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                logsUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .ddsource(),
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
+                dateProvider: dateProvider,
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
+
+        if configuration.tracingEnabled {
+            tracing = TracingFeature(
+                directory: try obtainTracingFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                tracesUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
+                dateProvider: dateProvider,
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing

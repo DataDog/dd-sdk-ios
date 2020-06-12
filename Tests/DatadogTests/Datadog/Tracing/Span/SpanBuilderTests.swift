@@ -11,7 +11,7 @@ class SpanBuilderTests: XCTestCase {
     func testBuildingBasicSpan() throws {
         let builder: SpanBuilder = .mockWith(serviceName: "test-service-name")
         let ddspan = DDSpan(
-            tracer: .mockNoOp(),
+            tracer: .mockAny(),
             context: .mockWith(traceID: 1, spanID: 2, parentSpanID: 1),
             operationName: "operation-name",
             startTime: .mockDecember15th2019At10AMUTC(),

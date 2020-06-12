@@ -111,7 +111,7 @@ internal class DDSpan: OpenTracing.Span {
             return
         }
         logFields.append(fields)
-        ddTracer.writeLog(withSpanContext: ddContext, fields: fields, date: timestamp)
+        ddTracer.writeLog(for: self, fields: fields, date: timestamp)
     }
 
     // MARK: - Private
