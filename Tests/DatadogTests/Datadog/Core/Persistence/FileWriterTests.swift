@@ -60,11 +60,11 @@ class FileWriterTests: XCTestCase {
                 - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the second `writer.write(value:)`
                 - throw an `I/O exception` for `fileHandle.write(_:)` for the second write
              */
-            afterSucceedingCallsCounts: 3 // will succeed on writing `validValue1` and `,` separator but will fail on `validValue2`
+            afterSucceedingCallsCounts: 3
         )
 
         writer.write(value: ["key1": "value1"]) // first write (2 calls to `ObjcExceptionHandler`)
-        writer.write(value: ["key2": "value2"]) // second write (3 calls to `ObjcExceptionHandler`)
+        writer.write(value: ["key2": "value2"]) // second write (2 calls to `ObjcExceptionHandler`, where the latter fails)
 
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
         waitForExpectations(timeout: 1, handler: nil)
