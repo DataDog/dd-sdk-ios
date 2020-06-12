@@ -41,7 +41,7 @@ class FileWriterTests: XCTestCase {
     }
 
     /// NOTE: Test added after incident-4797
-    func testGivenFileContainingData_whenNextDataFails_itDoesNotMalformTheFileContent() throws {
+    func testGivenFileContainingData_whenNextDataFails_itDoesNotMalformTheEndOfTheFile() throws {
         let previousObjcExceptionHandler = objcExceptionHandler
         defer { objcExceptionHandler = previousObjcExceptionHandler }
 
@@ -74,6 +74,38 @@ class FileWriterTests: XCTestCase {
             try temporaryDirectory.files()[0].read().utf8String,
             #"{"key1":"value1"}"# // second write should be ignored due to `I/O exception`
         )
+    }
+
+    /// NOTE: Test added after incident-4797
+    func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
+        let previousObjcExceptionHandler = objcExceptionHandler
+        defer { objcExceptionHandler = previousObjcExceptionHandler }
+
+        let expectation = self.expectation(description: "write completed")
+        let writer = FileWriter(
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            queue: queue
+        )
+
+        objcExceptionHandler = ObjcExceptionHandlerNonDeterministicMock(
+            throwingError: ErrorMock("I/O exception"),
+            withProbability: 0.2
+        )
+
+        struct Foo: Codable {
+            let foo = "bar"
+        }
+
+        (0...500).forEach { _ in writer.write(value: Foo()) }
+
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        let fileData = try temporaryDirectory.files()[0].read()
+        let jsonDecoder = JSONDecoder()
+
+        XCTAssertNoThrow(try jsonDecoder.decode([Foo].self, from: "[".utf8Data + fileData + "]".utf8Data))
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {

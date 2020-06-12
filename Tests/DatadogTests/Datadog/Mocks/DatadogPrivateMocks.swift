@@ -44,3 +44,23 @@ class ObjcExceptionHandlerDeferredMock: ObjcExceptionHandler {
         currentCallsCount += 1
     }
 }
+
+/// An `ObjcExceptionHandler` which throws given error with given probability.
+class ObjcExceptionHandlerNonDeterministicMock: ObjcExceptionHandler {
+    private let probability: Int
+    let error: Error
+
+    /// Probability should be described as a number between `0` and `1`
+    init(throwingError: Error, withProbability probability: Double) {
+        self.error = throwingError
+        self.probability = Int(probability * 1_000)
+    }
+
+    override func rethrowToSwift(tryBlock: @escaping () -> Void) throws {
+        if Int.random(in: 0...1_000) < probability {
+            throw error
+        } else {
+            tryBlock()
+        }
+    }
+}
