@@ -42,9 +42,9 @@ internal final class FileWriter {
                     try write(data)
                 }
             } else {
+                let atomicData = commaSeparatorData + data
                 try file.append { write in
-                    try write(commaSeparatorData)
-                    try write(data)
+                    try write(atomicData)
                 }
             }
         } catch {
