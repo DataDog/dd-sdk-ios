@@ -54,14 +54,13 @@ class FileWriterTests: XCTestCase {
         objcExceptionHandler = ObjcExceptionHandlerDeferredMock(
             throwingError: ErrorMock("I/O exception"),
             /*
-                Following the logic in `FileWriter` and `File`, the 4 comes from:
-                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the first `writer.write(value:)`
+                Following the logic in `FileWriter` and `File`, the 3 comes from:
+                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the first write
                 - succeed on `fileHandle.write(_:)` for `writer.write(value: ["key1": "value1"])`
                 - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the second `writer.write(value:)`
-                - succeed on `fileHandle.write(_:)` when writing separator data for `["key2": "value2"]` in `writer.write(value: ["key2": "value2"])`
-                - throw an `I/O exception` when writing actual `["key2": "value2"]` data in `writer.write(value: ["key2": "value2"])`
+                - throw an `I/O exception` for `fileHandle.write(_:)` for the second write
              */
-            afterSucceedingCallsCounts: 4 // will succeed on writing `validValue1` and `,` separator but will fail on `validValue2`
+            afterSucceedingCallsCounts: 3 // will succeed on writing `validValue1` and `,` separator but will fail on `validValue2`
         )
 
         writer.write(value: ["key1": "value1"]) // first write (2 calls to `ObjcExceptionHandler`)
