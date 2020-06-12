@@ -9,12 +9,11 @@
 extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp(temporaryDirectory: Directory) -> TracingFeature {
-        let noOpLoggingFeature = LoggingFeature.mockNoOp(temporaryDirectory: temporaryDirectory)
         return TracingFeature(
             directory: temporaryDirectory,
             configuration: .mockAny(),
             performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: noOpLoggingFeature),
+            loggingFeatureAdapter: nil,
             mobileDevice: .mockAny(),
             httpClient: .mockAny(),
             tracesUploadURLProvider: .mockAny(),
@@ -39,9 +38,7 @@ extension TracingFeature {
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
         ),
-        loggingFeature: LoggingFeature = .mockNoOp(
-            temporaryDirectory: temporaryDirectory
-        ),
+        loggingFeature: LoggingFeature? = nil,
         mobileDevice: MobileDevice = .mockWith(
             currentBatteryStatus: {
                 // Mock full battery, so it doesn't rely on battery condition for the upload
@@ -68,7 +65,7 @@ extension TracingFeature {
             directory: directory,
             configuration: configuration,
             performance: performance,
-            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: loggingFeature),
+            loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
             mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
             tracesUploadURLProvider: tracesUploadURLProvider,

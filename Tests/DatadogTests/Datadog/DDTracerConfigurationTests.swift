@@ -25,6 +25,7 @@ class DDTracerConfigurationTests: XCTestCase {
                 serviceName: "service-name",
                 environment: "tests"
             ),
+            loggingFeature: .mockNoOp(temporaryDirectory: temporaryDirectory),
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
