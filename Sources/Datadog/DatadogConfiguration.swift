@@ -103,17 +103,26 @@ extension Datadog {
             /// If `enableLogging(false)` is set, the SDK won't instantiate underlying resources required for
             /// running the logging feature. This will give you additional performance optimization if you only use tracing, but not logging.
             ///
+            /// **NOTE**: If you use logging for tracing (`span.log(fields:)`) keep the logging feature enabled. Otherwise the logs
+            /// you send for `span` objects won't be delivered to Datadog.
+            ///
             /// - Parameter enabled: `true` by default
             public func enableLogging(_ enabled: Bool) -> Builder {
-                // TODO: RUMM-468 Describe the impact on Logging for Tracing integration in this method comment
                 self.loggingEnabled = enabled
                 return self
             }
 
-            /// Enables the tracing feature.
+            /// Enables or disables the tracing feature.
+            ///
+            /// This option is meant to opt-out from using Datadog Tracing entirely, no matter of your environment or build configuration. If you need to
+            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `OpenTracing.Global.sharedTracer` to `DDTracer`,
+            /// and your app will be using the no-op tracer instance provided by `OpenTracing`.
+            ///
+            /// If `enableTracing(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the tracing feature. This will give you additional performance optimization if you only use logging, but not tracing.
+            ///
             /// - Parameter enabled: `true` by default
             public func enableTracing(_ enabled: Bool) -> Builder {
-                // TODO: RUMM-468 Describe the impact on Global.sharedTracer
                 self.tracingEnabled = enabled
                 return self
             }
