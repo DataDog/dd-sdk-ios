@@ -21,3 +21,26 @@ class ObjcExceptionHandlerMock: ObjcExceptionHandler {
         throw error
     }
 }
+
+/// An `ObjcExceptionHandler` which results with no error for the first `afterTimes` number of calls.
+/// Throws given `throwingError` for all other calls.
+class ObjcExceptionHandlerDeferredMock: ObjcExceptionHandler {
+    private let succeedingCallsCounts: Int
+    private var currentCallsCount = 0
+
+    let error: Error
+
+    init(throwingError: Error, afterSucceedingCallsCounts succeedingCallsCounts: Int) {
+        self.error = throwingError
+        self.succeedingCallsCounts = succeedingCallsCounts
+    }
+
+    override func rethrowToSwift(tryBlock: @escaping () -> Void) throws {
+        if currentCallsCount >= succeedingCallsCounts {
+            throw error
+        } else {
+            tryBlock()
+        }
+        currentCallsCount += 1
+    }
+}

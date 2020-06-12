@@ -40,6 +40,43 @@ class FileWriterTests: XCTestCase {
         )
     }
 
+    /// NOTE: Test added after incident-4797
+    func testGivenFileContainingData_whenNextDataFails_itDoesNotMalformTheFileContent() throws {
+        let previousObjcExceptionHandler = objcExceptionHandler
+        defer { objcExceptionHandler = previousObjcExceptionHandler }
+
+        let expectation = self.expectation(description: "write completed")
+        let writer = FileWriter(
+            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            queue: queue
+        )
+
+        objcExceptionHandler = ObjcExceptionHandlerDeferredMock(
+            throwingError: ErrorMock("I/O exception"),
+            /*
+                Following the logic in `FileWriter` and `File`, the 4 comes from:
+                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the first `writer.write(value:)`
+                - succeed on `fileHandle.write(_:)` for `writer.write(value: ["key1": "value1"])`
+                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the second `writer.write(value:)`
+                - succeed on `fileHandle.write(_:)` when writing separator data for `["key2": "value2"]` in `writer.write(value: ["key2": "value2"])`
+                - throw an `I/O exception` when writing actual `["key2": "value2"]` data in `writer.write(value: ["key2": "value2"])`
+             */
+            afterSucceedingCallsCounts: 4 // will succeed on writing `validValue1` and `,` separator but will fail on `validValue2`
+        )
+
+        writer.write(value: ["key1": "value1"]) // first write (2 calls to `ObjcExceptionHandler`)
+        writer.write(value: ["key2": "value2"]) // second write (3 calls to `ObjcExceptionHandler`)
+
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        XCTAssertEqual(
+            try temporaryDirectory.files()[0].read().utf8String,
+            #"{"key1":"value1"}"# // second write should be ignored due to `I/O exception`
+        )
+    }
+
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
         let expectation1 = self.expectation(description: "write completed")
         let expectation2 = self.expectation(description: "second write completed")
