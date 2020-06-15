@@ -8,7 +8,7 @@ import Foundation
 
 /// SDK version associated with logs.
 /// Should be synced with SDK releases.
-internal let sdkVersion = "1.2.2"
+internal let sdkVersion = "1.2.2-tracing-alpha2"
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -54,7 +54,7 @@ public class Datadog {
         do {
             try initializeOrThrow(appContext: appContext, configuration: configuration)
         } catch {
-            consolePrint("🔥 \(error)")
+            consolePrint("\(error)")
         }
     }
 
@@ -64,7 +64,7 @@ public class Datadog {
     public static var verbosityLevel: LogLevel? = nil
 
     public static func setUserInfo(
-        id: String? = nil, // swiftlint:disable:this identifier_name
+        id: String? = nil,
         name: String? = nil,
         email: String? = nil
     ) {
@@ -86,36 +86,82 @@ public class Datadog {
             appContext: appContext
         )
 
-        let logsUploadURLProvider = UploadURLProvider(
-            urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-            dateProvider: SystemDateProvider()
-        )
-
         let performance = PerformancePreset.best(for: appContext.bundleType)
         let dateProvider = SystemDateProvider()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
 
-        self.instance = Datadog(
-            userInfoProvider: userInfoProvider
-        )
+        // First, initialize internal loggers:
 
-        // Initialize features:
-
-        let httpClient = HTTPClient()
-
-        LoggingFeature.instance = LoggingFeature(
-            directory: try obtainLoggingFeatureDirectory(),
-            configuration: validConfiguration,
-            performance: performance,
-            mobileDevice: MobileDevice.current,
-            httpClient: httpClient,
-            logsUploadURLProvider: logsUploadURLProvider,
-            dateProvider: dateProvider,
+        let internalLoggerConfiguration = InternalLoggerConfiguration(
+            applicationVersion: validConfiguration.applicationVersion,
+            environment: validConfiguration.environment,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
+        )
+
+        userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
+        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
+
+        // Then, initialize features:
+
+        let httpClient = HTTPClient()
+        let mobileDevice = MobileDevice.current
+
+        var logging: LoggingFeature?
+        var tracing: TracingFeature?
+
+        if configuration.loggingEnabled {
+            logging = LoggingFeature(
+                directory: try obtainLoggingFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                logsUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .ddsource(),
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
+                dateProvider: dateProvider,
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
+
+        if configuration.tracingEnabled {
+            tracing = TracingFeature(
+                directory: try obtainTracingFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                tracesUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
+                dateProvider: dateProvider,
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
+
+        LoggingFeature.instance = logging
+        TracingFeature.instance = tracing
+
+        // Only after all features were initialized with no error thrown:
+        self.instance = Datadog(
+            userInfoProvider: userInfoProvider
         )
     }
 
@@ -129,9 +175,15 @@ public class Datadog {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
 
-        // Deinitialize features:
+        // First, reset internal loggers:
+        userLogger = createNoOpSDKUserLogger()
+        developerLogger = nil
 
+        // Then, deinitialize features:
         LoggingFeature.instance = nil
+        TracingFeature.instance = nil
+
+        // Deinitialize `Datadog`:
         Datadog.instance = nil
     }
 }
@@ -140,17 +192,17 @@ public class Datadog {
 internal typealias AppContext = Datadog.AppContext
 
 /// An exception thrown due to programmer error when calling SDK public API.
-/// It make the SDK non-functional and print the error to developer in debugger console..
+/// It makes the SDK non-functional and print the error to developer in debugger console..
 /// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
-/// and if you not call any other SDK methods before it returns.
+/// and if you do not call any other SDK methods before it returns.
 internal struct ProgrammerError: Error, CustomStringConvertible {
-    init(description: String) { self.description = "Datadog SDK usage error: \(description)" }
+    init(description: String) { self.description = "🔥 Datadog SDK usage error: \(description)" }
     let description: String
 }
 
 /// An exception thrown internally by SDK.
-/// It is always handled by SDK and never passed to the user until `Datadog.verbosity` is set (then it might be printed in debugger console).
-/// `InternalError` might be thrown due to SDK internal inconsistency or external issues (e.g.  I/O errors). The SDK
+/// It is always handled by SDK (keeps it functional) and never passed to the user until `Datadog.verbosity` is set (then it might be printed in debugger console).
+/// `InternalError` might be thrown due to programmer error (API misuse) or SDK internal inconsistency or external issues (e.g.  I/O errors). The SDK
 /// should always recover from that failures.
 internal struct InternalError: Error, CustomStringConvertible {
     let description: String

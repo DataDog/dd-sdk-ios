@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		615519352461D121002A85CF /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615519342461D121002A85CF /* OpenTracing.framework */; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
 		61C3641B243752A500C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641A243752A500C4D4E6 /* SceneDelegate.swift */; };
 		61C3641D243752A500C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
@@ -15,7 +16,6 @@
 		61C36430243752A600C4D4E6 /* CTProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3642F243752A600C4D4E6 /* CTProjectTests.swift */; };
 		61C3643B243752A600C4D4E6 /* CTProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */; };
 		61C3644B2437547A00C4D4E6 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61C3644A2437547A00C4D4E6 /* Datadog.framework */; };
-		61C3644C2437547A00C4D4E6 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61C3644A2437547A00C4D4E6 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,21 +35,10 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		61C3644D2437547A00C4D4E6 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				61C3644C2437547A00C4D4E6 /* Datadog.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
+		615519322461CDB4002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		615519332461CDB4002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
+		615519342461D121002A85CF /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
 		61C36415243752A500C4D4E6 /* CTProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CTProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C36418243752A500C4D4E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61C3641A243752A500C4D4E6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -64,9 +53,6 @@
 		61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTProjectUITests.swift; sourceTree = "<group>"; };
 		61C3643C243752A600C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61C3644A2437547A00C4D4E6 /* Datadog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Datadog.framework; path = Carthage/Build/iOS/Datadog.framework; sourceTree = "<group>"; };
-		61C3646224377D8A00C4D4E6 /* app-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "app-target.xcconfig"; sourceTree = "<group>"; };
-		61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "unit-tests-target.xcconfig"; sourceTree = "<group>"; };
-		61C364642437816500C4D4E6 /* datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = datadog.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +61,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C3644B2437547A00C4D4E6 /* Datadog.framework in Frameworks */,
+				615519352461D121002A85CF /* OpenTracing.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,10 +82,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		615519312461CDB4002A85CF /* xcconfigs */ = {
+			isa = PBXGroup;
+			children = (
+				615519322461CDB4002A85CF /* Datadog.xcconfig */,
+				615519332461CDB4002A85CF /* Datadog.local.xcconfig */,
+			);
+			name = xcconfigs;
+			path = ../../xcconfigs;
+			sourceTree = "<group>";
+		};
 		61C3640C243752A500C4D4E6 = {
 			isa = PBXGroup;
 			children = (
-				61C3646124377D8A00C4D4E6 /* xcconfigs */,
+				615519312461CDB4002A85CF /* xcconfigs */,
 				61C36417243752A500C4D4E6 /* CTProject */,
 				61C3642E243752A600C4D4E6 /* CTProjectTests */,
 				61C36439243752A600C4D4E6 /* CTProjectUITests */,
@@ -151,20 +148,10 @@
 		61C364492437547A00C4D4E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				615519342461D121002A85CF /* OpenTracing.framework */,
 				61C3644A2437547A00C4D4E6 /* Datadog.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		61C3646124377D8A00C4D4E6 /* xcconfigs */ = {
-			isa = PBXGroup;
-			children = (
-				61C364642437816500C4D4E6 /* datadog.xcconfig */,
-				61C3646224377D8A00C4D4E6 /* app-target.xcconfig */,
-				61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */,
-			);
-			name = xcconfigs;
-			path = ../xcconfigs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -178,7 +165,6 @@
 				61C36412243752A500C4D4E6 /* Frameworks */,
 				61C36413243752A500C4D4E6 /* Resources */,
 				61C364482437544F00C4D4E6 /* ⚙️ Carthage */,
-				61C3644D2437547A00C4D4E6 /* Embed Frameworks */,
 				61C3645C243768FC00C4D4E6 /* ⚙️ Run linter */,
 			);
 			buildRules = (
@@ -305,6 +291,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/Datadog.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/OpenTracing.framework",
 			);
 			name = "⚙️ Carthage";
 			outputFileListPaths = (
@@ -401,7 +388,7 @@
 /* Begin XCBuildConfiguration section */
 		61C3643D243752A600C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646224377D8A00C4D4E6 /* app-target.xcconfig */;
+			baseConfigurationReference = 615519322461CDB4002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -462,7 +449,7 @@
 		};
 		61C3643E243752A600C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646224377D8A00C4D4E6 /* app-target.xcconfig */;
+			baseConfigurationReference = 615519322461CDB4002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -519,7 +506,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -531,7 +518,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.CTProject;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Wildcard Development";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -541,7 +527,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -560,11 +546,10 @@
 		};
 		61C36443243752A600C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CTProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -581,11 +566,10 @@
 		};
 		61C36444243752A600C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646324377D8A00C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CTProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -604,7 +588,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CTProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -623,7 +607,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = CTProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -19,17 +19,40 @@ class LogFileOutputTests: XCTestCase {
     }
 
     func testItWritesLogToFileAsJSON() throws {
-        let queue = DispatchQueue(label: "any")
+        let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
+        let queue = DispatchQueue(label: "com.datadohq.testItWritesCurrentDateToLogs")
         let output = LogFileOutput(
-            logBuilder: .mockWith(date: .mockAny()),
-            fileWriter: .mockWrittingToSingleFile(in: temporaryDirectory, on: queue)
+            logBuilder: .mockAny(),
+            fileWriter: FileWriter(
+                dataFormat: LoggingFeature.Storage.dataFormat,
+                orchestrator: FilesOrchestrator(
+                    directory: temporaryDirectory,
+                    performance: PerformancePreset.combining(
+                        storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                        uploadPerformance: .noOp
+                    ),
+                    dateProvider: fileCreationDateProvider
+                ),
+                queue: queue
+            )
         )
 
-        output.writeLogWith(level: .info, message: "log message", attributes: [:], tags: [])
-
+        output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: [:], tags: [])
         queue.sync {} // wait on writter queue
 
-        let fileData = try temporaryDirectory.files()[0].read()
-        try LogMatcher.fromJSONObjectData(fileData).assertMessage(equals: "log message")
+        fileCreationDateProvider.advance(bySeconds: 1)
+
+        output.writeLogWith(level: .info, message: "log message 2", date: .mockAny(), attributes: [:], tags: [])
+        queue.sync {} // wait on writter queue
+
+        let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
+        let log1Data = try temporaryDirectory.file(named: log1FileName).read()
+        let log1Matcher = try LogMatcher.fromJSONObjectData(log1Data)
+        log1Matcher.assertMessage(equals: "log message 1")
+
+        let log2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
+        let log2Data = try temporaryDirectory.file(named: log2FileName).read()
+        let log2Matcher = try LogMatcher.fromJSONObjectData(log2Data)
+        log2Matcher.assertMessage(equals: "log message 2")
     }
 }

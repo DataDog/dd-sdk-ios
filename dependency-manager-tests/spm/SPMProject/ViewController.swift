@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import OpenTracing
 
 internal class ViewController: UIViewController {
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -25,6 +26,11 @@ internal class ViewController: UIViewController {
             .printLogsToConsole(true)
             .build()
 
+        Global.sharedTracer = DDTracer.initialize(configuration: .init())
+
         logger.info("It works")
+
+        // Start span, but never finish it (no upload)
+        _ = Global.sharedTracer.startSpan(operationName: "This too")
     }
 }

@@ -23,9 +23,9 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Sending logs
+    // MARK: - Customizing Logger
 
-    func testSendingMinimalLogWithDefaultLogger() throws {
+    func testSendingLogWithDefaultLogger() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -90,6 +90,30 @@ class LoggerTests: XCTestCase {
         if #available(iOS 13.0, *) {
             logMatcher.assertValue(forKeyPath: "network.client.is_constrained", isTypeOf: Bool.self)
         }
+    }
+
+    // MARK: - Sending Customized Logs
+
+    func testSendingLogsWithDifferentDates() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.info("message 1")
+        logger.info("message 2")
+        logger.info("message 3")
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
+        // swiftlint:disable trailing_closure
+        logMatchers[0].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC() })
+        logMatchers[1].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1) })
+        logMatchers[2].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2) })
+        // swiftlint:enable trailing_closure
     }
 
     func testSendingLogsWithDifferentLevels() throws {
@@ -303,6 +327,9 @@ class LoggerTests: XCTestCase {
         // nested string literal
         logger.addAttribute(forKey: "nested.string", value: "hello")
 
+        // URL
+        logger.addAttribute(forKey: "url", value: URL(string: "https://example.com/image.png")!)
+
         logger.info("message")
 
         let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
@@ -318,6 +345,8 @@ class LoggerTests: XCTestCase {
         logMatcher.assertValue(forKeyPath: "person.age", equals: 30)
         logMatcher.assertValue(forKeyPath: "person.nationality", equals: "Polish")
         logMatcher.assertValue(forKeyPath: "nested.string", equals: "hello")
+        /// URLs are encoded explicitly as `String` - see the comment in `EncodableValue`
+        logMatcher.assertValue(forKeyPath: "url", equals: "https://example.com/image.png")
     }
 
     func testSendingMessageAttributes() throws {
@@ -461,4 +490,52 @@ class LoggerTests: XCTestCase {
 
         server.waitAndAssertNoRequestsSent()
     }
+
+    // MARK: - Usage errors
+
+    func testGivenDatadogNotInitialized_whenInitializingLogger_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        XCTAssertNil(Datadog.instance)
+
+        // when
+        let logger = Logger.builder.build()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+        )
+        XCTAssertTrue(logger.logOutput is NoOpLogOutput)
+    }
+
+    func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+                .enableLogging(false)
+                .build()
+        )
+
+        // when
+        let logger = Logger.builder.build()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+        )
+        XCTAssertTrue(logger.logOutput is NoOpLogOutput)
+
+        try Datadog.deinitializeOrThrow()
+    }
 }
+// swiftlint:enable multiline_arguments_brackets

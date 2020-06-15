@@ -48,12 +48,9 @@ class AppContextTests: XCTestCase {
 
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let validConfiguration = Datadog.Configuration(
-        clientToken: "abc-def",
-        logsEndpoint: .us,
-        serviceName: "service-name",
-        environment: "tests"
-    )
+    private var configurationBuilder: Datadog.Configuration.Builder {
+        Datadog.Configuration.builderUsing(clientToken: "abc-def", environment: "tests")
+    }
 
     override func setUp() {
         super.setUp()
@@ -72,10 +69,11 @@ class DatadogTests: XCTestCase {
     // MARK: - Initializing with configuration
 
     func testGivenValidConfiguration_itCanBeInitialized() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
+        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
 
         XCTAssertNotNil(Datadog.instance)
-        XCTAssertNoThrow(try Datadog.deinitializeOrThrow())
+
+        try Datadog.deinitializeOrThrow()
     }
 
     func testGivenInvalidConfiguration_whenInitializing_itPrintsError() throws {
@@ -89,9 +87,9 @@ class DatadogTests: XCTestCase {
         XCTAssertNil(Datadog.instance)
     }
 
-    func testWhenInitializedMoreThanOnce_itPrintsError() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
-        Datadog.initialize(appContext: .mockAny(), configuration: validConfiguration)
+    func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
+        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
 
         XCTAssertEqual(
             printFunction.printedMessage,
@@ -101,9 +99,55 @@ class DatadogTests: XCTestCase {
         try Datadog.deinitializeOrThrow()
     }
 
+    // MARK: - Toggling features
+
+    func testEnablingAndDisablingFeatures() throws {
+        func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) throws {
+            Datadog.initialize(appContext: .mockAny(), configuration: configuration)
+            verificationBlock()
+            try Datadog.deinitializeOrThrow()
+        }
+
+        try verify(configuration: configurationBuilder.build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            // verify integrations:
+            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+        }
+        try verify(configuration: configurationBuilder.enableLogging(false).build()) {
+            // verify features:
+            XCTAssertNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            // verify integrations:
+            XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
+        }
+        try verify(configuration: configurationBuilder.enableTracing(false).build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNil(TracingFeature.instance)
+        }
+        try verify(configuration: configurationBuilder.enableLogging(false).enableTracing(false).build()) {
+            // verify features:
+            XCTAssertNil(LoggingFeature.instance)
+            XCTAssertNil(TracingFeature.instance)
+        }
+    }
+
     // MARK: - Defaults
 
     func testDefaultVerbosityLevel() {
         XCTAssertNil(Datadog.verbosityLevel)
+    }
+
+    func testDefaultUserInfo() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
+
+        XCTAssertNotNil(Datadog.instance?.userInfoProvider.value)
+        XCTAssertNil(Datadog.instance?.userInfoProvider.value.id)
+        XCTAssertNil(Datadog.instance?.userInfoProvider.value.email)
+        XCTAssertNil(Datadog.instance?.userInfoProvider.value.name)
+
+        try Datadog.deinitializeOrThrow()
     }
 }

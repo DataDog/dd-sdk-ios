@@ -16,18 +16,31 @@ extension Optional {
     }
 }
 
-// MARK: - Date
+// MARK: - TimeInterval
 
-extension Date {
+extension TimeInterval {
     // NOTE: RUMM-182 counterpart of currentTimeMillis in Java
     // https://docs.oracle.com/javase/7/docs/api/java/lang/System.html#currentTimeMillis()
-    var currentTimeMillis: UInt64 {
+    var toMilliseconds: UInt64 {
         do {
-            let miliseconds = self.timeIntervalSince1970 * 1_000
+            let miliseconds = self * 1_000
             return try UInt64(withReportingOverflow: miliseconds)
         } catch {
-            userLogger.error("🔥 Failed to convert timestamp: \(error)")
-            developerLogger?.error("🔥 Failed to convert timestamp: \(error)")
+            userLogger.error("🔥 Failed to convert `\(self)` time interval in milliseconds: \(error)")
+            developerLogger?.error("🔥 Failed to convert `\(self)` time interval in milliseconds: \(error)")
+            return UInt64.max
+        }
+    }
+
+    /// Returns `TimeInterval` represented in nanoseconds.
+    /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
+    var toNanoseconds: UInt64 {
+        do {
+            let nanoseconds = self * 1_000_000_000
+            return try UInt64(withReportingOverflow: nanoseconds)
+        } catch {
+            userLogger.error("🔥 Failed to convert `\(self)` time interval in nanoseconds: \(error)")
+            developerLogger?.error("🔥 Failed to convert `\(self)` time interval in nanoseconds: \(error)")
             return UInt64.max
         }
     }

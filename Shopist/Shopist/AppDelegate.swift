@@ -6,13 +6,14 @@
 
 import UIKit
 import Datadog
+import OpenTracing
 
 fileprivate(set) var logger: Logger!
 
+let appConfig = ExampleAppConfig(serviceName: "ios-sdk-example-app")
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    private lazy var config = ExampleAppConfig()
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         // Initialize Datadog SDK
@@ -20,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             appContext: .init(),
             configuration: Datadog.Configuration
                 .builderUsing(
-                    clientToken: config.clientToken, // use your own client token obtained on Datadog website
+                    clientToken: appConfig.clientToken, // use your own client token obtained on Datadog website
                     environment: "tests"
                 )
                 .build()
@@ -31,9 +32,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Create logger instance
         logger = Logger.builder
-            .set(serviceName: "ios-sdk-example-app")
+            .set(serviceName: appConfig.serviceName)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
+
+        // Register global tracer
+        Global.sharedTracer = DDTracer.initialize(configuration: .init(serviceName: appConfig.serviceName))
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
@@ -55,7 +59,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        installConsoleOutputInterceptor()
         return true
     }
 

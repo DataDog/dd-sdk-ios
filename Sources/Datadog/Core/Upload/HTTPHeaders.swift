@@ -8,18 +8,43 @@ import Foundation
 
 /// HTTP headers associated with requests send by SDK.
 internal struct HTTPHeaders {
-    private struct Constants {
-        static let contentTypeField = "Content-Type"
-        static let contentTypeValue = "application/json"
-        static let userAgentField = "User-Agent"
+    enum ContentType: String {
+        case applicationJSON = "application/json"
+        case textPlainUTF8 = "text/plain;charset=UTF-8"
+    }
+
+    struct HTTPHeader {
+        let field: String
+        let value: String
+
+        // MARK: - Supported headers
+
+        static func contentTypeHeader(contentType: ContentType) -> HTTPHeader {
+            return HTTPHeader(field: "Content-Type", value: contentType.rawValue)
+        }
+
+        static func userAgentHeader(appName: String, appVersion: String, device: MobileDevice) -> HTTPHeader {
+            return HTTPHeader(
+                field: "User-Agent",
+                value: "\(appName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))"
+            )
+        }
+
+        // MARK: - Initialization
+
+        private init(field: String, value: String) {
+            self.field = field
+            self.value = value
+        }
     }
 
     let all: [String: String]
 
-    init(appName: String, appVersion: String, device: MobileDevice) {
-        self.all = [
-            Constants.contentTypeField: Constants.contentTypeValue,
-            Constants.userAgentField: "\(appName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))"
-        ]
+    init(headers: [HTTPHeader]) {
+        self.all = headers.reduce([:]) { acc, next in
+            var dictionary = acc
+            dictionary[next.field] = next.value
+            return dictionary
+        }
     }
 }

@@ -188,14 +188,14 @@ class ServerMock {
 
     /// Returns recommended timeout for delivering given number of requests if `.mockUnitTestsPerformancePreset()` is used for upload.
     func recommendedTimeoutFor(numberOfRequestsMade: UInt) -> TimeInterval {
-        let performancePresetForTests: PerformancePreset = .mockUnitTestsPerformancePreset()
+        let uploadPerformanceForTests = UploadPerformanceMock.veryQuick
         // Set the timeout to 40 times more than expected.
         // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
-        return performancePresetForTests.defaultLogsUploadDelay * Double(numberOfRequestsMade) * 40
+        return uploadPerformanceForTests.defaultUploadDelay * Double(numberOfRequestsMade) * 40
     }
 }
 
-// MARK: - Logging feature helpers
+// MARK: - Feature helpers
 
 extension ServerMock {
     func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
@@ -206,6 +206,23 @@ extension ServerMock {
             line: line
         )
             .map { request in try request.httpBody.unwrapOrThrow() }
-            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody) }
+            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody, file: file, line: line) }
+    }
+}
+
+// MARK: - Tracing feature helpers
+
+extension ServerMock {
+    func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        return try waitAndReturnRequests(
+            count: count,
+            timeout: recommendedTimeoutFor(numberOfRequestsMade: count),
+            file: file,
+            line: line
+        )
+        .map { request in try request.httpBody.unwrapOrThrow() }
+        .flatMap { requestBody in
+            try SpanMatcher.fromNewlineSeparatedJSONObjectsData(requestBody)
+        }
     }
 }

@@ -24,3 +24,13 @@ extension EncodableValue: Equatable {
         return String(describing: lhs) == String(describing: rhs)
     }
 }
+
+extension File {
+    func makeReadonly() throws {
+        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: url.path)
+    }
+
+    func makeReadWrite() throws {
+        try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: url.path)
+    }
+}

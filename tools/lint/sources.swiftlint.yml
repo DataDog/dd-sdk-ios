@@ -30,7 +30,6 @@ whitelist_rules: # we enable lint rules explicitly - only the ones listed below 
   - force_try
   - force_unwrapping
   - function_default_parameter_at_end
-  - identifier_name
   - implicitly_unwrapped_optional
   - last_where
   - leading_whitespace

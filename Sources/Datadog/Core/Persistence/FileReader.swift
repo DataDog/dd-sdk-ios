@@ -14,10 +14,8 @@ internal struct Batch {
 }
 
 internal final class FileReader {
-    /// Opening bracked used to prefix data in `Batch`.
-    private let openingBracketData: Data = "[".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
-    /// Opening bracked used to suffix data in `Batch`.
-    private let closingBracketData: Data = "]".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
+    /// Data reading format.
+    private let dataFormat: DataFormat
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestrator
     /// Queue used to synchronize files access (read / write).
@@ -26,7 +24,8 @@ internal final class FileReader {
     /// Files marked as read.
     private var filesRead: [ReadableFile] = []
 
-    init(orchestrator: FilesOrchestrator, queue: DispatchQueue) {
+    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator, queue: DispatchQueue) {
+        self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.queue = queue
     }
@@ -43,7 +42,7 @@ internal final class FileReader {
         if let file = orchestrator.getReadableFile(excludingFilesNamed: Set(filesRead.map { $0.name })) {
             do {
                 let fileData = try file.read()
-                let batchData = openingBracketData + fileData + closingBracketData
+                let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
                 return Batch(data: batchData, file: file)
             } catch {
                 developerLogger?.error("🔥 Failed to read file: \(error)")

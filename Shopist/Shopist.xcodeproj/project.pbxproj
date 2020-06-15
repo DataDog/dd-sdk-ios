@@ -7,22 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		617CEB41245719E200AD4669 /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617CEB3C245719E200AD4669 /* OpenTracing.framework */; };
+		617CEB42245719E200AD4669 /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617CEB3C245719E200AD4669 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */; };
-		9E6ABAD4244F43BD003AE249 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACE244F43BD003AE249 /* ConsoleOutputInterceptor.swift */; };
-		9E6ABAD5244F43BD003AE249 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACF244F43BD003AE249 /* UIViewController+KeyboardControlling.swift */; };
-		9E6ABAD6244F43BD003AE249 /* SendMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD0244F43BD003AE249 /* SendMessageViewController.swift */; };
 		9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */; };
 		9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */; };
 		9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADF244F43E2003AE249 /* Assets.xcassets */; };
 		9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */; };
 		9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADE244F43E2003AE249 /* Main.storyboard */; };
-		9EE0E1B7244F65B30030DC52 /* Shopist.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */; };
 		9EE2AA14244F38E000A2C252 /* ShopistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */; };
 		9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EE2AA29244F3A3300A2C252 /* Datadog.framework */; };
 		9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9EE2AA29244F3A3300A2C252 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		61441C8B2461A531003D8BB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 61441C6824619FE4003D8BB8;
+			remoteInfo = DatadogBenchmarkTests;
+		};
+		61441C8D2461A531003D8BB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 61441C0224616DE9003D8BB8;
+			remoteInfo = Example;
+		};
 		9EE2AA10244F38E000A2C252 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9EE2A9E6244F38DE00A2C252 /* Project object */;
@@ -68,6 +80,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */,
+				617CEB42245719E200AD4669 /* OpenTracing.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -75,17 +88,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		611E133E2461D75D007B7552 /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		611E133F2461D75D007B7552 /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
+		617CEB3C245719E200AD4669 /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = ../Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
 		9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
-		9E6ABACE244F43BD003AE249 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
-		9E6ABACF244F43BD003AE249 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
-		9E6ABAD0244F43BD003AE249 /* SendMessageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendMessageViewController.swift; sourceTree = "<group>"; };
 		9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD9244F43D4003AE249 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9E6ABADE244F43E2003AE249 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		9E6ABADF244F43E2003AE249 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shopist.xcconfig; sourceTree = "<group>"; };
 		9EE2A9EE244F38DE00A2C252 /* Shopist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shopist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA0F244F38E000A2C252 /* ShopistUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShopistUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITests.swift; sourceTree = "<group>"; };
@@ -99,6 +111,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */,
+				617CEB41245719E200AD4669 /* OpenTracing.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,13 +125,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		9E6ABACD244F43BD003AE249 /* Utils */ = {
+		611E133D2461D75D007B7552 /* xcconfigs */ = {
 			isa = PBXGroup;
 			children = (
-				9E6ABACE244F43BD003AE249 /* ConsoleOutputInterceptor.swift */,
-				9E6ABACF244F43BD003AE249 /* UIViewController+KeyboardControlling.swift */,
+				611E133E2461D75D007B7552 /* Datadog.xcconfig */,
+				611E133F2461D75D007B7552 /* Datadog.local.xcconfig */,
 			);
-			path = Utils;
+			name = xcconfigs;
+			path = ../xcconfigs;
 			sourceTree = "<group>";
 		};
 		9E6ABAE0244F440B003AE249 /* Resources */ = {
@@ -135,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */,
+				611E133D2461D75D007B7552 /* xcconfigs */,
 				9EE2A9F0244F38DE00A2C252 /* Shopist */,
 				9EE2AA12244F38E000A2C252 /* ShopistUITests */,
 				9EE2A9EF244F38DE00A2C252 /* Products */,
@@ -154,14 +169,11 @@
 		9EE2A9F0244F38DE00A2C252 /* Shopist */ = {
 			isa = PBXGroup;
 			children = (
-				9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */,
 				9E6ABAD9244F43D4003AE249 /* Info.plist */,
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
 				9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */,
 				9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */,
-				9E6ABAD0244F43BD003AE249 /* SendMessageViewController.swift */,
 				9E6ABAE0244F440B003AE249 /* Resources */,
-				9E6ABACD244F43BD003AE249 /* Utils */,
 			);
 			path = Shopist;
 			sourceTree = "<group>";
@@ -181,7 +193,9 @@
 				9EE2AA29244F3A3300A2C252 /* Datadog.framework */,
 				9EE2AA2B244F3A3300A2C252 /* DatadogObjc.framework */,
 				9EE2AA2D244F3A3300A2C252 /* DatadogTests.xctest */,
+				61441C8C2461A531003D8BB8 /* DatadogBenchmarkTests.xctest */,
 				9EE2AA2F244F3A3300A2C252 /* DatadogIntegrationTests.xctest */,
+				61441C8E2461A531003D8BB8 /* Example.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -189,6 +203,7 @@
 		9EE2AA30244F3A4500A2C252 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				617CEB3C245719E200AD4669 /* OpenTracing.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -278,6 +293,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		61441C8C2461A531003D8BB8 /* DatadogBenchmarkTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = DatadogBenchmarkTests.xctest;
+			remoteRef = 61441C8B2461A531003D8BB8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		61441C8E2461A531003D8BB8 /* Example.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = Example.app;
+			remoteRef = 61441C8D2461A531003D8BB8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		9EE2AA29244F3A3300A2C252 /* Datadog.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -314,7 +343,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */,
-				9EE0E1B7244F65B30030DC52 /* Shopist.xcconfig in Resources */,
 				9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */,
 				9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */,
 			);
@@ -334,9 +362,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E6ABAD6244F43BD003AE249 /* SendMessageViewController.swift in Sources */,
-				9E6ABAD5244F43BD003AE249 /* UIViewController+KeyboardControlling.swift in Sources */,
-				9E6ABAD4244F43BD003AE249 /* ConsoleOutputInterceptor.swift in Sources */,
 				9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */,
 				9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */,
 				9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */,
@@ -364,7 +389,7 @@
 /* Begin XCBuildConfiguration section */
 		9EE2AA16244F38E000A2C252 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */;
+			baseConfigurationReference = 611E133E2461D75D007B7552 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -425,7 +450,7 @@
 		};
 		9EE2AA17244F38E000A2C252 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9EE0E1B6244F65B30030DC52 /* Shopist.xcconfig */;
+			baseConfigurationReference = 611E133E2461D75D007B7552 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -484,6 +509,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = Shopist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -503,6 +529,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = Shopist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

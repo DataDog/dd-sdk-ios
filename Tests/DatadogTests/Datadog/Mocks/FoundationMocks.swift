@@ -105,7 +105,13 @@ extension String {
     }
 
     static func mockRandom(length: Int = 10) -> String {
-        let characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
+        return mockRandom(
+            among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
+            length: length
+        )
+    }
+
+    static func mockRandom(among characters: String, length: Int = 10) -> String {
         return String((0..<length).map { _ in characters.randomElement()! })
     }
 

@@ -48,10 +48,12 @@ class LoggerBuilderTests: XCTestCase {
             return
         }
 
+        let feature = LoggingFeature.instance!
         XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(logBuilder.serviceName, "service-name")
         XCTAssertEqual(logBuilder.environment, "tests")
         XCTAssertEqual(logBuilder.loggerName, "com.datadog.unit-tests")
+        XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNil(logBuilder.carrierInfoProvider)
     }
@@ -60,7 +62,7 @@ class LoggerBuilderTests: XCTestCase {
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
             .set(loggerName: "custom-logger-name")
-            .sendNetworkInfo(false)
+            .sendNetworkInfo(true)
             .build()
 
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
@@ -68,12 +70,14 @@ class LoggerBuilderTests: XCTestCase {
             return
         }
 
+        let feature = LoggingFeature.instance!
         XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(logBuilder.serviceName, "custom-service-name")
         XCTAssertEqual(logBuilder.environment, "tests")
         XCTAssertEqual(logBuilder.loggerName, "custom-logger-name")
-        XCTAssertNil(logBuilder.networkConnectionInfoProvider)
-        XCTAssertNil(logBuilder.carrierInfoProvider)
+        XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(logBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(logBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
     }
 
     func testUsingDifferentOutputs() throws {
@@ -113,23 +117,6 @@ class LoggerBuilderTests: XCTestCase {
             logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(),
             usesOutput: NoOpLogOutput.self
         )
-    }
-}
-
-class LoggerBuilderErrorTests: XCTestCase {
-    func testGivenDatadogNotInitialized_whenBuildingLogger_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let logger = Logger.builder.build()
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
-        )
-        assertThat(logger: logger, usesOutput: NoOpLogOutput.self)
     }
 }
 

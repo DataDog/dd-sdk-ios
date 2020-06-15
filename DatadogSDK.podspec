@@ -24,4 +24,6 @@ Pod::Spec.new do |s|
   s.public_header_files = "Datadog/TargetSupport/Datadog/Datadog.h"
   s.private_header_files = "Sources/_Datadog_Private/include/*.h"
   s.module_map = "Sources/Datadog/Datadog.modulemap"
+
+  s.dependency 'OpenTracingSwift'
 end

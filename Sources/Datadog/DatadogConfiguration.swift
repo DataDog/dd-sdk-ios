@@ -7,16 +7,21 @@
 import Foundation
 
 extension Datadog {
+    internal struct Constants {
+        /// Value for `ddsource` send by different features.
+        static let ddsource = "ios"
+    }
+
     /// Datadog SDK configuration.
     public struct Configuration {
         /// Determines server to which logs are sent.
         public enum LogsEndpoint {
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us // swiftlint:disable:this identifier_name
+            case us
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu // swiftlint:disable:this identifier_name
+            case eu
             /// User-defined server.
             case custom(url: String)
 
@@ -29,10 +34,33 @@ extension Datadog {
             }
         }
 
+        /// Determines server to which traces are sent.
+        public enum TracesEndpoint {
+            /// US based servers.
+            /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us
+            /// Europe based servers.
+            /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu
+            /// User-defined server.
+            case custom(url: String)
+
+            internal var url: String {
+                switch self {
+                case .us: return "https://public-trace-http-intake.logs.datadoghq.com/v1/input/"
+                case .eu: return "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/"
+                case let .custom(url: url): return url
+                }
+            }
+        }
+
         internal let clientToken: String
-        internal let logsEndpoint: LogsEndpoint
-        internal let serviceName: String?
         internal let environment: String
+        internal var loggingEnabled: Bool
+        internal var tracingEnabled: Bool
+        internal let logsEndpoint: LogsEndpoint
+        internal let tracesEndpoint: TracesEndpoint
+        internal let serviceName: String?
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -53,13 +81,53 @@ extension Datadog {
         public class Builder {
             internal let clientToken: String
             internal let environment: String
-            internal var serviceName: String? = nil
+            internal var loggingEnabled = true
+            internal var tracingEnabled = true
             internal var logsEndpoint: LogsEndpoint = .us
+            internal var tracesEndpoint: TracesEndpoint = .us
+            internal var serviceName: String? = nil
 
             internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
                 self.environment = environment
             }
+
+            // MARK: - Features Configuration
+
+            /// Enables or disables the logging feature.
+            ///
+            /// This option is meant to opt-out from using Datadog Logging entirely, no matter of your environment or build configuration. If you need to
+            /// disable logging only for certain scenarios (e.g. in `DEBUG` build configuration), use `sendLogsToDatadog(false)` available
+            /// on `Logger.Builder`.
+            ///
+            /// If `enableLogging(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the logging feature. This will give you additional performance optimization if you only use tracing, but not logging.
+            ///
+            /// **NOTE**: If you use logging for tracing (`span.log(fields:)`) keep the logging feature enabled. Otherwise the logs
+            /// you send for `span` objects won't be delivered to Datadog.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func enableLogging(_ enabled: Bool) -> Builder {
+                self.loggingEnabled = enabled
+                return self
+            }
+
+            /// Enables or disables the tracing feature.
+            ///
+            /// This option is meant to opt-out from using Datadog Tracing entirely, no matter of your environment or build configuration. If you need to
+            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `OpenTracing.Global.sharedTracer` to `DDTracer`,
+            /// and your app will be using the no-op tracer instance provided by `OpenTracing`.
+            ///
+            /// If `enableTracing(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the tracing feature. This will give you additional performance optimization if you only use logging, but not tracing.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func enableTracing(_ enabled: Bool) -> Builder {
+                self.tracingEnabled = enabled
+                return self
+            }
+
+            // MARK: - Endpoints Configuration
 
             /// Sets the server endpoint to which logs are sent.
             /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
@@ -67,6 +135,15 @@ extension Datadog {
                 self.logsEndpoint = logsEndpoint
                 return self
             }
+
+            /// Sets the server endpoint to which traces are sent.
+            /// - Parameter tracesEndpoint: server endpoint (default value is `TracesEndpoint.us` )
+            public func set(tracesEndpoint: TracesEndpoint) -> Builder {
+                self.tracesEndpoint = tracesEndpoint
+                return self
+            }
+
+            // MARK: - Other Settings
 
             /// Sets the default service name associated with data send to Datadog.
             /// NOTE: The `serviceName` can be also overwriten by each `Logger` instance.
@@ -80,9 +157,12 @@ extension Datadog {
             public func build() -> Configuration {
                 return Configuration(
                     clientToken: clientToken,
+                    environment: environment,
+                    loggingEnabled: loggingEnabled,
+                    tracingEnabled: tracingEnabled,
                     logsEndpoint: logsEndpoint,
-                    serviceName: serviceName,
-                    environment: environment
+                    tracesEndpoint: tracesEndpoint,
+                    serviceName: serviceName
                 )
             }
         }
@@ -100,6 +180,7 @@ extension Datadog {
         internal let environment: String
 
         internal let logsUploadURLWithClientToken: URL
+        internal let tracesUploadURLWithClientToken: URL
     }
 }
 
@@ -113,6 +194,10 @@ extension Datadog.ValidConfiguration {
             environment: try ifValid(environment: configuration.environment),
             logsUploadURLWithClientToken: try ifValid(
                 endpointURLString: configuration.logsEndpoint.url,
+                clientToken: configuration.clientToken
+            ),
+            tracesUploadURLWithClientToken: try ifValid(
+                endpointURLString: configuration.tracesEndpoint.url,
                 clientToken: configuration.clientToken
             )
         )

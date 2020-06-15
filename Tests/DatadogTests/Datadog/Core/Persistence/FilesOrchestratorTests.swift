@@ -8,8 +8,7 @@ import XCTest
 @testable import Datadog
 
 class FilesOrchestratorTests: XCTestCase {
-    private let defaultWriteConditions = WritableFileConditions(performance: .default)
-    private let defaultReadConditions = ReadableFileConditions(performance: .default)
+    private let performance: PerformancePreset = .default
 
     override func setUp() {
         super.setUp()
@@ -25,8 +24,7 @@ class FilesOrchestratorTests: XCTestCase {
     private func configureOrchestrator(using dateProvider: DateProvider) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: temporaryDirectory,
-            writeConditions: defaultWriteConditions,
-            readConditions: defaultReadConditions,
+            performance: performance,
             dateProvider: dateProvider
         )
     }
@@ -57,7 +55,7 @@ class FilesOrchestratorTests: XCTestCase {
         var nextFile: WritableFile
 
         // use file maximum number of times
-        for _ in (0 ..< defaultWriteConditions.maxNumberOfUsesOfFile).dropLast() { // skip first use
+        for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
             nextFile = try orchestrator.getWritableFile(writeSize: 1)
             XCTAssertEqual(nextFile.name, previousFile.name) // assert it uses same file
             previousFile = nextFile
@@ -71,12 +69,12 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultWriteConditions_whenFileHasNoRoomForMore_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
         let chunkedData: [Data] = .mockChunksOf(
-            totalSize: defaultWriteConditions.maxFileSize,
-            maxChunkSize: defaultWriteConditions.maxWriteSize
+            totalSize: performance.maxFileSize,
+            maxChunkSize: performance.maxObjectSize
         )
 
-        let file1 = try orchestrator.getWritableFile(writeSize: UInt64(defaultWriteConditions.maxWriteSize))
-        try file1.append { write in try chunkedData.forEach { chunk in try write(chunk) } }
+        let file1 = try orchestrator.getWritableFile(writeSize: performance.maxObjectSize)
+        try chunkedData.forEach { chunk in try file1.append(data: chunk) }
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertNotEqual(file1.name, file2.name)
@@ -87,7 +85,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
 
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
-        dateProvider.advance(bySeconds: 1 + defaultWriteConditions.maxFileAgeForWrite)
+        dateProvider.advance(bySeconds: 1 + performance.maxFileAgeForWrite)
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertNotEqual(file1.name, file2.name)
@@ -123,30 +121,29 @@ class FilesOrchestratorTests: XCTestCase {
 
             let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
-            writeConditions: WritableFileConditions(
-                performance: .mockWith(
-                    maxBatchSize: oneMB, // 1MB
-                    maxSizeOfLogsDirectory: 3 * oneMB, // 3MB,
-                    maxFileAgeForWrite: .distantFuture,
-                    maxLogsPerBatch: 1, // create new file each time
-                    maxLogSize: .max
-                )
+            performance: StoragePerformanceMock(
+                maxFileSize: oneMB, // 1MB
+                maxDirectorySize: 3 * oneMB, // 3MB,
+                maxFileAgeForWrite: .distantFuture,
+                minFileAgeForRead: .mockAny(),
+                maxFileAgeForRead: .mockAny(),
+                maxObjectsInFile: 1, // create new file each time
+                maxObjectSize: .max
             ),
-            readConditions: defaultReadConditions,
             dateProvider: RelativeDateProvider(advancingBySeconds: 1)
         )
 
         // write 1MB to first file (1MB of directory size in total)
         let file1 = try orchestrator.getWritableFile(writeSize: oneMB)
-        try file1.append { write in try write(.mock(ofSize: oneMB)) }
+        try file1.append(data: .mock(ofSize: oneMB))
 
         // write 1MB to second file (2MB of directory size in total)
         let file2 = try orchestrator.getWritableFile(writeSize: oneMB)
-        try file2.append { write in try write(.mock(ofSize: oneMB)) }
+        try file2.append(data: .mock(ofSize: oneMB))
 
         // write 1MB to third file (3MB of directory size in total)
         let file3 = try orchestrator.getWritableFile(writeSize: oneMB + 1) // +1 byte to exceed the limit
-        try file3.append { write in try write(.mock(ofSize: oneMB + 1)) }
+        try file3.append(data: .mock(ofSize: oneMB + 1))
 
         XCTAssertEqual(try temporaryDirectory.files().count, 3)
 
@@ -155,7 +152,7 @@ class FilesOrchestratorTests: XCTestCase {
         let file4 = try orchestrator.getWritableFile(writeSize: oneMB)
         XCTAssertEqual(try temporaryDirectory.files().count, 3)
         XCTAssertNil(try? temporaryDirectory.file(named: file1.name))
-        try file4.append { write in try write(.mock(ofSize: oneMB + 1)) }
+        try file4.append(data: .mock(ofSize: oneMB + 1))
 
         _ = try orchestrator.getWritableFile(writeSize: oneMB)
         XCTAssertEqual(try temporaryDirectory.files().count, 3)
@@ -167,7 +164,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenThereAreNoFiles_itReturnsNil() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
@@ -176,7 +173,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
         let file = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
-        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
         XCTAssertEqual(orchestrator.getReadableFile()?.name, file.name)
     }
 
@@ -185,7 +182,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
         _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
-        dateProvider.advance(bySeconds: 0.5 * defaultReadConditions.minFileAgeForRead)
+        dateProvider.advance(bySeconds: 0.5 * performance.minFileAgeForRead)
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
@@ -195,7 +192,7 @@ class FilesOrchestratorTests: XCTestCase {
         let fileNames = (0..<4).map { _ in dateProvider.currentDate().toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
-        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
         XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[0])
         try temporaryDirectory.file(named: fileNames[0]).delete()
         XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[1])
@@ -213,7 +210,7 @@ class FilesOrchestratorTests: XCTestCase {
         let fileNames = (0..<4).map { _ in dateProvider.currentDate().toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
-        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
         XCTAssertEqual(
             orchestrator.getReadableFile(excludingFilesNamed: Set(fileNames[0...2]))?.name,
@@ -226,7 +223,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
         _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
-        dateProvider.advance(bySeconds: 2 * defaultReadConditions.maxFileAgeForRead)
+        dateProvider.advance(bySeconds: 2 * performance.maxFileAgeForRead)
 
         XCTAssertNil(orchestrator.getReadableFile())
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
@@ -237,7 +234,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
         _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
 
-        dateProvider.advance(bySeconds: 1 + defaultReadConditions.minFileAgeForRead)
+        dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
         let readableFile = try orchestrator.getReadableFile().unwrapOrThrow()
         XCTAssertEqual(try temporaryDirectory.files().count, 1)

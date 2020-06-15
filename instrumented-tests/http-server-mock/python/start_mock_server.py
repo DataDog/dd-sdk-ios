@@ -27,10 +27,13 @@ class HTTPMockServer(BaseHTTPRequestHandler):
 
     GET /inspect
     - Endpoint listing history of recorded generic requests. It provides <request-id> information
-    for each request to access its HTTP body with `GET /inspect/<request-id>`.
+    for each request to access its details, e.g. HTTP body with `GET /inspect/<request-id>/body`.
 
-    GET /inspect/<request-id>
-    - Endpoint returning HTTP body of specific generic request. 
+    GET /inspect/<request-id>/body
+    - Endpoint returning HTTP body of specific generic request.
+
+    GET /inspect/<request-id>/headers
+    - Endpoint returning HTTP headers of specific generic request.
     """
 
     def do_POST(self):
@@ -47,7 +50,8 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         """
         self.__route([
             (r"/inspect$", self.__GET_inspect),
-            (r"/inspect/([0-9]+)$", self.__GET_inspect_request),
+            (r"/inspect/([0-9]+)/body$", self.__GET_inspect_request_body),
+            (r"/inspect/([0-9]+)/headers$", self.__GET_inspect_request_headers)
         ])
 
     def __POST_any(self, parameters):
@@ -59,7 +63,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         global history
         request_path = parameters[0]
         request_body = self.rfile.read(int(self.headers['Content-Length']))
-        request = GenericRequest("POST", request_path, request_body)
+        request = GenericRequest("POST", request_path, self.headers, request_body)
         history.add_request(request)
         return "{}"
 
@@ -75,19 +79,31 @@ class HTTPMockServer(BaseHTTPRequestHandler):
             inspection_info.append({
                 "request_method": request.http_method,
                 "request_path": request.path,
-                "inspection_path": "/inspect/{request_id}".format( request_id = request.id )
+                "body_inspection_path": "/inspect/{request_id}/body".format( request_id = request.id ),
+                "headers_inspection_path": "/inspect/{request_id}/headers".format( request_id = request.id )
             })
         return json.dumps(inspection_info)
 
-    def __GET_inspect_request(self, parameters):
+    def __GET_inspect_request_body(self, parameters):
         """
-        GET /inspect/<request-id>
+        GET /inspect/<request-id>/body
 
         Returns http body of a generic requests with given id.
         """
         global history
         request_id = parameters[0]
         return history.request(request_id).http_body
+
+
+    def __GET_inspect_request_headers(self, parameters):
+        """
+        GET /inspect/<request-id>/headers
+
+        Returns http headers of a generic requests with given id.
+        """
+        global history
+        request_id = parameters[0]
+        return history.request(request_id).http_headers
 
     def __route(self, routes):
         try:
@@ -113,10 +129,11 @@ class GenericRequest:
     Represents data of request sent to generic endponit.
     """
 
-    def __init__(self, http_method, path, http_body):
+    def __init__(self, http_method, path, http_headers, http_body):
         self.id = None # set later by `GenericRequestsHistory`
         self.path = path
         self.http_method = http_method
+        self.http_headers = http_headers
         self.http_body = http_body
 
 class GenericRequestsHistory:

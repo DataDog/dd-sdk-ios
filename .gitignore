@@ -3,5 +3,6 @@
 /.build
 /.swiftpm
 xcuserdata/
+Carthage/
 
 *.local.xcconfig

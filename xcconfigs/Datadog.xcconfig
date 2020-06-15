@@ -1,0 +1,5 @@
+DATADOG_CLIENT_TOKEN=// use your own Client Token obtained on datadoghq.com
+DEVELOPMENT_TEAM[sdk=iphoneos*]=// use your own Development Team
+
+// Overwrite with secrets
+#include? "Datadog.local.xcconfig"

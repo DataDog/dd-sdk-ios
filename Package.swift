@@ -18,11 +18,12 @@ let package = Package(
             targets: ["DatadogObjc"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/DataDog/opentracing-swift.git", .branch("master")),
     ],
     targets: [
         .target(
             name: "Datadog",
-            dependencies: ["_Datadog_Private"]),
+            dependencies: ["_Datadog_Private", "OpenTracing"]),
         .target(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
@@ -31,6 +32,6 @@ let package = Package(
         ),
         .testTarget(
             name: "DatadogTests",
-            dependencies: ["Datadog", "DatadogObjc"]),
+            dependencies: ["Datadog", "DatadogObjc", "OpenTracing"]),
     ]
 )

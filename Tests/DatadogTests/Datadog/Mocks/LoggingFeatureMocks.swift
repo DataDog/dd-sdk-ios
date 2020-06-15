@@ -13,7 +13,7 @@ extension LoggingFeature {
         return LoggingFeature(
             directory: temporaryDirectory,
             configuration: .mockAny(),
-            performance: .mockNoOp(),
+            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
             mobileDevice: .mockAny(),
             httpClient: .mockAny(),
             logsUploadURLProvider: .mockAny(),
@@ -33,7 +33,10 @@ extension LoggingFeature {
         server: ServerMock,
         directory: Directory,
         configuration: Datadog.ValidConfiguration = .mockAny(),
-        performance: PerformancePreset = .mockUnitTestsPerformancePreset(),
+        performance: PerformancePreset = .combining(
+            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+            uploadPerformance: .veryQuick
+        ),
         mobileDevice: MobileDevice = .mockWith(
             currentBatteryStatus: {
                 // Mock full battery, so it doesn't rely on battery condition for the upload
@@ -67,5 +70,33 @@ extension LoggingFeature {
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
+    }
+}
+
+/// `LogOutput` recording received logs.
+class LogOutputMock: LogOutput {
+    struct RecordedLog: Equatable {
+        var level: LogLevel
+        var message: String
+        var date: Date
+        var attributes: [String: Encodable] = [:]
+        var tags: Set<String> = []
+
+        static func == (lhs: RecordedLog, rhs: RecordedLog) -> Bool {
+            let lhsAttributesSorted = lhs.attributes.sorted { $0.key < $1.key }
+            let rhsAttributesSorted = rhs.attributes.sorted { $0.key < $1.key }
+
+            return lhs.level == rhs.level
+                && lhs.message == rhs.message
+                && lhs.date == rhs.date
+                && String(describing: lhsAttributesSorted) == String(describing: rhsAttributesSorted)
+                && lhs.tags == rhs.tags
+        }
+    }
+
+    var recordedLog: RecordedLog? = nil
+
+    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) {
+        recordedLog = RecordedLog(level: level, message: message, date: date, attributes: attributes, tags: tags)
     }
 }

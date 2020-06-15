@@ -8,7 +8,7 @@ import Foundation
 @testable import Datadog
 
 /*
-A collection of mocks for Logs objects.
+A collection of mocks for `Log` objects.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
@@ -66,7 +66,6 @@ extension LogBuilder {
     }
 
     static func mockWith(
-        date: Date = .mockAny(),
         applicationVersion: String = .mockAny(),
         environment: String = .mockAny(),
         serviceName: String = .mockAny(),
@@ -80,7 +79,6 @@ extension LogBuilder {
             environment: environment,
             serviceName: serviceName,
             loggerName: loggerName,
-            dateProvider: RelativeDateProvider(using: date),
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider

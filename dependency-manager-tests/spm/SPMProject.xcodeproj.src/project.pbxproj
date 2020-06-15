@@ -63,9 +63,8 @@
 		61C363F724374D6100C4D4E6 /* SPMProjectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMProjectUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C363FB24374D6100C4D4E6 /* SPMProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPMProjectUITests.swift; sourceTree = "<group>"; };
 		61C363FD24374D6100C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		61C3646B2437839300C4D4E6 /* datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = datadog.xcconfig; sourceTree = "<group>"; };
-		61C3646C2437839300C4D4E6 /* app-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "app-target.xcconfig"; sourceTree = "<group>"; };
-		61C3646D2437839300C4D4E6 /* unit-tests-target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "unit-tests-target.xcconfig"; sourceTree = "<group>"; };
+		61CE5FD52461D3C2005EA621 /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		61CE5FD62461D3C2005EA621 /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +96,7 @@
 		61C363CD24374D5F00C4D4E6 = {
 			isa = PBXGroup;
 			children = (
-				61C3646A2437839300C4D4E6 /* xcconfigs */,
+				61CE5FD42461D3C2005EA621 /* xcconfigs */,
 				61C363D824374D5F00C4D4E6 /* SPMProject */,
 				61C363EF24374D6100C4D4E6 /* SPMProjectTests */,
 				61C363FA24374D6100C4D4E6 /* SPMProjectUITests */,
@@ -146,15 +145,14 @@
 			path = SPMProjectUITests;
 			sourceTree = "<group>";
 		};
-		61C3646A2437839300C4D4E6 /* xcconfigs */ = {
+		61CE5FD42461D3C2005EA621 /* xcconfigs */ = {
 			isa = PBXGroup;
 			children = (
-				61C3646B2437839300C4D4E6 /* datadog.xcconfig */,
-				61C3646C2437839300C4D4E6 /* app-target.xcconfig */,
-				61C3646D2437839300C4D4E6 /* unit-tests-target.xcconfig */,
+				61CE5FD52461D3C2005EA621 /* Datadog.xcconfig */,
+				61CE5FD62461D3C2005EA621 /* Datadog.local.xcconfig */,
 			);
 			name = xcconfigs;
-			path = ../xcconfigs;
+			path = ../../xcconfigs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -376,7 +374,7 @@
 /* Begin XCBuildConfiguration section */
 		61C363FE24374D6100C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646C2437839300C4D4E6 /* app-target.xcconfig */;
+			baseConfigurationReference = 61CE5FD52461D3C2005EA621 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -437,7 +435,7 @@
 		};
 		61C363FF24374D6100C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646C2437839300C4D4E6 /* app-target.xcconfig */;
+			baseConfigurationReference = 61CE5FD52461D3C2005EA621 /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -494,7 +492,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = SPMProject/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -511,7 +509,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = SPMProject/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -526,11 +524,10 @@
 		};
 		61C3640424374D6100C4D4E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646D2437839300C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = SPMProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -547,11 +544,10 @@
 		};
 		61C3640524374D6100C4D4E6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61C3646D2437839300C4D4E6 /* unit-tests-target.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = SPMProjectTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -570,7 +566,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = SPMProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -589,7 +585,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = SPMProjectUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
