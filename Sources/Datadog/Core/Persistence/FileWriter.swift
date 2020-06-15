@@ -39,14 +39,10 @@ internal final class FileWriter {
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
 
             if try file.size() == 0 {
-                try file.append { (write: (Data) throws -> Void) in
-                    try write(data)
-                }
+                try file.append(data: data)
             } else {
                 let atomicData = dataFormat.separatorData + data
-                try file.append { write in
-                    try write(atomicData)
-                }
+                try file.append(data: atomicData)
             }
         } catch {
             userLogger.error("🔥 Failed to write log: \(error)")
