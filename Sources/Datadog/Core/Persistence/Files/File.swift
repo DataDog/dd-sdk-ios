@@ -16,7 +16,7 @@ internal protocol WritableFile {
     func size() throws -> UInt64
 
     /// Synchronously appends given data at the end of this file.
-    func append(transaction: ((Data) throws -> Void) throws -> Void) throws
+    func append(data: Data) throws
 }
 
 /// Provides convenient interface for reading contents and metadata of the file.
@@ -43,7 +43,7 @@ internal struct File: WritableFile, ReadableFile {
     }
 
     /// Appends given data at the end of this file.
-    func append(transaction: ((Data) throws -> Void) throws -> Void) throws {
+    func append(data: Data) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
         defer { fileHandle.closeFile() }
 
@@ -52,14 +52,8 @@ internal struct File: WritableFile, ReadableFile {
         }
 
         // Writes given data at the end of the file.
-        func appendData(_ data: Data) throws {
-            try objcExceptionHandler.rethrowToSwift {
-                fileHandle.write(data)
-            }
-        }
-
-        try transaction { chunkOfData in
-            try appendData(chunkOfData)
+        try objcExceptionHandler.rethrowToSwift {
+            fileHandle.write(data)
         }
     }
 
