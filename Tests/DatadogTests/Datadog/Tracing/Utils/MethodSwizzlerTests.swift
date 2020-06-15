@@ -13,146 +13,144 @@ private class EmptySubclass: BaseClass { }
 @objcMembers
 private class BaseClass: NSObject {
     static let returnValue = "this is base class"
-
     func methodToSwizzle() -> String {
         return Self.returnValue
     }
 }
 
-@objcMembers
-private class NonNSObjectSubclass {
-    static let returnValue = "this is base class"
+class RecursiveMethodSwizzlerTests: XCTestCase {
+    private typealias TypedIMPReturnString = @convention(c) (AnyObject, Selector) -> String
+    private typealias TypedBlockReturnString = @convention(block) (AnyObject) -> String
+    private let selToSwizzle = #selector(BaseClass.methodToSwizzle)
+    private let newIMPReturnString: IMP = {
+        let newBlockImp: TypedBlockReturnString = { _ in String.mockAny() }
+        return imp_implementationWithBlock(newBlockImp)
+    }()
 
-    func methodToSwizzle() -> String {
-        return Self.returnValue
-    }
-}
-
-private class ThirdPartySwizzler {
-    private var originalIMP: IMP? = nil
-    private let selector: Selector = #selector(BaseClass.methodToSwizzle)
-    private let targetClass: AnyClass = BaseClass.self
-
-    func swizzleMethodToSwizzle() {
-        typealias TypedIMP = @convention(c) (AnyObject, Selector) -> String
-        typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
-
-        let method: Method = class_getInstanceMethod(targetClass, selector)!
-        let currentMethodImp: IMP = method_getImplementation(method)
-        self.originalIMP = currentMethodImp
-
-        let typedMethodImp: TypedIMP = unsafeBitCast(currentMethodImp, to: TypedIMP.self)
-        let newBlockImp: TypedBlockIMP = { [originalImp = typedMethodImp, impSel = selector] impSelf -> String in
-            let originalRetVal = originalImp(impSelf, impSel)
-            return originalRetVal + "...3rd party swizzled"
-        }
-        let newImp = imp_implementationWithBlock(newBlockImp)
-        method_setImplementation(method, newImp)
-    }
-
-    deinit {
-        let method: Method = class_getInstanceMethod(targetClass, selector)!
-        method_setImplementation(method, self.originalIMP!)
-    }
-}
-
-class MethodSwizzlerTests: XCTestCase {
     private let swizzler = MethodSwizzler.shared
 
-    func testSimpleSwizzling() {
-        typealias TypedIMP = @convention(c) (AnyObject, Selector) -> String
-        typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
+    override func tearDown() {
+        super.tearDown()
+        MethodSwizzler.shared.unswizzleALL()
+    }
 
-        let sel = #selector(BaseClass.methodToSwizzle as (BaseClass) -> () -> String)
-        let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return .mockAny()
-        }
-        let newImp = imp_implementationWithBlock(newBlockImp)
-
+    func test_simpleSwizzle() {
         let obj = BaseClass()
 
-        XCTAssertNoThrow(try swizzler.swizzle(selector: sel, in: BaseClass.self, with: newImp))
-        XCTAssertEqual(obj.perform(sel)?.takeUnretainedValue() as? String, String.mockAny())
+        // before
+        XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
+        // swizzle
+        XCTAssertNoThrow(try swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString))
+        // after
+        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
     }
 
-    func testUnswizzling() {
-        typealias TypedIMP = @convention(c) (AnyObject, Selector) -> String
-        typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
-
-        let sel = #selector(BaseClass.methodToSwizzle as (BaseClass) -> () -> String)
-        let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return .mockAny()
-        }
-        let newImp = imp_implementationWithBlock(newBlockImp)
-
-        try! swizzler.swizzle(selector: sel, in: BaseClass.self, with: newImp)
-
+    func test_simpleUnswizzle() {
+        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
         let obj = BaseClass()
 
-        XCTAssertNoThrow(try swizzler.unswizzle(selector: sel, in: BaseClass.self))
-        XCTAssertEqual(obj.perform(sel)?.takeUnretainedValue() as? String, BaseClass.returnValue)
+        // before
+        XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue)
+        // unswizzle
+        XCTAssertNoThrow(try swizzler.unswizzle(selector: selToSwizzle, in: BaseClass.self))
+        // after
+        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue)
     }
 
-    func testSwizzleSuperclassMethod() {
-        typealias TypedIMP = @convention(c) (AnyObject, Selector) -> String
-        typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
+    func test_swizzleWrongSelector() {
+        let wrongSelName = "selector_who_never_existed"
+        let wrongSelToSwizzle = Selector(wrongSelName)
 
-        let klass: AnyClass = EmptySubclass.self
-        let sel = #selector(EmptySubclass.methodToSwizzle as (EmptySubclass) -> () -> String)
-        let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return .mockAny()
-        }
-        let newImp = imp_implementationWithBlock(newBlockImp)
-
-        XCTAssertThrowsError(try swizzler.swizzle(selector: sel, in: klass, with: newImp), "Method should NOT be found") { error in
-            guard case SwizzlingError.methodNotFound(let unfoundSelector, let searchedClassName) = error else {
-                XCTFail("Expected `SwizzlingError.methodNotFound`: \(error)")
-                return
-            }
-            XCTAssertEqual(unfoundSelector, NSStringFromSelector(sel))
-            XCTAssertEqual(searchedClassName, NSStringFromClass(klass))
+        let expectedError = SwizzlingError.methodNotFound(selector: wrongSelName, className: NSStringFromClass(BaseClass.self))
+        XCTAssertThrowsError(
+            try swizzler.swizzleIfNonSwizzled(selector: wrongSelToSwizzle, in: BaseClass.self, with: newIMPReturnString),
+            "Unfound selector should throw"
+        ) { err in
+            XCTAssertEqual((err as? SwizzlingError), expectedError)
         }
     }
 
-    func testSwizzleNonNSObjectSubclass() {
-        typealias TypedIMP = @convention(c) (AnyObject, Selector) -> String
-        typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
+    func test_swizzleAlreadySwizzledSelector() {
+        let expectedError = SwizzlingError.methodIsAlreadySwizzled(
+            selector: NSStringFromSelector(selToSwizzle),
+            targetClassName: NSStringFromClass(BaseClass.self),
+            swizzledClassName: NSStringFromClass(BaseClass.self)
+        )
+        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
 
-        let klass: AnyClass = NonNSObjectSubclass.self
-        let sel = #selector(NonNSObjectSubclass.methodToSwizzle as (NonNSObjectSubclass) -> () -> String)
-        let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return .mockAny()
-        }
-        let newImp = imp_implementationWithBlock(newBlockImp)
-
-        XCTAssertThrowsError(try swizzler.swizzle(selector: sel, in: klass, with: newImp), "Method should NOT be found") { error in
-            guard case SwizzlingError.classIsNotNSObjectSubclass(let className) = error else {
-                XCTFail("Expected `SwizzlingError.classIsNotNSObjectSubclass`: \(error)")
-                return
-            }
-            XCTAssertEqual(className, NSStringFromClass(klass))
+        XCTAssertThrowsError(
+            try swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString),
+            "Already swizzled selector should throw"
+        ) { err in
+            XCTAssertEqual((err as? SwizzlingError), expectedError)
         }
     }
 
-    func testThirdPartySwizzling() {
-        typealias TypedIMP = @convention(c) (AnyObject, Selector) -> String
-        typealias TypedBlockIMP = @convention(block) (AnyObject) -> String
+    func test_swizzleSubclass() {
+        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
+        let expectedError = SwizzlingError.methodIsAlreadySwizzled(
+            selector: NSStringFromSelector(selToSwizzle),
+            targetClassName: NSStringFromClass(EmptySubclass.self),
+            swizzledClassName: NSStringFromClass(BaseClass.self)
+        )
 
-        let sel = #selector(BaseClass.methodToSwizzle as (BaseClass) -> () -> String)
-        let newBlockImp: TypedBlockIMP = { impSelf -> String in
-            return .mockAny()
+        XCTAssertThrowsError(
+            try swizzler.swizzleIfNonSwizzled(
+                selector: selToSwizzle,
+                in: EmptySubclass.self,
+                with: newIMPReturnString
+            ), "foo"
+        ) { err in
+            XCTAssertEqual(err as? SwizzlingError, expectedError)
         }
-        let newImp = imp_implementationWithBlock(newBlockImp)
+    }
 
-        let obj = BaseClass()
+    func test_lazyEvaluationOfNewIMP() {
+        let wrongSelToSwizzle = Selector(("selector_who_never_existed"))
+        let newIMPProvider: () -> IMP = {
+            XCTFail("New IMP should not be created after error")
+            let block = { }
+            return imp_implementationWithBlock(block)
+        }
 
-        try! swizzler.swizzle(selector: sel, in: BaseClass.self, with: newImp)
+        XCTAssertThrowsError(
+            try swizzler.swizzleIfNonSwizzled(selector: wrongSelToSwizzle, in: BaseClass.self, with: newIMPProvider())
+        )
+    }
 
-        let thirdPartySwizzler = ThirdPartySwizzler()
-        thirdPartySwizzler.swizzleMethodToSwizzle()
+    func test_unswizzleNonSwizzledSelector() {
+        let selName = NSStringFromSelector(selToSwizzle)
 
-        let returnValue: String = obj.perform(sel)?.takeUnretainedValue() as! String
-        XCTAssertNotEqual(returnValue, String.mockAny())
-        XCTAssert(returnValue.contains(String.mockAny()))
+        let expectedError = SwizzlingError.methodWasNotSwizzled(selector: selName, className: NSStringFromClass(BaseClass.self))
+        XCTAssertThrowsError(
+            try swizzler.unswizzle(selector: selToSwizzle, in: BaseClass.self),
+            "Unswizzling a non-swizzled method should throw"
+        ) { err in
+            XCTAssertEqual((err as? SwizzlingError), expectedError)
+        }
+    }
+
+    func test_parityCurrentOriginalIMP() {
+        // before
+        let beforeOrigIMP: IMP = try! swizzler.originalImplementation(of: selToSwizzle, in: BaseClass.self)
+        let beforeCurrentIMP: IMP = try! swizzler.currentImplementation(of: selToSwizzle, in: BaseClass.self)
+        // swizzle
+        try! swizzler.swizzleIfNonSwizzled(selector: selToSwizzle, in: BaseClass.self, with: newIMPReturnString)
+        // after
+        let afterOrigIMP: IMP = try! swizzler.originalImplementation(of: selToSwizzle, in: BaseClass.self)
+        let afterCurrentIMP: IMP = try! swizzler.currentImplementation(of: selToSwizzle, in: BaseClass.self)
+
+        // unswizzle
+        XCTAssertNoThrow(try swizzler.unswizzle(selector: selToSwizzle, in: BaseClass.self))
+        // after unswizzle
+        let unswizzledOrigIMP: IMP = try! swizzler.originalImplementation(of: selToSwizzle, in: BaseClass.self)
+        let unswizzledCurrentIMP: IMP = try! swizzler.currentImplementation(of: selToSwizzle, in: BaseClass.self)
+
+        XCTAssertEqual(beforeOrigIMP, beforeCurrentIMP)
+        XCTAssertEqual(beforeOrigIMP, afterOrigIMP)
+        XCTAssertNotEqual(afterOrigIMP, afterCurrentIMP)
+
+        XCTAssertEqual(beforeOrigIMP, unswizzledOrigIMP)
+        XCTAssertEqual(beforeCurrentIMP, unswizzledCurrentIMP)
     }
 }

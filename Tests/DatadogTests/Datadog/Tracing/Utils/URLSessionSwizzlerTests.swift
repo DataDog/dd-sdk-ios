@@ -7,107 +7,242 @@
 import XCTest
 @testable import Datadog
 
-// TODO: RUMM-300 plug DDTracer into swizzled methods
+private typealias InterceptorTuple = (
+    block: RequestInterceptor,
+    interceptionExpectation: XCTestExpectation,
+    observationStartingExpectation: XCTestExpectation,
+    observationCompletedExpectation: XCTestExpectation
+)
+private func buildInterceptorTuple(modifiedURL: URL?) -> InterceptorTuple {
+    let interceptionExpectation = XCTestExpectation(description: "interceptionExpectation")
+    let observationExpectation_start = XCTestExpectation(description: "observationExpectation.start")
+    let observationExpectation_completed = XCTestExpectation(description: "observationExpectation.completed")
+
+    let observer: TaskObserver = { event in
+        switch event {
+        case .starting:
+            observationExpectation_start.fulfill()
+        case .completed:
+            observationExpectation_completed.fulfill()
+        }
+    }
+    let interceptor: RequestInterceptor = { originalRequest in
+        interceptionExpectation.fulfill()
+        guard let someURL = modifiedURL else {
+            return nil
+        }
+
+        var modifiedRequest = originalRequest
+        modifiedRequest.url = someURL
+
+        return (request: modifiedRequest, taskPayload: observer)
+    }
+
+    return (
+        block: interceptor,
+        interceptionExpectation: interceptionExpectation,
+        observationStartingExpectation: observationExpectation_start,
+        observationCompletedExpectation: observationExpectation_completed
+    )
+}
+
+//class URLSessionSwizzlerTests_DefaultConfig: URLSessionSwizzlerTests {
+//    private let _session = URLSession(configuration: .default)
+//    override var session: URLSession { _session }
+//}
+//
+//class URLSessionSwizzlerTests_CustomDelegate: URLSessionSwizzlerTests {
+//    private class SessionDelegate: NSObject, URLSessionDelegate { }
+//    private let _session = URLSession(
+//        configuration: .default,
+//        delegate: SessionDelegate(),
+//        delegateQueue: OperationQueue()
+//    )
+//    override var session: URLSession { _session }
+//}
 
 class URLSessionSwizzlerTests: XCTestCase {
-    func test_swizzleDataTaskWithURL() {
-        defer {
-            try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.Selectors.DataTaskWithURL,
-                in: URLSessionSwizzler.subjectClass
-            )
-        }
+    var session: URLSession { URLSession.shared }
+    let modifiedURL = URL(string: "https://foo.bar.modified")!
 
-        let session = URLSession(configuration: .default)
-
-        XCTAssertNoThrow(try URLSessionSwizzler.swizzleDataTaskWithURL())
-
-        let url = URL(string: "http://foo.bar")!
-        let task = session.dataTask(with: url)
-
-        XCTAssertEqual(task.originalRequest?.url, url)
+    override func tearDown() {
+        super.tearDown()
+        MethodSwizzler.shared.unswizzleALL()
     }
 
-    func test_unswizzleDataTaskWithURL() {
-        let session = URLSession(configuration: .default)
+    func test_dataTask_urlCompletion_alwaysIntercept() {
+        let completionExpectation = XCTestExpectation(description: "completionExpectation")
+        let interceptorTuple = buildInterceptorTuple(modifiedURL: modifiedURL)
 
-        XCTAssertNoThrow(try URLSessionSwizzler.swizzleDataTaskWithURL())
+        XCTAssertNoThrow(try swizzleURLSession(interceptor: interceptorTuple.block))
 
-        let url = URL(string: "http://foo.bar")!
-        let task = session.dataTask(with: url)
+        let task = session.dataTask(with: URL.mockAny()) { _, _, _ in
+            completionExpectation.fulfill()
+        }
 
-        XCTAssertEqual(task.originalRequest?.url, url)
+        XCTAssertNotEqual(task.originalRequest?.url, URL.mockAny())
+        XCTAssertEqual(task.originalRequest?.url, modifiedURL)
 
-        try! MethodSwizzler.shared.unswizzle(
-            selector: URLSessionSwizzler.Selectors.DataTaskWithURL,
-            in: URLSessionSwizzler.subjectClass
+        wait(
+            for: [interceptorTuple.interceptionExpectation],
+            timeout: 0.1,
+            enforceOrder: true
         )
 
-        let unswizzledTask = session.dataTask(with: url)
-        XCTAssertEqual(unswizzledTask.originalRequest?.url, url)
+        task.resume()
+
+        let resumeExpectations: [XCTestExpectation] = [
+            interceptorTuple.observationStartingExpectation,
+            completionExpectation,
+            interceptorTuple.observationCompletedExpectation
+        ]
+        wait(
+            for: resumeExpectations,
+            timeout: 0.1,
+            enforceOrder: true
+        )
     }
 
-    func test_swizzleDataTaskWithRequest() {
-        defer {
-            try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.Selectors.DataTaskWithRequest,
-                in: URLSessionSwizzler.subjectClass
-            )
+    func test_dataTask_requestCompletion_alwaysIntercept() {
+        let completionExpectation = XCTestExpectation(description: "completionExpectation")
+        let interceptorTuple = buildInterceptorTuple(modifiedURL: modifiedURL)
+
+        XCTAssertNoThrow(try swizzleURLSession(interceptor: interceptorTuple.block))
+
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in
+            completionExpectation.fulfill()
         }
 
-        let session = URLSession(configuration: .default)
+        XCTAssertNotEqual(task.originalRequest?.url, URL.mockAny())
+        XCTAssertEqual(task.originalRequest?.url, modifiedURL)
 
-        XCTAssertNoThrow(try URLSessionSwizzler.swizzleDataTaskWithRequest())
-
-        let url = URL(string: "http://foo.bar")!
-        let request = URLRequest(url: url)
-        let task = session.dataTask(with: request)
-
-        XCTAssertEqual(task.originalRequest?.url, url)
-    }
-
-    func test_swizzleDataTaskWithURLCompletion() {
-        defer {
-            try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.Selectors.DataTaskWithURLCompletion,
-                in: URLSessionSwizzler.subjectClass
-            )
-        }
-
-        let session = URLSession(configuration: .default)
-
-        XCTAssertNoThrow(try URLSessionSwizzler.swizzleDataTaskWithURLCompletionHandler())
-
-        let asyncExpc = expectation(description: "completion handler expectation")
-        let url = URL(string: "http://foo.bar")!
-        let task = session.dataTask(with: url) { _,_,_ in asyncExpc.fulfill() }
-
-        XCTAssertEqual(task.originalRequest?.url, url)
+        wait(
+            for: [interceptorTuple.interceptionExpectation],
+            timeout: 0.1,
+            enforceOrder: true
+        )
 
         task.resume()
-        wait(for: [asyncExpc], timeout: 0.1)
+
+        let resumeExpectations: [XCTestExpectation] = [
+            interceptorTuple.observationStartingExpectation,
+            completionExpectation,
+            interceptorTuple.observationCompletedExpectation
+        ]
+        wait(
+            for: resumeExpectations,
+            timeout: 0.1,
+            enforceOrder: true
+        )
     }
 
-    func test_swizzleDataTaskWithRequestCompletion() {
-        defer {
-            try! MethodSwizzler.shared.unswizzle(
-                selector: URLSessionSwizzler.Selectors.DataTaskWithRequestCompletion,
-                in: URLSessionSwizzler.subjectClass
-            )
+    func test_dataTask_requestCompletion_alwaysIntercept_noResume() {
+        let modifiedURL = URL(string: "https://foo.bar.modified")!
+        let interceptor: RequestInterceptor = { originalRequest in
+            var modifiedReq = originalRequest
+            modifiedReq.url = modifiedURL
+
+            let observer: TaskObserver = { event in
+                XCTFail("Observer should not be called without resume()")
+            }
+            return (request: modifiedReq, taskPayload: observer)
         }
 
-        let session = URLSession(configuration: .default)
+        XCTAssertNoThrow(try swizzleURLSession(interceptor: interceptor))
 
-        XCTAssertNoThrow(try URLSessionSwizzler.swizzleDataTaskWithRequestCompletionHandler())
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in }
 
-        let asyncExpc = expectation(description: "completion handler expectation")
-        let url = URL(string: "http://foo.bar")!
-        let request = URLRequest(url: url)
-        let task = session.dataTask(with: request) { _,_,_ in asyncExpc.fulfill() }
+        XCTAssertEqual(task.originalRequest?.url, modifiedURL)
+    }
+}
 
-        XCTAssertEqual(task.originalRequest?.url, url)
+// MARK: - 3rd party swizzlers
 
-        task.resume()
-        wait(for: [asyncExpc], timeout: 0.1)
+class ThirdPartySwizzlingTests: XCTestCase {
+    var session: URLSession { URLSession.shared }
+    let timeout: TimeInterval = 0.5
+
+    typealias Swizzler = ExchangingThirdPartySwizzler
+
+    func test_3rdPartySwizzler() {
+        let thirdPartySwizzler = Swizzler()
+        defer { thirdPartySwizzler.unswizzle() }
+
+        let dataTaskURLExpc = XCTestExpectation(description: "dataTaskURLExpc")
+        thirdPartySwizzler.swizzle_dataTask_url_completion(expectation: dataTaskURLExpc)
+
+        let dataTaskRequestExpc = XCTestExpectation(description: "dataTaskRequestExpc")
+        thirdPartySwizzler.swizzle_dataTask_request_completion(expectation: dataTaskRequestExpc)
+
+        session.dataTask(with: URL.mockAny()) { _, _, _ in }
+        session.dataTask(with: URLRequest.mockAny()) { _, _, _ in }
+
+        wait(for: [dataTaskURLExpc, dataTaskRequestExpc], timeout: timeout)
+    }
+
+    // NOTE: RUMM-452 dataTaskWithURL WITH interception changes execution path to dataTaskWithRequest
+    func test_3rdPartySwizzler_withDatadog_dataTaskWithURL_withoutInterception() {
+        let thirdPartySwizzler = Swizzler()
+        defer {
+            MethodSwizzler.shared.unswizzleALL()
+            thirdPartySwizzler.unswizzle()
+        }
+
+        let dataTaskURLExpc = XCTestExpectation(description: "dataTaskURLExpc")
+        thirdPartySwizzler.swizzle_dataTask_url_completion(expectation: dataTaskURLExpc)
+
+        let interceptorTuple = buildInterceptorTuple(modifiedURL: nil)
+        XCTAssertNoThrow(try swizzleURLSession(interceptor: interceptorTuple.block))
+
+        let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
+        XCTAssert(task.isKind(of: URLSessionTask.self))
+
+        wait(for: [interceptorTuple.interceptionExpectation, dataTaskURLExpc], timeout: timeout, enforceOrder: true)
+    }
+
+    func test_3rdPartySwizzler_withDatadog_dataTaskWithRequest_withoutInterception() {
+        let thirdPartySwizzler = Swizzler()
+        defer {
+            MethodSwizzler.shared.unswizzleALL()
+            thirdPartySwizzler.unswizzle()
+        }
+
+        let dataTaskRequestExpc = XCTestExpectation(description: "dataTaskRequestExpc")
+        thirdPartySwizzler.swizzle_dataTask_request_completion(expectation: dataTaskRequestExpc)
+
+        let interceptorTuple = buildInterceptorTuple(modifiedURL: nil)
+        XCTAssertNoThrow(try swizzleURLSession(interceptor: interceptorTuple.block))
+
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in }
+        XCTAssert(task.isKind(of: URLSessionTask.self))
+
+        wait(for: [interceptorTuple.interceptionExpectation, dataTaskRequestExpc], timeout: timeout, enforceOrder: true)
+    }
+
+    func test_3rdPartySwizzler_withDatadog_dataTaskWithRequest_withInterception() {
+        let thirdPartySwizzler = Swizzler()
+        defer {
+            MethodSwizzler.shared.unswizzleALL()
+            thirdPartySwizzler.unswizzle()
+        }
+
+        let dataTaskRequestExpc = XCTestExpectation(description: "dataTaskRequestExpc")
+        thirdPartySwizzler.swizzle_dataTask_request_completion(expectation: dataTaskRequestExpc)
+
+        let interceptorTuple = buildInterceptorTuple(modifiedURL: URL.mockAny())
+        XCTAssertNoThrow(try swizzleURLSession(interceptor: interceptorTuple.block))
+
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in }
+        XCTAssert(task.isKind(of: URLSessionTask.self))
+
+        wait(for: [interceptorTuple.interceptionExpectation, dataTaskRequestExpc], timeout: timeout, enforceOrder: true)
+    }
+
+    func todo_test_3rdPartySwizzler_withDatadog_resume() {
+        // TODO: RUMM-452
+        // We need a way in which 3rd party swizzling is done BEFORe Datadog swizzling
+        //
+        // URLSessionTask.resume is Datadog-swizzled within dataTaskWithURL/Request methods implicitly as we need to swizzle private subclasses
+        // We need a way to inject 3rd party swizzler between dataTask creation and task swizzling, which is a very narrow period
     }
 }
