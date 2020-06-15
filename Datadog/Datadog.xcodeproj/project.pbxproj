@@ -168,6 +168,7 @@
 		9E544A4D24752A8900E83072 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */; };
 		9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */; };
 		9E544A5124753DDE00E83072 /* MethodSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */; };
+		9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */; };
 		9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
@@ -401,6 +402,7 @@
 		9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
 		9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzlerTests.swift; sourceTree = "<group>"; };
+		9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DateFormatter.swift; sourceTree = "<group>"; };
 		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoderTests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
@@ -534,6 +536,7 @@
 			children = (
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
+				9E5D2D4A249137E900763FE4 /* AutoInstrumentation */,
 				61133B9F2423979B00786299 /* Utils */,
 				61133BA12423979B00786299 /* System */,
 				61133BA62423979B00786299 /* Persistence */,
@@ -758,6 +761,7 @@
 			children = (
 				61345612244756E300E7DA6B /* PerformancePresetTests.swift */,
 				618C365D248E858200520CDE /* Utils */,
+				9E5D2D4B2491382800763FE4 /* AutoInstrumentation */,
 				61133C222423990D00786299 /* System */,
 				61133C272423990D00786299 /* Persistence */,
 				61133C2E2423990D00786299 /* Upload */,
@@ -1040,8 +1044,6 @@
 			children = (
 				61C5A87C24509A0C00DA608C /* Casting.swift */,
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
-				9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */,
-				9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1082,8 +1084,6 @@
 				61C5A89B24509C1100DA608C /* UUID.swift */,
 				61C5A89A24509C1100DA608C /* WarningsTests.swift */,
 				61C5A89C24509C1100DA608C /* Casting.swift */,
-				9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */,
-				9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1128,6 +1128,24 @@
 				9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */,
 			);
 			path = include;
+			sourceTree = "<group>";
+		};
+		9E5D2D4A249137E900763FE4 /* AutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */,
+				9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */,
+			);
+			path = AutoInstrumentation;
+			sourceTree = "<group>";
+		};
+		9E5D2D4B2491382800763FE4 /* AutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */,
+				9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */,
+			);
+			path = AutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		9E68FB52244707FD0013A8AA /* _Datadog_Private */ = {
