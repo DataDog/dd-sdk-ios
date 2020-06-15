@@ -45,6 +45,92 @@ class FileWriterTests: XCTestCase {
         )
     }
 
+    /// NOTE: Test added after incident-4797
+    func testGivenFileContainingData_whenNextDataFails_itDoesNotMalformTheEndOfTheFile() throws {
+        let previousObjcExceptionHandler = objcExceptionHandler
+        defer { objcExceptionHandler = previousObjcExceptionHandler }
+
+        let expectation = self.expectation(description: "write completed")
+        let writer = FileWriter(
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
+            queue: queue
+        )
+
+        objcExceptionHandler = ObjcExceptionHandlerDeferredMock(
+            throwingError: ErrorMock("I/O exception"),
+            /*
+                Following the logic in `FileWriter` and `File`, the 3 comes from:
+                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the first write
+                - succeed on `fileHandle.write(_:)` for `writer.write(value: ["key1": "value1"])`
+                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the second `writer.write(value:)`
+                - throw an `I/O exception` for `fileHandle.write(_:)` for the second write
+             */
+            afterSucceedingCallsCounts: 3
+        )
+
+        writer.write(value: ["key1": "value1"]) // first write (2 calls to `ObjcExceptionHandler`)
+        writer.write(value: ["key2": "value2"]) // second write (2 calls to `ObjcExceptionHandler`, where the latter fails)
+
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        XCTAssertEqual(
+            try temporaryDirectory.files()[0].read().utf8String,
+            #"{"key1":"value1"}"# // second write should be ignored due to `I/O exception`
+        )
+    }
+
+    /// NOTE: Test added after incident-4797
+    func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
+        let previousObjcExceptionHandler = objcExceptionHandler
+        defer { objcExceptionHandler = previousObjcExceptionHandler }
+
+        let expectation = self.expectation(description: "write completed")
+        let writer = FileWriter(
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write to single file
+                    minFileAgeForRead: .distantFuture,
+                    maxFileAgeForRead: .distantFuture,
+                    maxObjectsInFile: .max, // write to single file
+                    maxObjectSize: .max
+                ),
+                dateProvider: SystemDateProvider()
+            ),
+            queue: queue
+        )
+
+        objcExceptionHandler = ObjcExceptionHandlerNonDeterministicMock(
+            throwingError: ErrorMock("I/O exception"),
+            withProbability: 0.2
+        )
+
+        struct Foo: Codable {
+            let foo = "bar"
+        }
+
+        (0...500).forEach { _ in writer.write(value: Foo()) }
+
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        let fileData = try temporaryDirectory.files()[0].read()
+        let jsonDecoder = JSONDecoder()
+
+        XCTAssertNoThrow(try jsonDecoder.decode([Foo].self, from: "[".utf8Data + fileData + "]".utf8Data))
+    }
+
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
         let expectation1 = self.expectation(description: "write completed")
         let expectation2 = self.expectation(description: "second write completed")

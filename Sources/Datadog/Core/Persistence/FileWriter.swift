@@ -43,9 +43,9 @@ internal final class FileWriter {
                     try write(data)
                 }
             } else {
+                let atomicData = dataFormat.separatorData + data
                 try file.append { write in
-                    try write(dataFormat.separatorData)
-                    try write(data)
+                    try write(atomicData)
                 }
             }
         } catch {
