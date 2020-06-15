@@ -92,49 +92,69 @@ public class Datadog {
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
 
-        // Initialize features:
+        // First, initialize internal loggers:
+
+        let internalLoggerConfiguration = InternalLoggerConfiguration(
+            applicationVersion: validConfiguration.applicationVersion,
+            environment: validConfiguration.environment,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+
+        userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
+        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
+
+        // Then, initialize features:
 
         let httpClient = HTTPClient()
         let mobileDevice = MobileDevice.current
 
-        let logging = LoggingFeature(
-            directory: try obtainLoggingFeatureDirectory(),
-            configuration: validConfiguration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            logsUploadURLProvider: UploadURLProvider(
-                urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-                queryItemProviders: [
-                    .ddsource(),
-                    .batchTime(using: dateProvider)
-                ]
-            ),
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
+        var logging: LoggingFeature?
+        var tracing: TracingFeature?
 
-        let tracing = TracingFeature(
-            directory: try obtainTracingFeatureDirectory(),
-            configuration: validConfiguration,
-            performance: performance,
-            loggingFeatureAdapter: LoggingForTracingAdapter(loggingFeature: logging),
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            tracesUploadURLProvider: UploadURLProvider(
-                urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
-                queryItemProviders: [
-                    .batchTime(using: dateProvider)
-                ]
-            ),
-            dateProvider: dateProvider,
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
+        if configuration.loggingEnabled {
+            logging = LoggingFeature(
+                directory: try obtainLoggingFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                logsUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .ddsource(),
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
+                dateProvider: dateProvider,
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
+
+        if configuration.tracingEnabled {
+            tracing = TracingFeature(
+                directory: try obtainTracingFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                tracesUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
+                dateProvider: dateProvider,
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
@@ -155,10 +175,15 @@ public class Datadog {
             throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
         }
 
-        // Deinitialize features:
+        // First, reset internal loggers:
+        userLogger = createNoOpSDKUserLogger()
+        developerLogger = nil
 
+        // Then, deinitialize features:
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
+
+        // Deinitialize `Datadog`:
         Datadog.instance = nil
     }
 }

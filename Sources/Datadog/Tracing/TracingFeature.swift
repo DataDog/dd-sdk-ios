@@ -23,7 +23,9 @@ internal final class TracingFeature {
 
     // MARK: - Integration With Other Features
 
-    let loggingFeatureAdapter: LoggingForTracingAdapter
+    /// Integration with Logging feature, which enables the `span.log()` functionality.
+    /// Equals `nil` if Logging feature is disabled.
+    let loggingFeatureAdapter: LoggingForTracingAdapter?
 
     // MARK: - Dependencies
 
@@ -120,7 +122,7 @@ internal final class TracingFeature {
         directory: Directory,
         configuration: Datadog.ValidConfiguration,
         performance: PerformancePreset,
-        loggingFeatureAdapter: LoggingForTracingAdapter,
+        loggingFeatureAdapter: LoggingForTracingAdapter?,
         mobileDevice: MobileDevice,
         httpClient: HTTPClient,
         tracesUploadURLProvider: UploadURLProvider,

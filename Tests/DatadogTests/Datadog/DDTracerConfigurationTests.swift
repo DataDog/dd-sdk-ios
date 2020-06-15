@@ -25,6 +25,7 @@ class DDTracerConfigurationTests: XCTestCase {
                 serviceName: "service-name",
                 environment: "tests"
             ),
+            loggingFeature: .mockNoOp(temporaryDirectory: temporaryDirectory),
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
@@ -57,7 +58,7 @@ class DDTracerConfigurationTests: XCTestCase {
         XCTAssertNil(spanBuilder.networkConnectionInfoProvider)
         XCTAssertNil(spanBuilder.carrierInfoProvider)
 
-        guard let tracingLogBuilder = (tracer.logOutput.loggingOutput as? LogFileOutput)?.logBuilder else {
+        guard let tracingLogBuilder = (tracer.logOutput?.loggingOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
             return
         }
@@ -92,7 +93,7 @@ class DDTracerConfigurationTests: XCTestCase {
         XCTAssertTrue(spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
 
-        guard let tracingLogBuilder = (tracer.logOutput.loggingOutput as? LogFileOutput)?.logBuilder else {
+        guard let tracingLogBuilder = (tracer.logOutput?.loggingOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
             return
         }
@@ -104,44 +105,5 @@ class DDTracerConfigurationTests: XCTestCase {
         XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(tracingLogBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(tracingLogBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
-    }
-}
-
-class DDTracerErrorTests: XCTestCase {
-    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let tracer = DDTracer.initialize(configuration: .init())
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
-        )
-        XCTAssertTrue(tracer is DDNoopTracer)
-    }
-
-    func testGivenDatadogNotInitialized_whenUsingTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        XCTAssertNil(Datadog.instance)
-
-        let tracer = DDTracer(
-            spanOutput: SpanOutputMock(),
-            logOutput: .init(loggingOutput: LogOutputMock())
-        )
-        let fixtures: [(() -> Void, String)] = [
-            ({ _ = tracer.startSpan(operationName: .mockAny()) },
-             "`Datadog.initialize()` must be called prior to `startSpan(...)`."),
-        ]
-
-        fixtures.forEach { tracerMethod, expectedConsoleError in
-            tracerMethod()
-            XCTAssertEqual(printFunction.printedMessage, "🔥 Datadog SDK usage error: \(expectedConsoleError)")
-        }
     }
 }

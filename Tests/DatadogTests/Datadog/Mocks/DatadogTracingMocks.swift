@@ -58,10 +58,21 @@ class SpanOutputMock: SpanOutput {
 }
 
 extension DDTracer {
-    static func mockNoOp() -> DDTracer {
+    static func mockAny() -> DDTracer {
+        return mockWith()
+    }
+
+    static func mockWith(
+        spanOutput: SpanOutput = SpanOutputMock(),
+        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
+        dateProvider: DateProvider = SystemDateProvider(),
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+    ) -> DDTracer {
         return DDTracer(
-            spanOutput: SpanOutputMock(),
-            logOutput: .init(loggingOutput: LogOutputMock())
+            spanOutput: spanOutput,
+            logOutput: logOutput,
+            dateProvider: dateProvider,
+            tracingUUIDGenerator: tracingUUIDGenerator
         )
     }
 }

@@ -55,10 +55,12 @@ extension Datadog {
         }
 
         internal let clientToken: String
+        internal let environment: String
+        internal var loggingEnabled: Bool
+        internal var tracingEnabled: Bool
         internal let logsEndpoint: LogsEndpoint
         internal let tracesEndpoint: TracesEndpoint
         internal let serviceName: String?
-        internal let environment: String
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -79,14 +81,53 @@ extension Datadog {
         public class Builder {
             internal let clientToken: String
             internal let environment: String
-            internal var serviceName: String? = nil
+            internal var loggingEnabled = true
+            internal var tracingEnabled = true
             internal var logsEndpoint: LogsEndpoint = .us
             internal var tracesEndpoint: TracesEndpoint = .us
+            internal var serviceName: String? = nil
 
             internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
                 self.environment = environment
             }
+
+            // MARK: - Features Configuration
+
+            /// Enables or disables the logging feature.
+            ///
+            /// This option is meant to opt-out from using Datadog Logging entirely, no matter of your environment or build configuration. If you need to
+            /// disable logging only for certain scenarios (e.g. in `DEBUG` build configuration), use `sendLogsToDatadog(false)` available
+            /// on `Logger.Builder`.
+            ///
+            /// If `enableLogging(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the logging feature. This will give you additional performance optimization if you only use tracing, but not logging.
+            ///
+            /// **NOTE**: If you use logging for tracing (`span.log(fields:)`) keep the logging feature enabled. Otherwise the logs
+            /// you send for `span` objects won't be delivered to Datadog.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func enableLogging(_ enabled: Bool) -> Builder {
+                self.loggingEnabled = enabled
+                return self
+            }
+
+            /// Enables or disables the tracing feature.
+            ///
+            /// This option is meant to opt-out from using Datadog Tracing entirely, no matter of your environment or build configuration. If you need to
+            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `OpenTracing.Global.sharedTracer` to `DDTracer`,
+            /// and your app will be using the no-op tracer instance provided by `OpenTracing`.
+            ///
+            /// If `enableTracing(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the tracing feature. This will give you additional performance optimization if you only use logging, but not tracing.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func enableTracing(_ enabled: Bool) -> Builder {
+                self.tracingEnabled = enabled
+                return self
+            }
+
+            // MARK: - Endpoints Configuration
 
             /// Sets the server endpoint to which logs are sent.
             /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
@@ -102,6 +143,8 @@ extension Datadog {
                 return self
             }
 
+            // MARK: - Other Settings
+
             /// Sets the default service name associated with data send to Datadog.
             /// NOTE: The `serviceName` can be also overwriten by each `Logger` instance.
             /// - Parameter serviceName: the service name (default value is set to application bundle identifier)
@@ -114,10 +157,12 @@ extension Datadog {
             public func build() -> Configuration {
                 return Configuration(
                     clientToken: clientToken,
+                    environment: environment,
+                    loggingEnabled: loggingEnabled,
+                    tracingEnabled: tracingEnabled,
                     logsEndpoint: logsEndpoint,
                     tracesEndpoint: tracesEndpoint,
-                    serviceName: serviceName,
-                    environment: environment
+                    serviceName: serviceName
                 )
             }
         }
