@@ -3,9 +3,9 @@
 Send logs to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side logging library][1] and leverage the following features:
 
 * Log to Datadog in JSON format natively.
-* Add `context` and extra custom attributes to each log sent.
+* Use default and add custom attributes to each log sent.
 * Record real client IP addresses and User-Agents.
-* Optimized network usage with automatic bulk posts.
+* Leverage optimized network usage with automatic bulk posts.
 
 **Note**: The `dd-sdk-ios` library supports all iOS versions 11+.
 
@@ -54,6 +54,7 @@ Datadog.initialize(
     appContext: .init(),
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
         .build()
 )
 ```
@@ -66,6 +67,7 @@ Datadog.initialize(
     appContext: .init(),
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
         .set(logsEndpoint: .eu)
         .build()
 )
@@ -74,17 +76,17 @@ Datadog.initialize(
     {{% /tab %}}
     {{< /tabs >}}
 
-     When writing your application, you can enable development logs. All internal messages in the library with a priority equal to or higher than the provided level are then logged to console logs.
+     When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
 
     ```swift
     Datadog.verbosityLevel = .debug
     ```
 
-3. Configure the iOS Logger:
+3. Configure the `Logger`:
 
     ```swift
     logger = Logger.builder
-        .set(serviceName: "app-name")
+        .sendNetworkInfo(true)
         .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
         .build()
     ```
@@ -177,7 +179,7 @@ Use the `removeAttribute(forKey:)` method to remove a custom attribute from all 
 
 ```swift
 // This removes the attribute "device-model" from all further log send.
-logger.removeAttribute("device-model")
+logger.removeAttribute(forKey: "device-model")
 
 ```
 
