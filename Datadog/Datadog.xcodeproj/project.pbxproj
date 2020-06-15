@@ -168,7 +168,6 @@
 		9E544A4D24752A8900E83072 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */; };
 		9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */; };
 		9E544A5124753DDE00E83072 /* MethodSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */; };
-		9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */; };
 		9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
@@ -402,7 +401,6 @@
 		9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
 		9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzlerTests.swift; sourceTree = "<group>"; };
-		9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DateFormatter.swift; sourceTree = "<group>"; };
 		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoderTests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
@@ -522,7 +520,7 @@
 				61E917D02465423600E6C631 /* DDTracerConfiguration.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133B9E2423979B00786299 /* Core */,
-				61133BBC2423979B00786299 /* Logs */,
+				61133BBC2423979B00786299 /* Logging */,
 				61C5A87724509A0C00DA608C /* Tracing */,
 				61216277247D1F2100AC5D67 /* FeaturesIntegration */,
 				61133BB72423979B00786299 /* Utils */,
@@ -612,7 +610,7 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		61133BBC2423979B00786299 /* Logs */ = {
+		61133BBC2423979B00786299 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
 				612983CC2449E62E00D4424B /* LoggingFeature.swift */,
@@ -620,7 +618,7 @@
 				61133BC12423979B00786299 /* Log */,
 				61133BC52423979B00786299 /* LogOutputs */,
 			);
-			path = Logs;
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		61133BBF2423979B00786299 /* Attributes */ = {
@@ -730,7 +728,7 @@
 				61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */,
 				61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */,
 				61133C212423990D00786299 /* Core */,
-				61133C392423990D00786299 /* Logs */,
+				61133C392423990D00786299 /* Logging */,
 				61C5A89724509C1100DA608C /* Tracing */,
 				61216278247D20D500AC5D67 /* FeaturesIntegration */,
 				61133C352423990D00786299 /* Utils */,
@@ -823,14 +821,14 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		61133C392423990D00786299 /* Logs */ = {
+		61133C392423990D00786299 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
 				61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */,
 				61133C3A2423990D00786299 /* Log */,
 				61133C3D2423990D00786299 /* LogOutputs */,
 			);
-			path = Logs;
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		61133C3A2423990D00786299 /* Log */ = {
