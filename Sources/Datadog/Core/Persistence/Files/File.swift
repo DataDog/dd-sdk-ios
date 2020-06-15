@@ -66,8 +66,18 @@ internal struct File: WritableFile, ReadableFile {
 
     func read() throws -> Data {
         let fileHandle = try FileHandle(forReadingFrom: url)
-        defer { fileHandle.closeFile() }
-        return fileHandle.readDataToEndOfFile()
+
+        if #available(iOS 13.0, *) {
+            defer { try? fileHandle.close() }
+            return try fileHandle.readToEnd() ?? Data()
+        } else {
+            defer {
+                try? objcExceptionHandler.rethrowToSwift {
+                    fileHandle.closeFile()
+                }
+            }
+            return fileHandle.readDataToEndOfFile()
+        }
     }
 
     func size() throws -> UInt64 {

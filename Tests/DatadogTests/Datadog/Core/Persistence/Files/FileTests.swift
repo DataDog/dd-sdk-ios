@@ -71,11 +71,21 @@ class FileTests: XCTestCase {
         XCTAssertEqual(try file.size(), 15)
     }
 
-    func testItThrowsIOErrors() throws {
+    func testWhenIOExceptionHappens_itThrowsWhenWritting() throws {
         let file = try temporaryDirectory.createFile(named: "file")
         try file.delete()
 
         XCTAssertThrowsError(try file.append(data: .mock(ofSize: 5))) { error in
+            XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
+        }
+    }
+
+    func testWhenIOExceptionHappens_itThrowsWhenReading() throws {
+        let file = try temporaryDirectory.createFile(named: "file")
+        try file.append(data: .mock(ofSize: 5))
+        try file.delete()
+
+        XCTAssertThrowsError(try file.read()) { error in
             XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
         }
     }
