@@ -45,15 +45,25 @@ internal struct File: WritableFile, ReadableFile {
     /// Appends given data at the end of this file.
     func append(data: Data) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
-        defer { fileHandle.closeFile() }
 
-        try objcExceptionHandler.rethrowToSwift {
-            fileHandle.seekToEndOfFile()
-        }
+        if #available(iOS 13.0, *) {
+            try fileHandle.seekToEnd()
+            try fileHandle.write(contentsOf: data)
+            try fileHandle.close()
+        } else {
+            defer {
+                try? objcExceptionHandler.rethrowToSwift {
+                    fileHandle.closeFile()
+                }
+            }
 
-        // Writes given data at the end of the file.
-        try objcExceptionHandler.rethrowToSwift {
-            fileHandle.write(data)
+            try objcExceptionHandler.rethrowToSwift {
+                fileHandle.seekToEndOfFile()
+            }
+
+            try objcExceptionHandler.rethrowToSwift {
+                fileHandle.write(data)
+            }
         }
     }
 

@@ -70,4 +70,13 @@ class FileTests: XCTestCase {
         try file.append(data: .mock(ofSize: 10))
         XCTAssertEqual(try file.size(), 15)
     }
+
+    func testItThrowsIOErrors() throws {
+        let file = try temporaryDirectory.createFile(named: "file")
+        try file.delete()
+
+        XCTAssertThrowsError(try file.append(data: .mock(ofSize: 5))) { error in
+            XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
+        }
+    }
 }
