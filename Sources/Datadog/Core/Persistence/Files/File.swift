@@ -47,9 +47,9 @@ internal struct File: WritableFile, ReadableFile {
         let fileHandle = try FileHandle(forWritingTo: url)
 
         if #available(iOS 13.0, *) {
+            defer { try? fileHandle.close() }
             try fileHandle.seekToEnd()
             try fileHandle.write(contentsOf: data)
-            try fileHandle.close()
         } else {
             defer {
                 try? objcExceptionHandler.rethrowToSwift {
@@ -59,9 +59,6 @@ internal struct File: WritableFile, ReadableFile {
 
             try objcExceptionHandler.rethrowToSwift {
                 fileHandle.seekToEndOfFile()
-            }
-
-            try objcExceptionHandler.rethrowToSwift {
                 fileHandle.write(data)
             }
         }
