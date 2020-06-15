@@ -536,6 +536,7 @@
 			children = (
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
+				9E5D2D4A249137E900763FE4 /* AutoInstrumentation */,
 				61133B9F2423979B00786299 /* Utils */,
 				61133BA12423979B00786299 /* System */,
 				61133BA62423979B00786299 /* Persistence */,
@@ -760,6 +761,7 @@
 			children = (
 				61345612244756E300E7DA6B /* PerformancePresetTests.swift */,
 				618C365D248E858200520CDE /* Utils */,
+				9E5D2D4B2491382800763FE4 /* AutoInstrumentation */,
 				61133C222423990D00786299 /* System */,
 				61133C272423990D00786299 /* Persistence */,
 				61133C2E2423990D00786299 /* Upload */,
@@ -866,7 +868,6 @@
 				61133C452423990D00786299 /* SwiftExtensions.swift */,
 				61133C462423990D00786299 /* TestsDirectory.swift */,
 				61133C472423990D00786299 /* DatadogExtensions.swift */,
-				9E56C64E2481954D001ED01A /* ThirdPartySwizzler.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1043,8 +1044,6 @@
 			children = (
 				61C5A87C24509A0C00DA608C /* Casting.swift */,
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
-				9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */,
-				9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1085,8 +1084,6 @@
 				61C5A89B24509C1100DA608C /* UUID.swift */,
 				61C5A89A24509C1100DA608C /* WarningsTests.swift */,
 				61C5A89C24509C1100DA608C /* Casting.swift */,
-				9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */,
-				9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1131,6 +1128,24 @@
 				9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */,
 			);
 			path = include;
+			sourceTree = "<group>";
+		};
+		9E5D2D4A249137E900763FE4 /* AutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */,
+				9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */,
+			);
+			path = AutoInstrumentation;
+			sourceTree = "<group>";
+		};
+		9E5D2D4B2491382800763FE4 /* AutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */,
+				9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */,
+			);
+			path = AutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		9E68FB52244707FD0013A8AA /* _Datadog_Private */ = {
@@ -1511,7 +1526,6 @@
 			files = (
 				61C5A8A024509C1100DA608C /* Casting.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
-				9E56C64F2481954D001ED01A /* ThirdPartySwizzler.swift in Sources */,
 				61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */,
 				61C36470243B5C8300C4D4E6 /* ServerMock.swift in Sources */,
 				61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */,

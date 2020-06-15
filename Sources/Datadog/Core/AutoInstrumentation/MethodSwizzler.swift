@@ -6,18 +6,7 @@
 
 import Foundation
 
-internal enum SwizzlingError: LocalizedError, Equatable {
-    case methodNotFound(selector: String, className: String)
-
-    var errorDescription: String? {
-        switch self {
-        case .methodNotFound(let selector, let className):
-            return "\(selector) is not found in \(className)"
-        }
-    }
-}
-
-internal class MethodSwizzler {
+internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
     struct FoundMethod: Hashable {
         let method: Method
         let klass: AnyClass
@@ -27,7 +16,7 @@ internal class MethodSwizzler {
             self.klass = klass
         }
 
-        static func == (lhs: MethodSwizzler.FoundMethod, rhs: MethodSwizzler.FoundMethod) -> Bool {
+        static func == (lhs: FoundMethod, rhs: FoundMethod) -> Bool {
             let methodParity = (lhs.method == rhs.method)
             let classParity = (NSStringFromClass(lhs.klass) == NSStringFromClass(rhs.klass))
             return methodParity && classParity
@@ -41,11 +30,16 @@ internal class MethodSwizzler {
         }
     }
 
-    static let shared = MethodSwizzler()
-    private init() { }
-    private var implementationCache = [FoundMethod: IMP]()
+    private var implementationCache: [FoundMethod: IMP]
+    var swizzledMethods: [FoundMethod] {
+        return Array(implementationCache.keys)
+    }
 
-    func findMethod(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {
+    init() throws {
+        self.implementationCache = [:]
+    }
+
+    static func findMethod(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {
         /// NOTE: RUMM-452 as we never add/remove methods/classes at runtime,
         /// search operation doesn't have to wrapped in sync {...} although it's visible in the interface
         var headKlass: AnyClass? = klass
@@ -55,10 +49,10 @@ internal class MethodSwizzler {
             }
             headKlass = class_getSuperclass(headKlass)
         }
-        throw SwizzlingError.methodNotFound(selector: NSStringFromSelector(selector), className: NSStringFromClass(klass))
+        throw InternalError(description: "\(NSStringFromSelector(selector)) is not found in \(NSStringFromClass(klass))")
     }
 
-    func originalImplementation<TypedIMP>(of found: FoundMethod) -> TypedIMP {
+    func originalImplementation(of found: FoundMethod) -> TypedIMP {
         return sync {
             let originalImp: IMP = implementationCache[found] ?? method_getImplementation(found.method)
             return unsafeBitCast(originalImp, to: TypedIMP.self)
@@ -66,10 +60,9 @@ internal class MethodSwizzler {
     }
 
     @discardableResult
-    func swizzle<TypedCurrentIMP, TypedNewIMPBlock>(
+    func swizzle(
         _ foundMethod: FoundMethod,
-        impSignature: TypedCurrentIMP.Type,
-        impProvider: (TypedCurrentIMP) -> TypedNewIMPBlock,
+        impProvider: (TypedIMP) -> TypedBlockIMP,
         onlyIfNonSwizzled: Bool = false
     ) -> Bool {
         sync {
@@ -78,26 +71,12 @@ internal class MethodSwizzler {
                 return false
             }
             let currentIMP = method_getImplementation(foundMethod.method)
-            let current_typedIMP = unsafeBitCast(currentIMP, to: impSignature)
-            let newImpBlock: TypedNewIMPBlock = impProvider(current_typedIMP)
+            let current_typedIMP = unsafeBitCast(currentIMP, to: TypedIMP.self)
+            let newImpBlock: TypedBlockIMP = impProvider(current_typedIMP)
             let newImp: IMP = imp_implementationWithBlock(newImpBlock)
 
             set(newIMP: newImp, for: foundMethod)
             return true
-        }
-    }
-
-    // MARK: - Unsafe methods
-
-    func unsafe_unswizzleALL() {
-        return sync {
-            let cachedMethods: [FoundMethod] = Array(implementationCache.keys)
-            for foundMethod in cachedMethods {
-                if let cachedImp = implementationCache[foundMethod] {
-                    set(newIMP: cachedImp, for: foundMethod)
-                    implementationCache[foundMethod] = nil
-                }
-            }
         }
     }
 
@@ -110,7 +89,7 @@ internal class MethodSwizzler {
         return block()
     }
 
-    private func findMethod(with selector: Selector, in klass: AnyClass) -> Method? {
+    private static func findMethod(with selector: Selector, in klass: AnyClass) -> Method? {
         var methodsCount: UInt32 = 0
         let methodsCountPtr = withUnsafeMutablePointer(to: &methodsCount) { $0 }
         guard let methods: UnsafeMutablePointer<Method> = class_copyMethodList(klass, methodsCountPtr) else {
