@@ -126,7 +126,7 @@ class DDTracerTests: XCTestCase {
             tags: [
                 "tag1": "string value",
                 "error": true,
-                "resource.name": "GET /foo.png"
+                DDTags.resource: "GET /foo.png"
             ],
             startTime: .mockDecember15th2019At10AMUTC()
         )

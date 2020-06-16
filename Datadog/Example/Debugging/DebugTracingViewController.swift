@@ -6,6 +6,7 @@
 
 import UIKit
 import OpenTracing
+import struct Datadog.DDTags
 
 class DebugTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!
@@ -52,7 +53,7 @@ class DebugTracingViewController: UIViewController {
         queue1.async {
             let span = Global.sharedTracer.startSpan(operationName: spanName)
             if let resourceName = resourceName {
-                span.setTag(key: "resource.name", value: resourceName) // TODO: RUMM-390 use public constant
+                span.setTag(key: DDTags.resource, value: resourceName)
             }
             if isError {
                 // To only mark the span as an error, use the Open Tracing `error` tag:
@@ -62,10 +63,10 @@ class DebugTracingViewController: UIViewController {
                 // send a log containing Open Tracing log fields:
                 span.log(
                     fields: [
-                        "event": "error",
-                        "error.kind": "Simulated error",
-                        "message": "Describe what happened",
-                        "stack": "Foo.swift:42",
+                        OTLogFields.event: "error",
+                        OTLogFields.errorKind: "Simulated error",
+                        OTLogFields.message: "Describe what happened",
+                        OTLogFields.stack: "Foo.swift:42",
                     ]
                 )
             }

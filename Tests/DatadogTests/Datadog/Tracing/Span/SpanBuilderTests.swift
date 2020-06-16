@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import OpenTracing
 @testable import Datadog
 
 class SpanBuilderTests: XCTestCase {
@@ -36,7 +37,7 @@ class SpanBuilderTests: XCTestCase {
         let builder: SpanBuilder = .mockAny()
 
         // given
-        var ddspan: DDSpan = .mockWith(tags: [OpenTracingTagKeys.error: true])
+        var ddspan: DDSpan = .mockWith(tags: [OTTags.error: true])
         var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
@@ -44,7 +45,7 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(try span.tags.toEquatable(), ["error": "true"])
 
         // given
-        ddspan = .mockWith(tags: [OpenTracingTagKeys.error: false])
+        ddspan = .mockWith(tags: [OTTags.error: false])
         span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
@@ -57,7 +58,7 @@ class SpanBuilderTests: XCTestCase {
 
         // given
         var ddspan: DDSpan = .mockWith(tags: [:])
-        ddspan.log(fields: [OpenTracingLogFields.errorKind: "Swift error"])
+        ddspan.log(fields: [OTLogFields.errorKind: "Swift error"])
         var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
@@ -68,10 +69,10 @@ class SpanBuilderTests: XCTestCase {
         ddspan = .mockWith(tags: [:])
         ddspan.log(
             fields: [
-                OpenTracingLogFields.errorKind: "Swift error",
-                OpenTracingLogFields.event: "error",
-                OpenTracingLogFields.message: "Error occured",
-                OpenTracingLogFields.stack: "Foo.swift:42",
+                OTLogFields.errorKind: "Swift error",
+                OTLogFields.event: "error",
+                OTLogFields.message: "Error occured",
+                OTLogFields.stack: "Foo.swift:42",
             ]
         )
         span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
@@ -90,8 +91,8 @@ class SpanBuilderTests: XCTestCase {
         // given
         ddspan = .mockWith(tags: [:])
         ddspan.log(fields: ["foo": "bar"]) // ignored
-        ddspan.log(fields: [OpenTracingLogFields.errorKind: "Swift error 1"]) // captured
-        ddspan.log(fields: [OpenTracingLogFields.errorKind: "Swift error 2"]) // ignored
+        ddspan.log(fields: [OTLogFields.errorKind: "Swift error 1"]) // captured
+        ddspan.log(fields: [OTLogFields.errorKind: "Swift error 2"]) // ignored
         span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
@@ -104,7 +105,7 @@ class SpanBuilderTests: XCTestCase {
 
         // given
         var ddspan: DDSpan = .mockWith(tags: ["error": true])
-        ddspan.log(fields: [OpenTracingLogFields.event: "error"])
+        ddspan.log(fields: [OTLogFields.event: "error"])
         var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
@@ -112,7 +113,7 @@ class SpanBuilderTests: XCTestCase {
 
         // given
         ddspan = .mockWith(tags: ["error": false])
-        ddspan.log(fields: [OpenTracingLogFields.event: "error"])
+        ddspan.log(fields: [OTLogFields.event: "error"])
         span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
@@ -123,7 +124,7 @@ class SpanBuilderTests: XCTestCase {
         let builder: SpanBuilder = .mockAny()
 
         // given
-        let ddspan: DDSpan = .mockWith(tags: ["resource.name": "custom resource name"]) // TODO: RUMM-390 use public constant
+        let ddspan: DDSpan = .mockWith(tags: [DDTags.resource: "custom resource name"])
         let span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then

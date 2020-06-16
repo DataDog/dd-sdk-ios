@@ -6,6 +6,7 @@
 
 import UIKit
 import OpenTracing
+import struct Datadog.DDTags
 
 internal class SendTracesFixtureViewController: UIViewController {
     private let backgroundQueue = DispatchQueue(label: "background-queue")
@@ -24,19 +25,18 @@ internal class SendTracesFixtureViewController: UIViewController {
         )
         dataDownloadingSpan.setTag(key: "data.kind", value: "image")
         dataDownloadingSpan.setTag(key: "data.url", value: URL(string: "https://example.com/image.png")!)
-        dataDownloadingSpan.setTag(key: "resource.name", value: "GET /image.png") // TODO: RUMM-390 use public constant
+        dataDownloadingSpan.setTag(key: DDTags.resource, value: "GET /image.png")
 
         downloadSomeData { [weak self] data in
             // Simulate logging download progress
             dataDownloadingSpan.log(
                 fields: [
-                    "message": "download progress",
+                    OTLogFields.message: "download progress",
                     "progress": 0.99
                 ]
             )
 
             dataDownloadingSpan.finish()
-
             guard let self = self else { return }
 
             let dataPresentationSpan = tracer.startSpan(
@@ -44,7 +44,7 @@ internal class SendTracesFixtureViewController: UIViewController {
                 childOf: self.viewAppearingSpan.context
             )
             self.present(data: data)
-            dataPresentationSpan.setTag(key: "error", value: true)
+            dataPresentationSpan.setTag(key: OTTags.error, value: true)
             dataPresentationSpan.finish()
         }
     }
