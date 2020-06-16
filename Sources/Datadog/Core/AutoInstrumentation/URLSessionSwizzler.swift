@@ -11,39 +11,35 @@ import Foundation
 /// Takes an URL and if it is to be intercepted, returns a TaskObserver and additional HTTP headers
 /// otherwise, returns nil
 internal typealias RequestInterceptor = (URL?) -> InterceptionResult?
-internal typealias InterceptionResult = (taskObserver: TaskObserver, httpHeaders: [String: String])
+internal struct InterceptionResult {
+    let taskObserver: TaskObserver
+    let httpHeaders: [String: String]
+}
 
 /// Block to be executed at task starting and completion by URLSessionSwizzler
 /// starting event is passed at task.resume()
 /// completed event is passed when task's completion handler is being executed
 internal typealias TaskObserver = (TaskObservationEvent) -> Void
-internal enum TaskObservationEvent: Equatable {
-    case starting
-    case completed
+internal enum TaskObservationEvent {
+    case starting(URLRequest?)
+    case completed(URLResponse?, Error?)
 }
 
 internal class URLSessionSwizzler {
     let dataTaskWithURL: DataTaskWithURL
     let dataTaskwithRequest: DataTaskWithRequest
-    let resume: Resume
+    /// resume must be shared among URLSessionSwizzler instances
+    /// to avoid swizzling task.resume() multiple times
+    static let resume = Resume()
 
-    init() throws {
-        self.dataTaskWithURL = try DataTaskWithURL()
-        self.dataTaskwithRequest = try DataTaskWithRequest()
-        self.resume = try Resume()
+    init(with resume: Resume = URLSessionSwizzler.resume) throws {
+        self.dataTaskWithURL = try DataTaskWithURL(resume: resume)
+        self.dataTaskwithRequest = try DataTaskWithRequest(resume: resume)
     }
 
-    static var hasSwizzledBefore = false
-    @discardableResult
-    func swizzleOnce(using interceptor: @escaping RequestInterceptor) -> Bool {
-        if Self.hasSwizzledBefore {
-            consolePrint("URLSession is already swizzled before!")
-            return false
-        }
-        dataTaskWithURL.swizzle(using: interceptor, resumeSwizzler: resume)
-        dataTaskwithRequest.swizzle(using: interceptor, resumeSwizzler: resume)
-        Self.hasSwizzledBefore = true
-        return true
+    func swizzle(using interceptor: @escaping RequestInterceptor) {
+        dataTaskWithURL.swizzle(using: interceptor)
+        dataTaskwithRequest.swizzle(using: interceptor)
     }
 
     // MARK: - Private
@@ -57,28 +53,28 @@ internal class URLSessionSwizzler {
         private static let selector = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URL, @escaping CompletionHandler) -> URLSessionDataTask)
 
         private let method: FoundMethod
-        override init() throws {
+        private let resume: Resume
+        init(resume: Resume) throws {
             self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            try super.init()
+            self.resume = resume
+            super.init()
         }
 
-        func swizzle(using interceptor: @escaping RequestInterceptor, resumeSwizzler: Resume) {
+        func swizzle(using interceptor: @escaping RequestInterceptor) {
             typealias BlockIMP = @convention(block) (URLSession, URL, @escaping CompletionHandler) -> URLSessionDataTask
+            let resumeSwizzler = resume
             swizzle(method) { currentTypedImp -> BlockIMP in
                 return { impSelf, impURL, impCompletion -> URLSessionDataTask in
                     guard let interceptionResult = interceptor(impURL) else {
                         return currentTypedImp(impSelf, Self.selector, impURL, impCompletion)
                     }
-
-                    weak var blockTask: URLSessionDataTask? = nil
                     let modifiedCompletion: CompletionHandler = { origData, origResponse, origError in
                         impCompletion(origData, origResponse, origError)
-                        blockTask?.payload?(.completed)
+                        interceptionResult.taskObserver(.completed(origResponse, origError))
                     }
                     let task = currentTypedImp(impSelf, Self.selector, impURL, modifiedCompletion)
                     try? resumeSwizzler.swizzleIfNeeded(in: task)
-                    task.payload = interceptionResult.taskObserver
-                    blockTask = task
+                    task.addPayload(interceptionResult.taskObserver)
                     return task
                 }
             }
@@ -92,30 +88,30 @@ internal class URLSessionSwizzler {
         private static let selector = #selector(URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask)
 
         private let method: FoundMethod
-        override init() throws {
+        private let resume: Resume
+        init(resume: Resume) throws {
             self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            try super.init()
+            self.resume = resume
+            super.init()
         }
 
-        func swizzle(using interceptor: @escaping RequestInterceptor, resumeSwizzler: Resume) {
+        func swizzle(using interceptor: @escaping RequestInterceptor) {
             typealias BlockIMP = @convention(block) (URLSession, URLRequest, @escaping URLSessionSwizzler.CompletionHandler) -> URLSessionDataTask
-
+            let resumeSwizzler = resume
             self.swizzle(self.method) { typedCurrentImp -> BlockIMP in
                 return { impSelf, impURLRequest, impCompletion -> URLSessionDataTask in
-                    guard let interceptionResult = interceptor(impURLRequest.url) else {
-                        return typedCurrentImp(impSelf, Self.selector, impURLRequest, impCompletion)
+                    var modifiedRequest = impURLRequest
+                    guard let interceptionResult = interceptor(impURLRequest.url),
+                        modifiedRequest.add(newHTTPHeaders: interceptionResult.httpHeaders) else {
+                            return typedCurrentImp(impSelf, Self.selector, impURLRequest, impCompletion)
                     }
-
-                    weak var blockTask: URLSessionDataTask? = nil
                     let modifiedCompletion: CompletionHandler = { origData, origResponse, origError in
                         impCompletion(origData, origResponse, origError)
-                        blockTask?.payload?(.completed)
+                        interceptionResult.taskObserver(.completed(origResponse, origError))
                     }
-                    let modifiedRequest = impURLRequest.merging(interceptionResult.httpHeaders)
                     let task = typedCurrentImp(impSelf, Self.selector, modifiedRequest, modifiedCompletion)
                     try? resumeSwizzler.swizzleIfNeeded(in: task)
-                    task.payload = interceptionResult.taskObserver
-                    blockTask = task
+                    task.addPayload(interceptionResult.taskObserver)
                     return task
                 }
             }
@@ -145,7 +141,7 @@ internal class URLSessionSwizzler {
                 foundMethod,
                 impProvider: { currentTypedImp -> BlockIMP in
                     return { impSelf in
-                        impSelf.payload?(.starting)
+                        impSelf.payloads?.forEach { $0(.starting(impSelf.currentRequest)) }
                         return currentTypedImp(impSelf, Self.selector)
                     }
                 },
@@ -156,26 +152,33 @@ internal class URLSessionSwizzler {
 }
 
 private extension URLRequest {
-    func merging(_ httpHeaders: [String: String]) -> URLRequest {
+    mutating func add(newHTTPHeaders httpHeaders: [String: String]) -> Bool {
         var modifiedRequest = self
         for pair in httpHeaders {
             if modifiedRequest.value(forHTTPHeaderField: pair.key) == nil {
                 modifiedRequest.setValue(pair.value, forHTTPHeaderField: pair.key)
+            } else {
+                return false
             }
         }
-        return modifiedRequest
+        self = modifiedRequest
+        return true
     }
 }
 
-/// payload is a TaskObserver, executed in task.resume() and completion
+/// payloads is an array TaskObservers, each one is executed in task.resume() and completion
 private extension URLSessionTask {
     /// NOTE: RUMM-452 KVO on task.state could be utilized instead of manually swizzling every task object
     /// if we switch to KVO from swizzle(task), this shouldn't require refactoring and contained within this file only
     /// therefore we keep payload as an implementation detail of URLSessionSwizzler.
     /// unfortunately, KVO in Swift was broken until iOS 13 and task.state didn't seem reliable according to online crash reports
     private static var payloadAssociationKey: UInt8 = 0
-    var payload: TaskObserver? {
-        get { objc_getAssociatedObject(self, &Self.payloadAssociationKey) as? TaskObserver }
-        set { objc_setAssociatedObject(self, &Self.payloadAssociationKey, newValue, .OBJC_ASSOCIATION_RETAIN) }
+    var payloads: [TaskObserver]? {
+        return objc_getAssociatedObject(self, &Self.payloadAssociationKey) as? [TaskObserver]
+    }
+    func addPayload(_ payload: @escaping TaskObserver) {
+        var current = payloads ?? [TaskObserver]()
+        current.append(payload)
+        objc_setAssociatedObject(self, &Self.payloadAssociationKey, current, .OBJC_ASSOCIATION_RETAIN)
     }
 }

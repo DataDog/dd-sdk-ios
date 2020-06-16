@@ -7,40 +7,53 @@
 import XCTest
 @testable import Datadog
 
+let defaultHTTPHeaders: [String: String] = ["defaultKey": "defaultValue"]
+let modifiedHTTPHeaders: [String: String] = ["key": "value"]
+let secondModifiedHTTPHeaders: [String: String] = ["alt_key": "alt_value"]
+
 class URLSessionSwizzlerTests: XCTestCase {
     /// URL.mockAny() is a valid URL so that it loads actual resource and exceeds expectation timeouts
     let mockURL = URL(string: "https://foo.bar")!
     let mockURLRequest: URLRequest = {
         var req = URLRequest(url: URL(string: "https://foo.bar")!)
-        req.allHTTPHeaderFields = ["defaultKey": "defaultValue"]
+        req.allHTTPHeaderFields = defaultHTTPHeaders
         return req
     }()
-    let modifiedHTTPHeaders: [String: String] = ["key": "value"]
-    let mergedHTTPHeaders: [String: String] = ["key": "value", "defaultKey": "defaultValue"]
 
     var session: URLSession { URLSession.shared }
-    var swizzler = try! URLSessionSwizzler()
+    // swiftlint:disable implicitly_unwrapped_optional
+    var resumeSwizzler: URLSessionSwizzler.Resume!
+    var firstSwizzler: URLSessionSwizzler!
+    var secondSwizzler: URLSessionSwizzler!
+    var thirdSwizzler: URLSessionSwizzler!
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        resumeSwizzler = URLSessionSwizzler.Resume()
+        firstSwizzler = try! URLSessionSwizzler(with: self.resumeSwizzler)
+        secondSwizzler = try! URLSessionSwizzler(with: self.resumeSwizzler)
+        thirdSwizzler = try! URLSessionSwizzler(with: self.resumeSwizzler)
+    }
 
     override func tearDown() {
         super.tearDown()
-        swizzler.unswizzle()
-        URLSessionSwizzler.hasSwizzledBefore = false
+        firstSwizzler.unswizzle()
+        resumeSwizzler.unswizzle()
     }
 
-    func test_swizzleOnce_calledMultipleTimes() {
-        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: nil)
-        // first swizzling ✅
-        XCTAssertTrue(swizzler.swizzleOnce(using: interceptorTuple.block))
-        // further swizzling attempts ❌
-        XCTAssertFalse(swizzler.swizzleOnce(using: interceptorTuple.block))
-        XCTAssertFalse(swizzler.swizzleOnce(using: interceptorTuple.block))
-    }
-
-    func test_dataTask_urlCompletion_alwaysIntercept() {
+    func test_dataTask_urlCompletion() {
         let completionExpectation = XCTestExpectation(description: "completionExpectation")
-        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: modifiedHTTPHeaders)
+        // intercepts and injects modifiedHTTPHeaders
+        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: modifiedHTTPHeaders, id: 1)
+        // does NOT intercept
+        let secondInterceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: nil, id: 2)
+        // intercepts and injects secondModifiedHTTPHeaders
+        let thirdInterceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: secondModifiedHTTPHeaders, id: 3)
 
-        swizzler.swizzleOnce(using: interceptorTuple.block)
+        firstSwizzler.swizzle(using: interceptorTuple.block)
+        secondSwizzler.swizzle(using: secondInterceptorTuple.block)
+        thirdSwizzler.swizzle(using: thirdInterceptorTuple.block)
 
         let task = session.dataTask(with: mockURL) { _, _, _ in
             completionExpectation.fulfill()
@@ -51,16 +64,23 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertNil(taskRequest.allHTTPHeaderFields)
 
         wait(
-            for: [interceptorTuple.interceptionExpectation],
+            for: [
+                thirdInterceptorTuple.interceptionExpectation,
+                secondInterceptorTuple.interceptionExpectation,
+                interceptorTuple.interceptionExpectation
+            ],
             timeout: 1,
             enforceOrder: true
         )
 
         task.resume()
 
+        /// we expect secondInterceptor not to observe as it does not intercept in the first place
         let resumeExpectations: [XCTestExpectation] = [
             interceptorTuple.observationStartingExpectation,
+            thirdInterceptorTuple.observationStartingExpectation,
             completionExpectation,
+            thirdInterceptorTuple.observationCompletedExpectation,
             interceptorTuple.observationCompletedExpectation
         ]
         wait(
@@ -70,21 +90,31 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
     }
 
-    func test_dataTask_requestCompletion_alwaysIntercept() {
+    func test_dataTask_requestCompletion() {
         let completionExpectation = XCTestExpectation(description: "completionExpectation")
-        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: modifiedHTTPHeaders)
+        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: modifiedHTTPHeaders, id: 1)
+        let secondInterceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: nil, id: 2)
+        let thirdInterceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: secondModifiedHTTPHeaders, id: 3)
 
-        swizzler.swizzleOnce(using: interceptorTuple.block)
+        firstSwizzler.swizzle(using: interceptorTuple.block)
+        secondSwizzler.swizzle(using: secondInterceptorTuple.block)
+        thirdSwizzler.swizzle(using: thirdInterceptorTuple.block)
 
         let task = session.dataTask(with: mockURLRequest) { _, _, _ in
             completionExpectation.fulfill()
         }
 
-        XCTAssertEqual(task.originalRequest?.url, mockURLRequest.url)
-        XCTAssertEqual(task.originalRequest?.allHTTPHeaderFields, mergedHTTPHeaders)
+        let taskRequest = task.originalRequest!
+        XCTAssertEqual(taskRequest.url, mockURL)
+        let expectedHeaders = defaultHTTPHeaders + modifiedHTTPHeaders + secondModifiedHTTPHeaders
+        XCTAssertEqual(taskRequest.allHTTPHeaderFields, expectedHeaders)
 
         wait(
-            for: [interceptorTuple.interceptionExpectation],
+            for: [
+                thirdInterceptorTuple.interceptionExpectation,
+                secondInterceptorTuple.interceptionExpectation,
+                interceptorTuple.interceptionExpectation
+            ],
             timeout: 1,
             enforceOrder: true
         )
@@ -93,7 +123,9 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let resumeExpectations: [XCTestExpectation] = [
             interceptorTuple.observationStartingExpectation,
+            thirdInterceptorTuple.observationStartingExpectation,
             completionExpectation,
+            thirdInterceptorTuple.observationCompletedExpectation,
             interceptorTuple.observationCompletedExpectation
         ]
         wait(
@@ -103,54 +135,46 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
     }
 
-    func test_dataTask_requestCompletion_alwaysIntercept_noResume() {
-        let interceptor: RequestInterceptor = { _ in
-            let observer: TaskObserver = { event in
-                XCTFail("Observer should not be called without resume()")
-            }
-            return (taskObserver: observer, httpHeaders: self.modifiedHTTPHeaders)
-        }
-
-        swizzler.swizzleOnce(using: interceptor)
-
-        session.dataTask(with: mockURLRequest) { _, _, _ in }
-    }
-
-    func test_dataTask_urlCompletion_neverIntercept() {
+    func test_dataTask_requestCompletion_alreadyTracedRequest() {
         let completionExpectation = XCTestExpectation(description: "completionExpectation")
-        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: nil)
+        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: modifiedHTTPHeaders, id: 1)
+        let secondInterceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: modifiedHTTPHeaders, id: 2)
+        /// secondInterception injects headers
+        /// when first interceptor provides the same headers, interception should be ignored by URLSessionSwizzler
+        interceptorTuple.observationStartingExpectation.isInverted = true
+        interceptorTuple.observationCompletedExpectation.isInverted = true
 
-        swizzler.swizzleOnce(using: interceptorTuple.block)
-
-        let task = session.dataTask(with: mockURL) { _, _, _ in
-            completionExpectation.fulfill()
-        }
-        task.resume()
-
-        XCTAssertEqual(task.originalRequest?.url, mockURL)
-
-        wait(
-            for: [interceptorTuple.interceptionExpectation, completionExpectation],
-            timeout: 1,
-            enforceOrder: true
-        )
-    }
-
-    func test_dataTask_requestCompletion_neverIntercept() {
-        let completionExpectation = XCTestExpectation(description: "completionExpectation")
-        let interceptorTuple = buildInterceptorTuple(modifiedHTTPHeaders: nil)
-
-        swizzler.swizzleOnce(using: interceptorTuple.block)
+        firstSwizzler.swizzle(using: interceptorTuple.block)
+        secondSwizzler.swizzle(using: secondInterceptorTuple.block)
 
         let task = session.dataTask(with: mockURLRequest) { _, _, _ in
             completionExpectation.fulfill()
         }
-        task.resume()
 
-        XCTAssertEqual(task.originalRequest?.url, mockURL)
+        let taskRequest = task.originalRequest!
+        XCTAssertEqual(taskRequest.url, mockURL)
+        let expectedHeaders = defaultHTTPHeaders + modifiedHTTPHeaders
+        XCTAssertEqual(taskRequest.allHTTPHeaderFields, expectedHeaders)
 
         wait(
-            for: [interceptorTuple.interceptionExpectation, completionExpectation],
+            for: [
+                secondInterceptorTuple.interceptionExpectation,
+                interceptorTuple.interceptionExpectation
+            ],
+            timeout: 1,
+            enforceOrder: true
+        )
+
+        task.resume()
+
+        /// we expect firstInterceptor not to observe as the request was already traced at its firstInterceptor
+        let resumeExpectations: [XCTestExpectation] = [
+            secondInterceptorTuple.observationStartingExpectation,
+            completionExpectation,
+            secondInterceptorTuple.observationCompletedExpectation
+        ]
+        wait(
+            for: resumeExpectations,
             timeout: 1,
             enforceOrder: true
         )
@@ -168,11 +192,16 @@ class URLSessionSwizzlerTests_CustomDelegate: URLSessionSwizzlerTests {
     override var session: URLSession { _session }
 }
 
+private extension Dictionary where Key == String, Value == String {
+    static func + (lhs: Self, rhs: Self) -> Self {
+        return lhs.merging(rhs) { lhsKey, _ in return lhsKey }
+    }
+}
 private extension URLSessionSwizzler {
     func unswizzle() {
         dataTaskWithURL.unswizzle()
         dataTaskwithRequest.unswizzle()
-        resume.unswizzle()
+        Self.resume.unswizzle()
     }
 }
 private typealias InterceptorTuple = (
@@ -181,10 +210,14 @@ private typealias InterceptorTuple = (
     observationStartingExpectation: XCTestExpectation,
     observationCompletedExpectation: XCTestExpectation
 )
-private func buildInterceptorTuple(modifiedHTTPHeaders: [String: String]?) -> InterceptorTuple {
-    let interceptionExpectation = XCTestExpectation(description: "interceptionExpectation")
-    let observationExpectation_start = XCTestExpectation(description: "observationExpectation.start")
-    let observationExpectation_completed = XCTestExpectation(description: "observationExpectation.completed")
+private func buildInterceptorTuple(modifiedHTTPHeaders: [String: String]?, id: Int) -> InterceptorTuple {
+    let interceptionExpectation = XCTestExpectation(description: "\(id): interceptionExpectation")
+    let observationExpectation_start = XCTestExpectation(description: "\(id): observationExpectation.start")
+    let observationExpectation_completed = XCTestExpectation(description: "\(id): observationExpectation.completed")
+    if modifiedHTTPHeaders == nil {
+        observationExpectation_start.isInverted = true
+        observationExpectation_completed.isInverted = true
+    }
     let observer: TaskObserver = { event in
         switch event {
         case .starting:
@@ -198,7 +231,7 @@ private func buildInterceptorTuple(modifiedHTTPHeaders: [String: String]?) -> In
         guard let httpHeaders = modifiedHTTPHeaders else {
             return nil
         }
-        return (taskObserver: observer, httpHeaders: httpHeaders)
+        return InterceptionResult(taskObserver: observer, httpHeaders: httpHeaders)
     }
     return (
         block: interceptor,
