@@ -77,3 +77,133 @@ extension TracingFeature {
         )
     }
 }
+
+// MARK: - Span Mocks
+
+extension DDSpanContext {
+    static func mockAny() -> DDSpanContext {
+        return mockWith()
+    }
+
+    static func mockWith(
+        traceID: TracingUUID = .mockAny(),
+        spanID: TracingUUID = .mockAny(),
+        parentSpanID: TracingUUID? = .mockAny()
+    ) -> DDSpanContext {
+        return DDSpanContext(
+            traceID: traceID,
+            spanID: spanID,
+            parentSpanID: parentSpanID
+        )
+    }
+}
+
+extension DDSpan {
+    static func mockAny() -> DDSpan {
+        return mockWith()
+    }
+
+    static func mockWith(
+        tracer: DDTracer = .mockAny(),
+        context: DDSpanContext = .mockAny(),
+        operationName: String = .mockAny(),
+        startTime: Date = .mockAny(),
+        tags: [String: Codable] = [:]
+    ) -> DDSpan {
+        return DDSpan(
+            tracer: tracer,
+            context: context,
+            operationName: operationName,
+            startTime: startTime,
+            tags: tags
+        )
+    }
+}
+
+extension TracingUUID {
+    static func mockAny() -> TracingUUID {
+        return TracingUUID(rawValue: .mockAny())
+    }
+
+    static func mock(_ rawValue: UInt64) -> TracingUUID {
+        return TracingUUID(rawValue: rawValue)
+    }
+}
+
+class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
+    private(set) var uuid: TracingUUID
+    internal let count: UInt64
+    private let queue = DispatchQueue(label: "queue-RelativeTracingUUIDGenerator-\(UUID().uuidString)")
+
+    init(startingFrom uuid: TracingUUID, advancingByCount count: UInt64 = 1) {
+        self.uuid = uuid
+        self.count = count
+    }
+
+    func generateUnique() -> TracingUUID {
+        return queue.sync {
+            defer { uuid = TracingUUID(rawValue: uuid.rawValue + count) }
+            return uuid
+        }
+    }
+}
+
+// MARK: - Component Mocks
+
+extension DDTracer {
+    static func mockAny() -> DDTracer {
+        return mockWith()
+    }
+
+    static func mockWith(
+        spanOutput: SpanOutput = SpanOutputMock(),
+        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
+        dateProvider: DateProvider = SystemDateProvider(),
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+    ) -> DDTracer {
+        return DDTracer(
+            spanOutput: spanOutput,
+            logOutput: logOutput,
+            dateProvider: dateProvider,
+            tracingUUIDGenerator: tracingUUIDGenerator
+        )
+    }
+}
+
+extension SpanBuilder {
+    static func mockAny() -> SpanBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        applicationVersion: String = .mockAny(),
+        environment: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> SpanBuilder {
+        return SpanBuilder(
+            applicationVersion: applicationVersion,
+            environment: environment,
+            serviceName: serviceName,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+}
+
+/// `SpanOutput` recording received spans.
+class SpanOutputMock: SpanOutput {
+    struct Recorded {
+        let span: DDSpan
+        let finishTime: Date
+    }
+
+    var recorded: Recorded? = nil
+
+    func write(ddspan: DDSpan, finishTime: Date) {
+        recorded = Recorded(span: ddspan, finishTime: finishTime)
+    }
+}

@@ -31,7 +31,7 @@ class FileReaderTests: XCTestCase {
             queue: queue
         )
         _ = try temporaryDirectory
-            .createFile(named: .mockAnyFileName())
+            .createFile(named: Date.mockAny().toFileName)
             .append(data: "ABCD".utf8Data)
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)

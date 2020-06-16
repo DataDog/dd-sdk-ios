@@ -55,7 +55,21 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            uploadConditions: .mockAlwaysPerformingUpload(),
+            uploadConditions: DataUploadConditions(
+                batteryStatus: BatteryStatusProviderMock.mockWith(
+                    status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
+                ),
+                networkConnectionInfo: NetworkConnectionInfoProviderMock(
+                    networkConnectionInfo: NetworkConnectionInfo(
+                        reachability: .yes, // always upload
+                        availableInterfaces: [.wifi],
+                        supportsIPv4: true,
+                        supportsIPv6: true,
+                        isExpensive: false,
+                        isConstrained: false
+                    )
+                )
+            ),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny()
         )

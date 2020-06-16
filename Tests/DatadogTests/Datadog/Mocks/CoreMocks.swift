@@ -4,63 +4,83 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Foundation
-import XCTest
 @testable import Datadog
 
-/*
-A collection of SDK object mocks.
-It follows the mocking conventions described in `FoundationMocks.swift`.
- */
+// MARK: - Configuration Mocks
 
-// MARK: - Primitive types
+extension Datadog.Configuration {
+    static func mockAny() -> Datadog.Configuration {
+        return .mockWith()
+    }
 
-extension String {
-    /// Returns string being a valid name of the file managed by `FilesOrchestrator`.
-    static func mockAnyFileName() -> String {
-        return Date.mockAny().toFileName
+    static func mockWith(
+        clientToken: String = .mockAny(),
+        environment: String = .mockAny(),
+        loggingEnabled: Bool = false,
+        tracingEnabled: Bool = false,
+        logsEndpoint: LogsEndpoint = .us,
+        tracesEndpoint: TracesEndpoint = .us,
+        serviceName: String? = .mockAny()
+    ) -> Datadog.Configuration {
+        return Datadog.Configuration(
+            clientToken: clientToken,
+            environment: environment,
+            loggingEnabled: loggingEnabled,
+            tracingEnabled: tracingEnabled,
+            logsEndpoint: logsEndpoint,
+            tracesEndpoint: tracesEndpoint,
+            serviceName: serviceName
+        )
     }
 }
 
-// MARK: - Date and time
-
-/// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
-class RelativeDateProvider: DateProvider {
-    private(set) var date: Date
-    internal let timeInterval: TimeInterval
-    private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
-
-    init(using date: Date = Date()) {
-        self.date = date
-        self.timeInterval = 0
+extension Datadog.ValidConfiguration {
+    static func mockAny() -> Datadog.ValidConfiguration {
+        return mockWith()
     }
 
-    init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
-        self.date = referenceDate
-        self.timeInterval = timeInterval
-    }
-
-    /// Returns current date and advances next date by `timeInterval`.
-    func currentDate() -> Date {
-        defer {
-            queue.async {
-                self.date.addTimeInterval(self.timeInterval)
-            }
-        }
-        return queue.sync {
-            return date
-        }
-    }
-
-    /// Pushes time forward by given number of seconds.
-    func advance(bySeconds seconds: TimeInterval) {
-        queue.async {
-            self.date = self.date.addingTimeInterval(seconds)
-        }
+    static func mockWith(
+        applicationName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        applicationBundleIdentifier: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        environment: String = .mockAny(),
+        logsUploadURLWithClientToken: URL = .mockAny(),
+        tracesUploadURLWithClientToken: URL = .mockAny()
+    ) -> Datadog.ValidConfiguration {
+        return Datadog.ValidConfiguration(
+            applicationName: applicationName,
+            applicationVersion: applicationVersion,
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            serviceName: serviceName,
+            environment: environment,
+            logsUploadURLWithClientToken: logsUploadURLWithClientToken,
+            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken
+        )
     }
 }
 
-// MARK: - PerformancePreset
+extension AppContext {
+    static func mockAny() -> AppContext {
+        return mockWith()
+    }
+
+    static func mockWith(
+        bundleType: BundleType = .iOSApp,
+        bundleIdentifier: String? = .mockAny(),
+        bundleVersion: String? = .mockAny(),
+        bundleName: String? = .mockAny()
+    ) -> AppContext {
+        return AppContext(
+            bundleType: bundleType,
+            bundleIdentifier: bundleIdentifier,
+            bundleVersion: bundleVersion,
+            bundleName: bundleName
+        )
+    }
+}
+
+// MARK: - PerformancePreset Mocks
 
 struct StoragePerformanceMock: StoragePerformancePreset {
     let maxFileSize: UInt64
@@ -145,7 +165,7 @@ extension PerformancePreset {
     }
 }
 
-// MARK: - DataFormat
+// MARK: - Features Common Mocks
 
 extension DataFormat {
     static func mockAny() -> DataFormat {
@@ -165,15 +185,84 @@ extension DataFormat {
     }
 }
 
-// MARK: - HTTPHeaders
+/// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
+class RelativeDateProvider: DateProvider {
+    private(set) var date: Date
+    internal let timeInterval: TimeInterval
+    private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
+
+    init(using date: Date = Date()) {
+        self.date = date
+        self.timeInterval = 0
+    }
+
+    init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
+        self.date = referenceDate
+        self.timeInterval = timeInterval
+    }
+
+    /// Returns current date and advances next date by `timeInterval`.
+    func currentDate() -> Date {
+        defer {
+            queue.async {
+                self.date.addTimeInterval(self.timeInterval)
+            }
+        }
+        return queue.sync {
+            return date
+        }
+    }
+
+    /// Pushes time forward by given number of seconds.
+    func advance(bySeconds seconds: TimeInterval) {
+        queue.async {
+            self.date = self.date.addingTimeInterval(seconds)
+        }
+    }
+}
+
+extension UserInfo {
+    static func mockAny() -> UserInfo {
+        return mockEmpty()
+    }
+
+    static func mockEmpty() -> UserInfo {
+        return UserInfo(id: nil, name: nil, email: nil)
+    }
+}
+
+extension UserInfoProvider {
+    static func mockAny() -> UserInfoProvider {
+        return mockWith()
+    }
+
+    static func mockWith(userInfo: UserInfo = .mockAny()) -> UserInfoProvider {
+        let provider = UserInfoProvider()
+        provider.value = userInfo
+        return provider
+    }
+}
+
+extension UploadURLProvider {
+    static func mockAny() -> UploadURLProvider {
+        return UploadURLProvider(
+            urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
+            queryItemProviders: []
+        )
+    }
+}
+
+extension HTTPClient {
+    static func mockAny() -> HTTPClient {
+        return HTTPClient(session: URLSession())
+    }
+}
 
 extension HTTPHeaders {
     static func mockAny() -> HTTPHeaders {
         return HTTPHeaders(headers: [])
     }
 }
-
-// MARK: - System
 
 extension MobileDevice {
     static func mockAny() -> MobileDevice {
@@ -349,96 +438,13 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
     }
 }
 
-// MARK: - Persistence and Upload
-
-extension UploadURLProvider {
-    static func mockAny() -> UploadURLProvider {
-        return UploadURLProvider(
-            urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
-            queryItemProviders: []
-        )
+extension EncodableValue {
+    static func mockAny() -> EncodableValue {
+        return EncodableValue(String.mockAny())
     }
 }
 
-extension DataUploadConditions {
-    static func mockAlwaysPerformingUpload() -> DataUploadConditions {
-        return DataUploadConditions(
-            batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false)
-            ),
-            networkConnectionInfo: NetworkConnectionInfoProviderMock(
-                networkConnectionInfo: NetworkConnectionInfo(
-                    reachability: .yes,
-                    availableInterfaces: [.wifi],
-                    supportsIPv4: true,
-                    supportsIPv6: true,
-                    isExpensive: false,
-                    isConstrained: false
-                )
-            )
-        )
-    }
-}
-
-extension HTTPClient {
-    static func mockAny() -> HTTPClient {
-        return HTTPClient(session: URLSession())
-    }
-}
-
-// MARK: - Integration
-
-extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration {
-        return .mockWith()
-    }
-
-    static func mockWith(
-        clientToken: String = .mockAny(),
-        environment: String = .mockAny(),
-        loggingEnabled: Bool = false,
-        tracingEnabled: Bool = false,
-        logsEndpoint: LogsEndpoint = .us,
-        tracesEndpoint: TracesEndpoint = .us,
-        serviceName: String? = .mockAny()
-    ) -> Datadog.Configuration {
-        return Datadog.Configuration(
-            clientToken: clientToken,
-            environment: environment,
-            loggingEnabled: loggingEnabled,
-            tracingEnabled: tracingEnabled,
-            logsEndpoint: logsEndpoint,
-            tracesEndpoint: tracesEndpoint,
-            serviceName: serviceName
-        )
-    }
-}
-
-extension Datadog.ValidConfiguration {
-    static func mockAny() -> Datadog.ValidConfiguration {
-        return mockWith()
-    }
-
-    static func mockWith(
-        applicationName: String = .mockAny(),
-        applicationVersion: String = .mockAny(),
-        applicationBundleIdentifier: String = .mockAny(),
-        serviceName: String = .mockAny(),
-        environment: String = .mockAny(),
-        logsUploadURLWithClientToken: URL = .mockAny(),
-        tracesUploadURLWithClientToken: URL = .mockAny()
-    ) -> Datadog.ValidConfiguration {
-        return Datadog.ValidConfiguration(
-            applicationName: applicationName,
-            applicationVersion: applicationVersion,
-            applicationBundleIdentifier: applicationBundleIdentifier,
-            serviceName: serviceName,
-            environment: environment,
-            logsUploadURLWithClientToken: logsUploadURLWithClientToken,
-            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken
-        )
-    }
-}
+// MARK: - Global Dependencies Mocks
 
 /// Mock which can be used to intercept messages printed by `developerLogger` or
 /// `userLogger` by overwritting `Datadog.consolePrint` function:
@@ -451,47 +457,5 @@ class PrintFunctionMock {
 
     func print(message: String) {
         printedMessage = message
-    }
-}
-
-extension AppContext {
-    static func mockAny() -> AppContext {
-        return mockWith()
-    }
-
-    static func mockWith(
-        bundleType: BundleType = .iOSApp,
-        bundleIdentifier: String? = .mockAny(),
-        bundleVersion: String? = .mockAny(),
-        bundleName: String? = .mockAny()
-    ) -> AppContext {
-        return AppContext(
-            bundleType: bundleType,
-            bundleIdentifier: bundleIdentifier,
-            bundleVersion: bundleVersion,
-            bundleName: bundleName
-        )
-    }
-}
-
-extension UserInfo {
-    static func mockAny() -> UserInfo {
-        return mockEmpty()
-    }
-
-    static func mockEmpty() -> UserInfo {
-        return UserInfo(id: nil, name: nil, email: nil)
-    }
-}
-
-extension UserInfoProvider {
-    static func mockAny() -> UserInfoProvider {
-        return mockWith()
-    }
-
-    static func mockWith(userInfo: UserInfo = .mockAny()) -> UserInfoProvider {
-        let provider = UserInfoProvider()
-        provider.value = userInfo
-        return provider
     }
 }
