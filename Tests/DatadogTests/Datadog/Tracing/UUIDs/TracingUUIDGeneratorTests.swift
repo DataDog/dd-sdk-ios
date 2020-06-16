@@ -10,12 +10,12 @@ import XCTest
 class TracingUUIDGeneratorTests: XCTestCase {
     func testDefaultGenerationBoundaries() {
         let generator = DefaultTracingUUIDGenerator()
-        XCTAssertEqual(generator.min, 1)
-        XCTAssertEqual(generator.max, 9_223_372_036_854_775_807) // 2 ^ 63 -1
+        XCTAssertEqual(generator.range.lowerBound, 1)
+        XCTAssertEqual(generator.range.upperBound, 9_223_372_036_854_775_807) // 2 ^ 63 -1
     }
 
     func testItGeneratesUUIDsFromGivenBoundaries() {
-        let generator = DefaultTracingUUIDGenerator(lowerBoundary: 10, upperBoundary: 15)
+        let generator = DefaultTracingUUIDGenerator(range: 10...15)
         var generatedUUIDs: Set<UInt64> = []
 
         (0..<1_000).forEach { _ in
