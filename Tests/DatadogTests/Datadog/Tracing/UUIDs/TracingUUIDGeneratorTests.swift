@@ -8,18 +8,20 @@ import XCTest
 @testable import Datadog
 
 class TracingUUIDGeneratorTests: XCTestCase {
-    func testUUIDGenerationIsThreadSafe() {
+    func testDefaultGenerationBoundaries() {
         let generator = DefaultTracingUUIDGenerator()
-        var generatedUUIDs: [TracingUUID] = []
-        let queue = DispatchQueue(label: "uuid-array-sync")
+        XCTAssertEqual(generator.min, 1)
+        XCTAssertEqual(generator.max, 9_223_372_036_854_775_807) // 2 ^ 63 -1
+    }
 
-        DispatchQueue.concurrentPerform(iterations: 1_000) { iteration in
-            let uuid = generator.generateUnique()
-            queue.async { generatedUUIDs.append(uuid) }
+    func testItGeneratesUUIDsFromGivenBoundaries() {
+        let generator = DefaultTracingUUIDGenerator(lowerBoundary: 10, upperBoundary: 15)
+        var generatedUUIDs: Set<UInt64> = []
+
+        (0..<1_000).forEach { _ in
+            generatedUUIDs.insert(generator.generateUnique().rawValue)
         }
 
-        queue.sync { } // wait for all UUIDs in the array
-
-        XCTAssertEqual(generatedUUIDs.count, 1_000)
+        XCTAssertEqual(generatedUUIDs, [10, 11, 12, 13, 14, 15])
     }
 }
