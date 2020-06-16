@@ -6,10 +6,6 @@
 
 import _Datadog_Private
 
-/*
- A collection of mocks for `_Datadog_Private` module.
- */
-
 class ObjcExceptionHandlerMock: ObjcExceptionHandler {
     let error: Error
 

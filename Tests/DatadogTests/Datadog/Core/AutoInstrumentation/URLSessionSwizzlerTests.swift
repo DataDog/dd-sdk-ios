@@ -52,7 +52,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         wait(
             for: [interceptorTuple.interceptionExpectation],
-            timeout: 0.1,
+            timeout: 1,
             enforceOrder: true
         )
 
@@ -65,7 +65,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         ]
         wait(
             for: resumeExpectations,
-            timeout: 0.1,
+            timeout: 1,
             enforceOrder: true
         )
     }
@@ -85,7 +85,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         wait(
             for: [interceptorTuple.interceptionExpectation],
-            timeout: 0.1,
+            timeout: 1,
             enforceOrder: true
         )
 
@@ -98,7 +98,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         ]
         wait(
             for: resumeExpectations,
-            timeout: 0.1,
+            timeout: 1,
             enforceOrder: true
         )
     }
@@ -131,7 +131,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         wait(
             for: [interceptorTuple.interceptionExpectation, completionExpectation],
-            timeout: 0.1,
+            timeout: 1,
             enforceOrder: true
         )
     }
@@ -151,7 +151,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         wait(
             for: [interceptorTuple.interceptionExpectation, completionExpectation],
-            timeout: 0.1,
+            timeout: 1,
             enforceOrder: true
         )
     }

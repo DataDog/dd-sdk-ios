@@ -49,10 +49,8 @@
 		61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C152423990D00786299 /* DDLoggerBuilderTests.swift */; };
 		61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C162423990D00786299 /* DDConfigurationTests.swift */; };
 		61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C172423990D00786299 /* DDLoggerTests.swift */; };
-		61133C4C2423990D00786299 /* LogsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1A2423990D00786299 /* LogsMocks.swift */; };
 		61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */; };
 		61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1C2423990D00786299 /* UIKitMocks.swift */; };
-		61133C512423990D00786299 /* DatadogMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1F2423990D00786299 /* DatadogMocks.swift */; };
 		61133C522423990D00786299 /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
 		61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C232423990D00786299 /* MobileDeviceTests.swift */; };
 		61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C242423990D00786299 /* NetworkConnectionInfoProviderTests.swift */; };
@@ -143,8 +141,6 @@
 		61C5A88C24509A0C00DA608C /* HTTPHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */; };
 		61C5A88E24509A1F00DA608C /* DDTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88D24509A1F00DA608C /* DDTracer.swift */; };
 		61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88F24509AA700DA608C /* TracingFeature.swift */; };
-		61C5A89324509BD700DA608C /* SpansMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89124509BD700DA608C /* SpansMocks.swift */; };
-		61C5A89424509BD700DA608C /* DatadogTracingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89224509BD700DA608C /* DatadogTracingMocks.swift */; };
 		61C5A89624509BF600DA608C /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89524509BF600DA608C /* DDTracerTests.swift */; };
 		61C5A89D24509C1100DA608C /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89824509C1100DA608C /* DDSpanTests.swift */; };
 		61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89A24509C1100DA608C /* WarningsTests.swift */; };
@@ -161,6 +157,7 @@
 		61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917CE2464270500E6C631 /* EncodableValueTests.swift */; };
 		61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* DDTracerConfiguration.swift */; };
 		61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */; };
+		61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A6192498A51700075390 /* CoreMocks.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */; };
 		61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
@@ -168,7 +165,6 @@
 		9E544A4D24752A8900E83072 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */; };
 		9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */; };
 		9E544A5124753DDE00E83072 /* MethodSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */; };
-		9E58E8DF24615B89008E5063 /* ISO8601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */; };
 		9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
@@ -289,10 +285,8 @@
 		61133C152423990D00786299 /* DDLoggerBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDLoggerBuilderTests.swift; sourceTree = "<group>"; };
 		61133C162423990D00786299 /* DDConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDConfigurationTests.swift; sourceTree = "<group>"; };
 		61133C172423990D00786299 /* DDLoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDLoggerTests.swift; sourceTree = "<group>"; };
-		61133C1A2423990D00786299 /* LogsMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsMocks.swift; sourceTree = "<group>"; };
 		61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreTelephonyMocks.swift; sourceTree = "<group>"; };
 		61133C1C2423990D00786299 /* UIKitMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIKitMocks.swift; sourceTree = "<group>"; };
-		61133C1F2423990D00786299 /* DatadogMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogMocks.swift; sourceTree = "<group>"; };
 		61133C202423990D00786299 /* FoundationMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FoundationMocks.swift; sourceTree = "<group>"; };
 		61133C232423990D00786299 /* MobileDeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileDeviceTests.swift; sourceTree = "<group>"; };
 		61133C242423990D00786299 /* NetworkConnectionInfoProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoProviderTests.swift; sourceTree = "<group>"; };
@@ -377,8 +371,6 @@
 		61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersWriter.swift; sourceTree = "<group>"; };
 		61C5A88D24509A1F00DA608C /* DDTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracer.swift; sourceTree = "<group>"; };
 		61C5A88F24509AA700DA608C /* TracingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeature.swift; sourceTree = "<group>"; };
-		61C5A89124509BD700DA608C /* SpansMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpansMocks.swift; sourceTree = "<group>"; };
-		61C5A89224509BD700DA608C /* DatadogTracingMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogTracingMocks.swift; sourceTree = "<group>"; };
 		61C5A89524509BF600DA608C /* DDTracerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
 		61C5A89824509C1100DA608C /* DDSpanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 		61C5A89A24509C1100DA608C /* WarningsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WarningsTests.swift; sourceTree = "<group>"; };
@@ -395,6 +387,7 @@
 		61E917CE2464270500E6C631 /* EncodableValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableValueTests.swift; sourceTree = "<group>"; };
 		61E917D02465423600E6C631 /* DDTracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfiguration.swift; sourceTree = "<group>"; };
 		61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfigurationTests.swift; sourceTree = "<group>"; };
+		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
 		61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationTests.swift; sourceTree = "<group>"; };
 		61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureMocks.swift; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
@@ -402,7 +395,6 @@
 		9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
 		9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzlerTests.swift; sourceTree = "<group>"; };
-		9E58E8DE24615B89008E5063 /* ISO8601DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DateFormatter.swift; sourceTree = "<group>"; };
 		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoderTests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
@@ -522,7 +514,7 @@
 				61E917D02465423600E6C631 /* DDTracerConfiguration.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133B9E2423979B00786299 /* Core */,
-				61133BBC2423979B00786299 /* Logs */,
+				61133BBC2423979B00786299 /* Logging */,
 				61C5A87724509A0C00DA608C /* Tracing */,
 				61216277247D1F2100AC5D67 /* FeaturesIntegration */,
 				61133BB72423979B00786299 /* Utils */,
@@ -537,6 +529,7 @@
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
 				9E5D2D4A249137E900763FE4 /* AutoInstrumentation */,
+				61133BBF2423979B00786299 /* Attributes */,
 				61133B9F2423979B00786299 /* Utils */,
 				61133BA12423979B00786299 /* System */,
 				61133BA62423979B00786299 /* Persistence */,
@@ -612,15 +605,14 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		61133BBC2423979B00786299 /* Logs */ = {
+		61133BBC2423979B00786299 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
 				612983CC2449E62E00D4424B /* LoggingFeature.swift */,
-				61133BBF2423979B00786299 /* Attributes */,
 				61133BC12423979B00786299 /* Log */,
 				61133BC52423979B00786299 /* LogOutputs */,
 			);
-			path = Logs;
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		61133BBF2423979B00786299 /* Attributes */ = {
@@ -730,7 +722,7 @@
 				61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */,
 				61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */,
 				61133C212423990D00786299 /* Core */,
-				61133C392423990D00786299 /* Logs */,
+				61133C392423990D00786299 /* Logging */,
 				61C5A89724509C1100DA608C /* Tracing */,
 				61216278247D20D500AC5D67 /* FeaturesIntegration */,
 				61133C352423990D00786299 /* Utils */,
@@ -741,17 +733,12 @@
 		61133C192423990D00786299 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
-				61133C1A2423990D00786299 /* LogsMocks.swift */,
-				61C5A89124509BD700DA608C /* SpansMocks.swift */,
-				61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */,
-				61133C1C2423990D00786299 /* UIKitMocks.swift */,
-				61133C1F2423990D00786299 /* DatadogMocks.swift */,
-				61C5A89224509BD700DA608C /* DatadogTracingMocks.swift */,
-				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
-				61133C202423990D00786299 /* FoundationMocks.swift */,
 				61C3646F243B5C8300C4D4E6 /* ServerMock.swift */,
+				61F1A6192498A51700075390 /* CoreMocks.swift */,
 				61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */,
 				61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */,
+				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
+				61F1A61B2498AD2C00075390 /* SystemFrameworks */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -823,14 +810,14 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		61133C392423990D00786299 /* Logs */ = {
+		61133C392423990D00786299 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
 				61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */,
 				61133C3A2423990D00786299 /* Log */,
 				61133C3D2423990D00786299 /* LogOutputs */,
 			);
-			path = Logs;
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		61133C3A2423990D00786299 /* Log */ = {
@@ -1120,6 +1107,16 @@
 				61E917CE2464270500E6C631 /* EncodableValueTests.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		61F1A61B2498AD2C00075390 /* SystemFrameworks */ = {
+			isa = PBXGroup;
+			children = (
+				61133C202423990D00786299 /* FoundationMocks.swift */,
+				61133C1C2423990D00786299 /* UIKitMocks.swift */,
+				61133C1B2423990D00786299 /* CoreTelephonyMocks.swift */,
+			);
+			path = SystemFrameworks;
 			sourceTree = "<group>";
 		};
 		9E47010324471027000073A4 /* include */ = {
@@ -1531,9 +1528,7 @@
 				61133C5D2423990D00786299 /* DataUploadConditionsTests.swift in Sources */,
 				618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */,
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
-				61133C512423990D00786299 /* DatadogMocks.swift in Sources */,
 				61AD4E3A24534075006E34EA /* TracingFeatureTests.swift in Sources */,
-				61C5A89324509BD700DA608C /* SpansMocks.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
@@ -1545,7 +1540,6 @@
 				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
 				61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */,
 				61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */,
-				61133C4C2423990D00786299 /* LogsMocks.swift in Sources */,
 				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,
 				61B558CF2469561C001460D3 /* LoggerBuilderTests.swift in Sources */,
 				61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */,
@@ -1572,6 +1566,7 @@
 				61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */,
 				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
 				61C5A89624509BF600DA608C /* DDTracerTests.swift in Sources */,
+				61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */,
 				61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */,
 				61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */,
 				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,
@@ -1581,7 +1576,6 @@
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
-				61C5A89424509BD700DA608C /* DatadogTracingMocks.swift in Sources */,
 				61F8CC092469295500FE2908 /* DatadogConfigurationTests.swift in Sources */,
 				61133C642423990D00786299 /* LoggerTests.swift in Sources */,
 				61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */,

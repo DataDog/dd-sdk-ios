@@ -6,7 +6,6 @@
 
 @testable import Datadog
 
-/// Collection of mocks for logging feature.
 extension LoggingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp(temporaryDirectory: Directory) -> LoggingFeature {
@@ -66,6 +65,78 @@ extension LoggingFeature {
             httpClient: HTTPClient(session: server.urlSession),
             logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+}
+
+// MARK: - Log Mocks
+
+extension Log {
+    static func mockWith(
+        date: Date = .mockAny(),
+        status: Log.Status = .mockAny(),
+        message: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        environment: String = .mockAny(),
+        loggerName: String = .mockAny(),
+        loggerVersion: String = .mockAny(),
+        threadName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        userInfo: UserInfo = .mockAny(),
+        networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
+        mobileCarrierInfo: CarrierInfo? = .mockAny(),
+        attributes: [String: EncodableValue]? = nil,
+        tags: [String]? = nil
+    ) -> Log {
+        return Log(
+            date: date,
+            status: status,
+            message: message,
+            serviceName: serviceName,
+            environment: environment,
+            loggerName: loggerName,
+            loggerVersion: loggerVersion,
+            threadName: threadName,
+            applicationVersion: applicationVersion,
+            userInfo: userInfo,
+            networkConnectionInfo: networkConnectionInfo,
+            mobileCarrierInfo: mobileCarrierInfo,
+            attributes: attributes,
+            tags: tags
+        )
+    }
+}
+
+extension Log.Status {
+    static func mockAny() -> Log.Status {
+        return .info
+    }
+}
+
+// MARK: - Component Mocks
+
+extension LogBuilder {
+    static func mockAny() -> LogBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        applicationVersion: String = .mockAny(),
+        environment: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        loggerName: String = .mockAny(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> LogBuilder {
+        return LogBuilder(
+            applicationVersion: applicationVersion,
+            environment: environment,
+            serviceName: serviceName,
+            loggerName: loggerName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
