@@ -11,9 +11,18 @@ internal protocol TracingUUIDGenerator {
 }
 
 internal struct DefaultTracingUUIDGenerator: TracingUUIDGenerator {
+    /// Describes the lower and upper boundary of tracing ID generation.
+    /// * Lower: starts with `1` as `0` is reserved for historical reason: 0 == "unset", ref: dd-trace-java:DDId.java.
+    /// * Upper: equals to `2 ^ 63 - 1` as some tracers can't handle the `2 ^ 64 -1` range, ref: dd-trace-java:DDId.java.
+    internal static let defaultGenerationRange = (1...UInt64.max >> 1)
+
+    internal let range: ClosedRange<UInt64>
+
+    init(range: ClosedRange<UInt64> = Self.defaultGenerationRange) {
+        self.range = range
+    }
+
     func generateUnique() -> TracingUUID {
-       // TODO: RUMM-333 Add boundaries to trace & span ID generation, keeping in mind that `0` is reserved (ref: DDTracer.java#L600)
-       // NOTE: RUMM-340 Consider thread safety if the generation will depend on local state
-       return TracingUUID(rawValue: .random(in: 1...UInt64.max))
+        return TracingUUID(rawValue: .random(in: range))
    }
 }
