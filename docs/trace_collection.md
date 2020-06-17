@@ -1,6 +1,6 @@
 # iOS Trace Collection
 
-<div class="alert alert-info">The iOS Trace Collection is in public beta, and is currently not supported by Datadog.</div>
+<div class="alert alert-info">The iOS Trace collection is in public beta. If you have any questions, contact our [support team][11].</div>
 
 Send [traces][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side tracing library][2] and leverage the following features:
 
@@ -44,7 +44,7 @@ github "DataDog/dd-sdk-ios"
     {{% /tab %}}
     {{< /tabs >}}
 
-2. Initialize the library with your application context and your [Datadog client token][6]. For security reasons, you must use a client token: you cannot use [Datadog API keys][7] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][6]:
+2. Initialize the library with your application context and your [Datadog client token][6]. For security reasons, you must use a client token: you cannot use [Datadog API keys][7] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][6].
 
     {{< tabs >}}
     {{% tab "US" %}}
@@ -176,3 +176,4 @@ The data on disk will automatically be discarded if it gets too old to ensure th
 [8]: https://opentracing.io
 [9]: https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
 [10]: https://docs.datadoghq.com/tracing/
+[11]: /help/
