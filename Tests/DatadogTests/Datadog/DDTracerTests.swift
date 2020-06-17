@@ -542,17 +542,27 @@ class DDTracerTests: XCTestCase {
 
         queue.sync {} // wait for all spans in the array
 
-        /// Calls given closure on each span cuncurrently
-        func testThreadSafety(closure: @escaping (DDSpan) -> Void) {
+        /// Calls given closures on each span cuncurrently
+        func testThreadSafety(closures: [(DDSpan) -> Void]) {
             DispatchQueue.concurrentPerform(iterations: 100) { iteration in
-                closure(spans[iteration % spans.count])
+                closures.forEach { closure in
+                    closure(spans[iteration % spans.count])
+                }
             }
         }
 
-        testThreadSafety { span in span.setTag(key: .mockRandom(among: "abcde", length: 1), value: "value") }
-        testThreadSafety { span in span.setBaggageItem(key: .mockRandom(among: "abcde", length: 1), value: "value") }
-        testThreadSafety { span in span.log(fields: [.mockRandom(among: "abcde", length: 1): "value"]) }
-        testThreadSafety { span in span.finish() }
+        testThreadSafety(
+            closures: [
+                // swiftlint:disable opening_brace
+                { span in span.setTag(key: .mockRandom(among: "abcde", length: 1), value: "value") },
+                { span in span.setBaggageItem(key: .mockRandom(among: "abcde", length: 1), value: "value") },
+                { span in _ = span.baggageItem(withKey: .mockRandom(among: "abcde")) },
+                { span in _ = span.context.forEachBaggageItem { _, _ in return false } },
+                { span in span.log(fields: [.mockRandom(among: "abcde", length: 1): "value"]) },
+                { span in span.finish() }
+                // swiftlint:enable opening_brace
+            ]
+        )
 
         server.waitAndAssertNoRequestsSent()
     }

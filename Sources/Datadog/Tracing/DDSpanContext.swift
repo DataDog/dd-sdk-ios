@@ -5,6 +5,7 @@
  */
 
 import OpenTracing
+import Foundation
 
 internal struct DDSpanContext: OpenTracing.SpanContext {
     /// This span's trace ID.
