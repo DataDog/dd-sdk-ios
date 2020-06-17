@@ -19,6 +19,9 @@ internal class SendTracesFixtureViewController: UIViewController {
 
         viewAppearingSpan = tracer.startSpan(operationName: "view appearing")
 
+        // Set `class: SendTracesFixtureViewController` baggage item on the root span, so it will be propagated to all child spans.
+        viewAppearingSpan.setBaggageItem(key: "class", value: "\(type(of: self))")
+
         let dataDownloadingSpan = tracer.startSpan(
             operationName: "data downloading",
             childOf: viewAppearingSpan.context

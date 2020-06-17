@@ -87,6 +87,9 @@ class TracingIntegrationTests: IntegrationTests {
             XCTAssertEqual(try matcher.meta.tracerVersion().split(separator: ".").count, 3)
             XCTAssertEqual(try matcher.meta.applicationVersion(), "1.0")
 
+            // assert baggage item:
+            XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
+
             XCTAssertTrue(
                 SpanMatcher.allowedNetworkReachabilityValues.contains(
                     try matcher.meta.networkReachability()
