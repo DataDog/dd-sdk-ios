@@ -491,7 +491,7 @@ class LoggerTests: XCTestCase {
         server.waitAndAssertNoRequestsSent()
     }
 
-    // MARK: - Usage errors
+    // MARK: - Usage
 
     func testGivenDatadogNotInitialized_whenInitializingLogger_itPrintsError() {
         let printFunction = PrintFunctionMock()
@@ -536,6 +536,10 @@ class LoggerTests: XCTestCase {
         XCTAssertTrue(logger.logOutput is NoOpLogOutput)
 
         try Datadog.deinitializeOrThrow()
+    }
+
+    func testDDLoggerIsLoggerTypealias() {
+        XCTAssertTrue(DDLogger.self == Logger.self)
     }
 }
 // swiftlint:enable multiline_arguments_brackets
