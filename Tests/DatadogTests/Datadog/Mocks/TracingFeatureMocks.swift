@@ -88,12 +88,23 @@ extension DDSpanContext {
     static func mockWith(
         traceID: TracingUUID = .mockAny(),
         spanID: TracingUUID = .mockAny(),
-        parentSpanID: TracingUUID? = .mockAny()
+        parentSpanID: TracingUUID? = .mockAny(),
+        baggageItems: BaggageItems = .mockAny()
     ) -> DDSpanContext {
         return DDSpanContext(
             traceID: traceID,
             spanID: spanID,
-            parentSpanID: parentSpanID
+            parentSpanID: parentSpanID,
+            baggageItems: baggageItems
+        )
+    }
+}
+
+extension BaggageItems {
+    static func mockAny() -> BaggageItems {
+        return BaggageItems(
+            queue: DispatchQueue(label: "com.datadoghq.baggage-items"),
+            parentSpanItems: nil
         )
     }
 }

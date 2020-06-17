@@ -143,7 +143,7 @@ class DDTracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.tag2"), "123")
     }
 
-    func testSendingSpanWithParent() throws {
+    func testSendingSpanWithParentAndBaggageItems() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -156,6 +156,13 @@ class DDTracerTests: XCTestCase {
         let rootSpan = tracer.startSpan(operationName: "root operation")
         let childSpan = tracer.startSpan(operationName: "child operation", childOf: rootSpan.context)
         let grandchildSpan = tracer.startSpan(operationName: "grandchild operation", childOf: childSpan.context)
+        rootSpan.setBaggageItem(key: "root-item", value: "foo")
+        childSpan.setBaggageItem(key: "child-item", value: "bar")
+        grandchildSpan.setBaggageItem(key: "grandchild-item", value: "bizz")
+
+        grandchildSpan.setTag(key: "overwritten", value: "b") // This value "b" coming from a tag...
+        grandchildSpan.setBaggageItem(key: "overwritten", value: "a") // ... should overwrite this "a" coming from the baggage item.
+
         grandchildSpan.finish()
         childSpan.finish()
         rootSpan.finish()
@@ -171,15 +178,26 @@ class DDTracerTests: XCTestCase {
         XCTAssertEqual(try grandchildMatcher.traceID(), rootSpan.context.dd.traceID.toHexadecimalString)
         XCTAssertEqual(try grandchildMatcher.parentSpanID(), childSpan.context.dd.spanID.toHexadecimalString)
         XCTAssertNil(try? grandchildMatcher.metrics.isRootSpan())
+        XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
+        XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
+        XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.grandchild-item"), "bizz")
+        XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.grandchild-item"), "bizz")
+        XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.overwritten"), "b", "Tags should have higher priority than baggage items")
 
         XCTAssertEqual(try childMatcher.operationName(), "child operation")
         XCTAssertEqual(try childMatcher.traceID(), rootSpan.context.dd.traceID.toHexadecimalString)
         XCTAssertEqual(try childMatcher.parentSpanID(), rootSpan.context.dd.spanID.toHexadecimalString)
         XCTAssertNil(try? childMatcher.metrics.isRootSpan())
+        XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
+        XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
+        XCTAssertNil(try? childMatcher.meta.custom(keyPath: "meta.grandchild-item"))
 
         XCTAssertEqual(try rootMatcher.operationName(), "root operation")
         XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
         XCTAssertEqual(try rootMatcher.metrics.isRootSpan(), 1)
+        XCTAssertEqual(try rootMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
+        XCTAssertNil(try? rootMatcher.meta.custom(keyPath: "meta.child-item"))
+        XCTAssertNil(try? rootMatcher.meta.custom(keyPath: "meta.grandchild-item"))
 
         // Assert timing constraints
 
@@ -491,7 +509,7 @@ class DDTracerTests: XCTestCase {
 
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
         let tracer: DDTracer = .mockAny()
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny())
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = DDHTTPHeadersWriter()
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
