@@ -7,6 +7,17 @@
 import OpenTracing
 import Foundation
 
+/// Datadog - specific span `tags` to be used with `tracer.startSpan(operationName:references:tags:startTime:)`
+/// and `span.setTag(key:value:)`.
+public struct DDTags {
+    /// A Datadog-specific span tag, which sets the value appearing in the "RESOURCE" column
+    /// in traces explorer on [app.datadoghq.com](https://app.datadoghq.com/)
+    /// Can be used to customize the resource names grouped under the same operation name.
+    ///
+    /// Expects `String` value set for a tag.
+    public static let resource = "resource.name"
+}
+
 public class DDTracer: Tracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput

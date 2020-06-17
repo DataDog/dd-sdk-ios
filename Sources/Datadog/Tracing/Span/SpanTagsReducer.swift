@@ -5,14 +5,15 @@
  */
 
 import Foundation
+import OpenTracing
 
 /// Datadog tag keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields
 /// supported by Datadog platform.
 private struct DatadogTagKeys {
-    static let errorType     = "error.type"
-    static let errorMessage  = "error.msg"
-    static let errorStack    = "error.stack"
-    static let resourceName  = "resource.name"
+    static let errorType    = "error.type"
+    static let errorMessage = "error.msg"
+    static let errorStack   = "error.stack"
+    static let resourceName = DDTags.resource
 }
 
 /// Reduces `DDSpan` tags and log attributes by extracting values that require separate handling.
@@ -46,20 +47,20 @@ internal struct SpanTagsReducer {
 
         // extract error from `logFields`
         for fields in logFields {
-            let isErrorEvent = fields[OpenTracingLogFields.event] as? String == "error"
-            let errorKind = fields[OpenTracingLogFields.errorKind] as? String
+            let isErrorEvent = fields[OTLogFields.event] as? String == "error"
+            let errorKind = fields[OTLogFields.errorKind] as? String
 
             if isErrorEvent || errorKind != nil {
                 extractedIsError = true
-                mutableSpanTags[DatadogTagKeys.errorMessage] = fields[OpenTracingLogFields.message] as? String
+                mutableSpanTags[DatadogTagKeys.errorMessage] = fields[OTLogFields.message] as? String
                 mutableSpanTags[DatadogTagKeys.errorType] = errorKind
-                mutableSpanTags[DatadogTagKeys.errorStack] = fields[OpenTracingLogFields.stack] as? String
+                mutableSpanTags[DatadogTagKeys.errorStack] = fields[OTLogFields.stack] as? String
                 break // ignore next logs
             }
         }
 
         // extract error from `mutableSpanTags`
-        if mutableSpanTags[OpenTracingTagKeys.error] as? Bool == true {
+        if mutableSpanTags[OTTags.error] as? Bool == true {
             extractedIsError = true
         }
 

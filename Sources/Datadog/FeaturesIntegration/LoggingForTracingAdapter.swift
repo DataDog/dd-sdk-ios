@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import OpenTracing
 
 /// Adapts the Logging feature for Tracing. This stands for a thin integration layer between features.
 internal struct LoggingForTracingAdapter {
@@ -53,11 +54,11 @@ internal struct LoggingForTracingAdapter {
             var attributes = fields
 
             // get the log message
-            let message = (attributes.removeValue(forKey: OpenTracingLogFields.message) as? String) ?? Constants.defaultLogMessage
+            let message = (attributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
 
             // infer the log level
-            let isErrorEvent = fields[OpenTracingLogFields.event] as? String == "error"
-            let hasErrorKind = fields[OpenTracingLogFields.errorKind] != nil
+            let isErrorEvent = fields[OTLogFields.event] as? String == "error"
+            let hasErrorKind = fields[OTLogFields.errorKind] != nil
             let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
 
             // set tracing attributes

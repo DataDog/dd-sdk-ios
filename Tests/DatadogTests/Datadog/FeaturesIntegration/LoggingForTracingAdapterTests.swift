@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import OpenTracing
 @testable import Datadog
 
 class LoggingForTracingAdapterTests: XCTestCase {
@@ -17,7 +18,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
         tracingOutput.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: [
-                OpenTracingLogFields.message: "hello",
+                OTLogFields.message: "hello",
                 "custom field": 123,
             ],
             date: .mockDecember15th2019At10AMUTC()
@@ -43,7 +44,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
-            fields: [OpenTracingLogFields.event: "error"],
+            fields: [OTLogFields.event: "error"],
             date: .mockAny()
         )
 
@@ -51,7 +52,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
-            fields: [OpenTracingLogFields.errorKind: "Swift error"],
+            fields: [OTLogFields.errorKind: "Swift error"],
             date: .mockAny()
         )
 
@@ -59,7 +60,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
-            fields: [OpenTracingLogFields.event: "error", OpenTracingLogFields.errorKind: "Swift error"],
+            fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error"],
             date: .mockAny()
         )
 
