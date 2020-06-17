@@ -73,6 +73,21 @@ public typealias AttributeKey = String
 ///
 public typealias AttributeValue = Encodable
 
+/// Because `Logger` is a common name widely used across different projects, the `Datadog.Logger` may conflict when
+/// using `Logger.builder`. In such case, following `DDLogger` typealias can be used to avoid compiler ambiguity.
+///
+/// Usage:
+///
+///     import Datadog
+///
+///     // logger reference
+///     var logger: DDLogger!
+///
+///     // instantiate Datadog logger
+///     logger = DDLogger.builder.build()
+///
+public typealias DDLogger = Logger
+
 public class Logger {
     /// Writes `Log` objects to output.
     let logOutput: LogOutput
