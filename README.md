@@ -4,7 +4,17 @@
 
 ## Getting Started
 
-See the dedicated [Datadog iOS log collection](https://docs.datadoghq.com/logs/log_collection/ios/?tab=us) documentation to learn how to send logs from your iOS application to Datadog.
+### Log Collection
+
+See the dedicated [Datadog iOS Log Collection](https://docs.datadoghq.com/logs/log_collection/ios/?tab=us) documentation to learn how to send logs from your iOS application to Datadog.
+
+![Datadog iOS Log Collection](docs/images/logging.png)
+
+### Trace Collection (beta)
+
+This feature is currently in beta. See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/?tab=us) documentation to try it out.
+
+![Datadog iOS Log Collection](docs/images/tracing.png)
 
 ## Contributing
 
