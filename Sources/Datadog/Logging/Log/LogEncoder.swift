@@ -9,12 +9,12 @@ import Foundation
 /// `Encodable` representation of log. It gets sanitized before encoding.
 internal struct Log: Encodable {
     enum Status: String, Encodable {
-        case debug = "DEBUG"
-        case info = "INFO"
-        case notice = "NOTICE"
-        case warn = "WARN"
-        case error = "ERROR"
-        case critical = "CRITICAL"
+        case debug = "debug"
+        case info = "info"
+        case notice = "notice"
+        case warn = "warn"
+        case error = "error"
+        case critical = "critical"
     }
 
     let date: Date

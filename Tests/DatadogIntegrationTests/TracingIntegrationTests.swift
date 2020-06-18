@@ -130,7 +130,7 @@ class TracingIntegrationTests: IntegrationTests {
 
         XCTAssertEqual(logMatchers.count, 1)
 
-        logMatchers[0].assertStatus(equals: "INFO")
+        logMatchers[0].assertStatus(equals: "info")
         logMatchers[0].assertMessage(equals: "download progress")
         logMatchers[0].assertValue(forKey: "progress", equals: 0.99)
 
