@@ -93,15 +93,18 @@ class TracingIntegrationTests: IntegrationTests {
                 )
             )
 
-            try matcher.meta.networkAvailableInterfaces().split(separator: "+").forEach { interface in
-                XCTAssertTrue(
-                    SpanMatcher.allowedNetworkAvailableInterfacesValues.contains(String(interface))
-                )
+            if #available(iOS 12.0, *) { // The `iOS11NetworkConnectionInfoProvider` doesn't provide those info
+                try matcher.meta.networkAvailableInterfaces().split(separator: "+").forEach { interface in
+                    XCTAssertTrue(
+                        SpanMatcher.allowedNetworkAvailableInterfacesValues.contains(String(interface))
+                    )
+                }
+
+                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv4()))
+                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv6()))
+                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsExpensive()))
             }
 
-            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv4()))
-            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv6()))
-            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsExpensive()))
             if #available(iOS 13.0, *) {
                 XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsConstrained()))
             }

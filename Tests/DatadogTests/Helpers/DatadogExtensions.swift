@@ -19,12 +19,6 @@ extension Date {
     }
 }
 
-extension EncodableValue: Equatable {
-    public static func == (lhs: EncodableValue, rhs: EncodableValue) -> Bool {
-        return String(describing: lhs) == String(describing: rhs)
-    }
-}
-
 extension File {
     func makeReadonly() throws {
         try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: url.path)

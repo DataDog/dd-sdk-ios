@@ -11,28 +11,22 @@ class JSONEncoderTests: XCTestCase {
     private let jsonEncoder = JSONEncoder.default()
 
     func testDateEncoding() throws {
-        /// Prior to `iOS13.0` `JSONEncoder` supports only object or array as the root type, hence we can't encode `Date` directly.
-        struct Container: Encodable {
-            let date: Date = .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.123)
-        }
+        let encodedDate = try jsonEncoder.encode(
+            EncodingContainer(Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 0.123))
+        )
 
-        let encodedDate = try jsonEncoder.encode(Container())
-
-        XCTAssertEqual(encodedDate.utf8String, #"{"date":"2019-12-15T10:00:00.123Z"}"#)
+        XCTAssertEqual(encodedDate.utf8String, #"{"value":"2019-12-15T10:00:00.123Z"}"#)
     }
 
     func testURLEncoding() throws {
-        /// Prior to `iOS13.0` `JSONEncoder` supports only object or array as the root type, hence we can't encode `URL` directly.
-        struct Container: Encodable {
-            let url = URL(string: "https://example.com/foo")!
-        }
-
-        let encodedURL = try jsonEncoder.encode(Container())
+        let encodedURL = try jsonEncoder.encode(
+            EncodingContainer(URL(string: "https://example.com/foo")!)
+        )
 
         if #available(iOS 13.0, OSX 10.15, *) {
-            XCTAssertEqual(encodedURL.utf8String, #"{"url":"https://example.com/foo"}"#)
+            XCTAssertEqual(encodedURL.utf8String, #"{"value":"https://example.com/foo"}"#)
         } else {
-            XCTAssertEqual(encodedURL.utf8String, #"{"url":"https:\/\/example.com\/foo"}"#)
+            XCTAssertEqual(encodedURL.utf8String, #"{"value":"https:\/\/example.com\/foo"}"#)
         }
     }
 }

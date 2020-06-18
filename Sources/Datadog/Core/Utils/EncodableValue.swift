@@ -61,7 +61,33 @@ internal struct JSONStringEncodableValue: Encodable {
             // Switch to encode `url.absoluteString` directly - see the comment in `EncodableValue`
             try urlValue.absoluteString.encode(to: encoder)
         } else {
-            let jsonData = try jsonEncoder.encode(encodable)
+            let jsonData: Data
+
+            if #available(iOS 13.0, *) {
+                jsonData = try jsonEncoder.encode(encodable)
+            } else {
+                // Prior to `iOS13.0` the `JSONEncoder` is unable to encode primitive values - it expects them to be
+                // wrapped inside top-level JSON object (array or dictionary). Reference: https://bugs.swift.org/browse/SR-6163
+                //
+                // As a workaround, we serialize the `encodable` as a JSON array and then remove `[` and `]` bytes from serialized data.
+                let temporaryJsonArrayData = try jsonEncoder.encode([encodable])
+
+                let subdataStartIndex = temporaryJsonArrayData.startIndex.advanced(by: 1)
+                let subdataEndIndex = temporaryJsonArrayData.endIndex.advanced(by: -1)
+
+                guard subdataStartIndex < subdataEndIndex else {
+                    // This error should never be thrown, as the `temporaryJsonArrayData` will always contain at
+                    // least two bytes standing for `[` and `]`. This check is just for sanity.
+                    let encodingContext = EncodingError.Context(
+                        codingPath: encoder.codingPath,
+                        debugDescription: "Cannot safely encode value within a temporary array container."
+                    )
+                    throw EncodingError.invalidValue(encodable.value, encodingContext)
+                }
+
+                jsonData = temporaryJsonArrayData.subdata(in: subdataStartIndex..<subdataEndIndex)
+            }
+
             if let stringValue = String(data: jsonData, encoding: .utf8) {
                 try stringValue.encode(to: encoder)
             }

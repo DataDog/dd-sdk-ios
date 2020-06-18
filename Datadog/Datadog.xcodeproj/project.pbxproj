@@ -157,6 +157,7 @@
 		61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* DDTracerConfiguration.swift */; };
 		61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */; };
 		61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A6192498A51700075390 /* CoreMocks.swift */; };
+		61F1A623249B811200075390 /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A622249B811200075390 /* Encoding.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */; };
 		61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
@@ -386,6 +387,7 @@
 		61E917D02465423600E6C631 /* DDTracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfiguration.swift; sourceTree = "<group>"; };
 		61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfigurationTests.swift; sourceTree = "<group>"; };
 		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
+		61F1A622249B811200075390 /* Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
 		61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationTests.swift; sourceTree = "<group>"; };
 		61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureMocks.swift; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
@@ -853,6 +855,7 @@
 				61133C452423990D00786299 /* SwiftExtensions.swift */,
 				61133C462423990D00786299 /* TestsDirectory.swift */,
 				61133C472423990D00786299 /* DatadogExtensions.swift */,
+				61F1A622249B811200075390 /* Encoding.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1573,6 +1576,7 @@
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
 				61F8CC092469295500FE2908 /* DatadogConfigurationTests.swift in Sources */,
+				61F1A623249B811200075390 /* Encoding.swift in Sources */,
 				61133C642423990D00786299 /* LoggerTests.swift in Sources */,
 				61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */,
 				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,

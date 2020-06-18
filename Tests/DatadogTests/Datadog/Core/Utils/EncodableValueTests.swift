@@ -12,20 +12,22 @@ class EncodableValueTests: XCTestCase {
         let encoder = JSONEncoder()
 
         XCTAssertEqual(
-            try encoder.encode(EncodableValue("string")).utf8String,
-            #""string""#
+            try encoder.encode(EncodingContainer(EncodableValue("string"))).utf8String,
+            #"{"value":"string"}"#
         )
         XCTAssertEqual(
-            try encoder.encode(EncodableValue(123)).utf8String,
-            #"123"#
+            try encoder.encode(EncodingContainer(EncodableValue(123))).utf8String,
+            #"{"value":123}"#
         )
         XCTAssertEqual(
             try encoder.encode(EncodableValue(["a", "b", "c"])).utf8String,
             #"["a","b","c"]"#
         )
         XCTAssertEqual(
-            try encoder.encode(EncodableValue(URL(string: "https://example.com/image.png")!)).utf8String,
-            #""https:\/\/example.com\/image.png""#
+            try encoder.encode(
+                EncodingContainer(EncodableValue(URL(string: "https://example.com/image.png")!))
+            ).utf8String,
+            #"{"value":"https:\/\/example.com\/image.png"}"#
         )
         struct Foo: Encodable {
             let bar = "bar_"
@@ -43,30 +45,40 @@ class JSONStringEncodableValueTests: XCTestCase {
         let encoder = JSONEncoder()
 
         XCTAssertEqual(
-            try encoder.encode(JSONStringEncodableValue("string", encodedUsing: JSONEncoder())).utf8String,
-            #""string""#
-        )
-        XCTAssertEqual(
-            try encoder.encode(JSONStringEncodableValue(123, encodedUsing: JSONEncoder())).utf8String,
-            #""123""#
-        )
-        XCTAssertEqual(
-            try encoder.encode(JSONStringEncodableValue(["a", "b", "c"], encodedUsing: JSONEncoder())).utf8String,
-            #""[\"a\",\"b\",\"c\"]""#
+            try encoder.encode(
+                EncodingContainer(JSONStringEncodableValue("string", encodedUsing: JSONEncoder()))
+            ).utf8String,
+            #"{"value":"string"}"#
         )
         XCTAssertEqual(
             try encoder.encode(
-                JSONStringEncodableValue(URL(string: "https://example.com/image.png")!, encodedUsing: JSONEncoder())
+                EncodingContainer(JSONStringEncodableValue(123, encodedUsing: JSONEncoder()))
             ).utf8String,
-            #""https:\/\/example.com\/image.png""#
+            #"{"value":"123"}"#
+        )
+        XCTAssertEqual(
+            try encoder.encode(
+                EncodingContainer(JSONStringEncodableValue(["a", "b", "c"], encodedUsing: JSONEncoder()))
+            ).utf8String,
+            #"{"value":"[\"a\",\"b\",\"c\"]"}"#
+        )
+        XCTAssertEqual(
+            try encoder.encode(
+                EncodingContainer(
+                    JSONStringEncodableValue(URL(string: "https://example.com/image.png")!, encodedUsing: JSONEncoder())
+                )
+            ).utf8String,
+            #"{"value":"https:\/\/example.com\/image.png"}"#
         )
         struct Foo: Encodable {
             let bar = "bar_"
             let bizz = "bizz_"
         }
         XCTAssertEqual(
-            try encoder.encode(JSONStringEncodableValue(Foo(), encodedUsing: JSONEncoder())).utf8String,
-            #""{\"bar\":\"bar_\",\"bizz\":\"bizz_\"}""#
+            try encoder.encode(
+                EncodingContainer(JSONStringEncodableValue(Foo(), encodedUsing: JSONEncoder()))
+            ).utf8String,
+            #"{"value":"{\"bar\":\"bar_\",\"bizz\":\"bizz_\"}"}"#
         )
     }
 
