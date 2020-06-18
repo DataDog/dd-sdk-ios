@@ -68,13 +68,24 @@ internal class URLSessionSwizzler {
                     guard let interceptionResult = interceptor(impURL) else {
                         return currentTypedImp(impSelf, Self.selector, impURL, impCompletion)
                     }
+                    var taskObserver: TaskObserver? = interceptionResult.taskObserver
                     let modifiedCompletion: CompletionHandler = { origData, origResponse, origError in
                         impCompletion(origData, origResponse, origError)
-                        interceptionResult.taskObserver(.completed(origResponse, origError))
+                        taskObserver?(.completed(origResponse, origError))
                     }
+                    /// NOTE: RUMM-489 in iOS 11/12 dataTaskWithURL: calls dataTaskWithRequest: internally
+                    /// we need to check if the originalRequest already has interceptor headers
+                    /// if so, we don't intercept this request
                     let task = currentTypedImp(impSelf, Self.selector, impURL, modifiedCompletion)
-                    try? resumeSwizzler.swizzleIfNeeded(in: task)
-                    task.addPayload(interceptionResult.taskObserver)
+                    if var request = task.originalRequest,
+                        request.add(newHTTPHeaders: interceptionResult.httpHeaders) {
+                        /// interception needed
+                        try? resumeSwizzler.swizzleIfNeeded(in: task)
+                        task.addPayload(interceptionResult.taskObserver)
+                    } else {
+                        /// do NOT intercept!
+                        taskObserver = nil
+                    }
                     return task
                 }
             }

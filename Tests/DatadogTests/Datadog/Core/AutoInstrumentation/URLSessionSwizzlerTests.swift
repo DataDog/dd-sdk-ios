@@ -61,7 +61,11 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let taskRequest = task.originalRequest!
         XCTAssertEqual(taskRequest.url, mockURL)
-        XCTAssertNil(taskRequest.allHTTPHeaderFields)
+        if #available(iOS 13.0, *) {
+            XCTAssertNil(taskRequest.allHTTPHeaderFields)
+        } else {
+            XCTAssertEqual(taskRequest.allHTTPHeaderFields, modifiedHTTPHeaders + secondModifiedHTTPHeaders)
+        }
 
         wait(
             for: [
@@ -197,7 +201,7 @@ private extension Dictionary where Key == String, Value == String {
         return lhs.merging(rhs) { lhsKey, _ in return lhsKey }
     }
 }
-private extension URLSessionSwizzler {
+extension URLSessionSwizzler {
     func unswizzle() {
         dataTaskWithURL.unswizzle()
         dataTaskwithRequest.unswizzle()
