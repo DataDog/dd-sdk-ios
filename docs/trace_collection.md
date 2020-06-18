@@ -1,6 +1,6 @@
 # iOS Trace Collection
 
-<div class="alert alert-info">The iOS Trace collection is in public beta. If you have any questions, contact our [support team][11].</div>
+<div class="alert alert-info">The iOS Trace collection is in public beta. If you have any questions, contact our <a href="https://docs.datadoghq.com/help/" target="_blank">support team</a>.</div>
 
 Send [traces][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side tracing library][2] and leverage the following features:
 
@@ -16,8 +16,9 @@ Send [traces][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-i
     {{< tabs >}}
     {{% tab "CocoaPods" %}}
 
-You can use [CocoaPods][4] to install `dd-sdk-ios`:
+You can use [CocoaPods][4] to install `dd-sdk-ios` and `opentracing-swift`:
 ```
+pod 'OpenTracingSwift', :git => 'https://github.com/DataDog/opentracing-swift'
 pod 'DatadogSDK'
 ```
 
@@ -153,7 +154,7 @@ Datadog.initialize(
         request.addValue(value, forHTTPHeaderField: headerField)
     }
     ```
-    This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
+    This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard. Once the request is done, within a completion handler, call `span.finish()`.
 
 
 ## Batch collection
@@ -176,4 +177,3 @@ The data on disk will automatically be discarded if it gets too old to ensure th
 [8]: https://opentracing.io
 [9]: https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
 [10]: https://docs.datadoghq.com/tracing/
-[11]: /help/
