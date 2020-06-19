@@ -46,7 +46,7 @@ class LoggerTests: XCTestCase {
         let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
         try logMatcher.assertItFullyMatches(jsonString: """
         {
-          "status" : "DEBUG",
+          "status" : "debug",
           "message" : "message",
           "service" : "default-service-name",
           "logger.name" : "com.datadoghq.ios-sdk",
@@ -133,12 +133,12 @@ class LoggerTests: XCTestCase {
         logger.critical("message")
 
         let logMatchers = try server.waitAndReturnLogMatchers(count: 6)
-        logMatchers[0].assertStatus(equals: "DEBUG")
-        logMatchers[1].assertStatus(equals: "INFO")
-        logMatchers[2].assertStatus(equals: "NOTICE")
-        logMatchers[3].assertStatus(equals: "WARN")
-        logMatchers[4].assertStatus(equals: "ERROR")
-        logMatchers[5].assertStatus(equals: "CRITICAL")
+        logMatchers[0].assertStatus(equals: "debug")
+        logMatchers[1].assertStatus(equals: "info")
+        logMatchers[2].assertStatus(equals: "notice")
+        logMatchers[3].assertStatus(equals: "warn")
+        logMatchers[4].assertStatus(equals: "error")
+        logMatchers[5].assertStatus(equals: "critical")
     }
 
     // MARK: - Sending user info

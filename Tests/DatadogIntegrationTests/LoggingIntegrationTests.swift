@@ -39,22 +39,22 @@ class LoggingIntegrationTests: IntegrationTests {
 
         XCTAssertEqual(logMatchers.count, 6)
 
-        logMatchers[0].assertStatus(equals: "DEBUG")
+        logMatchers[0].assertStatus(equals: "debug")
         logMatchers[0].assertMessage(equals: "debug message")
 
-        logMatchers[1].assertStatus(equals: "INFO")
+        logMatchers[1].assertStatus(equals: "info")
         logMatchers[1].assertMessage(equals: "info message")
 
-        logMatchers[2].assertStatus(equals: "NOTICE")
+        logMatchers[2].assertStatus(equals: "notice")
         logMatchers[2].assertMessage(equals: "notice message")
 
-        logMatchers[3].assertStatus(equals: "WARN")
+        logMatchers[3].assertStatus(equals: "warn")
         logMatchers[3].assertMessage(equals: "warn message")
 
-        logMatchers[4].assertStatus(equals: "ERROR")
+        logMatchers[4].assertStatus(equals: "error")
         logMatchers[4].assertMessage(equals: "error message")
 
-        logMatchers[5].assertStatus(equals: "CRITICAL")
+        logMatchers[5].assertStatus(equals: "critical")
         logMatchers[5].assertMessage(equals: "critical message")
 
         logMatchers.forEach { matcher in
