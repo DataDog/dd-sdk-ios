@@ -19,7 +19,7 @@ Send [traces][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-i
 You can use [CocoaPods][4] to install `dd-sdk-ios` and `opentracing-swift`:
 ```
 pod 'OpenTracingSwift', :git => 'https://github.com/DataDog/opentracing-swift'
-pod 'DatadogSDK'
+pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '1.3.0-beta1'
 ```
 
 [4]: https://cocoapods.org/
