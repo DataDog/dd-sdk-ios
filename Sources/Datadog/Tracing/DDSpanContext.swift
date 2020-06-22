@@ -40,8 +40,8 @@ internal class BaggageItems {
     /// Unsynchronized baggage items dictionary. Use `queue` to synchronize the access.
     private var unsafeItems: [String: String] = [:]
 
-    init(queue: DispatchQueue, parentSpanItems: BaggageItems?) {
-        self.queue = queue
+    init(targetQueue: DispatchQueue, parentSpanItems: BaggageItems?) {
+        self.queue = DispatchQueue(label: "com.datadoghq.BaggageItem", target: targetQueue)
         self.parent = parentSpanItems
     }
 

@@ -103,7 +103,7 @@ extension DDSpanContext {
 extension BaggageItems {
     static func mockAny() -> BaggageItems {
         return BaggageItems(
-            queue: DispatchQueue(label: "com.datadoghq.baggage-items"),
+            targetQueue: DispatchQueue(label: "com.datadoghq.baggage-items"),
             parentSpanItems: nil
         )
     }

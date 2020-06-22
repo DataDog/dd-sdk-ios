@@ -125,7 +125,7 @@ public class DDTracer: Tracer {
                 traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
                 spanID: tracingUUIDGenerator.generateUnique(),
                 parentSpanID: parentSpanContext?.spanID,
-                baggageItems: BaggageItems(queue: queue, parentSpanItems: parentSpanContext?.baggageItems)
+                baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
             ),
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),

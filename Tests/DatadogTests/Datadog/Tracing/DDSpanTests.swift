@@ -33,7 +33,7 @@ class DDSpanTests: XCTestCase {
     func testSettingBaggageItems() {
         let queue = DispatchQueue(label: "com.datadoghq.\(#function)")
         let span: DDSpan = .mockWith(
-            context: .mockWith(baggageItems: BaggageItems(queue: queue, parentSpanItems: nil))
+            context: .mockWith(baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: nil))
         )
 
         XCTAssertEqual(span.ddContext.baggageItems.all, [:])
