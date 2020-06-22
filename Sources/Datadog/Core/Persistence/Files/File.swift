@@ -46,7 +46,18 @@ internal struct File: WritableFile, ReadableFile {
     func append(data: Data) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
 
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.4, *) {
+            /**
+             Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
+             ```
+             @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+             public func seekToEnd() throws -> UInt64
+             ```
+             it crashes on iOS Simulators prior to iOS 13.4:
+             ```
+             Symbol not found: _$sSo12NSFileHandleC10FoundationE9seekToEnds6UInt64VyKF
+             ```
+            */
             defer { try? fileHandle.close() }
             try fileHandle.seekToEnd()
             try fileHandle.write(contentsOf: data)
@@ -67,7 +78,18 @@ internal struct File: WritableFile, ReadableFile {
     func read() throws -> Data {
         let fileHandle = try FileHandle(forReadingFrom: url)
 
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.4, *) {
+            /**
+             Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
+             ```
+             @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+             public func readToEnd() throws -> Data?
+             ```
+             it crashes on iOS Simulators prior to iOS 13.4:
+             ```
+             Symbol not found: _$sSo12NSFileHandleC10FoundationE9readToEndAC4DataVSgyKF
+             ```
+            */
             defer { try? fileHandle.close() }
             return try fileHandle.readToEnd() ?? Data()
         } else {
