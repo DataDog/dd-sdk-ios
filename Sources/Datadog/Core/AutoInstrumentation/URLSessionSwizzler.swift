@@ -10,10 +10,10 @@ import Foundation
 /// dataTaskWithURL:completion: and dataTaskWithRequest:completion:
 /// Takes an URL and if it is to be intercepted, returns a TaskObserver and additional HTTP headers
 /// otherwise, returns nil
-internal typealias RequestInterceptor = (URL?) -> InterceptionResult?
+internal typealias RequestInterceptor = (URLRequest) -> InterceptionResult?
 internal struct InterceptionResult {
+    let modifiedRequest: URLRequest
     let taskObserver: TaskObserver
-    let httpHeaders: [String: String]
 }
 
 /// Block to be executed at task starting and completion by URLSessionSwizzler
@@ -25,16 +25,18 @@ internal enum TaskObservationEvent {
     case completed(URLResponse?, Error?)
 }
 
+/// URLSessionSwizzler
+/// Responsibility: Invoking Interceptor and TaskObserver at right time and places
+/// Interceptor must be invoked at task creation: dataTaskWithURL/Request
+/// TaskObserver must be invoked at task resume and completion: task.resume and completionHandler
 internal class URLSessionSwizzler {
     let dataTaskWithURL: DataTaskWithURL
     let dataTaskwithRequest: DataTaskWithRequest
-    /// resume must be shared among URLSessionSwizzler instances
-    /// to avoid swizzling task.resume() multiple times
-    static let resume = Resume()
+    static var resume = Resume()
 
-    init(with resume: Resume = URLSessionSwizzler.resume) throws {
-        self.dataTaskWithURL = try DataTaskWithURL(resume: resume)
-        self.dataTaskwithRequest = try DataTaskWithRequest(resume: resume)
+    init() throws {
+        self.dataTaskWithURL = try DataTaskWithURL(resume: Self.resume)
+        self.dataTaskwithRequest = try DataTaskWithRequest(resume: Self.resume)
     }
 
     func swizzle(using interceptor: @escaping RequestInterceptor) {
@@ -65,10 +67,7 @@ internal class URLSessionSwizzler {
             let resumeSwizzler = resume
             swizzle(method) { currentTypedImp -> BlockIMP in
                 return { impSelf, impURL, impCompletion -> URLSessionDataTask in
-                    guard let interceptionResult = interceptor(impURL) else {
-                        return currentTypedImp(impSelf, Self.selector, impURL, impCompletion)
-                    }
-                    var taskObserver: TaskObserver? = interceptionResult.taskObserver
+                    var taskObserver: TaskObserver? = nil
                     let modifiedCompletion: CompletionHandler = { origData, origResponse, origError in
                         impCompletion(origData, origResponse, origError)
                         taskObserver?(.completed(origResponse, origError))
@@ -77,14 +76,12 @@ internal class URLSessionSwizzler {
                     /// we need to check if the originalRequest already has interceptor headers
                     /// if so, we don't intercept this request
                     let task = currentTypedImp(impSelf, Self.selector, impURL, modifiedCompletion)
-                    if var request = task.originalRequest,
-                        request.add(newHTTPHeaders: interceptionResult.httpHeaders) {
+                    if let taskRequest = task.originalRequest,
+                        let someObserver = interceptor(taskRequest)?.taskObserver {
                         /// interception needed
                         try? resumeSwizzler.swizzleIfNeeded(in: task)
-                        task.addPayload(interceptionResult.taskObserver)
-                    } else {
-                        /// do NOT intercept!
-                        taskObserver = nil
+                        taskObserver = someObserver
+                        task.addPayload(someObserver)
                     }
                     return task
                 }
@@ -111,18 +108,16 @@ internal class URLSessionSwizzler {
             let resumeSwizzler = resume
             self.swizzle(self.method) { typedCurrentImp -> BlockIMP in
                 return { impSelf, impURLRequest, impCompletion -> URLSessionDataTask in
-                    var modifiedRequest = impURLRequest
-                    guard let interceptionResult = interceptor(impURLRequest.url),
-                        modifiedRequest.add(newHTTPHeaders: interceptionResult.httpHeaders) else {
-                            return typedCurrentImp(impSelf, Self.selector, impURLRequest, impCompletion)
+                    guard let interception = interceptor(impURLRequest) else {
+                        return typedCurrentImp(impSelf, Self.selector, impURLRequest, impCompletion)
                     }
                     let modifiedCompletion: CompletionHandler = { origData, origResponse, origError in
                         impCompletion(origData, origResponse, origError)
-                        interceptionResult.taskObserver(.completed(origResponse, origError))
+                        interception.taskObserver(.completed(origResponse, origError))
                     }
-                    let task = typedCurrentImp(impSelf, Self.selector, modifiedRequest, modifiedCompletion)
+                    let task = typedCurrentImp(impSelf, Self.selector, interception.modifiedRequest, modifiedCompletion)
                     try? resumeSwizzler.swizzleIfNeeded(in: task)
-                    task.addPayload(interceptionResult.taskObserver)
+                    task.addPayload(interception.taskObserver)
                     return task
                 }
             }
@@ -159,21 +154,6 @@ internal class URLSessionSwizzler {
                 onlyIfNonSwizzled: true
             )
         }
-    }
-}
-
-private extension URLRequest {
-    mutating func add(newHTTPHeaders httpHeaders: [String: String]) -> Bool {
-        var modifiedRequest = self
-        for pair in httpHeaders {
-            if modifiedRequest.value(forHTTPHeaderField: pair.key) == nil {
-                modifiedRequest.setValue(pair.value, forHTTPHeaderField: pair.key)
-            } else {
-                return false
-            }
-        }
-        self = modifiedRequest
-        return true
     }
 }
 

@@ -63,17 +63,6 @@
                BlueprintName = "DatadogTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "URLSessionSwizzlerTests/test_dataTask_urlCompletion_alwaysIntercept()">
-               </Test>
-               <Test
-                  Identifier = "URLSessionSwizzlerTests_CustomDelegate/test_dataTask_urlCompletion_alwaysIntercept()">
-               </Test>
-               <Test
-                  Identifier = "URLSessionSwizzlerTests_DefaultConfig/test_dataTask_urlCompletion_alwaysIntercept()">
-               </Test>
-            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
