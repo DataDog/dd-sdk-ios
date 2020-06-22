@@ -87,15 +87,14 @@ internal class DDSpan: OpenTracing.Span {
         if warnIfFinished("setBaggageItem(key:value:)") {
             return
         }
-        // TODO: RUMM-292
+        ddContext.baggageItems.set(key: key, value: value)
     }
 
     func baggageItem(withKey key: String) -> String? {
         if warnIfFinished("baggageItem(withKey:)") {
             return nil
         }
-        // TODO: RUMM-292
-        return nil
+        return ddContext.baggageItems.get(key: key)
     }
 
     func finish(at time: Date) {

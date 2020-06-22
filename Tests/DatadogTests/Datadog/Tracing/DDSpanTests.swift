@@ -14,6 +14,8 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(span.operationName, "new")
     }
 
+    // MARK: - Tags
+
     func testSettingTag() {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.tags.count, 0)
@@ -26,7 +28,27 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(span.tags["key2"] as? String, "value2")
     }
 
-    func testCallingMethodsOnSpanInstanceAfterItIsFinished() {
+    // MARK: - Baggage Items
+
+    func testSettingBaggageItems() {
+        let queue = DispatchQueue(label: "com.datadoghq.\(#function)")
+        let span: DDSpan = .mockWith(
+            context: .mockWith(baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: nil))
+        )
+
+        XCTAssertEqual(span.ddContext.baggageItems.all, [:])
+
+        span.setBaggageItem(key: "foo", value: "bar")
+        span.setBaggageItem(key: "bizz", value: "buzz")
+
+        XCTAssertEqual(span.baggageItem(withKey: "foo"), "bar")
+        XCTAssertEqual(span.baggageItem(withKey: "bizz"), "buzz")
+        XCTAssertEqual(span.ddContext.baggageItems.all, ["foo": "bar", "bizz": "buzz"])
+    }
+
+    // MARK: - Usage
+
+    func testGivenFinishedSpan_whenCallingItsAPI_itPrintsErrors() {
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 

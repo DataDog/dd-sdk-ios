@@ -124,7 +124,8 @@ public class DDTracer: Tracer {
             context: DDSpanContext(
                 traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
                 spanID: tracingUUIDGenerator.generateUnique(),
-                parentSpanID: parentSpanContext?.spanID
+                parentSpanID: parentSpanContext?.spanID,
+                baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
             ),
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),
