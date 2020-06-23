@@ -8,7 +8,7 @@ import Foundation
 
 internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
-    private let ddTracer: DDTracer
+    private let ddTracer: Tracer
     /// Span context.
     internal let ddContext: DDSpanContext
     /// Span creation date
@@ -44,7 +44,7 @@ internal class DDSpan: OTSpan {
     }
 
     init(
-        tracer: DDTracer,
+        tracer: Tracer,
         context: DDSpanContext,
         operationName: String,
         startTime: Date,

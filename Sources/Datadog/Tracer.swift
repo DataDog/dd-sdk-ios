@@ -17,13 +17,28 @@ public struct DDTags {
     public static let resource = "resource.name"
 }
 
-public class DDTracer: OTTracer {
+/// Because `Tracer` is a common name widely used across different projects, the `Datadog.Tracer` may conflict when
+/// doing `import Datadog`. In such case, following `DDTracer` typealias can be used to avoid compiler ambiguity.
+///
+/// Usage:
+///
+///     import Datadog
+///
+///     // tracer reference
+///     var tracer: DDTracer!
+///
+///     // instantiate Datadog tracer
+///     tracer = DDTracer.initialize(...)
+///
+public typealias DDTracer = Tracer
+
+public class Tracer: OTTracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output.
     /// Equals `nil` if Logging feature is disabled.
     internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
-    /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
+    /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
 
     private let dateProvider: DateProvider
@@ -33,7 +48,7 @@ public class DDTracer: OTTracer {
 
     /// Initializes the Datadog Tracer.
     /// - Parameters:
-    ///   - configuration: the tracer configuration obtained using `DDTracer.Configuration()`.
+    ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration) -> OTTracer {
         do {
             return try initializeOrThrow(configuration: configuration)
@@ -43,15 +58,15 @@ public class DDTracer: OTTracer {
         }
     }
 
-    internal static func initializeOrThrow(configuration: Configuration) throws -> DDTracer {
+    internal static func initializeOrThrow(configuration: Configuration) throws -> Tracer {
         guard let tracingFeature = TracingFeature.instance else {
             throw ProgrammerError(
                 description: Datadog.instance == nil
-                    ? "`Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
-                    : "`DDTracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+                    ? "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                    : "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
             )
         }
-        return DDTracer(
+        return Tracer(
             tracingFeature: tracingFeature,
             tracerConfiguration: configuration
         )

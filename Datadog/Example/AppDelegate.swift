@@ -45,8 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .build()
 
         // Register global tracer
-        Global.sharedTracer = DDTracer.initialize(
-            configuration: DDTracer.Configuration(
+        Global.sharedTracer = Tracer.initialize(
+            configuration: Tracer.Configuration(
                 serviceName: appConfig.serviceName,
                 sendNetworkInfo: true
             )

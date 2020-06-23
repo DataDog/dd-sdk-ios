@@ -16,7 +16,7 @@ internal struct LoggingForTracingAdapter {
 
     // MARK: - LogOutput
 
-    func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: DDTracer.Configuration) -> AdaptedLogOutput {
+    func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration) -> AdaptedLogOutput {
         return AdaptedLogOutput(
             loggingOutput: LogFileOutput(
                 logBuilder: LogBuilder(

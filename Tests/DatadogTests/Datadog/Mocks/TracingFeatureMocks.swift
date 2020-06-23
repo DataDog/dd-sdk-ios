@@ -115,7 +115,7 @@ extension DDSpan {
     }
 
     static func mockWith(
-        tracer: DDTracer = .mockAny(),
+        tracer: Tracer = .mockAny(),
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
@@ -161,8 +161,8 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
 
 // MARK: - Component Mocks
 
-extension DDTracer {
-    static func mockAny() -> DDTracer {
+extension Tracer {
+    static func mockAny() -> Tracer {
         return mockWith()
     }
 
@@ -171,8 +171,8 @@ extension DDTracer {
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
-    ) -> DDTracer {
-        return DDTracer(
+    ) -> Tracer {
+        return Tracer(
             spanOutput: spanOutput,
             logOutput: logOutput,
             dateProvider: dateProvider,

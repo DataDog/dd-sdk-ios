@@ -16,7 +16,7 @@
 
 // swiftlint:disable identifier_name
 internal extension OTTracer {
-    var dd: DDTracer { self as! DDTracer }
+    var dd: Tracer { self as! Tracer }
 }
 
 internal extension OTSpan {

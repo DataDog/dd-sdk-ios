@@ -12,7 +12,7 @@ internal func obtainTracingFeatureDirectory() throws -> Directory {
 }
 
 /// Creates and owns componetns enabling tracing feature.
-/// Bundles dependencies for other tracing-related components created later at runtime  (i.e. `DDTracer`).
+/// Bundles dependencies for other tracing-related components created later at runtime  (i.e. `Tracer`).
 internal final class TracingFeature {
     /// Single, shared instance of `TracingFeatureFeature`.
     internal static var instance: TracingFeature?

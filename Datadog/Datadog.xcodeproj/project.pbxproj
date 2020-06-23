@@ -143,9 +143,9 @@
 		61C5A88A24509A0C00DA608C /* SpanFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88024509A0C00DA608C /* SpanFileOutput.swift */; };
 		61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88124509A0C00DA608C /* SpanOutput.swift */; };
 		61C5A88C24509A0C00DA608C /* HTTPHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */; };
-		61C5A88E24509A1F00DA608C /* DDTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88D24509A1F00DA608C /* DDTracer.swift */; };
+		61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88D24509A1F00DA608C /* Tracer.swift */; };
 		61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88F24509AA700DA608C /* TracingFeature.swift */; };
-		61C5A89624509BF600DA608C /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89524509BF600DA608C /* DDTracerTests.swift */; };
+		61C5A89624509BF600DA608C /* TracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89524509BF600DA608C /* TracerTests.swift */; };
 		61C5A89D24509C1100DA608C /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89824509C1100DA608C /* DDSpanTests.swift */; };
 		61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89A24509C1100DA608C /* WarningsTests.swift */; };
 		61C5A89F24509C1100DA608C /* UUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89B24509C1100DA608C /* UUID.swift */; };
@@ -159,8 +159,8 @@
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917CE2464270500E6C631 /* EncodableValueTests.swift */; };
-		61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* DDTracerConfiguration.swift */; };
-		61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */; };
+		61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* TracerConfiguration.swift */; };
+		61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */; };
 		61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A6192498A51700075390 /* CoreMocks.swift */; };
 		61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A620249A45E400075390 /* DDSpanContextTests.swift */; };
 		61F1A623249B811200075390 /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A622249B811200075390 /* Encoding.swift */; };
@@ -380,9 +380,9 @@
 		61C5A88024509A0C00DA608C /* SpanFileOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanFileOutput.swift; sourceTree = "<group>"; };
 		61C5A88124509A0C00DA608C /* SpanOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanOutput.swift; sourceTree = "<group>"; };
 		61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersWriter.swift; sourceTree = "<group>"; };
-		61C5A88D24509A1F00DA608C /* DDTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracer.swift; sourceTree = "<group>"; };
+		61C5A88D24509A1F00DA608C /* Tracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tracer.swift; sourceTree = "<group>"; };
 		61C5A88F24509AA700DA608C /* TracingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeature.swift; sourceTree = "<group>"; };
-		61C5A89524509BF600DA608C /* DDTracerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
+		61C5A89524509BF600DA608C /* TracerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TracerTests.swift; sourceTree = "<group>"; };
 		61C5A89824509C1100DA608C /* DDSpanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 		61C5A89A24509C1100DA608C /* WarningsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WarningsTests.swift; sourceTree = "<group>"; };
 		61C5A89B24509C1100DA608C /* UUID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UUID.swift; sourceTree = "<group>"; };
@@ -396,8 +396,8 @@
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		61E45ED02451A8730061DAC7 /* SpanMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanMatcher.swift; sourceTree = "<group>"; };
 		61E917CE2464270500E6C631 /* EncodableValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableValueTests.swift; sourceTree = "<group>"; };
-		61E917D02465423600E6C631 /* DDTracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfiguration.swift; sourceTree = "<group>"; };
-		61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfigurationTests.swift; sourceTree = "<group>"; };
+		61E917D02465423600E6C631 /* TracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfiguration.swift; sourceTree = "<group>"; };
+		61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfigurationTests.swift; sourceTree = "<group>"; };
 		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
 		61F1A620249A45E400075390 /* DDSpanContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanContextTests.swift; sourceTree = "<group>"; };
 		61F1A622249B811200075390 /* Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
@@ -516,8 +516,8 @@
 				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
 				61133BBB2423979B00786299 /* Datadog.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
-				61C5A88D24509A1F00DA608C /* DDTracer.swift */,
-				61E917D02465423600E6C631 /* DDTracerConfiguration.swift */,
+				61C5A88D24509A1F00DA608C /* Tracer.swift */,
+				61E917D02465423600E6C631 /* TracerConfiguration.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133B9E2423979B00786299 /* Core */,
 				61133BBC2423979B00786299 /* Logging */,
@@ -724,8 +724,8 @@
 				61133C412423990D00786299 /* DatadogTests.swift */,
 				61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */,
 				61133C382423990D00786299 /* LoggerTests.swift */,
-				61C5A89524509BF600DA608C /* DDTracerTests.swift */,
-				61E917D2246546BF00E6C631 /* DDTracerConfigurationTests.swift */,
+				61C5A89524509BF600DA608C /* TracerTests.swift */,
+				61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */,
 				61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */,
 				61133C212423990D00786299 /* Core */,
 				61133C392423990D00786299 /* Logging */,
@@ -1476,7 +1476,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61E917D12465423600E6C631 /* DDTracerConfiguration.swift in Sources */,
+				61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */,
 				61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */,
 				61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
@@ -1500,7 +1500,7 @@
 				9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61C5A8A624509FAA00DA608C /* SpanEncoder.swift in Sources */,
-				61C5A88E24509A1F00DA608C /* DDTracer.swift in Sources */,
+				61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */,
 				614C742424A2094600BB999E /* OTReference.swift in Sources */,
 				614C742824A21A0800BB999E /* OTGlobal.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfo.swift in Sources */,
@@ -1560,7 +1560,7 @@
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
 				9E544A4D24752A8900E83072 /* URLSessionSwizzlerTests.swift in Sources */,
-				61E917D3246546BF00E6C631 /* DDTracerConfigurationTests.swift in Sources */,
+				61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */,
 				61C5A89D24509C1100DA608C /* DDSpanTests.swift in Sources */,
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
 				61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */,
@@ -1593,7 +1593,7 @@
 				61133C6C2423990D00786299 /* SwiftExtensions.swift in Sources */,
 				61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */,
 				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
-				61C5A89624509BF600DA608C /* DDTracerTests.swift in Sources */,
+				61C5A89624509BF600DA608C /* TracerTests.swift in Sources */,
 				61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */,
 				61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */,
 				61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */,
