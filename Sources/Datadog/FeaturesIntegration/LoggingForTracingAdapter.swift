@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import OpenTracing
 
 /// Adapts the Logging feature for Tracing. This stands for a thin integration layer between features.
 internal struct LoggingForTracingAdapter {

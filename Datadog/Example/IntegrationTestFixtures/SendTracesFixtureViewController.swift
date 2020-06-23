@@ -5,7 +5,6 @@
  */
 
 import UIKit
-import OpenTracing
 import struct Datadog.DDTags
 
 internal class SendTracesFixtureViewController: UIViewController {

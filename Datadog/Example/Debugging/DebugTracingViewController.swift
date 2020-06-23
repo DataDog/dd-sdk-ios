@@ -5,7 +5,6 @@
  */
 
 import UIKit
-import OpenTracing
 import struct Datadog.DDTags
 
 class DebugTracingViewController: UIViewController {

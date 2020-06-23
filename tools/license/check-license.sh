@@ -16,6 +16,7 @@ function files {
 		-not -path "*Pods*" \
 		-not -path "*Carthage/Build/*" \
 		-not -path "*Carthage/Checkouts/*" \
+		-not -name "OTGlobal.swift" \
 		-not -name "OTSpan.swift" \
 		-not -name "OTFormat.swift" \
 		-not -name "OTTracer.swift" \

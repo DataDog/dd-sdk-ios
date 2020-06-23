@@ -4,7 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
 import Foundation
 
 /// Datadog - specific span `tags` to be used with `tracer.startSpan(operationName:references:tags:startTime:)`

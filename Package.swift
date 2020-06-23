@@ -17,9 +17,7 @@ let package = Package(
             type: .dynamic,
             targets: ["DatadogObjc"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/DataDog/opentracing-swift.git", .branch("master")),
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: "Datadog",

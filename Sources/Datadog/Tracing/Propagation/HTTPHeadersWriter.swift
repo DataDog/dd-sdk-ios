@@ -4,8 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
-
 public class DDHTTPHeadersWriter: HTTPHeadersWriter {
     private struct Constants {
         static let traceIDField = "x-datadog-trace-id"

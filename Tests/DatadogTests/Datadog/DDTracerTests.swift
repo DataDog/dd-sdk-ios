@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import OpenTracing
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets
