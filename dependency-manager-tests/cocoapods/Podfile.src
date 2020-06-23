@@ -2,6 +2,5 @@ platform :ios, '12.0'
 
 target 'CPProject' do
   use_frameworks!
-  pod 'OpenTracingSwift', :git => 'https://github.com/DataDog/opentracing-swift'
   pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'REMOTE_GIT_BRANCH'
 end
