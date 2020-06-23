@@ -510,7 +510,7 @@ class TracerTests: XCTestCase {
         let tracer: Tracer = .mockAny()
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
-        let httpHeadersWriter = DDHTTPHeadersWriter()
+        let httpHeadersWriter = HTTPHeadersWriter()
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
         tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
