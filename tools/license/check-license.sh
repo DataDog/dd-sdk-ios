@@ -6,14 +6,21 @@ fi
 
 IFS=$'\n'
 
+# Lists all files requiring the license header.
 function files {
+	# Exclude all auto-generated and 3rd party files.
 	find -E . \
 		-iregex '.*\.(swift|h|m|py)$' \
 		-type f \( ! -name "Package.swift" \) \
 		-not -path "*/.build/*" \
 		-not -path "*Pods*" \
 		-not -path "*Carthage/Build/*" \
-		-not -path "*Carthage/Checkouts/*"
+		-not -path "*Carthage/Checkouts/*" \
+		-not -name "OTSpan.swift" \
+		-not -name "OTFormat.swift" \
+		-not -name "OTTracer.swift" \
+		-not -name "OTReference.swift" \
+		-not -name "OTSpanContext.swift"
 }
 
 FILES_WITH_MISSING_LICENSE=""
