@@ -35,7 +35,7 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         return Array(implementationCache.keys)
     }
 
-    init() throws {
+    init() {
         self.implementationCache = [:]
     }
 
