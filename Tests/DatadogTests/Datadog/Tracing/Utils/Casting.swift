@@ -15,15 +15,15 @@
  */
 
 // swiftlint:disable identifier_name
-internal extension OpenTracing.Tracer {
+internal extension OTTracer {
     var dd: DDTracer { self as! DDTracer }
 }
 
-internal extension OpenTracing.Span {
+internal extension OTSpan {
     var dd: DDSpan { self as! DDSpan }
 }
 
-internal extension OpenTracing.SpanContext {
+internal extension OTSpanContext {
     var dd: DDSpanContext { self as! DDSpanContext }
 }
 // swiftlint:enable identifier_name

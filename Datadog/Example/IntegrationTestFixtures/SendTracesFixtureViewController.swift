@@ -5,13 +5,13 @@
  */
 
 import UIKit
-import struct Datadog.DDTags
+import Datadog
 
 internal class SendTracesFixtureViewController: UIViewController {
     private let backgroundQueue = DispatchQueue(label: "background-queue")
 
     /// Traces view appearing
-    private var viewAppearingSpan: Span!
+    private var viewAppearingSpan: OTSpan!
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

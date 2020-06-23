@@ -17,7 +17,7 @@ public struct DDTags {
     public static let resource = "resource.name"
 }
 
-public class DDTracer: Tracer {
+public class DDTracer: OTTracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output.
@@ -34,7 +34,7 @@ public class DDTracer: Tracer {
     /// Initializes the Datadog Tracer.
     /// - Parameters:
     ///   - configuration: the tracer configuration obtained using `DDTracer.Configuration()`.
-    public static func initialize(configuration: Configuration) -> OpenTracing.Tracer {
+    public static func initialize(configuration: Configuration) -> OTTracer {
         do {
             return try initializeOrThrow(configuration: configuration)
         } catch {
@@ -96,7 +96,7 @@ public class DDTracer: Tracer {
 
     // MARK: - Open Tracing interface
 
-    public func startSpan(operationName: String, references: [Reference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OpenTracing.Span {
+    public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OTSpan {
         do {
             return try startSpanOrThrow(operationName: operationName, references: references, tags: tags, startTime: startTime)
         } catch {
@@ -105,18 +105,18 @@ public class DDTracer: Tracer {
         }
     }
 
-    public func inject(spanContext: SpanContext, writer: FormatWriter) {
+    public func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {
         writer.inject(spanContext: spanContext)
     }
 
-    public func extract(reader: FormatReader) -> SpanContext? {
+    public func extract(reader: OTFormatReader) -> OTSpanContext? {
         // TODO: RUMM-385 - we don't need to support it now
         return nil
     }
 
     // MARK: - Private Open Tracing helpers
 
-    private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> OpenTracing.Span {
+    private func startSpanOrThrow(operationName: String, references: [OTReference]?, tags: [String: Codable]?, startTime: Date?) throws -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,

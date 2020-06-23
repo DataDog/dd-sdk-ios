@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class DDSpan: OpenTracing.Span {
+internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
     private let ddTracer: DDTracer
     /// Span context.
@@ -60,11 +60,11 @@ internal class DDSpan: OpenTracing.Span {
 
     // MARK: - Open Tracing interface
 
-    var context: OpenTracing.SpanContext {
+    var context: OTSpanContext {
         return ddContext
     }
 
-    func tracer() -> Tracer {
+    func tracer() -> OTTracer {
         return ddTracer
     }
 

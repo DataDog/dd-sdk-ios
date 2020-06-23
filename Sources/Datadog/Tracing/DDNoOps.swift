@@ -12,15 +12,15 @@ private struct DDNoopGlobals {
     static let context = DDNoopSpanContext()
 }
 
-internal struct DDNoopTracer: OpenTracing.Tracer {
-    func extract(reader: FormatReader) -> SpanContext? { DDNoopGlobals.context }
-    func inject(spanContext: SpanContext, writer: FormatWriter) {}
-    func startSpan(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) -> OpenTracing.Span { DDNoopGlobals.span }
+internal struct DDNoopTracer: OTTracer {
+    func extract(reader: OTFormatReader) -> OTSpanContext? { DDNoopGlobals.context }
+    func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {}
+    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Codable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
 }
 
-internal struct DDNoopSpan: OpenTracing.Span {
-    var context: SpanContext { DDNoopGlobals.context }
-    func tracer() -> Tracer { DDNoopGlobals.tracer }
+internal struct DDNoopSpan: OTSpan {
+    var context: OTSpanContext { DDNoopGlobals.context }
+    func tracer() -> OTTracer { DDNoopGlobals.tracer }
     func setOperationName(_ operationName: String) {}
     func finish(at time: Date) {}
     func log(fields: [String: Codable], timestamp: Date) {}
@@ -29,6 +29,6 @@ internal struct DDNoopSpan: OpenTracing.Span {
     func setTag(key: String, value: Codable) {}
 }
 
-internal struct DDNoopSpanContext: OpenTracing.SpanContext {
+internal struct DDNoopSpanContext: OTSpanContext {
     func forEachBaggageItem(callback: (String, String) -> Bool) {}
 }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct DDSpanContext: OpenTracing.SpanContext {
+internal struct DDSpanContext: OTSpanContext {
     /// This span's trace ID.
     let traceID: TracingUUID
     /// This span ID.

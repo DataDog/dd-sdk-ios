@@ -4,7 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-public class DDHTTPHeadersWriter: HTTPHeadersWriter {
+public class DDHTTPHeadersWriter: OTHTTPHeadersWriter {
     private struct Constants {
         static let traceIDField = "x-datadog-trace-id"
         static let parentSpanIDField = "x-datadog-parent-id"
@@ -20,7 +20,7 @@ public class DDHTTPHeadersWriter: HTTPHeadersWriter {
     /// TODO: revisit in RUMM-386
     public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
 
-    public func inject(spanContext: SpanContext) {
+    public func inject(spanContext: OTSpanContext) {
         guard let spanContext = spanContext.dd else {
             return
         }

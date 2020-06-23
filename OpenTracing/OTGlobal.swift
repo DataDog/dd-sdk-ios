@@ -1,9 +1,7 @@
-//
-//  OTGlobal.swift
-//  Datadog
-//
-//  Created by Maciek Grzybowski on 23/06/2020.
-//  Copyright © 2020 Datadog. All rights reserved.
-//
+/// Struct that stores the shared tracer
+public struct Global {
+    private init() {}
 
-import Foundation
+    /// Shared tracer instance used throughout the app
+    public static var sharedTracer: OTTracer = DDNoopTracer()
+}
