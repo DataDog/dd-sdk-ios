@@ -16,10 +16,9 @@ Send [traces][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-i
     {{< tabs >}}
     {{% tab "CocoaPods" %}}
 
-You can use [CocoaPods][4] to install `dd-sdk-ios` and `opentracing-swift`:
+You can use [CocoaPods][4] to install `dd-sdk-ios`:
 ```
-pod 'OpenTracingSwift', :git => 'https://github.com/DataDog/opentracing-swift'
-pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '1.3.0-beta1'
+pod 'DatadogSDK'
 ```
 
 [4]: https://cocoapods.org/
@@ -83,14 +82,13 @@ Datadog.initialize(
     Datadog.verbosityLevel = .debug
     ```
 
-3. Datadog tracer implements the [Open Tracing standard][8]. Configure and register the `DDTracer` globally as Open Tracing `Global.sharedTracer`. You only need to do it once, usually in your `AppDelegate` code:
+3. Datadog tracer implements the [Open Tracing standard][8]. Configure and register the `Tracer` globally as Open Tracing `Global.sharedTracer`. You only need to do it once, usually in your `AppDelegate` code:
 
     ```swift
     import Datadog
-    import OpenTracing
 
-    Global.sharedTracer = DDTracer.initialize(
-        configuration: DDTracer.Configuration(
+    Global.sharedTracer = Tracer.initialize(
+        configuration: Tracer.Configuration(
             sendNetworkInfo: true
         )
     )
@@ -99,8 +97,6 @@ Datadog.initialize(
 4. Instrument your code using the following methods:
 
     ```swift
-    import OpenTracing
-
     let span = Global.sharedTracer.startSpan(operationName: "<span_name>")
     // do something you want to measure ...
     // ... then, when the operation is finished:
@@ -129,10 +125,10 @@ Datadog.initialize(
     ```swift
     span.log(
         fields: [
-            "event": "error",
-            "error.kind": "I/O Exception",
-            "message": "File not found",
-            "stack": "FileReader.swift:42",
+            OTLogFields.event: "error",
+            OTLogFields.errorKind: "I/O Exception",
+            OTLogFields.message: "File not found",
+            OTLogFields.stack: "FileReader.swift:42",
         ]
     )
     ```
@@ -140,14 +136,13 @@ Datadog.initialize(
 8. (Optional) To distribute traces between your environments, for example frontend - backend, inject tracer context in the client request:
 
     ```swift
-    import OpenTracing
     import Datadog
 
     var request: URLRequest = ... // the request to your API
 
     let span = Global.sharedTracer.startSpan(operationName: "network request")
 
-    let headersWritter = DDHTTPHeadersWriter()
+    let headersWritter = HTTPHeadersWriter()
     Global.sharedTracer.inject(spanContext: span.context, writer: headersWritter)
 
     for (headerField, value) in headersWritter.tracePropagationHTTPHeaders {
