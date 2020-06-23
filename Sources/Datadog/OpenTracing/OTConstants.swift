@@ -12,7 +12,6 @@ import Foundation
 /// See more: [Span tags table](https://github.com/opentracing/specification/blob/master/semantic_conventions.md#span-tags-table)
 ///
 public struct OTTags {
-
     /// Expected value: `String`.
     public static let component = "component"
 
@@ -74,7 +73,6 @@ public struct OTTags {
 /// See more: [Log fields table](https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table)
 ///
 public struct OTLogFields {
-
     /// Expected value: `String`
     public static let errorKind = "error.kind"
 

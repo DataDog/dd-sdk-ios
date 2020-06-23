@@ -2,7 +2,6 @@ import Foundation
 
 /// Represents information related to an event with a timespan
 public protocol OTSpan {
-
     /// The span context that refers to this span
     var context: OTSpanContext { get }
 
@@ -45,7 +44,6 @@ public protocol OTSpan {
 
 /// Convenience extension
 public extension OTSpan {
-
     /// Add a new log with the supplied fields and the current timestamp
     ///
     /// - parameter fields: Fields to set on the span log

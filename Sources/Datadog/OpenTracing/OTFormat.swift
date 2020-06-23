@@ -35,7 +35,6 @@ public protocol OTHTTPHeadersWriter: OTTextMapWriter {}
 
 /// Read interface for a custom carrier
 public protocol OTCustomFormatReader {
-
     /// Extract a span context from the custom carrier
     ///
     /// - returns: extracted span context from the custom carrier, or nil on failure
@@ -44,7 +43,6 @@ public protocol OTCustomFormatReader {
 
 /// Write interface for a custom carrier
 public protocol OTCustomFormatWriter {
-
     /// Inject a span context into the custom carrier
     ///
     /// - parameter spanContext: context to inject into the custom carrier

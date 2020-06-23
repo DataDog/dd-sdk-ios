@@ -1,6 +1,5 @@
 /// OpenTracing span reference
 public struct OTReference {
-
     /// Type of reference
     public let type: OTReferenceType
 
@@ -18,7 +17,6 @@ public struct OTReference {
 
 /// Enum representing the type of reference
 public enum OTReferenceType: String {
-
     /// The CHILD_OF reference type, used to denote direct causal relationships
     case childOf = "CHILD_OF"
 

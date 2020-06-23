@@ -21,7 +21,7 @@ let package = Package(
     targets: [
         .target(
             name: "Datadog",
-            dependencies: ["_Datadog_Private", "OpenTracing"]),
+            dependencies: ["_Datadog_Private"]),
         .target(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
@@ -30,6 +30,6 @@ let package = Package(
         ),
         .testTarget(
             name: "DatadogTests",
-            dependencies: ["Datadog", "DatadogObjc", "OpenTracing"]),
+            dependencies: ["Datadog", "DatadogObjc"]),
     ]
 )

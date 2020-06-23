@@ -5,7 +5,6 @@ import Foundation
 /// 
 /// Tracer should be thread-safe.
 public protocol OTTracer {
-
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
@@ -15,8 +14,12 @@ public protocol OTTracer {
     /// - parameter startTime:     an explicitly specified start timestamp for the OTSpan, or nil to use the
     ///                            current walltime
     /// - returns:                 a valid Span instance; it is the caller's responsibility to call finish()
-    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Codable]?,
-                   startTime: Date?) -> OTSpan
+    func startSpan(
+        operationName: String,
+        references: [OTReference]?,
+        tags: [String: Codable]?,
+        startTime: Date?
+    ) -> OTSpan
 
     /// Transfer the span information into the carrier of the given format.
     ///
@@ -55,7 +58,6 @@ public protocol OTTracer {
 
 /// Extension for a convenience startSpan() with a single parent rather than a list of references
 public extension OTTracer {
-
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
@@ -65,11 +67,18 @@ public extension OTTracer {
     /// - parameter startTime:     an explicitly specified start timestamp for the OTSpan, or nil to use the
     ///                            current walltime
     /// - returns:                 a valid Span instance; it is the caller's responsibility to call finish()
-    func startSpan(operationName: String, childOf parent: OTSpanContext? = nil, tags: [String: Codable]? = nil,
-                   startTime: Date? = nil) -> OTSpan
-    {
+    func startSpan(
+        operationName: String,
+        childOf parent: OTSpanContext? = nil,
+        tags: [String: Codable]? = nil,
+        startTime: Date? = nil
+    ) -> OTSpan {
         let references = parent.map { [OTReference.child(of: $0)] }
-        return self.startSpan(operationName: operationName, references: references, tags: tags,
-                                  startTime: startTime)
+        return self.startSpan(
+            operationName: operationName,
+            references: references,
+            tags: tags,
+            startTime: startTime
+        )
     }
 }

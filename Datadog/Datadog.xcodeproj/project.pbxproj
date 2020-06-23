@@ -107,13 +107,6 @@
 		61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */; };
 		61441C9D2461A796003D8BB8 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C9C2461A796003D8BB8 /* AppConfig.swift */; };
 		614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
-		614C742124A2094600BB999E /* OTSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C741B24A2094600BB999E /* OTSpanContext.swift */; };
-		614C742224A2094600BB999E /* OTConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C741C24A2094600BB999E /* OTConstants.swift */; };
-		614C742324A2094600BB999E /* OTFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C741D24A2094600BB999E /* OTFormat.swift */; };
-		614C742424A2094600BB999E /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C741E24A2094600BB999E /* OTReference.swift */; };
-		614C742524A2094600BB999E /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C741F24A2094600BB999E /* OTSpan.swift */; };
-		614C742624A2094600BB999E /* OTTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C742024A2094600BB999E /* OTTracer.swift */; };
-		614C742824A21A0800BB999E /* OTGlobal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C742724A21A0800BB999E /* OTGlobal.swift */; };
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -158,6 +151,13 @@
 		61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */; };
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
+		61E909ED24A24DD3005EA2DE /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
+		61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E724A24DD3005EA2DE /* OTFormat.swift */; };
+		61E909EF24A24DD3005EA2DE /* OTGlobal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E824A24DD3005EA2DE /* OTGlobal.swift */; };
+		61E909F024A24DD3005EA2DE /* OTTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E924A24DD3005EA2DE /* OTTracer.swift */; };
+		61E909F124A24DD3005EA2DE /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EA24A24DD3005EA2DE /* OTReference.swift */; };
+		61E909F224A24DD3005EA2DE /* OTConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EB24A24DD3005EA2DE /* OTConstants.swift */; };
+		61E909F324A24DD3005EA2DE /* OTSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */; };
 		61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917CE2464270500E6C631 /* EncodableValueTests.swift */; };
 		61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* TracerConfiguration.swift */; };
 		61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */; };
@@ -344,13 +344,6 @@
 		61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DebugLoggingViewController.swift; sourceTree = "<group>"; };
 		61441C9C2461A796003D8BB8 /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		614872762485067300E3EBDB /* SpanTagsReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanTagsReducer.swift; sourceTree = "<group>"; };
-		614C741B24A2094600BB999E /* OTSpanContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpanContext.swift; sourceTree = "<group>"; };
-		614C741C24A2094600BB999E /* OTConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTConstants.swift; sourceTree = "<group>"; };
-		614C741D24A2094600BB999E /* OTFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTFormat.swift; sourceTree = "<group>"; };
-		614C741E24A2094600BB999E /* OTReference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTReference.swift; sourceTree = "<group>"; };
-		614C741F24A2094600BB999E /* OTSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpan.swift; sourceTree = "<group>"; };
-		614C742024A2094600BB999E /* OTTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTTracer.swift; sourceTree = "<group>"; };
-		614C742724A21A0800BB999E /* OTGlobal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTGlobal.swift; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* BundleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleType.swift; sourceTree = "<group>"; };
 		615519252461BCE7002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519262461BCE7002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
@@ -395,6 +388,13 @@
 		61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanFileOutputTests.swift; sourceTree = "<group>"; };
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		61E45ED02451A8730061DAC7 /* SpanMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanMatcher.swift; sourceTree = "<group>"; };
+		61E909E624A24DD3005EA2DE /* OTSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpan.swift; sourceTree = "<group>"; };
+		61E909E724A24DD3005EA2DE /* OTFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTFormat.swift; sourceTree = "<group>"; };
+		61E909E824A24DD3005EA2DE /* OTGlobal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTGlobal.swift; sourceTree = "<group>"; };
+		61E909E924A24DD3005EA2DE /* OTTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTTracer.swift; sourceTree = "<group>"; };
+		61E909EA24A24DD3005EA2DE /* OTReference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTReference.swift; sourceTree = "<group>"; };
+		61E909EB24A24DD3005EA2DE /* OTConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTConstants.swift; sourceTree = "<group>"; };
+		61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpanContext.swift; sourceTree = "<group>"; };
 		61E917CE2464270500E6C631 /* EncodableValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableValueTests.swift; sourceTree = "<group>"; };
 		61E917D02465423600E6C631 /* TracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfiguration.swift; sourceTree = "<group>"; };
 		61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfigurationTests.swift; sourceTree = "<group>"; };
@@ -469,7 +469,7 @@
 				61133B9C2423979B00786299 /* Datadog */,
 				61133C082423983800786299 /* DatadogObjc */,
 				9E68FB52244707FD0013A8AA /* _Datadog_Private */,
-				61EFA5D124A206EE002FA0F4 /* OpenTracing */,
+				61E909E524A24DD3005EA2DE /* OpenTracing */,
 				61133C122423990D00786299 /* DatadogTests */,
 				61441C772461A204003D8BB8 /* DatadogBenchmarkTests */,
 				61441C3524617013003D8BB8 /* DatadogIntegrationTests */,
@@ -1108,27 +1108,27 @@
 			path = SpanOutputs;
 			sourceTree = "<group>";
 		};
+		61E909E524A24DD3005EA2DE /* OpenTracing */ = {
+			isa = PBXGroup;
+			children = (
+				61E909E624A24DD3005EA2DE /* OTSpan.swift */,
+				61E909E724A24DD3005EA2DE /* OTFormat.swift */,
+				61E909E824A24DD3005EA2DE /* OTGlobal.swift */,
+				61E909E924A24DD3005EA2DE /* OTTracer.swift */,
+				61E909EA24A24DD3005EA2DE /* OTReference.swift */,
+				61E909EB24A24DD3005EA2DE /* OTConstants.swift */,
+				61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */,
+			);
+			name = OpenTracing;
+			path = ../Sources/Datadog/OpenTracing;
+			sourceTree = "<group>";
+		};
 		61E917CD246426E000E6C631 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
 				61E917CE2464270500E6C631 /* EncodableValueTests.swift */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		61EFA5D124A206EE002FA0F4 /* OpenTracing */ = {
-			isa = PBXGroup;
-			children = (
-				614C741C24A2094600BB999E /* OTConstants.swift */,
-				614C742724A21A0800BB999E /* OTGlobal.swift */,
-				614C741D24A2094600BB999E /* OTFormat.swift */,
-				614C741E24A2094600BB999E /* OTReference.swift */,
-				614C741F24A2094600BB999E /* OTSpan.swift */,
-				614C741B24A2094600BB999E /* OTSpanContext.swift */,
-				614C742024A2094600BB999E /* OTTracer.swift */,
-			);
-			name = OpenTracing;
-			path = ../OpenTracing;
 			sourceTree = "<group>";
 		};
 		61F1A61B2498AD2C00075390 /* SystemFrameworks */ = {
@@ -1477,14 +1477,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */,
+				61E909ED24A24DD3005EA2DE /* OTSpan.swift in Sources */,
 				61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */,
+				61E909F324A24DD3005EA2DE /* OTSpanContext.swift in Sources */,
+				61E909F024A24DD3005EA2DE /* OTTracer.swift in Sources */,
+				61E909F124A24DD3005EA2DE /* OTReference.swift in Sources */,
 				61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */,
+				61E909EF24A24DD3005EA2DE /* OTGlobal.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
-				614C742524A2094600BB999E /* OTSpan.swift in Sources */,
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
 				614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */,
 				61133BCF2423979B00786299 /* FileWriter.swift in Sources */,
+				61E909F224A24DD3005EA2DE /* OTConstants.swift in Sources */,
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
 				61C5A8A724509FAA00DA608C /* SpanBuilder.swift in Sources */,
 				61AD4E3824531500006E34EA /* DataFormat.swift in Sources */,
@@ -1501,8 +1506,7 @@
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61C5A8A624509FAA00DA608C /* SpanEncoder.swift in Sources */,
 				61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */,
-				614C742424A2094600BB999E /* OTReference.swift in Sources */,
-				614C742824A21A0800BB999E /* OTGlobal.swift in Sources */,
+				61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfo.swift in Sources */,
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
@@ -1515,26 +1519,22 @@
 				61133BD32423979B00786299 /* File.swift in Sources */,
 				61D447E224917F8F00649287 /* DateFormatting.swift in Sources */,
 				61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */,
-				614C742324A2094600BB999E /* OTFormat.swift in Sources */,
 				61133BDA2423979B00786299 /* HTTPHeaders.swift in Sources */,
 				61133BE82423979B00786299 /* LogFileOutput.swift in Sources */,
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
 				61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */,
 				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
 				61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */,
-				614C742624A2094600BB999E /* OTTracer.swift in Sources */,
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
 				61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */,
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
 				614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
-				614C742224A2094600BB999E /* OTConstants.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
 				612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */,
 				9EB47B92247443FA004F90BE /* URLSessionSwizzler.swift in Sources */,
 				61133BE92423979B00786299 /* LogOutput.swift in Sources */,
-				614C742124A2094600BB999E /* OTSpanContext.swift in Sources */,
 				61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */,
 				61C5A88624509A0C00DA608C /* TracingUUIDGenerator.swift in Sources */,
 				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,

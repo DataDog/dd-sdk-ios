@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		617CEB41245719E200AD4669 /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617CEB3C245719E200AD4669 /* OpenTracing.framework */; };
-		617CEB42245719E200AD4669 /* OpenTracing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617CEB3C245719E200AD4669 /* OpenTracing.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */; };
 		9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */; };
 		9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */; };
@@ -80,7 +78,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */,
-				617CEB42245719E200AD4669 /* OpenTracing.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -111,7 +108,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */,
-				617CEB41245719E200AD4669 /* OpenTracing.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,7 +505,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = Shopist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -529,7 +524,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = Shopist/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
