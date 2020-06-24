@@ -6,7 +6,7 @@
 
 import Foundation
 
-private struct DDNoopGlobals {
+internal struct DDNoopGlobals {
     static let tracer = DDNoopTracer()
     static let span = DDNoopSpan()
     static let context = DDNoopSpanContext()

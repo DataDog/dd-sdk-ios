@@ -158,6 +158,7 @@
 		61E909F124A24DD3005EA2DE /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EA24A24DD3005EA2DE /* OTReference.swift */; };
 		61E909F224A24DD3005EA2DE /* OTConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EB24A24DD3005EA2DE /* OTConstants.swift */; };
 		61E909F324A24DD3005EA2DE /* OTSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */; };
+		61E909F624A32D1C005EA2DE /* OTGlobalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909F524A32D1C005EA2DE /* OTGlobalTests.swift */; };
 		61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917CE2464270500E6C631 /* EncodableValueTests.swift */; };
 		61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* TracerConfiguration.swift */; };
 		61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */; };
@@ -397,6 +398,7 @@
 		61E909EA24A24DD3005EA2DE /* OTReference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTReference.swift; sourceTree = "<group>"; };
 		61E909EB24A24DD3005EA2DE /* OTConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTConstants.swift; sourceTree = "<group>"; };
 		61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpanContext.swift; sourceTree = "<group>"; };
+		61E909F524A32D1C005EA2DE /* OTGlobalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTGlobalTests.swift; sourceTree = "<group>"; };
 		61E917CE2464270500E6C631 /* EncodableValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableValueTests.swift; sourceTree = "<group>"; };
 		61E917D02465423600E6C631 /* TracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfiguration.swift; sourceTree = "<group>"; };
 		61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfigurationTests.swift; sourceTree = "<group>"; };
@@ -703,6 +705,7 @@
 				61133C182423990D00786299 /* Datadog */,
 				61133C132423990D00786299 /* DatadogObjc */,
 				61C3637E2436163400C4D4E6 /* DatadogPrivate */,
+				61E909F424A32CF6005EA2DE /* OpenTracing */,
 				61133C422423990D00786299 /* Matchers */,
 				61133C442423990D00786299 /* Helpers */,
 			);
@@ -1127,6 +1130,14 @@
 			);
 			name = OpenTracing;
 			path = ../Sources/Datadog/OpenTracing;
+			sourceTree = "<group>";
+		};
+		61E909F424A32CF6005EA2DE /* OpenTracing */ = {
+			isa = PBXGroup;
+			children = (
+				61E909F524A32D1C005EA2DE /* OTGlobalTests.swift */,
+			);
+			path = OpenTracing;
 			sourceTree = "<group>";
 		};
 		61E917CD246426E000E6C631 /* Utils */ = {
@@ -1588,6 +1599,7 @@
 				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
 				61133C5E2423990D00786299 /* LogsUploadDelayTests.swift in Sources */,
 				61133C5C2423990D00786299 /* DataUploadWorkerTests.swift in Sources */,
+				61E909F624A32D1C005EA2DE /* OTGlobalTests.swift in Sources */,
 				9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */,
 				61133C692423990D00786299 /* LogFileOutputTests.swift in Sources */,
 				61133C682423990D00786299 /* LogUtilityOutputsTests.swift in Sources */,

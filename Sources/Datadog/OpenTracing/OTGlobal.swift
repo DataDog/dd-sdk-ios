@@ -3,5 +3,5 @@ public struct Global {
     private init() {}
 
     /// Shared tracer instance used throughout the app
-    public static var sharedTracer: OTTracer = DDNoopTracer()
+    public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
 }
