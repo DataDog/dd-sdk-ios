@@ -23,28 +23,6 @@ class DDLoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    func testSendingLogWithCustomizedLogger() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
-        defer { LoggingFeature.instance = nil }
-
-        let objcBuilder = DDLogger.builder()
-        objcBuilder.set(serviceName: "objc-service-name")
-        objcBuilder.set(loggerName: "objc-logger-name")
-        objcBuilder.sendLogsToDatadog(true)
-        objcBuilder.printLogsToConsole(false)
-
-        let objcLogger = objcBuilder.build()
-        objcLogger.debug("message")
-
-        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
-        logMatcher.assertServiceName(equals: "objc-service-name")
-        logMatcher.assertLoggerName(equals: "objc-logger-name")
-    }
-
     func testSendingLogsWithDifferentLevels() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
@@ -71,7 +49,34 @@ class DDLoggerTests: XCTestCase {
         logMatchers[5].assertStatus(equals: "critical")
     }
 
-    // MARK: - Sending attributes
+    func testSendingMessageAttributes() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let objcLogger = DDLogger.builder().build()
+
+        objcLogger.debug("message", attributes: ["foo": "bar"])
+        objcLogger.info("message", attributes: ["foo": "bar"])
+        objcLogger.notice("message", attributes: ["foo": "bar"])
+        objcLogger.warn("message", attributes: ["foo": "bar"])
+        objcLogger.error("message", attributes: ["foo": "bar"])
+        objcLogger.critical("message", attributes: ["foo": "bar"])
+
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 6)
+        logMatchers[0].assertStatus(equals: "debug")
+        logMatchers[1].assertStatus(equals: "info")
+        logMatchers[2].assertStatus(equals: "notice")
+        logMatchers[3].assertStatus(equals: "warn")
+        logMatchers[4].assertStatus(equals: "error")
+        logMatchers[5].assertStatus(equals: "critical")
+        logMatchers.forEach { matcher in
+            matcher.assertAttributes(equal: ["foo": "bar"])
+        }
+    }
 
     func testSendingLoggerAttributes() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
@@ -112,6 +117,37 @@ class DDLoggerTests: XCTestCase {
         logMatcher.assertValue(forKey: "nsarray-of-int", equals: [1, 2, 3])
         logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date1", equals: "2019-12-15T10:00:00.000Z")
         logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date2", equals: "2019-12-15T11:00:00.000Z")
+    }
+
+    func testSettingTagsAndAttributes() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            configuration: .mockWith(environment: "test")
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let objcLogger = DDLogger.builder().build()
+
+        objcLogger.addAttribute(forKey: "foo", value: "bar")
+        objcLogger.addAttribute(forKey: "bizz", value: "buzz")
+        objcLogger.removeAttribute(forKey: "bizz")
+
+        objcLogger.addTag(withKey: "foo", value: "bar")
+        objcLogger.addTag(withKey: "bizz", value: "buzz")
+        objcLogger.removeTag(withKey: "bizz")
+
+        objcLogger.add(tag: "foobar")
+        objcLogger.add(tag: "bizzbuzz")
+        objcLogger.remove(tag: "bizzbuzz")
+
+        objcLogger.info(.mockAny())
+
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
+        logMatcher.assertNoValue(forKey: "bizz")
+        logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test"])
     }
 }
 // swiftlint:enable multiline_arguments_brackets

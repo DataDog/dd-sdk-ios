@@ -5,9 +5,28 @@
  */
 
 import XCTest
+@testable import Datadog
 
 class OTGlobalTests: XCTestCase {
-    func testItDoesSomething() {
-        // 🐶
+    func testWhenUsingDefaultGlobalTracer_itDoesNothing() {
+        let noOpTracer = Global.sharedTracer
+        XCTAssertTrue(noOpTracer is DDNoopTracer)
+
+        let noOpSpan = Global.sharedTracer.startSpan(operationName: .mockAny())
+        XCTAssertTrue(noOpSpan is DDNoopSpan)
+        XCTAssertTrue(noOpSpan.tracer() is DDNoopTracer)
+        XCTAssertTrue(noOpSpan.context is DDNoopSpanContext)
+
+        noOpSpan.setOperationName(.mockAny())
+        noOpSpan.setTag(key: .mockAny(), value: String.mockAny())
+        noOpSpan.setBaggageItem(key: .mockAny(), value: .mockAny())
+        _ = noOpSpan.baggageItem(withKey: .mockAny())
+        _ = noOpSpan.context.forEachBaggageItem { _, _ in return false }
+        noOpSpan.log(fields: [.mockAny(): String.mockAny()])
+        noOpSpan.finish()
+
+        let headersWriter = HTTPHeadersWriter()
+        noOpTracer.inject(spanContext: noOpSpan.context, writer: headersWriter)
+        XCTAssertEqual(headersWriter.tracePropagationHTTPHeaders.count, 0)
     }
 }

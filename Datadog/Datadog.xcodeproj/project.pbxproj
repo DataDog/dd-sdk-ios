@@ -683,8 +683,8 @@
 			isa = PBXGroup;
 			children = (
 				61133C092423983800786299 /* Datadog+objc.swift */,
-				61133C0C2423983800786299 /* Logger+objc.swift */,
 				61133C0D2423983800786299 /* DatadogConfiguration+objc.swift */,
+				61133C0C2423983800786299 /* Logger+objc.swift */,
 				61133C0A2423983800786299 /* ObjcIntercompatibility */,
 			);
 			name = DatadogObjc;
@@ -717,9 +717,9 @@
 			isa = PBXGroup;
 			children = (
 				61133C142423990D00786299 /* DDDatadogTests.swift */,
-				61133C152423990D00786299 /* DDLoggerBuilderTests.swift */,
 				61133C162423990D00786299 /* DDConfigurationTests.swift */,
 				61133C172423990D00786299 /* DDLoggerTests.swift */,
+				61133C152423990D00786299 /* DDLoggerBuilderTests.swift */,
 			);
 			path = DatadogObjc;
 			sourceTree = "<group>";
