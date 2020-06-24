@@ -4,12 +4,11 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
 import Foundation
 
-internal class DDSpan: OpenTracing.Span {
+internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
-    private let ddTracer: DDTracer
+    private let ddTracer: Tracer
     /// Span context.
     internal let ddContext: DDSpanContext
     /// Span creation date
@@ -45,7 +44,7 @@ internal class DDSpan: OpenTracing.Span {
     }
 
     init(
-        tracer: DDTracer,
+        tracer: Tracer,
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
@@ -61,11 +60,11 @@ internal class DDSpan: OpenTracing.Span {
 
     // MARK: - Open Tracing interface
 
-    var context: OpenTracing.SpanContext {
+    var context: OTSpanContext {
         return ddContext
     }
 
-    func tracer() -> Tracer {
+    func tracer() -> OTTracer {
         return ddTracer
     }
 

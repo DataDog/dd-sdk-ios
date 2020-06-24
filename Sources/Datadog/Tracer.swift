@@ -4,7 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
 import Foundation
 
 /// Datadog - specific span `tags` to be used with `tracer.startSpan(operationName:references:tags:startTime:)`
@@ -18,13 +17,28 @@ public struct DDTags {
     public static let resource = "resource.name"
 }
 
-public class DDTracer: Tracer {
+/// Because `Tracer` is a common name widely used across different projects, the `Datadog.Tracer` may conflict when
+/// doing `import Datadog`. In such case, following `DDTracer` typealias can be used to avoid compiler ambiguity.
+///
+/// Usage:
+///
+///     import Datadog
+///
+///     // tracer reference
+///     var tracer: DDTracer!
+///
+///     // instantiate Datadog tracer
+///     tracer = DDTracer.initialize(...)
+///
+public typealias DDTracer = Tracer
+
+public class Tracer: OTTracer {
     /// Writes `Span` objects to output.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output.
     /// Equals `nil` if Logging feature is disabled.
     internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
-    /// Queue ensuring thread-safety of the `DDTracer` and `DDSpan` operations.
+    /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
 
     private let dateProvider: DateProvider
@@ -34,8 +48,8 @@ public class DDTracer: Tracer {
 
     /// Initializes the Datadog Tracer.
     /// - Parameters:
-    ///   - configuration: the tracer configuration obtained using `DDTracer.Configuration()`.
-    public static func initialize(configuration: Configuration) -> OpenTracing.Tracer {
+    ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
+    public static func initialize(configuration: Configuration) -> OTTracer {
         do {
             return try initializeOrThrow(configuration: configuration)
         } catch {
@@ -44,15 +58,15 @@ public class DDTracer: Tracer {
         }
     }
 
-    internal static func initializeOrThrow(configuration: Configuration) throws -> DDTracer {
+    internal static func initializeOrThrow(configuration: Configuration) throws -> Tracer {
         guard let tracingFeature = TracingFeature.instance else {
             throw ProgrammerError(
                 description: Datadog.instance == nil
-                    ? "`Datadog.initialize()` must be called prior to `DDTracer.initialize()`."
-                    : "`DDTracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+                    ? "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                    : "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
             )
         }
-        return DDTracer(
+        return Tracer(
             tracingFeature: tracingFeature,
             tracerConfiguration: configuration
         )
@@ -97,7 +111,7 @@ public class DDTracer: Tracer {
 
     // MARK: - Open Tracing interface
 
-    public func startSpan(operationName: String, references: [Reference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OpenTracing.Span {
+    public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OTSpan {
         do {
             return try startSpanOrThrow(operationName: operationName, references: references, tags: tags, startTime: startTime)
         } catch {
@@ -106,18 +120,18 @@ public class DDTracer: Tracer {
         }
     }
 
-    public func inject(spanContext: SpanContext, writer: FormatWriter) {
+    public func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {
         writer.inject(spanContext: spanContext)
     }
 
-    public func extract(reader: FormatReader) -> SpanContext? {
+    public func extract(reader: OTFormatReader) -> OTSpanContext? {
         // TODO: RUMM-385 - we don't need to support it now
         return nil
     }
 
     // MARK: - Private Open Tracing helpers
 
-    private func startSpanOrThrow(operationName: String, references: [Reference]?, tags: [String: Codable]?, startTime: Date?) throws -> OpenTracing.Span {
+    private func startSpanOrThrow(operationName: String, references: [OTReference]?, tags: [String: Codable]?, startTime: Date?) throws -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         return DDSpan(
             tracer: self,

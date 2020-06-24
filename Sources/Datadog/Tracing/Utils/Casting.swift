@@ -4,10 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
-
 // swiftlint:disable identifier_name
-internal extension OpenTracing.SpanContext {
+internal extension OTSpanContext {
     var dd: DDSpanContext? { warnIfCannotCast(value: self) }
 }
 // swiftlint:enable identifier_name

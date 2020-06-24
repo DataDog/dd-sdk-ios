@@ -4,10 +4,9 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
 import Foundation
 
-internal struct DDSpanContext: OpenTracing.SpanContext {
+internal struct DDSpanContext: OTSpanContext {
     /// This span's trace ID.
     let traceID: TracingUUID
     /// This span ID.

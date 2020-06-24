@@ -4,7 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import OpenTracing
 @testable import Datadog
 
 /*
@@ -16,15 +15,15 @@ import OpenTracing
  */
 
 // swiftlint:disable identifier_name
-internal extension OpenTracing.Tracer {
-    var dd: DDTracer { self as! DDTracer }
+internal extension OTTracer {
+    var dd: Tracer { self as! Tracer }
 }
 
-internal extension OpenTracing.Span {
+internal extension OTSpan {
     var dd: DDSpan { self as! DDSpan }
 }
 
-internal extension OpenTracing.SpanContext {
+internal extension OTSpanContext {
     var dd: DDSpanContext { self as! DDSpanContext }
 }
 // swiftlint:enable identifier_name

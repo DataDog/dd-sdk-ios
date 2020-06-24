@@ -6,7 +6,7 @@
 
 import Foundation
 
-extension DDTracer {
+extension Tracer {
     /// Datadog Tracer configuration.
     public struct Configuration {
         /// The service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).

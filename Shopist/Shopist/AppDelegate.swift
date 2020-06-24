@@ -6,7 +6,6 @@
 
 import UIKit
 import Datadog
-import OpenTracing
 
 fileprivate(set) var logger: Logger!
 
@@ -37,7 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .build()
 
         // Register global tracer
-        Global.sharedTracer = DDTracer.initialize(configuration: .init(serviceName: appConfig.serviceName))
+        Global.sharedTracer = Tracer.initialize(configuration: .init(serviceName: appConfig.serviceName))
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug

@@ -7,13 +7,7 @@ tools:
 		@echo "OK 👌"
 
 dependencies:
-ifneq ("$(wildcard ./Cartfile)","")
-		@echo "⚙️  Cartfile found, bootstrapping..."
-		@carthage bootstrap --platform iOS
-else
-		@echo "⚙️  Cartfile not found, ignoring."
-		@echo "OK 👌"	
-endif
+		@echo "⚙️  No dependencies required, skipping..."
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."

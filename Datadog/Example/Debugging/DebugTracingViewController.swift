@@ -5,8 +5,7 @@
  */
 
 import UIKit
-import OpenTracing
-import struct Datadog.DDTags
+import Datadog
 
 class DebugTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!

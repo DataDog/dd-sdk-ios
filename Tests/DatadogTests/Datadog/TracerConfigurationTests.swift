@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-class DDTracerConfigurationTests: XCTestCase {
+class TracerConfigurationTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private var mockServer: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -41,7 +41,7 @@ class DDTracerConfigurationTests: XCTestCase {
     }
 
     func testDefaultTracer() {
-        let tracer = DDTracer.initialize(
+        let tracer = Tracer.initialize(
             configuration: .init()
         ).dd
 
@@ -73,7 +73,7 @@ class DDTracerConfigurationTests: XCTestCase {
     }
 
     func testCustomizedTracer() {
-        let tracer = DDTracer.initialize(
+        let tracer = Tracer.initialize(
             configuration: .init(
                 serviceName: "custom-service-name",
                 sendNetworkInfo: true

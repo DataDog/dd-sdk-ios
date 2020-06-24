@@ -6,10 +6,9 @@
 
 import UIKit
 import Datadog
-import OpenTracing
 
 var logger: Logger!
-var tracer: OpenTracing.Tracer { Global.sharedTracer }
+var tracer: OTTracer { Global.sharedTracer }
 
 let appConfig: AppConfig = currentAppConfig()
 
@@ -46,8 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .build()
 
         // Register global tracer
-        Global.sharedTracer = DDTracer.initialize(
-            configuration: DDTracer.Configuration(
+        Global.sharedTracer = Tracer.initialize(
+            configuration: Tracer.Configuration(
                 serviceName: appConfig.serviceName,
                 sendNetworkInfo: true
             )

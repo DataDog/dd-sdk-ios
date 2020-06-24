@@ -5,9 +5,8 @@
  */
 
 import Foundation
-import OpenTracing
 
-/// Datadog tag keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields
+/// Datadog tag keys used to encode information received from the user through `OTLogFields`, `OTTagKeys` or custom fields
 /// supported by Datadog platform.
 private struct DatadogTagKeys {
     static let errorType    = "error.type"

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		615519352461D121002A85CF /* OpenTracing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615519342461D121002A85CF /* OpenTracing.framework */; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
 		61C3641B243752A500C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641A243752A500C4D4E6 /* SceneDelegate.swift */; };
 		61C3641D243752A500C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
@@ -61,7 +60,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C3644B2437547A00C4D4E6 /* Datadog.framework in Frameworks */,
-				615519352461D121002A85CF /* OpenTracing.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,7 +289,6 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/Datadog.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/OpenTracing.framework",
 			);
 			name = "⚙️ Carthage";
 			outputFileListPaths = (

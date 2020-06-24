@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import OpenTracing
 
 /// Adapts the Logging feature for Tracing. This stands for a thin integration layer between features.
 internal struct LoggingForTracingAdapter {
@@ -17,7 +16,7 @@ internal struct LoggingForTracingAdapter {
 
     // MARK: - LogOutput
 
-    func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: DDTracer.Configuration) -> AdaptedLogOutput {
+    func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration) -> AdaptedLogOutput {
         return AdaptedLogOutput(
             loggingOutput: LogFileOutput(
                 logBuilder: LogBuilder(
