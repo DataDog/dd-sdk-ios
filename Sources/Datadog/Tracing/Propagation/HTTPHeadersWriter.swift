@@ -4,7 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-public class DDHTTPHeadersWriter: OTHTTPHeadersWriter {
+public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     private struct Constants {
         static let traceIDField = "x-datadog-trace-id"
         static let parentSpanIDField = "x-datadog-parent-id"
