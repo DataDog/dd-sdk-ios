@@ -106,7 +106,7 @@ class URLSessionSwizzlerTests: XCTestCase {
                 mock2.interceptionExpectation,
                 mock3.interceptionExpectation
             ],
-            timeout: 1
+            timeout: 2
         )
 
         task.resume()
@@ -120,7 +120,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         ]
         wait(
             for: resumeExpectations,
-            timeout: 1,
+            timeout: 2,
             enforceOrder: true
         )
     }

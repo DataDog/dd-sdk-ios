@@ -23,6 +23,21 @@ public class DDLogsEndpoint: NSObject {
 }
 
 @objcMembers
+public class DDTracesEndpoint: NSObject {
+    internal let sdkEndpoint: Datadog.Configuration.TracesEndpoint
+
+    internal init(sdkEndpoint: Datadog.Configuration.TracesEndpoint) {
+        self.sdkEndpoint = sdkEndpoint
+    }
+
+    // MARK: - Public
+
+    public static func eu() -> DDTracesEndpoint { .init(sdkEndpoint: .eu) }
+    public static func us() -> DDTracesEndpoint { .init(sdkEndpoint: .us) }
+    public static func custom(url: String) -> DDTracesEndpoint { .init(sdkEndpoint: .custom(url: url)) }
+}
+
+@objcMembers
 public class DDConfiguration: NSObject {
     internal let sdkConfiguration: Datadog.Configuration
 
@@ -49,8 +64,25 @@ public class DDConfigurationBuilder: NSObject {
 
     // MARK: - Public
 
+    @available(*, deprecated, renamed: "set(logsEndpoint:)")
     public func set(endpoint: DDLogsEndpoint) {
-        _ = sdkBuilder.set(logsEndpoint: endpoint.sdkEndpoint)
+        set(logsEndpoint: endpoint)
+    }
+
+    public func enableLogging(_ enabled: Bool) {
+        _ = sdkBuilder.enableLogging(enabled)
+    }
+
+    public func enableTracing(_ enabled: Bool) {
+        _ = sdkBuilder.enableTracing(enabled)
+    }
+
+    public func set(logsEndpoint: DDLogsEndpoint) {
+        _ = sdkBuilder.set(logsEndpoint: logsEndpoint.sdkEndpoint)
+    }
+
+    public func set(tracesEndpoint: DDTracesEndpoint) {
+        _ = sdkBuilder.set(tracesEndpoint: tracesEndpoint.sdkEndpoint)
     }
 
     public func set(serviceName: String) {
