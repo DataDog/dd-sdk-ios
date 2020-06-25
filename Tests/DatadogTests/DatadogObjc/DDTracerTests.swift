@@ -31,22 +31,22 @@ class DDTracerTests: XCTestCase {
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
-        let objcSpan1 = objcTracer.startSpan(operationName: "operation")
+        let objcSpan1 = objcTracer.startSpan("operation")
         let objcSpan2 = objcTracer.startSpan(
-            operationName: "operation",
+            "operation",
             tags: NSDictionary(dictionary: ["tag1": NSString(string: "value1"), "tag2": NSInteger(integerLiteral: 123)])
         )
         let objcSpan3 = objcTracer.startSpan(
-            operationName: "operation",
+            "operation",
             childOf: objcSpan1.context
         )
         let objcSpan4 = objcTracer.startSpan(
-            operationName: "operation",
+            "operation",
             childOf: objcSpan1.context,
             tags: NSDictionary(dictionary: ["tag1": NSString(string: "value1"), "tag2": NSInteger(integerLiteral: 123)])
         )
         let objcSpan5 = objcTracer.startSpan(
-            operationName: "operation",
+            "operation",
             childOf: objcSpan1.context,
             tags: NSDictionary(
                 dictionary: [
@@ -58,13 +58,13 @@ class DDTracerTests: XCTestCase {
             startTime: .mockDecember15th2019At10AMUTC()
         )
 
-        objcSpan5.set(operationName: "updated operation name")
-        objcSpan5.setTag(key: "nsstringTag", value: NSString(string: "string value"))
-        objcSpan5.setTag(key: "nsnumberTag", numberValue: NSNumber(value: 10.5))
-        objcSpan5.setTag(key: "nsboolTag", boolValue: true)
+        objcSpan5.setOperationName("updated operation name")
+        objcSpan5.setTag("nsstringTag", value: NSString(string: "string value"))
+        objcSpan5.setTag("nsnumberTag", numberValue: NSNumber(value: 10.5))
+        objcSpan5.setTag("nsboolTag", boolValue: true)
 
-        _ = objcSpan5.setBaggageItem(key: "item", value: "value")
-        XCTAssertEqual(objcSpan5.getBaggageItem(key: "item"), "value")
+        _ = objcSpan5.setBaggageItem("item", value: "value")
+        XCTAssertEqual(objcSpan5.getBaggageItem("item"), "value")
 
         var baggageItems: [(key: String, value: String)] = []
         objcSpan5.context.forEachBaggageItem { itemKey, itemValue in
@@ -79,7 +79,7 @@ class DDTracerTests: XCTestCase {
         objcSpan2.finish()
         objcSpan3.finish()
         objcSpan4.finish()
-        objcSpan5.finish(withTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
+        objcSpan5.finishWithTime(.mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
         [objcSpan1, objcSpan2, objcSpan3, objcSpan4, objcSpan5].forEach { span in
             XCTAssertTrue(span.tracer === objcTracer)
@@ -134,9 +134,9 @@ class DDTracerTests: XCTestCase {
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
-        let objcSpan = objcTracer.startSpan(operationName: "operation")
-        objcSpan.log(fields: ["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
-        objcSpan.log(fields: ["bizz": NSNumber(10.5)])
+        let objcSpan = objcTracer.startSpan("operation")
+        objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
+        objcSpan.log(["bizz": NSNumber(10.5)])
 
         let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
 
@@ -151,7 +151,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDHTTPHeadersWriter()
-        try objcTracer.inject(spanContext: objcSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
+        try objcTracer.inject(objcSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
             "x-datadog-trace-id": "1",
@@ -168,13 +168,13 @@ class DDTracerTests: XCTestCase {
         let objcValidWriter = DDHTTPHeadersWriter()
         let objcInvalidFormat = "foo"
         XCTAssertThrowsError(
-            try objcTracer.inject(spanContext: objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)
+            try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)
         )
 
         let objcInvalidWriter = NSObject()
         let objcValidFormat = OTFormatHTTPHeaders
         XCTAssertThrowsError(
-            try objcTracer.inject(spanContext: objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
+            try objcTracer.inject(objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
         )
     }
 
@@ -185,7 +185,7 @@ class DDTracerTests: XCTestCase {
         let objcTracer = DDTracer(swiftTracer: swiftTracer)
 
         let previousSwiftTracer = Global.sharedTracer
-        DDOTGlobal.initSharedTracer(tracer: objcTracer)
+        DDOTGlobal.initSharedTracer(objcTracer)
         defer {
             DDOTGlobal.sharedTracer = nil
             Global.sharedTracer = previousSwiftTracer

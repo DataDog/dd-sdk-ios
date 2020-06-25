@@ -26,7 +26,7 @@ public class DDOTTracer: NSObject {
 
     // MARK: - Open Tracing Objective-C Interface
 
-    public func startSpan(operationName: String) -> DDOTSpan {
+    public func startSpan(_ operationName: String) -> DDOTSpan {
         // Corresponds to:
         // - (id<OTSpan>)startSpan:(NSString*)operationName;
         return DDOTSpan(
@@ -35,7 +35,7 @@ public class DDOTTracer: NSObject {
         )
     }
 
-    public func startSpan(operationName: String, tags: NSDictionary?) -> DDOTSpan {
+    public func startSpan(_ operationName: String, tags: NSDictionary?) -> DDOTSpan {
         // Corresponds to:
         // - (id<OTSpan>)startSpan:(NSString*)operationName
         //               tags:(nullable NSDictionary*)tags;
@@ -48,8 +48,7 @@ public class DDOTTracer: NSObject {
         )
     }
 
-    // - (id<OTSpan>)startSpan:(NSString*)operationName childOf:(nullable id<OTSpanContext>)parent;
-    public func startSpan(operationName: String, childOf parent: DDOTSpanContext?) -> DDOTSpan {
+    public func startSpan(_ operationName: String, childOf parent: DDOTSpanContext?) -> DDOTSpan {
         // Corresponds to:
         // - (id<OTSpan>)startSpan:(NSString*)operationName
         //               childOf:(nullable id<OTSpanContext>)parent;
@@ -63,7 +62,7 @@ public class DDOTTracer: NSObject {
     }
 
     public func startSpan(
-        operationName: String,
+        _ operationName: String,
         childOf parent: DDOTSpanContext?,
         tags: NSDictionary?
     ) -> DDOTSpan {
@@ -82,7 +81,7 @@ public class DDOTTracer: NSObject {
     }
 
     public func startSpan(
-        operationName: String,
+        _ operationName: String,
         childOf parent: DDOTSpanContext?,
         tags: NSDictionary?,
         startTime: Date?
@@ -103,7 +102,7 @@ public class DDOTTracer: NSObject {
         )
     }
 
-    public func inject(spanContext: DDOTSpanContext, format: String, carrier: Any) throws {
+    public func inject(_ spanContext: DDOTSpanContext, format: String, carrier: Any) throws {
         // Corresponds to:
         // - (BOOL)inject:(id<OTSpanContext>)spanContext format:(NSString*)format carrier:(id)carrier error:(NSError* __autoreleasing *)outError;
         guard format == OTFormatHTTPHeaders, let objcWriter = carrier as? DDHTTPHeadersWriter else {
@@ -123,7 +122,7 @@ public class DDOTTracer: NSObject {
         )
     }
 
-    public func extractWithFormat(format: String, carrier: Any) throws {
+    public func extractWithFormat(_ format: String, carrier: Any) throws {
         // Corresponds to:
         // - (nullable id<OTSpanContext>)extractWithFormat:(NSString*)format carrier:(id)carrier error:(NSError* __autoreleasing *)outError;
         // TODO: RUMM-385 - we don't need to support it now

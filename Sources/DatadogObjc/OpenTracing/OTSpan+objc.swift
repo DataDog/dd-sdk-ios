@@ -21,36 +21,40 @@ public class DDOTSpan: NSObject {
     // MARK: - Open Tracing Objective-C Interface
 
     public var context: DDOTSpanContext {
+        // Corresponds to:
+        // - (id<OTSpanContext>)context;
         return objcContext
     }
 
+    // Corresponds to:
+    // - (id<OTTracer>)tracer;
     public let tracer: DDOTTracer
 
-    public func set(operationName: String) {
+    public func setOperationName(_ operationName: String) {
         // Corresponds to:
         // - (void)setOperationName:(NSString*)operationName;
         swiftSpan.setOperationName(operationName)
     }
 
-    public func setTag(key: String, value: NSString) {
+    public func setTag(_ key: String, value: NSString) {
         // Corresponds to:
         // - (void)setTag:(NSString *)key value:(NSString *)value;
         swiftSpan.setTag(key: key, value: value as String)
     }
 
-    public func setTag(key: String, numberValue: NSNumber) {
+    public func setTag(_ key: String, numberValue: NSNumber) {
         // Corresponds to:
         // - (void)setTag:(NSString *)key numberValue:(NSNumber *)value;
         swiftSpan.setTag(key: key, value: AnyCodable(numberValue))
     }
 
-    public func setTag(key: String, boolValue: Bool) {
+    public func setTag(_ key: String, boolValue: Bool) {
         // Corresponds to:
         // - (void)setTag:(NSString *)key boolValue:(BOOL)value;
         swiftSpan.setTag(key: key, value: boolValue)
     }
 
-    public func log(fields: [String: NSObject], timestamp: Date? = nil) {
+    public func log(_ fields: [String: NSObject], timestamp: Date? = nil) {
         // Corresponds to:
         // - (void)log:(NSDictionary<NSString*, NSObject*>*)fields timestamp:(nullable NSDate*)timestamp;
         if let timestamp = timestamp {
@@ -65,14 +69,14 @@ public class DDOTSpan: NSObject {
         }
     }
 
-    public func setBaggageItem(key: String, value: String) -> DDOTSpan {
+    public func setBaggageItem(_ key: String, value: String) -> DDOTSpan {
         // Corresponds to:
         // - (id<OTSpan>)setBaggageItem:(NSString*)key value:(NSString*)value;
         swiftSpan.setBaggageItem(key: key, value: value)
         return self
     }
 
-    public func getBaggageItem(key: String) -> String? {
+    public func getBaggageItem(_ key: String) -> String? {
         // Corresponds to:
         // - (nullable NSString*)getBaggageItem:(NSString*)key;
         return swiftSpan.baggageItem(withKey: key)
@@ -84,7 +88,7 @@ public class DDOTSpan: NSObject {
         swiftSpan.finish()
     }
 
-    public func finish(withTime finishTime: Date?) {
+    public func finishWithTime(_ finishTime: Date?) {
         // Corresponds to:
         // - (void)finishWithTime:(nullable NSDate*)finishTime;
         if let finishTime = finishTime {

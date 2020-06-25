@@ -17,7 +17,7 @@ public class DDOTSpanContext: NSObject {
 
     // MARK: - Open Tracing Objective-C Interface
 
-    public func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool) {
+    public func forEachBaggageItem(_ callback: (_ key: String, _ value: String) -> Bool) {
         // Corresponds to:
         // - (void)forEachBaggageItem:(BOOL (^) (NSString* key, NSString* value))callback;
         swiftSpanContext.forEachBaggageItem(callback: callback)

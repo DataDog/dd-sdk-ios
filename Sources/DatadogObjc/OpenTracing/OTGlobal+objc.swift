@@ -9,7 +9,7 @@ import Datadog
 @objcMembers
 @objc(OTGlobal)
 public class DDOTGlobal: NSObject {
-    public static func initSharedTracer(tracer: DDOTTracer) {
+    public static func initSharedTracer(_ tracer: DDOTTracer) {
         // Corresponds to:
         // + (void)initSharedTracer:(id<OTTracer>)tracer;
         sharedTracer = tracer
@@ -20,5 +20,5 @@ public class DDOTGlobal: NSObject {
 
     // Corresponds to:
     // + (id<OTTracer>)sharedTracer
-    public static var sharedTracer: DDOTTracer?
+    public internal(set) static var sharedTracer: DDOTTracer?
 }
