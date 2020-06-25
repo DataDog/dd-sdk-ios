@@ -8,17 +8,17 @@ import Datadog
 
 @objcMembers
 @objc(OTGlobal)
-public class DDOTGlobal: NSObject {
-    public static func initSharedTracer(_ tracer: DDOTTracer) {
-        // Corresponds to:
-        // + (void)initSharedTracer:(id<OTTracer>)tracer;
-        sharedTracer = tracer
+public class OTGlobal: NSObject {
+    public static func initSharedTracer(_ tracer: OTTracer) {
+        guard let ddtracer = tracer.dd else {
+            return
+        }
+
+        sharedTracer = ddtracer
 
         // We must also set the Swift `sharedTracer` as it's used internally by auto-instrumentation feature.
-        Global.sharedTracer = tracer.swiftTracer
+        Global.sharedTracer = ddtracer.swiftTracer
     }
 
-    // Corresponds to:
-    // + (id<OTTracer>)sharedTracer
-    public internal(set) static var sharedTracer: DDOTTracer?
+    public internal(set) static var sharedTracer: OTTracer = noopTracer
 }

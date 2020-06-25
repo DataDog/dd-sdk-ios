@@ -29,7 +29,7 @@ class DDTracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let objcTracer = DDTracer(configuration: DDTracerConfiguration())
+        let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
 
         let objcSpan1 = objcTracer.startSpan("operation")
         let objcSpan2 = objcTracer.startSpan(
@@ -78,7 +78,7 @@ class DDTracerTests: XCTestCase {
         objcSpan1.finish()
         objcSpan2.finish()
         objcSpan3.finish()
-        objcSpan4.finish()
+        objcSpan4.finishWithTime(nil)
         objcSpan5.finishWithTime(.mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
         [objcSpan1, objcSpan2, objcSpan3, objcSpan4, objcSpan5].forEach { span in
@@ -137,16 +137,18 @@ class DDTracerTests: XCTestCase {
         let objcSpan = objcTracer.startSpan("operation")
         objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
         objcSpan.log(["bizz": NSNumber(10.5)])
+        objcSpan.log(["buzz": NSURL(string: "https://example.com/image.png")!], timestamp: nil)
 
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
         logMatchers[1].assertValue(forKey: "bizz", equals: 10.5)
+        logMatchers[2].assertValue(forKey: "buzz", equals: "https://example.com/image.png")
     }
 
     func testInjectingSpanContextToValidCarrierAndFormat() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
-        let objcSpanContext = DDOTSpanContext(
+        let objcSpanContext = DDSpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
         )
 
@@ -163,7 +165,7 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToInvalidCarrierOrFormat() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
-        let objcSpanContext = DDOTSpanContext(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
 
         let objcValidWriter = DDHTTPHeadersWriter()
         let objcInvalidFormat = "foo"
@@ -179,19 +181,80 @@ class DDTracerTests: XCTestCase {
     }
 
     func testWhenSettingGlobalTracer_itSetsSwiftTracerAswell() {
-        XCTAssertNil(DDOTGlobal.sharedTracer)
+        XCTAssertTrue(OTGlobal.sharedTracer === noopTracer)
 
         let swiftTracer = Tracer.mockAny()
         let objcTracer = DDTracer(swiftTracer: swiftTracer)
 
+        let previousObjcTracer = OTGlobal.sharedTracer
         let previousSwiftTracer = Global.sharedTracer
-        DDOTGlobal.initSharedTracer(objcTracer)
+        OTGlobal.initSharedTracer(objcTracer)
         defer {
-            DDOTGlobal.sharedTracer = nil
+            OTGlobal.sharedTracer = previousObjcTracer
             Global.sharedTracer = previousSwiftTracer
         }
 
-        XCTAssertTrue(DDOTGlobal.sharedTracer === objcTracer)
+        XCTAssertTrue(OTGlobal.sharedTracer === objcTracer)
         XCTAssertTrue(Global.sharedTracer as? Tracer === swiftTracer)
+    }
+
+    // MARK: - Usage errors
+
+    func testsWhenUsingUnexpectedOTTracer() throws {
+        let previousObjcTracer = OTGlobal.sharedTracer
+
+        OTGlobal.initSharedTracer(noopTracer)
+
+        XCTAssertTrue(OTGlobal.sharedTracer === previousObjcTracer)
+        XCTAssertFalse(Global.sharedTracer is Tracer)
+    }
+
+    func testsWhenUsingUnexpectedOTSpanContext() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
+
+        XCTAssertNil(objcTracer.startSpan(.mockAny(), childOf: noopSpanContext).dd!.swiftSpan.dd.ddContext.parentSpanID)
+        XCTAssertNil(objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary()).dd!.swiftSpan.dd.ddContext.parentSpanID)
+        XCTAssertNil(objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary(), startTime: .mockAny()).dd!.swiftSpan.dd.ddContext.parentSpanID)
+
+        let objcWriter = DDHTTPHeadersWriter()
+        try objcTracer.inject(noopSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
+        XCTAssertEqual(objcWriter.swiftHTTPHeadersWriter.tracePropagationHTTPHeaders.count, 0)
+    }
+
+    func testsWhenUsingUnexpectedTagsDictionary() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
+
+        let tags = NSDictionary(dictionary: [1: "string"])
+        let objcSpan = objcTracer.startSpan(.mockAny(), tags: tags)
+
+        XCTAssertEqual(objcSpan.dd?.swiftSpan.dd.tags.count, 0)
+    }
+
+    func testUsingNoopTracerIsSafe() {
+        // noop Tracer
+        XCTAssertTrue(noopTracer.startSpan(.mockAny()) === noopSpan)
+        XCTAssertTrue(noopTracer.startSpan(.mockAny(), tags: nil) === noopSpan)
+        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil) === noopSpan)
+        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil, tags: nil) === noopSpan)
+        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil, tags: nil, startTime: nil) === noopSpan)
+        XCTAssertNoThrow(try noopTracer.inject(noopSpanContext, format: .mockAny(), carrier: NSObject()))
+        XCTAssertNoThrow(try noopTracer.extractWithFormat(.mockAny(), carrier: NSObject()))
+
+        // noop Span
+        XCTAssertTrue(noopSpan.context === noopSpanContext)
+        XCTAssertTrue(noopSpan.tracer === noopTracer)
+        noopSpan.setOperationName(.mockAny())
+        noopSpan.setTag(.mockAny(), value: "")
+        noopSpan.setTag(.mockAny(), numberValue: 0)
+        noopSpan.setTag(.mockAny(), boolValue: false)
+        noopSpan.log([:])
+        noopSpan.log([:], timestamp: nil)
+        _ = noopSpan.setBaggageItem(.mockAny(), value: .mockAny())
+        _ = noopSpan.getBaggageItem(.mockAny())
+        noopSpan.finish()
+        noopSpan.finishWithTime(nil)
+
+        // noop SpanContext
+        noopSpanContext.forEachBaggageItem { _, _ in false }
     }
 }

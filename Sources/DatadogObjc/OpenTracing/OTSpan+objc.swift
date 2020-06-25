@@ -4,97 +4,24 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import protocol Datadog.OTSpan
+@objc
+/// Corresponds to: https://github.com/opentracing/opentracing-objc/blob/master/Pod/Classes/OTSpan.h
+public protocol OTSpan {
+    var context: OTSpanContext { get }
+    var tracer: OTTracer { get }
 
-@objcMembers
-@objc(OTSpan)
-public class DDOTSpan: NSObject {
-    let objcContext: DDOTSpanContext
-    let swiftSpan: Datadog.OTSpan
+    func setOperationName(_ operationName: String)
 
-    internal init(objcTracer: DDOTTracer, swiftSpan: Datadog.OTSpan) {
-        self.tracer = objcTracer
-        self.objcContext = DDOTSpanContext(swiftSpanContext: swiftSpan.context)
-        self.swiftSpan = swiftSpan
-    }
+    func setTag(_ key: String, value: NSString)
+    func setTag(_ key: String, numberValue: NSNumber)
+    func setTag(_ key: String, boolValue: Bool)
 
-    // MARK: - Open Tracing Objective-C Interface
+    func log(_ fields: [String: NSObject])
+    func log(_ fields: [String: NSObject], timestamp: Date?)
 
-    public var context: DDOTSpanContext {
-        // Corresponds to:
-        // - (id<OTSpanContext>)context;
-        return objcContext
-    }
+    func setBaggageItem(_ key: String, value: String) -> OTSpan
+    func getBaggageItem(_ key: String) -> String?
 
-    // Corresponds to:
-    // - (id<OTTracer>)tracer;
-    public let tracer: DDOTTracer
-
-    public func setOperationName(_ operationName: String) {
-        // Corresponds to:
-        // - (void)setOperationName:(NSString*)operationName;
-        swiftSpan.setOperationName(operationName)
-    }
-
-    public func setTag(_ key: String, value: NSString) {
-        // Corresponds to:
-        // - (void)setTag:(NSString *)key value:(NSString *)value;
-        swiftSpan.setTag(key: key, value: value as String)
-    }
-
-    public func setTag(_ key: String, numberValue: NSNumber) {
-        // Corresponds to:
-        // - (void)setTag:(NSString *)key numberValue:(NSNumber *)value;
-        swiftSpan.setTag(key: key, value: AnyCodable(numberValue))
-    }
-
-    public func setTag(_ key: String, boolValue: Bool) {
-        // Corresponds to:
-        // - (void)setTag:(NSString *)key boolValue:(BOOL)value;
-        swiftSpan.setTag(key: key, value: boolValue)
-    }
-
-    public func log(_ fields: [String: NSObject], timestamp: Date? = nil) {
-        // Corresponds to:
-        // - (void)log:(NSDictionary<NSString*, NSObject*>*)fields timestamp:(nullable NSDate*)timestamp;
-        if let timestamp = timestamp {
-            swiftSpan.log(
-                fields: fields.mapValues { AnyCodable($0) },
-                timestamp: timestamp
-            )
-        } else {
-            swiftSpan.log(
-                fields: fields.mapValues { AnyCodable($0) }
-            )
-        }
-    }
-
-    public func setBaggageItem(_ key: String, value: String) -> DDOTSpan {
-        // Corresponds to:
-        // - (id<OTSpan>)setBaggageItem:(NSString*)key value:(NSString*)value;
-        swiftSpan.setBaggageItem(key: key, value: value)
-        return self
-    }
-
-    public func getBaggageItem(_ key: String) -> String? {
-        // Corresponds to:
-        // - (nullable NSString*)getBaggageItem:(NSString*)key;
-        return swiftSpan.baggageItem(withKey: key)
-    }
-
-    public func finish() {
-        // Corresponds to:
-        // - (void)finish;
-        swiftSpan.finish()
-    }
-
-    public func finishWithTime(_ finishTime: Date?) {
-        // Corresponds to:
-        // - (void)finishWithTime:(nullable NSDate*)finishTime;
-        if let finishTime = finishTime {
-            swiftSpan.finish(at: finishTime)
-        } else {
-            swiftSpan.finish()
-        }
-    }
+    func finish()
+    func finishWithTime(_ finishTime: Date?)
 }
