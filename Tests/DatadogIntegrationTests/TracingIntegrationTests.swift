@@ -16,13 +16,19 @@ class TracingIntegrationTests: IntegrationTests {
     func testLaunchTheAppAndSendTraces() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
+        // Server session recording mock data requests send to `HTTPServerMock`.
+        // Used to inspect trace HTTP headers.
+        let dataSourceServerSession = server.obtainUniqueRecordingSession()
+        // Server session recording spans send to `HTTPServerMock`.
         let tracingServerSession = server.obtainUniqueRecordingSession()
+        // Server session recording logs send to `HTTPServerMock`.
         let loggingServerSession = server.obtainUniqueRecordingSession()
 
         let app = ExampleApplication()
         app.launchWith(
             mockLogsEndpointURL: loggingServerSession.recordingURL,
-            mockTracesEndpointURL: tracingServerSession.recordingURL
+            mockTracesEndpointURL: tracingServerSession.recordingURL,
+            mockSourceEndpointURL: dataSourceServerSession.recordingURL
         )
         app.tapSendTracesForUITests()
 
@@ -44,10 +50,23 @@ class TracingIntegrationTests: IntegrationTests {
         let spanMatchers = try recordedTracingRequests
             .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
-        XCTAssertEqual(spanMatchers.count, 3)
+        let autoTracedWithURL = spanMatchers[3]
+        let autoTracedWithRequest = spanMatchers[4]
+
+        let recordedNetworkRequests = try dataSourceServerSession.getRecordedPOSTRequests()
+        XCTAssert(recordedNetworkRequests.count == 1)
+        let traceID = try! autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
+        XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-trace-id: \(traceID)"), "Trace: \(traceID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
+        let spanID = try! autoTracedWithRequest.spanID().hexadecimalNumberToDecimal
+        XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-parent-id: \(spanID)"), "Span: \(spanID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
+
+        XCTAssertEqual(spanMatchers.count, 5)
         XCTAssertEqual(try spanMatchers[0].operationName(), "data downloading")
         XCTAssertEqual(try spanMatchers[1].operationName(), "data presentation")
         XCTAssertEqual(try spanMatchers[2].operationName(), "view appearing")
+
+        XCTAssertEqual(try autoTracedWithURL.operationName(), "urlsession.request")
+        XCTAssertEqual(try autoTracedWithRequest.operationName(), "urlsession.request")
 
         // All spans share the same `trace_id`
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[1].traceID())
@@ -57,9 +76,15 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[0].parentSpanID(), try spanMatchers[2].spanID())
         XCTAssertEqual(try spanMatchers[1].parentSpanID(), try spanMatchers[2].spanID())
 
+        // auto-instrumentation generates unique trace ids
+        XCTAssertNotEqual(try autoTracedWithURL.traceID(), try spanMatchers[0].traceID())
+        XCTAssertNotEqual(try autoTracedWithRequest.traceID(), try spanMatchers[0].traceID())
+
         XCTAssertNil(try? spanMatchers[0].metrics.isRootSpan())
         XCTAssertNil(try? spanMatchers[1].metrics.isRootSpan())
         XCTAssertEqual(try spanMatchers[2].metrics.isRootSpan(), 1)
+        XCTAssertEqual(try autoTracedWithURL.metrics.isRootSpan(), 1)
+        XCTAssertEqual(try autoTracedWithRequest.metrics.isRootSpan(), 1)
 
         // "data downloading" span's tags
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.kind"), "image")
@@ -69,11 +94,24 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[0].isError(), 0)
         XCTAssertEqual(try spanMatchers[1].isError(), 1)
         XCTAssertEqual(try spanMatchers[2].isError(), 0)
+        XCTAssertEqual(try autoTracedWithURL.isError(), 0)
+        XCTAssertEqual(try autoTracedWithRequest.isError(), 0)
 
         // "data downloading" span has custom resource name
         XCTAssertEqual(try spanMatchers[0].resource(), "GET /image.png")
         XCTAssertEqual(try spanMatchers[1].resource(), try spanMatchers[1].operationName())
         XCTAssertEqual(try spanMatchers[2].resource(), try spanMatchers[2].operationName())
+
+        let baseURL = dataSourceServerSession.recordingURL.absoluteString
+        let targetURL1 = URL(string: "\(baseURL)/dataTaskWithURL")!
+        let targetURL2 = URL(string: "\(baseURL)/dataTaskWithRequest")!
+        XCTAssertEqual(try autoTracedWithURL.resource(), targetURL1.absoluteString)
+        XCTAssertEqual(try autoTracedWithRequest.resource(), targetURL2.absoluteString)
+
+        // assert baggage item:
+        XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
+        XCTAssertEqual(try spanMatchers[1].meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
 
         try spanMatchers.forEach { matcher in
             XCTAssertGreaterThan(try matcher.startTime(), testBeginTimeInNanoseconds)
@@ -86,9 +124,6 @@ class TracingIntegrationTests: IntegrationTests {
             XCTAssertEqual(try matcher.meta.source(), "ios")
             XCTAssertEqual(try matcher.meta.tracerVersion().split(separator: ".").count, 3)
             XCTAssertEqual(try matcher.meta.applicationVersion(), "1.0")
-
-            // assert baggage item:
-            XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
 
             XCTAssertTrue(
                 SpanMatcher.allowedNetworkReachabilityValues.contains(

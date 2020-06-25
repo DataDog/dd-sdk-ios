@@ -108,10 +108,15 @@ class DatadogTests: XCTestCase {
             try Datadog.deinitializeOrThrow()
         }
 
+        defer {
+            TracingAutoInstrumentation.instance?.swizzler.unswizzle()
+        }
+
         try verify(configuration: configurationBuilder.build()) {
             // verify features:
             XCTAssertNotNil(LoggingFeature.instance)
             XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -119,6 +124,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNil(LoggingFeature.instance)
             XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -126,11 +132,21 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(LoggingFeature.instance)
             XCTAssertNil(TracingFeature.instance)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
         try verify(configuration: configurationBuilder.enableLogging(false).enableTracing(false).build()) {
             // verify features:
             XCTAssertNil(LoggingFeature.instance)
             XCTAssertNil(TracingFeature.instance)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(configuration: configurationBuilder.enableTracing(true).setTracedHosts([URL.mockAny()]).build()) {
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNotNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(configuration: configurationBuilder.enableTracing(false).setTracedHosts([URL.mockAny()]).build()) {
+            XCTAssertNil(TracingFeature.instance)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
     }
 

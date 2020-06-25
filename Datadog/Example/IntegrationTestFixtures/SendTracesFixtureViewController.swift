@@ -29,6 +29,7 @@ internal class SendTracesFixtureViewController: UIViewController {
         dataDownloadingSpan.setTag(key: "data.url", value: URL(string: "https://example.com/image.png")!)
         dataDownloadingSpan.setTag(key: DDTags.resource, value: "GET /image.png")
 
+        // Step #1: Manual tracing with complex hierarchy
         downloadSomeData { [weak self] data in
             // Simulate logging download progress
             dataDownloadingSpan.log(
@@ -55,6 +56,17 @@ internal class SendTracesFixtureViewController: UIViewController {
         super.viewDidAppear(animated)
 
         viewAppearingSpan.finish()
+
+        // Step #2: Auto Instrumentation
+        // Send two requests which will be automatically traced as tracing auto-instrumentation is enabled
+        let tracedHost = currentAppConfig().sourceEndpoint.absoluteString
+        let url = URL(string: "\(tracedHost)/dataTaskWithURL")!
+        var request = URLRequest(url: URL(string: "\(tracedHost)/dataTaskWithRequest")!)
+        request.httpMethod = "POST"
+        URLSession.shared.dataTask(with: url) { _, _, _ in
+            // Step #3
+            URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
+        }.resume()
     }
 
     /// Simulates doing an asynchronous work with completion.

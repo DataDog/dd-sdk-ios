@@ -61,6 +61,7 @@ extension Datadog {
         internal let logsEndpoint: LogsEndpoint
         internal let tracesEndpoint: TracesEndpoint
         internal let serviceName: String?
+        internal var tracedHosts = Set<URL>()
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -86,6 +87,7 @@ extension Datadog {
             internal var logsEndpoint: LogsEndpoint = .us
             internal var tracesEndpoint: TracesEndpoint = .us
             internal var serviceName: String? = nil
+            internal var tracedHosts = Set<URL>()
 
             internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
@@ -127,6 +129,17 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the hosts to be automatically traced.
+            ///
+            /// Example, if tracedHosts is ["https://foo.bar"], then every network request such as "https://foo.bar/some/path" will be automatically traced.
+            /// If nil, automatic tracing is disabled.
+            ///
+            /// - Parameter tracedHosts: `nil` by default
+            public func setTracedHosts(_ tracedHosts: Set<URL>) -> Builder {
+                self.tracedHosts = tracedHosts
+                return self
+            }
+
             // MARK: - Endpoints Configuration
 
             /// Sets the server endpoint to which logs are sent.
@@ -162,7 +175,8 @@ extension Datadog {
                     tracingEnabled: tracingEnabled,
                     logsEndpoint: logsEndpoint,
                     tracesEndpoint: tracesEndpoint,
-                    serviceName: serviceName
+                    serviceName: serviceName,
+                    tracedHosts: tracedHosts
                 )
             }
         }

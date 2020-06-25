@@ -12,6 +12,8 @@ protocol AppConfig {
     var serviceName: String { get }
     /// SDK configuration
     var datadogConfiguration: Datadog.Configuration { get }
+    /// Endpoint for arbitrary network requests
+    var sourceEndpoint: URL { get }
 }
 
 struct ExampleAppConfig: AppConfig {
@@ -19,6 +21,7 @@ struct ExampleAppConfig: AppConfig {
     let serviceName = "ios-sdk-example-app"
     /// Configuration for uploading logs to Datadog servers
     let datadogConfiguration: Datadog.Configuration
+    let sourceEndpoint = URL(string: "https://app.datadoghq.com/")!
 
     init() {
         guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
@@ -32,6 +35,7 @@ struct ExampleAppConfig: AppConfig {
 
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: clientToken, environment: "tests")
+            .setTracedHosts([sourceEndpoint])
             .build()
     }
 }
@@ -41,12 +45,18 @@ struct UITestAppConfig: AppConfig {
     let serviceName = "ui-tests-service-name"
     /// Configuration for uploading logs to mock servers
     let datadogConfiguration: Datadog.Configuration
+    let sourceEndpoint: URL
 
-    init(mockLogsEndpoint: String, mockTracesEndpoint: String) {
+    init() {
+        let mockLogsEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!
+        let mockTracesEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
+        let sourceEndpointString = ProcessInfo.processInfo.environment["DD_MOCK_SOURCE_ENDPOINT_URL"]!
+        sourceEndpoint = URL(string: sourceEndpointString)!
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
+            .setTracedHosts([sourceEndpoint])
             .build()
     }
 }
@@ -54,10 +64,7 @@ struct UITestAppConfig: AppConfig {
 /// Returns different `AppConfig` when running in UI Tests or launching directly.
 func currentAppConfig() -> AppConfig {
     if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
-        return UITestAppConfig(
-            mockLogsEndpoint: ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!,
-            mockTracesEndpoint: ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
-        )
+        return UITestAppConfig()
     } else {
         return ExampleAppConfig()
     }
