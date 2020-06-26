@@ -33,17 +33,15 @@ internal struct LoggingForTracingAdapter {
         )
     }
 
+    internal struct TracingAttributes {
+        static let traceID = "dd.trace_id"
+        static let spanID = "dd.span_id"
+    }
+
     /// Bridges logs created by Tracing feature to Logging feature's output.
     internal struct AdaptedLogOutput {
         private struct Constants {
             static let defaultLogMessage = "Span event"
-        }
-
-        private struct TracingAttributes {
-            static let traceID = "dd.trace_id"
-            static let spanID = "dd.span_id"
-
-            // TODO: RUMM-478 Add tracing log attributes to the list of reserved log attributes in `LogSanitizer`
         }
 
         /// Actual `LogOutput` bridged to `LoggingFeature`.
