@@ -60,19 +60,22 @@ internal struct LogSanitizer {
 
     // MARK: - Attributes sanitization
 
-    private func sanitize(attributes rawAttributes: [String: EncodableValue]?) -> [String: EncodableValue]? {
-        if let rawAttributes = rawAttributes {
-            var attributes = removeInvalidAttributes(rawAttributes)
-            attributes = removeReservedAttributes(attributes)
-            attributes = sanitizeAttributeNames(attributes)
-            attributes = limitToMaxNumberOfAttributes(attributes)
-            return attributes
-        } else {
-            return nil
-        }
+    private func sanitize(attributes rawAttributes: LogAttributes) -> LogAttributes {
+        // Sanitizes only `userAttributes`, `internalAttributes` remain untouched
+        var userAttributes = rawAttributes.userAttributes
+        userAttributes = removeInvalidAttributes(userAttributes)
+        userAttributes = removeReservedAttributes(userAttributes)
+        userAttributes = sanitizeAttributeNames(userAttributes)
+        let userAttributesLimit = Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
+        userAttributes = limitToMaxNumberOfAttributes(userAttributes, limit: userAttributesLimit)
+
+        return LogAttributes(
+            userAttributes: userAttributes,
+            internalAttributes: rawAttributes.internalAttributes
+        )
     }
 
-    private func removeInvalidAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
+    private func removeInvalidAttributes(_ attributes: [String: Encodable]) -> [String: Encodable] {
         // Attribute name cannot be empty
         return attributes.filter { attribute in
             if attribute.key.isEmpty {
@@ -83,7 +86,7 @@ internal struct LogSanitizer {
         }
     }
 
-    private func removeReservedAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
+    private func removeReservedAttributes(_ attributes: [String: Encodable]) -> [String: Encodable] {
         return attributes.filter { attribute in
             if Constraints.reservedAttributeNames.contains(attribute.key) {
                 userLogger.error("'\(attribute.key)' is a reserved attribute name. This attribute will be ignored.")
@@ -93,8 +96,8 @@ internal struct LogSanitizer {
         }
     }
 
-    private func sanitizeAttributeNames(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
-        let sanitizedAttributes: [(String, EncodableValue)] = attributes.map { name, value in
+    private func sanitizeAttributeNames(_ attributes: [String: Encodable]) -> [String: Encodable] {
+        let sanitizedAttributes: [(String, Encodable)] = attributes.map { name, value in
             let sanitizedName = sanitize(attributeName: name)
             if sanitizedName != name {
                 userLogger.error("Attribute '\(name)' was modified to '\(sanitizedName)' to match Datadog constraints.")
@@ -121,9 +124,9 @@ internal struct LogSanitizer {
         return sanitized
     }
 
-    private func limitToMaxNumberOfAttributes(_ attributes: [String: EncodableValue]) -> [String: EncodableValue] {
-        // Only `Constants.maxNumberOfAttributes` of attributes are allowed.
-        if attributes.count > Constraints.maxNumberOfAttributes {
+    private func limitToMaxNumberOfAttributes(_ attributes: [String: Encodable], limit: Int) -> [String: Encodable] {
+        // Only `limit` number of attributes are allowed.
+        if attributes.count > limit {
             let extraAttributesCount = attributes.count - Constraints.maxNumberOfAttributes
             userLogger.error("Number of attributes exceeds the limit of \(Constraints.maxNumberOfAttributes). \(extraAttributesCount) attribute(s) will be ignored.")
             return Dictionary(uniqueKeysWithValues: attributes.dropLast(extraAttributesCount))

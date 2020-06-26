@@ -50,19 +50,23 @@ internal struct LoggingForTracingAdapter {
         func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
             var userAttributes = fields
 
-            // get the log message
+            // get the log message and optional error kind
             let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
+            let errorKind = userAttributes.removeValue(forKey: OTLogFields.errorKind) as? String
 
             // infer the log level
             let isErrorEvent = fields[OTLogFields.event] as? String == "error"
-            let hasErrorKind = fields[OTLogFields.errorKind] != nil
+            let hasErrorKind = errorKind != nil
             let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
 
             // set tracing attributes
-            let internalAttributes = [
+            var internalAttributes = [
                 TracingAttributes.traceID: "\(spanContext.traceID.rawValue)",
                 TracingAttributes.spanID: "\(spanContext.spanID.rawValue)"
             ]
+            if let errorKind = errorKind {
+                internalAttributes[OTLogFields.errorKind] = errorKind
+            }
 
             loggingOutput.writeLogWith(
                 level: level,

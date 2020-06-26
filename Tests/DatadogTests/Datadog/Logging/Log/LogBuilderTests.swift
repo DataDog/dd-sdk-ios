@@ -29,7 +29,7 @@ class LogBuilderTests: XCTestCase {
         XCTAssertEqual(log.serviceName, "test-service-name")
         XCTAssertEqual(log.loggerName, "test-logger-name")
         XCTAssertEqual(log.tags, ["tag"])
-        XCTAssertEqual(log.attributes, ["attribute": EncodableValue("value")])
+        XCTAssertEqual(log.attributes.userAttributes as? [String: String], ["attribute": "value"])
         XCTAssertEqual(
             builder.createLogWith(level: .info, message: "", date: .mockAny(), attributes: .mockAny(), tags: []).status, .info
         )

@@ -29,7 +29,7 @@ internal struct Log: Encodable {
     let userInfo: UserInfo
     let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
-    let attributes: [String: EncodableValue]?
+    let attributes: LogAttributes
     let tags: [String]?
 
     func encode(to encoder: Encoder) throws {
@@ -134,10 +134,21 @@ internal struct LogEncoder {
             try container.encode(carrierInfo.carrierAllowsVOIP, forKey: .mobileNetworkCarrierAllowsVoIP)
         }
 
-        // Encode custom user attributes
-        if let attributes = log.attributes {
-            var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-            try attributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
+        // Encode attributes...
+        var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+
+        // ... first, user attributes ...
+        let encodableUserAttributes = Dictionary(
+            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, EncodableValue(value)) }
+        )
+        try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
+
+        // ... then, internal attributes:
+        if let internalAttributes = log.attributes.internalAttributes {
+            let encodableInternalAttributes = Dictionary(
+                uniqueKeysWithValues: internalAttributes.map { name, value in (name, EncodableValue(value)) }
+            )
+            try encodableInternalAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
         }
 
         // Encode tags

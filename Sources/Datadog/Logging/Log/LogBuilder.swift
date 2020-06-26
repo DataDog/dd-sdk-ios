@@ -24,10 +24,6 @@ internal struct LogBuilder {
     let carrierInfoProvider: CarrierInfoProviderType?
 
     func createLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
-        let encodableAttributes = Dictionary(
-            uniqueKeysWithValues: attributes.userAttributes.map { name, value in (name, EncodableValue(value)) }
-        )
-
         return Log(
             date: date,
             status: logStatus(for: level),
@@ -41,7 +37,7 @@ internal struct LogBuilder {
             userInfo: userInfoProvider.value,
             networkConnectionInfo: networkConnectionInfoProvider?.current,
             mobileCarrierInfo: carrierInfoProvider?.current,
-            attributes: !encodableAttributes.isEmpty ? encodableAttributes : nil,
+            attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
     }

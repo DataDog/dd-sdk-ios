@@ -88,7 +88,7 @@ extension Log {
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
-        attributes: [String: EncodableValue]? = nil,
+        attributes: LogAttributes = .mockAny(),
         tags: [String]? = nil
     ) -> Log {
         return Log(
