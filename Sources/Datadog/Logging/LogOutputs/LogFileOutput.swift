@@ -11,7 +11,7 @@ internal struct LogFileOutput: LogOutput {
     let logBuilder: LogBuilder
     let fileWriter: FileWriter
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) {
+    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
         let log = logBuilder.createLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags)
         fileWriter.write(value: log)
     }

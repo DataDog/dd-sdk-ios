@@ -23,9 +23,9 @@ internal struct LogBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given logger).
     let carrierInfoProvider: CarrierInfoProviderType?
 
-    func createLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) -> Log {
+    func createLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
         let encodableAttributes = Dictionary(
-            uniqueKeysWithValues: attributes.map { name, value in (name, EncodableValue(value)) }
+            uniqueKeysWithValues: attributes.userAttributes.map { name, value in (name, EncodableValue(value)) }
         )
 
         return Log(

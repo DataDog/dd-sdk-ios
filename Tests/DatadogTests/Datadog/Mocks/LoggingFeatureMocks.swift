@@ -144,30 +144,46 @@ extension LogBuilder {
     }
 }
 
+extension LogAttributes: Equatable {
+    static func mockAny() -> LogAttributes {
+        return mockWith()
+    }
+
+    static func mockWith(
+        userAttributes: [String: Encodable] = [:],
+        internalAttributes: [String: Encodable]? = nil
+    ) -> LogAttributes {
+        return LogAttributes(
+            userAttributes: userAttributes,
+            internalAttributes: internalAttributes
+        )
+    }
+
+    public static func == (lhs: LogAttributes, rhs: LogAttributes) -> Bool {
+        let lhsUserAttributesSorted = lhs.userAttributes.sorted { $0.key < $1.key }
+        let rhsUserAttributesSorted = rhs.userAttributes.sorted { $0.key < $1.key }
+
+        let lhsInternalAttributesSorted = lhs.internalAttributes?.sorted { $0.key < $1.key }
+        let rhsInternalAttributesSorted = rhs.internalAttributes?.sorted { $0.key < $1.key }
+
+        return String(describing: lhsUserAttributesSorted) == String(describing: rhsUserAttributesSorted)
+            && String(describing: lhsInternalAttributesSorted) == String(describing: rhsInternalAttributesSorted)
+    }
+}
+
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
     struct RecordedLog: Equatable {
         var level: LogLevel
         var message: String
         var date: Date
-        var attributes: [String: Encodable] = [:]
+        var attributes = LogAttributes(userAttributes: [:], internalAttributes: nil)
         var tags: Set<String> = []
-
-        static func == (lhs: RecordedLog, rhs: RecordedLog) -> Bool {
-            let lhsAttributesSorted = lhs.attributes.sorted { $0.key < $1.key }
-            let rhsAttributesSorted = rhs.attributes.sorted { $0.key < $1.key }
-
-            return lhs.level == rhs.level
-                && lhs.message == rhs.message
-                && lhs.date == rhs.date
-                && String(describing: lhsAttributesSorted) == String(describing: rhsAttributesSorted)
-                && lhs.tags == rhs.tags
-        }
     }
 
     var recordedLog: RecordedLog? = nil
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: [String: Encodable], tags: Set<String>) {
+    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
         recordedLog = RecordedLog(level: level, message: message, date: date, attributes: attributes, tags: tags)
     }
 }

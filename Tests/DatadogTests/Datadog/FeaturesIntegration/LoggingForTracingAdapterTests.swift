@@ -27,11 +27,15 @@ class LoggingForTracingAdapterTests: XCTestCase {
             level: .info,
             message: "hello",
             date: .mockDecember15th2019At10AMUTC(),
-            attributes: [
-                "custom field": 123,
-                "dd.span_id": "2",
-                "dd.trace_id": "1"
-            ]
+            attributes: LogAttributes(
+                userAttributes: [
+                    "custom field": 123,
+                ],
+                internalAttributes: [
+                    "dd.span_id": "2",
+                    "dd.trace_id": "1"
+                ]
+            )
         )
 
         XCTAssertEqual(loggingOutput.recordedLog, expectedLog)
@@ -85,11 +89,15 @@ class LoggingForTracingAdapterTests: XCTestCase {
             level: .info,
             message: "Span event", // default message is used.
             date: .mockDecember15th2019At10AMUTC(),
-            attributes: [
-                "custom field": 123,
-                "dd.span_id": "2",
-                "dd.trace_id": "1"
-            ]
+            attributes: LogAttributes(
+                userAttributes: [
+                    "custom field": 123,
+                ],
+                internalAttributes: [
+                    "dd.span_id": "2",
+                    "dd.trace_id": "1"
+                ]
+            )
         )
 
         XCTAssertEqual(loggingOutput.recordedLog, expectedLog)

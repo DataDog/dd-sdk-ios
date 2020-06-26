@@ -18,7 +18,7 @@ class LogConsoleOutputTests: XCTestCase {
             timeZone: .UTC,
             printingFunction: { messagePrinted = $0 }
         )
-        output1.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        output1.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
         XCTAssertEqual(messagePrinted, "10:00:00.000 [INFO] Info message.")
 
         let output2 = LogConsoleOutput(
@@ -27,7 +27,7 @@ class LogConsoleOutputTests: XCTestCase {
             timeZone: .UTC,
             printingFunction: { messagePrinted = $0 }
         )
-        output2.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        output2.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
         XCTAssertEqual(messagePrinted, "🐶 10:00:00.000 [INFO] Info message.")
     }
 
@@ -40,7 +40,7 @@ class LogConsoleOutputTests: XCTestCase {
             timeZone: .EET,
             printingFunction: { messagePrinted = $0 }
         )
-        output.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        output.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
         XCTAssertEqual(messagePrinted, "12:00:00.000 [INFO] Info message.")
     }
 
@@ -53,7 +53,7 @@ class LogConsoleOutputTests: XCTestCase {
             timeZone: .mockAny(),
             printingFunction: { messagePrinted = $0 }
         )
-        output1.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        output1.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
         try LogMatcher.fromJSONObjectData(messagePrinted.utf8Data)
             .assertMessage(equals: "Info message.")
 
@@ -63,7 +63,7 @@ class LogConsoleOutputTests: XCTestCase {
             timeZone: .mockAny(),
             printingFunction: { messagePrinted = $0 }
         )
-        output2.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        output2.writeLogWith(level: .info, message: "Info message.", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
         XCTAssertTrue(messagePrinted.hasPrefix("🐶 → "))
         try LogMatcher.fromJSONObjectData(messagePrinted.removingPrefix("🐶 → ").utf8Data)
             .assertMessage(equals: "Info message.")

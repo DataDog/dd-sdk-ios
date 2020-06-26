@@ -14,7 +14,7 @@ class CombinedLogOutputTests: XCTestCase {
         let output3 = LogOutputMock()
 
         let combinedOutput = CombinedLogOutput(combine: [output1, output2, output3])
-        combinedOutput.writeLogWith(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        combinedOutput.writeLogWith(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
 
         XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC()))
         XCTAssertEqual(output2.recordedLog, .init(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC()))
@@ -25,13 +25,13 @@ class CombinedLogOutputTests: XCTestCase {
         let output1 = LogOutputMock()
         let conditionalOutput1 = ConditionalLogOutput(conditionedOutput: output1) { _ in true }
 
-        conditionalOutput1.writeLogWith(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC(), attributes: [:], tags: [])
+        conditionalOutput1.writeLogWith(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
         XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message", date: .mockDecember15th2019At10AMUTC()))
 
         let output2 = LogOutputMock()
         let conditionalOutput2 = ConditionalLogOutput(conditionedOutput: output2) { _ in false }
 
-        conditionalOutput2.writeLogWith(level: .info, message: "info message", date: .mockAny(), attributes: [:], tags: [])
+        conditionalOutput2.writeLogWith(level: .info, message: "info message", date: .mockAny(), attributes: .mockAny(), tags: [])
         XCTAssertNil(output2.recordedLog)
     }
 }
