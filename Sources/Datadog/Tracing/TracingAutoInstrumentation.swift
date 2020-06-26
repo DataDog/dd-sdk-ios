@@ -9,15 +9,22 @@ import Foundation
 internal class TracingAutoInstrumentation {
     static var instance: TracingAutoInstrumentation?
 
-    let tracedHosts: Set<URL>
     let swizzler: URLSessionSwizzler
+    let interceptor: RequestInterceptor
 
-    init?(tracedHosts: Set<URL>) {
+    init?(tracedHosts: Set<String>) {
         if tracedHosts.isEmpty {
             return nil
         }
         do {
-            self.tracedHosts = tracedHosts
+            /// pattern = "^(.*\\.)*tracedHost1|^(.*\\.)*tracedHost2|..."
+            let regex = tracedHosts
+                .map {
+                    let escaped = NSRegularExpression.escapedPattern(for: $0)
+                    return "^(.*\\.)*\(escaped)$"
+                }
+                .joined(separator: "|")
+            self.interceptor = TracingRequestInterceptor.build(with: regex)
             self.swizzler = try URLSessionSwizzler()
         } catch {
             userLogger.warn("🔥 Network requests won't be traced automatically for \(String(describing: tracedHosts)): \(error)")
@@ -27,17 +34,15 @@ internal class TracingAutoInstrumentation {
     }
 
     func apply() {
-        let interceptor = TracingRequestInterceptor.build(with: tracedHosts)
         swizzler.swizzle(using: interceptor)
     }
 }
 
-internal enum TracingRequestInterceptor {
-    static func build(with tracedHosts: Set<URL>) -> RequestInterceptor {
+private enum TracingRequestInterceptor {
+    static func build(with tracedHostsRegex: String) -> RequestInterceptor {
         let interceptor: RequestInterceptor = { urlRequest in
             guard let tracer = Global.sharedTracer as? DDTracer,
-                let someURL = urlRequest.url,
-                tracedHosts.allows(someURL),
+                urlRequest.allowed(by: tracedHostsRegex),
                 HTTPHeadersWriter.canInject(to: urlRequest) else {
                     return nil
             }
@@ -54,7 +59,7 @@ internal enum TracingRequestInterceptor {
         return interceptor
     }
 
-    static func tracingTaskObserver(
+    private static func tracingTaskObserver(
         tracer: DDTracer,
         spanContext: DDSpanContext
     ) -> TaskObserver {
@@ -80,11 +85,17 @@ internal enum TracingRequestInterceptor {
                 guard let completedSpan = startedSpan else {
                     break
                 }
-                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                    completedSpan.setTag(key: OTTags.httpStatusCode, value: statusCode)
-                }
                 if let someError = error {
                     completedSpan.handleError(someError)
+                }
+                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                    completedSpan.setTag(key: OTTags.httpStatusCode, value: statusCode)
+                    if (400..<500).contains(statusCode) {
+                        completedSpan.setTag(key: OTTags.error, value: true)
+                    }
+                    if statusCode == 404 {
+                        completedSpan.setTag(key: DDTags.resource, value: "404")
+                    }
                 }
                 completedSpan.finish()
             }
@@ -93,16 +104,19 @@ internal enum TracingRequestInterceptor {
     }
 }
 
-private extension Set where Element == URL {
-    func allows(_ url: URL) -> Bool {
-        return self.contains {
-            return (url.scheme == $0.scheme) && (url.host == $0.host)
+private extension URLRequest {
+    func allowed(by tracedHostsRegex: String) -> Bool {
+        if let url = self.url, let host = url.host {
+            return host.range(of: tracedHostsRegex, options: .regularExpression) != nil
+        } else {
+            return false
         }
     }
 }
 
 private extension OTSpan {
     func handleError(_ error: Error) {
+        setTag(key: OTTags.error, value: true)
         setTag(key: DDTags.errorStack, value: String(describing: error))
         let nsError = error as NSError
         let errorKind = "\(nsError.domain) - \(nsError.code)"

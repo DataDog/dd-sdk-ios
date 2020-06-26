@@ -57,15 +57,17 @@ internal class SendTracesFixtureViewController: UIViewController {
 
         viewAppearingSpan.finish()
 
-        // Step #2: Auto Instrumentation
-        // Send two requests which will be automatically traced as tracing auto-instrumentation is enabled
-        let tracedHost = currentAppConfig().sourceEndpoint.absoluteString
-        let url = URL(string: "\(tracedHost)/dataTaskWithURL")!
-        var request = URLRequest(url: URL(string: "\(tracedHost)/dataTaskWithRequest")!)
-        request.httpMethod = "POST"
+        // Send requests which will be automatically traced as tracing auto-instrumentation is enabled
+        let url = currentAppConfig().arbitraryNetworkURL
+        let request = currentAppConfig().arbitraryNetworkRequest
+        let dnsErrorURL = URL(string: "https://foo.bar")!
+        // Step #2: Auto-instrumentated request with URL to succeed
         URLSession.shared.dataTask(with: url) { _, _, _ in
-            // Step #3
-            URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
+            // Step #3: Auto-instrumentated request with Request to fail
+            URLSession.shared.dataTask(with: request) { _, _, _ in
+                // Step #4: Auto-instrumentated request to return NSError
+                URLSession.shared.dataTask(with: dnsErrorURL) { _, _, _ in }.resume()
+            }.resume()
         }.resume()
     }
 

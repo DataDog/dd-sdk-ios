@@ -140,11 +140,21 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(TracingFeature.instance)
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
-        try verify(configuration: configurationBuilder.enableTracing(true).setTracedHosts([URL.mockAny()]).build()) {
+        try verify(
+            configuration: configurationBuilder
+            .enableTracing(true)
+            .set(tracedHosts: [String.mockAny()])
+            .build()
+        ) {
             XCTAssertNotNil(TracingFeature.instance)
             XCTAssertNotNil(TracingAutoInstrumentation.instance)
         }
-        try verify(configuration: configurationBuilder.enableTracing(false).setTracedHosts([URL.mockAny()]).build()) {
+        try verify(
+            configuration: configurationBuilder
+            .enableTracing(false)
+            .set(tracedHosts: [String.mockAny()])
+            .build()
+        ) {
             XCTAssertNil(TracingFeature.instance)
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }

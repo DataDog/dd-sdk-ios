@@ -52,6 +52,7 @@ class TracingIntegrationTests: IntegrationTests {
 
         let autoTracedWithURL = spanMatchers[3]
         let autoTracedWithRequest = spanMatchers[4]
+        let autoTracedWithError = spanMatchers[5]
 
         let recordedNetworkRequests = try dataSourceServerSession.getRecordedPOSTRequests()
         XCTAssert(recordedNetworkRequests.count == 1)
@@ -59,14 +60,16 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-trace-id: \(traceID)"), "Trace: \(traceID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
         let spanID = try! autoTracedWithRequest.spanID().hexadecimalNumberToDecimal
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-parent-id: \(spanID)"), "Span: \(spanID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
+        XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("creation-method: dataTaskWithRequest"))
 
-        XCTAssertEqual(spanMatchers.count, 5)
+        XCTAssertEqual(spanMatchers.count, 6)
         XCTAssertEqual(try spanMatchers[0].operationName(), "data downloading")
         XCTAssertEqual(try spanMatchers[1].operationName(), "data presentation")
         XCTAssertEqual(try spanMatchers[2].operationName(), "view appearing")
 
         XCTAssertEqual(try autoTracedWithURL.operationName(), "urlsession.request")
         XCTAssertEqual(try autoTracedWithRequest.operationName(), "urlsession.request")
+        XCTAssertEqual(try autoTracedWithError.operationName(), "urlsession.request")
 
         // All spans share the same `trace_id`
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[1].traceID())
@@ -79,12 +82,14 @@ class TracingIntegrationTests: IntegrationTests {
         // auto-instrumentation generates unique trace ids
         XCTAssertNotEqual(try autoTracedWithURL.traceID(), try spanMatchers[0].traceID())
         XCTAssertNotEqual(try autoTracedWithRequest.traceID(), try spanMatchers[0].traceID())
+        XCTAssertNotEqual(try autoTracedWithError.traceID(), try spanMatchers[0].traceID())
 
         XCTAssertNil(try? spanMatchers[0].metrics.isRootSpan())
         XCTAssertNil(try? spanMatchers[1].metrics.isRootSpan())
         XCTAssertEqual(try spanMatchers[2].metrics.isRootSpan(), 1)
         XCTAssertEqual(try autoTracedWithURL.metrics.isRootSpan(), 1)
         XCTAssertEqual(try autoTracedWithRequest.metrics.isRootSpan(), 1)
+        XCTAssertEqual(try autoTracedWithError.metrics.isRootSpan(), 1)
 
         // "data downloading" span's tags
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.kind"), "image")
@@ -96,17 +101,16 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[2].isError(), 0)
         XCTAssertEqual(try autoTracedWithURL.isError(), 0)
         XCTAssertEqual(try autoTracedWithRequest.isError(), 0)
+        XCTAssertEqual(try autoTracedWithError.isError(), 1)
 
         // "data downloading" span has custom resource name
         XCTAssertEqual(try spanMatchers[0].resource(), "GET /image.png")
         XCTAssertEqual(try spanMatchers[1].resource(), try spanMatchers[1].operationName())
         XCTAssertEqual(try spanMatchers[2].resource(), try spanMatchers[2].operationName())
 
-        let baseURL = dataSourceServerSession.recordingURL.absoluteString
-        let targetURL1 = URL(string: "\(baseURL)/dataTaskWithURL")!
-        let targetURL2 = URL(string: "\(baseURL)/dataTaskWithRequest")!
-        XCTAssertEqual(try autoTracedWithURL.resource(), targetURL1.absoluteString)
-        XCTAssertEqual(try autoTracedWithRequest.resource(), targetURL2.absoluteString)
+        let targetURL = dataSourceServerSession.recordingURL
+        XCTAssert(try autoTracedWithURL.resource().contains(targetURL.host!))
+        XCTAssertEqual(try autoTracedWithRequest.resource(), targetURL.absoluteString)
 
         // assert baggage item:
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
