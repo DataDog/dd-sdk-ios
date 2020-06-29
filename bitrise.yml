@@ -9,13 +9,13 @@ project_type: other
 workflows:
   push_to_any_branch:
     after_run:
-    - _make_dependencies
+    # - _make_dependencies
     - run_linter
-    - run_unit_tests
-    - run_integration_tests
-    - run_ui_tests
-    - check_dependency_managers
-    - _deploy_artifacts
+    # - run_unit_tests
+    # - run_integration_tests
+    # - run_ui_tests
+    # - check_dependency_managers
+    # - _deploy_artifacts
 
   _make_dependencies:
     description: |-
