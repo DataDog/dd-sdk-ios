@@ -263,7 +263,13 @@ public class Logger {
             return self.loggerTags
         }
 
-        logOutput.writeLogWith(level: level, message: message, date: date, attributes: combinedAttributes, tags: tags)
+        logOutput.writeLogWith(
+            level: level,
+            message: message,
+            date: date,
+            attributes: LogAttributes(userAttributes: combinedAttributes, internalAttributes: nil),
+            tags: tags
+        )
     }
 
     // MARK: - Logger.Builder

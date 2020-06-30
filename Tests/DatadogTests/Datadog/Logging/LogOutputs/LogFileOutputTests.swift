@@ -37,12 +37,12 @@ class LogFileOutputTests: XCTestCase {
             )
         )
 
-        output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: [:], tags: [])
+        output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: .mockAny(), tags: [])
         queue.sync {} // wait on writter queue
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
-        output.writeLogWith(level: .info, message: "log message 2", date: .mockAny(), attributes: [:], tags: [])
+        output.writeLogWith(level: .info, message: "log message 2", date: .mockAny(), attributes: .mockAny(), tags: [])
         queue.sync {} // wait on writter queue
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())

@@ -10,91 +10,118 @@ import XCTest
 class LogSanitizerTests: XCTestCase {
     // MARK: - Attributes sanitization
 
-    func testWhenAttributeUsesReservedName_itIsIgnored() {
+    func testWhenUserAttributeUsesReservedName_itIsIgnored() {
         let log = Log.mockWith(
-            attributes: [
-                // reserved attributes:
-                "host": .mockAny(),
-                "message": .mockAny(),
-                "status": .mockAny(),
-                "service": .mockAny(),
-                "source": .mockAny(),
-                "error.message": .mockAny(),
-                "error.stack": .mockAny(),
-                "ddtags": .mockAny(),
+            attributes: .mockWith(
+                userAttributes: [
+                    // reserved attributes:
+                    "host": mockValue(),
+                    "message": mockValue(),
+                    "status": mockValue(),
+                    "service": mockValue(),
+                    "source": mockValue(),
+                    "error.message": mockValue(),
+                    "error.stack": mockValue(),
+                    "ddtags": mockValue(),
 
-                // valid attributes:
-                "attribute1": .mockAny(),
-                "attribute2": .mockAny(),
-                "date": .mockAny(),
-            ]
+                    // valid attributes:
+                    "attribute1": mockValue(),
+                    "attribute2": mockValue(),
+                    "date": mockValue(),
+                ]
+            )
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, 3)
-        XCTAssertNotNil(sanitized.attributes?["attribute1"])
-        XCTAssertNotNil(sanitized.attributes?["attribute2"])
-        XCTAssertNotNil(sanitized.attributes?["date"])
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 3)
+        XCTAssertNotNil(sanitized.attributes.userAttributes["attribute1"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["attribute2"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["date"])
     }
 
-    func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
+    func testWhenUserAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
         let log = Log.mockWith(
-            attributes: [
-                "one": .mockAny(),
-                "one.two": .mockAny(),
-                "one.two.three": .mockAny(),
-                "one.two.three.four": .mockAny(),
-                "one.two.three.four.five": .mockAny(),
-                "one.two.three.four.five.six": .mockAny(),
-                "one.two.three.four.five.six.seven": .mockAny(),
-                "one.two.three.four.five.six.seven.eight": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
-                "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
-            ]
+            attributes: .mockWith(
+                userAttributes: [
+                    "one": mockValue(),
+                    "one.two": mockValue(),
+                    "one.two.three": mockValue(),
+                    "one.two.three.four": mockValue(),
+                    "one.two.three.four.five": mockValue(),
+                    "one.two.three.four.five.six": mockValue(),
+                    "one.two.three.four.five.six.seven": mockValue(),
+                    "one.two.three.four.five.six.seven.eight": mockValue(),
+                    "one.two.three.four.five.six.seven.eight.nine": mockValue(),
+                    "one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
+                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
+                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+                ]
+            )
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, 12)
-        XCTAssertNotNil(sanitized.attributes?["one"])
-        XCTAssertNotNil(sanitized.attributes?["one.two"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven.eight.nine.ten"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
-        XCTAssertNotNil(sanitized.attributes?["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 12)
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
     }
 
-    func testWhenAttributeNameIsInvalid_itIsIgnored() {
+    func testWhenUserAttributeNameIsInvalid_itIsIgnored() {
         let log = Log.mockWith(
-            attributes: [
-                "valid-name": .mockAny(),
-                "": .mockAny(), // invalid name
-            ]
+            attributes: .mockWith(
+                userAttributes: [
+                    "valid-name": mockValue(),
+                    "": mockValue(), // invalid name
+                ]
+            )
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, 1)
-        XCTAssertNotNil(sanitized.attributes?["valid-name"])
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 1)
+        XCTAssertNotNil(sanitized.attributes.userAttributes["valid-name"])
     }
 
-    func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
-        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", EncodableValue.mockAny()) }
+    func testWhenNumberOfUserAttributesExceedsLimit_itDropsExtraOnes() {
+        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", mockValue()) }
         let log = Log.mockWith(
-            attributes: Dictionary(uniqueKeysWithValues: mockAttributes)
+            attributes: .mockWith(
+                userAttributes: Dictionary(uniqueKeysWithValues: mockAttributes)
+            )
         )
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes?.count, LogSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, LogSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
+    func testInternalAttributesAreNotSanitized() {
+        let log = Log.mockWith(
+            attributes: .mockWith(
+                internalAttributes: [
+                    // reserved attributes:
+                    LoggingForTracingAdapter.TracingAttributes.traceID: mockValue(),
+                    LoggingForTracingAdapter.TracingAttributes.spanID: mockValue(),
+
+                    // custom attribute:
+                    "attribute1": mockValue(),
+                ]
+            )
+        )
+
+        let sanitized = LogSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.attributes.internalAttributes?.count, 3)
     }
 
     // MARK: - Tags sanitization
@@ -171,5 +198,11 @@ class LogSanitizerTests: XCTestCase {
         let sanitized = LogSanitizer().sanitize(log: log)
 
         XCTAssertEqual(sanitized.tags?.count, LogSanitizer.Constraints.maxNumberOfTags)
+    }
+
+    // MARK: - Private
+
+    private func mockValue() -> String {
+        return .mockAny()
     }
 }

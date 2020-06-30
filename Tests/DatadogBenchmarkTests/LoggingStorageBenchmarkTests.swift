@@ -96,7 +96,10 @@ class LoggingStorageBenchmarkTests: XCTestCase {
                 isConstrained: false
             ),
             mobileCarrierInfo: nil,
-            attributes: ["attribute": EncodableValue("value")],
+            attributes: LogAttributes(
+                userAttributes: ["user.attribute": "value"],
+                internalAttributes: ["internal.attribute": "value"]
+            ),
             tags: ["tag:value"]
         )
     }

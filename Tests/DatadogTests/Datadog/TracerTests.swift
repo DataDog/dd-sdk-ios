@@ -494,14 +494,26 @@ class TracerTests: XCTestCase {
         let tracer = Tracer.initialize(configuration: .init())
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
-        span.log(fields: ["message": "hello", "custom.field": "value"])
+        span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
+        span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
 
-        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
 
-        logMatcher.assertMessage(equals: "hello")
-        logMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
-        logMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
-        logMatcher.assertValue(forKey: "custom.field", equals: "value")
+        let regularLogMatcher = logMatchers[0]
+        let errorLogMatcher = logMatchers[1]
+
+        regularLogMatcher.assertStatus(equals: "info")
+        regularLogMatcher.assertMessage(equals: "hello")
+        regularLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
+        regularLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        regularLogMatcher.assertValue(forKey: "custom.field", equals: "value")
+
+        errorLogMatcher.assertStatus(equals: "error")
+        errorLogMatcher.assertValue(forKey: "event", equals: "error")
+        errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
+        errorLogMatcher.assertMessage(equals: "Ops!")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
     }
 
     // MARK: - Injecting span context into carrier
