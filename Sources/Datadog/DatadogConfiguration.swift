@@ -61,6 +61,7 @@ extension Datadog {
         internal let logsEndpoint: LogsEndpoint
         internal let tracesEndpoint: TracesEndpoint
         internal let serviceName: String?
+        internal var tracedHosts = Set<String>()
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -86,6 +87,7 @@ extension Datadog {
             internal var logsEndpoint: LogsEndpoint = .us
             internal var tracesEndpoint: TracesEndpoint = .us
             internal var serviceName: String? = nil
+            internal var tracedHosts = Set<String>()
 
             internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
@@ -127,6 +129,25 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the hosts to be automatically traced.
+            ///
+            /// Every request made to a traced host and its subdomains will create its Span with related information; _such as url, method, status code, error (if any)_.
+            /// Example, if `tracedHosts` is ["example.com"], then every network request such as the ones below will be automatically traced and generate a span.
+            /// "https://example.com/any/path"
+            /// "https://api.example.com/any/path"
+            ///
+            /// If your backend is also being traced with Datadog agents, you can see the full trace (eg: client>server>database) in your dashboard with our distributed tracing feature.
+            /// A few HTTP headers are injected to auto-traced network requests so that you can see your spans in your backend as well.
+            ///
+            /// If `tracedHosts` is empty, automatic tracing is disabled.
+            /// **IMPORTANT:** Non-empty `tracedHost`s will lead to modifying implementation of some `URLSession` methods, in case your app relies on `URLSession` internals please refer to `URLSessionSwizzler.swift` file for details
+            ///
+            /// - Parameter tracedHosts: empty by default
+            public func set(tracedHosts: Set<String>) -> Builder {
+                self.tracedHosts = tracedHosts
+                return self
+            }
+
             // MARK: - Endpoints Configuration
 
             /// Sets the server endpoint to which logs are sent.
@@ -162,7 +183,8 @@ extension Datadog {
                     tracingEnabled: tracingEnabled,
                     logsEndpoint: logsEndpoint,
                     tracesEndpoint: tracesEndpoint,
-                    serviceName: serviceName
+                    serviceName: serviceName,
+                    tracedHosts: tracedHosts
                 )
             }
         }

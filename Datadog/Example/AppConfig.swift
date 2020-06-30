@@ -12,6 +12,9 @@ protocol AppConfig {
     var serviceName: String { get }
     /// SDK configuration
     var datadogConfiguration: Datadog.Configuration { get }
+    /// Endpoints for arbitrary network requests
+    var arbitraryNetworkURL: URL { get }
+    var arbitraryNetworkRequest: URLRequest { get }
 }
 
 struct ExampleAppConfig: AppConfig {
@@ -19,6 +22,14 @@ struct ExampleAppConfig: AppConfig {
     let serviceName = "ios-sdk-example-app"
     /// Configuration for uploading logs to Datadog servers
     let datadogConfiguration: Datadog.Configuration
+
+    let arbitraryNetworkURL = URL(string: "https://status.datadoghq.com")!
+    let arbitraryNetworkRequest: URLRequest = {
+        var request = URLRequest(url: URL(string: "https://status.datadoghq.com/bad/path")!)
+        request.httpMethod = "POST"
+        request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
+        return request
+    }()
 
     init() {
         guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
@@ -32,6 +43,7 @@ struct ExampleAppConfig: AppConfig {
 
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: clientToken, environment: "tests")
+            .set(tracedHosts: [arbitraryNetworkURL.host!, "foo.bar"])
             .build()
     }
 }
@@ -41,23 +53,36 @@ struct UITestAppConfig: AppConfig {
     let serviceName = "ui-tests-service-name"
     /// Configuration for uploading logs to mock servers
     let datadogConfiguration: Datadog.Configuration
+    let arbitraryNetworkURL: URL
+    let arbitraryNetworkRequest: URLRequest
 
-    init(mockLogsEndpoint: String, mockTracesEndpoint: String) {
+    init() {
+        let mockLogsEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!
+        let mockTracesEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
+        let sourceEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_SOURCE_ENDPOINT_URL"]!
+        let tracedhost = URL(string: sourceEndpoint)!.host!
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
+            .set(tracedHosts: [tracedhost, "foo.bar"])
             .build()
+
+        let url = URL(string: sourceEndpoint)!
+        self.arbitraryNetworkURL = URL(string: url.deletingLastPathComponent().absoluteString + "inspect")!
+        self.arbitraryNetworkRequest = {
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
+            return request
+        }()
     }
 }
 
 /// Returns different `AppConfig` when running in UI Tests or launching directly.
 func currentAppConfig() -> AppConfig {
     if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
-        return UITestAppConfig(
-            mockLogsEndpoint: ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!,
-            mockTracesEndpoint: ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
-        )
+        return UITestAppConfig()
     } else {
         return ExampleAppConfig()
     }

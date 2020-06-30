@@ -15,6 +15,12 @@ public struct DDTags {
     ///
     /// Expects `String` value set for a tag.
     public static let resource = "resource.name"
+
+    /// Those keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields.
+    /// Supported by Datadog platform.
+    internal static let errorType    = "error.type"
+    internal static let errorMessage = "error.msg"
+    internal static let errorStack   = "error.stack"
 }
 
 /// Because `Tracer` is a common name widely used across different projects, the `Datadog.Tracer` may conflict when
@@ -51,25 +57,21 @@ public class Tracer: OTTracer {
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration) -> OTTracer {
         do {
-            return try initializeOrThrow(configuration: configuration)
+            guard let tracingFeature = TracingFeature.instance else {
+                throw ProgrammerError(
+                    description: Datadog.instance == nil
+                        ? "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                        : "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+                )
+            }
+            return DDTracer(
+                tracingFeature: tracingFeature,
+                tracerConfiguration: configuration
+            )
         } catch {
             consolePrint("\(error)")
             return DDNoopTracer()
         }
-    }
-
-    internal static func initializeOrThrow(configuration: Configuration) throws -> Tracer {
-        guard let tracingFeature = TracingFeature.instance else {
-            throw ProgrammerError(
-                description: Datadog.instance == nil
-                    ? "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
-                    : "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
-            )
-        }
-        return Tracer(
-            tracingFeature: tracingFeature,
-            tracerConfiguration: configuration
-        )
     }
 
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
@@ -112,12 +114,14 @@ public class Tracer: OTTracer {
     // MARK: - Open Tracing interface
 
     public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OTSpan {
-        do {
-            return try startSpanOrThrow(operationName: operationName, references: references, tags: tags, startTime: startTime)
-        } catch {
-            consolePrint("\(error)")
-            return DDNoopSpan()
-        }
+        let parentSpanContext = references?.compactMap { $0.context.dd }.last
+        let spanContext = createSpanContext(parentSpanContext: parentSpanContext)
+        return startSpan(
+            spanContext: spanContext,
+            operationName: operationName,
+            tags: tags,
+            startTime: startTime
+        )
     }
 
     public func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {
@@ -129,25 +133,26 @@ public class Tracer: OTTracer {
         return nil
     }
 
-    // MARK: - Private Open Tracing helpers
+    // MARK: - Internal
 
-    private func startSpanOrThrow(operationName: String, references: [OTReference]?, tags: [String: Codable]?, startTime: Date?) throws -> OTSpan {
-        let parentSpanContext = references?.compactMap { $0.context.dd }.last
+    internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+        return DDSpanContext(
+            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            spanID: tracingUUIDGenerator.generateUnique(),
+            parentSpanID: parentSpanContext?.spanID,
+            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
+        )
+    }
+
+    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OTSpan {
         return DDSpan(
             tracer: self,
-            context: DDSpanContext(
-                traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
-                spanID: tracingUUIDGenerator.generateUnique(),
-                parentSpanID: parentSpanContext?.spanID,
-                baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
-            ),
+            context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),
             tags: tags ?? [:]
         )
     }
-
-    // MARK: - Internal
 
     internal func write(span: DDSpan, finishTime: Date) {
         spanOutput.write(ddspan: span, finishTime: finishTime)

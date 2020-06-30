@@ -6,15 +6,6 @@
 
 import Foundation
 
-/// Datadog tag keys used to encode information received from the user through `OTLogFields`, `OTTagKeys` or custom fields
-/// supported by Datadog platform.
-private struct DatadogTagKeys {
-    static let errorType    = "error.type"
-    static let errorMessage = "error.msg"
-    static let errorStack   = "error.stack"
-    static let resourceName = DDTags.resource
-}
-
 /// Reduces `DDSpan` tags and log attributes by extracting values that require separate handling.
 ///
 /// The responsibility of `SpanTagsReducer` is to capture Open Tracing [tags](https://github.com/opentracing/specification/blob/master/semantic_conventions.md#span-tags-table)
@@ -51,9 +42,9 @@ internal struct SpanTagsReducer {
 
             if isErrorEvent || errorKind != nil {
                 extractedIsError = true
-                mutableSpanTags[DatadogTagKeys.errorMessage] = fields[OTLogFields.message] as? String
-                mutableSpanTags[DatadogTagKeys.errorType] = errorKind
-                mutableSpanTags[DatadogTagKeys.errorStack] = fields[OTLogFields.stack] as? String
+                mutableSpanTags[DDTags.errorMessage] = fields[OTLogFields.message] as? String
+                mutableSpanTags[DDTags.errorType] = errorKind
+                mutableSpanTags[DDTags.errorStack] = fields[OTLogFields.stack] as? String
                 break // ignore next logs
             }
         }
@@ -64,7 +55,7 @@ internal struct SpanTagsReducer {
         }
 
         // extract resource name from `mutableSpanTags`
-        if let resourceName = mutableSpanTags.removeValue(forKey: DatadogTagKeys.resourceName) as? String {
+        if let resourceName = mutableSpanTags.removeValue(forKey: DDTags.resource) as? String {
             extractedResourceName = resourceName
         }
 
