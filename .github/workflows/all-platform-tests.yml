@@ -3,6 +3,8 @@ name: Run all-platform tests
 on:
   pull_request:
     types: [opened]
+  issue_comment:
+    types: [created, edited]
   pull_request_review_comment:
     types: [created, edited]
 
