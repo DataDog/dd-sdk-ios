@@ -30,7 +30,7 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
     }
 
     func setTag(_ key: String, numberValue: NSNumber) {
-        swiftSpan.setTag(key: key, value: AnyCodable(numberValue))
+        swiftSpan.setTag(key: key, value: AnyEncodable(numberValue))
     }
 
     func setTag(_ key: String, boolValue: Bool) {
@@ -44,12 +44,12 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
     func log(_ fields: [String: NSObject], timestamp: Date?) {
         if let timestamp = timestamp {
             swiftSpan.log(
-                fields: fields.mapValues { AnyCodable($0) },
+                fields: fields.mapValues { AnyEncodable($0) },
                 timestamp: timestamp
             )
         } else {
             swiftSpan.log(
-                fields: fields.mapValues { AnyCodable($0) }
+                fields: fields.mapValues { AnyEncodable($0) }
             )
         }
     }

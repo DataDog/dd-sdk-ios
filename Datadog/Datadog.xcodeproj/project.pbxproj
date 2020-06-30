@@ -84,7 +84,6 @@
 		61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
 		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
 		612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612983CC2449E62E00D4424B /* LoggingFeature.swift */; };
-		6132BF3F24A36E1C00D7BD17 /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF3E24A36E1C00D7BD17 /* AnyCodable.swift */; };
 		6132BF4224A38D2400D7BD17 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
 		6132BF4424A3AAD700D7BD17 /* OTGlobal+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4324A3AAD700D7BD17 /* OTGlobal+objc.swift */; };
 		6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
@@ -340,7 +339,6 @@
 		61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapter.swift; sourceTree = "<group>"; };
 		61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapterTests.swift; sourceTree = "<group>"; };
 		612983CC2449E62E00D4424B /* LoggingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeature.swift; sourceTree = "<group>"; };
-		6132BF3E24A36E1C00D7BD17 /* AnyCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
 		6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTTracer+objc.swift"; sourceTree = "<group>"; };
 		6132BF4324A3AAD700D7BD17 /* OTGlobal+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTGlobal+objc.swift"; sourceTree = "<group>"; };
 		6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
@@ -727,7 +725,6 @@
 			isa = PBXGroup;
 			children = (
 				61133C0B2423983800786299 /* AnyEncodable.swift */,
-				6132BF3E24A36E1C00D7BD17 /* AnyCodable.swift */,
 			);
 			path = ObjcIntercompatibility;
 			sourceTree = "<group>";
@@ -1725,7 +1722,6 @@
 				61133C102423983800786299 /* Logger+objc.swift in Sources */,
 				615A4A8324A3431600233986 /* Tracer+objc.swift in Sources */,
 				6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */,
-				6132BF3F24A36E1C00D7BD17 /* AnyCodable.swift in Sources */,
 				6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */,
 				6132BF4E24A49D5400D7BD17 /* OTNoop.swift in Sources */,
 				615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */,

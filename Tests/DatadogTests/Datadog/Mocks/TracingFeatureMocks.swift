@@ -119,7 +119,7 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Codable] = [:]
+        tags: [String: Encodable] = [:]
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,

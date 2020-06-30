@@ -122,7 +122,7 @@ public class DDTracer: DatadogObjc.OTTracer {
 
     // MARK: - Private
 
-    private func castTagsToSwift(_ tags: NSDictionary) -> [String: Codable] {
+    private func castTagsToSwift(_ tags: NSDictionary) -> [String: Encodable] {
         guard let dictionary = tags as? [String: Any] else {
             return [:]
         }
@@ -135,7 +135,7 @@ public class DDTracer: DatadogObjc.OTTracer {
             } else if let urlValue = objcTagValue as? URL {
                 return urlValue
             } else {
-                return AnyCodable(objcTagValue)
+                return AnyEncodable(objcTagValue)
             }
         }
     }
