@@ -6,7 +6,7 @@
 
 import Foundation
 
-private struct DDNoopGlobals {
+internal struct DDNoopGlobals {
     static let tracer = DDNoopTracer()
     static let span = DDNoopSpan()
     static let context = DDNoopSpanContext()
@@ -15,7 +15,7 @@ private struct DDNoopGlobals {
 internal struct DDNoopTracer: OTTracer {
     func extract(reader: OTFormatReader) -> OTSpanContext? { DDNoopGlobals.context }
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {}
-    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Codable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
+    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
 }
 
 internal struct DDNoopSpan: OTSpan {
@@ -23,10 +23,10 @@ internal struct DDNoopSpan: OTSpan {
     func tracer() -> OTTracer { DDNoopGlobals.tracer }
     func setOperationName(_ operationName: String) {}
     func finish(at time: Date) {}
-    func log(fields: [String: Codable], timestamp: Date) {}
+    func log(fields: [String: Encodable], timestamp: Date) {}
     func baggageItem(withKey key: String) -> String? { nil }
     func setBaggageItem(key: String, value: String) {}
-    func setTag(key: String, value: Codable) {}
+    func setTag(key: String, value: Encodable) {}
 }
 
 internal struct DDNoopSpanContext: OTSpanContext {

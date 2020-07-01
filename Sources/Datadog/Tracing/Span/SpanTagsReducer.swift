@@ -18,7 +18,7 @@ import Foundation
 /// Values extracted from `spanTags` and `logFields` will be passed to the `Span` encoding process in a type-safe manner.
 internal struct SpanTagsReducer {
     /// Tags for generic `span.meta.*` encoding in `Span` JSON.
-    let reducedSpanTags: [String: Codable]
+    let reducedSpanTags: [String: Encodable]
 
     // MARK: - Extracted Info
 
@@ -29,7 +29,7 @@ internal struct SpanTagsReducer {
 
     // MARK: - Initialization
 
-    init(spanTags: [String: Codable], logFields: [[String: Codable]]) {
+    init(spanTags: [String: Encodable], logFields: [[String: Encodable]]) {
         var mutableSpanTags = spanTags
 
         var extractedIsError: Bool? = nil

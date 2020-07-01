@@ -17,7 +17,7 @@ public protocol OTTracer {
     func startSpan(
         operationName: String,
         references: [OTReference]?,
-        tags: [String: Codable]?,
+        tags: [String: Encodable]?,
         startTime: Date?
     ) -> OTSpan
 
@@ -70,7 +70,7 @@ public extension OTTracer {
     func startSpan(
         operationName: String,
         childOf parent: OTSpanContext? = nil,
-        tags: [String: Codable]? = nil,
+        tags: [String: Encodable]? = nil,
         startTime: Date? = nil
     ) -> OTSpan {
         let references = parent.map { [OTReference.child(of: $0)] }

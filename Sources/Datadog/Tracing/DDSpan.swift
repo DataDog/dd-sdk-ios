@@ -22,8 +22,8 @@ internal class DDSpan: OTSpan {
     }
 
     /// Unsynchronized span tags. Use `self.tags` setter & getter.
-    private var unsafeTags: [String: Codable]
-    private(set) var tags: [String: Codable] {
+    private var unsafeTags: [String: Encodable]
+    private(set) var tags: [String: Encodable] {
         get { ddTracer.queue.sync { unsafeTags } }
         set { ddTracer.queue.async { self.unsafeTags = newValue } }
     }
@@ -36,9 +36,9 @@ internal class DDSpan: OTSpan {
     }
 
     /// Unsychronized span log fields. Use `self.logFields` setter & getter.
-    private var unsafeLogFields: [[String: Codable]] = []
+    private var unsafeLogFields: [[String: Encodable]] = []
     /// A collection of all log fields send for this span.
-    private(set) var logFields: [[String: Codable]] {
+    private(set) var logFields: [[String: Encodable]] {
         get { ddTracer.queue.sync { unsafeLogFields } }
         set { ddTracer.queue.async { self.unsafeLogFields = newValue } }
     }
@@ -48,7 +48,7 @@ internal class DDSpan: OTSpan {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Codable]
+        tags: [String: Encodable]
     ) {
         self.ddTracer = tracer
         self.ddContext = context
@@ -75,7 +75,7 @@ internal class DDSpan: OTSpan {
         self.operationName = operationName
     }
 
-    func setTag(key: String, value: Codable) {
+    func setTag(key: String, value: Encodable) {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
@@ -104,7 +104,7 @@ internal class DDSpan: OTSpan {
         ddTracer.write(span: self, finishTime: time)
     }
 
-    func log(fields: [String: Codable], timestamp: Date) {
+    func log(fields: [String: Encodable], timestamp: Date) {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }

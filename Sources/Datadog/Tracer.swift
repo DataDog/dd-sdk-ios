@@ -113,7 +113,7 @@ public class Tracer: OTTracer {
 
     // MARK: - Open Tracing interface
 
-    public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OTSpan {
+    public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last
         let spanContext = createSpanContext(parentSpanContext: parentSpanContext)
         return startSpan(
@@ -144,7 +144,7 @@ public class Tracer: OTTracer {
         )
     }
 
-    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Codable]? = nil, startTime: Date? = nil) -> OTSpan {
+    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         return DDSpan(
             tracer: self,
             context: spanContext,

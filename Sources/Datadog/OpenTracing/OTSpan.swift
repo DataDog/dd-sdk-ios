@@ -17,13 +17,13 @@ public protocol OTSpan {
     ///
     /// - parameter key:   Key of the tag to set
     /// - parameter value: Value of the tag to set
-    func setTag(key: String, value: Codable)
+    func setTag(key: String, value: Encodable)
 
     /// Add a new log with the supplied fields and timestamp
     ///
     /// - parameter fields:    Fields to set on the span log
     /// - parameter timestamp: Timestamp to use for the span log
-    func log(fields: [String: Codable], timestamp: Date)
+    func log(fields: [String: Encodable], timestamp: Date)
 
     /// Add a new baggage item or replace an existing baggage item value for the given key
     ///
@@ -47,7 +47,7 @@ public extension OTSpan {
     /// Add a new log with the supplied fields and the current timestamp
     ///
     /// - parameter fields: Fields to set on the span log
-    func log(fields: [String: Codable]) {
+    func log(fields: [String: Encodable]) {
         self.log(fields: fields, timestamp: Date())
     }
 
