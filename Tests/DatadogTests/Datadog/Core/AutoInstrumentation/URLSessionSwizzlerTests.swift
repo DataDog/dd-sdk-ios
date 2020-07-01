@@ -9,10 +9,13 @@ import XCTest
 
 class URLSessionSwizzlerTests: XCTestCase {
     /// URL.mockAny() is a valid URL so that it loads actual resource and exceeds expectation timeouts
-    let mockURL = URL(string: "https://foo.bar")!
-    let mockURLRequest = URLRequest(url: URL(string: "https://foo.bar")!)
-    let modifiedURLRequest = URLRequest(url: URL(string: "https://bar.foo")!)
-    let secondModifiedURLRequest = URLRequest(url: URL(string: "https://bar.foo.bar")!)
+    /// We use unsupported URLs so that the task goes through its URLProtocol chain and **immediately** returns with "unsupported URL" error
+    let mockURL = URL(string: "foo://example.com")!
+    let mockURLRequest = URLRequest(url: URL(string: "foo://example.com")!)
+    let modifiedURLRequest = URLRequest(url: URL(string: "bar://example.com")!)
+    let secondModifiedURLRequest = URLRequest(url: URL(string: "bar://foo.example.com")!)
+
+    let timeout = 1.0
 
     var session: URLSession { URLSession.shared }
     // swiftlint:disable implicitly_unwrapped_optional
@@ -63,7 +66,7 @@ class URLSessionSwizzlerTests: XCTestCase {
                 mock2.interceptionExpectation,
                 mock3.interceptionExpectation
             ],
-            timeout: 1
+            timeout: timeout
         )
 
         task.resume()
@@ -78,7 +81,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         ]
         wait(
             for: resumeExpectations,
-            timeout: 1,
+            timeout: timeout,
             enforceOrder: true
         )
     }
@@ -106,7 +109,7 @@ class URLSessionSwizzlerTests: XCTestCase {
                 mock2.interceptionExpectation,
                 mock3.interceptionExpectation
             ],
-            timeout: 1
+            timeout: timeout
         )
 
         task.resume()
@@ -120,7 +123,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         ]
         wait(
             for: resumeExpectations,
-            timeout: 1,
+            timeout: timeout,
             enforceOrder: true
         )
     }
