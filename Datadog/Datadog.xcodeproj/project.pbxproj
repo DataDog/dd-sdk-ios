@@ -181,6 +181,7 @@
 		61F8CC092469295500FE2908 /* DatadogConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */; };
 		61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
+		9E330A8E24ADE1250031408E /* NSURLSessionBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E330A8D24ADE1250031408E /* NSURLSessionBridge.m */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		9E493E1C249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E493E1B249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift */; };
 		9E544A4D24752A8900E83072 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */; };
@@ -434,6 +435,9 @@
 		61F8CC082469295500FE2908 /* DatadogConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationTests.swift; sourceTree = "<group>"; };
 		61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureMocks.swift; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
+		9E330A8B24ADE1250031408E /* DatadogTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DatadogTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		9E330A8C24ADE1250031408E /* NSURLSessionBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSURLSessionBridge.h; sourceTree = "<group>"; };
+		9E330A8D24ADE1250031408E /* NSURLSessionBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSURLSessionBridge.m; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
 		9E493E1B249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingAutoInstrumentationTests.swift; sourceTree = "<group>"; };
 		9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
@@ -537,6 +541,7 @@
 			isa = PBXGroup;
 			children = (
 				61133B92242393DE00786299 /* Info.plist */,
+				9E330A8B24ADE1250031408E /* DatadogTests-Bridging-Header.h */,
 			);
 			path = DatadogTests;
 			sourceTree = "<group>";
@@ -1250,6 +1255,8 @@
 			children = (
 				9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */,
 				9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */,
+				9E330A8C24ADE1250031408E /* NSURLSessionBridge.h */,
+				9E330A8D24ADE1250031408E /* NSURLSessionBridge.m */,
 			);
 			path = AutoInstrumentation;
 			sourceTree = "<group>";
@@ -1638,6 +1645,7 @@
 			files = (
 				61C5A8A024509C1100DA608C /* Casting.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
+				9E330A8E24ADE1250031408E /* NSURLSessionBridge.m in Sources */,
 				9E493E1C249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift in Sources */,
 				61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */,
 				61C36470243B5C8300C4D4E6 /* ServerMock.swift in Sources */,
@@ -1998,6 +2006,7 @@
 			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2008,6 +2017,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
@@ -2019,6 +2030,7 @@
 			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2029,6 +2041,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
@@ -2358,6 +2371,7 @@
 			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2368,6 +2382,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";

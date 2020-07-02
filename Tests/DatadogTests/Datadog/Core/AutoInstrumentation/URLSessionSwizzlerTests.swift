@@ -127,6 +127,102 @@ class URLSessionSwizzlerTests: XCTestCase {
             enforceOrder: true
         )
     }
+
+    // edgeCases test that our swizzling doesn't break anything in ObjC
+    // MARK: - Edge cases
+
+    private var taskObservation: NSKeyValueObservation? = nil
+
+    func test_dataTask_urlCompletion_edgeCase_nilURLNilCompletion() throws {
+        let completionExpectation = XCTestExpectation(description: "completionExpectation")
+        let interceptor = MockInterceptor(id: 1, modifiedRequest: modifiedURLRequest)
+        firstSwizzler.swizzle(using: interceptor.block)
+
+        let nilURL: URL? = nil
+        let task = NSURLSessionBridge.session(self.session, dataTaskWith: nilURL, completionHandler: nil)
+
+        let someTask = try XCTUnwrap(task)
+
+        wait(for: [interceptor.interceptionExpectation], timeout: timeout)
+
+        taskObservation = someTask.observe(\.state) { observedTask, _ in
+            if case URLSessionTask.State.completed = observedTask.state {
+                completionExpectation.fulfill()
+            }
+        }
+
+        someTask.resume()
+
+        let resumeExpectations: [XCTestExpectation] = [
+            interceptor.observationStartingExpectation,
+            completionExpectation,
+            interceptor.observationCompletedExpectation
+        ]
+        wait(for: resumeExpectations, timeout: timeout, enforceOrder: true)
+    }
+
+    func test_dataTask_requestCompletion_edgeCase_nilCompletion() throws {
+        let completionExpectation = XCTestExpectation(description: "completionExpectation")
+        let interceptor = MockInterceptor(id: 1, modifiedRequest: modifiedURLRequest)
+        firstSwizzler.swizzle(using: interceptor.block)
+
+        let task = NSURLSessionBridge.session(self.session, dataTaskWith: mockURLRequest, completionHandler: nil)
+
+        let someTask = try XCTUnwrap(task)
+        XCTAssertEqual(someTask.originalRequest, modifiedURLRequest)
+
+        wait(for: [interceptor.interceptionExpectation], timeout: timeout)
+
+        taskObservation = someTask.observe(\.state) { observedTask, _ in
+            if case URLSessionTask.State.completed = observedTask.state {
+                completionExpectation.fulfill()
+            }
+        }
+
+        someTask.resume()
+
+        let resumeExpectations: [XCTestExpectation] = [
+            interceptor.observationStartingExpectation,
+            completionExpectation,
+            interceptor.observationCompletedExpectation
+        ]
+        wait(for: resumeExpectations, timeout: timeout, enforceOrder: true)
+    }
+
+    func test_dataTask_requestCompletion_edgeCase_nilRequestNilCompletion() throws {
+        /// nil URLRequest throws an exception, tested in iOS 13.5
+        /// we test that we do NOT change the thrown exception after swizzling
+        let nilRequest: URLRequest? = nil
+
+        var originalException: NSError? = nil
+        var originalTask: URLSessionTask? = nil
+
+        XCTAssertThrowsError(
+           try objcExceptionHandler.rethrowToSwift {
+              originalTask = NSURLSessionBridge.session(self.session, dataTaskWith: nilRequest, completionHandler: nil)
+           }
+        ) { error in
+           originalException = error as NSError
+        }
+
+        // swizzling happens
+        let interceptor = MockInterceptor(id: 1, modifiedRequest: modifiedURLRequest)
+        firstSwizzler.swizzle(using: interceptor.block)
+
+        var swizzledException: NSError? = nil
+        var swizzledTask: URLSessionTask? = nil
+
+        XCTAssertThrowsError(
+           try objcExceptionHandler.rethrowToSwift {
+              swizzledTask = NSURLSessionBridge.session(self.session, dataTaskWith: nilRequest, completionHandler: nil)
+           }
+        ) { error in
+           swizzledException = error as NSError
+        }
+
+        XCTAssertEqual(swizzledException, originalException)
+        XCTAssertEqual(swizzledTask != nil, originalTask != nil)
+    }
 }
 
 class URLSessionSwizzlerTests_DefaultConfig: URLSessionSwizzlerTests {
