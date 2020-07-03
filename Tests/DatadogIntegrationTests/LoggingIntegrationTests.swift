@@ -21,11 +21,9 @@ class LoggingIntegrationTests: IntegrationTests {
         app.launchWith(mockServerURL: serverSession.recordingURL)
         app.tapSendLogsForUITests()
 
-        // Wait for delivery
-        Thread.sleep(forTimeInterval: Constants.logsDeliveryTime)
+        // Return desired count or timeout
+        let recordedRequests = try serverSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.logsDeliveryTime)
 
-        // Assert requests
-        let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`
             let pathRegexp = #"^(.*)(/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)$"#

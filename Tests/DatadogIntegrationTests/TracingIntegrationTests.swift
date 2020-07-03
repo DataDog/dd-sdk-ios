@@ -32,11 +32,9 @@ class TracingIntegrationTests: IntegrationTests {
         )
         app.tapSendTracesForUITests()
 
-        // Wait for delivery
-        Thread.sleep(forTimeInterval: Constants.dataDeliveryTime)
+        // Return desired count or timeout
+        let recordedTracingRequests = try tracingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
 
-        // Assert tracing requests
-        let recordedTracingRequests = try tracingServerSession.getRecordedPOSTRequests()
         recordedTracingRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?batch_time=1589969230153`
             let pathRegexp = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#

@@ -52,6 +52,69 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertTrue(recordedRequests[1].path.hasSuffix("/resource/2"))
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
+
+    func testItReturnspullRecordedPOSTRequests() throws {
+        let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
+        guard let serverProces = runner.waitUntilServerIsReachable() else {
+            XCTFail("Failed to connect with the server.")
+            return
+        }
+        
+        let server = ServerMock(serverProcess: serverProces)
+        let session = server.obtainUniqueRecordingSession()
+        
+        let initialTime = Date()
+        DispatchQueue.global(qos: .userInitiated).async {
+            Thread.sleep(forTimeInterval: 0.5)
+            sendPOSTRequestAsynchronouslyTo(
+                url: session.recordingURL.appendingPathComponent("/resource/1"),
+                body: "1st request body".data(using: .utf8)!
+            )
+            Thread.sleep(forTimeInterval: 0.5)
+            sendPOSTRequestAsynchronouslyTo(
+                url: session.recordingURL.appendingPathComponent("/resource/2"),
+                body: "2nd request body".data(using: .utf8)!
+            )
+        }
+        let timeoutTime: TimeInterval = 2
+        let recordedRequests = try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)
+        XCTAssertLessThan(Date(), initialTime.addingTimeInterval(timeoutTime))
+        XCTAssertEqual(recordedRequests.count, 2)
+        XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
+        XCTAssertEqual(recordedRequests[0].httpBody, "1st request body".data(using: .utf8)!)
+        XCTAssertTrue(recordedRequests[1].path.hasSuffix("/resource/2"))
+        XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
+    }
+    
+    func testItReturnspullRecordedPOSTRequestsTimedOut() throws {
+        let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
+        guard let serverProces = runner.waitUntilServerIsReachable() else {
+            XCTFail("Failed to connect with the server.")
+            return
+        }
+        
+        let server = ServerMock(serverProcess: serverProces)
+        let session = server.obtainUniqueRecordingSession()
+        
+        let initialTime = Date()
+        DispatchQueue.global(qos: .userInitiated).async {
+            Thread.sleep(forTimeInterval: 2)
+            sendPOSTRequestAsynchronouslyTo(
+                url: session.recordingURL.appendingPathComponent("/resource/1"),
+                body: "1st request body".data(using: .utf8)!
+            )
+            Thread.sleep(forTimeInterval: 2)
+            sendPOSTRequestAsynchronouslyTo(
+                url: session.recordingURL.appendingPathComponent("/resource/2"),
+                body: "2nd request body".data(using: .utf8)!
+            )
+        }
+        
+        let timeoutTime: TimeInterval = 2
+        let recordedRequests = try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)
+        XCTAssertLessThan(recordedRequests.count, 2)
+        XCTAssertGreaterThan(Date(), initialTime.addingTimeInterval(timeoutTime))
+    }
 }
 
 // MARK: - Helpers
@@ -88,5 +151,16 @@ private func sendPOSTRequestSynchronouslyTo(url: URL, body: Data) {
     }
     _ = semaphore.wait(timeout: .now() + 1)
 
+    task.resume()
+}
+
+private func sendPOSTRequestAsynchronouslyTo(url: URL, body: Data) {
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.httpBody = body
+
+    let task = URLSession.shared.dataTask(with: request) { _, _, error in
+        XCTAssertNil(error)
+    }
     task.resume()
 }
