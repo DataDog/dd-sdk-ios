@@ -114,7 +114,7 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertThrowsError(try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)) {
             thrownError = $0
         }
-        XCTAssertTrue( thrownError is ServerSession.Exception, "Unexpected error type: \(type(of: thrownError))")
+        XCTAssertTrue(thrownError is ServerSession.Exception, "Unexpected error type: \(type(of: thrownError))")
     }
 }
 
