@@ -52,7 +52,7 @@ class TracingIntegrationTests: IntegrationTests {
         let autoTracedWithRequest = spanMatchers[4]
         let autoTracedWithError = spanMatchers[5]
 
-        let recordedNetworkRequests = try dataSourceServerSession.getRecordedPOSTRequests()
+        let recordedNetworkRequests = try dataSourceServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
         XCTAssert(recordedNetworkRequests.count == 1)
         let traceID = try! autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-trace-id: \(traceID)"), "Trace: \(traceID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
@@ -165,7 +165,7 @@ class TracingIntegrationTests: IntegrationTests {
         }
 
         // Assert logs requests
-        let recordedLoggingRequests = try loggingServerSession.getRecordedPOSTRequests()
+        let recordedLoggingRequests = try loggingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
 
         // Assert logs
         let logMatchers = try recordedLoggingRequests

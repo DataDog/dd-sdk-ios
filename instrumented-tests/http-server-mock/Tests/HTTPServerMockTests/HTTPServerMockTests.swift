@@ -5,7 +5,7 @@
 */
 
 import XCTest
-import HTTPServerMock
+@testable import HTTPServerMock
 
 final class HTTPServerMockTests: XCTestCase {
     #if os(macOS)
@@ -86,7 +86,7 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
     
-    func testItReturnspullRecordedPOSTRequestsTimedOut() throws {
+    func testWhenPullingRecordedPOSTRequestExceedsTimeout_itThrownsAnError() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
@@ -96,7 +96,6 @@ final class HTTPServerMockTests: XCTestCase {
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
         
-        let initialTime = Date()
         DispatchQueue.global(qos: .userInitiated).async {
             Thread.sleep(forTimeInterval: 2)
             sendPOSTRequestAsynchronouslyTo(
@@ -111,9 +110,11 @@ final class HTTPServerMockTests: XCTestCase {
         }
         
         let timeoutTime: TimeInterval = 2
-        let recordedRequests = try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)
-        XCTAssertLessThan(recordedRequests.count, 2)
-        XCTAssertGreaterThan(Date(), initialTime.addingTimeInterval(timeoutTime))
+        var thrownError: Error?
+        XCTAssertThrowsError(try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)) {
+            thrownError = $0
+        }
+        XCTAssertTrue( thrownError is ServerSession.Exception, "Unexpected error type: \(type(of: thrownError))")
     }
 }
 

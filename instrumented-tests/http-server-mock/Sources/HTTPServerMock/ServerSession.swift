@@ -18,11 +18,15 @@ public class ServerSession {
         public let httpBody: Data
     }
 
+    internal struct Exception: Error, CustomStringConvertible {
+        let description: String
+    }
+
     private let server: ServerMock
     private let sessionIdentifier: String
 
     /// Unique session URL. `POST` requests send using this base URL can be later retrieved
-    /// using `getRecordedPOSTRequests()`.
+    /// using `getRecordedPOSTRequests() or pullRecordedPOSTRequests()`.
     public let recordingURL: URL
 
     internal init(server: ServerMock) {
@@ -56,13 +60,18 @@ public class ServerSession {
             timeoutTimer.activate()
         }
 
-        while !timeoutTimer.isCancelled && currentRequests.count < count {
-            Thread.sleep(forTimeInterval: 0.2)
+        repeat {
             currentRequests = try server
                 .getRecordedPOSTRequestsInfo()
                 .filter { requestInfo in requestInfo.path.contains(sessionIdentifier) }
+            Thread.sleep(forTimeInterval: 0.2)
+        } while !timeoutTimer.isCancelled && currentRequests.count < count
+
+        if timeoutTimer.isCancelled {
+            throw Exception(description: "Exceeded \(timeout)s timeout by receiving only \(currentRequests.count) requests, where \(count) were expected.")
+        } else {
+            timeoutTimer.cancel()
         }
-        timeoutTimer.cancel()
 
         return try currentRequests.map { requestInfo in
             return POSTRequestDetails(
