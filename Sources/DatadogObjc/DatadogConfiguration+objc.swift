@@ -85,6 +85,10 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.set(tracesEndpoint: tracesEndpoint.sdkEndpoint)
     }
 
+    public func set(tracedHosts: Set<String>) {
+        _ = sdkBuilder.set(tracedHosts: tracedHosts)
+    }
+
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
     }
