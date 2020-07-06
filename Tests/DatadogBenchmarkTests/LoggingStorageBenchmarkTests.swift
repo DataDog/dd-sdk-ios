@@ -15,10 +15,10 @@ class LoggingStorageBenchmarkTests: XCTestCase {
     private var reader: FileReader!
     // swiftlint:enable implicitly_unwrapped_optional
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
         self.queue = DispatchQueue(label: "com.datadoghq.benchmark-logs-io", target: .global(qos: .utility))
-        self.directory = try! Directory(withSubdirectoryPath: "logging-benchmark")
+        self.directory = try Directory(withSubdirectoryPath: "logging-benchmark")
 
         let storage = LoggingFeature.Storage(
             directory: directory,
@@ -30,7 +30,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         self.writer = storage.writer
         self.reader = storage.reader
 
-        XCTAssertTrue(try! directory.files().count == 0)
+        XCTAssertTrue(try directory.files().count == 0)
     }
 
     override func tearDown() {

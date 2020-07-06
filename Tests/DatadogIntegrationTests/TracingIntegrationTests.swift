@@ -56,9 +56,9 @@ class TracingIntegrationTests: IntegrationTests {
 
         let recordedNetworkRequests = try dataSourceServerSession.getRecordedPOSTRequests()
         XCTAssert(recordedNetworkRequests.count == 1)
-        let traceID = try! autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
+        let traceID = try autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-trace-id: \(traceID)"), "Trace: \(traceID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
-        let spanID = try! autoTracedWithRequest.spanID().hexadecimalNumberToDecimal
+        let spanID = try autoTracedWithRequest.spanID().hexadecimalNumberToDecimal
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-parent-id: \(spanID)"), "Span: \(spanID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("creation-method: dataTaskWithRequest"))
 

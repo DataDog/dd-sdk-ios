@@ -24,11 +24,11 @@ class URLSessionSwizzlerTests: XCTestCase {
     var thirdSwizzler: URLSessionSwizzler!
     // swiftlint:enable implicitly_unwrapped_optional
 
-    override func setUp() {
-        super.setUp()
-        firstSwizzler = try! URLSessionSwizzler()
-        secondSwizzler = try! URLSessionSwizzler()
-        thirdSwizzler = try! URLSessionSwizzler()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        firstSwizzler = try URLSessionSwizzler()
+        secondSwizzler = try URLSessionSwizzler()
+        thirdSwizzler = try URLSessionSwizzler()
     }
 
     override func tearDown() {
