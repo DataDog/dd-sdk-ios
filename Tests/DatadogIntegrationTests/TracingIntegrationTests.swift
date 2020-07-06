@@ -32,11 +32,9 @@ class TracingIntegrationTests: IntegrationTests {
         )
         app.tapSendTracesForUITests()
 
-        // Wait for delivery
-        Thread.sleep(forTimeInterval: Constants.dataDeliveryTime)
+        // Return desired count or timeout
+        let recordedTracingRequests = try tracingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
 
-        // Assert tracing requests
-        let recordedTracingRequests = try tracingServerSession.getRecordedPOSTRequests()
         recordedTracingRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?batch_time=1589969230153`
             let pathRegexp = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#
@@ -54,7 +52,7 @@ class TracingIntegrationTests: IntegrationTests {
         let autoTracedWithRequest = spanMatchers[4]
         let autoTracedWithError = spanMatchers[5]
 
-        let recordedNetworkRequests = try dataSourceServerSession.getRecordedPOSTRequests()
+        let recordedNetworkRequests = try dataSourceServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
         XCTAssert(recordedNetworkRequests.count == 1)
         let traceID = try autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
         XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-trace-id: \(traceID)"), "Trace: \(traceID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
@@ -167,7 +165,7 @@ class TracingIntegrationTests: IntegrationTests {
         }
 
         // Assert logs requests
-        let recordedLoggingRequests = try loggingServerSession.getRecordedPOSTRequests()
+        let recordedLoggingRequests = try loggingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
 
         // Assert logs
         let logMatchers = try recordedLoggingRequests
