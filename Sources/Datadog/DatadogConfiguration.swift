@@ -59,7 +59,7 @@ extension Datadog {
         internal var loggingEnabled: Bool
         internal var tracingEnabled: Bool
         internal let logsEndpoint: LogsEndpoint
-        internal let tracesEndpoint: TracesEndpoint
+        internal var tracesEndpoint: TracesEndpoint
         internal let serviceName: String?
         internal var tracedHosts = Set<String>()
 

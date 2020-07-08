@@ -140,14 +140,20 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(TracingFeature.instance)
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
-        try verify(
-            configuration: configurationBuilder
+
+        let autoTracingConfig = configurationBuilder
             .enableTracing(true)
             .set(tracedHosts: [String.mockAny()])
             .build()
-        ) {
+        try verify(configuration: autoTracingConfig) {
             XCTAssertNotNil(TracingFeature.instance)
             XCTAssertNotNil(TracingAutoInstrumentation.instance)
+
+            let urlFilter = TracingAutoInstrumentation.instance?.urlFilter as? URLFilter
+            let expectedURLFilter = TracingAutoInstrumentation(with: autoTracingConfig)?.urlFilter as? URLFilter
+
+            XCTAssertNotNil(urlFilter)
+            XCTAssertEqual(urlFilter, expectedURLFilter)
         }
         try verify(
             configuration: configurationBuilder
