@@ -14,7 +14,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - name: Look for a keyword triggering Bitrise build
+      - name: Look for a keyword triggering the build on Bitrise
         id: check-keyword-trigger
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,13 +27,15 @@ jobs:
         env:
           BITRISE_APP_SLUG: ${{ secrets.BITRISE_APP_SLUG }}
           BITRISE_TOKEN: ${{ secrets.BITRISE_TOKEN }}
-          CURRENT_BRANCH: ${{ github.ref }}
           CURRENT_PR_SOURCE_BRANCH: ${{ github.head_ref }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         shell: bash
         run: |
           if [[ -z "${CURRENT_PR_SOURCE_BRANCH}" ]]; then
-            # when running due to a push to existing Pull Request
-            CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+            # when running on Pull Request comment (get the branch name from comment's body)
+            SANITIZED_COMMENT=${COMMENT_BODY//[^a-zA-Z0-9@ -\/]/} # sanitize the user input
+            BRANCH_NAME_REGEXP='[a-z]*\/[a-zA-Z0-9-]*'
+            CURRENT_BRANCH=$(echo "${SANITIZED_COMMENT}" | grep -oe '@test-all-platforms '$BRANCH_NAME_REGEXP | grep -oe $BRANCH_NAME_REGEXP)
           else
             # when running due to opening a Pull Request
             CURRENT_BRANCH="${CURRENT_PR_SOURCE_BRANCH}"
