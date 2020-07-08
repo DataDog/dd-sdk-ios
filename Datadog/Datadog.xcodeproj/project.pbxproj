@@ -193,6 +193,8 @@
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9EB47B92247443FA004F90BE /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */; };
 		9ED583A32498C222004CFF2A /* TracingAutoInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ED583A22498C222004CFF2A /* TracingAutoInstrumentation.swift */; };
+		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
+		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -452,6 +454,8 @@
 		9ED583A22498C222004CFF2A /* TracingAutoInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingAutoInstrumentation.swift; sourceTree = "<group>"; };
 		9EF49F1624476FBD004F2CA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
+		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
+		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1013,6 +1017,8 @@
 			children = (
 				61441C782461A204003D8BB8 /* LoggingBenchmarkTests.swift */,
 				61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
+				E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */,
+				E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */,
 			);
 			name = DatadogBenchmarkTests;
 			path = ../Tests/DatadogBenchmarkTests;
@@ -1775,6 +1781,8 @@
 			files = (
 				61441C7A2461A204003D8BB8 /* LoggingBenchmarkTests.swift in Sources */,
 				61441C7B2461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift in Sources */,
+				E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */,
+				E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */,
 				61441C7C2461A244003D8BB8 /* TestsDirectory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
