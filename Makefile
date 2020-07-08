@@ -38,7 +38,6 @@ bump:
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
-		git tag $$version; \
 		echo Bumped version to $$version
 
 ship:
