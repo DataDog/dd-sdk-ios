@@ -7,9 +7,24 @@
 import XCTest
 @testable import Datadog
 
+private struct MockURLFilter: URLFiltering {
+    let allow: Bool
+    func allows(_ url: URL?) -> Bool {
+        return allow
+    }
+}
+
 class TracingAutoInstrumentationTests: XCTestCase {
-    func testFailableInit() {
-        XCTAssertNil(TracingAutoInstrumentation(tracedHosts: []))
+    func testInitializationWithDatadogConfiguration() throws {
+        var config = Datadog.Configuration.mockAny()
+        config.tracingEnabled = true
+        config.tracedHosts = [String.mockAny()]
+        let autoInstrumentation = TracingAutoInstrumentation(with: config)
+
+        let urlFilter = try XCTUnwrap(autoInstrumentation?.urlFilter as? URLFilter)
+        let expectedURLFilter = URLFilter(includedHosts: [String.mockAny()], excludedURLs: [config.logsEndpoint.url, config.tracesEndpoint.url])
+
+        XCTAssertEqual(urlFilter, expectedURLFilter)
     }
 }
 
@@ -31,42 +46,16 @@ class TracingURLSessionHooksTests: XCTestCase {
     let tracedHost = "foo.bar"
     let tracedRequest = URLRequest(url: URL(string: "http://foo.bar/foo")!)
 
-    func testTracedHosts() {
-        let tracedHosts: Set<String> = [tracedHost, "example", "my.app.org"]
-        guard let interceptor = TracingAutoInstrumentation(tracedHosts: tracedHosts)?.interceptor else {
-            XCTFail("Non-empty set of traced hosts should create a TracingAutoInstrumentation instance")
-            return
-        }
+    func testURLFilter() {
+        let passingInterceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: true))!.interceptor
+        let blockingInterceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: false))!.interceptor
 
-        XCTAssertNotNil(interceptor(tracedRequest))
-
-        for tracedHost in tracedHosts {
-            let subdomainURLInTracedHost = URL(string: "http://www.\(tracedHost)/foo")!
-            XCTAssertNotNil(interceptor(URLRequest(url: subdomainURLInTracedHost)))
-
-            let complexURLInTracedHost = URL(string: "http://johnny:p4ssw0rd@\(tracedHost):999/script.ext;param=value?query=value#ref")!
-            XCTAssertNotNil(interceptor(URLRequest(url: complexURLInTracedHost)))
-
-            let differentSchemeInTracedHost = URL(string: "https://\(tracedHost)/foo")!
-            XCTAssertNotNil(interceptor(URLRequest(url: differentSchemeInTracedHost)))
-        }
-
-        let nonTracedHost = URL(string: "https://non.traced.host")!
-        XCTAssertNil(interceptor(URLRequest(url: nonTracedHost)))
-
-        let nonEscapedDotURL = URL(string: "https://foo-bar.com")!
-        XCTAssertNil(interceptor(URLRequest(url: nonEscapedDotURL)))
-
-        let extendedTracedHost = URL(string: "https://foo.bar.asd")!
-        XCTAssertNil(interceptor(URLRequest(url: extendedTracedHost)))
-
-        let fileURL = URL(string: "file://some-file")!
-        XCTAssertTrue(fileURL.isFileURL)
-        XCTAssertNil(interceptor(URLRequest(url: fileURL)))
+        XCTAssertNotNil(passingInterceptor(tracedRequest))
+        XCTAssertNil(blockingInterceptor(tracedRequest))
     }
 
     func testTaskObserver() throws {
-        let interceptor = TracingAutoInstrumentation(tracedHosts: [tracedHost])!.interceptor
+        let interceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: true))!.interceptor
 
         let interception = interceptor(tracedRequest)
         guard let taskObserver = interception?.taskObserver else {
@@ -86,7 +75,7 @@ class TracingURLSessionHooksTests: XCTestCase {
     }
 
     func testTaskObserver_response() throws {
-        let interceptor = TracingAutoInstrumentation(tracedHosts: [tracedHost])!.interceptor
+        let interceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: true))!.interceptor
 
         let interception = interceptor(tracedRequest)
         guard let taskObserver = interception?.taskObserver else {
@@ -108,7 +97,7 @@ class TracingURLSessionHooksTests: XCTestCase {
     }
 
     func testTaskObserver_NSError() throws {
-        let interceptor = TracingAutoInstrumentation(tracedHosts: [tracedHost])!.interceptor
+        let interceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: true))!.interceptor
 
         let interception = interceptor(tracedRequest)
         guard let taskObserver = interception?.taskObserver else {
@@ -132,7 +121,7 @@ class TracingURLSessionHooksTests: XCTestCase {
     }
 
     func testTaskObserver_wrongOrder() throws {
-        let interceptor = TracingAutoInstrumentation(tracedHosts: [tracedHost])!.interceptor
+        let interceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: true))!.interceptor
 
         let interception = interceptor(tracedRequest)
         let taskObserver: TaskObserver! = interception?.taskObserver //swiftlint:disable:this implicitly_unwrapped_optional
@@ -144,7 +133,7 @@ class TracingURLSessionHooksTests: XCTestCase {
     }
 
     func testTaskObserver_duplicateStarts_shouldNotFail() throws {
-        let interceptor = TracingAutoInstrumentation(tracedHosts: [tracedHost])!.interceptor
+        let interceptor = TracingAutoInstrumentation(urlFilter: MockURLFilter(allow: true))!.interceptor
 
         let interception = interceptor(tracedRequest)
         let taskObserver: TaskObserver! = interception?.taskObserver //swiftlint:disable:this implicitly_unwrapped_optional

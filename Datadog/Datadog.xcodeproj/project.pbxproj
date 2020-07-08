@@ -184,6 +184,7 @@
 		9E330A8E24ADE1250031408E /* NSURLSessionBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E330A8D24ADE1250031408E /* NSURLSessionBridge.m */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		9E493E1C249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E493E1B249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift */; };
+		9E50B2E424B49DDF00A2CB95 /* URLFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E50B2E324B49DDF00A2CB95 /* URLFilterTests.swift */; };
 		9E544A4D24752A8900E83072 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */; };
 		9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */; };
 		9E544A5124753DDE00E83072 /* MethodSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */; };
@@ -195,6 +196,7 @@
 		9ED583A32498C222004CFF2A /* TracingAutoInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ED583A22498C222004CFF2A /* TracingAutoInstrumentation.swift */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
+		9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* URLFilter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -442,6 +444,7 @@
 		9E330A8D24ADE1250031408E /* NSURLSessionBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSURLSessionBridge.m; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
 		9E493E1B249B7BAA005F95F5 /* TracingAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingAutoInstrumentationTests.swift; sourceTree = "<group>"; };
+		9E50B2E324B49DDF00A2CB95 /* URLFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLFilterTests.swift; sourceTree = "<group>"; };
 		9E544A4C24752A8900E83072 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
 		9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzlerTests.swift; sourceTree = "<group>"; };
@@ -456,6 +459,7 @@
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
+		9EFD112B24B32D29003A1A2B /* URLFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLFilter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -860,6 +864,7 @@
 			children = (
 				61133C362423990D00786299 /* InternalLoggersTests.swift */,
 				9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */,
+				9E50B2E324B49DDF00A2CB95 /* URLFilterTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1127,6 +1132,7 @@
 			children = (
 				61C5A87C24509A0C00DA608C /* Casting.swift */,
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
+				9EFD112B24B32D29003A1A2B /* URLFilter.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1600,6 +1606,7 @@
 				617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
+				9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
@@ -1692,6 +1699,7 @@
 				61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */,
 				61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */,
 				61133C592423990D00786299 /* FilesOrchestratorTests.swift in Sources */,
+				9E50B2E424B49DDF00A2CB95 /* URLFilterTests.swift in Sources */,
 				61B558D42469CDD8001460D3 /* TracingUUIDGeneratorTests.swift in Sources */,
 				9E544A5124753DDE00E83072 /* MethodSwizzlerTests.swift in Sources */,
 				61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */,

@@ -158,7 +158,7 @@ class URLSessionSwizzlerTests: XCTestCase {
             completionExpectation,
             interceptor.observationCompletedExpectation
         ]
-        wait(for: resumeExpectations, timeout: timeout, enforceOrder: true)
+        wait(for: resumeExpectations, timeout: timeout)
     }
 
     func test_dataTask_requestCompletion_edgeCase_nilCompletion() throws {
@@ -186,7 +186,7 @@ class URLSessionSwizzlerTests: XCTestCase {
             completionExpectation,
             interceptor.observationCompletedExpectation
         ]
-        wait(for: resumeExpectations, timeout: timeout, enforceOrder: true)
+        wait(for: resumeExpectations, timeout: timeout)
     }
 
     func test_dataTask_requestCompletion_edgeCase_nilRequestNilCompletion() throws {

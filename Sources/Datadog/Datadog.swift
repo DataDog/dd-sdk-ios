@@ -112,7 +112,6 @@ public class Datadog {
 
         var logging: LoggingFeature?
         var tracing: TracingFeature?
-        var tracingAutoInstrumentation: TracingAutoInstrumentation?
 
         if configuration.loggingEnabled {
             logging = LoggingFeature(
@@ -155,12 +154,11 @@ public class Datadog {
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
             )
-            tracingAutoInstrumentation = TracingAutoInstrumentation(tracedHosts: configuration.tracedHosts)
         }
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
-        TracingAutoInstrumentation.instance = tracingAutoInstrumentation
+        TracingAutoInstrumentation.instance = TracingAutoInstrumentation(with: configuration)
         TracingAutoInstrumentation.instance?.apply()
 
         // Only after all features were initialized with no error thrown:

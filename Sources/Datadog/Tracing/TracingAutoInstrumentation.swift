@@ -10,25 +10,32 @@ internal class TracingAutoInstrumentation {
     static var instance: TracingAutoInstrumentation?
 
     let swizzler: URLSessionSwizzler
-    let interceptor: RequestInterceptor
+    let urlFilter: URLFiltering
+    var interceptor: RequestInterceptor {
+        TracingRequestInterceptor.build(with: urlFilter)
+    }
 
-    init?(tracedHosts: Set<String>) {
-        if tracedHosts.isEmpty {
+    convenience init?(with configuration: Datadog.Configuration) {
+        if !configuration.tracingEnabled || configuration.tracedHosts.isEmpty {
             return nil
         }
+        let urlFilter = URLFilter(
+            includedHosts: configuration.tracedHosts,
+            excludedURLs: [
+                configuration.logsEndpoint.url,
+                configuration.tracesEndpoint.url
+            ]
+        )
+        self.init(urlFilter: urlFilter)
+    }
+
+    init?(urlFilter: URLFiltering) {
         do {
-            /// pattern = "^(.*\\.)*tracedHost1|^(.*\\.)*tracedHost2|..."
-            let regex = tracedHosts
-                .map {
-                    let escaped = NSRegularExpression.escapedPattern(for: $0)
-                    return "^(.*\\.)*\(escaped)$"
-                }
-                .joined(separator: "|")
-            self.interceptor = TracingRequestInterceptor.build(with: regex)
             self.swizzler = try URLSessionSwizzler()
+            self.urlFilter = urlFilter
         } catch {
-            userLogger.warn("🔥 Network requests won't be traced automatically for \(String(describing: tracedHosts)): \(error)")
-            developerLogger?.warn("🔥 Network requests won't be traced automatically for \(String(describing: tracedHosts)): \(error)")
+            userLogger.warn("🔥 Network requests won't be traced automatically: \(error)")
+            developerLogger?.warn("🔥 Network requests won't be traced automatically: \(error)")
             return nil
         }
     }
@@ -39,10 +46,10 @@ internal class TracingAutoInstrumentation {
 }
 
 private enum TracingRequestInterceptor {
-    static func build(with tracedHostsRegex: String) -> RequestInterceptor {
+    static func build(with filter: URLFiltering) -> RequestInterceptor {
         let interceptor: RequestInterceptor = { urlRequest in
             guard let tracer = Global.sharedTracer as? DDTracer,
-                urlRequest.allowed(by: tracedHostsRegex),
+                filter.allows(urlRequest.url),
                 HTTPHeadersWriter.canInject(to: urlRequest) else {
                     return nil
             }
@@ -101,16 +108,6 @@ private enum TracingRequestInterceptor {
             }
         }
         return observer
-    }
-}
-
-private extension URLRequest {
-    func allowed(by tracedHostsRegex: String) -> Bool {
-        if let url = self.url, let host = url.host {
-            return host.range(of: tracedHostsRegex, options: .regularExpression) != nil
-        } else {
-            return false
-        }
     }
 }
 
