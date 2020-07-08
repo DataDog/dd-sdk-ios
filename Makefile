@@ -1,5 +1,5 @@
 all: tools dependencies xcodeproj-httpservermock templates
-.PHONY : examples tools newversion
+.PHONY : tools
 
 tools:
 		@echo "⚙️  Installing tools..."
@@ -31,12 +31,18 @@ test-carthage:
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
-newversion:
+bump:
 		@read -p "Enter version number: " version;  \
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.meta > DatadogSDK.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.meta > DatadogSDKObjc.podspec; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.src > DatadogSDK.podspec; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
-		git push -u origin master; \
+		git tag $$version; \
 		echo Bumped version to $$version
+
+ship:
+		pod spec lint DatadogSDK.podspec
+		pod spec lint DatadogSDKObjc.podspec
+		pod trunk push DatadogSDK.podspec
+		pod trunk push DatadogSDKObjc.podspec

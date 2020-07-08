@@ -21,7 +21,8 @@ function files {
 		-not -name "OTFormat.swift" \
 		-not -name "OTTracer.swift" \
 		-not -name "OTReference.swift" \
-		-not -name "OTSpanContext.swift"
+		-not -name "OTSpanContext.swift" \
+        -not -name "Versioning.swift"
 }
 
 FILES_WITH_MISSING_LICENSE=""
