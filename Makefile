@@ -31,6 +31,14 @@ test-carthage:
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
+# Generate api-surface files for Datadog and DatadogObjc.
+api-surface:
+		@cd tools/api-surface/ && swift build --configuration release
+		@echo "Generating api-surface-swift"
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme Datadog --path . > api-surface-swift
+		@echo "Generating api-surface-objc"
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
+
 bump:
 		@read -p "Enter version number: " version;  \
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \

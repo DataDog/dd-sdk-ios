@@ -1,0 +1,104 @@
+public class DDAppContext: NSObject
+ public init(mainBundle: Bundle)
+ override public init()
+public class DDDatadog: NSObject
+ public static func initialize(appContext: DDAppContext, configuration: DDConfiguration)
+ public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
+ public static func verbosityLevel() -> DDSDKVerbosityLevel
+ public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil)
+public class DDLogsEndpoint: NSObject
+ public static func eu() -> DDLogsEndpoint
+ public static func us() -> DDLogsEndpoint
+ public static func custom(url: String) -> DDLogsEndpoint
+public class DDTracesEndpoint: NSObject
+ public static func eu() -> DDTracesEndpoint
+ public static func us() -> DDTracesEndpoint
+ public static func custom(url: String) -> DDTracesEndpoint
+public class DDConfiguration: NSObject
+ public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder
+public class DDConfigurationBuilder: NSObject
+ public func set(endpoint: DDLogsEndpoint)
+ public func enableLogging(_ enabled: Bool)
+ public func enableTracing(_ enabled: Bool)
+ public func set(logsEndpoint: DDLogsEndpoint)
+ public func set(tracesEndpoint: DDTracesEndpoint)
+ public func set(tracedHosts: Set<String>)
+ public func set(serviceName: String)
+ public func build() -> DDConfiguration
+public enum DDSDKVerbosityLevel: Int
+ case none
+ case debug
+ case info
+ case notice
+ case warn
+ case error
+ case critical
+public class DDLogger: NSObject
+ public func debug(_ message: String)
+ public func debug(_ message: String, attributes: [String: Any])
+ public func info(_ message: String)
+ public func info(_ message: String, attributes: [String: Any])
+ public func notice(_ message: String)
+ public func notice(_ message: String, attributes: [String: Any])
+ public func warn(_ message: String)
+ public func warn(_ message: String, attributes: [String: Any])
+ public func error(_ message: String)
+ public func error(_ message: String, attributes: [String: Any])
+ public func critical(_ message: String)
+ public func critical(_ message: String, attributes: [String: Any])
+ public func addAttribute(forKey key: String, value: Any)
+ public func removeAttribute(forKey key: String)
+ public func addTag(withKey key: String, value: String)
+ public func removeTag(withKey key: String)
+ public func add(tag: String)
+ public func remove(tag: String)
+ public static func builder() -> DDLoggerBuilder
+public class DDLoggerBuilder: NSObject
+ public func set(serviceName: String)
+ public func set(loggerName: String)
+ public func sendNetworkInfo(_ enabled: Bool)
+ public func sendLogsToDatadog(_ enabled: Bool)
+ public func printLogsToConsole(_ enabled: Bool)
+ public func build() -> DDLogger
+public class OTGlobal: NSObject
+ public static func initSharedTracer(_ tracer: OTTracer)
+ public internal(set) static var sharedTracer: OTTracer = noopTracer
+public protocol OTSpan
+ var context: OTSpanContext
+ var tracer: OTTracer
+ func setOperationName(_ operationName: String)
+ func setTag(_ key: String, value: NSString)
+ func setTag(_ key: String, numberValue: NSNumber)
+ func setTag(_ key: String, boolValue: Bool)
+ func log(_ fields: [String: NSObject])
+ func log(_ fields: [String: NSObject], timestamp: Date?)
+ func setBaggageItem(_ key: String, value: String) -> OTSpan
+ func getBaggageItem(_ key: String) -> String?
+ func finish()
+ func finishWithTime(_ finishTime: Date?)
+public protocol OTSpanContext
+ func forEachBaggageItem(_ callback: (_ key: String, _ value: String) -> Bool)
+public let OTFormatHTTPHeaders = "OTFormatHTTPHeaders"
+public protocol OTTracer
+ func startSpan(_ operationName: String) -> OTSpan
+ func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
+ func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan
+ func startSpan(_ operationName: String, childOf parent: OTSpanContext?, tags: NSDictionary?) -> OTSpan
+ func startSpan(_ operationName: String, childOf parent: OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> OTSpan
+ func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws
+ func extractWithFormat(_ format: String, carrier: Any) throws
+public class DDTracer: DatadogObjc.OTTracer
+ public static func initialize(configuration: DDTracerConfiguration) -> DatadogObjc.OTTracer
+ public func startSpan(_ operationName: String) -> OTSpan
+ public func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
+ public func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan
+ public func startSpan(_ operationName: String,childOf parent: OTSpanContext?,tags: NSDictionary?) -> OTSpan
+ public func startSpan(_ operationName: String,childOf parent: OTSpanContext?,tags: NSDictionary?,startTime: Date?) -> OTSpan
+ public func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws
+ public func extractWithFormat(_ format: String, carrier: Any) throws
+public class DDTracerConfiguration: NSObject
+ override public init()
+ public func set(serviceName: String)
+ public func sendNetworkInfo(_ enabled: Bool)
+public class DDHTTPHeadersWriter: NSObject
+ override public init()
