@@ -6,10 +6,6 @@
 
 import Foundation
 
-/// SDK version associated with logs.
-/// Should be synced with SDK releases.
-internal let sdkVersion = "1.3.0-beta2"
-
 /// Datadog SDK configuration object.
 public class Datadog {
     /// Provides information about the app.
