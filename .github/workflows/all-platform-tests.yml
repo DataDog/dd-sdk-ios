@@ -34,7 +34,7 @@ jobs:
           if [[ -z "${CURRENT_PR_SOURCE_BRANCH}" ]]; then
             # when running on Pull Request comment (get the branch name from comment's body)
             SANITIZED_COMMENT=${COMMENT_BODY//[^a-zA-Z0-9@ -\/]/} # sanitize the user input
-            BRANCH_NAME_REGEXP='[a-z]*\/[a-zA-Z0-9-]*'
+            BRANCH_NAME_REGEXP='[a-zA-Z0-9-]*\/[a-zA-Z0-9-]*'
             CURRENT_BRANCH=$(echo "${SANITIZED_COMMENT}" | grep -oe '@test-all-platforms '$BRANCH_NAME_REGEXP | grep -oe $BRANCH_NAME_REGEXP)
           else
             # when running due to opening a Pull Request
