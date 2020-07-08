@@ -83,6 +83,8 @@ custom_rules:
 included:
   - Sources
   - instrumented-tests/http-server-mock/Sources
+  - tools/api-surface/Sources
+  - tools/api-surface/Fixtures/Sources
   - dependency-manager-tests/carthage/CTProject
   - dependency-manager-tests/cocoapods/CPProject
   - dependency-manager-tests/spm/SPMProject

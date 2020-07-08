@@ -8,7 +8,7 @@ import Foundation
 import SourceKittenFramework
 
 /// Finds public `InterfaceItems` in given `SwiftDocs`.
-func getPublicInterfaceItems(from docs: SwiftDocs) throws -> [InterfaceItem] {
+internal func getPublicInterfaceItems(from docs: SwiftDocs) throws -> [InterfaceItem] {
     let docsJSONObject = toNSDictionary(docs.docsDictionary)
     let docsJSONData = try JSONSerialization.data(
         withJSONObject: docsJSONObject,
@@ -58,7 +58,7 @@ private func recursivelySearchForPublicInterfaceItems(
     recursionLevel: Int = 0
 ) {
     skSubstructures
-        .compactMap({ $0 })
+        .compactMap { $0 }
         .forEach { structure in
             if structure.accessibility == "source.lang.swift.accessibility.public" {
                 if let declaration = structure.declaration {
@@ -85,4 +85,3 @@ private func recursivelySearchForPublicInterfaceItems(
             }
         }
 }
-

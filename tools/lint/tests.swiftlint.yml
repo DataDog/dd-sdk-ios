@@ -76,7 +76,8 @@ custom_rules:
 
 included:
   - Tests
-  - instrumented-tests/http-server-mock/Test
+  - instrumented-tests/http-server-mock/Tests
+  - tools/api-surface/Tests
   - dependency-manager-tests/carthage/CTProjectTests
   - dependency-manager-tests/carthage/CTProjectUITests
   - dependency-manager-tests/cocoapods/CTProjectTests

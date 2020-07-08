@@ -7,7 +7,7 @@
 import ArgumentParser
 import APISurfaceCore
 
-struct RootCommand: ParsableCommand {
+private struct RootCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "api-surface",
         abstract: "Prints API surface for given Swift module.",

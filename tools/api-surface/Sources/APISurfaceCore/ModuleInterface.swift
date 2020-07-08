@@ -8,7 +8,7 @@ import Foundation
 import SourceKittenFramework
 
 /// A single interface item, e.g.: class or method declaration.
-struct InterfaceItem {
+internal struct InterfaceItem {
     /// Code declaration,
     /// e.g. `class Car` or `case manufacturer1` for enum.
     let declaration: String
@@ -19,7 +19,7 @@ struct InterfaceItem {
 }
 
 /// An interface of the entire module.
-struct ModuleInterface {
+internal struct ModuleInterface {
     /// List of file interfaces in this module.
     let fileInterfaces: [FileInterface]
 
@@ -31,7 +31,7 @@ struct ModuleInterface {
 }
 
 /// An interface of a single source file.
-struct FileInterface {
+internal struct FileInterface {
     /// List of public interface items in this file.
     let publicInterface: [InterfaceItem]
 

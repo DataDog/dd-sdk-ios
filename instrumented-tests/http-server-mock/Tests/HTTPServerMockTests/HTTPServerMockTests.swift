@@ -59,10 +59,10 @@ final class HTTPServerMockTests: XCTestCase {
             XCTFail("Failed to connect with the server.")
             return
         }
-        
+
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
-        
+
         let initialTime = Date()
         DispatchQueue.global(qos: .userInitiated).async {
             Thread.sleep(forTimeInterval: 0.5)
@@ -85,17 +85,17 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertTrue(recordedRequests[1].path.hasSuffix("/resource/2"))
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
-    
+
     func testWhenPullingRecordedPOSTRequestExceedsTimeout_itThrownsAnError() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
             return
         }
-        
+
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
-        
+
         DispatchQueue.global(qos: .userInitiated).async {
             Thread.sleep(forTimeInterval: 2)
             sendPOSTRequestAsynchronouslyTo(
@@ -108,7 +108,7 @@ final class HTTPServerMockTests: XCTestCase {
                 body: "2nd request body".data(using: .utf8)!
             )
         }
-        
+
         let timeoutTime: TimeInterval = 2
         var thrownError: Error?
         XCTAssertThrowsError(try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)) {

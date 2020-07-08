@@ -7,7 +7,7 @@
 import Foundation
 import SourceKittenFramework
 
-struct ModuleInterfacePrinter {
+internal struct ModuleInterfacePrinter {
     func print(moduleInterface: ModuleInterface) -> String {
         return moduleInterface
             .fileInterfaces
@@ -30,7 +30,7 @@ struct ModuleInterfacePrinter {
             .joined()
 
         let indentation = (0..<interfaceItem.nestingLevel)
-            .map({ _ in " "})
+            .map { _ in " " }
             .joined()
 
         return "\(indentation)\(inlinedDeclaration)"
