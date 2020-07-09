@@ -16,7 +16,7 @@ class IntegrationTests: XCTestCase {
     private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
-        try super.setUp()
+        try super.setUpWithError()
         server = try connectToServer()
     }
 
