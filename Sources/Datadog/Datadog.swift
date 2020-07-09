@@ -108,6 +108,7 @@ public class Datadog {
 
         var logging: LoggingFeature?
         var tracing: TracingFeature?
+        var rum: RUMFeature?
 
         if configuration.loggingEnabled {
             logging = LoggingFeature(
@@ -152,8 +153,31 @@ public class Datadog {
             )
         }
 
+        if configuration.rumEnabled {
+            rum = RUMFeature(
+                directory: try obtainRUMFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                rumUploadURLProvider: UploadURLProvider(
+                    urlWithClientToken: validConfiguration.rumUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .ddsource(),
+                        .batchTime(using: dateProvider) // TODO: RUMM-515 Build correct query and add tests
+                    ]
+                ),
+                dateProvider: dateProvider,
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
+
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
+        RUMFeature.instance = rum
+
         TracingAutoInstrumentation.instance = TracingAutoInstrumentation(with: configuration)
         TracingAutoInstrumentation.instance?.apply()
 
@@ -180,6 +204,7 @@ public class Datadog {
         // Then, deinitialize features:
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
+        RUMFeature.instance = nil
         TracingAutoInstrumentation.instance = nil
 
         // Deinitialize `Datadog`:

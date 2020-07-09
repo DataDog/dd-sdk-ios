@@ -18,8 +18,10 @@ extension Datadog.Configuration {
         environment: String = .mockAny(),
         loggingEnabled: Bool = false,
         tracingEnabled: Bool = false,
+        rumEnabled: Bool = false,
         logsEndpoint: LogsEndpoint = .us,
         tracesEndpoint: TracesEndpoint = .us,
+        rumEndpoint: RUMEndpoint = .us,
         serviceName: String? = .mockAny()
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
@@ -27,8 +29,10 @@ extension Datadog.Configuration {
             environment: environment,
             loggingEnabled: loggingEnabled,
             tracingEnabled: tracingEnabled,
+            rumEnabled: rumEnabled,
             logsEndpoint: logsEndpoint,
             tracesEndpoint: tracesEndpoint,
+            rumEndpoint: rumEndpoint,
             serviceName: serviceName
         )
     }
@@ -46,7 +50,8 @@ extension Datadog.ValidConfiguration {
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         logsUploadURLWithClientToken: URL = .mockAny(),
-        tracesUploadURLWithClientToken: URL = .mockAny()
+        tracesUploadURLWithClientToken: URL = .mockAny(),
+        rumUploadURLWithClientToken: URL = .mockAny()
     ) -> Datadog.ValidConfiguration {
         return Datadog.ValidConfiguration(
             applicationName: applicationName,
@@ -55,7 +60,8 @@ extension Datadog.ValidConfiguration {
             serviceName: serviceName,
             environment: environment,
             logsUploadURLWithClientToken: logsUploadURLWithClientToken,
-            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken
+            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken,
+            rumUploadURLWithClientToken: rumUploadURLWithClientToken
         )
     }
 }

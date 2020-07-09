@@ -22,22 +22,6 @@ class LoggingFeatureTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Initialization
-
-    func testInitialization() throws {
-        let appContext: AppContext = .mockAny()
-        Datadog.initialize(
-            appContext: appContext,
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc", environment: "tests")
-                .build()
-        )
-
-        XCTAssertNotNil(LoggingFeature.instance)
-
-        try Datadog.deinitializeOrThrow()
-    }
-
     // MARK: - HTTP Headers
 
     func testItUsesExpectedHTTPHeaders() throws {

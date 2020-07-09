@@ -14,7 +14,7 @@ extension Datadog {
 
     /// Datadog SDK configuration.
     public struct Configuration {
-        /// Determines server to which logs are sent.
+        /// Determines the server for uploading logs.
         public enum LogsEndpoint {
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
@@ -34,7 +34,7 @@ extension Datadog {
             }
         }
 
-        /// Determines server to which traces are sent.
+        /// Determines the server for uploading traces.
         public enum TracesEndpoint {
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
@@ -54,12 +54,34 @@ extension Datadog {
             }
         }
 
+        /// Determines the server for uploading RUM events.
+        public enum RUMEndpoint {
+            /// US based servers.
+            /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us
+            /// Europe based servers.
+            /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu
+            /// User-defined server.
+            case custom(url: String)
+
+            internal var url: String {
+                switch self {
+                case .us: return "https://rum-http-intake.logs.datadoghq.com/v1/input/"
+                case .eu: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
+                case let .custom(url: url): return url
+                }
+            }
+        }
+
         internal let clientToken: String
         internal let environment: String
         internal var loggingEnabled: Bool
         internal var tracingEnabled: Bool
+        internal var rumEnabled: Bool
         internal let logsEndpoint: LogsEndpoint
         internal var tracesEndpoint: TracesEndpoint
+        internal var rumEndpoint: RUMEndpoint
         internal let serviceName: String?
         internal var tracedHosts = Set<String>()
 
@@ -84,8 +106,10 @@ extension Datadog {
             internal let environment: String
             internal var loggingEnabled = true
             internal var tracingEnabled = true
+            internal var rumEnabled = true
             internal var logsEndpoint: LogsEndpoint = .us
             internal var tracesEndpoint: TracesEndpoint = .us
+            internal var rumEndpoint: RUMEndpoint = .us
             internal var serviceName: String? = nil
             internal var tracedHosts = Set<String>()
 
@@ -129,6 +153,12 @@ extension Datadog {
                 return self
             }
 
+            // TODO: RUMM-607 Update public comment
+            public func enableRUM(_ enabled: Bool) -> Builder {
+                self.rumEnabled = enabled
+                return self
+            }
+
             /// Sets the hosts to be automatically traced.
             ///
             /// Every request made to a traced host and its subdomains will create its Span with related information; _such as url, method, status code, error (if any)_.
@@ -164,6 +194,13 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the server endpoint to which RUM events are sent.
+            /// - Parameter rumEndpoint: server endpoint (default value is `RUMEndpoint.us` )
+            public func set(rumEndpoint: RUMEndpoint) -> Builder {
+                self.rumEndpoint = rumEndpoint
+                return self
+            }
+
             // MARK: - Other Settings
 
             /// Sets the default service name associated with data send to Datadog.
@@ -181,8 +218,10 @@ extension Datadog {
                     environment: environment,
                     loggingEnabled: loggingEnabled,
                     tracingEnabled: tracingEnabled,
+                    rumEnabled: rumEnabled,
                     logsEndpoint: logsEndpoint,
                     tracesEndpoint: tracesEndpoint,
+                    rumEndpoint: rumEndpoint,
                     serviceName: serviceName,
                     tracedHosts: tracedHosts
                 )
@@ -203,6 +242,7 @@ extension Datadog {
 
         internal let logsUploadURLWithClientToken: URL
         internal let tracesUploadURLWithClientToken: URL
+        internal let rumUploadURLWithClientToken: URL
     }
 }
 
@@ -220,6 +260,10 @@ extension Datadog.ValidConfiguration {
             ),
             tracesUploadURLWithClientToken: try ifValid(
                 endpointURLString: configuration.tracesEndpoint.url,
+                clientToken: configuration.clientToken
+            ),
+            rumUploadURLWithClientToken: try ifValid(
+                endpointURLString: configuration.rumEndpoint.url,
                 clientToken: configuration.clientToken
             )
         )

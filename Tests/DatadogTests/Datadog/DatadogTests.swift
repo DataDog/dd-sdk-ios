@@ -116,6 +116,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(LoggingFeature.instance)
             XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNotNil(RUMFeature.instance)
             XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
@@ -124,6 +125,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNil(LoggingFeature.instance)
             XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNotNil(RUMFeature.instance)
             XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
@@ -132,12 +134,16 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(LoggingFeature.instance)
             XCTAssertNil(TracingFeature.instance)
+            XCTAssertNotNil(RUMFeature.instance)
+            // verify integrations:
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
-        try verify(configuration: configurationBuilder.enableLogging(false).enableTracing(false).build()) {
+        try verify(configuration: configurationBuilder.enableRUM(false).build()) {
             // verify features:
-            XCTAssertNil(LoggingFeature.instance)
-            XCTAssertNil(TracingFeature.instance)
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(RUMFeature.instance)
+            // verify integrations:
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 

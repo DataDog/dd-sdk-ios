@@ -7,17 +7,17 @@
 import XCTest
 @testable import Datadog
 
-class TracingFeatureTests: XCTestCase {
+class RUMFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(Datadog.instance)
-        XCTAssertNil(TracingFeature.instance)
+        XCTAssertNil(RUMFeature.instance)
         temporaryDirectory.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
-        XCTAssertNil(TracingFeature.instance)
+        XCTAssertNil(RUMFeature.instance)
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -26,7 +26,7 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedHTTPHeaders() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
+        RUMFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
             configuration: .mockWith(
@@ -35,12 +35,14 @@ class TracingFeatureTests: XCTestCase {
             ),
             mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
         )
-        defer { TracingFeature.instance = nil }
+        defer { RUMFeature.instance = nil }
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
-
-        let span = tracer.startSpan(operationName: "operation 1")
-        span.finish()
+        // TODO: RUMM-585 Replace with real data created by `RUMMonitor`
+        struct DummyRUMMEvent: Encodable {
+            let someAttribute = "foo"
+        }
+        let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
+        fileWriter.write(value: DummyRUMMEvent())
 
         let httpHeaders = server.waitAndReturnRequests(count: 1)[0].allHTTPHeaderFields
         XCTAssertEqual(httpHeaders?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
@@ -51,7 +53,7 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
+        RUMFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
             performance: .combining(
@@ -73,26 +75,35 @@ class TracingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { TracingFeature.instance = nil }
+        defer { RUMFeature.instance = nil }
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
-
-        tracer.startSpan(operationName: "operation 1").finish()
-        tracer.startSpan(operationName: "operation 2").finish()
-        tracer.startSpan(operationName: "operation 3").finish()
+        // TODO: RUMM-585 Replace with real data created by `RUMMonitor`
+        struct DummyRUMMEvent: Codable {
+            let someAttribute = "foo"
+        }
+        let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
+        fileWriter.write(value: DummyRUMMEvent()) // 1st event
+        fileWriter.write(value: DummyRUMMEvent()) // 2nd event
+        fileWriter.write(value: DummyRUMMEvent()) // 3rd event
 
         let payload = server.waitAndReturnRequests(count: 1)[0].httpBody!
 
         // Expected payload format:
         // ```
-        // span1JSON
-        // span2JSON
-        // span3JSON
+        // event1JSON
+        // event2JSON
+        // event3JSON
         // ```
 
-        let spanMatchers = try SpanMatcher.fromNewlineSeparatedJSONObjectsData(payload)
-        XCTAssertEqual(try spanMatchers[0].operationName(), "operation 1")
-        XCTAssertEqual(try spanMatchers[1].operationName(), "operation 2")
-        XCTAssertEqual(try spanMatchers[2].operationName(), "operation 3")
+        // Expect payload to be 3 newline-separated JSONs
+        // TODO: RUMM-585 Use RUMEventMatcher: let rumEventMatchers = try RUMeventMacher.fromNewlineSeparatedJSONObjectsData(payload)
+        // Split payload by `\n`
+        let jsonObjectsData = payload.split(separator: 10) // 10 stands for `\n` in ASCII
+        XCTAssertEqual(jsonObjectsData.count, 3)
+        let jsonDecoder = JSONDecoder()
+        // Ensure each line of data is a valid JSON string
+        XCTAssertNoThrow(try jsonDecoder.decode(DummyRUMMEvent.self, from: jsonObjectsData[0]))
+        XCTAssertNoThrow(try jsonDecoder.decode(DummyRUMMEvent.self, from: jsonObjectsData[1]))
+        XCTAssertNoThrow(try jsonDecoder.decode(DummyRUMMEvent.self, from: jsonObjectsData[2]))
     }
 }
