@@ -22,7 +22,6 @@ extension RUMFeature {
                 return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
             }
         ),
-        rumUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
@@ -43,7 +42,6 @@ extension RUMFeature {
             performance: performance,
             mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
-            rumUploadURLProvider: rumUploadURLProvider,
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,

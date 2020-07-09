@@ -73,7 +73,7 @@ internal final class RUMFeature {
             performance: PerformancePreset,
             mobileDevice: MobileDevice,
             httpClient: HTTPClient,
-            rumUploadURLProvider: UploadURLProvider,
+            dateProvider: DateProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
             uploadQueue: DispatchQueue
         ) {
@@ -93,7 +93,21 @@ internal final class RUMFeature {
             )
 
             let dataUploader = DataUploader(
-                urlProvider: rumUploadURLProvider,
+                urlProvider: UploadURLProvider(
+                    urlWithClientToken: configuration.rumUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .ddsource(),
+                        .batchTime(using: dateProvider),
+                        .ddtags(
+                            tags: [
+                                "service:\(configuration.serviceName)",
+                                "version:\(configuration.applicationVersion)",
+                                "sdk_version:\(sdkVersion)",
+                                "env:\(configuration.environment)"
+                            ]
+                        )
+                    ]
+                ),
                 httpClient: httpClient,
                 httpHeaders: httpHeaders
             )
@@ -117,7 +131,6 @@ internal final class RUMFeature {
         performance: PerformancePreset,
         mobileDevice: MobileDevice,
         httpClient: HTTPClient,
-        rumUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
         userInfoProvider: UserInfoProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
@@ -154,7 +167,7 @@ internal final class RUMFeature {
             performance: performance,
             mobileDevice: mobileDevice,
             httpClient: httpClient,
-            rumUploadURLProvider: rumUploadURLProvider,
+            dateProvider: dateProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             uploadQueue: uploadQueue
         )

@@ -22,9 +22,9 @@ class TracingFeatureTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - HTTP Headers
+    // MARK: - HTTP Message
 
-    func testItUsesExpectedHTTPHeaders() throws {
+    func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -33,7 +33,8 @@ class TracingFeatureTests: XCTestCase {
                 applicationName: "FoobarApp",
                 applicationVersion: "2.1.0"
             ),
-            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
         defer { TracingFeature.instance = nil }
 
@@ -42,12 +43,14 @@ class TracingFeatureTests: XCTestCase {
         let span = tracer.startSpan(operationName: "operation 1")
         span.finish()
 
-        let httpHeaders = server.waitAndReturnRequests(count: 1)[0].allHTTPHeaderFields
-        XCTAssertEqual(httpHeaders?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
-        XCTAssertEqual(httpHeaders?["Content-Type"], "text/plain;charset=UTF-8")
+        let request = server.waitAndReturnRequests(count: 1)[0]
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.url?.query, "batch_time=1576404000000")
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
     }
 
-    // MARK: - Payload Format
+    // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))

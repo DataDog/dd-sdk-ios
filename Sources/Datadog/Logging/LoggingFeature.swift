@@ -73,7 +73,7 @@ internal final class LoggingFeature {
             performance: PerformancePreset,
             mobileDevice: MobileDevice,
             httpClient: HTTPClient,
-            logsUploadURLProvider: UploadURLProvider,
+            dateProvider: DateProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
             uploadQueue: DispatchQueue
         ) {
@@ -93,7 +93,13 @@ internal final class LoggingFeature {
             )
 
             let dataUploader = DataUploader(
-                urlProvider: logsUploadURLProvider,
+                urlProvider: UploadURLProvider(
+                    urlWithClientToken: configuration.logsUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .ddsource(),
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
                 httpClient: httpClient,
                 httpHeaders: httpHeaders
             )
@@ -117,7 +123,6 @@ internal final class LoggingFeature {
         performance: PerformancePreset,
         mobileDevice: MobileDevice,
         httpClient: HTTPClient,
-        logsUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
         userInfoProvider: UserInfoProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
@@ -154,7 +159,7 @@ internal final class LoggingFeature {
             performance: performance,
             mobileDevice: mobileDevice,
             httpClient: httpClient,
-            logsUploadURLProvider: logsUploadURLProvider,
+            dateProvider: dateProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             uploadQueue: uploadQueue
         )

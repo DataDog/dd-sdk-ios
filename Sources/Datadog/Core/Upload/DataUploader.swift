@@ -28,6 +28,12 @@ internal class UploadURLProvider {
             return QueryItemProvider { queryItem }
         }
 
+        /// Creates `ddtags=tag1,tag2,...` query item.
+        static func ddtags(tags: [String]) -> QueryItemProvider {
+            let queryItem = URLQueryItem(name: "ddtags", value: tags.joined(separator: ","))
+            return QueryItemProvider { queryItem }
+        }
+
         private init(value: @escaping () -> URLQueryItem) {
             self.value = value
         }

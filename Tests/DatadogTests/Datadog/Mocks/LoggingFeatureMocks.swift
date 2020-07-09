@@ -15,7 +15,6 @@ extension LoggingFeature {
             performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
             mobileDevice: .mockAny(),
             httpClient: .mockAny(),
-            logsUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
@@ -42,7 +41,6 @@ extension LoggingFeature {
                 return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
             }
         ),
-        logsUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
@@ -63,7 +61,6 @@ extension LoggingFeature {
             performance: performance,
             mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
-            logsUploadURLProvider: logsUploadURLProvider,
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,

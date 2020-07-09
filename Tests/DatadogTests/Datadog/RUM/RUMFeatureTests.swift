@@ -22,18 +22,21 @@ class RUMFeatureTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - HTTP Headers
+    // MARK: - HTTP Message
 
-    func testItUsesExpectedHTTPHeaders() throws {
+    func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWorkingFeatureWith(
             server: server,
             directory: temporaryDirectory,
             configuration: .mockWith(
                 applicationName: "FoobarApp",
-                applicationVersion: "2.1.0"
+                applicationVersion: "2.1.0",
+                serviceName: "service-name",
+                environment: "environment-name"
             ),
-            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
         defer { RUMFeature.instance = nil }
 
@@ -44,12 +47,19 @@ class RUMFeatureTests: XCTestCase {
         let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
         fileWriter.write(value: DummyRUMMEvent())
 
-        let httpHeaders = server.waitAndReturnRequests(count: 1)[0].allHTTPHeaderFields
-        XCTAssertEqual(httpHeaders?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
-        XCTAssertEqual(httpHeaders?["Content-Type"], "text/plain;charset=UTF-8")
+        let request = server.waitAndReturnRequests(count: 1)[0]
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(
+            request.url?.query,
+            """
+            ddsource=ios&batch_time=1576404000000&ddtags=service:service-name,version:2.1.0,sdk_version:\(sdkVersion),env:environment-name
+            """
+        )
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
     }
 
-    // MARK: - Payload Format
+    // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))

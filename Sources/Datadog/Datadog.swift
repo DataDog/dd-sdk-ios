@@ -117,13 +117,6 @@ public class Datadog {
                 performance: performance,
                 mobileDevice: mobileDevice,
                 httpClient: httpClient,
-                logsUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .ddsource(),
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
                 dateProvider: dateProvider,
                 userInfoProvider: userInfoProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
@@ -139,12 +132,6 @@ public class Datadog {
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
                 mobileDevice: mobileDevice,
                 httpClient: httpClient,
-                tracesUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
                 dateProvider: dateProvider,
                 tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
                 userInfoProvider: userInfoProvider,
@@ -160,13 +147,6 @@ public class Datadog {
                 performance: performance,
                 mobileDevice: mobileDevice,
                 httpClient: httpClient,
-                rumUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.rumUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .ddsource(),
-                        .batchTime(using: dateProvider) // TODO: RUMM-515 Build correct query and add tests
-                    ]
-                ),
                 dateProvider: dateProvider,
                 userInfoProvider: userInfoProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
