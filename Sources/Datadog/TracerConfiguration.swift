@@ -18,7 +18,7 @@ extension Tracer {
         /// - Parameter enabled: `false` by default
         public var sendNetworkInfo: Bool
 
-        /// Tags that will be added to all new spans created by the tracer
+        /// Tags that will be added to all new spans created by the tracer.
         public var globalTags: [String: Encodable]?
 
         /// Initializes the Datadog Tracer configuration.
