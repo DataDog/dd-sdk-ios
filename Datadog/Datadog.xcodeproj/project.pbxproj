@@ -168,6 +168,8 @@
 		61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */; };
 		61E5333124B75DFC003D6C4E /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */; };
 		61E5333424B7A545003D6C4E /* RUMViewEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333324B7A545003D6C4E /* RUMViewEvent.swift */; };
+		61E5333624B84B43003D6C4E /* RUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333524B84B43003D6C4E /* RUMMonitor.swift */; };
+		61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */; };
 		61E909ED24A24DD3005EA2DE /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
 		61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E724A24DD3005EA2DE /* OTFormat.swift */; };
 		61E909EF24A24DD3005EA2DE /* OTGlobal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E824A24DD3005EA2DE /* OTGlobal.swift */; };
@@ -431,6 +433,8 @@
 		61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureTests.swift; sourceTree = "<group>"; };
 		61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureMocks.swift; sourceTree = "<group>"; };
 		61E5333324B7A545003D6C4E /* RUMViewEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewEvent.swift; sourceTree = "<group>"; };
+		61E5333524B84B43003D6C4E /* RUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitor.swift; sourceTree = "<group>"; };
+		61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRUMViewController.swift; sourceTree = "<group>"; };
 		61E909E624A24DD3005EA2DE /* OTSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpan.swift; sourceTree = "<group>"; };
 		61E909E724A24DD3005EA2DE /* OTFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTFormat.swift; sourceTree = "<group>"; };
 		61E909E824A24DD3005EA2DE /* OTGlobal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTGlobal.swift; sourceTree = "<group>"; };
@@ -569,10 +573,11 @@
 			children = (
 				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
 				61133BBB2423979B00786299 /* Datadog.swift */,
+				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
 				61C5A88D24509A1F00DA608C /* Tracer.swift */,
 				61E917D02465423600E6C631 /* TracerConfiguration.swift */,
-				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
+				61E5333524B84B43003D6C4E /* RUMMonitor.swift */,
 				E1D5AEA624B4D45A007F194B /* Versioning.swift */,
 				61133B9E2423979B00786299 /* Core */,
 				61133BBC2423979B00786299 /* Logging */,
@@ -1058,6 +1063,7 @@
 			children = (
 				61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */,
 				61441C932461A649003D8BB8 /* DebugTracingViewController.swift */,
+				61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */,
 			);
 			path = Debugging;
 			sourceTree = "<group>";
@@ -1659,6 +1665,7 @@
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
 				61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */,
+				61E5333624B84B43003D6C4E /* RUMMonitor.swift in Sources */,
 				61133BD62423979B00786299 /* DataUploader.swift in Sources */,
 				61C5A88724509A0C00DA608C /* Casting.swift in Sources */,
 				61133BE52423979B00786299 /* LogBuilder.swift in Sources */,
@@ -1806,6 +1813,7 @@
 				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
 				61B9ED1C2461E12000C0DCFF /* SendLogsFixtureViewController.swift in Sources */,
 				61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */,
+				61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */,
 				61441C9D2461A796003D8BB8 /* AppConfig.swift in Sources */,
 				61441C0524616DE9003D8BB8 /* AppDelegate.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
