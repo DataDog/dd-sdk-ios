@@ -167,6 +167,7 @@
 		61E5332C24B75C51003D6C4E /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5332B24B75C51003D6C4E /* RUMFeature.swift */; };
 		61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */; };
 		61E5333124B75DFC003D6C4E /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */; };
+		61E5333424B7A545003D6C4E /* RUMViewEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333324B7A545003D6C4E /* RUMViewEvent.swift */; };
 		61E909ED24A24DD3005EA2DE /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
 		61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E724A24DD3005EA2DE /* OTFormat.swift */; };
 		61E909EF24A24DD3005EA2DE /* OTGlobal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E824A24DD3005EA2DE /* OTGlobal.swift */; };
@@ -429,6 +430,7 @@
 		61E5332B24B75C51003D6C4E /* RUMFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeature.swift; sourceTree = "<group>"; };
 		61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureTests.swift; sourceTree = "<group>"; };
 		61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureMocks.swift; sourceTree = "<group>"; };
+		61E5333324B7A545003D6C4E /* RUMViewEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewEvent.swift; sourceTree = "<group>"; };
 		61E909E624A24DD3005EA2DE /* OTSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpan.swift; sourceTree = "<group>"; };
 		61E909E724A24DD3005EA2DE /* OTFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTFormat.swift; sourceTree = "<group>"; };
 		61E909E824A24DD3005EA2DE /* OTGlobal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTGlobal.swift; sourceTree = "<group>"; };
@@ -1221,6 +1223,7 @@
 			isa = PBXGroup;
 			children = (
 				61E5332B24B75C51003D6C4E /* RUMFeature.swift */,
+				61E5333224B7A504003D6C4E /* DataModels */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1231,6 +1234,14 @@
 				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
 			);
 			path = RUM;
+			sourceTree = "<group>";
+		};
+		61E5333224B7A504003D6C4E /* DataModels */ = {
+			isa = PBXGroup;
+			children = (
+				61E5333324B7A545003D6C4E /* RUMViewEvent.swift */,
+			);
+			path = DataModels;
 			sourceTree = "<group>";
 		};
 		61E909E524A24DD3005EA2DE /* OpenTracing */ = {
@@ -1640,6 +1651,7 @@
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
+				61E5333424B7A545003D6C4E /* RUMViewEvent.swift in Sources */,
 				61C5A8A624509FAA00DA608C /* SpanEncoder.swift in Sources */,
 				61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */,
 				61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */,
