@@ -127,12 +127,13 @@ class TracerTests: XCTestCase {
         )
 
         let span = tracer.startSpan(operationName: .mockAny())
+        span.setTag(key:"globaltag2", value: "overwrittenValue" )
         span.finish()
 
         let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag1"), "globalValue1")
-        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "globalValue2")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "overwrittenValue")
     }
 
     // MARK: - Sending Customized Spans
