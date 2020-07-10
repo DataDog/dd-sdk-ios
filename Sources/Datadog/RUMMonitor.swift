@@ -15,7 +15,7 @@ public class RUMMonitor {
 
     /// TODO: RUMM-585 Replace with real RUMMonitor public API
     public func sendFakeViewEvent(viewURL: String) {
-        let event = RUMViewEvent(
+        let dataModel = RUMViewEvent(
             date: Date(timeIntervalSinceNow: -1).timeIntervalSince1970.toMilliseconds,
             application: .init(id: rumApplicationID),
             session: .init(id: UUID().uuidString.lowercased(), type: "user"),
@@ -30,6 +30,13 @@ public class RUMMonitor {
             dd: .init(documentVersion: 1)
         )
 
-        RUMFeature.instance?.storage.writer.write(value: event)
+        RUMFeature.instance?.storage.writer.write(value: dataModel)
+
+//        let event = RUMEvent(
+//            model: dataModel,
+//            userInfo: Datadog.instance!.userInfoProvider.value // swiftlint:disable:this force_unwrapping
+//        )
+//
+//        RUMFeature.instance?.storage.writer.write(value: event)
     }
 }
