@@ -23,7 +23,8 @@ internal class TracingAutoInstrumentation {
             includedHosts: configuration.tracedHosts,
             excludedURLs: [
                 configuration.logsEndpoint.url,
-                configuration.tracesEndpoint.url
+                configuration.tracesEndpoint.url,
+                configuration.rumEndpoint.url
             ]
         )
         self.init(urlFilter: urlFilter)

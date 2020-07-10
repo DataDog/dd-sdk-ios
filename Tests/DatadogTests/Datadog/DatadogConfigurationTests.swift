@@ -16,8 +16,10 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(defaultConfiguration.environment, "tests")
         XCTAssertTrue(defaultConfiguration.loggingEnabled)
         XCTAssertTrue(defaultConfiguration.tracingEnabled)
+        XCTAssertTrue(defaultConfiguration.rumEnabled)
         XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertEqual(defaultConfiguration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
+        XCTAssertEqual(defaultConfiguration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertNil(defaultConfiguration.serviceName)
     }
 
@@ -26,11 +28,13 @@ class DatadogConfigurationTests: XCTestCase {
             .set(serviceName: "service-name")
             .enableLogging(false)
             .enableTracing(false)
+            .enableRUM(false)
             .build()
         XCTAssertEqual(configuration.clientToken, "abcd")
         XCTAssertEqual(configuration.environment, "tests")
         XCTAssertFalse(configuration.loggingEnabled)
         XCTAssertFalse(configuration.tracingEnabled)
+        XCTAssertFalse(configuration.rumEnabled)
         XCTAssertEqual(configuration.serviceName, "service-name")
     }
 
@@ -68,6 +72,23 @@ class DatadogConfigurationTests: XCTestCase {
             .set(tracesEndpoint: .custom(url: "https://api.example.com/v1/traces/"))
             .build()
         XCTAssertEqual(configuration.tracesEndpoint.url, "https://api.example.com/v1/traces/")
+    }
+
+    func testRUMEndpoints() {
+        var configuration = Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny())
+            .set(rumEndpoint: .us)
+            .build()
+        XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.com/v1/input/")
+
+        configuration = Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny())
+            .set(rumEndpoint: .eu)
+            .build()
+        XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.eu/v1/input/")
+
+        configuration = Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny())
+            .set(rumEndpoint: .custom(url: "https://api.example.com/v1/rum/"))
+            .build()
+        XCTAssertEqual(configuration.rumEndpoint.url, "https://api.example.com/v1/rum/")
     }
 }
 
@@ -187,10 +208,16 @@ class DatadogValidConfigurationTests: XCTestCase {
         func configurationWith(
             clientToken: String = "abc",
             logsEndpoint: Datadog.Configuration.LogsEndpoint = .us,
-            tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us
+            tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us,
+            rumEndpoint: Datadog.Configuration.RUMEndpoint = .us
         ) throws -> Configuration {
             return try Configuration(
-                configuration: .mockWith(clientToken: clientToken, logsEndpoint: logsEndpoint, tracesEndpoint: tracesEndpoint),
+                configuration: .mockWith(
+                    clientToken: clientToken,
+                    logsEndpoint: logsEndpoint,
+                    tracesEndpoint: tracesEndpoint,
+                    rumEndpoint: rumEndpoint
+                ),
                 appContext: .mockAny()
             )
         }
@@ -221,6 +248,18 @@ class DatadogValidConfigurationTests: XCTestCase {
             try configurationWith(clientToken: "abc", tracesEndpoint: .custom(url: "http://example.com/api")).tracesUploadURLWithClientToken,
             URL(string: "http://example.com/api/abc")!
         )
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", rumEndpoint: .us).rumUploadURLWithClientToken,
+            URL(string: "https://rum-http-intake.logs.datadoghq.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", rumEndpoint: .eu).rumUploadURLWithClientToken,
+            URL(string: "https://rum-http-intake.logs.datadoghq.eu/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", rumEndpoint: .custom(url: "http://example.com/api")).rumUploadURLWithClientToken,
+            URL(string: "http://example.com/api/abc")!
+        )
 
         // Invalid fixtures:
 
@@ -234,6 +273,12 @@ class DatadogValidConfigurationTests: XCTestCase {
             )
         }
         XCTAssertThrowsError(try configurationWith(tracesEndpoint: .custom(url: "not a valid url string"))) { error in
+            XCTAssertEqual(
+                (error as? ProgrammerError)?.description,
+                "🔥 Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
+            )
+        }
+        XCTAssertThrowsError(try configurationWith(rumEndpoint: .custom(url: "not a valid url string"))) { error in
             XCTAssertEqual(
                 (error as? ProgrammerError)?.description,
                 "🔥 Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."

@@ -16,7 +16,6 @@ extension TracingFeature {
             loggingFeatureAdapter: nil,
             mobileDevice: .mockAny(),
             httpClient: .mockAny(),
-            tracesUploadURLProvider: .mockAny(),
             dateProvider: SystemDateProvider(),
             tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
             userInfoProvider: .mockAny(),
@@ -45,7 +44,6 @@ extension TracingFeature {
                 return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
             }
         ),
-        tracesUploadURLProvider: UploadURLProvider = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -68,7 +66,6 @@ extension TracingFeature {
             loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
             mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
-            tracesUploadURLProvider: tracesUploadURLProvider,
             dateProvider: dateProvider,
             tracingUUIDGenerator: tracingUUIDGenerator,
             userInfoProvider: userInfoProvider,

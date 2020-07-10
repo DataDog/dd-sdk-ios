@@ -108,6 +108,7 @@ public class Datadog {
 
         var logging: LoggingFeature?
         var tracing: TracingFeature?
+        var rum: RUMFeature?
 
         if configuration.loggingEnabled {
             logging = LoggingFeature(
@@ -116,13 +117,6 @@ public class Datadog {
                 performance: performance,
                 mobileDevice: mobileDevice,
                 httpClient: httpClient,
-                logsUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .ddsource(),
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
                 dateProvider: dateProvider,
                 userInfoProvider: userInfoProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
@@ -138,12 +132,6 @@ public class Datadog {
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
                 mobileDevice: mobileDevice,
                 httpClient: httpClient,
-                tracesUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
                 dateProvider: dateProvider,
                 tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
                 userInfoProvider: userInfoProvider,
@@ -152,8 +140,24 @@ public class Datadog {
             )
         }
 
+        if configuration.rumEnabled {
+            rum = RUMFeature(
+                directory: try obtainRUMFeatureDirectory(),
+                configuration: validConfiguration,
+                performance: performance,
+                mobileDevice: mobileDevice,
+                httpClient: httpClient,
+                dateProvider: dateProvider,
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
+        }
+
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
+        RUMFeature.instance = rum
+
         TracingAutoInstrumentation.instance = TracingAutoInstrumentation(with: configuration)
         TracingAutoInstrumentation.instance?.apply()
 
@@ -180,6 +184,7 @@ public class Datadog {
         // Then, deinitialize features:
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
+        RUMFeature.instance = nil
         TracingAutoInstrumentation.instance = nil
 
         // Deinitialize `Datadog`:

@@ -80,7 +80,7 @@ internal final class TracingFeature {
             performance: PerformancePreset,
             mobileDevice: MobileDevice,
             httpClient: HTTPClient,
-            tracesUploadURLProvider: UploadURLProvider,
+            dateProvider: DateProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
             uploadQueue: DispatchQueue
         ) {
@@ -100,7 +100,12 @@ internal final class TracingFeature {
             )
 
             let dataUploader = DataUploader(
-                urlProvider: tracesUploadURLProvider,
+                urlProvider: UploadURLProvider(
+                    urlWithClientToken: configuration.tracesUploadURLWithClientToken,
+                    queryItemProviders: [
+                        .batchTime(using: dateProvider)
+                    ]
+                ),
                 httpClient: httpClient,
                 httpHeaders: httpHeaders
             )
@@ -125,7 +130,6 @@ internal final class TracingFeature {
         loggingFeatureAdapter: LoggingForTracingAdapter?,
         mobileDevice: MobileDevice,
         httpClient: HTTPClient,
-        tracesUploadURLProvider: UploadURLProvider,
         dateProvider: DateProvider,
         tracingUUIDGenerator: TracingUUIDGenerator,
         userInfoProvider: UserInfoProvider,
@@ -167,7 +171,7 @@ internal final class TracingFeature {
             performance: performance,
             mobileDevice: mobileDevice,
             httpClient: httpClient,
-            tracesUploadURLProvider: tracesUploadURLProvider,
+            dateProvider: dateProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             uploadQueue: uploadQueue
         )

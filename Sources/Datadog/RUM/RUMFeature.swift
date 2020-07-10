@@ -6,16 +6,16 @@
 
 import Foundation
 
-/// Obtains a subdirectory in `/Library/Caches` where log files are stored.
-internal func obtainLoggingFeatureDirectory() throws -> Directory {
-    return try Directory(withSubdirectoryPath: "com.datadoghq.logs/v1")
+/// Obtains a subdirectory in `/Library/Caches` for writting RUM events.
+internal func obtainRUMFeatureDirectory() throws -> Directory {
+    return try Directory(withSubdirectoryPath: "com.datadoghq.rum/v1")
 }
 
-/// Creates and owns componetns enabling logging feature.
-/// Bundles dependencies for other logging-related components created later at runtime  (i.e. `Logger`).
-internal final class LoggingFeature {
-    /// Single, shared instance of `LoggingFeature`.
-    internal static var instance: LoggingFeature?
+/// Creates and owns componetns enabling RUM feature.
+/// Bundles dependencies for other RUM-related components created later at runtime  (i.e. `RUMMonitor`).
+internal final class RUMFeature {
+    /// Single, shared instance of `RUMFeature`.
+    internal static var instance: RUMFeature?
 
     // MARK: - Configuration
 
@@ -30,20 +30,20 @@ internal final class LoggingFeature {
 
     // MARK: - Components
 
-    /// Log files storage.
+    /// RUM files storage.
     let storage: Storage
-    /// Logs upload worker.
+    /// RUM upload worker.
     let upload: Upload
 
-    /// Encapsulates  storage stack setup for `LoggingFeature`.
+    /// Encapsulates  storage stack setup for `RUMFeature`.
     class Storage {
-        /// Writes logs to files.
+        /// Writes RUM events to files.
         let writer: FileWriter
-        /// Reads logs from files.
+        /// Reads RUM events from files.
         let reader: FileReader
 
-        /// NOTE: any change to logs data format requires updating the logs directory url to be unique
-        static let dataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
+        /// NOTE: any change to logs data format requires updating the RUM directory url to be unique
+        static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
 
         init(
             directory: Directory,
@@ -62,9 +62,9 @@ internal final class LoggingFeature {
         }
     }
 
-    /// Encapsulates upload stack setup for `LoggingFeature`.
+    /// Encapsulates upload stack setup for `RUMFeature`.
     class Upload {
-        /// Uploads logs to server.
+        /// Uploads RUM events to server.
         let uploader: DataUploadWorker
 
         init(
@@ -79,7 +79,7 @@ internal final class LoggingFeature {
         ) {
             let httpHeaders = HTTPHeaders(
                 headers: [
-                    .contentTypeHeader(contentType: .applicationJSON),
+                    .contentTypeHeader(contentType: .textPlainUTF8),
                     .userAgentHeader(
                         appName: configuration.applicationName,
                         appVersion: configuration.applicationVersion,
@@ -94,10 +94,18 @@ internal final class LoggingFeature {
 
             let dataUploader = DataUploader(
                 urlProvider: UploadURLProvider(
-                    urlWithClientToken: configuration.logsUploadURLWithClientToken,
+                    urlWithClientToken: configuration.rumUploadURLWithClientToken,
                     queryItemProviders: [
                         .ddsource(),
-                        .batchTime(using: dateProvider)
+                        .batchTime(using: dateProvider),
+                        .ddtags(
+                            tags: [
+                                "service:\(configuration.serviceName)",
+                                "version:\(configuration.applicationVersion)",
+                                "sdk_version:\(sdkVersion)",
+                                "env:\(configuration.environment)"
+                            ]
+                        )
                     ]
                 ),
                 httpClient: httpClient,
@@ -110,7 +118,7 @@ internal final class LoggingFeature {
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
                 delay: DataUploadDelay(performance: performance),
-                featureName: "logging"
+                featureName: "RUM"
             )
         }
     }
@@ -139,7 +147,7 @@ internal final class LoggingFeature {
 
         // Initialize components
         let readWriteQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-logs-read-write",
+            label: "com.datadoghq.ios-sdk-rum-read-write",
             target: .global(qos: .utility)
         )
         self.storage = Storage(
@@ -150,7 +158,7 @@ internal final class LoggingFeature {
         )
 
         let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-logs-upload",
+            label: "com.datadoghq.ios-sdk-rum-upload",
             target: .global(qos: .utility)
         )
         self.upload = Upload(
