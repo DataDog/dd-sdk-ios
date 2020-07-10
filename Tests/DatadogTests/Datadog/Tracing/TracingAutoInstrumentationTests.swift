@@ -22,7 +22,14 @@ class TracingAutoInstrumentationTests: XCTestCase {
         let autoInstrumentation = TracingAutoInstrumentation(with: config)
 
         let urlFilter = try XCTUnwrap(autoInstrumentation?.urlFilter as? URLFilter)
-        let expectedURLFilter = URLFilter(includedHosts: [String.mockAny()], excludedURLs: [config.logsEndpoint.url, config.tracesEndpoint.url])
+        let expectedURLFilter = URLFilter(
+            includedHosts: [String.mockAny()],
+            excludedURLs: [
+                config.logsEndpoint.url,
+                config.tracesEndpoint.url,
+                config.rumEndpoint.url
+            ]
+        )
 
         XCTAssertEqual(urlFilter, expectedURLFilter)
     }
