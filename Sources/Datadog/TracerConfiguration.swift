@@ -18,15 +18,20 @@ extension Tracer {
         /// - Parameter enabled: `false` by default
         public var sendNetworkInfo: Bool
 
+        /// Tags that will be added to all new spans created by the tracer
+        public var globalTags: [String: Encodable]?
+
         /// Initializes the Datadog Tracer configuration.
         /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
         /// - Parameter sendNetworkInfo: adds network connection info to every span and span logs (`false` by default).
         public init(
             serviceName: String? = nil,
-            sendNetworkInfo: Bool = false
+            sendNetworkInfo: Bool = false,
+            globalTags: [String: Encodable]? = nil
         ) {
             self.serviceName = serviceName
             self.sendNetworkInfo = sendNetworkInfo
+            self.globalTags = globalTags
         }
     }
 }
