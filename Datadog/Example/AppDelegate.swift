@@ -38,7 +38,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Create logger instance
         logger = Logger.builder
-            .set(serviceName: appConfig.serviceName)
             .set(loggerName: "logger-name")
             .sendNetworkInfo(true)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
@@ -47,7 +46,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Register global tracer
         Global.sharedTracer = Tracer.initialize(
             configuration: Tracer.Configuration(
-                serviceName: appConfig.serviceName,
                 sendNetworkInfo: true
             )
         )

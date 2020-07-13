@@ -8,8 +8,10 @@ import Foundation
 import Datadog
 
 protocol AppConfig {
-    /// Service name used for logs and traces.
+    /// Example app's service name.
     var serviceName: String { get }
+    /// RUM application id.
+    var rumApplicationID: String { get }
     /// SDK configuration
     var datadogConfiguration: Datadog.Configuration { get }
     /// Endpoints for arbitrary network requests
@@ -20,6 +22,8 @@ protocol AppConfig {
 struct ExampleAppConfig: AppConfig {
     /// Service name used for logs and traces.
     let serviceName = "ios-sdk-example-app"
+    /// RUM application ID obtained on datadohq.com
+    let rumApplicationID: String
     /// Configuration for uploading logs to Datadog servers
     let datadogConfiguration: Datadog.Configuration
 
@@ -41,8 +45,19 @@ struct ExampleAppConfig: AppConfig {
             """)
         }
 
+        guard let rumApplicationID = Bundle.main.infoDictionary!["RUMApplicationID"] as? String, !clientToken.isEmpty else {
+            fatalError("""
+            ✋⛔️ Cannot read `RUM_APPLICATION_ID` from `Info.plist` dictionary.
+            Please update `Datadog.xcconfig` in the repository root with your own
+            RUM application id obtained on datadoghq.com.
+            You might need to run `Product > Clean Build Folder` before retrying.
+            """)
+        }
+
+        self.rumApplicationID = rumApplicationID
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: clientToken, environment: "tests")
+            .set(serviceName: serviceName)
             .set(tracedHosts: [arbitraryNetworkURL.host!, "foo.bar"])
             .build()
     }
@@ -51,6 +66,8 @@ struct ExampleAppConfig: AppConfig {
 struct UITestAppConfig: AppConfig {
     /// Mocked service name for UITests
     let serviceName = "ui-tests-service-name"
+    /// Mocked RUM application ID
+    let rumApplicationID: String = "rum-application-id"
     /// Configuration for uploading logs to mock servers
     let datadogConfiguration: Datadog.Configuration
     let arbitraryNetworkURL: URL
@@ -63,6 +80,7 @@ struct UITestAppConfig: AppConfig {
         let tracedhost = URL(string: sourceEndpoint)!.host!
         self.datadogConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
+            .set(serviceName: serviceName)
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
             .set(tracedHosts: [tracedhost, "foo.bar"])
