@@ -87,14 +87,10 @@ class RUMFeatureTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        // TODO: RUMM-585 Replace with real data created by `RUMMonitor`
-        struct DummyRUMMEvent: Codable {
-            let someAttribute = "foo"
-        }
         let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
-        fileWriter.write(value: DummyRUMMEvent()) // 1st event
-        fileWriter.write(value: DummyRUMMEvent()) // 2nd event
-        fileWriter.write(value: DummyRUMMEvent()) // 3rd event
+        fileWriter.write(value: RUMDataModelMock(attribute: "1st event"))
+        fileWriter.write(value: RUMDataModelMock(attribute: "2nd event"))
+        fileWriter.write(value: RUMDataModelMock(attribute: "3rd event"))
 
         let payload = server.waitAndReturnRequests(count: 1)[0].httpBody!
 
@@ -105,15 +101,9 @@ class RUMFeatureTests: XCTestCase {
         // event3JSON
         // ```
 
-        // Expect payload to be 3 newline-separated JSONs
-        // TODO: RUMM-585 Use RUMEventMatcher: let rumEventMatchers = try RUMeventMacher.fromNewlineSeparatedJSONObjectsData(payload)
-        // Split payload by `\n`
-        let jsonObjectsData = payload.split(separator: 10) // 10 stands for `\n` in ASCII
-        XCTAssertEqual(jsonObjectsData.count, 3)
-        let jsonDecoder = JSONDecoder()
-        // Ensure each line of data is a valid JSON string
-        XCTAssertNoThrow(try jsonDecoder.decode(DummyRUMMEvent.self, from: jsonObjectsData[0]))
-        XCTAssertNoThrow(try jsonDecoder.decode(DummyRUMMEvent.self, from: jsonObjectsData[1]))
-        XCTAssertNoThrow(try jsonDecoder.decode(DummyRUMMEvent.self, from: jsonObjectsData[2]))
+        let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
+        XCTAssertEqual((try eventMatchers[0].model() as RUMDataModelMock).attribute, "1st event")
+        XCTAssertEqual((try eventMatchers[1].model() as RUMDataModelMock).attribute, "2nd event")
+        XCTAssertEqual((try eventMatchers[2].model() as RUMDataModelMock).attribute, "3rd event")
     }
 }

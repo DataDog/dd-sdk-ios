@@ -12,8 +12,25 @@ import Foundation
 internal class RUMEventMatcher {
     // MARK: - Initialization
 
+    /// Returns "RUM event" matcher for data representing JSON string:
     class func fromJSONObjectData(_ data: Data) throws -> RUMEventMatcher {
         return try RUMEventMatcher(with: data)
+    }
+
+    /// Returns array containing RUM event A, RUM event B RUM event Span C matchers for data representing string:
+    ///
+    ///     ```
+    ///     { /* RUM event A json */ }
+    ///     { /* RUM event B json */ }
+    ///     { /* RUM event C json */ }
+    ///     ```
+    ///
+    /// **See Also** `RUMEventMatcher.fromJSONObjectData(_:)`
+    ///
+    class func fromNewlineSeparatedJSONObjectsData(_ data: Data) throws -> [RUMEventMatcher] {
+        let separator = "\n".data(using: .utf8)![0]
+        let spansData = data.split(separator: separator).map { Data($0) }
+        return try spansData.map { spanJSONData in try RUMEventMatcher.fromJSONObjectData(spanJSONData) }
     }
 
     private let jsonMatcher: JSONDataMatcher
