@@ -49,3 +49,29 @@ extension RUMFeature {
         )
     }
 }
+
+// MARK: - RUM Event Mocks
+
+struct RUMDataModelMock: RUMDataModel, Equatable {
+    let attribute: String
+}
+
+// MARK: - Component Mocks
+
+extension RUMEventBuilder {
+    static func mockAny() -> RUMEventBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> RUMEventBuilder {
+        return RUMEventBuilder(
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+}

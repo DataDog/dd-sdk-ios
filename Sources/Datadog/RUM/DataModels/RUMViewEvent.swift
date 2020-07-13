@@ -7,7 +7,9 @@
 import Foundation
 
 // TODO: RUMM-517 Replace with auto-generated RUM data model
-internal struct RUMViewEvent: Encodable {
+internal struct RUMViewEvent: Codable, RUMDataModel {
+    typealias DataModelCodingKeys = CodingKeys
+
     enum CodingKeys: String, CodingKey {
         case date
         case application
@@ -24,16 +26,16 @@ internal struct RUMViewEvent: Encodable {
     let view: View
     let dd: DD
 
-    struct Application: Encodable {
+    struct Application: Codable {
         let id: String
     }
 
-    struct Session: Encodable {
+    struct Session: Codable {
         let id: String
         let type: String
     }
 
-    struct View: Encodable {
+    struct View: Codable {
         enum CodingKeys: String, CodingKey {
             case id
             case url
@@ -50,18 +52,18 @@ internal struct RUMViewEvent: Encodable {
         let error: Error
         let resource: Resource
 
-        struct Action: Encodable {
+        struct Action: Codable {
             let count: UInt
         }
-        struct Error: Encodable {
+        struct Error: Codable {
             let count: UInt
         }
-        struct Resource: Encodable {
+        struct Resource: Codable {
             let count: UInt
         }
     }
 
-    struct DD: Encodable {
+    struct DD: Codable {
         enum CodingKeys: String, CodingKey {
             case documentVersion = "document_version"
             case formatVersion  = "format_version"
