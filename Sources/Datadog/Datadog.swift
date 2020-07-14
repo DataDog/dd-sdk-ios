@@ -161,6 +161,9 @@ public class Datadog {
         TracingAutoInstrumentation.instance = TracingAutoInstrumentation(with: configuration)
         TracingAutoInstrumentation.instance?.apply()
 
+        UIViewControllerAutoInstrumentation.instance = UIViewControllerAutoInstrumentation(with: configuration)
+        UIViewControllerAutoInstrumentation.instance?.apply()
+
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(
             userInfoProvider: userInfoProvider

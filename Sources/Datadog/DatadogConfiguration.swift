@@ -74,6 +74,15 @@ extension Datadog {
             }
         }
 
+        public enum ViewControllerInstrumentationMode {
+            /// No View Controller instrumentation
+            case off
+            /// Automatic viewcontroller instrumentation, all view controllers are logged, name is automatically set
+            case automatic
+            /// Only view controller implementing Instrumentable protocol will be logged, name can be defined by user
+            case userdefined
+        }
+
         internal let clientToken: String
         internal let environment: String
         internal var loggingEnabled: Bool
@@ -84,6 +93,7 @@ extension Datadog {
         internal var rumEndpoint: RUMEndpoint
         internal let serviceName: String?
         internal var tracedHosts = Set<String>()
+        internal var vcInstrumentationMode: ViewControllerInstrumentationMode
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -112,6 +122,7 @@ extension Datadog {
             internal var rumEndpoint: RUMEndpoint = .us
             internal var serviceName: String? = nil
             internal var tracedHosts = Set<String>()
+            internal var vcInstrumentationMode: ViewControllerInstrumentationMode = .off
 
             internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
@@ -223,7 +234,8 @@ extension Datadog {
                     tracesEndpoint: tracesEndpoint,
                     rumEndpoint: rumEndpoint,
                     serviceName: serviceName,
-                    tracedHosts: tracedHosts
+                    tracedHosts: tracedHosts,
+                    vcInstrumentationMode: vcInstrumentationMode
                 )
             }
         }
