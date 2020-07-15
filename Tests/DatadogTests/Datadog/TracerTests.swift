@@ -127,7 +127,7 @@ class TracerTests: XCTestCase {
         )
 
         let span = tracer.startSpan(operationName: .mockAny())
-        span.setTag(key:"globaltag2", value: "overwrittenValue" )
+        span.setTag(key: "globaltag2", value: "overwrittenValue" )
         span.finish()
 
         let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]

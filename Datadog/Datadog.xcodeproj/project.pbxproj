@@ -80,7 +80,6 @@
 		61133C6D2423990D00786299 /* TestsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C462423990D00786299 /* TestsDirectory.swift */; };
 		61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C472423990D00786299 /* DatadogExtensions.swift */; };
 		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
-		61133C712423993200786299 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
 		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
 		612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612983CC2449E62E00D4424B /* LoggingFeature.swift */; };
@@ -196,10 +195,10 @@
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9EB47B92247443FA004F90BE /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */; };
 		9ED583A32498C222004CFF2A /* TracingAutoInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ED583A22498C222004CFF2A /* TracingAutoInstrumentation.swift */; };
-		E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5AEA624B4D45A007F194B /* Versioning.swift */; };
+		9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* URLFilter.swift */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
-		9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* URLFilter.swift */; };
+		E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5AEA624B4D45A007F194B /* Versioning.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -241,17 +240,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		61133C742423993200786299 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				61133C712423993200786299 /* Datadog.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		61441C5124619499003D8BB8 /* ⚙️ Embed Framework Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -403,7 +391,6 @@
 		61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogPrivateMocks.swift; sourceTree = "<group>"; };
 		61C3638424361E9200C4D4E6 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		61C3646F243B5C8300C4D4E6 /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
-		61C5A8732450989E00DA608C /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = ../Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
 		61C5A87824509A0C00DA608C /* DDSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpan.swift; sourceTree = "<group>"; };
 		61C5A87924509A0C00DA608C /* DDNoOps.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDNoOps.swift; sourceTree = "<group>"; };
 		61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TracingUUIDGenerator.swift; sourceTree = "<group>"; };
@@ -463,10 +450,10 @@
 		9ED583A22498C222004CFF2A /* TracingAutoInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingAutoInstrumentation.swift; sourceTree = "<group>"; };
 		9EF49F1624476FBD004F2CA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
-		E1D5AEA624B4D45A007F194B /* Versioning.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Versioning.swift; sourceTree = "<group>"; };
+		9EFD112B24B32D29003A1A2B /* URLFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLFilter.swift; sourceTree = "<group>"; };
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
-		9EFD112B24B32D29003A1A2B /* URLFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLFilter.swift; sourceTree = "<group>"; };
+		E1D5AEA624B4D45A007F194B /* Versioning.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Versioning.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -931,7 +918,6 @@
 		61133C6F2423993200786299 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				61C5A8732450989E00DA608C /* OpenTracing.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1372,7 +1358,6 @@
 				61133BEC242397DA00786299 /* Sources */,
 				61133BED242397DA00786299 /* Frameworks */,
 				61133BEE242397DA00786299 /* Resources */,
-				61133C742423993200786299 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
