@@ -17,8 +17,7 @@ let package = Package(
             type: .dynamic,
             targets: ["DatadogObjc"]),
     ],
-    dependencies: [
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: "Datadog",

@@ -22,8 +22,8 @@ class PerformancePresetTests: XCTestCase {
 
         presets.forEach { preset in
             XCTAssertLessThan(
-                preset.maxBatchSize,
-                preset.maxSizeOfLogsDirectory,
+                preset.maxFileSize,
+                preset.maxDirectorySize,
                 "Size of individual file must not exceed the directory size limit."
             )
             XCTAssertLessThan(
@@ -37,22 +37,22 @@ class PerformancePresetTests: XCTestCase {
                 "File read boundaries must be consistent."
             )
             XCTAssertGreaterThan(
-                preset.maxLogsUploadDelay,
-                preset.minLogsUploadDelay,
+                preset.maxUploadDelay,
+                preset.minUploadDelay,
                 "Upload delay boundaries must be consistent."
             )
             XCTAssertGreaterThan(
-                preset.maxLogsUploadDelay,
-                preset.minLogsUploadDelay,
+                preset.maxUploadDelay,
+                preset.minUploadDelay,
                 "Upload delay boundaries must be consistent."
             )
             XCTAssertLessThanOrEqual(
-                preset.logsUploadDelayDecreaseFactor,
+                preset.uploadDelayDecreaseFactor,
                 1,
                 "Upload delay should not be increased towards infinity."
             )
             XCTAssertGreaterThan(
-                preset.logsUploadDelayDecreaseFactor,
+                preset.uploadDelayDecreaseFactor,
                 0,
                 "Upload delay must never result with 0."
             )

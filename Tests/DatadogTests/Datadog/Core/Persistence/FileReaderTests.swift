@@ -22,12 +22,17 @@ class FileReaderTests: XCTestCase {
 
     func testItReadsSingleBatch() throws {
         let reader = FileReader(
-            orchestrator: .mockReadAllFiles(in: temporaryDirectory),
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: StoragePerformanceMock.readAllFiles,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
         _ = try temporaryDirectory
-            .createFile(named: .mockAnyFileName())
-            .append { write in try write("ABCD".utf8Data) }
+            .createFile(named: Date.mockAny().toFileName)
+            .append(data: "ABCD".utf8Data)
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let batch = reader.readNextBatch()
@@ -38,22 +43,22 @@ class FileReaderTests: XCTestCase {
     func testItMarksBatchesAsRead() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 60)
         let reader = FileReader(
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: WritableFileConditions(performance: .mockUnitTestsPerformancePreset()),
-                readConditions: ReadableFileConditions(performance: .mockUnitTestsPerformancePreset()),
+                performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: dateProvider
             ),
             queue: queue
         )
         let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file1.append { write in try write("1".utf8Data) }
+        try file1.append(data: "1".utf8Data)
 
         let file2 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file2.append { write in try write("2".utf8Data) }
+        try file2.append(data: "2".utf8Data)
 
         let file3 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file3.append { write in try write("3".utf8Data) }
+        try file3.append(data: "3".utf8Data)
 
         var batch: Batch
         batch = try reader.readNextBatch().unwrapOrThrow()

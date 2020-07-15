@@ -1,0 +1,140 @@
+public class Datadog
+ public struct AppContext
+  public init(mainBundle: Bundle = Bundle.main)
+ public static func initialize(appContext: AppContext, configuration: Configuration)
+ public static var verbosityLevel: LogLevel? = nil
+ public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil)
+ public struct Configuration
+  public enum LogsEndpoint
+   case us
+   case eu
+   case custom(url: String)
+  public enum TracesEndpoint
+   case us
+   case eu
+   case custom(url: String)
+  public static func builderUsing(clientToken: String, environment: String) -> Builder
+  public class Builder
+   public func enableLogging(_ enabled: Bool) -> Builder
+   public func enableTracing(_ enabled: Bool) -> Builder
+   public func set(tracedHosts: Set<String>) -> Builder
+   public func set(logsEndpoint: LogsEndpoint) -> Builder
+   public func set(tracesEndpoint: TracesEndpoint) -> Builder
+   public func set(serviceName: String) -> Builder
+   public func build() -> Configuration
+public enum LogLevel: Int, Codable
+ case debug
+ case info
+ case notice
+ case warn
+ case error
+ case critical
+public typealias AttributeKey = String
+public typealias AttributeValue = Encodable
+public typealias DDLogger = Logger
+public class Logger
+ public func debug(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func info(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func notice(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func warn(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func error(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func critical(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+ public func removeAttribute(forKey key: AttributeKey)
+ public func addTag(withKey key: String, value: String)
+ public func removeTag(withKey key: String)
+ public func add(tag: String)
+ public func remove(tag: String)
+ public static var builder: Builder
+ public class Builder
+  public func set(serviceName: String) -> Builder
+  public func set(loggerName: String) -> Builder
+  public func sendNetworkInfo(_ enabled: Bool) -> Builder
+  public func sendLogsToDatadog(_ enabled: Bool) -> Builder
+  public enum ConsoleLogFormat
+   case short
+   case shortWith(prefix: String)
+   case json
+   case jsonWith(prefix: String)
+  public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder
+  public func build() -> Logger
+public struct OTTags
+ public static let component = "component"
+ public static let dbInstance = "db.instance"
+ public static let dbStatement = "db.statement"
+ public static let dbType = "db.type"
+ public static let dbUser = "db.user"
+ public static let error = "error"
+ public static let httpMethod = "http.method"
+ public static let httpStatusCode = "http.status_code"
+ public static let httpUrl = "http.url"
+ public static let messageBusDestination = "message_bus.destination"
+ public static let peerAddress = "peer.address"
+ public static let peerHostname = "peer.hostname"
+ public static let peerIPv4 = "peer.ipv4"
+ public static let peerIPv6 = "peer.ipv6"
+ public static let peerPort = "peer.port"
+ public static let peerService = "peer.service"
+ public static let samplingPriority = "sampling.priority"
+ public static let spanKind = "span.kind"
+public struct OTLogFields
+ public static let errorKind = "error.kind"
+ public static let event = "event"
+ public static let message = "message"
+ public static let stack = "stack"
+public protocol OTFormatReader: OTCustomFormatReader
+public protocol OTFormatWriter: OTCustomFormatWriter
+public protocol OTTextMapReader: OTFormatReader
+public protocol OTTextMapWriter: OTFormatWriter
+public protocol OTHTTPHeadersReader: OTTextMapReader
+public protocol OTHTTPHeadersWriter: OTTextMapWriter
+public protocol OTCustomFormatReader
+ func extract() -> OTSpanContext?
+public protocol OTCustomFormatWriter
+ func inject(spanContext: OTSpanContext)
+public struct Global
+ public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
+public struct OTReference
+ public let type: OTReferenceType
+ public let context: OTSpanContext
+ public static func child(of parent: OTSpanContext) -> OTReference
+ public static func follows(from precedingContext: OTSpanContext) -> OTReference
+public enum OTReferenceType: String
+ case childOf = "CHILD_OF"
+ case followsFrom = "FOLLOWS_FROM"
+public protocol OTSpan
+ var context: OTSpanContext
+ func tracer() -> OTTracer
+ func setOperationName(_ operationName: String)
+ func setTag(key: String, value: Encodable)
+ func log(fields: [String: Encodable], timestamp: Date)
+ func setBaggageItem(key: String, value: String)
+ func baggageItem(withKey key: String) -> String?
+ func finish(at time: Date)
+public extension OTSpan
+ func log(fields: [String: Encodable])
+ func finish()
+public protocol OTSpanContext
+ func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
+public protocol OTTracer
+ func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+ func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
+ func extract(reader: OTFormatReader) -> OTSpanContext?
+public extension OTTracer
+ func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+public struct DDTags
+ public static let resource = "resource.name"
+public typealias DDTracer = Tracer
+public class Tracer: OTTracer
+ public static func initialize(configuration: Configuration) -> OTTracer
+ public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan
+ public func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
+ public func extract(reader: OTFormatReader) -> OTSpanContext?
+ public struct Configuration
+  public var serviceName: String?
+  public var sendNetworkInfo: Bool
+  public init(serviceName: String? = nil,sendNetworkInfo: Bool = false)
+public class HTTPHeadersWriter: OTHTTPHeadersWriter
+ public init()
+ public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
+ public func inject(spanContext: OTSpanContext)

@@ -73,9 +73,7 @@ class DirectoryTests: XCTestCase {
 
         let files = try directory.files()
         XCTAssertEqual(files.count, 3)
-        XCTAssertTrue(files.contains { file in file.url == directory.url.appendingPathComponent("f1") })
-        XCTAssertTrue(files.contains { file in file.url == directory.url.appendingPathComponent("f2") })
-        XCTAssertTrue(files.contains { file in file.url == directory.url.appendingPathComponent("f3") })
+        files.forEach { file in XCTAssertTrue(file.url.relativePath.contains(directory.url.relativePath)) }
         files.forEach { file in XCTAssertTrue(fileManager.fileExists(atPath: file.url.path)) }
     }
 }

@@ -9,13 +9,13 @@ To propose improvements, feel free to submit a PR or open an Issue.
 
 Many great ideas for new features come from the community, and we'd be happy to consider yours 👍.
 
-To share your idea or request, [open a GitHub Issue](https://github.com/DataDog/dd-sdk-ios/issues/new) using dedicated issue template.
+To share your idea or request, [open a GitHub Issue](https://github.com/DataDog/dd-sdk-ios/issues/new/choose) using dedicated issue template.
 
 ## Found a bug?
 
 For any urgent matters (such as outages) or issues concerning the Datadog service or UI, contact our support team via https://docs.datadoghq.com/help/ for direct, faster assistance.
 
-You may submit a bug report concerning the Datadog SDK for iOS by [opening a GitHub Issue](https://github.com/DataDog/dd-sdk-ios/issues/new). Use dedicated bug-issue template and provide all listed details to let us solve it better.
+You may submit a bug report concerning the Datadog SDK for iOS by [opening a GitHub Issue](https://github.com/DataDog/dd-sdk-ios/issues/new/choose). Use appropriate template and provide all listed details to help us resolve the issue.
 
 ## Have a patch?
 
@@ -40,11 +40,9 @@ $ make
 
 ### Repo structure
 
-#### Datadog
+#### `Datadog.xcworkspace`
 
-1. Datadog.xcodeproj
-2. DatadogPrivate _(can be moved to `Sources`)_
-  * ObjC -> Swift bridge module
+The workspace for SDK development and integration (tests, benchmarks, example app).
 
 #### Sources
 
@@ -52,12 +50,8 @@ $ make
 
 #### Tests
 
-`DatadogTests` (unit tests) and `DatadogIntegrationTests` source files
+`DatadogTests` (unit tests), `DatadogIntegrationTests` (integration tests), and `DatadogBenchmarkTests` (benchmarks) source files
 
 #### Dependency manager tests
 
 Isolated example apps using `cocoapods`, `carthage` and `spm` to ensure SDK is well integrated with all supported dependency managers.
-  
-#### Examples (to be removed)
-
-Example apps for different package managers

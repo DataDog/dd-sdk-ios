@@ -3,9 +3,9 @@
 Send logs to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side logging library][1] and leverage the following features:
 
 * Log to Datadog in JSON format natively.
-* Add `context` and extra custom attributes to each log sent.
+* Use default and add custom attributes to each log sent.
 * Record real client IP addresses and User-Agents.
-* Optimized network usage with automatic bulk posts.
+* Leverage optimized network usage with automatic bulk posts.
 
 **Note**: The `dd-sdk-ios` library supports all iOS versions 11+.
 
@@ -53,7 +53,8 @@ github "DataDog/dd-sdk-ios"
 Datadog.initialize(
     appContext: .init(),
     configuration: Datadog.Configuration
-        .builderUsing(clientToken: config.clientToken)
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
         .build()
 )
 ```
@@ -65,7 +66,8 @@ Datadog.initialize(
 Datadog.initialize(
     appContext: .init(),
     configuration: Datadog.Configuration
-        .builderUsing(clientToken: config.clientToken)
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
         .set(logsEndpoint: .eu)
         .build()
 )
@@ -74,17 +76,17 @@ Datadog.initialize(
     {{% /tab %}}
     {{< /tabs >}}
 
-     When writing your application, you can enable development logs. All internal messages in the library with a priority equal to or higher than the provided level are then logged to console logs.
+     When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
 
     ```swift
     Datadog.verbosityLevel = .debug
     ```
 
-3. Configure the iOS Logger:
+3. Configure the `Logger`:
 
     ```swift
     logger = Logger.builder
-        .set(serviceName: "ios-sdk-example-app")
+        .sendNetworkInfo(true)
         .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
         .build()
     ```
@@ -114,11 +116,11 @@ The following methods in `Logger.Builder` can be used when initializing the logg
 
 | Method                           | Description                                                                                                                                                                                                                         |
 |----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sendNetworkInfo(_ enabled: true)`    | Add `network.client.connectivity` attribute to all logs. The data logged by default is `reachability` (`yes`, `no`, `maybe`...), `available_interfaces` (`wifi`, `cellular`...), `sim_carrier` (`AT&T - US`), `sim_carrier.technology` (`3G`, `LTE`) and `sim_carrier.iso_country` (`US`). |
-| `set(serviceName: <SERVICE_NAME>)` | Set `<SERVICE_NAME>` as the value for the `service` [standard attribute][4] attached to all logs sent to Datadog.                                                                                                                        |
-| `printLogsToConsole(_ enabled: true, usingFormat format: ConsoleLogFormat = .short)`     | Set to `true` to send logs to the debugger console.                                                                                                                                                                                         |
-| `sendLogsToDatadog(_ enabled: true)`    | Set to `true` to send logs to Datadog.                                                                                                                                                                                              |
-| `set(loggerName: <LOGGER_NAME>)`   | Set `<LOGGER_NAME>` as the value for the `logger.name` attribute attached to all logs sent to Datadog.                                                                                                                                   |
+| `sendNetworkInfo(true)`    | Add `network.client.*` attributes to all logs. The data logged by default is: `reachability` (`yes`, `no`, `maybe`), `available_interfaces` (`wifi`, `cellular`, ...), `sim_carrier.name` (e.x. `AT&T - US`), `sim_carrier.technology` (`3G`, `LTE`, ...) and `sim_carrier.iso_country` (e.x. `US`). |
+| `set(serviceName: "<SERVICE_NAME>")` | Set `<SERVICE_NAME>` as the value for the `service` [standard attribute][4] attached to all logs sent to Datadog.                                                                                                                        |
+| `printLogsToConsole(true)`     | Set to `true` to send logs to the debugger console.                                                                                                                                                                                         |
+| `sendLogsToDatadog(true)`    | Set to `true` to send logs to Datadog.                                                                                                                                                                                              |
+| `set(loggerName: "<LOGGER_NAME>")`   | Set `<LOGGER_NAME>` as the value for the `logger.name` attribute attached to all logs sent to Datadog.                                                                                                                                   |
 | `build()`                        | Build a new logger instance with all options set.                                                                                                                                                                                   |
 
 ### Global configuration
@@ -129,22 +131,22 @@ Find below methods to add/remove tags and attributes to all logs sent by a given
 
 ##### Add Tags
 
-Use the `addTag(withKey: "<TAG_KEY>", value: "<TAG_VALUE>")` method to add tags to all logs sent by a specific logger:
+Use the `addTag(withKey:value:)` method to add tags to all logs sent by a specific logger:
 
 ```swift
 // This adds a tag "build_configuration:debug"
 logger.addTag(withKey: "build_configuration", value: "debug")
 ```
 
-**Note**: `<TAG_VALUE>` must be a String.
+**Note**: `<TAG_VALUE>` must be a `String`.
 
 ##### Remove Tags
 
-Use the `removeTag(withKey key: "<TAG_KEY>")` method to remove tags from all logs sent by a specific logger:
+Use the `removeTag(withKey:)` method to remove tags from all logs sent by a specific logger:
 
 ```swift
 // This removes any tag starting with "build_configuration"
-logger.removeTag(withKey key: "build_configuration")
+logger.removeTag(withKey: "build_configuration")
 ```
 
 [Learn more about Datadog tags][5].
@@ -159,24 +161,25 @@ By default, the following attributes are added to all logs sent by a logger:
 * `network.client.ip` and its extracted geographical properties (`country`, `city`)
 * `logger.version`, Datadog SDK version
 * `logger.thread_name`, (`main`, `background`)
-* `application.version`, client's app version extracted from `Info.plist`
+* `version`, client's app version extracted from `Info.plist`
+* `environment`, the environment name used to initialize the SDK
 
-Use the `addAttribute(forKey key: "<ATTRIBUTE_KEY>", value: "<ATTRIBUTE_VALUE>")` method to add a custom attribute to all logs sent by a specific logger:
+Use the `addAttribute(forKey:value:)` method to add a custom attribute to all logs sent by a specific logger:
 
 ```swift
 // This adds an attribute "device-model" with a string value
 logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
 ```
 
-**Note**: `<ATTRIBUTE_VALUE>` can be anything conforming to `Encodable` (String, Date, custom `Codable` data model, ...).
+**Note**: `<ATTRIBUTE_VALUE>` can be anything conforming to `Encodable` (`String`, `Date`, custom `Codable` data model, ...).
 
 ##### Remove attributes
 
-Use the `removeAttribute(forKey key: "<ATTRIBUTE_KEY>")` method to remove a custom attribute from all logs sent by a specific logger:
+Use the `removeAttribute(forKey:)` method to remove a custom attribute from all logs sent by a specific logger:
 
 ```swift
 // This removes the attribute "device-model" from all further log send.
-logger.removeAttribute("device-model")
+logger.removeAttribute(forKey: "device-model")
 
 ```
 

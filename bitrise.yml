@@ -12,8 +12,8 @@ workflows:
     - _make_dependencies
     - run_linter
     - run_unit_tests
-    - run_ui_tests
     - run_integration_tests
+    - run_ui_tests
     - check_dependency_managers
     - _deploy_artifacts
 
@@ -39,14 +39,14 @@ workflows:
     description: |-
         Runs swiftlint and license check for all source and test files.
     steps:
-    - swiftlint@0.4.2:
+    - swiftlint@0.7.0:
         title: Lint Sources/*
         inputs:
         - strict: 'yes'
         - lint_config_file: "$BITRISE_SOURCE_DIR/tools/lint/sources.swiftlint.yml"
         - linting_path: "$BITRISE_SOURCE_DIR"
         - reporter: emoji
-    - swiftlint@0.4.2:
+    - swiftlint@0.7.0:
         title: Lint Tests/*
         is_always_run: true
         inputs:
@@ -66,6 +66,7 @@ workflows:
   run_unit_tests:
     description: |-
         Runs unit tests for SDK on iOS Simulator.
+        Runs benchmarks for SDK on iOS Simulator.
         Runs unit tests for HTTPServerMock package on macOS.
     steps:
     - xcode-test@2.4.5:
@@ -77,6 +78,16 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
+    - xcode-test:
+        title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
+        inputs:
+        - scheme: DatadogBenchmarkTests
+        - simulator_device: iPhone 11
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
     - script@1.1.6:
         title: Generate HTTPServerMock.xcodeproj
         inputs:
@@ -101,7 +112,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            cd Shopist && make
+            echo 'DATADOG_CLIENT_TOKEN="fake-client-token-for-shopist"' > xcconfigs/Datadog.local.xcconfig
     - xcode-test@2.4.5:
         title: Run UI tests for Shopist - iOS Simulator
         inputs:
@@ -125,6 +136,7 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Integration-tests.html"
+
   check_dependency_managers:
     description: |-
         Uses supported dependency managers to fetch, install and link the SDK

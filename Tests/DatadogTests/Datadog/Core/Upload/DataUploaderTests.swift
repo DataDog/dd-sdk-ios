@@ -8,12 +8,40 @@ import XCTest
 @testable import Datadog
 
 class DataUploadURLProviderTests: XCTestCase {
-    func testItBuildsValidURL() throws {
+    func testDDSourceQueryItem() {
+        let item: UploadURLProvider.QueryItemProvider = .ddsource()
+
+        XCTAssertEqual(item.value().name, "ddsource")
+        XCTAssertEqual(item.value().value, "ios")
+    }
+
+    func testBatchTimeQueryItem() {
+        let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
+        let item: UploadURLProvider.QueryItemProvider = .batchTime(using: dateProvider)
+
+        XCTAssertEqual(item.value().name, "batch_time")
+        XCTAssertEqual(item.value().value, "1576404000000")
+        dateProvider.advance(bySeconds: 9.999)
+        XCTAssertEqual(item.value().name, "batch_time")
+        XCTAssertEqual(item.value().value, "1576404009999")
+    }
+
+    func testItBuildsValidURLUsingNoQueryItems() throws {
+        let urlProvider = UploadURLProvider(
+            urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
+            queryItemProviders: []
+        )
+
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?"))
+    }
+
+    func testItBuildsValidURLUsingAllQueryItems() throws {
         let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
-            dateProvider: dateProvider
+            queryItemProviders: [.ddsource(), .batchTime(using: dateProvider)]
         )
+
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404000000"))
         dateProvider.advance(bySeconds: 9.999)
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404009999"))
@@ -99,26 +127,5 @@ class DataUploaderTests: XCTestCase {
 
         XCTAssertEqual(status, .unknown)
         server.waitFor(requestsCompletion: 1)
-    }
-
-    // MARK: - HTTP Headers
-
-    func testItSendsCustomHTTPHeaders() {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let uploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.urlSession),
-            httpHeaders: HTTPHeaders(
-                appName: "app-name",
-                appVersion: "1.0.0",
-                device: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
-            )
-        )
-
-        _ = uploader.upload(data: .mockAny())
-
-        let request = server.waitAndReturnRequests(count: 1)[0]
-        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
-        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "app-name/1.0.0 CFNetwork (iPhone; iOS/13.3.1)")
     }
 }
