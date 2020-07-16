@@ -125,4 +125,34 @@ public class RUMMonitor: RUMMonitorInternal {
 
         rumFeature.storage.writer.write(value: event)
     }
+
+    public func sendFakeActionEvent(viewURL: String, actionType: String) {
+        guard let rumFeature = RUMFeature.instance else {
+            fatalError("RUMFeature must be initialized.")
+        }
+
+        let dataModel = RUMActionEvent(
+            date: Date().timeIntervalSince1970.toMilliseconds,
+            application: .init(id: applicationScope.context.rumApplicationID),
+            session: .init(id: UUID().uuidString.lowercased(), type: "user"),
+            view: .init(
+                id: UUID().uuidString.lowercased(),
+                url: viewURL
+            ),
+            action: .init(
+                type: actionType
+            ),
+            dd: .init()
+        )
+
+        let builder = RUMEventBuilder(
+            userInfoProvider: rumFeature.userInfoProvider,
+            networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
+            carrierInfoProvider: rumFeature.carrierInfoProvider
+        )
+
+        let event = builder.createRUMEvent(with: dataModel, attributes: nil)
+
+        rumFeature.storage.writer.write(value: event)
+    }
 }
