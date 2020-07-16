@@ -11,8 +11,6 @@ class DebugRUMViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
     @IBOutlet weak var consoleTextView: UITextView!
 
-    private let rumMonitor = RUMMonitor.initialize(rumApplicationID: appConfig.rumApplicationID)
-
     override func viewDidLoad() {
         super.viewDidLoad()
         rumServiceNameTextField.text = appConfig.serviceName

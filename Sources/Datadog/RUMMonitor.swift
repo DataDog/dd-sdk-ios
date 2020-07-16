@@ -31,13 +31,16 @@ public class RUMMonitor: RUMMonitorInternal {
         self.init(
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumApplicationID,
-                eventBuilder: RUMEventBuilder(
-                    userInfoProvider: rumFeature.userInfoProvider,
-                    networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-                    carrierInfoProvider: rumFeature.carrierInfoProvider
-                ),
-                eventOutput: RUMEventFileOutput(
-                    fileWriter: rumFeature.storage.writer
+                dependencies: RUMScopeDependencies(
+                    dateProvider: rumFeature.dateProvider,
+                    eventBuilder: RUMEventBuilder(
+                        userInfoProvider: rumFeature.userInfoProvider,
+                        networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
+                        carrierInfoProvider: rumFeature.carrierInfoProvider
+                    ),
+                    eventOutput: RUMEventFileOutput(
+                        fileWriter: rumFeature.storage.writer
+                    )
                 )
             )
         )

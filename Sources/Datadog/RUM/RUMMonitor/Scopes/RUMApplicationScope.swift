@@ -6,23 +6,38 @@
 
 import Foundation
 
-internal class RUMApplicationScope: RUMScope {
-    /// No-op session ID used shortly before the real session is initialized.
-    static let nullSessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
+/// Injection container for common dependencies used by all `RUMScopes`.
+internal struct RUMScopeDependencies {
+    let dateProvider: DateProvider
+    let eventBuilder: RUMEventBuilder
+    let eventOutput: RUMEventOutput
+}
 
-    let eventBuilder: RUMEventBuilder // TODO: RUMM-518 move to `RUMMSessionScope`
-    let eventOutput: RUMEventOutput // TODO: RUMM-518 move to `RUMMSessionScope`
+internal class RUMApplicationScope: RUMScope {
+    struct Constants {
+        /// No-op session ID used shortly before the real session is initialized.
+        static let nullUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
+    }
+
+    // MARK: - Child Scopes
+
+    private lazy var sessionScope: RUMScope = RUMSessionScope(
+        parent: self,
+        dependencies: self.dependencies
+    )
+
+    // MARK: - Initialization
+
+    let dependencies: RUMScopeDependencies
 
     init(
         rumApplicationID: String,
-        eventBuilder: RUMEventBuilder,
-        eventOutput: RUMEventOutput
+        dependencies: RUMScopeDependencies
     ) {
-        self.eventBuilder = eventBuilder
-        self.eventOutput = eventOutput
+        self.dependencies = dependencies
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
-            sessionID: RUMApplicationScope.nullSessionID,
+            sessionID: Constants.nullUUID,
             activeViewID: nil,
             activeViewURI: nil,
             activeUserActionID: nil
@@ -34,6 +49,7 @@ internal class RUMApplicationScope: RUMScope {
     let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
+        _ = sessionScope.process(command: command)
         return false
     }
 }

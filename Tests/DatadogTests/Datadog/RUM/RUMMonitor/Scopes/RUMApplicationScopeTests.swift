@@ -8,15 +8,14 @@ import XCTest
 @testable import Datadog
 
 class RUMApplicationScopeTests: XCTestCase {
-    func testContextPropagation() {
+    func testRootContext() {
         let scope = RUMApplicationScope(
             rumApplicationID: "abc-123",
-            eventBuilder: .mockAny(),
-            eventOutput: RUMEventOutputMock()
+            dependencies: .mockAny()
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "abc-123")
-        XCTAssertEqual(scope.context.sessionID, RUMApplicationScope.nullSessionID)
+        XCTAssertEqual(scope.context.sessionID, RUMApplicationScope.Constants.nullUUID)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewURI)
         XCTAssertNil(scope.context.activeUserActionID)

@@ -96,6 +96,50 @@ extension RUMEventBuilder {
     }
 }
 
+class RUMEventOutputMock: RUMEventOutput {
+    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {}
+}
+
+// MARK: - RUMScope Mocks
+
+extension RUMScopeDependencies {
+    static func mockAny() -> RUMScopeDependencies {
+        return mockWith()
+    }
+
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider(),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: nil,
+            carrierInfoProvider: nil
+        ),
+        eventOutput: RUMEventOutput = RUMEventOutputMock()
+    ) -> RUMScopeDependencies {
+        return RUMScopeDependencies(
+            dateProvider: dateProvider,
+            eventBuilder: eventBuilder,
+            eventOutput: eventOutput
+        )
+    }
+}
+
+extension RUMApplicationScope {
+    static func mockAny() -> RUMApplicationScope {
+        return mockWith()
+    }
+
+    static func mockWith(
+        rumApplicationID: String = .mockAny(),
+        dependencies: RUMScopeDependencies = .mockAny()
+    ) -> RUMApplicationScope {
+        return RUMApplicationScope(
+            rumApplicationID: rumApplicationID,
+            dependencies: dependencies
+        )
+    }
+}
+
 /// `RUMScope` recording processed commands.
 class RUMScopeMock: RUMScope {
     private let queue = DispatchQueue(label: "com.datadoghq.RUMScopeMock")
@@ -144,10 +188,6 @@ class RUMScopeMock: RUMScope {
         }
         return false
     }
-}
-
-class RUMEventOutputMock: RUMEventOutput {
-    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {}
 }
 
 // MARK: - Utilities

@@ -226,3 +226,20 @@ extension ServerMock {
         }
     }
 }
+
+// MARK: - RUM feature helpers
+
+extension ServerMock {
+    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        return try waitAndReturnRequests(
+            count: count,
+            timeout: recommendedTimeoutFor(numberOfRequestsMade: count),
+            file: file,
+            line: line
+        )
+        .map { request in try request.httpBody.unwrapOrThrow() }
+        .flatMap { requestBody in
+            try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(requestBody)
+        }
+    }
+}

@@ -40,12 +40,10 @@ class RUMFeatureTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        // TODO: RUMM-585 Replace with real data created by `RUMMonitor`
-        struct DummyRUMMEvent: Encodable {
-            let someAttribute = "foo"
-        }
-        let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
-        fileWriter.write(value: DummyRUMMEvent())
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+
+        // Starting first view sends `application_start` action event
+        monitor.start(view: UIViewController(), attributes: nil)
 
         let request = server.waitAndReturnRequests(count: 1)[0]
         XCTAssertEqual(request.httpMethod, "POST")
