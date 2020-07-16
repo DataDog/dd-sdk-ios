@@ -10,13 +10,16 @@ internal class RUMApplicationScope: RUMScope {
     /// No-op session ID used shortly before the real session is initialized.
     static let nullSessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
 
-    internal init(
+    let eventBuilder: RUMEventBuilder // TODO: RUMM-518 move to `RUMMSessionScope`
+    let eventOutput: RUMEventOutput // TODO: RUMM-518 move to `RUMMSessionScope`
+
+    init(
         rumApplicationID: String,
         eventBuilder: RUMEventBuilder,
         eventOutput: RUMEventOutput
     ) {
-        _ = eventBuilder // TODO: RUMM-518 both builder and output will be passed to child scopes
-        _ = eventOutput
+        self.eventBuilder = eventBuilder
+        self.eventOutput = eventOutput
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: RUMApplicationScope.nullSessionID,

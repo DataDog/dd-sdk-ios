@@ -75,3 +75,33 @@ extension RUMEventBuilder {
         )
     }
 }
+
+/// `RUMScope` recording processed commands.
+class RUMScopeMock: RUMScope {
+    let context = RUMContext(
+        rumApplicationID: .mockAny(),
+        sessionID: UUID(),
+        activeViewID: nil,
+        activeViewURI: nil,
+        activeUserActionID: nil
+    )
+
+    var recordedCommands: [RUMCommand] = []
+
+    func process(command: RUMCommand) -> Bool {
+        recordedCommands.append(command)
+        return false
+    }
+}
+
+class RUMEventOutputMock: RUMEventOutput {
+    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {}
+}
+
+// MARK: - Utilities
+
+extension RUMCommand: Equatable {
+    public static func == (_ lhs: RUMCommand, _ rhs: RUMCommand) -> Bool {
+        return String(describing: lhs) == String(describing: rhs)
+    }
+}

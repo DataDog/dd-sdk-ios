@@ -14,10 +14,10 @@ public class RUMMonitor: RUMMonitorInternal {
 
     // MARK: - Initialization
 
-    // TODO: RUMM-600 `RUMMonitor` initialization API
+    // TODO: RUMM-614 `RUMMonitor` initialization and configuration API
     public static func initialize(rumApplicationID: String) -> RUMMonitor {
         guard let rumFeature = RUMFeature.instance else {
-            // TODO: RUMM-600 `RUMMonitor` initialization API
+            // TODO: RUMM-614 `RUMMonitor` initialization API
             fatalError("RUMFeature not initialized")
         }
 
