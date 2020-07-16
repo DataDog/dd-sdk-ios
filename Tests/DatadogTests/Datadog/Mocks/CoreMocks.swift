@@ -22,7 +22,8 @@ extension Datadog.Configuration {
         logsEndpoint: LogsEndpoint = .us,
         tracesEndpoint: TracesEndpoint = .us,
         rumEndpoint: RUMEndpoint = .us,
-        serviceName: String? = .mockAny()
+        serviceName: String? = .mockAny(),
+        vcInstrumentationMode: ViewControllerInstrumentationMode = .off
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             clientToken: clientToken,
@@ -33,7 +34,8 @@ extension Datadog.Configuration {
             logsEndpoint: logsEndpoint,
             tracesEndpoint: tracesEndpoint,
             rumEndpoint: rumEndpoint,
-            serviceName: serviceName
+            serviceName: serviceName,
+            vcInstrumentationMode: vcInstrumentationMode
         )
     }
 }
