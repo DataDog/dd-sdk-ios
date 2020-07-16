@@ -65,14 +65,18 @@ internal class FilesOrchestrator {
             throw InternalError(description: "data exceeds the maximum size of \(writeConditions.maxWriteSize) bytes.")
         }
 
-        try purgeFilesDirectoryIfNeeded()
-
         let lastWritableFileOrNil = reuseLastWritableFileIfPossible(writeSize: writeSize)
 
         if let lastWritableFile = lastWritableFileOrNil { // if last writable file can be reused
             lastWritableFileUsesCount += 1
             return lastWritableFile
         } else {
+            // NOTE: RUMM-610 As purging files directory is a memory-expensive operation, do it only when we know
+            // that a new file will be created. With SDK's `PerformancePreset` this gives
+            // the process enough time to not over-allocate internal `_FileCache` and `_NSFastEnumerationEnumerator`
+            // objects, resulting with a flat allocations graph in a long term.
+            try purgeFilesDirectoryIfNeeded()
+
             let newFileName = fileNameFrom(fileCreationDate: dateProvider.currentDate())
             let newFile = try directory.createFile(named: newFileName)
             lastWritableFileName = newFile.name
