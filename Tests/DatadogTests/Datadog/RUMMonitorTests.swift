@@ -48,4 +48,34 @@ class RUMMonitorTests: XCTestCase {
             ]
         )
     }
+
+    // MARK: - Thread safety
+
+    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let mockView = UIViewController()
+
+        DispatchQueue.concurrentPerform(iterations: 900) { iteration in
+            let modulo = iteration % 9
+
+            switch modulo {
+            case 0: monitor.start(view: mockView, attributes: nil)
+            case 1: monitor.stop(view: mockView, attributes: nil)
+            case 2: monitor.addViewError(message: .mockAny(), error: ErrorMock(), attributes: nil)
+            case 3: monitor.start(resource: .mockAny(), attributes: nil)
+            case 4: monitor.stop(resource: .mockAny(), attributes: nil)
+            case 5: monitor.stop(resource: .mockAny(), withError: ErrorMock(), attributes: nil)
+            case 6: monitor.start(userAction: .scroll, attributes: nil)
+            case 7: monitor.stop(userAction: .scroll, attributes: nil)
+            case 8: monitor.add(userAction: .tap, attributes: nil)
+            default: break
+            }
+        }
+
+        server.waitAndAssertNoRequestsSent()
+    }
 }
