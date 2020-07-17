@@ -6,17 +6,9 @@
 
 import XCTest
 
-/// Provides set of assertions for Log JSON object.
+/// Provides set of assertions for single `Log` JSON object or collection of `[Log]`.
 /// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
-struct LogMatcher {
-    private static let dateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        if #available(iOS 11.2, *) {
-            formatter.formatOptions.insert(.withFractionalSeconds)
-        }
-        return formatter
-    }()
-
+internal class LogMatcher: JSONDataMatcher {
     /// Log JSON keys.
     struct JSONKey {
         static let date = "date"
@@ -63,30 +55,19 @@ struct LogMatcher {
     /// Allowed values for `network.client.reachability` attribute.
     static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
 
-    private let json: [String: Any]
-
     // MARK: - Initialization
 
-    static func fromJSONObjectData(_ data: Data) throws -> LogMatcher {
-        return self.init(from: try data.toJSONObject())
+    class func fromJSONObjectData(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> LogMatcher {
+        return LogMatcher(from: try data.toJSONObject(file: file, line: line))
     }
 
-    static func fromArrayOfJSONObjectsData(_ data: Data) throws -> [LogMatcher] {
-        return try data.toArrayOfJSONObjects()
-            .map { jsonObject in self.init(from: jsonObject) }
+    class func fromArrayOfJSONObjectsData(_ data: Data, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        return try data.toArrayOfJSONObjects(file: file, line: line)
+            .map { LogMatcher(from: $0) }
     }
 
-    private init(from jsonObject: [String: Any]) {
-        self.json = jsonObject
-    }
-
-    // MARK: Full match
-
-    func assertItFullyMatches(jsonString: String, file: StaticString = #file, line: UInt = #line) throws {
-        let thisJSON = json as NSDictionary
-        let theirJSON = try jsonString.data(using: .utf8)!.toJSONObject() as NSDictionary // swiftlint:disable:this force_unwrapping
-
-        XCTAssertEqual(thisJSON, theirJSON, file: file, line: line)
+    override private init(from jsonObject: [String: Any]) {
+        super.init(from: jsonObject)
     }
 
     // MARK: Partial matches
@@ -96,7 +77,7 @@ struct LogMatcher {
             XCTFail("Cannot decode date from log JSON: \(json).", file: file, line: line)
             return
         }
-        guard let date = LogMatcher.dateFormatter.date(from: dateString) else {
+        guard let date = date(fromISO8601FormattedString: dateString) else {
             XCTFail("Date has invalid format: \(dateString).", file: file, line: line)
             return
         }
@@ -132,7 +113,7 @@ struct LogMatcher {
     }
 
     func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {
-        if let id = userInfo?.id { // swiftlint:disable:this identifier_name
+        if let id = userInfo?.id {
             assertValue(forKey: JSONKey.userId, equals: id, file: file, line: line)
         } else {
             assertNoValue(forKey: JSONKey.userId, file: file, line: line)
@@ -177,80 +158,13 @@ struct LogMatcher {
 
         XCTAssertEqual(matcherTags, logTags, file: file, line: line)
     }
-
-    // MARK: - Generic matches
-
-    func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
-        XCTAssertEqual(json[key] as? T, value, file: file, line: line)
-    }
-
-    func assertNoValue(forKey key: String, file: StaticString = #file, line: UInt = #line) {
-        XCTAssertNil(json[key], file: file, line: line)
-    }
-
-    func assertValue<T: Equatable>(forKeyPath keyPath: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
-        let dictionary = json as NSDictionary
-        let dictionaryValue = dictionary.value(forKeyPath: keyPath)
-        guard let jsonValue = dictionaryValue as? T else {
-            XCTFail("Value at key path `\(keyPath)` is not of type `\(type(of: value))`: \(String(describing: dictionaryValue))", file: file, line: line)
-            return
-        }
-        XCTAssertEqual(jsonValue, value, file: file, line: line)
-    }
-
-    func assertNoValue(forKeyPath keyPath: String, file: StaticString = #file, line: UInt = #line) {
-        let dictionary = json as NSDictionary
-        XCTAssertNil(dictionary.value(forKeyPath: keyPath), file: file, line: line)
-    }
-
-    func assertValue<T: Equatable>(
-        forKeyPath keyPath: String,
-        matches matcherClosure: (T) -> Bool,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        let dictionary = json as NSDictionary
-        let dictionaryValue = dictionary.value(forKeyPath: keyPath)
-        guard let jsonValue = dictionaryValue as? T else {
-            XCTFail(
-                "Can't cast value at key path `\(keyPath)` to expected type: \(String(describing: dictionaryValue))",
-                file: file,
-                line: line
-            )
-            return
-        }
-
-        XCTAssertTrue(matcherClosure(jsonValue), file: file, line: line)
-    }
-
-    func assertValue<T>(
-        forKeyPath keyPath: String,
-        isTypeOf type: T.Type,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        let dictionary = json as NSDictionary
-        let dictionaryValue = dictionary.value(forKeyPath: keyPath)
-        XCTAssertTrue((dictionaryValue as? T) != nil, file: file, line: line)
-    }
 }
 
-private extension Data {
-    func toArrayOfJSONObjects(file: StaticString = #file, line: UInt = #line) throws -> [[String: Any]] {
-        guard let jsonArray = try? JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]] else {
-            XCTFail("Cannot decode array of JSON objects from data.", file: file, line: line)
-            return []
-        }
-
-        return jsonArray
-    }
-
-    func toJSONObject(file: StaticString = #file, line: UInt = #line) throws -> [String: Any] {
-        guard let jsonObject = try? JSONSerialization.jsonObject(with: self, options: []) as? [String: Any] else {
-            XCTFail("Cannot decode JSON object from given data.", file: file, line: line)
-            return [:]
-        }
-
-        return jsonObject
-    }
+func date(fromISO8601FormattedString: String) -> Date? {
+    let iso8601Formatter = DateFormatter()
+    iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
+    iso8601Formatter.timeZone = TimeZone(abbreviation: "UTC")!
+    iso8601Formatter.calendar = Calendar(identifier: .gregorian)
+    iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" // ISO8601 format
+    return iso8601Formatter.date(from: fromISO8601FormattedString)
 }

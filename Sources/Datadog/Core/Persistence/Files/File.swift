@@ -16,7 +16,7 @@ internal protocol WritableFile {
     func size() throws -> UInt64
 
     /// Synchronously appends given data at the end of this file.
-    func append(transaction: ((Data) throws -> Void) throws -> Void) throws
+    func append(data: Data) throws
 }
 
 /// Provides convenient interface for reading contents and metadata of the file.
@@ -43,30 +43,63 @@ internal struct File: WritableFile, ReadableFile {
     }
 
     /// Appends given data at the end of this file.
-    func append(transaction: ((Data) throws -> Void) throws -> Void) throws {
+    func append(data: Data) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
-        defer { fileHandle.closeFile() }
 
-        try objcExceptionHandler.rethrowToSwift {
-            fileHandle.seekToEndOfFile()
-        }
+        if #available(iOS 13.4, *) {
+            /**
+             Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
+             ```
+             @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+             public func seekToEnd() throws -> UInt64
+             ```
+             it crashes on iOS Simulators prior to iOS 13.4:
+             ```
+             Symbol not found: _$sSo12NSFileHandleC10FoundationE9seekToEnds6UInt64VyKF
+             ```
+            */
+            defer { try? fileHandle.close() }
+            try fileHandle.seekToEnd()
+            try fileHandle.write(contentsOf: data)
+        } else {
+            defer {
+                try? objcExceptionHandler.rethrowToSwift {
+                    fileHandle.closeFile()
+                }
+            }
 
-        // Writes given data at the end of the file.
-        func appendData(_ data: Data) throws {
             try objcExceptionHandler.rethrowToSwift {
+                fileHandle.seekToEndOfFile()
                 fileHandle.write(data)
             }
-        }
-
-        try transaction { chunkOfData in
-            try appendData(chunkOfData)
         }
     }
 
     func read() throws -> Data {
         let fileHandle = try FileHandle(forReadingFrom: url)
-        defer { fileHandle.closeFile() }
-        return fileHandle.readDataToEndOfFile()
+
+        if #available(iOS 13.4, *) {
+            /**
+             Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
+             ```
+             @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+             public func readToEnd() throws -> Data?
+             ```
+             it crashes on iOS Simulators prior to iOS 13.4:
+             ```
+             Symbol not found: _$sSo12NSFileHandleC10FoundationE9readToEndAC4DataVSgyKF
+             ```
+            */
+            defer { try? fileHandle.close() }
+            return try fileHandle.readToEnd() ?? Data()
+        } else {
+            defer {
+                try? objcExceptionHandler.rethrowToSwift {
+                    fileHandle.closeFile()
+                }
+            }
+            return fileHandle.readDataToEndOfFile()
+        }
     }
 
     func size() throws -> UInt64 {

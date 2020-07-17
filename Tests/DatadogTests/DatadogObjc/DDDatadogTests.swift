@@ -14,26 +14,33 @@ class DDDatadogTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
+        XCTAssertNil(TracingAutoInstrumentation.instance)
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
+        XCTAssertNil(TracingAutoInstrumentation.instance)
         super.tearDown()
     }
 
     // MARK: - Initializing with configuration
 
     func testItFowardsInitializationToSwift() throws {
+        let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
+        configBuilder.set(tracedHosts: ["example.com"])
+
         DDDatadog.initialize(
             appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
-            configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
+            configuration: configBuilder.build()
         )
 
         XCTAssertNotNil(Datadog.instance)
         XCTAssertEqual(LoggingFeature.instance?.configuration.applicationName, "app-name")
         XCTAssertEqual(LoggingFeature.instance?.configuration.environment, "tests")
+        XCTAssertNotNil(TracingAutoInstrumentation.instance)
 
+        TracingAutoInstrumentation.instance?.swizzler.unswizzle()
         try Datadog.deinitializeOrThrow()
     }
 

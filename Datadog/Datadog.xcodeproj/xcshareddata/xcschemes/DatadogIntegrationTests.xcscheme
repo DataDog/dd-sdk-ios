@@ -14,7 +14,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "DatadogIntegrationTests.xctest"
                      BlueprintName = "DatadogIntegrationTests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
@@ -25,10 +25,12 @@
       </PreActions>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Integration"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      codeCoverageEnabled = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "YES">
       <PreActions>
          <ExecutionAction
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
@@ -38,7 +40,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "DatadogIntegrationTests.xctest"
                      BlueprintName = "DatadogIntegrationTests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
@@ -56,7 +58,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "DatadogIntegrationTests.xctest"
                      BlueprintName = "DatadogIntegrationTests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
@@ -65,12 +67,28 @@
             </ActionContent>
          </ExecutionAction>
       </PostActions>
+      <CodeCoverageTargets>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "Datadog.framework"
+            BlueprintName = "Datadog"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133BEF242397DA00786299"
+            BuildableName = "DatadogObjc.framework"
+            BlueprintName = "DatadogObjc"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </CodeCoverageTargets>
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9E2FB2412447660E001C9B7B"
+               BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                BuildableName = "DatadogIntegrationTests.xctest"
                BlueprintName = "DatadogIntegrationTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
@@ -79,7 +97,7 @@
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Integration"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -88,6 +106,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61441C0124616DE9003D8BB8"
+            BuildableName = "Example.app"
+            BlueprintName = "Example"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -95,6 +123,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61441C0124616DE9003D8BB8"
+            BuildableName = "Example.app"
+            BlueprintName = "Example"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

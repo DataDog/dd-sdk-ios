@@ -13,17 +13,24 @@ class DatadogConfigurationTests: XCTestCase {
     func testDefaultConfiguration() {
         let defaultConfiguration = Configuration.builderUsing(clientToken: "abcd", environment: "tests").build()
         XCTAssertEqual(defaultConfiguration.clientToken, "abcd")
-        XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertEqual(defaultConfiguration.environment, "tests")
+        XCTAssertTrue(defaultConfiguration.loggingEnabled)
+        XCTAssertTrue(defaultConfiguration.tracingEnabled)
+        XCTAssertEqual(defaultConfiguration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
+        XCTAssertEqual(defaultConfiguration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertNil(defaultConfiguration.serviceName)
     }
 
     func testCustomConfiguration() {
         let configuration = Configuration.builderUsing(clientToken: "abcd", environment: "tests")
             .set(serviceName: "service-name")
+            .enableLogging(false)
+            .enableTracing(false)
             .build()
         XCTAssertEqual(configuration.clientToken, "abcd")
         XCTAssertEqual(configuration.environment, "tests")
+        XCTAssertFalse(configuration.loggingEnabled)
+        XCTAssertFalse(configuration.tracingEnabled)
         XCTAssertEqual(configuration.serviceName, "service-name")
     }
 
@@ -44,6 +51,23 @@ class DatadogConfigurationTests: XCTestCase {
             .set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs/"))
             .build()
         XCTAssertEqual(configuration.logsEndpoint.url, "https://api.example.com/v1/logs/")
+    }
+
+    func testTracingEndpoints() {
+        var configuration = Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny())
+            .set(tracesEndpoint: .us)
+            .build()
+        XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
+
+        configuration = Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny())
+            .set(tracesEndpoint: .eu)
+            .build()
+        XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/")
+
+        configuration = Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny())
+            .set(tracesEndpoint: .custom(url: "https://api.example.com/v1/traces/"))
+            .build()
+        XCTAssertEqual(configuration.tracesEndpoint.url, "https://api.example.com/v1/traces/")
     }
 }
 
@@ -145,7 +169,7 @@ class DatadogValidConfigurationTests: XCTestCase {
             XCTAssertThrowsError(try Configuration(configuration: .mockWith(environment: environment), appContext: .mockAny())) { error in
                 XCTAssertEqual(
                     (error as? ProgrammerError)?.description,
-                    "Datadog SDK usage error: `environment` contains illegal characters (only alphanumerics and `_` are allowed)"
+                    "🔥 Datadog SDK usage error: `environment` contains illegal characters (only alphanumerics and `_` are allowed)"
                 )
             }
         }
@@ -160,56 +184,60 @@ class DatadogValidConfigurationTests: XCTestCase {
     }
 
     func testLogsUploadURLValidation() throws {
-        func verify(clientToken: String, logsEndpoint: Datadog.Configuration.LogsEndpoint, expectedLogsUploadURL: URL) throws {
-            // it equals `Datadog.Configuration.environment`
-            let configuration = try Configuration(
-                configuration: .mockWith(clientToken: clientToken, logsEndpoint: logsEndpoint),
+        func configurationWith(
+            clientToken: String = "abc",
+            logsEndpoint: Datadog.Configuration.LogsEndpoint = .us,
+            tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us
+        ) throws -> Configuration {
+            return try Configuration(
+                configuration: .mockWith(clientToken: clientToken, logsEndpoint: logsEndpoint, tracesEndpoint: tracesEndpoint),
                 appContext: .mockAny()
             )
-            XCTAssertEqual(configuration.logsUploadURLWithClientToken, expectedLogsUploadURL)
-        }
-        func verify(clientToken: String, logsEndpoint: Datadog.Configuration.LogsEndpoint, expectedError: String) {
-            XCTAssertThrowsError(
-                try Configuration(
-                    configuration: .mockWith(clientToken: clientToken, logsEndpoint: logsEndpoint),
-                    appContext: .mockAny()
-                )
-            ) { error in
-                XCTAssertEqual((error as? ProgrammerError)?.description, expectedError)
-            }
         }
 
-        try verify(
-            clientToken: "abc",
-            logsEndpoint: .us,
-            expectedLogsUploadURL: URL(string: "https://mobile-http-intake.logs.datadoghq.com/v1/input/abc")!
+        // Valid fixtures:
+
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", logsEndpoint: .us).logsUploadURLWithClientToken,
+            URL(string: "https://mobile-http-intake.logs.datadoghq.com/v1/input/abc")!
         )
-        try verify(
-            clientToken: "abc",
-            logsEndpoint: .eu,
-            expectedLogsUploadURL: URL(string: "https://mobile-http-intake.logs.datadoghq.eu/v1/input/abc")!
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", logsEndpoint: .eu).logsUploadURLWithClientToken,
+            URL(string: "https://mobile-http-intake.logs.datadoghq.eu/v1/input/abc")!
         )
-        try verify(
-            clientToken: "abc",
-            logsEndpoint: .custom(url: "http://example.com/api"),
-            expectedLogsUploadURL: URL(string: "http://example.com/api/abc")!
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", logsEndpoint: .custom(url: "http://example.com/api")).logsUploadURLWithClientToken,
+            URL(string: "http://example.com/api/abc")!
         )
-        verify(clientToken: "", logsEndpoint: .us, expectedError: "Datadog SDK usage error: `clientToken` cannot be empty.")
-        verify(clientToken: "", logsEndpoint: .eu, expectedError: "Datadog SDK usage error: `clientToken` cannot be empty.")
-        verify(
-            clientToken: "",
-            logsEndpoint: .custom(url: URL.mockAny().absoluteString),
-            expectedError: "Datadog SDK usage error: `clientToken` cannot be empty."
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", tracesEndpoint: .us).tracesUploadURLWithClientToken,
+            URL(string: "https://public-trace-http-intake.logs.datadoghq.com/v1/input/abc")!
         )
-        verify(
-            clientToken: "abc",
-            logsEndpoint: .custom(url: ""),
-            expectedError: "Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", tracesEndpoint: .eu).tracesUploadURLWithClientToken,
+            URL(string: "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/abc")!
         )
-        verify(
-            clientToken: "abc",
-            logsEndpoint: .custom(url: "not a valid url string"),
-            expectedError: "Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
+        XCTAssertEqual(
+            try configurationWith(clientToken: "abc", tracesEndpoint: .custom(url: "http://example.com/api")).tracesUploadURLWithClientToken,
+            URL(string: "http://example.com/api/abc")!
         )
+
+        // Invalid fixtures:
+
+        XCTAssertThrowsError(try configurationWith(clientToken: "")) { error in
+            XCTAssertEqual((error as? ProgrammerError)?.description, "🔥 Datadog SDK usage error: `clientToken` cannot be empty.")
+        }
+        XCTAssertThrowsError(try configurationWith(logsEndpoint: .custom(url: "not a valid url string"))) { error in
+            XCTAssertEqual(
+                (error as? ProgrammerError)?.description,
+                "🔥 Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
+            )
+        }
+        XCTAssertThrowsError(try configurationWith(tracesEndpoint: .custom(url: "not a valid url string"))) { error in
+            XCTAssertEqual(
+                (error as? ProgrammerError)?.description,
+                "🔥 Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
+            )
+        }
     }
 }

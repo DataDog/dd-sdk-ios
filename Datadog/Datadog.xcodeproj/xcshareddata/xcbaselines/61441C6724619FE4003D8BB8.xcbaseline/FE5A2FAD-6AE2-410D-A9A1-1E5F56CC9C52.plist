@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>classNames</key>
+	<dict>
+		<key>LoggingBenchmarkTests</key>
+		<dict>
+			<key>testCreatingOneLog()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>7.5537e-05</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>7 Jul 2020 at 10:28:47</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+			<key>testCreatingOneLogWithAttributes()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>6.6391e-05</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>7 Jul 2020 at 10:28:47</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+			<key>testCreatingOneLogWithTags()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>7.2e-05</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+		</dict>
+		<key>LoggingStorageBenchmarkTests</key>
+		<dict>
+			<key>testReadingLogsFromDisc()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.00151</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+			<key>testWrittingLogsOnDisc()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.00376</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+		</dict>
+		<key>TracingBenchmarkTests</key>
+		<dict>
+			<key>testCreatingAndEndingOneSpan()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>5.81e-05</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+			<key>testCreatingOneSpanWithBaggageItems()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>6.89e-05</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+			<key>testCreatingOneSpanWithTags()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>6.48e-05</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+		</dict>
+		<key>TracingStorageBenchmarkTests</key>
+		<dict>
+			<key>testReadingSpansFromDisc()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.00139</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+			<key>testWrittingSpansOnDisc()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.00352</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>30</real>
+				</dict>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>

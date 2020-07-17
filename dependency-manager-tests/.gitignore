@@ -11,6 +11,7 @@ xcuserdata
 # SPM test
 # - ignore `SPMProject.xcodeproj` as it will be re-created for every test run
 /spm/SPMProject.xcodeproj
+/spm/**/Package.resolved
 
 # Cocoapods test
 # - ignore `Podfile.lock` and `Podfile` as they will be re-created for every test run

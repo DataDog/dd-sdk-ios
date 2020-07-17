@@ -1,5 +1,5 @@
 all: tools dependencies xcodeproj-httpservermock templates
-.PHONY : examples tools
+.PHONY : tools
 
 tools:
 		@echo "⚙️  Installing tools..."
@@ -7,13 +7,7 @@ tools:
 		@echo "OK 👌"
 
 dependencies:
-ifneq ("$(wildcard ./Cartfile)","")
-		@echo "⚙️  Cartfile found, bootstrapping..."
-		@carthage bootstrap --platform iOS
-else
-		@echo "⚙️  Cartfile not found, ignoring."
-		@echo "OK 👌"	
-endif
+		@echo "⚙️  No dependencies required, skipping..."
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
@@ -36,3 +30,26 @@ test-carthage:
 # Tests if current branch ships a valid Cocoapods project.
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
+
+# Generate api-surface files for Datadog and DatadogObjc.
+api-surface:
+		@cd tools/api-surface/ && swift build --configuration release
+		@echo "Generating api-surface-swift"
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme Datadog --path . > api-surface-swift
+		@echo "Generating api-surface-objc"
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
+
+bump:
+		@read -p "Enter version number: " version;  \
+		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.src > DatadogSDK.podspec; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
+		git add . ; \
+		git commit -m "Bumped version to $$version"; \
+		echo Bumped version to $$version
+
+ship:
+		pod spec lint DatadogSDK.podspec
+		pod spec lint DatadogSDKObjc.podspec
+		pod trunk push DatadogSDK.podspec
+		pod trunk push DatadogSDKObjc.podspec

@@ -23,7 +23,12 @@ class FileWriterTests: XCTestCase {
     func testItWritesDataToSingleFile() throws {
         let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
@@ -40,74 +45,6 @@ class FileWriterTests: XCTestCase {
         )
     }
 
-    /// NOTE: Test added after incident-4797
-    func testGivenFileContainingData_whenNextDataFails_itDoesNotMalformTheEndOfTheFile() throws {
-        let previousObjcExceptionHandler = objcExceptionHandler
-        defer { objcExceptionHandler = previousObjcExceptionHandler }
-
-        let expectation = self.expectation(description: "write completed")
-        let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
-            queue: queue
-        )
-
-        objcExceptionHandler = ObjcExceptionHandlerDeferredMock(
-            throwingError: ErrorMock("I/O exception"),
-            /*
-                Following the logic in `FileWriter` and `File`, the 3 comes from:
-                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the first write
-                - succeed on `fileHandle.write(_:)` for `writer.write(value: ["key1": "value1"])`
-                - succeed on `fileHandle.seekToEndOfFile()` to prepare the file for the second `writer.write(value:)`
-                - throw an `I/O exception` for `fileHandle.write(_:)` for the second write
-             */
-            afterSucceedingCallsCounts: 3
-        )
-
-        writer.write(value: ["key1": "value1"]) // first write (2 calls to `ObjcExceptionHandler`)
-        writer.write(value: ["key2": "value2"]) // second write (2 calls to `ObjcExceptionHandler`, where the latter fails)
-
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        XCTAssertEqual(
-            try temporaryDirectory.files()[0].read().utf8String,
-            #"{"key1":"value1"}"# // second write should be ignored due to `I/O exception`
-        )
-    }
-
-    /// NOTE: Test added after incident-4797
-    func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
-        let previousObjcExceptionHandler = objcExceptionHandler
-        defer { objcExceptionHandler = previousObjcExceptionHandler }
-
-        let expectation = self.expectation(description: "write completed")
-        let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
-            queue: queue
-        )
-
-        objcExceptionHandler = ObjcExceptionHandlerNonDeterministicMock(
-            throwingError: ErrorMock("I/O exception"),
-            withProbability: 0.2
-        )
-
-        struct Foo: Codable {
-            let foo = "bar"
-        }
-
-        (0...500).forEach { _ in writer.write(value: Foo()) }
-
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 5, handler: nil)
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        let fileData = try temporaryDirectory.files()[0].read()
-        let jsonDecoder = JSONDecoder()
-
-        XCTAssertNoThrow(try jsonDecoder.decode([Foo].self, from: "[".utf8Data + fileData + "]".utf8Data))
-    }
-
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
         let expectation1 = self.expectation(description: "write completed")
         let expectation2 = self.expectation(description: "second write completed")
@@ -115,21 +52,21 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, identifier: "sdk-user")
+        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
 
         let writer = FileWriter(
+            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                writeConditions: WritableFileConditions(
-                    performance: .mockWith(
-                        maxBatchSize: .max,
-                        maxSizeOfLogsDirectory: .max,
-                        maxFileAgeForWrite: .distantFuture,
-                        maxLogsPerBatch: .max,
-                        maxLogSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
-                    )
+                performance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture,
+                    minFileAgeForRead: .mockAny(),
+                    maxFileAgeForRead: .mockAny(),
+                    maxObjectsInFile: .max,
+                    maxObjectSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
                 ),
-                readConditions: .mockReadAllFiles(),
                 dateProvider: SystemDateProvider()
             ),
             queue: queue
@@ -156,10 +93,15 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, identifier: "sdk-user")
+        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
 
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            dataFormat: .mockAny(),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
@@ -176,25 +118,84 @@ class FileWriterTests: XCTestCase {
         let expectation = self.expectation(description: "write completed")
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
-        let previousObjcExceptionHandler = objcExceptionHandler
-        defer { objcExceptionHandler = previousObjcExceptionHandler }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, identifier: "sdk-user")
-        objcExceptionHandler = ObjcExceptionHandlerMock(throwingError: ErrorMock("I/O exception"))
+        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
 
         let writer = FileWriter(
-            orchestrator: .mockWriteToSingleFile(in: temporaryDirectory),
+            dataFormat: .mockAny(),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.default,
+                dateProvider: SystemDateProvider()
+            ),
             queue: queue
         )
 
-        writer.write(value: ["whatever"])
+        writer.write(value: ["ok"]) // will create the file
+        queue.async { try? temporaryDirectory.files()[0].makeReadonly() }
+        writer.write(value: ["won't be written"])
+        queue.async { try? temporaryDirectory.files()[0].makeReadWrite() }
 
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
         waitForExpectations(timeout: 1, handler: nil)
 
         XCTAssertEqual(output.recordedLog?.level, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: I/O exception")
+        XCTAssertNotNil(output.recordedLog?.message)
+        XCTAssertTrue(output.recordedLog!.message.contains("You don’t have permission"))
+    }
+
+    /// NOTE: Test added after incident-4797
+    func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
+        let expectation = self.expectation(description: "write completed")
+        let writer = FileWriter(
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write to single file
+                    minFileAgeForRead: .distantFuture,
+                    maxFileAgeForRead: .distantFuture,
+                    maxObjectsInFile: .max, // write to single file
+                    maxObjectSize: .max
+                ),
+                dateProvider: SystemDateProvider()
+            ),
+            queue: queue
+        )
+
+        let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")
+
+        func randomlyInterruptIO(for file: File?) {
+            ioInterruptionQueue.async { try? file?.makeReadonly() }
+            ioInterruptionQueue.async { try? file?.makeReadWrite() }
+        }
+
+        struct Foo: Codable {
+            let foo = "bar"
+        }
+
+        // Write 500 of `Foo`s and interrupt writes randomly
+        (0..<500).forEach { _ in
+            writer.write(value: Foo())
+            randomlyInterruptIO(for: try? temporaryDirectory.files().first)
+        }
+
+        ioInterruptionQueue.sync { }
+        waitForWritesCompletion(on: queue, thenFulfill: expectation)
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        let fileData = try temporaryDirectory.files()[0].read()
+        let jsonDecoder = JSONDecoder()
+
+        // Assert that data written is not malformed
+        let writtenData = try jsonDecoder.decode([Foo].self, from: "[".utf8Data + fileData + "]".utf8Data)
+        // Assert that some, but not all `Foo`s were skipped
+        XCTAssertGreaterThan(writtenData.count, 0)
+        XCTAssertLessThan(writtenData.count, 500)
     }
 
     private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {

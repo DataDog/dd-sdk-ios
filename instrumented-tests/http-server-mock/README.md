@@ -38,3 +38,7 @@ XCTAssertEqual(recordedRequests[0].httpBody, "hello world".data(using: .utf8)!)
 ```
 
 By obtaining separate `ServerSession` with `server.obtainUniqueRecordingSession()` for each test, there is no need to restart the server each time to reset its state. 
+
+## License
+
+[Apache License, v2.0](../../LICENSE)
