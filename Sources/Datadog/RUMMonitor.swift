@@ -154,6 +154,7 @@ public class RUMMonitor: RUMMonitorInternal {
                 url: viewURL
             ),
             action: .init(
+                id: UUID().uuidString.lowercased(),
                 type: actionType
             ),
             dd: .init()

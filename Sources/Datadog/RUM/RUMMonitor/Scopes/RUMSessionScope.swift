@@ -77,6 +77,7 @@ internal class RUMSessionScope: RUMScope {
                 url: ""
             ),
             action: .init(
+                id: UUID().uuidString.lowercased(),
                 type: "application_start"
             ),
             dd: .init()

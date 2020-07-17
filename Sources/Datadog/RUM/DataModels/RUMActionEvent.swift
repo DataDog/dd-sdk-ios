@@ -46,6 +46,8 @@ internal struct RUMActionEvent: Codable, RUMDataModel {
     }
 
     struct Action: Codable {
+        /// Open discussion: should this be non-optional?
+        let id: String?
         /// Allowed values:
         /// `"custom", "click", "tap", "scroll", "swipe", "application_start"`
         let type: String
