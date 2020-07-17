@@ -8,33 +8,33 @@ import Foundation
 import os.activity
 
 /// Helper class to get the current Span
-internal struct ActiveSpanUtils {
+internal class ActiveSpansPool {
     static let RTLD_DEFAULT = UnsafeMutableRawPointer(bitPattern: -2)
     static let sym = dlsym(RTLD_DEFAULT, "_os_activity_current")
     static let OS_ACTIVITY_CURRENT = unsafeBitCast(sym, to: os_activity_t.self)
 
-    static var contextMap = [os_activity_id_t: DDSpan]()
-    static let rlock = NSRecursiveLock()
+    var contextMap = [os_activity_id_t: DDSpan]()
+    let rlock = NSRecursiveLock()
 
     /// Returns the Span from the current context
-    internal static func getActiveSpan() -> DDSpan? {
+    internal func getActiveSpan() -> DDSpan? {
         // We should try to traverse all hierarchy to locate the Span, but I could not find a way, just direct parent
         var parentIdent: os_activity_id_t = 0
-        let activityIdent = os_activity_get_identifier(OS_ACTIVITY_CURRENT, &parentIdent)
+        let activityIdent = os_activity_get_identifier(ActiveSpansPool.OS_ACTIVITY_CURRENT, &parentIdent)
         var returnSpan: DDSpan?
         rlock.lock()
-returnSpan = contextMap[activityIdent] ?? contextMap[parentIdent]
+        returnSpan = contextMap[activityIdent] ?? contextMap[parentIdent]
         rlock.unlock()
         return returnSpan
     }
 
-    static func addSpan(_ span: DDSpan) {
+    func addSpan(_ span: DDSpan) {
         rlock.lock()
         contextMap[span.ddContext.activityId] = span
         rlock.unlock()
     }
 
-    static func removeSpan(_ span: DDSpan) {
+    func removeSpan(_ span: DDSpan) {
         rlock.lock()
         contextMap[span.ddContext.activityId] = nil
         rlock.unlock()

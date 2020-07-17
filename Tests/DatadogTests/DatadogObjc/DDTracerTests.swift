@@ -18,8 +18,6 @@ class DDTracerTests: XCTestCase {
     override func tearDown() {
         XCTAssertNil(TracingFeature.instance)
         temporaryDirectory.delete()
-        //Confirm that tests have cleaned up spans
-        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
         super.tearDown()
     }
 

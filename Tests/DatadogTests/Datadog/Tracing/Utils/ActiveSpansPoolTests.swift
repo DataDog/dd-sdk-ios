@@ -7,50 +7,44 @@
 import XCTest
 @testable import Datadog
 
-class ActiveSpanUtilsTest: XCTestCase {
-    override func tearDown() {
-        //Confirm that tests have cleaned up spans
-        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
-        super.tearDown()
-    }
-
+class ActiveSpansPoolTests: XCTestCase {
     func testsWhenSpanIsStartedIsAssignedToActiveSpan() throws {
         let tracer = Tracer.mockAny()
-        let previousSpan = ActiveSpanUtils.getActiveSpan()
+        let previousSpan = tracer.activeSpan
         XCTAssertNil(previousSpan)
 
         let oneSpan = tracer.startSpan(operationName: .mockAny())
-        XCTAssert(ActiveSpanUtils.getActiveSpan()?.ddContext.spanID == oneSpan.dd.ddContext.spanID)
+        XCTAssert(tracer.activeSpan?.dd.ddContext.spanID == oneSpan.dd.ddContext.spanID)
         oneSpan.finish()
-        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
+        XCTAssertNil(tracer.activeSpan)
     }
 
     func testsWhenSpanIsFinishedIsRemovedFromActiveSpan() throws {
         let tracer = Tracer.mockAny()
-        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
+        XCTAssertNil(tracer.activeSpan)
 
         let oneSpan = tracer.startSpan(operationName: .mockAny())
-        XCTAssert(ActiveSpanUtils.getActiveSpan()?.ddContext.spanID == oneSpan.dd.ddContext.spanID)
+        XCTAssert(tracer.activeSpan?.dd.ddContext.spanID == oneSpan.dd.ddContext.spanID)
 
         oneSpan.finish()
-        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
+        XCTAssertNil(tracer.activeSpan)
     }
 
     func testsSpanWithoutParentInheritsActiveSpan() throws {
         let tracer = Tracer.mockAny()
         let firstSpan = tracer.startSpan(operationName: .mockAny())
 
-        let previousActiveSpan = ActiveSpanUtils.getActiveSpan()
+        let previousActiveSpan = tracer.activeSpan
         let secondSpan = tracer.startSpan(operationName: .mockAny())
 
         XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, previousActiveSpan?.dd.ddContext.spanID)
-        XCTAssertEqual(secondSpan.dd.ddContext.spanID,  ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID)
+        XCTAssertEqual(secondSpan.dd.ddContext.spanID,  tracer.activeSpan?.dd.ddContext.spanID)
         XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, firstSpan.dd.ddContext.spanID)
 
         secondSpan.finish()
-        XCTAssertEqual(ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
+        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
         firstSpan.finish()
-        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
+        XCTAssertNil(tracer.activeSpan)
     }
 
     func testsSpanWithParentDoesntInheritActiveSpan() throws {
@@ -62,7 +56,7 @@ class ActiveSpanUtilsTest: XCTestCase {
 
         XCTAssertEqual(spanWithParent.dd.ddContext.parentSpanID, oneSpan.dd.ddContext.spanID)
         spanWithParent.finish()
-        XCTAssertEqual(ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID, otherSpan.dd.ddContext.spanID)
+        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, otherSpan.dd.ddContext.spanID)
         oneSpan.finish()
         otherSpan.finish()
     }
@@ -75,19 +69,19 @@ class ActiveSpanUtilsTest: XCTestCase {
 
         DispatchQueue.global(qos: .default).async {
             let firstSpan = tracer.startSpan(operationName: .mockAny())
-            XCTAssertEqual(ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
             expectation1.fulfill()
         }
 
         DispatchQueue.global(qos: .default).async {
             Thread.sleep(forTimeInterval: 0.5)
-            XCTAssertEqual(ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
             let secondSpan = tracer.startSpan(operationName: .mockAny())
-            XCTAssertEqual(ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID, secondSpan.dd.ddContext.spanID)
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, secondSpan.dd.ddContext.spanID)
             expectation2.fulfill()
         }
 
-        XCTAssertEqual(ActiveSpanUtils.getActiveSpan()?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
+        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
         waitForExpectations(timeout: 5, handler: nil)
         oneSpan.finish()
     }

@@ -39,7 +39,7 @@ internal struct DDSpanContext: OTSpanContext {
         let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
         let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
         activityId = os_activity_get_identifier(activity, nil)
-        os_activity_scope_enter(activity, &activity_state)
+        os_activity_scope_enter(activity, &activityState)
     }
 
     // MARK: - Open Tracing interface

@@ -101,7 +101,7 @@ internal class DDSpan: OTSpan {
             return
         }
         isFinished = true
-        ActiveSpanUtils.removeSpan(self)
+        ddTracer.activeSpansPool.removeSpan(self)
         ddTracer.write(span: self, finishTime: time)
     }
 

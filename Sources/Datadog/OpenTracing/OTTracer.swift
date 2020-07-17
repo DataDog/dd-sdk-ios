@@ -54,6 +54,9 @@ public protocol OTTracer {
     ///        injected into the carrier (presumably in a remote process)
     /// 
     func extract(reader: OTFormatReader) -> OTSpanContext?
+
+    /// Returns the active span in the current execution context, this span will be automatically
+    var activeSpan: OTSpan? { get }
 }
 
 /// Extension for a convenience startSpan() with a single parent rather than a list of references
@@ -61,7 +64,7 @@ public extension OTTracer {
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
-    /// - parameter parent:        span context that will be a parent reference; nil creates a root span
+    /// - parameter parent:        span context that will be a parent reference
     /// - parameter tags:          a set of tag keys and values per OTSpan#setTag:value:, or nil to start with
     ///                            an empty tag map
     /// - parameter startTime:     an explicitly specified start timestamp for the OTSpan, or nil to use the
