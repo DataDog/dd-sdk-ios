@@ -86,8 +86,8 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertNil(try? spanMatchers[1].metrics.isRootSpan())
         XCTAssertEqual(try spanMatchers[2].metrics.isRootSpan(), 1)
         XCTAssertEqual(try autoTracedWithURL.metrics.isRootSpan(), 1)
-        XCTAssertEqual(try autoTracedWithRequest.metrics.isRootSpan(), 1)
-        XCTAssertEqual(try autoTracedWithError.metrics.isRootSpan(), 1)
+        XCTAssertNil(try? autoTracedWithRequest.metrics.isRootSpan())
+        XCTAssertNil(try? autoTracedWithError.metrics.isRootSpan())
 
         // "data downloading" span's tags
         XCTAssertEqual(try spanMatchers[0].meta.custom(keyPath: "meta.data.kind"), "image")
