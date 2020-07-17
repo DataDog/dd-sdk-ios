@@ -139,14 +139,22 @@ public class Tracer: OTTracer {
         return nil
     }
 
+    public var activeSpan: OTSpan? {
+        return ActiveSpanUtils.getActiveSpan()
+    }
+
     // MARK: - Internal
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+        var currentParentContext = parentSpanContext
+        if currentParentContext == nil {
+            currentParentContext = activeSpan?.context as? DDSpanContext
+        }
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: currentParentContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentSpanContext?.spanID,
-            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
+            parentSpanID: currentParentContext?.spanID,
+            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: currentParentContext?.baggageItems)
         )
     }
 
@@ -156,13 +164,15 @@ public class Tracer: OTTracer {
             combinedTags.merge(tags) { _, last in last }
         }
 
-        return DDSpan(
+        let span = DDSpan(
             tracer: self,
             context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),
             tags: combinedTags
         )
+        ActiveSpanUtils.addSpan(span)
+        return span
     }
 
     internal func write(span: DDSpan, finishTime: Date) {

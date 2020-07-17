@@ -18,6 +18,8 @@ class DDTracerTests: XCTestCase {
     override func tearDown() {
         XCTAssertNil(TracingFeature.instance)
         temporaryDirectory.delete()
+        //Confirm that tests have cleaned up spans
+        XCTAssertNil(ActiveSpanUtils.getActiveSpan())
         super.tearDown()
     }
 
@@ -144,6 +146,7 @@ class DDTracerTests: XCTestCase {
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
         logMatchers[1].assertValue(forKey: "bizz", equals: 10.5)
         logMatchers[2].assertValue(forKey: "buzz", equals: "https://example.com/image.png")
+        objcSpan.finish()
     }
 
     func testInjectingSpanContextToValidCarrierAndFormat() throws {
@@ -212,13 +215,21 @@ class DDTracerTests: XCTestCase {
     func testsWhenUsingUnexpectedOTSpanContext() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
 
-        XCTAssertNil(objcTracer.startSpan(.mockAny(), childOf: noopSpanContext).dd!.swiftSpan.dd.ddContext.parentSpanID)
-        XCTAssertNil(objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary()).dd!.swiftSpan.dd.ddContext.parentSpanID)
-        XCTAssertNil(objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary(), startTime: .mockAny()).dd!.swiftSpan.dd.ddContext.parentSpanID)
+        let firstSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext)
+        XCTAssertNil(firstSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
+
+        let secondSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary())
+        XCTAssertEqual(secondSpan.dd!.swiftSpan.dd.ddContext.parentSpanID, firstSpan.dd!.swiftSpan.dd.ddContext.spanID)
+
+        let thirdSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary(), startTime: .mockAny())
+        XCTAssertEqual(thirdSpan.dd!.swiftSpan.dd.ddContext.parentSpanID, secondSpan .dd!.swiftSpan.dd.ddContext.spanID)
 
         let objcWriter = DDHTTPHeadersWriter()
         try objcTracer.inject(noopSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
         XCTAssertEqual(objcWriter.swiftHTTPHeadersWriter.tracePropagationHTTPHeaders.count, 0)
+        firstSpan.finish()
+        secondSpan.finish()
+        thirdSpan.finish()
     }
 
     func testsWhenUsingUnexpectedTagsDictionary() throws {
@@ -228,6 +239,7 @@ class DDTracerTests: XCTestCase {
         let objcSpan = objcTracer.startSpan(.mockAny(), tags: tags)
 
         XCTAssertEqual(objcSpan.dd?.swiftSpan.dd.tags.count, 0)
+        objcSpan.finish()
     }
 
     func testUsingNoopTracerIsSafe() {
