@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import UIKit
 import Foundation
 
 public class RUMMonitor: RUMMonitorInternal {
@@ -48,6 +49,16 @@ public class RUMMonitor: RUMMonitorInternal {
 
     internal init(applicationScope: RUMScope) {
         self.applicationScope = applicationScope
+    }
+
+    // MARK: - Public API
+
+    /// Notifies that a View is being shown to the user.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this View.
+    ///   - attributes: custom attributes to attach to the View.
+    public func start(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+        start(view: viewController, attributes: attributes)
     }
 
     // MARK: - RUMMonitorInternal

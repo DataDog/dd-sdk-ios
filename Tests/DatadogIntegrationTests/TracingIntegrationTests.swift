@@ -28,6 +28,7 @@ class TracingIntegrationTests: IntegrationTests {
         app.launchWith(
             mockLogsEndpointURL: loggingServerSession.recordingURL,
             mockTracesEndpointURL: tracingServerSession.recordingURL,
+            mockRUMEndpointURL: server.obtainUniqueRecordingSession().recordingURL, // mock any
             mockSourceEndpointURL: dataSourceServerSession.recordingURL
         )
         app.tapSendTracesForUITests()

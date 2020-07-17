@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <view key="tableFooterView" contentMode="scaleToFill" id="wle-IX-rUl">
-                            <rect key="frame" x="0.0" y="329.5" width="414" height="0.0"/>
+                            <rect key="frame" x="0.0" y="373" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         </view>
@@ -126,6 +126,26 @@
                                         </tableViewCellContentView>
                                         <connections>
                                             <segue destination="dQd-PO-4F8" kind="show" id="A9W-uP-Mly"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="l3V-Ox-kSa" style="IBUITableViewCellStyleDefault" id="fQz-Mr-2Bo">
+                                        <rect key="frame" x="0.0" y="301.5" width="414" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="fQz-Mr-2Bo" id="LHK-QM-RpV">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Send RUM events for UI Tests" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="l3V-Ox-kSa">
+                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="aYv-rh-9k5" kind="show" id="GFk-KX-86C"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -709,7 +729,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8d2-uk-OiR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="259" y="915"/>
+            <point key="canvasLocation" x="-1386" y="1233"/>
         </scene>
         <!--Send Traces Fixture View Controller-->
         <scene sceneID="LEY-wo-4ju">
@@ -738,7 +758,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6qc-vU-hqo" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-309" y="1611"/>
+            <point key="canvasLocation" x="-542" y="1233"/>
         </scene>
         <!--DebugRUM View Controller-->
         <scene sceneID="JCG-Nr-eCn">
@@ -1007,6 +1027,35 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="z20-g6-vwL" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="675" y="-273"/>
+        </scene>
+        <!--SendRUM Fixture1 View Controller-->
+        <scene sceneID="c26-v4-HIp">
+            <objects>
+                <viewController id="aYv-rh-9k5" customClass="SendRUMFixture1ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="hqR-vc-dhH">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TAP-cq-oB8">
+                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="TAP-cq-oB8" firstAttribute="centerY" secondItem="hqR-vc-dhH" secondAttribute="centerY" id="CWP-u7-YDL"/>
+                            <constraint firstItem="TAP-cq-oB8" firstAttribute="centerX" secondItem="hqR-vc-dhH" secondAttribute="centerX" id="z26-0p-djn"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="nQt-QF-hgQ"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="3Wo-iA-H76"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ugy-cJ-IEs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="258" y="1233"/>
         </scene>
     </scenes>
 </document>
