@@ -23,10 +23,7 @@ internal struct ActiveSpanUtils {
         let activityIdent = os_activity_get_identifier(OS_ACTIVITY_CURRENT, &parentIdent)
         var returnSpan: DDSpan?
         rlock.lock()
-        returnSpan = contextMap[activityIdent]
-        if returnSpan == nil {
-            returnSpan = contextMap[parentIdent]
-        }
+returnSpan = contextMap[activityIdent] ?? contextMap[parentIdent]
         rlock.unlock()
         return returnSpan
     }

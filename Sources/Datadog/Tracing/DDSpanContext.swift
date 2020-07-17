@@ -7,7 +7,7 @@
 import Foundation
 import os.activity
 
-// Bridging Obj-C variabled defined as c-macroses. See `activity.h` header.
+// Bridging Obj-C variable defined as c-macro. See `activity.h` header.
 private
 let OS_ACTIVITY_CURRENT = unsafeBitCast( dlsym( UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
@@ -28,7 +28,7 @@ internal struct DDSpanContext: OTSpanContext {
     let baggageItems: BaggageItems
 
     let activityId: os_activity_id_t
-    var activity_state = os_activity_scope_state_s()
+    var activityState = os_activity_scope_state_s()
 
     init(traceID: TracingUUID, spanID: TracingUUID, parentSpanID: TracingUUID?, baggageItems: BaggageItems) {
         self.traceID = traceID

@@ -146,10 +146,7 @@ public class Tracer: OTTracer {
     // MARK: - Internal
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
-        var currentParentContext = parentSpanContext
-        if currentParentContext == nil {
-            currentParentContext = activeSpan?.context as? DDSpanContext
-        }
+        let parentContext = parentSpanContext ?? activeSpan?.context as? DDSpanContext
         return DDSpanContext(
             traceID: currentParentContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
