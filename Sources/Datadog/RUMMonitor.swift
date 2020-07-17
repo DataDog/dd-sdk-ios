@@ -10,7 +10,10 @@ public class RUMMonitor: RUMMonitorInternal {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMScope
     /// Queue for processing RUM events off the main thread..
-    internal let queue: DispatchQueue
+    private let queue = DispatchQueue(
+        label: "com.datadoghq.rum-monitor",
+        target: .global(qos: .userInteractive)
+    )
 
     // MARK: - Initialization
 
@@ -36,17 +39,12 @@ public class RUMMonitor: RUMMonitorInternal {
                 eventOutput: RUMEventFileOutput(
                     fileWriter: rumFeature.storage.writer
                 )
-            ),
-            queue: DispatchQueue(
-                label: "com.datadoghq.rum-monitor",
-                target: .global(qos: .userInteractive)
             )
         )
     }
 
-    internal init(applicationScope: RUMScope, queue: DispatchQueue) {
+    internal init(applicationScope: RUMScope) {
         self.applicationScope = applicationScope
-        self.queue = queue
     }
 
     // MARK: - RUMMonitorInternal

@@ -10,10 +10,8 @@ import UIKit
 
 class RUMMonitorTests: XCTestCase {
     func testWhenCallingPublicAPI_itProcessessExpectedCommandsThrougScopes() {
-        let queue = DispatchQueue(label: #function)
         let scope = RUMScopeMock()
-
-        let monitor = RUMMonitor(applicationScope: scope, queue: queue)
+        let monitor = RUMMonitor(applicationScope: scope)
 
         let mockView = UIViewController()
         let mockAttributes = ["foo": "bar"]
@@ -31,10 +29,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.stop(userAction: .scroll, attributes: mockAttributes)
         monitor.add(userAction: .tap, attributes: mockAttributes)
 
-        queue.sync {}
+        let recordedCommands = scope.waitAndReturnProcessedCommands(count: 9, timeout: 0.5)
 
         XCTAssertEqual(
-            scope.recordedCommands,
+            recordedCommands,
             [
                 .startView(id: mockView, attributes: mockAttributes),
                 .stopView(id: mockView, attributes: mockAttributes),

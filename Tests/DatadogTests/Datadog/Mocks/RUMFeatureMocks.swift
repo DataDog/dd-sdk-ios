@@ -5,6 +5,7 @@
  */
 
 @testable import Datadog
+import XCTest
 
 extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
@@ -97,6 +98,37 @@ extension RUMEventBuilder {
 
 /// `RUMScope` recording processed commands.
 class RUMScopeMock: RUMScope {
+    private let queue = DispatchQueue(label: "com.datadoghq.RUMScopeMock")
+    private var expectation: XCTestExpectation?
+    private var commands: [RUMCommand] = []
+
+    func waitAndReturnProcessedCommands(
+        count: UInt,
+        timeout: TimeInterval,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> [RUMCommand] {
+        precondition(expectation == nil, "The `RUMScopeMock` is already waiting on `waitAndReturnProcessedCommands`.")
+        let expectation = XCTestExpectation(description: "Receive \(count) RUMCommands.")
+
+        if count > 0 {
+            expectation.expectedFulfillmentCount = Int(count)
+        } else {
+            expectation.isInverted = true
+        }
+
+        queue.sync {
+            self.expectation = expectation
+            self.commands.forEach { _ in expectation.fulfill() } // fulfill already recorded
+        }
+
+        XCTWaiter().wait(for: [expectation], timeout: timeout)
+
+        return queue.sync { self.commands }
+    }
+
+    // MARK: - RUMScope
+
     let context = RUMContext(
         rumApplicationID: .mockAny(),
         sessionID: UUID(),
@@ -105,10 +137,8 @@ class RUMScopeMock: RUMScope {
         activeUserActionID: nil
     )
 
-    var recordedCommands: [RUMCommand] = []
-
     func process(command: RUMCommand) -> Bool {
-        recordedCommands.append(command)
+        queue.async { self.commands.append(command) }
         return false
     }
 }
