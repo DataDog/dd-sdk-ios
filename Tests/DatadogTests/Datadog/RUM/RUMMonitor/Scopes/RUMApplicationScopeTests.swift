@@ -20,4 +20,37 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNil(scope.context.activeViewURI)
         XCTAssertNil(scope.context.activeUserActionID)
     }
+
+    func testWhenFirstViewIsStarted_itStartsNewSession() {
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
+
+        XCTAssertNil(scope.sessionScope)
+        XCTAssertFalse(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
+        XCTAssertNotNil(scope.sessionScope)
+    }
+
+    func testWhenSessionExpires_itStartsANewOne() throws {
+        let dateProvider = RelativeDateProvider()
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockWith(dateProvider: dateProvider))
+
+        _ = scope.process(command: .startView(id: UIViewController(), attributes: nil))
+        let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
+
+        // Push time forward by the max session duration:
+        dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionMaxDuration)
+
+        _ = scope.process(command: .addUserAction(userAction: .tap, attributes: nil))
+        let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
+
+        XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
+    }
+
+    func testUntilSessionIsStarted_itIgnoresOtherCommands() {
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
+
+        XCTAssertFalse(scope.process(command: .stopView(id: UIViewController(), attributes: nil)))
+        XCTAssertFalse(scope.process(command: .addUserAction(userAction: .tap, attributes: nil)))
+        XCTAssertFalse(scope.process(command: .startResource(resourceName: .mockAny(), attributes: nil)))
+        XCTAssertNil(scope.sessionScope)
+    }
 }

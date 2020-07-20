@@ -100,6 +100,14 @@ class RUMEventOutputMock: RUMEventOutput {
     func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {}
 }
 
+// MARK: - RUMCommand Mocks
+
+extension RUMCommand {
+    static func mockAny() -> RUMCommand {
+        return .addUserAction(userAction: .tap, attributes: nil)
+    }
+}
+
 // MARK: - RUMScope Mocks
 
 extension RUMScopeDependencies {

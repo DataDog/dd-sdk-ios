@@ -13,66 +13,46 @@ class RUMSessionScopeTests: XCTestCase {
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny())
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
-        XCTAssertEqual(scope.context.sessionID, RUMApplicationScope.Constants.nullUUID)
-        XCTAssertNil(scope.context.activeViewID)
-        XCTAssertNil(scope.context.activeViewURI)
-        XCTAssertNil(scope.context.activeUserActionID)
-    }
-
-    func testWhenFirstViewIsStarted_itStartsNewSession() {
-        let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny())
-
-        XCTAssertFalse(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
-
-        XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertNotEqual(scope.context.sessionID, RUMApplicationScope.Constants.nullUUID)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewURI)
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
-    func testWhenSessionExceedsMaxDuration_itStartsNewSession() {
+    func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         let dateProvider = RelativeDateProvider()
-        let parent: RUMApplicationScope = .mockAny()
+        let parent = RUMScopeMock()
         let scope = RUMSessionScope(
             parent: parent,
             dependencies: .mockWith(dateProvider: dateProvider)
         )
 
-        XCTAssertFalse(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
-        let firstSessionID = scope.context.sessionID
-        XCTAssertFalse(parent.process(command: .stopView(id: UIViewController(), attributes: nil)))
-        XCTAssertFalse(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
-        XCTAssertEqual(scope.context.sessionID, firstSessionID, "It should keep the same session")
+        XCTAssertFalse(scope.process(command: .mockAny()))
 
         // Push time forward by the max session duration:
         dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionMaxDuration)
 
-        XCTAssertFalse(scope.process(command: .stopView(id: UIViewController(), attributes: nil)))
-        XCTAssertNotEqual(scope.context.sessionID, firstSessionID, "It should start new session")
+        XCTAssertTrue(scope.process(command: .mockAny()))
     }
 
-    func testWhenSessionIsInactiveForCertainDuration_itStartsNewSession() {
+    func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         let dateProvider = RelativeDateProvider()
-        let parent: RUMApplicationScope = .mockAny()
+        let parent = RUMScopeMock()
         let scope = RUMSessionScope(
             parent: parent,
             dependencies: .mockWith(dateProvider: dateProvider)
         )
 
-        XCTAssertFalse(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
-        let firstSessionID = scope.context.sessionID
+        XCTAssertFalse(scope.process(command: .mockAny()))
 
         // Push time forward by less than the session timeout duration:
         dateProvider.advance(bySeconds: 0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
-        XCTAssertFalse(scope.process(command: .addUserAction(userAction: .tap, attributes: nil)))
-        XCTAssertEqual(scope.context.sessionID, firstSessionID, "It should keep the same session")
+
+        XCTAssertFalse(scope.process(command: .mockAny()))
 
         // Push time forward by the session timeout duration:
         dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertFalse(scope.process(command: .stopView(id: UIViewController(), attributes: nil)))
-        XCTAssertNotEqual(scope.context.sessionID, firstSessionID, "It should start new session")
+        XCTAssertTrue(scope.process(command: .mockAny()))
     }
 }

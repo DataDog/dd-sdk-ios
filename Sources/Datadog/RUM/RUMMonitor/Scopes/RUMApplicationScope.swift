@@ -15,16 +15,15 @@ internal struct RUMScopeDependencies {
 
 internal class RUMApplicationScope: RUMScope {
     struct Constants {
-        /// No-op session ID used shortly before the real session is initialized.
+        /// No-op session ID used before the real session is started.
         static let nullUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
     }
 
     // MARK: - Child Scopes
 
-    private lazy var sessionScope: RUMScope = RUMSessionScope(
-        parent: self,
-        dependencies: self.dependencies
-    )
+    /// Session scope. It gets created with the first `.startView` event.
+    /// Might be re-created later according to session duration constraints.
+    private(set) var sessionScope: RUMScope?
 
     // MARK: - Initialization
 
@@ -49,7 +48,24 @@ internal class RUMApplicationScope: RUMScope {
     let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
-        _ = sessionScope.process(command: command)
+        if let currentSession = sessionScope {
+            let shouldRefreshSession = currentSession.process(command: command)
+            if shouldRefreshSession {
+                let refreshedSession = RUMSessionScope(parent: self, dependencies: dependencies)
+                sessionScope = refreshedSession
+                _ = refreshedSession.process(command: command)
+            }
+        } else {
+            switch command {
+            case .startView:
+                let newSession = RUMSessionScope(parent: self, dependencies: dependencies)
+                sessionScope = newSession
+                _ = newSession.process(command: command)
+            default:
+                break
+            }
+        }
+
         return false
     }
 }

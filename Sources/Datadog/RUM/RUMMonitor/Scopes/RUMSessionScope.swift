@@ -19,34 +19,40 @@ internal class RUMSessionScope: RUMScope {
     unowned let parent: RUMScope
     private let dependencies: RUMScopeDependencies
 
-    /// Current session ID. May change due to inactivity or when exceeding max duration.
-    private var sessionID: UUID?
-    /// The start time of current session.
-    private var sessionStartTime: Date?
-    /// Time of the last processed RUM command.
-    private var lastInteractionTime: Date?
+    /// This session UUID.
+    private var sessionUUID: UUID
+    /// The start time of this session.
+    private var sessionStartTime: Date
+    /// Time of the last RUM interaction noticed by this session.
+    private var lastInteractionTime: Date
 
     init(
-        parent: RUMApplicationScope,
+        parent: RUMScope,
         dependencies: RUMScopeDependencies
     ) {
         self.parent = parent
         self.dependencies = dependencies
+        self.sessionUUID = UUID()
+        self.sessionStartTime = dependencies.dateProvider.currentDate()
+        self.lastInteractionTime = self.sessionStartTime
     }
 
     // MARK: - RUMScope
 
     var context: RUMContext {
         var context = parent.context
-        context.sessionID = sessionID ?? parent.context.sessionID
+        context.sessionID = sessionUUID
         return context
     }
 
     func process(command: RUMCommand) -> Bool {
-        startNewSessionIfNeeded()
+        if timedOutOrExpired() {
+            return true // end session
+        }
 
         switch command {
         case .startView:
+            // TODO: RUMM-519 Move to `RUMViewScope`
             sendApplicationStartActionOnlyOnce()
         default:
             break
@@ -91,29 +97,15 @@ internal class RUMSessionScope: RUMScope {
 
     // MARK: - Private
 
-    private func startNewSessionIfNeeded() {
+    private func timedOutOrExpired() -> Bool {
         let currentTime = dependencies.dateProvider.currentDate()
 
-        guard sessionID != nil,
-              let sessionStartTime = sessionStartTime,
-              let lastInteractionTime = lastInteractionTime
-        else {
-            // No session was created, start the first one:
-            self.sessionID = UUID()
-            self.sessionStartTime = currentTime
-            return
-        }
-
         let timeElapsedSinceLastInteraction = currentTime.timeIntervalSince(lastInteractionTime)
-        let wasInactiveTooLong = timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
+        let timedOut = timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
 
         let sessionDuration = currentTime.timeIntervalSince(sessionStartTime)
-        let isLastingTooLong = sessionDuration >= Constants.sessionMaxDuration
+        let expired = sessionDuration >= Constants.sessionMaxDuration
 
-        if wasInactiveTooLong || isLastingTooLong {
-            // start new session
-            self.sessionID = UUID()
-            self.sessionStartTime = currentTime
-        }
+        return timedOut || expired
     }
 }
