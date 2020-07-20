@@ -5,8 +5,28 @@
  */
 
 @testable import Datadog
+import XCTest
 
 extension RUMFeature {
+    /// Mocks feature instance which performs no writes and no uploads.
+    static func mockNoOp(temporaryDirectory: Directory) -> RUMFeature {
+        return RUMFeature(
+            directory: temporaryDirectory,
+            configuration: .mockAny(),
+            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
+            mobileDevice: .mockAny(),
+            httpClient: .mockAny(),
+            dateProvider: SystemDateProvider(),
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
+                networkConnectionInfo: .mockWith(
+                    reachability: .no // so it doesn't meet the upload condition
+                )
+            ),
+            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
+        )
+    }
+
     /// Mocks feature instance which performs uploads to given `ServerMock` with performance optimized for fast delivery in unit tests.
     static func mockWorkingFeatureWith(
         server: ServerMock,
@@ -73,5 +93,67 @@ extension RUMEventBuilder {
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
+    }
+}
+
+/// `RUMScope` recording processed commands.
+class RUMScopeMock: RUMScope {
+    private let queue = DispatchQueue(label: "com.datadoghq.RUMScopeMock")
+    private var expectation: XCTestExpectation?
+    private var commands: [RUMCommand] = []
+
+    func waitAndReturnProcessedCommands(
+        count: UInt,
+        timeout: TimeInterval,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> [RUMCommand] {
+        precondition(expectation == nil, "The `RUMScopeMock` is already waiting on `waitAndReturnProcessedCommands`.")
+        let expectation = XCTestExpectation(description: "Receive \(count) RUMCommands.")
+
+        if count > 0 {
+            expectation.expectedFulfillmentCount = Int(count)
+        } else {
+            expectation.isInverted = true
+        }
+
+        queue.sync {
+            self.expectation = expectation
+            self.commands.forEach { _ in expectation.fulfill() } // fulfill already recorded
+        }
+
+        XCTWaiter().wait(for: [expectation], timeout: timeout)
+
+        return queue.sync { self.commands }
+    }
+
+    // MARK: - RUMScope
+
+    let context = RUMContext(
+        rumApplicationID: .mockAny(),
+        sessionID: UUID(),
+        activeViewID: nil,
+        activeViewURI: nil,
+        activeUserActionID: nil
+    )
+
+    func process(command: RUMCommand) -> Bool {
+        queue.async {
+            self.commands.append(command)
+            self.expectation?.fulfill()
+        }
+        return false
+    }
+}
+
+class RUMEventOutputMock: RUMEventOutput {
+    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {}
+}
+
+// MARK: - Utilities
+
+extension RUMCommand: Equatable {
+    public static func == (_ lhs: RUMCommand, _ rhs: RUMCommand) -> Bool {
+        return String(describing: lhs) == String(describing: rhs)
     }
 }

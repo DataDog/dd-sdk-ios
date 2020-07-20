@@ -6,14 +6,95 @@
 
 import Foundation
 
-public class RUMMonitor {
-    private let rumApplicationID: String
+public class RUMMonitor: RUMMonitorInternal {
+    /// The root scope of RUM monitoring.
+    internal let applicationScope: RUMScope
+    /// Queue for processing RUM events off the main thread..
+    private let queue = DispatchQueue(
+        label: "com.datadoghq.rum-monitor",
+        target: .global(qos: .userInteractive)
+    )
 
-    public init(rumApplicationID: String) {
-        self.rumApplicationID = rumApplicationID
+    // MARK: - Initialization
+
+    // TODO: RUMM-614 `RUMMonitor` initialization and configuration API
+    public static func initialize(rumApplicationID: String) -> RUMMonitor {
+        guard let rumFeature = RUMFeature.instance else {
+            // TODO: RUMM-614 `RUMMonitor` initialization API
+            fatalError("RUMFeature not initialized")
+        }
+
+        return RUMMonitor(rumFeature: rumFeature, rumApplicationID: rumApplicationID)
     }
 
-    /// TODO: RUMM-585 Replace with real RUMMonitor public API
+    internal convenience init(rumFeature: RUMFeature, rumApplicationID: String) {
+        self.init(
+            applicationScope: RUMApplicationScope(
+                rumApplicationID: rumApplicationID,
+                eventBuilder: RUMEventBuilder(
+                    userInfoProvider: rumFeature.userInfoProvider,
+                    networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
+                    carrierInfoProvider: rumFeature.carrierInfoProvider
+                ),
+                eventOutput: RUMEventFileOutput(
+                    fileWriter: rumFeature.storage.writer
+                )
+            )
+        )
+    }
+
+    internal init(applicationScope: RUMScope) {
+        self.applicationScope = applicationScope
+    }
+
+    // MARK: - RUMMonitorInternal
+
+    func start(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .startView(id: id, attributes: attributes))
+    }
+
+    func stop(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .stopView(id: id, attributes: attributes))
+    }
+
+    func addViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .addCurrentViewError(message: message, error: error, attributes: attributes))
+    }
+
+    func start(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .startResource(resourceName: resourceName, attributes: attributes))
+    }
+
+    func stop(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .stopResource(resourceName: resourceName, attributes: attributes))
+    }
+
+    func stop(resource resourceName: String, withError error: Error, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .stopResourceWithError(resourceName: resourceName, error: error, attributes: attributes))
+    }
+
+    func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .startUserAction(userAction: userAction, attributes: attributes))
+    }
+
+    func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .stopUserAction(userAction: userAction, attributes: attributes))
+    }
+
+    func add(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+        process(command: .addUserAction(userAction: userAction, attributes: attributes))
+    }
+
+    // MARK: - Private
+
+    private func process(command: RUMCommand) {
+        queue.async {
+            _ = self.applicationScope.process(command: command)
+        }
+    }
+
+    // MARK: - TODO: RUMM-585 Temporary APIs to remove
+
     public func sendFakeViewEvent(viewURL: String) {
         guard let rumFeature = RUMFeature.instance else {
             fatalError("RUMFeature must be initialized.")
@@ -21,7 +102,7 @@ public class RUMMonitor {
 
         let dataModel = RUMViewEvent(
             date: Date(timeIntervalSinceNow: -1).timeIntervalSince1970.toMilliseconds,
-            application: .init(id: rumApplicationID),
+            application: .init(id: applicationScope.context.rumApplicationID),
             session: .init(id: UUID().uuidString.lowercased(), type: "user"),
             view: .init(
                 id: UUID().uuidString.lowercased(),
