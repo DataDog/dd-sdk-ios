@@ -138,7 +138,10 @@ class RUMScopeMock: RUMScope {
     )
 
     func process(command: RUMCommand) -> Bool {
-        queue.async { self.commands.append(command) }
+        queue.async {
+            self.commands.append(command)
+            self.expectation?.fulfill()
+        }
         return false
     }
 }
