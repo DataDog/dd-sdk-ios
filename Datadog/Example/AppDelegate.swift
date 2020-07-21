@@ -9,6 +9,7 @@ import Datadog
 
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
+var rumMonitor: RUMMonitor!
 
 let appConfig: AppConfig = currentAppConfig()
 
@@ -49,6 +50,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 sendNetworkInfo: true
             )
         )
+
+        // Create RUM monitor instance
+        rumMonitor = RUMMonitor.initialize(rumApplicationID: appConfig.rumApplicationID)
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug

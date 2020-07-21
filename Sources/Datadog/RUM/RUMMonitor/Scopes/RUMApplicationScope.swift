@@ -6,23 +6,37 @@
 
 import Foundation
 
-internal class RUMApplicationScope: RUMScope {
-    /// No-op session ID used shortly before the real session is initialized.
-    static let nullSessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
+/// Injection container for common dependencies used by all `RUMScopes`.
+internal struct RUMScopeDependencies {
+    let dateProvider: DateProvider
+    let eventBuilder: RUMEventBuilder
+    let eventOutput: RUMEventOutput
+}
 
-    let eventBuilder: RUMEventBuilder // TODO: RUMM-518 move to `RUMMSessionScope`
-    let eventOutput: RUMEventOutput // TODO: RUMM-518 move to `RUMMSessionScope`
+internal class RUMApplicationScope: RUMScope {
+    struct Constants {
+        /// No-op session ID used before the real session is started.
+        static let nullUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
+    }
+
+    // MARK: - Child Scopes
+
+    /// Session scope. It gets created with the first `.startView` event.
+    /// Might be re-created later according to session duration constraints.
+    private(set) var sessionScope: RUMScope?
+
+    // MARK: - Initialization
+
+    let dependencies: RUMScopeDependencies
 
     init(
         rumApplicationID: String,
-        eventBuilder: RUMEventBuilder,
-        eventOutput: RUMEventOutput
+        dependencies: RUMScopeDependencies
     ) {
-        self.eventBuilder = eventBuilder
-        self.eventOutput = eventOutput
+        self.dependencies = dependencies
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
-            sessionID: RUMApplicationScope.nullSessionID,
+            sessionID: Constants.nullUUID,
             activeViewID: nil,
             activeViewURI: nil,
             activeUserActionID: nil
@@ -34,6 +48,24 @@ internal class RUMApplicationScope: RUMScope {
     let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
-        return false
+        if let currentSession = sessionScope {
+            let keepCurrentSession = currentSession.process(command: command)
+            if !keepCurrentSession {
+                let refreshedSession = RUMSessionScope(parent: self, dependencies: dependencies)
+                sessionScope = refreshedSession
+                _ = refreshedSession.process(command: command)
+            }
+        } else {
+            switch command {
+            case .startView:
+                let newSession = RUMSessionScope(parent: self, dependencies: dependencies)
+                sessionScope = newSession
+                _ = newSession.process(command: command)
+            default:
+                break
+            }
+        }
+
+        return true
     }
 }

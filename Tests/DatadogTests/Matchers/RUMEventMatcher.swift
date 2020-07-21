@@ -69,4 +69,8 @@ internal class RUMEventMatcher {
     func mobileNetworkCarrierISOCountryCode()  throws -> String { try jsonMatcher.value(forKeyPath: "meta.network.client.sim_carrier.iso_country") }
     func mobileNetworkCarrierRadioTechnology() throws -> String { try jsonMatcher.value(forKeyPath: "meta.network.client.sim_carrier.technology") }
     func mobileNetworkCarrierAllowsVoIP()      throws -> Bool { try jsonMatcher.value(forKeyPath: "meta.network.client.sim_carrier.allows_voip") }
+
+    func attribute<T: Equatable>(forKeyPath keyPath: String) throws -> T {
+        return try jsonMatcher.value(forKeyPath: keyPath)
+    }
 }

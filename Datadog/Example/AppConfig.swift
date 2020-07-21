@@ -76,6 +76,7 @@ struct UITestAppConfig: AppConfig {
     init() {
         let mockLogsEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!
         let mockTracesEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
+        let mockRUMEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_RUM_ENDPOINT_URL"]!
         let sourceEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_SOURCE_ENDPOINT_URL"]!
         let tracedhost = URL(string: sourceEndpoint)!.host!
         self.datadogConfiguration = Datadog.Configuration
@@ -83,6 +84,7 @@ struct UITestAppConfig: AppConfig {
             .set(serviceName: serviceName)
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
+            .set(rumEndpoint: .custom(url: mockRUMEndpoint))
             .set(tracedHosts: [tracedhost, "foo.bar"])
             .build()
 

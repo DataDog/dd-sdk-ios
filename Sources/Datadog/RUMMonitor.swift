@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import UIKit
 import Foundation
 
 public class RUMMonitor: RUMMonitorInternal {
@@ -31,13 +32,16 @@ public class RUMMonitor: RUMMonitorInternal {
         self.init(
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumApplicationID,
-                eventBuilder: RUMEventBuilder(
-                    userInfoProvider: rumFeature.userInfoProvider,
-                    networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-                    carrierInfoProvider: rumFeature.carrierInfoProvider
-                ),
-                eventOutput: RUMEventFileOutput(
-                    fileWriter: rumFeature.storage.writer
+                dependencies: RUMScopeDependencies(
+                    dateProvider: rumFeature.dateProvider,
+                    eventBuilder: RUMEventBuilder(
+                        userInfoProvider: rumFeature.userInfoProvider,
+                        networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
+                        carrierInfoProvider: rumFeature.carrierInfoProvider
+                    ),
+                    eventOutput: RUMEventFileOutput(
+                        fileWriter: rumFeature.storage.writer
+                    )
                 )
             )
         )
@@ -45,6 +49,16 @@ public class RUMMonitor: RUMMonitorInternal {
 
     internal init(applicationScope: RUMScope) {
         self.applicationScope = applicationScope
+    }
+
+    // MARK: - Public API
+
+    /// Notifies that a View is being shown to the user.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this View.
+    ///   - attributes: custom attributes to attach to the View.
+    public func start(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+        start(view: viewController, attributes: attributes)
     }
 
     // MARK: - RUMMonitorInternal
@@ -113,6 +127,37 @@ public class RUMMonitor: RUMMonitorInternal {
                 resource: .init(count: 0)
             ),
             dd: .init(documentVersion: 1)
+        )
+
+        let builder = RUMEventBuilder(
+            userInfoProvider: rumFeature.userInfoProvider,
+            networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
+            carrierInfoProvider: rumFeature.carrierInfoProvider
+        )
+
+        let event = builder.createRUMEvent(with: dataModel, attributes: nil)
+
+        rumFeature.storage.writer.write(value: event)
+    }
+
+    public func sendFakeActionEvent(viewURL: String, actionType: String) {
+        guard let rumFeature = RUMFeature.instance else {
+            fatalError("RUMFeature must be initialized.")
+        }
+
+        let dataModel = RUMActionEvent(
+            date: Date().timeIntervalSince1970.toMilliseconds,
+            application: .init(id: applicationScope.context.rumApplicationID),
+            session: .init(id: UUID().uuidString.lowercased(), type: "user"),
+            view: .init(
+                id: UUID().uuidString.lowercased(),
+                url: viewURL
+            ),
+            action: .init(
+                id: UUID().uuidString.lowercased(),
+                type: actionType
+            ),
+            dd: .init()
         )
 
         let builder = RUMEventBuilder(

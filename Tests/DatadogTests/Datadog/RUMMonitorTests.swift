@@ -9,42 +9,42 @@ import UIKit
 @testable import Datadog
 
 class RUMMonitorTests: XCTestCase {
-    func testWhenCallingPublicAPI_itProcessessExpectedCommandsThrougScopes() {
-        let scope = RUMScopeMock()
-        let monitor = RUMMonitor(applicationScope: scope)
+    override func setUp() {
+        super.setUp()
+        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(RUMFeature.instance)
+        temporaryDirectory.create()
+    }
 
-        let mockView = UIViewController()
-        let mockAttributes = ["foo": "bar"]
-        let mockError = ErrorMock()
+    override func tearDown() {
+        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(RUMFeature.instance)
+        temporaryDirectory.delete()
+        super.tearDown()
+    }
 
-        monitor.start(view: mockView, attributes: mockAttributes)
-        monitor.stop(view: mockView, attributes: mockAttributes)
-        monitor.addViewError(message: "error", error: mockError, attributes: mockAttributes)
+    // MARK: - Sending RUM events
 
-        monitor.start(resource: "/resource/1", attributes: mockAttributes)
-        monitor.stop(resource: "/resource/1", attributes: mockAttributes)
-        monitor.stop(resource: "/resource/1", withError: ErrorMock(), attributes: mockAttributes)
-
-        monitor.start(userAction: .scroll, attributes: mockAttributes)
-        monitor.stop(userAction: .scroll, attributes: mockAttributes)
-        monitor.add(userAction: .tap, attributes: mockAttributes)
-
-        let recordedCommands = scope.waitAndReturnProcessedCommands(count: 9, timeout: 0.5)
-
-        XCTAssertEqual(
-            recordedCommands,
-            [
-                .startView(id: mockView, attributes: mockAttributes),
-                .stopView(id: mockView, attributes: mockAttributes),
-                .addCurrentViewError(message: "error", error: mockError, attributes: mockAttributes),
-                .startResource(resourceName: "/resource/1", attributes: mockAttributes),
-                .stopResource(resourceName: "/resource/1", attributes: mockAttributes),
-                .stopResourceWithError(resourceName: "/resource/1", error: mockError, attributes: mockAttributes),
-                .startUserAction(userAction: .scroll, attributes: mockAttributes),
-                .stopUserAction(userAction: .scroll, attributes: mockAttributes),
-                .addUserAction(userAction: .tap, attributes: mockAttributes)
-            ]
+    func testWhenFirstViewIsStarted_itSendsApplicationStartAction() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
         )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+
+        monitor.start(view: UIViewController(), attributes: nil)
+
+        let rumEventMatcher = try server.waitAndReturnRUMEventMatchers(count: 1)[0]
+
+        let event: RUMActionEvent = try rumEventMatcher.model()
+        XCTAssertEqual(event.application.id, "abc-123")
+        XCTAssertEqual(event.action.type, "application_start")
+        XCTAssertEqual(event.view.id, "00000000-0000-0000-0000-000000000000")
+        XCTAssertEqual(event.view.url, "")
+        XCTAssertNotEqual(event.session.id, "00000000-0000-0000-0000-000000000000")
     }
 
     // MARK: - Thread safety
@@ -75,5 +75,46 @@ class RUMMonitorTests: XCTestCase {
         }
 
         server.waitAndAssertNoRequestsSent()
+    }
+
+    // MARK: - Usage
+
+    func testWhenCallingPublicAPI_itProcessesExpectedCommandsThrougScopes() {
+        let scope = RUMScopeMock()
+        let monitor = RUMMonitor(applicationScope: scope)
+
+        let mockView = UIViewController()
+        let mockAttributes = ["foo": "bar"]
+        let mockError = ErrorMock()
+
+        // TODO: RUMM-585 Replace these internal API calls with public APIs
+        monitor.start(view: mockView, attributes: mockAttributes)
+        monitor.stop(view: mockView, attributes: mockAttributes)
+        monitor.addViewError(message: "error", error: mockError, attributes: mockAttributes)
+
+        monitor.start(resource: "/resource/1", attributes: mockAttributes)
+        monitor.stop(resource: "/resource/1", attributes: mockAttributes)
+        monitor.stop(resource: "/resource/1", withError: ErrorMock(), attributes: mockAttributes)
+
+        monitor.start(userAction: .scroll, attributes: mockAttributes)
+        monitor.stop(userAction: .scroll, attributes: mockAttributes)
+        monitor.add(userAction: .tap, attributes: mockAttributes)
+
+        let recordedCommands = scope.waitAndReturnProcessedCommands(count: 9, timeout: 0.5)
+
+        XCTAssertEqual(
+            recordedCommands,
+            [
+                .startView(id: mockView, attributes: mockAttributes),
+                .stopView(id: mockView, attributes: mockAttributes),
+                .addCurrentViewError(message: "error", error: mockError, attributes: mockAttributes),
+                .startResource(resourceName: "/resource/1", attributes: mockAttributes),
+                .stopResource(resourceName: "/resource/1", attributes: mockAttributes),
+                .stopResourceWithError(resourceName: "/resource/1", error: mockError, attributes: mockAttributes),
+                .startUserAction(userAction: .scroll, attributes: mockAttributes),
+                .stopUserAction(userAction: .scroll, attributes: mockAttributes),
+                .addUserAction(userAction: .tap, attributes: mockAttributes)
+            ]
+        )
     }
 }

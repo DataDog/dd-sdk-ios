@@ -44,7 +44,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let feature = try XCTUnwrap(RUMFeature.instance)
         let applicationScope = try XCTUnwrap(monitor.applicationScope as? RUMApplicationScope)
-        let rumEventBuilder = applicationScope.eventBuilder
+        let rumEventBuilder = applicationScope.dependencies.eventBuilder
 
         XCTAssertTrue(rumEventBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(rumEventBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)

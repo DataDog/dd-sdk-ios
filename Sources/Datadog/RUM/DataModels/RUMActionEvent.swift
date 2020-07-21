@@ -7,21 +7,23 @@
 import Foundation
 
 // TODO: RUMM-517 Replace with auto-generated RUM data model
-internal struct RUMViewEvent: Codable, RUMDataModel {
+internal struct RUMActionEvent: Codable, RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case date
         case application
         case session
         case type
         case view
+        case action
         case dd  = "_dd"
     }
 
     let date: UInt64
     let application: Application
     let session: Session
-    let type = "view"
     let view: View
+    let type = "action"
+    let action: Action
     let dd: DD
 
     struct Application: Codable {
@@ -37,37 +39,25 @@ internal struct RUMViewEvent: Codable, RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case id
             case url
-            case timeSpent = "time_spent"
-            case action
-            case error
-            case resource
         }
 
         let id: String
         let url: String
-        let timeSpent: UInt64
-        let action: Action
-        let error: Error
-        let resource: Resource
+    }
 
-        struct Action: Codable {
-            let count: UInt
-        }
-        struct Error: Codable {
-            let count: UInt
-        }
-        struct Resource: Codable {
-            let count: UInt
-        }
+    struct Action: Codable {
+        /// Open discussion: should this be non-optional?
+        let id: String?
+        /// Allowed values:
+        /// `"custom", "click", "tap", "scroll", "swipe", "application_start"`
+        let type: String
     }
 
     struct DD: Codable {
         enum CodingKeys: String, CodingKey {
-            case documentVersion = "document_version"
             case formatVersion  = "format_version"
         }
 
-        let documentVersion: UInt
         let formatVersion = 2
     }
 }
