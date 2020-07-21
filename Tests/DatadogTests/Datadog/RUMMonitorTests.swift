@@ -79,7 +79,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Usage
 
-    func testWhenCallingPublicAPI_itProcessessExpectedCommandsThrougScopes() {
+    func testWhenCallingPublicAPI_itProcessesExpectedCommandsThrougScopes() {
         let scope = RUMScopeMock()
         let monitor = RUMMonitor(applicationScope: scope)
 
