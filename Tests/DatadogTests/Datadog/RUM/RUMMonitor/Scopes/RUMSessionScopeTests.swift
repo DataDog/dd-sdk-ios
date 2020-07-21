@@ -49,4 +49,21 @@ class RUMSessionScopeTests: XCTestCase {
 
         XCTAssertFalse(scope.process(command: .mockWith(time: currentTime)))
     }
+
+    func testItManagesViewScopeLifecycle() {
+        let parent = RUMScopeMock()
+        let view = UIViewController()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: Date())
+        XCTAssertEqual(scope.viewScopes.count, 0)
+        _ = scope.process(command: .startInitialView(id: view, attributes: [:], time: Date()))
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        _ = scope.process(command: .stopView(id: view, attributes: [:], time: Date()))
+        XCTAssertEqual(scope.viewScopes.count, 0)
+
+        _ = scope.process(command: .startView(id: view, attributes: [:], time: Date()))
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        _ = scope.process(command: .stopView(id: view, attributes: [:], time: Date()))
+        XCTAssertEqual(scope.viewScopes.count, 0)
+    }
 }

@@ -99,9 +99,8 @@ extension RUMEventBuilder {
 class RUMEventOutputMock: RUMEventOutput {
     private var recordedEvents: [Any] = []
 
-    func first<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> E {
-        let event = recordedEvents.compactMap { event in event as? E }.first
-        return try XCTUnwrap(event, "Recorded events: \(recordedEvents) do not contain \(type)", file: file, line: line)
+    func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
+        return recordedEvents.compactMap { event in event as? E }
     }
 
     // MARK: - RUMEventOutput

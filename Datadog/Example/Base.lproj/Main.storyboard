@@ -1043,10 +1043,34 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ruj-73-qLY">
+                                <rect key="frame" x="107" y="468.5" width="200" height="44"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="Bmg-kT-Yxc"/>
+                                    <constraint firstAttribute="width" constant="200" id="sSM-Io-P5M"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                <state key="normal" title="Push Next Screen">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <segue destination="6GY-za-J8c" kind="show" id="izd-aP-tP1"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstItem="ruj-73-qLY" firstAttribute="top" secondItem="TAP-cq-oB8" secondAttribute="bottom" constant="10" id="AJN-dM-oKe"/>
                             <constraint firstItem="TAP-cq-oB8" firstAttribute="centerY" secondItem="hqR-vc-dhH" secondAttribute="centerY" id="CWP-u7-YDL"/>
+                            <constraint firstItem="ruj-73-qLY" firstAttribute="centerX" secondItem="hqR-vc-dhH" secondAttribute="centerX" id="xyn-52-QCf"/>
                             <constraint firstItem="TAP-cq-oB8" firstAttribute="centerX" secondItem="hqR-vc-dhH" secondAttribute="centerX" id="z26-0p-djn"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="nQt-QF-hgQ"/>
@@ -1056,6 +1080,88 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ugy-cJ-IEs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="258" y="1233"/>
+        </scene>
+        <!--SendRUM Fixture2 View Controller-->
+        <scene sceneID="7z8-r4-do8">
+            <objects>
+                <viewController id="6GY-za-J8c" customClass="SendRUMFixture2ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ZJp-0b-4KB">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fDJ-Tx-6eZ">
+                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vWW-9m-bZQ">
+                                <rect key="frame" x="107" y="468.5" width="200" height="44"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="200" id="Lfu-z1-wSC"/>
+                                    <constraint firstAttribute="height" constant="44" id="zuJ-2f-nG1"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                <state key="normal" title="Present Next Screen">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <segue destination="Ym4-Og-fR7" kind="presentation" id="k8q-aq-QgP"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="vWW-9m-bZQ" firstAttribute="top" secondItem="fDJ-Tx-6eZ" secondAttribute="bottom" constant="10" id="DzN-Te-PyQ"/>
+                            <constraint firstItem="vWW-9m-bZQ" firstAttribute="centerX" secondItem="ZJp-0b-4KB" secondAttribute="centerX" id="PwK-RN-S5j"/>
+                            <constraint firstItem="fDJ-Tx-6eZ" firstAttribute="centerX" secondItem="ZJp-0b-4KB" secondAttribute="centerX" id="RVB-9S-x9C"/>
+                            <constraint firstItem="fDJ-Tx-6eZ" firstAttribute="centerY" secondItem="ZJp-0b-4KB" secondAttribute="centerY" id="dn5-gJ-4eQ"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="6Eg-KL-CZj"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="TcA-ty-WlM"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="a73-lN-gE3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1026" y="1233"/>
+        </scene>
+        <!--SendRUM Fixture3 View Controller-->
+        <scene sceneID="CtE-po-hG0">
+            <objects>
+                <viewController id="Ym4-Og-fR7" customClass="SendRUMFixture3ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Fof-gR-hNV">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h3E-Aj-64C">
+                                <rect key="frame" x="116" y="410.5" width="182.5" height="21"/>
+                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="h3E-Aj-64C" firstAttribute="centerX" secondItem="Fof-gR-hNV" secondAttribute="centerX" id="3hE-0c-h39"/>
+                            <constraint firstItem="h3E-Aj-64C" firstAttribute="centerY" secondItem="Fof-gR-hNV" secondAttribute="centerY" id="L7U-sw-Jgx"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="v1Q-cn-gOs"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="xNt-tS-tjM"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="WdG-UD-APE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1788" y="1233"/>
         </scene>
     </scenes>
 </document>

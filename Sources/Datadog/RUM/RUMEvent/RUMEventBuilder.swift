@@ -14,7 +14,7 @@ internal struct RUMEventBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given `RUMMonitor`).
     let carrierInfoProvider: CarrierInfoProviderType?
 
-    func createRUMEvent<DM: RUMDataModel>(with model: DM, attributes: [String: Encodable]?) -> RUMEvent<DM> {
+    func createRUMEvent<DM: RUMDataModel>(with model: DM, attributes: [String: Encodable]) -> RUMEvent<DM> {
         return RUMEvent(
             model: model,
             userInfo: userInfoProvider.value,

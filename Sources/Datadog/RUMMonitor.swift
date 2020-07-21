@@ -57,12 +57,20 @@ public class RUMMonitor: RUMMonitorInternal {
 
     // MARK: - Public API
 
-    /// Notifies that a View is being shown to the user.
+    /// Notifies that the View starts being presented to the user.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - attributes: custom attributes to attach to the View.
     public func start(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
         start(view: viewController, attributes: attributes)
+    }
+
+    /// Notifies that the View stops being presented to the user.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this View.
+    ///   - attributes: custom attributes to attach to the View.
+    public func stop(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+        stop(view: viewController, attributes: attributes)
     }
 
     // MARK: - RUMMonitorInternal
@@ -195,7 +203,7 @@ public class RUMMonitor: RUMMonitorInternal {
             carrierInfoProvider: rumFeature.carrierInfoProvider
         )
 
-        let event = builder.createRUMEvent(with: dataModel, attributes: nil)
+        let event = builder.createRUMEvent(with: dataModel, attributes: [:])
 
         rumFeature.storage.writer.write(value: event)
     }
@@ -226,7 +234,7 @@ public class RUMMonitor: RUMMonitorInternal {
             carrierInfoProvider: rumFeature.carrierInfoProvider
         )
 
-        let event = builder.createRUMEvent(with: dataModel, attributes: nil)
+        let event = builder.createRUMEvent(with: dataModel, attributes: [:])
 
         rumFeature.storage.writer.write(value: event)
     }

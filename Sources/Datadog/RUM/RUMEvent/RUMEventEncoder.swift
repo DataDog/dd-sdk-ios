@@ -15,8 +15,8 @@ internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
 
-    /// Custom attributes set by user
-    let attributes: [String: Encodable]?
+    /// Custom attributes set by the user
+    let attributes: [String: Encodable]
 
     func encode(to encoder: Encoder) throws {
         try RUMEventEncoder().encode(self, to: encoder)
@@ -83,7 +83,7 @@ internal struct RUMEventEncoder {
 
         // Encode attributes
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try event.attributes?.forEach { attributeName, attributeValue in
+        try event.attributes.forEach { attributeName, attributeValue in
             try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey(attributeName))
         }
 

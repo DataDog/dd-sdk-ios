@@ -56,6 +56,11 @@ internal class RUMViewScope: RUMScope {
         switch command {
         case .startInitialView(let id, _, _) where id === identity:
             startAsInitialView(on: command)
+        case .startView(let id, _, _) where id === identity:
+            startView(on: command)
+        case .stopView(let id, _, _) where id === identity:
+            stopView(on: command)
+            return false
         default:
             break
         }
@@ -67,6 +72,14 @@ internal class RUMViewScope: RUMScope {
 
     private func startAsInitialView(on command: RUMCommand) {
         sendApplicationStartAction()
+        sendViewUpdateEvent(on: command)
+    }
+
+    private func startView(on command: RUMCommand) {
+        sendViewUpdateEvent(on: command)
+    }
+
+    private func stopView(on command: RUMCommand) {
         sendViewUpdateEvent(on: command)
     }
 
@@ -90,7 +103,7 @@ internal class RUMViewScope: RUMScope {
             dd: .init()
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: nil)
+        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: [:])
         dependencies.eventOutput.write(rumEvent: event)
     }
 

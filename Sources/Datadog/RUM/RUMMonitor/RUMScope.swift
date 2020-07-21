@@ -20,17 +20,17 @@ extension RUMScope {
     /// Propagates given `command` to the child scope and manages its lifecycle by
     /// removing it if it gets closed.
     func propagate(command: RUMCommand, to chilScope: inout RUMScope?) {
-        if chilScope?.process(command: command) == true {
+        if chilScope?.process(command: command) == false {
             chilScope = nil
         }
     }
 
     /// Propagates given `command` through array of child scopes and manages their lifecycle by
     /// removing child scopes that get closed.
-    func propagate(command: RUMCommand, to chilScopes: inout [RUMScope]) {
-        chilScopes = chilScopes.filter { chilScope in
-            let shouldBeClosed = chilScope.process(command: command)
-            return shouldBeClosed == false
+    func propagate(command: RUMCommand, to childScopes: inout [RUMScope]) {
+        childScopes = childScopes.compactMap { childScope in
+            let shouldBeKept = childScope.process(command: command)
+            return shouldBeKept ? childScope : nil
         }
     }
 }

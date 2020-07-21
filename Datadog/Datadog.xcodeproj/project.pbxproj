@@ -132,6 +132,9 @@
 		618DCFD724C7265300589570 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
 		618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */; };
 		618DCFDD24C7287900589570 /* DefaultRUMUUIDGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */; };
+		618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDE24C75FD300589570 /* RUMScopeTests.swift */; };
+		618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */; };
+		618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
 		61AD4E3824531500006E34EA /* DataFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3724531500006E34EA /* DataFormat.swift */; };
@@ -427,6 +430,9 @@
 		618DCFD624C7265300589570 /* RUMUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUID.swift; sourceTree = "<group>"; };
 		618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUIDGenerator.swift; sourceTree = "<group>"; };
 		618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultRUMUUIDGeneratorTests.swift; sourceTree = "<group>"; };
+		618DCFDE24C75FD300589570 /* RUMScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScopeTests.swift; sourceTree = "<group>"; };
+		618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture2ViewController.swift; sourceTree = "<group>"; };
+		618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture3ViewController.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
 		61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeatureMocks.swift; sourceTree = "<group>"; };
 		61AD4E3724531500006E34EA /* DataFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataFormat.swift; sourceTree = "<group>"; };
@@ -1153,6 +1159,7 @@
 			isa = PBXGroup;
 			children = (
 				617B953E24BF4D9D00E6F443 /* Scopes */,
+				618DCFDE24C75FD300589570 /* RUMScopeTests.swift */,
 			);
 			path = RUMMonitor;
 			sourceTree = "<group>";
@@ -1217,6 +1224,8 @@
 				61B9ED1A2461E12000C0DCFF /* SendLogsFixtureViewController.swift */,
 				61B9ED1B2461E12000C0DCFF /* SendTracesFixtureViewController.swift */,
 				61C2C20A24C1045300C0321C /* SendRUMFixture1ViewController.swift */,
+				618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */,
+				618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */,
 			);
 			path = IntegrationTestFixtures;
 			sourceTree = "<group>";
@@ -1953,6 +1962,7 @@
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
 				618DCFDD24C7287900589570 /* DefaultRUMUUIDGeneratorTests.swift in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
+				618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */,
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
@@ -1998,6 +2008,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */,
 				61441C982461A649003D8BB8 /* DebugTracingViewController.swift in Sources */,
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
@@ -2008,6 +2019,7 @@
 				61441C9D2461A796003D8BB8 /* AppConfig.swift in Sources */,
 				61441C0524616DE9003D8BB8 /* AppDelegate.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
+				618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */,
 				61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
