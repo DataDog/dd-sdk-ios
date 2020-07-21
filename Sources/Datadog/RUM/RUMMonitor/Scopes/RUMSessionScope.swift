@@ -14,27 +14,33 @@ internal class RUMSessionScope: RUMScope {
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
     }
 
+    // MARK: - Child Scopes
+
+    /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
+    private(set) var viewScopes: [RUMScope] = []
+
     // MARK: - Initialization
 
     unowned let parent: RUMScope
     private let dependencies: RUMScopeDependencies
 
-    /// This session UUID.
+    /// This Session UUID.
     private var sessionUUID: UUID
-    /// The start time of this session.
+    /// The start time of this Session.
     private var sessionStartTime: Date
-    /// Time of the last RUM interaction noticed by this session.
+    /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
 
     init(
         parent: RUMScope,
-        dependencies: RUMScopeDependencies
+        dependencies: RUMScopeDependencies,
+        startTime: Date
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.sessionUUID = UUID()
-        self.sessionStartTime = dependencies.dateProvider.currentDate()
-        self.lastInteractionTime = self.sessionStartTime
+        self.sessionStartTime = startTime
+        self.lastInteractionTime = startTime
     }
 
     // MARK: - RUMScope
@@ -46,60 +52,31 @@ internal class RUMSessionScope: RUMScope {
     }
 
     func process(command: RUMCommand) -> Bool {
-        if timedOutOrExpired() {
+        if timedOutOrExpired(currentTime: command.time) {
             return false // no longer keep this session
         }
+        lastInteractionTime = command.time
 
+        // Apply side effects
         switch command {
-        case .startView:
-            // TODO: RUMM-519 Move to `RUMViewScope`
-            sendApplicationStartActionOnlyOnce()
+        case .startInitialView(let id, let attributes, let time),
+             .startView(let id, let attributes, let time):
+            viewScopes.append(
+                RUMViewScope(parent: self, dependencies: dependencies, identity: id, attributes: attributes, startTime: time)
+            )
         default:
             break
         }
 
-        lastInteractionTime = dependencies.dateProvider.currentDate()
+        // Propagation
+        propagate(command: command, to: &viewScopes)
+
         return true
-    }
-
-    // MARK: - Sending RUM Events
-
-    /// Tracks if the `application_start` RUM action was already sent.
-    private var didSendApplicationStartAction = false
-
-    private func sendApplicationStartActionOnlyOnce() {
-        guard !didSendApplicationStartAction else {
-            return
-        }
-
-        let eventData = RUMActionEvent(
-            date: Date().timeIntervalSince1970.toMilliseconds,
-            application: .init(id: context.rumApplicationID),
-            session: .init(id: UUID().uuidString.lowercased(), type: "user"),
-            view: .init(
-                // The `application_start` event uses null UUID for its `view.id`
-                id: RUMApplicationScope.Constants.nullUUID.uuidString.lowercased(),
-                // The `application_start` event uses empty string for its `view.url`
-                url: ""
-            ),
-            action: .init(
-                id: UUID().uuidString.lowercased(),
-                type: "application_start"
-            ),
-            dd: .init()
-        )
-
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: nil)
-        dependencies.eventOutput.write(rumEvent: event)
-
-        didSendApplicationStartAction = true
     }
 
     // MARK: - Private
 
-    private func timedOutOrExpired() -> Bool {
-        let currentTime = dependencies.dateProvider.currentDate()
-
+    private func timedOutOrExpired(currentTime: Date) -> Bool {
         let timeElapsedSinceLastInteraction = currentTime.timeIntervalSince(lastInteractionTime)
         let timedOut = timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
 

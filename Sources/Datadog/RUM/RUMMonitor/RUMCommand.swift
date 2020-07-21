@@ -8,15 +8,41 @@ import Foundation
 
 /// Commands processed by the tree of `RUMScopes`.
 internal enum RUMCommand {
-    case startView(id: AnyObject, attributes: [AttributeKey: AttributeValue]?)
-    case stopView(id: AnyObject, attributes: [AttributeKey: AttributeValue]?)
-    case addCurrentViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue]?)
+    // MARK: - Commands Published by `RUMMonitor`
 
-    case startResource(resourceName: String, attributes: [AttributeKey: AttributeValue]?)
-    case stopResource(resourceName: String, attributes: [AttributeKey: AttributeValue]?)
-    case stopResourceWithError(resourceName: String, error: Error, attributes: [AttributeKey: AttributeValue]?)
+    case startView(id: AnyObject, attributes: [AttributeKey: AttributeValue], time: Date)
+    case stopView(id: AnyObject, attributes: [AttributeKey: AttributeValue], time: Date)
+    case addCurrentViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue], time: Date)
 
-    case startUserAction(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
-    case stopUserAction(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
-    case addUserAction(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
+    case startResource(resourceName: String, attributes: [AttributeKey: AttributeValue], time: Date)
+    case stopResource(resourceName: String, attributes: [AttributeKey: AttributeValue], time: Date)
+    case stopResourceWithError(resourceName: String, error: Error, attributes: [AttributeKey: AttributeValue], time: Date)
+
+    case startUserAction(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue], time: Date)
+    case stopUserAction(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue], time: Date)
+    case addUserAction(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue], time: Date)
+
+    // MARK: - Commands Published by `RUMScopes`
+
+    /// Replaces `.startView` command for the first View started in the application.
+    case startInitialView(id: AnyObject, attributes: [AttributeKey: AttributeValue], time: Date)
+
+    // MARK: - Properties
+
+    /// Time of the command issuing.
+    var time: Date {
+        switch self {
+        case .startView(_, _, let time),
+             .stopView(_, _, let time),
+             .addCurrentViewError(_, _, _, let time),
+             .startResource(_, _, let time),
+             .stopResource(_, _, let time),
+             .stopResourceWithError(_, _, _, let time),
+             .startUserAction(_, _, let time),
+             .stopUserAction(_, _, let time),
+             .addUserAction(_, _, let time),
+             .startInitialView(_, _, let time):
+            return time
+        }
+    }
 }

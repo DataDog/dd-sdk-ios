@@ -8,7 +8,6 @@ import Foundation
 
 /// Injection container for common dependencies used by all `RUMScopes`.
 internal struct RUMScopeDependencies {
-    let dateProvider: DateProvider
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
 }
@@ -28,6 +27,9 @@ internal class RUMApplicationScope: RUMScope {
     // MARK: - Initialization
 
     let dependencies: RUMScopeDependencies
+
+    /// Tracks if the initial View was displayed by this application.
+    private var didStartInitialView = false
 
     init(
         rumApplicationID: String,
@@ -51,16 +53,23 @@ internal class RUMApplicationScope: RUMScope {
         if let currentSession = sessionScope {
             let keepCurrentSession = currentSession.process(command: command)
             if !keepCurrentSession {
-                let refreshedSession = RUMSessionScope(parent: self, dependencies: dependencies)
+                let refreshedSession = RUMSessionScope(parent: self, dependencies: dependencies, startTime: command.time)
                 sessionScope = refreshedSession
                 _ = refreshedSession.process(command: command)
             }
         } else {
             switch command {
-            case .startView:
-                let newSession = RUMSessionScope(parent: self, dependencies: dependencies)
+            case let .startView(id, attributes, time):
+                var startViewCommand = command
+
+                if didStartInitialView == false {
+                    startViewCommand = .startInitialView(id: id, attributes: attributes, time: time)
+                    didStartInitialView = true
+                }
+
+                let newSession = RUMSessionScope(parent: self, dependencies: dependencies, startTime: command.time)
                 sessionScope = newSession
-                _ = newSession.process(command: command)
+                _ = newSession.process(command: startViewCommand)
             default:
                 break
             }

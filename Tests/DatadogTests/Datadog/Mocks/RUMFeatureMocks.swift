@@ -104,7 +104,11 @@ class RUMEventOutputMock: RUMEventOutput {
 
 extension RUMCommand {
     static func mockAny() -> RUMCommand {
-        return .addUserAction(userAction: .tap, attributes: nil)
+        return mockWith(time: .mockAny())
+    }
+
+    static func mockWith(time: Date) -> RUMCommand {
+        return .addUserAction(userAction: .tap, attributes: [:], time: time)
     }
 }
 
@@ -116,7 +120,6 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider(),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: nil,
@@ -125,7 +128,6 @@ extension RUMScopeDependencies {
         eventOutput: RUMEventOutput = RUMEventOutputMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            dateProvider: dateProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput
         )

@@ -25,7 +25,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Sending RUM events
 
-    func testWhenFirstViewIsStarted_itSendsApplicationStartAction() throws {
+    func testWhenFirstViewIsStarted_itSendsApplicationStartActionAndViewEvent() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -35,16 +35,14 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
 
-        monitor.start(view: UIViewController(), attributes: nil)
+        monitor.start(view: UIViewController(), attributes: ["foo": "bar"])
 
-        let rumEventMatcher = try server.waitAndReturnRUMEventMatchers(count: 1)[0]
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 2)
+        let applicationStartAction: RUMActionEvent = try rumEventMatchers[0].model()
+        let viewEvent: RUMViewEvent = try rumEventMatchers[1].model()
 
-        let event: RUMActionEvent = try rumEventMatcher.model()
-        XCTAssertEqual(event.application.id, "abc-123")
-        XCTAssertEqual(event.action.type, "application_start")
-        XCTAssertEqual(event.view.id, "00000000-0000-0000-0000-000000000000")
-        XCTAssertEqual(event.view.url, "")
-        XCTAssertNotEqual(event.session.id, "00000000-0000-0000-0000-000000000000")
+        XCTAssertEqual(applicationStartAction.action.type, "application_start")
+        XCTAssertEqual(viewEvent.view.action.count, 1)
     }
 
     // MARK: - Thread safety
@@ -81,7 +79,8 @@ class RUMMonitorTests: XCTestCase {
 
     func testWhenCallingPublicAPI_itProcessesExpectedCommandsThrougScopes() {
         let scope = RUMScopeMock()
-        let monitor = RUMMonitor(applicationScope: scope)
+        let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        let monitor = RUMMonitor(applicationScope: scope, dateProvider: dateProvider)
 
         let mockView = UIViewController()
         let mockAttributes = ["foo": "bar"]
@@ -105,15 +104,15 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(
             recordedCommands,
             [
-                .startView(id: mockView, attributes: mockAttributes),
-                .stopView(id: mockView, attributes: mockAttributes),
-                .addCurrentViewError(message: "error", error: mockError, attributes: mockAttributes),
-                .startResource(resourceName: "/resource/1", attributes: mockAttributes),
-                .stopResource(resourceName: "/resource/1", attributes: mockAttributes),
-                .stopResourceWithError(resourceName: "/resource/1", error: mockError, attributes: mockAttributes),
-                .startUserAction(userAction: .scroll, attributes: mockAttributes),
-                .stopUserAction(userAction: .scroll, attributes: mockAttributes),
-                .addUserAction(userAction: .tap, attributes: mockAttributes)
+                .startView(id: mockView, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .stopView(id: mockView, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .addCurrentViewError(message: "error", error: mockError, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .startResource(resourceName: "/resource/1", attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .stopResource(resourceName: "/resource/1", attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .stopResourceWithError(resourceName: "/resource/1", error: mockError, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .startUserAction(userAction: .scroll, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .stopUserAction(userAction: .scroll, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
+                .addUserAction(userAction: .tap, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
             ]
         )
     }

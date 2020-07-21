@@ -10,6 +10,8 @@ import Foundation
 public class RUMMonitor: RUMMonitorInternal {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMScope
+    /// Time provider.
+    private let dateProvider: DateProvider
     /// Queue for processing RUM events off the main thread..
     private let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
@@ -33,7 +35,6 @@ public class RUMMonitor: RUMMonitorInternal {
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumApplicationID,
                 dependencies: RUMScopeDependencies(
-                    dateProvider: rumFeature.dateProvider,
                     eventBuilder: RUMEventBuilder(
                         userInfoProvider: rumFeature.userInfoProvider,
                         networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
@@ -43,12 +44,14 @@ public class RUMMonitor: RUMMonitorInternal {
                         fileWriter: rumFeature.storage.writer
                     )
                 )
-            )
+            ),
+            dateProvider: rumFeature.dateProvider
         )
     }
 
-    internal init(applicationScope: RUMScope) {
+    internal init(applicationScope: RUMScope, dateProvider: DateProvider) {
         self.applicationScope = applicationScope
+        self.dateProvider = dateProvider
     }
 
     // MARK: - Public API
@@ -64,39 +67,95 @@ public class RUMMonitor: RUMMonitorInternal {
     // MARK: - RUMMonitorInternal
 
     func start(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .startView(id: id, attributes: attributes))
+        process(
+            command: .startView(
+                id: id,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func stop(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .stopView(id: id, attributes: attributes))
+        process(
+            command: .stopView(
+                id: id,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func addViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .addCurrentViewError(message: message, error: error, attributes: attributes))
+        process(
+            command: .addCurrentViewError(
+                message: message,
+                error: error,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func start(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .startResource(resourceName: resourceName, attributes: attributes))
+        process(
+            command: .startResource(
+                resourceName: resourceName,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func stop(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .stopResource(resourceName: resourceName, attributes: attributes))
+        process(
+            command: .stopResource(
+                resourceName: resourceName,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func stop(resource resourceName: String, withError error: Error, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .stopResourceWithError(resourceName: resourceName, error: error, attributes: attributes))
+        process(
+            command: .stopResourceWithError(
+                resourceName: resourceName,
+                error: error,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .startUserAction(userAction: userAction, attributes: attributes))
+        process(
+            command: .startUserAction(
+                userAction: userAction,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .stopUserAction(userAction: userAction, attributes: attributes))
+        process(
+            command: .stopUserAction(
+                userAction: userAction,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     func add(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
-        process(command: .addUserAction(userAction: userAction, attributes: attributes))
+        process(
+            command: .addUserAction(
+                userAction: userAction,
+                attributes: attributes ?? [:],
+                time: dateProvider.currentDate()
+            )
+        )
     }
 
     // MARK: - Private

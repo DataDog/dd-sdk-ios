@@ -25,21 +25,21 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
         XCTAssertNil(scope.sessionScope)
-        XCTAssertTrue(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
+        XCTAssertTrue(scope.process(command: .startView(id: UIViewController(), attributes: [:], time: .mockAny())))
         XCTAssertNotNil(scope.sessionScope)
     }
 
     func testWhenSessionExpires_itStartsANewOne() throws {
-        let dateProvider = RelativeDateProvider()
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockWith(dateProvider: dateProvider))
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
+        var currentTime = Date()
 
-        _ = scope.process(command: .startView(id: UIViewController(), attributes: nil))
+        _ = scope.process(command: .startView(id: UIViewController(), attributes: [:], time: currentTime))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
 
         // Push time forward by the max session duration:
-        dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionMaxDuration)
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        _ = scope.process(command: .addUserAction(userAction: .tap, attributes: nil))
+        _ = scope.process(command: .addUserAction(userAction: .tap, attributes: [:], time: currentTime))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
 
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
@@ -48,9 +48,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
-        XCTAssertTrue(scope.process(command: .stopView(id: UIViewController(), attributes: nil)))
-        XCTAssertTrue(scope.process(command: .addUserAction(userAction: .tap, attributes: nil)))
-        XCTAssertTrue(scope.process(command: .startResource(resourceName: .mockAny(), attributes: nil)))
+        XCTAssertTrue(scope.process(command: .stopView(id: UIViewController(), attributes: [:], time: .mockAny())))
+        XCTAssertTrue(scope.process(command: .addUserAction(userAction: .tap, attributes: [:], time: .mockAny())))
+        XCTAssertTrue(scope.process(command: .startResource(resourceName: .mockAny(), attributes: [:], time: .mockAny())))
         XCTAssertNil(scope.sessionScope)
     }
 }
