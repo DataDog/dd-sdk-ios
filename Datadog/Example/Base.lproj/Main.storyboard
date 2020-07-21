@@ -1104,7 +1104,7 @@
                                     <constraint firstAttribute="height" constant="44" id="zuJ-2f-nG1"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <state key="normal" title="Present Next Screen">
+                                <state key="normal" title="Push Next Screen">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
@@ -1115,7 +1115,7 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <segue destination="Ym4-Og-fR7" kind="presentation" id="k8q-aq-QgP"/>
+                                    <segue destination="Ym4-Og-fR7" kind="show" id="k8q-aq-QgP"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1139,11 +1139,11 @@
             <objects>
                 <viewController id="Ym4-Og-fR7" customClass="SendRUMFixture3ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Fof-gR-hNV">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h3E-Aj-64C">
-                                <rect key="frame" x="116" y="410.5" width="182.5" height="21"/>
+                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
                                 <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

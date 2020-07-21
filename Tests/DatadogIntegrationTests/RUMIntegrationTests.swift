@@ -24,7 +24,9 @@ class RUMIntegrationTests: IntegrationTests {
             mockRUMEndpointURL: rumServerSession.recordingURL,
             mockSourceEndpointURL: server.obtainUniqueRecordingSession().recordingURL    // mock any 
         )
-        app.tapSendRUMEventsForUITests()
+        let fixture1Screen = app.tapSendRUMEventsForUITests()
+        let fixture2Screen = fixture1Screen.tapPushNextScreen()
+        fixture2Screen.tapPushNextScreen()
 
         // Return desired count or timeout
         let recordedRUMRequests = try rumServerSession.pullRecordedPOSTRequests(
@@ -46,7 +48,31 @@ class RUMIntegrationTests: IntegrationTests {
         let rumEventsMatchers = try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
+        // Assert `application_start` action
         let applicationStartAction: RUMActionEvent = try rumEventsMatchers[0].model()
         XCTAssertEqual(applicationStartAction.action.type, "application_start")
+
+        // Assert Fixture 1 View updates
+        let view1UpdateA: RUMViewEvent = try rumEventsMatchers[1].model()
+        XCTAssertEqual(view1UpdateA.dd.documentVersion, 1)
+        XCTAssertEqual(view1UpdateA.view.action.count, 1)
+
+        let view1UpdateB: RUMViewEvent = try rumEventsMatchers[2].model()
+        XCTAssertEqual(view1UpdateB.dd.documentVersion, 2)
+        XCTAssertEqual(view1UpdateB.view.action.count, 1)
+
+        // Assert Fixture 2 View updates
+        let view2UpdateA: RUMViewEvent = try rumEventsMatchers[3].model()
+        XCTAssertEqual(view2UpdateA.dd.documentVersion, 1)
+        XCTAssertEqual(view2UpdateA.view.action.count, 0)
+
+        let view2UpdateB: RUMViewEvent = try rumEventsMatchers[4].model()
+        XCTAssertEqual(view2UpdateB.dd.documentVersion, 2)
+        XCTAssertEqual(view2UpdateB.view.action.count, 0)
+
+        // Assert Fixture 3 View updates
+        let view3UpdateA: RUMViewEvent = try rumEventsMatchers[5].model()
+        XCTAssertEqual(view3UpdateA.dd.documentVersion, 1)
+        XCTAssertEqual(view3UpdateA.view.action.count, 0)
     }
 }
