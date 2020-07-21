@@ -80,7 +80,7 @@ internal class RUMEventMatcher {
     }
 }
 
-func XCTAssertIsValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
+func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
     guard let string = string else {
         XCTFail("`nil` is not valid RUM UUID", file: file, line: line)
         return

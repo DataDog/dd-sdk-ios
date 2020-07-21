@@ -13,7 +13,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: .mockAny())
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
-        XCTAssertNotEqual(scope.context.sessionID, RUMApplicationScope.Constants.nullUUID)
+        XCTAssertNotEqual(scope.context.sessionID, .nullUUID)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewURI)
         XCTAssertNil(scope.context.activeUserActionID)

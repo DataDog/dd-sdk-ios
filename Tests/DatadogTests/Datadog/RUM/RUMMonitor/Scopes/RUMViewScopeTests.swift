@@ -11,24 +11,65 @@ import UIKit
 private class ViewControllerMock: UIViewController {}
 
 class RUMViewScopeTests: XCTestCase {
-//    private var mockOutput: RUMEventOutput!
-//    private var parentScope: RUMScope!
-//    private var scope: RUMViewScope!
-//    private var dependencies: RUMScopeDependencies!
+    private let output = RUMEventOutputMock()
+    private let view = ViewControllerMock()
+    private let parent = RUMScopeMock()
+    private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-
-    func testWhenFirstViewIsStarted_itSendsApplicationStartActionAndViewUpdateEvent() throws {
-        let output = RUMEventOutputMock()
-        let parent = RUMScopeMock()
+    func testWhenInitialViewIsStarted_itSendsApplicationStartAction() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             parent: parent,
-            dependencies: .mockWith(
-//                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-                eventOutput: output
-            ),
-            identity: ViewControllerMock(),
+            dependencies: dependencies,
+            identity: view,
             attributes: [:],
-            startTime: .mockDecember15th2019At10AMUTC()
+            startTime: currentTime
         )
+
+        XCTAssertTrue(scope.process(command: .startInitialView(id: view, attributes: ["foo": "bar"], time: currentTime)))
+
+        let event = try output.first(ofType: RUMEvent<RUMActionEvent>.self)
+        XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
+        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toString)
+        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertValidRumUUID(event.model.view.id)
+        XCTAssertEqual(event.model.view.url, "ViewControllerMock")
+        XCTAssertValidRumUUID(event.model.action.id)
+        XCTAssertEqual(event.model.action.type, "application_start")
+        XCTAssertNil(event.attributes)
+        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
+        XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
+        XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
+    }
+
+    func testWhenInitialViewIsStarted_itSendsViewUpdateEvent() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: view,
+            attributes: [:],
+            startTime: currentTime
+        )
+
+        XCTAssertTrue(scope.process(command: .startInitialView(id: view, attributes: ["foo": "bar"], time: currentTime)))
+
+        let event = try output.first(ofType: RUMEvent<RUMViewEvent>.self)
+        XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
+        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toString)
+        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertValidRumUUID(event.model.view.id)
+        XCTAssertEqual(event.model.view.url, "ViewControllerMock")
+        XCTAssertEqual(event.model.view.timeSpent, 0)
+        XCTAssertEqual(event.model.view.action.count, 1)
+        XCTAssertEqual(event.model.view.error.count, 0)
+        XCTAssertEqual(event.model.view.resource.count, 0)
+        XCTAssertEqual(event.model.dd.documentVersion, 1)
+        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
+        XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
+        XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
 }

@@ -42,7 +42,8 @@ public class RUMMonitor: RUMMonitorInternal {
                     ),
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
-                    )
+                    ),
+                    rumUUIDGenerator: DefaultRUMUUIDGenerator()
                 )
             ),
             dateProvider: rumFeature.dateProvider

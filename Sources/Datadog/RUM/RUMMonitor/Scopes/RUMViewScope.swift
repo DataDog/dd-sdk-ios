@@ -19,7 +19,7 @@ internal class RUMViewScope: RUMScope {
     private(set) var attributes: [AttributeKey: AttributeValue]
 
     /// This View UUID.
-    private let viewUUID: UUID
+    private let viewUUID: RUMUUID
     /// The URI of this View, used as the `view.url` in RUM Explorer.
     private let viewURI: String
     /// The start time of this View.
@@ -27,6 +27,8 @@ internal class RUMViewScope: RUMScope {
 
     /// Number of actions happened on this View.
     private var actionsCount: UInt = 0
+    /// Current version of this View to use for RUM `documentVersion`.
+    private var version: UInt = 0
 
     init(
         parent: RUMScope,
@@ -39,7 +41,7 @@ internal class RUMViewScope: RUMScope {
         self.dependencies = dependencies
         self.identity = identity
         self.attributes = attributes
-        self.viewUUID = UUID()
+        self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewURI = RUMViewScope.viewURI(from: identity)
         self.viewStartTime = startTime
     }
@@ -51,34 +53,38 @@ internal class RUMViewScope: RUMScope {
     }
 
     func process(command: RUMCommand) -> Bool {
-        // Apply side effects
         switch command {
-        case .startInitialView(let id, _, let time) where id === identity:
-            sendApplicationStartAction()
-            actionsCount += 1
-            sendViewUpdateEvent(updateTime: time)
+        case .startInitialView(let id, _, _) where id === identity:
+            startAsInitialView(on: command)
         default:
             break
         }
 
-        // Create child scopes
-
         return true
+    }
+
+    // MARK: - RUMCommands Processing
+
+    private func startAsInitialView(on command: RUMCommand) {
+        sendApplicationStartAction()
+        sendViewUpdateEvent(on: command)
     }
 
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() {
+        actionsCount += 1
+
         let eventData = RUMActionEvent(
             date: viewStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.uuidString.lowercased(), type: "user"),
+            session: .init(id: context.sessionID.toString, type: "user"),
             view: .init(
-                id: viewUUID.uuidString.lowercased(),
+                id: viewUUID.toString,
                 url: viewURI
             ),
             action: .init(
-                id: UUID().uuidString.lowercased(),
+                id: dependencies.rumUUIDGenerator.generateUnique().toString,
                 type: "application_start"
             ),
             dd: .init()
@@ -88,20 +94,23 @@ internal class RUMViewScope: RUMScope {
         dependencies.eventOutput.write(rumEvent: event)
     }
 
-    private func sendViewUpdateEvent(updateTime: Date) {
+    private func sendViewUpdateEvent(on command: RUMCommand) {
+        version += 1
+        attributes.merge(rumCommandAttributes: command.attributes)
+
         let eventData = RUMViewEvent(
-            date: updateTime.timeIntervalSince1970.toMilliseconds,
+            date: command.time.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.uuidString.lowercased(), type: "user"),
+            session: .init(id: context.sessionID.toString, type: "user"),
             view: .init(
-                id: viewUUID.uuidString.lowercased(),
+                id: viewUUID.toString,
                 url: viewURI,
-                timeSpent: updateTime.timeIntervalSince(viewStartTime).toNanoseconds,
+                timeSpent: command.time.timeIntervalSince(viewStartTime).toNanoseconds,
                 action: .init(count: actionsCount),
                 error: .init(count: 0),
                 resource: .init(count: 0)
             ),
-            dd: .init(documentVersion: 1)
+            dd: .init(documentVersion: version)
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

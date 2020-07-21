@@ -25,7 +25,7 @@ internal class RUMSessionScope: RUMScope {
     private let dependencies: RUMScopeDependencies
 
     /// This Session UUID.
-    private var sessionUUID: UUID
+    private var sessionUUID: RUMUUID
     /// The start time of this Session.
     private var sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
@@ -38,7 +38,7 @@ internal class RUMSessionScope: RUMScope {
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.sessionUUID = UUID()
+        self.sessionUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
     }

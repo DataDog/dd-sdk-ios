@@ -129,6 +129,9 @@
 		617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B954124BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift */; };
 		617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
 		618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C365E248E85B400520CDE /* DateFormattingTests.swift */; };
+		618DCFD724C7265300589570 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
+		618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */; };
+		618DCFDD24C7287900589570 /* DefaultRUMUUIDGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
 		61AD4E3824531500006E34EA /* DataFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3724531500006E34EA /* DataFormat.swift */; };
@@ -421,6 +424,9 @@
 		617B954124BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorConfigurationTests.swift; sourceTree = "<group>"; };
 		617CEB382456BC3A00AD4669 /* TracingUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUID.swift; sourceTree = "<group>"; };
 		618C365E248E85B400520CDE /* DateFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormattingTests.swift; sourceTree = "<group>"; };
+		618DCFD624C7265300589570 /* RUMUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUID.swift; sourceTree = "<group>"; };
+		618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUIDGenerator.swift; sourceTree = "<group>"; };
+		618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultRUMUUIDGeneratorTests.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
 		61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeatureMocks.swift; sourceTree = "<group>"; };
 		61AD4E3724531500006E34EA /* DataFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataFormat.swift; sourceTree = "<group>"; };
@@ -1188,6 +1194,23 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		618DCFD524C7264100589570 /* UUIDs */ = {
+			isa = PBXGroup;
+			children = (
+				618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */,
+				618DCFD624C7265300589570 /* RUMUUID.swift */,
+			);
+			path = UUIDs;
+			sourceTree = "<group>";
+		};
+		618DCFDA24C7274700589570 /* UUIDs */ = {
+			isa = PBXGroup;
+			children = (
+				618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */,
+			);
+			path = UUIDs;
+			sourceTree = "<group>";
+		};
 		61B9ED142461DFEE00C0DCFF /* IntegrationTestFixtures */ = {
 			isa = PBXGroup;
 			children = (
@@ -1331,6 +1354,7 @@
 				61C3E63124BF143C008053F2 /* RUMMonitor */,
 				61E5333B24B87908003D6C4E /* RUMEvent */,
 				61FF282224B8A1AE000B3D9B /* RUMEventOutputs */,
+				618DCFD524C7264100589570 /* UUIDs */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1342,6 +1366,7 @@
 				617B953B24BF4D7300E6F443 /* RUMMonitor */,
 				61FF281F24B89807000B3D9B /* RUMEvent */,
 				61FF282E24BC5E0E000B3D9B /* RUMEventOutputs */,
+				618DCFDA24C7274700589570 /* UUIDs */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1796,10 +1821,12 @@
 				61C3E63324BF1456008053F2 /* RUMMonitorInternal.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
+				618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */,
 				9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
+				618DCFD724C7265300589570 /* RUMUUID.swift in Sources */,
 				9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61E5333424B7A545003D6C4E /* RUMViewEvent.swift in Sources */,
@@ -1924,6 +1951,7 @@
 				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
 				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
+				618DCFDD24C7287900589570 /* DefaultRUMUUIDGeneratorTests.swift in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,

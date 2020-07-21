@@ -10,12 +10,12 @@ internal struct RUMContext {
     /// An ID of RUM application.
     let rumApplicationID: String
     /// An ID of current RUM session. May change over time.
-    var sessionID: UUID
+    var sessionID: RUMUUID
 
     /// An ID of currently displayed view.
-    var activeViewID: UUID?
+    var activeViewID: RUMUUID?
     /// An URI of currently displayed view.
     var activeViewURI: String?
     /// An ID of active user action.
-    var activeUserActionID: UUID?
+    var activeUserActionID: RUMUUID?
 }

@@ -29,7 +29,7 @@ internal enum RUMCommand {
 
     // MARK: - Properties
 
-    /// Time of the command issuing.
+    /// Time of the command issue.
     var time: Date {
         switch self {
         case .startView(_, _, let time),
@@ -43,6 +43,23 @@ internal enum RUMCommand {
              .addUserAction(_, _, let time),
              .startInitialView(_, _, let time):
             return time
+        }
+    }
+
+    /// Attributes associated with the command.
+    var attributes: [AttributeKey: AttributeValue] {
+        switch self {
+        case .startView(_, let attributes, _),
+             .stopView(_, let attributes, _),
+             .addCurrentViewError(_, _, let attributes, _),
+             .startResource(_, let attributes, _),
+             .stopResource(_, let attributes, _),
+             .stopResourceWithError(_, _, let attributes, _),
+             .startUserAction(_, let attributes, _),
+             .stopUserAction(_, let attributes, _),
+             .addUserAction(_, let attributes, _),
+             .startInitialView(_, let attributes, _):
+            return attributes
         }
     }
 }

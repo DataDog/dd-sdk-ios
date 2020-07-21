@@ -10,14 +10,10 @@ import Foundation
 internal struct RUMScopeDependencies {
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
+    let rumUUIDGenerator: RUMUUIDGenerator
 }
 
 internal class RUMApplicationScope: RUMScope {
-    struct Constants {
-        /// No-op session ID used before the real session is started.
-        static let nullUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
-    }
-
     // MARK: - Child Scopes
 
     /// Session scope. It gets created with the first `.startView` event.
@@ -38,7 +34,7 @@ internal class RUMApplicationScope: RUMScope {
         self.dependencies = dependencies
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
-            sessionID: Constants.nullUUID,
+            sessionID: .nullUUID,
             activeViewID: nil,
             activeViewURI: nil,
             activeUserActionID: nil
