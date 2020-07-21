@@ -27,12 +27,12 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(dateProvider: dateProvider)
         )
 
-        XCTAssertFalse(scope.process(command: .mockAny()))
+        XCTAssertTrue(scope.process(command: .mockAny()))
 
         // Push time forward by the max session duration:
         dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionMaxDuration)
 
-        XCTAssertTrue(scope.process(command: .mockAny()))
+        XCTAssertFalse(scope.process(command: .mockAny()))
     }
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
@@ -43,16 +43,16 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(dateProvider: dateProvider)
         )
 
-        XCTAssertFalse(scope.process(command: .mockAny()))
+        XCTAssertTrue(scope.process(command: .mockAny()))
 
         // Push time forward by less than the session timeout duration:
         dateProvider.advance(bySeconds: 0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertFalse(scope.process(command: .mockAny()))
+        XCTAssertTrue(scope.process(command: .mockAny()))
 
         // Push time forward by the session timeout duration:
         dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertTrue(scope.process(command: .mockAny()))
+        XCTAssertFalse(scope.process(command: .mockAny()))
     }
 }

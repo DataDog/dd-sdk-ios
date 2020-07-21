@@ -49,8 +49,8 @@ internal class RUMApplicationScope: RUMScope {
 
     func process(command: RUMCommand) -> Bool {
         if let currentSession = sessionScope {
-            let shouldRefreshSession = currentSession.process(command: command)
-            if shouldRefreshSession {
+            let keepCurrentSession = currentSession.process(command: command)
+            if !keepCurrentSession {
                 let refreshedSession = RUMSessionScope(parent: self, dependencies: dependencies)
                 sessionScope = refreshedSession
                 _ = refreshedSession.process(command: command)
@@ -66,6 +66,6 @@ internal class RUMApplicationScope: RUMScope {
             }
         }
 
-        return false
+        return true
     }
 }

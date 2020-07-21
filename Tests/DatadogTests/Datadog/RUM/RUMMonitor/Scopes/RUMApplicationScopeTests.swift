@@ -25,7 +25,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
         XCTAssertNil(scope.sessionScope)
-        XCTAssertFalse(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
+        XCTAssertTrue(scope.process(command: .startView(id: UIViewController(), attributes: nil)))
         XCTAssertNotNil(scope.sessionScope)
     }
 
@@ -48,9 +48,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
-        XCTAssertFalse(scope.process(command: .stopView(id: UIViewController(), attributes: nil)))
-        XCTAssertFalse(scope.process(command: .addUserAction(userAction: .tap, attributes: nil)))
-        XCTAssertFalse(scope.process(command: .startResource(resourceName: .mockAny(), attributes: nil)))
+        XCTAssertTrue(scope.process(command: .stopView(id: UIViewController(), attributes: nil)))
+        XCTAssertTrue(scope.process(command: .addUserAction(userAction: .tap, attributes: nil)))
+        XCTAssertTrue(scope.process(command: .startResource(resourceName: .mockAny(), attributes: nil)))
         XCTAssertNil(scope.sessionScope)
     }
 }

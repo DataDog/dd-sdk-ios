@@ -194,7 +194,7 @@ class RUMScopeMock: RUMScope {
             self.commands.append(command)
             self.expectation?.fulfill()
         }
-        return false
+        return true
     }
 }
 

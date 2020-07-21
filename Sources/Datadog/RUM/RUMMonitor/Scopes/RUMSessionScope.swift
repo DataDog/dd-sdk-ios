@@ -47,7 +47,7 @@ internal class RUMSessionScope: RUMScope {
 
     func process(command: RUMCommand) -> Bool {
         if timedOutOrExpired() {
-            return true // end session
+            return false // no longer keep this session
         }
 
         switch command {
@@ -59,7 +59,7 @@ internal class RUMSessionScope: RUMScope {
         }
 
         lastInteractionTime = dependencies.dateProvider.currentDate()
-        return false
+        return true
     }
 
     // MARK: - Sending RUM Events
