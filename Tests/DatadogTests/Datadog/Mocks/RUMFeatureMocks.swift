@@ -162,6 +162,24 @@ extension RUMApplicationScope {
     }
 }
 
+extension RUMSessionScope {
+    static func mockAny() -> RUMSessionScope {
+        return mockWith()
+    }
+
+    static func mockWith(
+        parent: RUMApplicationScope = .mockAny(),
+        dependencies: RUMScopeDependencies = .mockAny(),
+        startTime: Date = .mockAny()
+    ) -> RUMSessionScope {
+        return RUMSessionScope(
+            parent: parent,
+            dependencies: dependencies,
+            startTime: startTime
+        )
+    }
+}
+
 /// `RUMScope` recording processed commands.
 class RUMScopeMock: RUMScope {
     private let queue = DispatchQueue(label: "com.datadoghq.RUMScopeMock")

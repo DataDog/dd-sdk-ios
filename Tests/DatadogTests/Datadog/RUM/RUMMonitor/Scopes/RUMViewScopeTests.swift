@@ -16,7 +16,23 @@ class RUMViewScopeTests: XCTestCase {
     private let parent = RUMScopeMock()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-    // TODO: RUMM-519 Test context propagation
+    func testDefaultContext() {
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
+        let scope = RUMViewScope(
+            parent: sessionScope,
+            dependencies: .mockAny(),
+            identity: view,
+            attributes: [:],
+            startTime: .mockAny()
+        )
+
+        XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
+        XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
+        XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
+        XCTAssertEqual(scope.context.activeViewURI, scope.viewURI)
+        XCTAssertNil(scope.context.activeUserActionID)
+    }
 
     func testWhenInitialViewIsStarted_itSendsApplicationStartAction() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()

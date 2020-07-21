@@ -19,9 +19,9 @@ internal class RUMViewScope: RUMScope {
     private(set) var attributes: [AttributeKey: AttributeValue]
 
     /// This View UUID.
-    private let viewUUID: RUMUUID
+    let viewUUID: RUMUUID
     /// The URI of this View, used as the `view.url` in RUM Explorer.
-    private let viewURI: String
+    let viewURI: String
     /// The start time of this View.
     private var viewStartTime: Date
 
@@ -49,7 +49,10 @@ internal class RUMViewScope: RUMScope {
     // MARK: - RUMScope
 
     var context: RUMContext {
-        return parent.context
+        var context = parent.context
+        context.activeViewID = viewUUID
+        context.activeViewURI = viewURI
+        return context
     }
 
     func process(command: RUMCommand) -> Bool {
