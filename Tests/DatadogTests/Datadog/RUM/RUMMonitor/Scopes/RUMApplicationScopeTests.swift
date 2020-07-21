@@ -29,20 +29,25 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNotNil(scope.sessionScope)
     }
 
-    func testWhenSessionExpires_itStartsANewOne() throws {
+    func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
         var currentTime = Date()
+        let view = UIViewController()
 
-        _ = scope.process(command: .startView(id: UIViewController(), attributes: [:], time: currentTime))
+        _ = scope.process(command: .startView(id: view, attributes: [:], time: currentTime))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
+        let firstsSessionViewScopes = try XCTUnwrap((scope.sessionScope as? RUMSessionScope)?.viewScopes)
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
         _ = scope.process(command: .addUserAction(userAction: .tap, attributes: [:], time: currentTime))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
+        let secondSessionViewScopes = try XCTUnwrap((scope.sessionScope as? RUMSessionScope)?.viewScopes)
 
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
+        XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
+        XCTAssertTrue((secondSessionViewScopes.first as? RUMViewScope)?.identity === view)
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {

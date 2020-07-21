@@ -43,6 +43,32 @@ internal class RUMSessionScope: RUMScope {
         self.lastInteractionTime = startTime
     }
 
+    /// Creates a new Session upon expiration of the previous one.
+    convenience init(
+        from expiredSession: RUMSessionScope,
+        startTime: Date
+    ) {
+        self.init(
+            parent: expiredSession.parent,
+            dependencies: expiredSession.dependencies,
+            startTime: startTime
+        )
+
+        // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
+        self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
+            guard let expiredView = expiredView as? RUMViewScope, let expiredViewIdentity = expiredView.identity else {
+                return nil // if the underlying `UIVIewController` no longer exists, skip transferring this scope
+            }
+            return RUMViewScope(
+                parent: self,
+                dependencies: dependencies,
+                identity: expiredViewIdentity,
+                attributes: expiredView.attributes,
+                startTime: startTime
+            )
+        }
+    }
+
     // MARK: - RUMScope
 
     var context: RUMContext {
@@ -68,7 +94,7 @@ internal class RUMSessionScope: RUMScope {
             break
         }
 
-        // Propagation
+        // Propagate command
         propagate(command: command, to: &viewScopes)
 
         return true
