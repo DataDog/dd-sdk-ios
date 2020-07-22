@@ -99,21 +99,16 @@ class RUMMonitorTests: XCTestCase {
         monitor.stop(userAction: .scroll, attributes: mockAttributes)
         monitor.add(userAction: .tap, attributes: mockAttributes)
 
-        let recordedCommands = scope.waitAndReturnProcessedCommands(count: 9, timeout: 0.5)
+        let commands = scope.waitAndReturnProcessedCommands(count: 9, timeout: 0.5)
 
-        XCTAssertEqual(
-            recordedCommands,
-            [
-                .startView(id: mockView, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .stopView(id: mockView, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .addCurrentViewError(message: "error", error: mockError, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .startResource(resourceName: "/resource/1", attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .stopResource(resourceName: "/resource/1", attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .stopResourceWithError(resourceName: "/resource/1", error: mockError, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .startUserAction(userAction: .scroll, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .stopUserAction(userAction: .scroll, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-                .addUserAction(userAction: .tap, attributes: mockAttributes, time: .mockDecember15th2019At10AMUTC()),
-            ]
-        )
+        XCTAssertTrue(commands[0] is RUMStartViewCommand)
+        XCTAssertTrue(commands[1] is RUMStopViewCommand)
+        XCTAssertTrue(commands[2] is RUMAddCurrentViewErrorCommand)
+        XCTAssertTrue(commands[3] is RUMStartResourceCommand)
+        XCTAssertTrue(commands[4] is RUMStopResourceCommand)
+        XCTAssertTrue(commands[5] is RUMStopResourceWithErrorCommand)
+        XCTAssertTrue(commands[6] is RUMStartUserActionCommand)
+        XCTAssertTrue(commands[7] is RUMStopUserActionCommand)
+        XCTAssertTrue(commands[8] is RUMAddUserActionCommand)
     }
 }

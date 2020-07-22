@@ -85,11 +85,8 @@ internal class RUMSessionScope: RUMScope {
 
         // Apply side effects
         switch command {
-        case .startInitialView(let id, let attributes, let time),
-             .startView(let id, let attributes, let time):
-            viewScopes.append(
-                RUMViewScope(parent: self, dependencies: dependencies, identity: id, attributes: attributes, startTime: time)
-            )
+        case let command as RUMStartViewCommand:
+            startView(on: command)
         default:
             break
         }
@@ -98,6 +95,20 @@ internal class RUMSessionScope: RUMScope {
         propagate(command: command, to: &viewScopes)
 
         return true
+    }
+
+    // MARK: - RUMCommands Processing
+
+    private func startView(on command: RUMStartViewCommand) {
+        viewScopes.append(
+            RUMViewScope(
+                parent: self,
+                dependencies: dependencies,
+                identity: command.identity,
+                attributes: command.attributes,
+                startTime: command.time
+            )
+        )
     }
 
     // MARK: - Private

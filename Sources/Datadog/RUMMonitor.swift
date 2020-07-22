@@ -77,92 +77,92 @@ public class RUMMonitor: RUMMonitorInternal {
 
     func start(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .startView(
-                id: id,
+            command: RUMStartViewCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                identity: id
             )
         )
     }
 
     func stop(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .stopView(
-                id: id,
+            command: RUMStopViewCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                identity: id
             )
         )
     }
 
     func addViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .addCurrentViewError(
-                message: message,
-                error: error,
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                message: message,
+                error: error
             )
         )
     }
 
     func start(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .startResource(
-                resourceName: resourceName,
+            command: RUMStartResourceCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                name: resourceName
             )
         )
     }
 
     func stop(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .stopResource(
-                resourceName: resourceName,
+            command: RUMStopResourceCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                name: resourceName
             )
         )
     }
 
     func stop(resource resourceName: String, withError error: Error, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .stopResourceWithError(
-                resourceName: resourceName,
-                error: error,
+            command: RUMStopResourceWithErrorCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                name: resourceName,
+                error: error
             )
         )
     }
 
     func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .startUserAction(
-                userAction: userAction,
+            command: RUMStartUserActionCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                action: userAction
             )
         )
     }
 
     func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .stopUserAction(
-                userAction: userAction,
+            command: RUMStopUserActionCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                action: userAction
             )
         )
     }
 
     func add(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
         process(
-            command: .addUserAction(
-                userAction: userAction,
+            command: RUMAddUserActionCommand(
+                time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                time: dateProvider.currentDate()
+                action: userAction
             )
         )
     }

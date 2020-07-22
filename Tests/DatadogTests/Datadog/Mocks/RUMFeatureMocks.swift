@@ -112,14 +112,9 @@ class RUMEventOutputMock: RUMEventOutput {
 
 // MARK: - RUMCommand Mocks
 
-extension RUMCommand {
-    static func mockAny() -> RUMCommand {
-        return mockWith(time: .mockAny())
-    }
-
-    static func mockWith(time: Date) -> RUMCommand {
-        return .addUserAction(userAction: .tap, attributes: [:], time: time)
-    }
+struct RUMCommandMock: RUMCommand {
+    var time: Date = .mockAny()
+    var attributes: [AttributeKey: AttributeValue] = [:]
 }
 
 // MARK: - RUMScope Mocks
@@ -227,13 +222,5 @@ class RUMScopeMock: RUMScope {
             self.expectation?.fulfill()
         }
         return true
-    }
-}
-
-// MARK: - Utilities
-
-extension RUMCommand: Equatable {
-    public static func == (_ lhs: RUMCommand, _ rhs: RUMCommand) -> Bool {
-        return String(describing: lhs) == String(describing: rhs)
     }
 }

@@ -20,13 +20,13 @@ class RUMScopeTests: XCTestCase {
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         var scope: RUMScope? = CompletedScope()
-        RUMScopeMock().propagate(command: .mockAny(), to: &scope)
+        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
         XCTAssertNil(scope)
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         var scope: RUMScope? = NonCompletedScope()
-        RUMScopeMock().propagate(command: .mockAny(), to: &scope)
+        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
         XCTAssertNotNil(scope)
     }
 
@@ -38,7 +38,7 @@ class RUMScopeTests: XCTestCase {
             NonCompletedScope()
         ]
 
-        RUMScopeMock().propagate(command: .mockAny(), to: &scopes)
+        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scopes)
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { $0 is NonCompletedScope }.count, 2)
