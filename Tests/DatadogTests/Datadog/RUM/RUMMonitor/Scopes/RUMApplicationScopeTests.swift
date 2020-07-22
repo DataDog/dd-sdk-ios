@@ -56,7 +56,13 @@ class RUMApplicationScopeTests: XCTestCase {
 
         XCTAssertTrue(scope.process(command: RUMStopViewCommand(time: .mockAny(), attributes: [:], identity: view)))
         XCTAssertTrue(scope.process(command: RUMAddUserActionCommand(time: .mockAny(), attributes: [:], action: .tap)))
-        XCTAssertTrue(scope.process(command: RUMStartResourceCommand(time: .mockAny(), attributes: [:], name: .mockAny())))
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceName: .mockAny(), time: .mockAny(), attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0
+                )
+            )
+        )
         XCTAssertNil(scope.sessionScope)
     }
 }

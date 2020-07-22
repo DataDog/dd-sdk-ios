@@ -61,7 +61,7 @@ public class RUMMonitor: RUMMonitorInternal {
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - attributes: custom attributes to attach to the View.
-    public func start(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func startView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
         start(view: viewController, attributes: attributes)
     }
 
@@ -69,8 +69,38 @@ public class RUMMonitor: RUMMonitorInternal {
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - attributes: custom attributes to attach to the View.
-    public func stop(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
         stop(view: viewController, attributes: attributes)
+    }
+
+    /// Notifies that the Resource starts being loaded.
+    /// - Parameters:
+    ///   - resourceName: the name representing this Resource - must be unique among all Resources currently being loaded.
+    ///   - request: the `URLRequest` issued for this Resource
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func startResourceLoading(resourceName: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]? = nil) {
+        start(
+            resource: resourceName,
+            url: request.url?.absoluteString ?? "",
+            httpMethod: request.httpMethod ?? "",
+            attributes: attributes
+        )
+    }
+
+    /// Notifies that the Resource stops being loaded.
+    /// - Parameters:
+    ///   - resourceName: the name representing this Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - response: the `HTTPURLResponse` issued for this Resource
+    ///   - size: size of loaded Resource (in bytes). If not specified, it will be inferred from the `Content-Length` HTTP header if available.
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func stopResourceLoading(resourceName: String, response: HTTPURLResponse, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        stop(
+            resource: resourceName,
+            type: resourceType(from: response.mimeType),
+            httpStatusCode: response.statusCode,
+            size: size ?? resourceSize(from: response),
+            attributes: attributes
+        )
     }
 
     // MARK: - RUMMonitorInternal
@@ -106,33 +136,40 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func start(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
+    func start(resource resourceName: String, url: String, httpMethod: String, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStartResourceCommand(
+                resourceName: resourceName,
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                name: resourceName
+                url: url,
+                httpMethod: httpMethod
             )
         )
     }
 
-    func stop(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?) {
+    func stop(resource resourceName: String, type: String, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopResourceCommand(
+                resourceName: resourceName,
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                name: resourceName
+                type: type,
+                httpStatusCode: httpStatusCode,
+                size: size
             )
         )
     }
 
-    func stop(resource resourceName: String, withError error: Error, attributes: [AttributeKey: AttributeValue]?) {
+    func stop(resource resourceName: String, withError errorMessage: String, errorSource: String, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopResourceWithErrorCommand(
+                resourceName: resourceName,
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                name: resourceName,
-                error: error
+                errorMessage: errorMessage,
+                errorSource: errorSource,
+                httpStatusCode: httpStatusCode
             )
         )
     }
@@ -175,38 +212,15 @@ public class RUMMonitor: RUMMonitorInternal {
         }
     }
 
-    // MARK: - TODO: RUMM-585 Temporary APIs to remove
-
-    public func sendFakeViewEvent(viewURL: String) {
-        guard let rumFeature = RUMFeature.instance else {
-            fatalError("RUMFeature must be initialized.")
-        }
-
-        let dataModel = RUMViewEvent(
-            date: Date(timeIntervalSinceNow: -1).timeIntervalSince1970.toMilliseconds,
-            application: .init(id: applicationScope.context.rumApplicationID),
-            session: .init(id: UUID().uuidString.lowercased(), type: "user"),
-            view: .init(
-                id: UUID().uuidString.lowercased(),
-                url: viewURL,
-                timeSpent: TimeInterval(0.5).toNanoseconds,
-                action: .init(count: 0),
-                error: .init(count: 0),
-                resource: .init(count: 0)
-            ),
-            dd: .init(documentVersion: 1)
-        )
-
-        let builder = RUMEventBuilder(
-            userInfoProvider: rumFeature.userInfoProvider,
-            networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-            carrierInfoProvider: rumFeature.carrierInfoProvider
-        )
-
-        let event = builder.createRUMEvent(with: dataModel, attributes: [:])
-
-        rumFeature.storage.writer.write(value: event)
+    private func resourceType(from mimeType: String?) -> String {
+        return "other" // TODO: RUMM-633 Add Resource type and size
     }
+
+    private func resourceSize(from response: HTTPURLResponse) -> UInt64? {
+        return nil // TODO: RUMM-633 Add Resource type and size
+    }
+
+    // MARK: - TODO: RUMM-585 Temporary APIs to remove
 
     public func sendFakeActionEvent(viewURL: String, actionType: String) {
         guard let rumFeature = RUMFeature.instance else {

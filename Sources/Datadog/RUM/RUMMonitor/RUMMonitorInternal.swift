@@ -19,9 +19,9 @@ internal protocol RUMMonitorInternal {
     func stop(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?)
     func addViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue]?)
 
-    func start(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?)
-    func stop(resource resourceName: String, attributes: [AttributeKey: AttributeValue]?)
-    func stop(resource resourceName: String, withError error: Error, attributes: [AttributeKey: AttributeValue]?)
+    func start(resource resourceName: String, url: String, httpMethod: String, attributes: [AttributeKey: AttributeValue]?)
+    func stop(resource resourceName: String, type: String, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
+    func stop(resource resourceName: String, withError errorMessage: String, errorSource: String, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
 
     func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
     func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)

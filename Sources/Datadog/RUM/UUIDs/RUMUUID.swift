@@ -17,3 +17,7 @@ internal struct RUMUUID: Equatable {
         return rawValue.uuidString.lowercased()
     }
 }
+
+extension Optional where Wrapped == RUMUUID {
+    var orNull: RUMUUID { self ?? RUMUUID.nullUUID }
+}

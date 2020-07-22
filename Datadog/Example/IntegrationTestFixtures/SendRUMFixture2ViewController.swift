@@ -10,12 +10,12 @@ internal class SendRUMFixture2ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        rumMonitor.start(viewController: self)
+        rumMonitor.startView(viewController: self)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        rumMonitor.stop(viewController: self)
+        rumMonitor.stopView(viewController: self)
     }
 }

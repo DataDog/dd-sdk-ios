@@ -55,6 +55,11 @@ internal class RUMEventMatcher {
         return try jsonDataDecoder.decode(DM.self, from: jsonData)
     }
 
+    func model<DM: Decodable>(ofType type: DM.Type, matches matcher: (DM) -> Void) throws {
+        let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
+        matcher(model)
+    }
+
     func model<DM: Decodable>(isTypeOf type: DM.Type) -> Bool {
         return (try? model() as DM) != nil
     }

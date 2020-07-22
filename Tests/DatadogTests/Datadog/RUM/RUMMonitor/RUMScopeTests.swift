@@ -19,15 +19,35 @@ class RUMScopeTests: XCTestCase {
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
+        // Direct reference
         var scope: RUMScope? = CompletedScope()
         RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
         XCTAssertNil(scope)
+
+        // Dictionary item reference
+        var dictionaryOfScopes: [String: RUMScope] = [
+            "a": CompletedScope(),
+            "b": NonCompletedScope(),
+        ]
+        RUMScopeMock().propagate(command: RUMCommandMock(), to: &dictionaryOfScopes["a"])
+        XCTAssertNil(dictionaryOfScopes["a"])
+        XCTAssertNotNil(dictionaryOfScopes["b"])
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
+        // Direct reference
         var scope: RUMScope? = NonCompletedScope()
         RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
         XCTAssertNotNil(scope)
+
+        // Dictionary item reference
+        var dictionaryOfScopes: [String: RUMScope] = [
+            "a": CompletedScope(),
+            "b": NonCompletedScope(),
+        ]
+        RUMScopeMock().propagate(command: RUMCommandMock(), to: &dictionaryOfScopes["b"])
+        XCTAssertNotNil(dictionaryOfScopes["a"])
+        XCTAssertNotNil(dictionaryOfScopes["b"])
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScopes() {
