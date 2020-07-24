@@ -40,7 +40,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        _ = scope.process(command: RUMAddUserActionCommand(time: currentTime, attributes: [:], action: .tap))
+        _ = scope.process(command: RUMAddUserActionCommand(time: currentTime, attributes: [:], actionType: .tap))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
@@ -53,7 +53,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
         XCTAssertTrue(scope.process(command: RUMStopViewCommand(time: .mockAny(), attributes: [:], identity: mockView)))
-        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand(time: .mockAny(), attributes: [:], action: .tap)))
+        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand(time: .mockAny(), attributes: [:], actionType: .tap)))
         XCTAssertTrue(
             scope.process(
                 command: RUMStopResourceCommand(

@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal enum RUMUserAction {
+internal enum RUMUserActionType {
     case tap
     case scroll
     case swipe
@@ -23,7 +23,7 @@ internal protocol RUMMonitorInternal {
     func stop(resource resourceName: String, type: String, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
     func stop(resource resourceName: String, withError errorMessage: String, errorSource: String, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
 
-    func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
-    func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
-    func add(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?)
+    func start(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?)
+    func stop(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?)
+    func add(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?)
 }

@@ -46,11 +46,30 @@ internal struct RUMActionEvent: Codable, RUMDataModel {
     }
 
     struct Action: Codable {
+        enum CodingKeys: String, CodingKey {
+            case id
+            case type
+            case loadingTime = "loading_time"
+            case resource
+            case error
+        }
+
         /// Open discussion: should this be non-optional?
         let id: String?
         /// Allowed values:
         /// `"custom", "click", "tap", "scroll", "swipe", "application_start"`
         let type: String
+        let loadingTime: UInt64?
+
+        let resource: Resource?
+        let error: Error?
+
+        struct Resource: Codable {
+            let count: UInt
+        }
+        struct Error: Codable {
+            let count: UInt
+        }
     }
 
     struct DD: Codable {

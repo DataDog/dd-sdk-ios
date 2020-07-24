@@ -97,7 +97,7 @@ internal class RUMSessionScope: RUMScope {
         }
 
         // Propagate command
-        manage(childScopes: &viewScopes, byPropagatingCommand: command)
+        viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
 
         return true
     }

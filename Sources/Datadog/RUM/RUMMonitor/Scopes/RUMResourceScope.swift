@@ -14,7 +14,7 @@ internal class RUMResourceScope: RUMScope {
     private let dependencies: RUMScopeDependencies
 
     /// The name used to identify this Resource.
-    private(set) var resourceName: String
+    internal let resourceName: String
     /// Resource attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
 
@@ -69,7 +69,7 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMResourceEvent(
-            date: command.time.timeIntervalSince1970.toMilliseconds,
+            date: resourceLoadingStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
             session: .init(id: context.sessionID.toString, type: "user"),
             view: .init(

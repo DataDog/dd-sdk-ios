@@ -174,32 +174,32 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+    func start(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                action: userAction
+                actionType: userAction
             )
         )
     }
 
-    func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+    func stop(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                action: userAction
+                actionType: userAction
             )
         )
     }
 
-    func add(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+    func add(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                action: userAction
+                actionType: userAction
             )
         )
     }
@@ -237,7 +237,10 @@ public class RUMMonitor: RUMMonitorInternal {
             ),
             action: .init(
                 id: UUID().uuidString.lowercased(),
-                type: actionType
+                type: actionType,
+                loadingTime: nil,
+                resource: nil,
+                error: nil
             ),
             dd: .init()
         )

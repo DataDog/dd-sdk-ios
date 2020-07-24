@@ -21,11 +21,8 @@ class RUMResourceScopeTests: XCTestCase {
     )
 
     func testDefaultContext() {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
-        let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
-        let viewScope: RUMViewScope = .mockWith(parent: sessionScope)
         let scope = RUMResourceScope(
-            parent: viewScope,
+            parent: parent,
             dependencies: .mockAny(),
             resourceName: .mockAny(),
             attributes: [:],
@@ -34,11 +31,11 @@ class RUMResourceScopeTests: XCTestCase {
             httpMethod: .mockAny()
         )
 
-        XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
-        XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
-        XCTAssertEqual(scope.context.activeViewID, viewScope.viewUUID)
-        XCTAssertEqual(scope.context.activeViewURI, viewScope.viewURI)
-        XCTAssertNil(scope.context.activeUserActionID)
+        XCTAssertEqual(scope.context.rumApplicationID, parent.context.rumApplicationID)
+        XCTAssertEqual(scope.context.sessionID, parent.context.sessionID)
+        XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(parent.context.activeViewID))
+        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(parent.context.activeViewURI))
+        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
     }
 
     func testWhenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -69,10 +66,9 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toString)
-        XCTAssertEqual(event.model.session.type, "user")
         XCTAssertEqual(event.model.session.type, "user")
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toString)
         XCTAssertEqual(event.model.view.url, "FooViewController")
@@ -119,7 +115,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toString)
-        XCTAssertEqual(event.model.session.type, "user")
         XCTAssertEqual(event.model.session.type, "user")
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toString)
         XCTAssertEqual(event.model.view.url, "FooViewController")

@@ -12,6 +12,8 @@ internal class RUMViewScope: RUMScope {
 
     /// Active Resource scopes, keyed by the Resource name.
     private(set) var resourceScopes: [String: RUMResourceScope] = [:]
+    /// Active User Action scope. There can be only one active user action at a time.
+    private(set) var userActionScope: RUMUserActionScope?
 
     // MARK: - Initialization
 
@@ -24,7 +26,7 @@ internal class RUMViewScope: RUMScope {
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
 
-    /// This View UUID.
+    /// This View's UUID.
     let viewUUID: RUMUUID
     /// The URI of this View, used as the `view.url` in RUM Explorer.
     let viewURI: String
@@ -60,28 +62,64 @@ internal class RUMViewScope: RUMScope {
         var context = parent.context
         context.activeViewID = viewUUID
         context.activeViewURI = viewURI
+        context.activeUserActionID = userActionScope?.actionUUID
         return context
     }
 
     func process(command: RUMCommand) -> Bool {
         // Apply side effects
         switch command {
+        // View commands
         case let command as RUMStartViewCommand where command.identity === identity:
             startView(on: command)
         case let command as RUMStopViewCommand where command.identity === identity:
-            stopView(on: command)
+            willStopView(on: command)
             return false
+
+        // Resource commands
         case let command as RUMStartResourceCommand:
             startResource(on: command)
-        case let command as RUMResourceCommand where command is RUMStopResourceCommand || command is RUMStopResourceWithErrorCommand:
-            stopResource(on: command)
+
+        // User Action commands
+        case let command as RUMStartUserActionCommand:
+            startContinuousUserAction(on: command)
+        case let command as RUMAddUserActionCommand:
+            addDiscreteUserAction(on: command)
+
         default:
             break
         }
 
-        // Propagate command
+        // Track active scopes
+        let beforeResourcesCount = resourceScopes.count
+        let beforeHadUserAction = userActionScope != nil
+
+        // Propagate to Resource scopes
         if let resourceCommand = command as? RUMResourceCommand {
-            manage(childScope: &resourceScopes[resourceCommand.resourceName], byPropagatingCommand: resourceCommand)
+            resourceScopes[resourceCommand.resourceName] = manage(
+                childScope: resourceScopes[resourceCommand.resourceName],
+                byPropagatingCommand: resourceCommand
+            )
+        }
+
+        // Propagate to User Action scope
+        userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
+
+        let afterResourcesCount = resourceScopes.count
+        let afterHasUserAction = userActionScope != nil
+
+        // Consider closed scopes
+        let didTrackResource = afterResourcesCount < beforeResourcesCount
+        let didTrackUserAction = beforeHadUserAction && !afterHasUserAction
+
+        if didTrackResource {
+            resourcesCount += 1
+            sendViewUpdateEvent(on: command)
+        }
+
+        if didTrackUserAction {
+            actionsCount += 1
+            sendViewUpdateEvent(on: command)
         }
 
         return true
@@ -97,7 +135,7 @@ internal class RUMViewScope: RUMScope {
         sendViewUpdateEvent(on: command)
     }
 
-    private func stopView(on command: RUMStopViewCommand) {
+    private func willStopView(on command: RUMStopViewCommand) {
         sendViewUpdateEvent(on: command)
     }
 
@@ -113,9 +151,26 @@ internal class RUMViewScope: RUMScope {
         )
     }
 
-    private func stopResource(on command: RUMResourceCommand) {
-        resourcesCount += 1
-        sendViewUpdateEvent(on: command)
+    private func startContinuousUserAction(on command: RUMStartUserActionCommand) {
+        userActionScope = RUMUserActionScope(
+            parent: self,
+            dependencies: dependencies,
+            actionType: command.actionType,
+            attributes: command.attributes,
+            startTime: command.time,
+            isContinuous: true
+        )
+    }
+
+    private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
+        userActionScope = RUMUserActionScope(
+            parent: self,
+            dependencies: dependencies,
+            actionType: command.actionType,
+            attributes: command.attributes,
+            startTime: command.time,
+            isContinuous: false
+        )
     }
 
     // MARK: - Sending RUM Events
@@ -131,7 +186,10 @@ internal class RUMViewScope: RUMScope {
             ),
             action: .init(
                 id: dependencies.rumUUIDGenerator.generateUnique().toString,
-                type: "application_start"
+                type: "application_start",
+                loadingTime: nil,
+                resource: nil,
+                error: nil
             ),
             dd: .init()
         )
