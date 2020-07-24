@@ -93,10 +93,8 @@ internal class RUMViewScope: RUMScope {
         if command.isInitialView {
             actionsCount += 1
             sendApplicationStartAction()
-            sendViewUpdateEvent(on: command)
-        } else {
-            sendViewUpdateEvent(on: command)
         }
+        sendViewUpdateEvent(on: command)
     }
 
     private func stopView(on command: RUMStopViewCommand) {
