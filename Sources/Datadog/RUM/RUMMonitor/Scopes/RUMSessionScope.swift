@@ -21,6 +21,7 @@ internal class RUMSessionScope: RUMScope {
 
     // MARK: - Initialization
 
+    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
     unowned let parent: RUMScope
     private let dependencies: RUMScopeDependencies
 
