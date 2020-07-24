@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal class SendRUMFixture1ViewController: UIViewController {
+internal class SendRUMFixture2ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 

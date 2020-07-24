@@ -15,3 +15,32 @@ internal protocol RUMScope: class {
     /// * `false` if the scope should be closed.
     func process(command: RUMCommand) -> Bool
 }
+
+extension RUMScope {
+    /// Propagates given `command` to the child scope and manages its lifecycle by
+    /// removing it if it gets closed.
+    func propagate(command: RUMCommand, to chilScope: inout RUMScope?) {
+        if chilScope?.process(command: command) == false {
+            chilScope = nil
+        }
+    }
+
+    /// Propagates given `command` through array of child scopes and manages their lifecycle by
+    /// removing child scopes that get closed.
+    func propagate(command: RUMCommand, to childScopes: inout [RUMScope]) {
+        childScopes = childScopes.compactMap { childScope in
+            let shouldBeKept = childScope.process(command: command)
+            return shouldBeKept ? childScope : nil
+        }
+    }
+}
+
+extension Dictionary where Key == AttributeKey, Value == AttributeValue {
+    /// Merges given `rumCommandAttributes` to current dictionary, by overwriting values.
+    mutating func merge(rumCommandAttributes: [AttributeKey: AttributeValue]?) {
+        guard let additionalAttributes = rumCommandAttributes else {
+            return
+        }
+        merge(additionalAttributes) { _, new in new }
+    }
+}

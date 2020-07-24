@@ -237,6 +237,8 @@ extension UserInfo {
     }
 }
 
+extension UserInfo: EquatableInTests {}
+
 extension UserInfoProvider {
     static func mockAny() -> UserInfoProvider {
         return mockWith()
@@ -358,6 +360,8 @@ extension NetworkConnectionInfo {
     }
 }
 
+extension NetworkConnectionInfo: EquatableInTests {}
+
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
     private var _current: NetworkConnectionInfo?
@@ -412,6 +416,8 @@ extension CarrierInfo {
         )
     }
 }
+
+extension CarrierInfo: EquatableInTests {}
 
 class CarrierInfoProviderMock: CarrierInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")

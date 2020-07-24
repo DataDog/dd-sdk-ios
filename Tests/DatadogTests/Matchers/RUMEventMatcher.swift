@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import XCTest
 
 /// Provides set of assertions for single `RUMEvent<DM: RUMDataModel>` JSON object and collection of `[RUMEvent<DM: RUMDataModel>]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced except `RUMDataModel` implementations
@@ -54,6 +55,10 @@ internal class RUMEventMatcher {
         return try jsonDataDecoder.decode(DM.self, from: jsonData)
     }
 
+    func model<DM: Decodable>(isTypeOf type: DM.Type) -> Bool {
+        return (try? model() as DM) != nil
+    }
+
     func userID()               throws -> String { try jsonMatcher.value(forKeyPath: "usr.id") }
     func userName()             throws -> String { try jsonMatcher.value(forKeyPath: "usr.name") }
     func userEmail()            throws -> String { try jsonMatcher.value(forKeyPath: "usr.email") }
@@ -73,4 +78,18 @@ internal class RUMEventMatcher {
     func attribute<T: Equatable>(forKeyPath keyPath: String) throws -> T {
         return try jsonMatcher.value(forKeyPath: keyPath)
     }
+}
+
+func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
+    guard let string = string else {
+        XCTFail("`nil` is not valid RUM UUID", file: file, line: line)
+        return
+    }
+    let regex = #"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"#
+    XCTAssertNotNil(
+        string.range(of: regex, options: .regularExpression, range: nil, locale: nil),
+        "\(string) is not valid RUM UUID - it doesn't match \(regex)",
+        file: file,
+        line: line
+    )
 }

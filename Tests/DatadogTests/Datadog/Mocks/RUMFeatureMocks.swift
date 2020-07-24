@@ -97,14 +97,28 @@ extension RUMEventBuilder {
 }
 
 class RUMEventOutputMock: RUMEventOutput {
-    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {}
+    private var recordedEvents: [Any] = []
+
+    func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
+        return recordedEvents.compactMap { event in event as? E }
+    }
+
+    // MARK: - RUMEventOutput
+
+    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {
+        recordedEvents.append(rumEvent)
+    }
 }
 
 // MARK: - RUMCommand Mocks
 
 extension RUMCommand {
     static func mockAny() -> RUMCommand {
-        return .addUserAction(userAction: .tap, attributes: nil)
+        return mockWith(time: .mockAny())
+    }
+
+    static func mockWith(time: Date) -> RUMCommand {
+        return .addUserAction(userAction: .tap, attributes: [:], time: time)
     }
 }
 
@@ -116,18 +130,18 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider(),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: nil,
             carrierInfoProvider: nil
         ),
-        eventOutput: RUMEventOutput = RUMEventOutputMock()
+        eventOutput: RUMEventOutput = RUMEventOutputMock(),
+        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            dateProvider: dateProvider,
             eventBuilder: eventBuilder,
-            eventOutput: eventOutput
+            eventOutput: eventOutput,
+            rumUUIDGenerator: rumUUIDGenerator
         )
     }
 }
@@ -144,6 +158,24 @@ extension RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies
+        )
+    }
+}
+
+extension RUMSessionScope {
+    static func mockAny() -> RUMSessionScope {
+        return mockWith()
+    }
+
+    static func mockWith(
+        parent: RUMApplicationScope = .mockAny(),
+        dependencies: RUMScopeDependencies = .mockAny(),
+        startTime: Date = .mockAny()
+    ) -> RUMSessionScope {
+        return RUMSessionScope(
+            parent: parent,
+            dependencies: dependencies,
+            startTime: startTime
         )
     }
 }
@@ -183,7 +215,7 @@ class RUMScopeMock: RUMScope {
 
     let context = RUMContext(
         rumApplicationID: .mockAny(),
-        sessionID: UUID(),
+        sessionID: .nullUUID,
         activeViewID: nil,
         activeViewURI: nil,
         activeUserActionID: nil

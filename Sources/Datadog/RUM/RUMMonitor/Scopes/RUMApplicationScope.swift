@@ -8,17 +8,12 @@ import Foundation
 
 /// Injection container for common dependencies used by all `RUMScopes`.
 internal struct RUMScopeDependencies {
-    let dateProvider: DateProvider
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
+    let rumUUIDGenerator: RUMUUIDGenerator
 }
 
 internal class RUMApplicationScope: RUMScope {
-    struct Constants {
-        /// No-op session ID used before the real session is started.
-        static let nullUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
-    }
-
     // MARK: - Child Scopes
 
     /// Session scope. It gets created with the first `.startView` event.
@@ -36,7 +31,7 @@ internal class RUMApplicationScope: RUMScope {
         self.dependencies = dependencies
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
-            sessionID: Constants.nullUUID,
+            sessionID: .nullUUID,
             activeViewID: nil,
             activeViewURI: nil,
             activeUserActionID: nil
@@ -48,24 +43,35 @@ internal class RUMApplicationScope: RUMScope {
     let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
-        if let currentSession = sessionScope {
-            let keepCurrentSession = currentSession.process(command: command)
-            if !keepCurrentSession {
-                let refreshedSession = RUMSessionScope(parent: self, dependencies: dependencies)
-                sessionScope = refreshedSession
-                _ = refreshedSession.process(command: command)
+        if let currentSession = sessionScope as? RUMSessionScope {
+            propagate(command: command, to: &sessionScope)
+
+            if sessionScope == nil { // if session expired
+                refresh(expiredSession: currentSession, on: command)
             }
         } else {
             switch command {
-            case .startView:
-                let newSession = RUMSessionScope(parent: self, dependencies: dependencies)
-                sessionScope = newSession
-                _ = newSession.process(command: command)
+            case .startView(let id, let attributes, _):
+                startInitialSessionWithView(id: id, attributes: attributes, on: command)
             default:
                 break
             }
         }
 
         return true
+    }
+
+    // MARK: - Private
+
+    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand) {
+        let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time)
+        sessionScope = refreshedSession
+        _ = refreshedSession.process(command: command)
+    }
+
+    private func startInitialSessionWithView(id: AnyObject, attributes: [AttributeKey: AttributeValue], on command: RUMCommand) {
+        let initialSession = RUMSessionScope(parent: self, dependencies: dependencies, startTime: command.time)
+        sessionScope = initialSession
+        _ = initialSession.process(command: .startInitialView(id: id, attributes: attributes, time: command.time))
     }
 }

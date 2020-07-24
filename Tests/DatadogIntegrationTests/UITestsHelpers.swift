@@ -33,7 +33,21 @@ class ExampleApplication: XCUIApplication {
         tables.staticTexts["Send traces for UI Tests"].tap()
     }
 
-    func tapSendRUMEventsForUITests() {
+    func tapSendRUMEventsForUITests() -> RUMFixture1Screen {
         tables.staticTexts["Send RUM events for UI Tests"].tap()
+        return RUMFixture1Screen()
+    }
+}
+
+class RUMFixture1Screen: XCUIApplication {
+    func tapPushNextScreen() -> RUMFixture2Screen {
+        buttons["Push Next Screen"].tap()
+        return RUMFixture2Screen()
+    }
+}
+
+class RUMFixture2Screen: XCUIApplication {
+    func tapPushNextScreen() {
+        buttons["Push Next Screen"].tap()
     }
 }

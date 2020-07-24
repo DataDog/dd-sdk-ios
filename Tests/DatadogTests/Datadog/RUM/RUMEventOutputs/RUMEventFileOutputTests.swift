@@ -44,7 +44,7 @@ class RUMEventFileOutputTests: XCTestCase {
         let dataModel1 = RUMDataModelMock(attribute: "foo")
         let dataModel2 = RUMDataModelMock(attribute: "bar")
         let event1 = builder.createRUMEvent(with: dataModel1, attributes: ["custom.attribute": "value"])
-        let event2 = builder.createRUMEvent(with: dataModel2, attributes: nil)
+        let event2 = builder.createRUMEvent(with: dataModel2, attributes: [:])
 
         output.write(rumEvent: event1)
         queue.sync {} // wait on writter queue
