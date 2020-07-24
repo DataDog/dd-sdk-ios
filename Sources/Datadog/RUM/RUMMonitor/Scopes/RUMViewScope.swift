@@ -80,7 +80,7 @@ internal class RUMViewScope: RUMScope {
 
         // Propagate command
         if let resourceCommand = command as? RUMResourceCommand {
-            propagate(command: resourceCommand, to: &resourceScopes[resourceCommand.resourceName])
+            manage(childScope: &resourceScopes[resourceCommand.resourceName], byPropagatingCommand: resourceCommand)
         }
 
         return true

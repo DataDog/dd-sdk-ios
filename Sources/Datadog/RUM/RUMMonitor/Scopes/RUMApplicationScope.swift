@@ -44,7 +44,7 @@ internal class RUMApplicationScope: RUMScope {
 
     func process(command: RUMCommand) -> Bool {
         if let currentSession = sessionScope as? RUMSessionScope {
-            propagate(command: command, to: &sessionScope)
+            manage(childScope: &sessionScope, byPropagatingCommand: command)
 
             if sessionScope == nil { // if session expired
                 refresh(expiredSession: currentSession, on: command)

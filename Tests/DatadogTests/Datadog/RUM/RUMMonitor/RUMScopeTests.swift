@@ -21,7 +21,7 @@ class RUMScopeTests: XCTestCase {
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         // Direct reference
         var scope: RUMScope? = CompletedScope()
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
+        RUMScopeMock().manage(childScope: &scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNil(scope)
 
         // Dictionary item reference
@@ -29,7 +29,7 @@ class RUMScopeTests: XCTestCase {
             "a": CompletedScope(),
             "b": NonCompletedScope(),
         ]
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &dictionaryOfScopes["a"])
+        RUMScopeMock().manage(childScope: &dictionaryOfScopes["a"], byPropagatingCommand: RUMCommandMock())
         XCTAssertNil(dictionaryOfScopes["a"])
         XCTAssertNotNil(dictionaryOfScopes["b"])
     }
@@ -37,7 +37,7 @@ class RUMScopeTests: XCTestCase {
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         // Direct reference
         var scope: RUMScope? = NonCompletedScope()
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
+        RUMScopeMock().manage(childScope: &scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNotNil(scope)
 
         // Dictionary item reference
@@ -45,7 +45,7 @@ class RUMScopeTests: XCTestCase {
             "a": CompletedScope(),
             "b": NonCompletedScope(),
         ]
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &dictionaryOfScopes["b"])
+        RUMScopeMock().manage(childScope: &dictionaryOfScopes["b"], byPropagatingCommand: RUMCommandMock())
         XCTAssertNotNil(dictionaryOfScopes["a"])
         XCTAssertNotNil(dictionaryOfScopes["b"])
     }
@@ -58,7 +58,7 @@ class RUMScopeTests: XCTestCase {
             NonCompletedScope()
         ]
 
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scopes)
+        RUMScopeMock().manage(childScopes: &scopes, byPropagatingCommand: RUMCommandMock())
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { $0 is NonCompletedScope }.count, 2)
