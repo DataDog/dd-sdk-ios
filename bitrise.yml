@@ -62,6 +62,14 @@ workflows:
             #!/usr/bin/env bash
             set -e
             ./tools/license/check-license.sh
+    - script@1.1.6:
+        title: Verify RUM data models
+        is_always_run: true
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            ./tools/generate-models/run.sh verify
 
   run_unit_tests:
     description: |-
