@@ -11,7 +11,7 @@ internal class RUMViewScope: RUMScope {
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by the Resource name.
-    private(set) var resourceScopes: [String: RUMScope] = [:]
+    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
 
     // MARK: - Initialization
 

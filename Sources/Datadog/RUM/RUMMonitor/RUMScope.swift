@@ -19,7 +19,7 @@ internal protocol RUMScope: class {
 extension RUMScope {
     /// Propagates given `command` to the child scope and manages its lifecycle by
     /// removing it if it gets closed.
-    func manage(childScope: inout RUMScope?, byPropagatingCommand command: RUMCommand) {
+    func manage<S: RUMScope>(childScope: inout S?, byPropagatingCommand command: RUMCommand) {
         if childScope?.process(command: command) == false {
             childScope = nil
         }
@@ -27,7 +27,7 @@ extension RUMScope {
 
     /// Propagates given `command` through array of child scopes and manages their lifecycle by
     /// removing child scopes that get closed.
-    func manage(childScopes: inout [RUMScope], byPropagatingCommand command: RUMCommand) {
+    func manage<S: RUMScope>(childScopes: inout [S], byPropagatingCommand command: RUMCommand) {
         childScopes = childScopes.compactMap { childScope in
             let shouldBeKept = childScope.process(command: command)
             return shouldBeKept ? childScope : nil

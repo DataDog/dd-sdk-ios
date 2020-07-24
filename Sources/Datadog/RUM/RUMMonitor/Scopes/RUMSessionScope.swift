@@ -17,7 +17,7 @@ internal class RUMSessionScope: RUMScope {
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
-    private(set) var viewScopes: [RUMScope] = []
+    private(set) var viewScopes: [RUMViewScope] = []
 
     // MARK: - Initialization
 
@@ -57,7 +57,7 @@ internal class RUMSessionScope: RUMScope {
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
-            guard let expiredView = expiredView as? RUMViewScope, let expiredViewIdentity = expiredView.identity else {
+            guard let expiredViewIdentity = expiredView.identity else {
                 return nil // if the underlying `UIVIewController` no longer exists, skip transferring its scope
             }
             return RUMViewScope(

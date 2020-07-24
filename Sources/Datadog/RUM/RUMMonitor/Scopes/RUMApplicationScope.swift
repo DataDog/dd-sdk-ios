@@ -18,7 +18,7 @@ internal class RUMApplicationScope: RUMScope {
 
     /// Session scope. It gets created with the first `.startView` event.
     /// Might be re-created later according to session duration constraints.
-    private(set) var sessionScope: RUMScope?
+    private(set) var sessionScope: RUMSessionScope?
 
     // MARK: - Initialization
 
@@ -43,7 +43,7 @@ internal class RUMApplicationScope: RUMScope {
     let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
-        if let currentSession = sessionScope as? RUMSessionScope {
+        if let currentSession = sessionScope {
             manage(childScope: &sessionScope, byPropagatingCommand: command)
 
             if sessionScope == nil { // if session expired

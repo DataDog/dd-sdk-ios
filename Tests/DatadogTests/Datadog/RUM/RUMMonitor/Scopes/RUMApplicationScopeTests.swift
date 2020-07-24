@@ -37,18 +37,18 @@ class RUMApplicationScopeTests: XCTestCase {
 
         _ = scope.process(command: RUMStartViewCommand(time: currentTime, attributes: [:], identity: view))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
-        let firstsSessionViewScopes = try XCTUnwrap((scope.sessionScope as? RUMSessionScope)?.viewScopes)
+        let firstsSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
         _ = scope.process(command: RUMAddUserActionCommand(time: currentTime, attributes: [:], action: .tap))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
-        let secondSessionViewScopes = try XCTUnwrap((scope.sessionScope as? RUMSessionScope)?.viewScopes)
+        let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
         XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
-        XCTAssertTrue((secondSessionViewScopes.first as? RUMViewScope)?.identity === view)
+        XCTAssertTrue(secondSessionViewScopes.first?.identity === view)
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
