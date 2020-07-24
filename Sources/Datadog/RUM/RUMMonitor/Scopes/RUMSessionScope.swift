@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import class UIKit.UIViewController
 
 internal class RUMSessionScope: RUMScope {
     struct Constants {
@@ -59,6 +60,9 @@ internal class RUMSessionScope: RUMScope {
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
             guard let expiredViewIdentity = expiredView.identity else {
                 return nil // if the underlying `UIVIewController` no longer exists, skip transferring its scope
+            }
+            guard (expiredViewIdentity as? UIViewController)?.view?.window != nil else {
+                return nil // TODO: RUMM-634 Produce a RUM error when the VC is leaked
             }
             return RUMViewScope(
                 parent: self,

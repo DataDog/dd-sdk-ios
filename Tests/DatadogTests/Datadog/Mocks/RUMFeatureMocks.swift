@@ -205,8 +205,15 @@ extension RUMSessionScope {
     }
 }
 
+private let mockWindow = UIWindow(frame: .zero)
+
 /// Holds the `mockView` object so it can be weakily referenced by `RUMViewScope` mocks.
-let mockView = UIViewController()
+let mockView: UIViewController = {
+    let viewController = UIViewController()
+    mockWindow.rootViewController = viewController
+    mockWindow.makeKeyAndVisible()
+    return viewController
+}()
 
 extension RUMViewScope {
     static func mockAny() -> RUMViewScope {
