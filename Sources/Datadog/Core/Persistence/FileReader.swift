@@ -38,11 +38,17 @@ internal final class FileReader {
         }
     }
 
+    private static let utf8NewlineData = "\n".data(using: .utf8)!.first! // swiftlint:disable:this force_unwrapping
     private func synchronizedReadNextBatch() -> Batch? {
         if let file = orchestrator.getReadableFile(excludingFilesNamed: Set(filesRead.map { $0.name })) {
             do {
                 let fileData = try file.read()
                 let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
+                // Validate data here, return nil if corrupt
+                // NOTE: dataFormat.validate(batchData) would make more sense
+                try batchData.split(separator: Self.utf8NewlineData).forEach {
+                    try JSONSerialization.jsonObject(with: $0, options: [])
+                }
                 return Batch(data: batchData, file: file)
             } catch {
                 developerLogger?.error("🔥 Failed to read file: \(error)")
