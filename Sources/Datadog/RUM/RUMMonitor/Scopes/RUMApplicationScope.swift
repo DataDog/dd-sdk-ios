@@ -51,8 +51,8 @@ internal class RUMApplicationScope: RUMScope {
             }
         } else {
             switch command {
-            case .startView(let id, let attributes, _):
-                startInitialSessionWithView(id: id, attributes: attributes, on: command)
+            case let command as RUMStartViewCommand:
+                startInitialSession(on: command)
             default:
                 break
             }
@@ -69,9 +69,11 @@ internal class RUMApplicationScope: RUMScope {
         _ = refreshedSession.process(command: command)
     }
 
-    private func startInitialSessionWithView(id: AnyObject, attributes: [AttributeKey: AttributeValue], on command: RUMCommand) {
+    private func startInitialSession(on command: RUMStartViewCommand) {
+        var startInitialViewCommand = command
+        startInitialViewCommand.isInitialView = true
         let initialSession = RUMSessionScope(parent: self, dependencies: dependencies, startTime: command.time)
         sessionScope = initialSession
-        _ = initialSession.process(command: .startInitialView(id: id, attributes: attributes, time: command.time))
+        _ = initialSession.process(command: startInitialViewCommand)
     }
 }

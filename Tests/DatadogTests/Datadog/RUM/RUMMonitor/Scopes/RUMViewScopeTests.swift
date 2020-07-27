@@ -44,7 +44,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(scope.process(command: .startInitialView(id: view, attributes: ["foo": "bar"], time: currentTime)))
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar"], identity: view, isInitialView: true)
+            )
+        )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
@@ -71,7 +75,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(scope.process(command: .startInitialView(id: view, attributes: ["foo": "bar"], time: currentTime)))
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar"], identity: view, isInitialView: true)
+            )
+        )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).first)
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
@@ -101,7 +109,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(scope.process(command: .startView(id: view, attributes: ["foo": "bar 2"], time: currentTime)))
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar 2"], identity: view)
+            )
+        )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).first)
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
@@ -131,9 +143,14 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(scope.process(command: .startView(id: view, attributes: [:], time: currentTime)))
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand(time: currentTime, attributes: [:], identity: view))
+        )
         currentTime.addTimeInterval(2)
-        XCTAssertFalse(scope.process(command: .stopView(id: view, attributes: [:], time: currentTime)), "The scope should end.")
+        XCTAssertFalse(
+            scope.process(command: RUMStopViewCommand(time: currentTime, attributes: [:], identity: view)),
+            "The scope should end."
+        )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).dropFirst().first)
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)

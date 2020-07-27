@@ -8,6 +8,8 @@ import XCTest
 @testable import Datadog
 
 class RUMApplicationScopeTests: XCTestCase {
+    private let view = UIViewController()
+
     func testRootContext() {
         let scope = RUMApplicationScope(
             rumApplicationID: "abc-123",
@@ -25,23 +27,22 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
         XCTAssertNil(scope.sessionScope)
-        XCTAssertTrue(scope.process(command: .startView(id: UIViewController(), attributes: [:], time: .mockAny())))
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand(time: .mockAny(), attributes: [:], identity: view)))
         XCTAssertNotNil(scope.sessionScope)
     }
 
     func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
         var currentTime = Date()
-        let view = UIViewController()
 
-        _ = scope.process(command: .startView(id: view, attributes: [:], time: currentTime))
+        _ = scope.process(command: RUMStartViewCommand(time: currentTime, attributes: [:], identity: view))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let firstsSessionViewScopes = try XCTUnwrap((scope.sessionScope as? RUMSessionScope)?.viewScopes)
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        _ = scope.process(command: .addUserAction(userAction: .tap, attributes: [:], time: currentTime))
+        _ = scope.process(command: RUMAddUserActionCommand(time: currentTime, attributes: [:], action: .tap))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let secondSessionViewScopes = try XCTUnwrap((scope.sessionScope as? RUMSessionScope)?.viewScopes)
 
@@ -53,9 +54,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
-        XCTAssertTrue(scope.process(command: .stopView(id: UIViewController(), attributes: [:], time: .mockAny())))
-        XCTAssertTrue(scope.process(command: .addUserAction(userAction: .tap, attributes: [:], time: .mockAny())))
-        XCTAssertTrue(scope.process(command: .startResource(resourceName: .mockAny(), attributes: [:], time: .mockAny())))
+        XCTAssertTrue(scope.process(command: RUMStopViewCommand(time: .mockAny(), attributes: [:], identity: view)))
+        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand(time: .mockAny(), attributes: [:], action: .tap)))
+        XCTAssertTrue(scope.process(command: RUMStartResourceCommand(time: .mockAny(), attributes: [:], name: .mockAny())))
         XCTAssertNil(scope.sessionScope)
     }
 }

@@ -24,12 +24,12 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMScopeMock()
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: currentTime)
 
-        XCTAssertTrue(scope.process(command: .mockWith(time: currentTime)))
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        XCTAssertFalse(scope.process(command: .mockWith(time: currentTime)))
+        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
     }
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
@@ -37,17 +37,17 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMScopeMock()
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: currentTime)
 
-        XCTAssertTrue(scope.process(command: .mockWith(time: currentTime)))
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
         // Push time forward by less than the session timeout duration:
         currentTime.addTimeInterval(0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertTrue(scope.process(command: .mockWith(time: currentTime)))
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
         // Push time forward by the session timeout duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertFalse(scope.process(command: .mockWith(time: currentTime)))
+        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
     }
 
     func testItManagesViewScopeLifecycle() {
@@ -56,14 +56,14 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
-        _ = scope.process(command: .startInitialView(id: view, attributes: [:], time: Date()))
+        _ = scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
         XCTAssertEqual(scope.viewScopes.count, 1)
-        _ = scope.process(command: .stopView(id: view, attributes: [:], time: Date()))
+        _ = scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
         XCTAssertEqual(scope.viewScopes.count, 0)
 
-        _ = scope.process(command: .startView(id: view, attributes: [:], time: Date()))
+        _ = scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
         XCTAssertEqual(scope.viewScopes.count, 1)
-        _ = scope.process(command: .stopView(id: view, attributes: [:], time: Date()))
+        _ = scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 }

@@ -57,11 +57,9 @@ internal class RUMViewScope: RUMScope {
 
     func process(command: RUMCommand) -> Bool {
         switch command {
-        case .startInitialView(let id, _, _) where id === identity:
-            startAsInitialView(on: command)
-        case .startView(let id, _, _) where id === identity:
+        case let command as RUMStartViewCommand where command.identity === identity:
             startView(on: command)
-        case .stopView(let id, _, _) where id === identity:
+        case let command as RUMStopViewCommand where command.identity === identity:
             stopView(on: command)
             return false
         default:
@@ -73,16 +71,16 @@ internal class RUMViewScope: RUMScope {
 
     // MARK: - RUMCommands Processing
 
-    private func startAsInitialView(on command: RUMCommand) {
-        sendApplicationStartAction()
-        sendViewUpdateEvent(on: command)
+    private func startView(on command: RUMStartViewCommand) {
+        if command.isInitialView {
+            sendApplicationStartAction()
+            sendViewUpdateEvent(on: command)
+        } else {
+            sendViewUpdateEvent(on: command)
+        }
     }
 
-    private func startView(on command: RUMCommand) {
-        sendViewUpdateEvent(on: command)
-    }
-
-    private func stopView(on command: RUMCommand) {
+    private func stopView(on command: RUMStopViewCommand) {
         sendViewUpdateEvent(on: command)
     }
 
