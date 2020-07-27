@@ -79,12 +79,62 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.resource.statusCode, 200)
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
         }
-        try rumEventMatchers[3].model(ofType: RUMResourceEvent.self) { rumModel in
+    }
+
+    func testStartingView_thenTappingButton_thenLoadingResources() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+
+        monitor.startView(viewController: mockView)
+        monitor.startUserAction(type: .scroll)
+        monitor.startResourceLoading(resourceName: "/resource/1", request: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/1", response: .mockResponseWith(statusCode: 200))
+        monitor.startResourceLoading(resourceName: "/resource/2", request: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/2", response: .mockResponseWith(statusCode: 202))
+        monitor.stopUserAction(type: .scroll)
+
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 8)
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "application_start")
+        }
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 200)
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 1)
+        }
+        try rumEventMatchers[4].model(ofType: RUMResourceEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.resource.statusCode, 202)
+        }
+        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 2)
+        }
+        try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.resource?.count, 2)
+            XCTAssertEqual(rumModel.action.error?.count, 0)
+        }
+        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 2)
+            XCTAssertEqual(rumModel.view.resource.count, 2)
         }
     }
 

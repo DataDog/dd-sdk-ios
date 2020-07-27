@@ -85,6 +85,19 @@ internal class RUMEventMatcher {
     }
 }
 
+extension RUMEventMatcher: CustomStringConvertible {
+    /// Returns prety JSON representation of this matcher. Handy for debugging with `po matcher`.
+    var description: String {
+        do {
+            let jsonObject = try jsonData.toJSONObject()
+            let prettyPrintedJSONData = try JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted])
+            return prettyPrintedJSONData.utf8String
+        } catch {
+            return "Cannot build pretty JSON: \(error)"
+        }
+    }
+}
+
 func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
     guard let string = string else {
         XCTFail("`nil` is not valid RUM UUID", file: file, line: line)
