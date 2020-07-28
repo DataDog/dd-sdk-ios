@@ -67,14 +67,16 @@ internal class RUMViewScope: RUMScope {
     }
 
     func process(command: RUMCommand) -> Bool {
+        // Tells if this scope should complete after processing the `command`
+        var shouldComplete = false
+
         // Apply side effects
         switch command {
         // View commands
         case let command as RUMStartViewCommand where command.identity === identity:
             startView(on: command)
         case let command as RUMStopViewCommand where command.identity === identity:
-            willStopView(on: command)
-            return false
+            shouldComplete = true
 
         // Resource commands
         case let command as RUMStartResourceCommand:
@@ -122,7 +124,13 @@ internal class RUMViewScope: RUMScope {
             sendViewUpdateEvent(on: command)
         }
 
-        return true
+        if shouldComplete && !(didTrackResource || didTrackUserAction) {
+            // If the View will complete, but it didn't sent the View update due
+            // to User Action or Resource completion.
+            sendViewUpdateEvent(on: command)
+        }
+
+        return !shouldComplete
     }
 
     // MARK: - RUMCommands Processing
@@ -132,10 +140,6 @@ internal class RUMViewScope: RUMScope {
             actionsCount += 1
             sendApplicationStartAction()
         }
-        sendViewUpdateEvent(on: command)
-    }
-
-    private func willStopView(on command: RUMStopViewCommand) {
         sendViewUpdateEvent(on: command)
     }
 

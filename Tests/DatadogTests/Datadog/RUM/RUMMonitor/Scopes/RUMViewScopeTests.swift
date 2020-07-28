@@ -285,10 +285,6 @@ class RUMViewScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
-        XCTAssertTrue(
-            scope.process(command: RUMCommandMock(time: currentTime))
-        )
-
         XCTAssertFalse(
             scope.process(command: RUMStopViewCommand(time: currentTime, attributes: [:], identity: view))
         )

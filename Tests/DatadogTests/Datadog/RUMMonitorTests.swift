@@ -88,6 +88,38 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
+    func testStartingView_thenTappingButton() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+
+        monitor.startView(viewController: mockView)
+        monitor.registerUserAction(type: .tap)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 4)
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "application_start")
+        }
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "tap")
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 2)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+    }
+
     func testStartingView_thenTappingButton_thenLoadingResources() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWorkingFeatureWith(
