@@ -115,7 +115,6 @@ public class RUMMonitor: RUMMonitorInternal {
     /// Such an User Action must be stopped with `stopUserAction(type:)`, and will be stopped automatically if it lasts more than 10 seconds.
     /// - Parameters:
     ///   - type: the User Action type
-    ///   - name: // TODO: RUMM-521 support UA's `target`
     ///   - attributes: custom attributes to attach to the User Action.
     public func startUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
         start(userAction: type, attributes: attributes)
@@ -125,7 +124,6 @@ public class RUMMonitor: RUMMonitorInternal {
     /// This is used to stop tracking long running user actions (e.g. "scroll"), started with `startUserAction(type:)`.
     /// - Parameters:
     ///   - type: the User Action type
-    ///   - name: // TODO: RUMM-521 support UA's `target`
     ///   - attributes: custom attributes to attach to the User Action.
     public func stopUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
         stop(userAction: type, attributes: attributes)
@@ -135,7 +133,6 @@ public class RUMMonitor: RUMMonitorInternal {
     /// This is used to track discrete User Actions (e.g. "tap").
     /// - Parameters:
     ///   - type: the User Action type
-    ///   - name: // TODO: RUMM-521 support UA's `target`
     ///   - attributes: custom attributes to attach to the User Action.
     public func registerUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
         add(userAction: type, attributes: attributes)
