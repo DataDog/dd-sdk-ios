@@ -19,16 +19,31 @@ internal class SendRUMFixture1ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        rumMonitor.startView(viewController: self)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        rumMonitor.stopView(viewController: self)
+    }
+
+    @IBAction func didTapDownloadResourceButton(_ sender: Any) {
         let simulatedResourceName = "/resource/1"
         let simulatedResourceURL = URL(string: "https://foo.com/resource/1")!
+        let simulatedResourceLoadingTime: TimeInterval = 0.1
 
-        rumMonitor.startView(viewController: self)
+        rumMonitor.registerUserAction(
+            type: .tap,
+            attributes: ["button.label": (sender as! UIButton).currentTitle!]
+        )
+
         rumMonitor.startResourceLoading(
             resourceName: simulatedResourceName,
             request: URLRequest(url: simulatedResourceURL)
         )
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
             rumMonitor.stopResourceLoading(
                 resourceName: simulatedResourceName,
                 response: HTTPURLResponse(
@@ -42,11 +57,5 @@ internal class SendRUMFixture1ViewController: UIViewController {
             // Reveal the "Push Next Screen" button so UITest can continue
             self.pushNextScreenButton.isHidden = false
         }
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        rumMonitor.stopView(viewController: self)
     }
 }
