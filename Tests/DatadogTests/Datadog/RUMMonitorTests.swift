@@ -146,14 +146,14 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
-        let mockView = UIViewController()
+        let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
             let modulo = iteration % 9
 
             switch modulo {
-            case 0: monitor.start(view: mockView, attributes: nil)
-            case 1: monitor.stop(view: mockView, attributes: nil)
+            case 0: monitor.start(view: view, attributes: nil)
+            case 1: monitor.stop(view: view, attributes: nil)
             case 2: monitor.addViewError(message: .mockAny(), error: ErrorMock(), attributes: nil)
             case 3: monitor.start(resource: .mockAny(), url: .mockAny(), httpMethod: .mockAny(), attributes: nil)
             case 4: monitor.stop(resource: .mockAny(), type: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)

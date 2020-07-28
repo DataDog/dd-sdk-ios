@@ -40,7 +40,7 @@ internal class RUMUserActionScope: RUMScope {
     /// Number of Errors occured during this User Action's lifespan.
     private var errorsCount: UInt = 0
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
-    private var activeResourcesCount: UInt = 0
+    private var activeResourcesCount: Int = 0
 
     init(
         parent: RUMScope,
