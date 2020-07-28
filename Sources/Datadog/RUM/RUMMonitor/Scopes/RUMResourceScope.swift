@@ -52,25 +52,15 @@ internal class RUMResourceScope: RUMScope {
     func process(command: RUMCommand) -> Bool {
         switch command {
         case let command as RUMStopResourceCommand where command.resourceName == resourceName:
-            stopResource(on: command)
+            sendResourceEvent(on: command)
             return false
         case let command as RUMStopResourceWithErrorCommand where command.resourceName == resourceName:
-            stopResource(on: command)
+            sendErrorEvent(on: command)
             return false
         default:
             break
         }
         return true
-    }
-
-    // MARK: - RUMCommands Processing
-
-    private func stopResource(on command: RUMStopResourceCommand) {
-        sendResourceEvent(on: command)
-    }
-
-    private func stopResource(on command: RUMStopResourceWithErrorCommand) {
-        sendErrorEvent(on: command)
     }
 
     // MARK: - Sending RUM Events

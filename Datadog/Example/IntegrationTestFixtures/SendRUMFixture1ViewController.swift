@@ -19,17 +19,20 @@ internal class SendRUMFixture1ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        let simulatedResourceName = "/resource/1"
+        let simulatedResourceURL = URL(string: "https://foo.com/resource/1")!
+
         rumMonitor.startView(viewController: self)
         rumMonitor.startResourceLoading(
-            resourceName: "/resource/1",
-            request: URLRequest(url: URL(string: "https://foo.com/resource/1")!)
+            resourceName: simulatedResourceName,
+            request: URLRequest(url: simulatedResourceURL)
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             rumMonitor.stopResourceLoading(
-                resourceName: "/resource/1",
+                resourceName: simulatedResourceName,
                 response: HTTPURLResponse(
-                    url: URL(string: "https://foo.com/resource/1")!,
+                    url: simulatedResourceURL,
                     mimeType: "image/jpeg",
                     expectedContentLength: -1,
                     textEncodingName: nil

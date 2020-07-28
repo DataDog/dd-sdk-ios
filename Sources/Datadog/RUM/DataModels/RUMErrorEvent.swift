@@ -17,6 +17,17 @@ internal struct RUMErrorEvent: Codable, RUMDataModel {
     let action: Action?
     let dd: DD
 
+    enum CodingKeys: String, CodingKey {
+        case date
+        case application
+        case session
+        case type
+        case view
+        case error
+        case action
+        case dd = "_dd"
+    }
+
     struct Application: Codable {
         let id: String
     }
