@@ -91,7 +91,7 @@ extension RUMEventMatcher: CustomStringConvertible {
         do {
             let jsonObject = try jsonData.toJSONObject()
             let prettyPrintedJSONData = try JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted])
-            return prettyPrintedJSONData.utf8String
+            return String(data: prettyPrintedJSONData, encoding: .utf8) ?? "Failed to build String from utf8 data"
         } catch {
             return "Cannot build pretty JSON: \(error)"
         }
