@@ -48,30 +48,59 @@ class RUMIntegrationTests: IntegrationTests {
         let rumEventsMatchers = try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
-        // Assert `application_start` action
+        print(rumEventsMatchers.count)
+
+        // Assert Fixture 1 VC ⬇️
+
+        // ----> `application_start` Action due to initial startView()
         let applicationStartAction: RUMActionEvent = try rumEventsMatchers[0].model()
         XCTAssertEqual(applicationStartAction.action.type, "application_start")
 
-        // Assert Fixture 1 View updates
+        // ----> View update on startView()
         let view1UpdateA: RUMViewEvent = try rumEventsMatchers[1].model()
         XCTAssertEqual(view1UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view1UpdateA.view.action.count, 1)
+        XCTAssertEqual(view1UpdateA.view.resource.count, 0)
 
+        // --------> View update on stopResourceLoading()
         let view1UpdateB: RUMViewEvent = try rumEventsMatchers[2].model()
+        XCTAssertEqual(view1UpdateB.view.id, view1UpdateA.view.id)
         XCTAssertEqual(view1UpdateB.dd.documentVersion, 2)
         XCTAssertEqual(view1UpdateB.view.action.count, 1)
+        XCTAssertEqual(view1UpdateB.view.resource.count, 1)
 
-        // Assert Fixture 2 View updates
-        let view2UpdateA: RUMViewEvent = try rumEventsMatchers[3].model()
+        // --------> Resource event on stopResourceLoading()
+        let resourceLoaded: RUMResourceEvent = try rumEventsMatchers[3].model()
+        XCTAssertEqual(resourceLoaded.view.id, view1UpdateA.view.id)
+        XCTAssertEqual(resourceLoaded.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(resourceLoaded.resource.statusCode, 200)
+        XCTAssertEqual(resourceLoaded.resource.type, "other")
+        XCTAssertGreaterThan(resourceLoaded.resource.duration, 100_000_000 - 1) // ~0.1s
+        XCTAssertLessThan(resourceLoaded.resource.duration, 100_000_000 * 3) // less than 0.3s
+
+        // ----> View update on stopView()
+        let view1UpdateC: RUMViewEvent = try rumEventsMatchers[4].model()
+        XCTAssertEqual(view1UpdateC.view.id, view1UpdateA.view.id)
+        XCTAssertEqual(view1UpdateC.dd.documentVersion, 3)
+        XCTAssertEqual(view1UpdateC.view.action.count, 1)
+        XCTAssertEqual(view1UpdateC.view.resource.count, 1)
+
+        // Assert Fixture 2 VC ⬇️
+
+        // ----> View update on startView()
+        let view2UpdateA: RUMViewEvent = try rumEventsMatchers[5].model()
         XCTAssertEqual(view2UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view2UpdateA.view.action.count, 0)
 
-        let view2UpdateB: RUMViewEvent = try rumEventsMatchers[4].model()
+        // ----> View update on stopView()
+        let view2UpdateB: RUMViewEvent = try rumEventsMatchers[6].model()
         XCTAssertEqual(view2UpdateB.dd.documentVersion, 2)
         XCTAssertEqual(view2UpdateB.view.action.count, 0)
 
-        // Assert Fixture 3 View updates
-        let view3UpdateA: RUMViewEvent = try rumEventsMatchers[5].model()
+        // Assert Fixture 3 VC ⬇️
+
+        // ----> View update on startView()
+        let view3UpdateA: RUMViewEvent = try rumEventsMatchers[7].model()
         XCTAssertEqual(view3UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view3UpdateA.view.action.count, 0)
     }

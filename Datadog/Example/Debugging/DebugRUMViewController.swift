@@ -11,6 +11,8 @@ class DebugRUMViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
     @IBOutlet weak var consoleTextView: UITextView!
 
+    private var simulatedViewControllers: [UIViewController] = []
+
     override func viewDidLoad() {
         super.viewDidLoad()
         rumServiceNameTextField.text = appConfig.serviceName
@@ -20,6 +22,8 @@ class DebugRUMViewController: UIViewController {
         viewURLTextField.placeholder = viewURL
         actionViewURLTextField.placeholder = actionViewURL
         actionTypeTextField.placeholder = actionType
+        resourceViewURLTextField.placeholder = resourceViewURL
+        resourceURLTextField.placeholder = resourceURL
     }
 
     // MARK: - View Event
@@ -28,11 +32,16 @@ class DebugRUMViewController: UIViewController {
     @IBOutlet weak var sendViewEventButton: UIButton!
 
     private var viewURL: String {
-        viewURLTextField.text!.isEmpty ? "/hello/rum" : viewURLTextField.text!
+        viewURLTextField.text!.isEmpty ? "FooViewController" : viewURLTextField.text!
     }
 
     @IBAction func didTapSendViewEvent(_ sender: Any) {
-        rumMonitor.sendFakeViewEvent(viewURL: viewURL)
+        let viewController = createUIViewControllerSubclassInstance(named: viewURL)
+        rumMonitor.startView(viewController: viewController)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            rumMonitor.stopView(viewController: viewController)
+        }
+        simulatedViewControllers.append(viewController)
         sendViewEventButton.disableFor(seconds: 0.5)
     }
 
@@ -43,7 +52,7 @@ class DebugRUMViewController: UIViewController {
     @IBOutlet weak var sendActionEventButton: UIButton!
 
     private var actionViewURL: String {
-        actionViewURLTextField.text!.isEmpty ? "/hello/rum" : actionViewURLTextField.text!
+        actionViewURLTextField.text!.isEmpty ? "FooViewController" : actionViewURLTextField.text!
     }
 
     private var actionType: String {
@@ -63,4 +72,56 @@ class DebugRUMViewController: UIViewController {
             }
         }
     }
+
+    // MARK: - Resource Event
+
+    @IBOutlet weak var resourceViewURLTextField: UITextField!
+    @IBOutlet weak var resourceURLTextField: UITextField!
+    @IBOutlet weak var sendResourceEventButton: UIButton!
+
+    private var resourceViewURL: String {
+        resourceViewURLTextField.text!.isEmpty ? "FooViewController" : resourceViewURLTextField.text!
+    }
+
+    private var resourceURL: String {
+        resourceURLTextField.text!.isEmpty ? "/resource/1" : resourceURLTextField.text!
+    }
+
+    @IBAction func didTapSendResourceEvent(_ sender: Any) {
+        let viewController = createUIViewControllerSubclassInstance(named: resourceViewURL)
+        rumMonitor.startView(viewController: viewController)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            let url = URL(string: "https://foo.com" + self.resourceURL)!
+            rumMonitor.startResourceLoading(
+                resourceName: "/resource/1",
+                request: URLRequest(url: url)
+            )
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                rumMonitor.stopResourceLoading(
+                    resourceName: "/resource/1",
+                    response: HTTPURLResponse(
+                        url: url,
+                        mimeType: "image/jpeg",
+                        expectedContentLength: -1,
+                        textEncodingName: nil
+                    )
+                )
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            rumMonitor.stopView(viewController: viewController)
+        }
+        simulatedViewControllers.append(viewController)
+        sendResourceEventButton.disableFor(seconds: 0.5)
+    }
+}
+
+// MARK: - Private Helpers
+
+/// Creates an instance of `UIViewController` subclass with a given name.
+private func createUIViewControllerSubclassInstance(named viewControllerClassName: String) -> UIViewController {
+    let theClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
+    objc_registerClassPair(theClass)
+    return theClass.alloc() as! UIViewController
 }

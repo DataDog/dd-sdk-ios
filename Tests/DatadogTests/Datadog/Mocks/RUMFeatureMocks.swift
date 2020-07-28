@@ -70,7 +70,7 @@ extension RUMFeature {
     }
 }
 
-// MARK: - RUM Event Mocks
+// MARK: - RUMDataModel Mocks
 
 struct RUMDataModelMock: RUMDataModel, Equatable {
     let attribute: String
@@ -115,6 +115,36 @@ class RUMEventOutputMock: RUMEventOutput {
 struct RUMCommandMock: RUMCommand {
     var time: Date = .mockAny()
     var attributes: [AttributeKey: AttributeValue] = [:]
+}
+
+// MARK: - RUMContext Mocks
+
+extension RUMUUID {
+    static func mockRandom() -> RUMUUID {
+        return RUMUUID(rawValue: UUID())
+    }
+}
+
+extension RUMContext {
+    static func mockAny() -> RUMContext {
+        return mockWith()
+    }
+
+    static func mockWith(
+        rumApplicationID: String = .mockAny(),
+        sessionID: RUMUUID = .mockRandom(),
+        activeViewID: RUMUUID? = nil,
+        activeViewURI: String? = nil,
+        activeUserActionID: RUMUUID? = nil
+    ) -> RUMContext {
+        return RUMContext(
+            rumApplicationID: rumApplicationID,
+            sessionID: sessionID,
+            activeViewID: activeViewID,
+            activeViewURI: activeViewURI,
+            activeUserActionID: activeUserActionID
+        )
+    }
 }
 
 // MARK: - RUMScope Mocks
@@ -175,11 +205,47 @@ extension RUMSessionScope {
     }
 }
 
+private let mockWindow = UIWindow(frame: .zero)
+
+/// Holds the `mockView` object so it can be weakily referenced by `RUMViewScope` mocks.
+let mockView: UIViewController = {
+    let viewController = UIViewController()
+    mockWindow.rootViewController = viewController
+    mockWindow.makeKeyAndVisible()
+    return viewController
+}()
+
+extension RUMViewScope {
+    static func mockAny() -> RUMViewScope {
+        return mockWith()
+    }
+
+    static func mockWith(
+        parent: RUMSessionScope = .mockAny(),
+        dependencies: RUMScopeDependencies = .mockAny(),
+        identity: AnyObject = mockView,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        startTime: Date = .mockAny()
+    ) -> RUMViewScope {
+        return RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: identity,
+            attributes: attributes,
+            startTime: startTime
+        )
+    }
+}
+
 /// `RUMScope` recording processed commands.
 class RUMScopeMock: RUMScope {
     private let queue = DispatchQueue(label: "com.datadoghq.RUMScopeMock")
     private var expectation: XCTestExpectation?
     private var commands: [RUMCommand] = []
+
+    init(context: RUMContext = .mockAny()) {
+        self.context = context
+    }
 
     func waitAndReturnProcessedCommands(
         count: UInt,
@@ -208,13 +274,7 @@ class RUMScopeMock: RUMScope {
 
     // MARK: - RUMScope
 
-    let context = RUMContext(
-        rumApplicationID: .mockAny(),
-        sessionID: .nullUUID,
-        activeViewID: nil,
-        activeViewURI: nil,
-        activeUserActionID: nil
-    )
+    let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
         queue.async {

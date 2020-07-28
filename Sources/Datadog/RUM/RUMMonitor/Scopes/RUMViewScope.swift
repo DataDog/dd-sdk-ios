@@ -8,12 +8,18 @@ import Foundation
 import UIKit
 
 internal class RUMViewScope: RUMScope {
+    // MARK: - Child Scopes
+
+    /// Active Resource scopes, keyed by the Resource name.
+    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
+
     // MARK: - Initialization
 
+    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
     private unowned let parent: RUMScope
     private let dependencies: RUMScopeDependencies
 
-    /// Weak reference to the `UIViewController` which issued this scope.
+    /// Weak reference to corresponding `UIViewController`, used to identify this View.
     private(set) weak var identity: AnyObject?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
@@ -25,8 +31,10 @@ internal class RUMViewScope: RUMScope {
     /// The start time of this View.
     private var viewStartTime: Date
 
-    /// Number of actions happened on this View.
+    /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
+    /// Number of Resources tracked by this View.
+    private var resourcesCount: UInt = 0
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
 
@@ -56,14 +64,24 @@ internal class RUMViewScope: RUMScope {
     }
 
     func process(command: RUMCommand) -> Bool {
+        // Apply side effects
         switch command {
         case let command as RUMStartViewCommand where command.identity === identity:
             startView(on: command)
         case let command as RUMStopViewCommand where command.identity === identity:
             stopView(on: command)
             return false
+        case let command as RUMStartResourceCommand:
+            startResource(on: command)
+        case let command as RUMResourceCommand where command is RUMStopResourceCommand || command is RUMStopResourceWithErrorCommand:
+            stopResource(on: command)
         default:
             break
+        }
+
+        // Propagate command
+        if let resourceCommand = command as? RUMResourceCommand {
+            manage(childScope: &resourceScopes[resourceCommand.resourceName], byPropagatingCommand: resourceCommand)
         }
 
         return true
@@ -73,22 +91,36 @@ internal class RUMViewScope: RUMScope {
 
     private func startView(on command: RUMStartViewCommand) {
         if command.isInitialView {
+            actionsCount += 1
             sendApplicationStartAction()
-            sendViewUpdateEvent(on: command)
-        } else {
-            sendViewUpdateEvent(on: command)
         }
+        sendViewUpdateEvent(on: command)
     }
 
     private func stopView(on command: RUMStopViewCommand) {
         sendViewUpdateEvent(on: command)
     }
 
+    private func startResource(on command: RUMStartResourceCommand) {
+        resourceScopes[command.resourceName] = RUMResourceScope(
+            parent: self,
+            dependencies: dependencies,
+            resourceName: command.resourceName,
+            attributes: command.attributes,
+            startTime: command.time,
+            url: command.url,
+            httpMethod: command.httpMethod
+        )
+    }
+
+    private func stopResource(on command: RUMResourceCommand) {
+        resourcesCount += 1
+        sendViewUpdateEvent(on: command)
+    }
+
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() {
-        actionsCount += 1
-
         let eventData = RUMActionEvent(
             date: viewStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
@@ -113,7 +145,7 @@ internal class RUMViewScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMViewEvent(
-            date: command.time.timeIntervalSince1970.toMilliseconds,
+            date: viewStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
             session: .init(id: context.sessionID.toString, type: "user"),
             view: .init(
@@ -122,7 +154,7 @@ internal class RUMViewScope: RUMScope {
                 timeSpent: command.time.timeIntervalSince(viewStartTime).toNanoseconds,
                 action: .init(count: actionsCount),
                 error: .init(count: 0),
-                resource: .init(count: 0)
+                resource: .init(count: resourcesCount)
             ),
             dd: .init(documentVersion: version)
         )

@@ -197,14 +197,17 @@ class RelativeDateProvider: DateProvider {
     internal let timeInterval: TimeInterval
     private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
 
-    init(using date: Date = Date()) {
+    private init(date: Date, timeInterval: TimeInterval) {
         self.date = date
-        self.timeInterval = 0
+        self.timeInterval = timeInterval
     }
 
-    init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
-        self.date = referenceDate
-        self.timeInterval = timeInterval
+    convenience init(using date: Date = Date()) {
+        self.init(date: date, timeInterval: 0)
+    }
+
+    convenience init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
+        self.init(date: referenceDate, timeInterval: timeInterval)
     }
 
     /// Returns current date and advances next date by `timeInterval`.

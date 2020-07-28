@@ -41,6 +41,7 @@ class ExampleApplication: XCUIApplication {
 
 class RUMFixture1Screen: XCUIApplication {
     func tapPushNextScreen() -> RUMFixture2Screen {
+        buttons["Push Next Screen"].waitForExistence(timeout: 2)
         buttons["Push Next Screen"].tap()
         return RUMFixture2Screen()
     }

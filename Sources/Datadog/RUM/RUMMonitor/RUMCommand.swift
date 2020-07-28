@@ -49,30 +49,46 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 
 // MARK: - RUM Resource related commands
 
-internal struct RUMStartResourceCommand: RUMCommand {
-    let time: Date
-    let attributes: [AttributeKey: AttributeValue]
-
+internal protocol RUMResourceCommand: RUMCommand {
     /// The name identifying the RUM Resource.
-    let name: String
+    var resourceName: String { get }
 }
 
-internal struct RUMStopResourceCommand: RUMCommand {
+internal struct RUMStartResourceCommand: RUMResourceCommand {
+    let resourceName: String
     let time: Date
     let attributes: [AttributeKey: AttributeValue]
 
-    /// The name identifying the RUM Resource.
-    let name: String
+    /// Resource url
+    let url: String
+    /// HTTP method used to load the Resource
+    let httpMethod: String
 }
 
-internal struct RUMStopResourceWithErrorCommand: RUMCommand {
+internal struct RUMStopResourceCommand: RUMResourceCommand {
+    let resourceName: String
     let time: Date
     let attributes: [AttributeKey: AttributeValue]
 
-    /// The name identifying the RUM Resource.
-    let name: String
-    /// The error object.
-    let error: Error
+    /// A type of the Resource (image, font, ...)
+    let type: String
+    /// HTTP status code of loading the Ressource
+    let httpStatusCode: Int?
+    /// The size of loaded Resource
+    let size: UInt64?
+}
+
+internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
+    let resourceName: String
+    let time: Date
+    let attributes: [AttributeKey: AttributeValue]
+
+    /// The error message.
+    let errorMessage: String
+    /// The origin of the error (network, webview, ...)
+    let errorSource: String
+    /// HTTP status code of the Ressource error.
+    let httpStatusCode: Int?
 }
 
 // MARK: - RUM User Action related commands

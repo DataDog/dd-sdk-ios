@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import class UIKit.UIViewController
 
 internal class RUMSessionScope: RUMScope {
     struct Constants {
@@ -17,10 +18,11 @@ internal class RUMSessionScope: RUMScope {
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
-    private(set) var viewScopes: [RUMScope] = []
+    private(set) var viewScopes: [RUMViewScope] = []
 
     // MARK: - Initialization
 
+    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
     unowned let parent: RUMScope
     private let dependencies: RUMScopeDependencies
 
@@ -56,8 +58,11 @@ internal class RUMSessionScope: RUMScope {
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
-            guard let expiredView = expiredView as? RUMViewScope, let expiredViewIdentity = expiredView.identity else {
-                return nil // if the underlying `UIVIewController` no longer exists, skip transferring this scope
+            guard let expiredViewIdentity = expiredView.identity else {
+                return nil // if the underlying `UIVIewController` no longer exists, skip transferring its scope
+            }
+            guard (expiredViewIdentity as? UIViewController)?.view?.window != nil else {
+                return nil // TODO: RUMM-634 Produce a RUM error when the VC is leaked
             }
             return RUMViewScope(
                 parent: self,
@@ -92,7 +97,7 @@ internal class RUMSessionScope: RUMScope {
         }
 
         // Propagate command
-        propagate(command: command, to: &viewScopes)
+        manage(childScopes: &viewScopes, byPropagatingCommand: command)
 
         return true
     }

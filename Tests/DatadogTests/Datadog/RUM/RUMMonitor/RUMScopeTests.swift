@@ -8,40 +8,62 @@ import XCTest
 @testable import Datadog
 
 class RUMScopeTests: XCTestCase {
-    private class CompletedScope: RUMScope {
-        let context = RUMContext(rumApplicationID: .mockAny(), sessionID: .nullUUID)
-        func process(command: RUMCommand) -> Bool { false }
-    }
+    /// A mock `RUMScope` that completes or not based on the configuration.
+    private class CompletableScope: RUMScope {
+        let isCompleted: Bool
 
-    private class NonCompletedScope: RUMScope {
+        init(isCompleted: Bool) {
+            self.isCompleted = isCompleted
+        }
+
         let context = RUMContext(rumApplicationID: .mockAny(), sessionID: .nullUUID)
-        func process(command: RUMCommand) -> Bool { true }
+        func process(command: RUMCommand) -> Bool { !isCompleted }
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
-        var scope: RUMScope? = CompletedScope()
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
+        // Direct reference
+        var scope: CompletableScope? = CompletableScope(isCompleted: true)
+        RUMScopeMock().manage(childScope: &scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNil(scope)
+
+        // Dictionary item reference
+        var dictionaryOfScopes: [String: CompletableScope] = [
+            "a": CompletableScope(isCompleted: true),
+            "b": CompletableScope(isCompleted: false)
+        ]
+        RUMScopeMock().manage(childScope: &dictionaryOfScopes["a"], byPropagatingCommand: RUMCommandMock())
+        XCTAssertNil(dictionaryOfScopes["a"])
+        XCTAssertNotNil(dictionaryOfScopes["b"])
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
-        var scope: RUMScope? = NonCompletedScope()
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scope)
+        // Direct reference
+        var scope: CompletableScope? = CompletableScope(isCompleted: false)
+        RUMScopeMock().manage(childScope: &scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNotNil(scope)
+
+        // Dictionary item reference
+        var dictionaryOfScopes: [String: CompletableScope] = [
+            "a": CompletableScope(isCompleted: true),
+            "b": CompletableScope(isCompleted: false)
+        ]
+        RUMScopeMock().manage(childScope: &dictionaryOfScopes["b"], byPropagatingCommand: RUMCommandMock())
+        XCTAssertNotNil(dictionaryOfScopes["a"])
+        XCTAssertNotNil(dictionaryOfScopes["b"])
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScopes() {
-        var scopes: [RUMScope] = [
-            CompletedScope(),
-            NonCompletedScope(),
-            CompletedScope(),
-            NonCompletedScope()
+        var scopes: [CompletableScope] = [
+            CompletableScope(isCompleted: true),
+            CompletableScope(isCompleted: false),
+            CompletableScope(isCompleted: true),
+            CompletableScope(isCompleted: false)
         ]
 
-        RUMScopeMock().propagate(command: RUMCommandMock(), to: &scopes)
+        RUMScopeMock().manage(childScopes: &scopes, byPropagatingCommand: RUMCommandMock())
 
         XCTAssertEqual(scopes.count, 2)
-        XCTAssertEqual(scopes.filter { $0 is NonCompletedScope }.count, 2)
+        XCTAssertEqual(scopes.filter { !$0.isCompleted }.count, 2)
     }
 
     func testMergingRUMAttributes() {
