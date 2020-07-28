@@ -120,7 +120,7 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_thenTappingButton_thenLoadingResources() throws {
+    func testStartingView_thenLoadingResources_whileScrolling() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWorkingFeatureWith(
             server: server,
