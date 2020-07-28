@@ -40,8 +40,12 @@ class ExampleApplication: XCUIApplication {
 }
 
 class RUMFixture1Screen: XCUIApplication {
+    func tapDownloadResourceButton() {
+        buttons["Download Resource"].tap()
+    }
+
     func tapPushNextScreen() -> RUMFixture2Screen {
-        buttons["Push Next Screen"].waitForExistence(timeout: 2)
+        _ = buttons["Push Next Screen"].waitForExistence(timeout: 2)
         buttons["Push Next Screen"].tap()
         return RUMFixture2Screen()
     }
@@ -50,5 +54,38 @@ class RUMFixture1Screen: XCUIApplication {
 class RUMFixture2Screen: XCUIApplication {
     func tapPushNextScreen() {
         buttons["Push Next Screen"].tap()
+    }
+}
+
+extension Array where Element == RUMEventMatcher {
+    /// Prints a list of generic `RUMEventMatchers` that should be used to assert elements from this array.
+    /// Handy for debugging `[RUMEventMatcher]` with `po rumEventsMatchers`.
+    ///
+    /// Example output:
+    ///
+    ///     [0] - RUMEventMatcher<RUMActionEvent>
+    ///     [1] - RUMEventMatcher<RUMViewEvent>
+    ///     [2] - RUMEventMatcher<RUMResourceEvent>
+    ///     [3] - RUMEventMatcher<RUMViewEvent>
+    ///     [4] - RUMEventMatcher<RUMActionEvent>
+    ///
+    func inspect() {
+        enumerated().forEach { index, matcher in
+            print("[\(index)] - \(getTypeOf(matcher: matcher))")
+        }
+    }
+
+    private func getTypeOf(matcher: RUMEventMatcher) -> String {
+        let allPossibleMatchers: [String: (RUMEventMatcher) -> Bool] = [
+            "RUMEventMatcher<RUMViewEvent>": { matcher in matcher.model(isTypeOf: RUMViewEvent.self) },
+            "RUMEventMatcher<RUMActionEvent>": { matcher in matcher.model(isTypeOf: RUMActionEvent.self) },
+            "RUMEventMatcher<RUMResourceEvent>": { matcher in matcher.model(isTypeOf: RUMResourceEvent.self) },
+            "RUMEventMatcher<RUMErrorEvent>": { matcher in matcher.model(isTypeOf: RUMErrorEvent.self) }
+        ]
+
+        let bestMatcherEntry = allPossibleMatchers
+            .first { _, matcherPredicate in matcherPredicate(matcher) }
+
+        return bestMatcherEntry?.key ?? "unkonwn / unimplemented"
     }
 }

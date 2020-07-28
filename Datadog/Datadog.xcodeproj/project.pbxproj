@@ -124,6 +124,7 @@
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61570007246AAED100E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
+		615A20D524D0562000D857A2 /* RUMErrorEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB624C99F7C0082C633 /* RUMErrorEvent.swift */; };
 		615A4A8324A3431600233986 /* Tracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8224A3431600233986 /* Tracer+objc.swift */; };
 		615A4A8524A3445700233986 /* TracerConfiguration+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8424A3445700233986 /* TracerConfiguration+objc.swift */; };
 		615A4A8724A3452800233986 /* DDTracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8624A3452800233986 /* DDTracerConfigurationTests.swift */; };
@@ -2055,6 +2056,7 @@
 			files = (
 				61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */,
 				61C2C20E24C196E800C0321C /* RUMActionEvent.swift in Sources */,
+				615A20D524D0562000D857A2 /* RUMErrorEvent.swift in Sources */,
 				61C2C20F24C196EB00C0321C /* RUMViewEvent.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingIntegrationTests.swift in Sources */,
 				61494CB824C9D8810082C633 /* RUMResourceEvent.swift in Sources */,
