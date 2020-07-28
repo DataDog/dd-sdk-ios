@@ -6,13 +6,6 @@
 
 import Foundation
 
-internal enum RUMUserActionType {
-    case tap
-    case scroll
-    case swipe
-    case custom
-}
-
 /// TODO: RUMM-585 - what else parameters do we need in each method?
 internal protocol RUMMonitorInternal {
     func start(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?)

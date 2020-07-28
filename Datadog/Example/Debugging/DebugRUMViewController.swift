@@ -21,7 +21,7 @@ class DebugRUMViewController: UIViewController {
 
         viewURLTextField.placeholder = viewURL
         actionViewURLTextField.placeholder = actionViewURL
-        actionTypeTextField.placeholder = actionType
+        actionTypeTextField.placeholder = RUMUserActionType.default.toString
         resourceViewURLTextField.placeholder = resourceViewURL
         resourceURLTextField.placeholder = resourceURL
     }
@@ -55,20 +55,26 @@ class DebugRUMViewController: UIViewController {
         actionViewURLTextField.text!.isEmpty ? "FooViewController" : actionViewURLTextField.text!
     }
 
-    private var actionType: String {
-        let allowedTypes = ["custom", "click", "tap", "scroll", "swipe", "application_start"]
-        let defaultType = "custom"
-        let actionType = actionTypeTextField.text ?? defaultType
-        return allowedTypes.contains(actionType) ? actionType : defaultType // limit to allowed types
+    private var actionType: RUMUserActionType {
+        let actionType = actionTypeTextField.text.flatMap { RUMUserActionType(string: $0) }
+        return actionType ?? RUMUserActionType.default
     }
 
     @IBAction func didTapSendActionEvent(_ sender: Any) {
-        rumMonitor.sendFakeActionEvent(viewURL: actionViewURL, actionType: actionType)
+        let viewController = createUIViewControllerSubclassInstance(named: actionViewURL)
+        rumMonitor.startView(viewController: viewController)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            rumMonitor.registerUserAction(type: self.actionType)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            rumMonitor.stopView(viewController: viewController)
+        }
+        simulatedViewControllers.append(viewController)
         sendActionEventButton.disableFor(seconds: 0.5)
 
-        if actionType != actionTypeTextField.text { // if `actionType` was replaced with allowed type
+        if actionType.toString != actionTypeTextField.text { // if `actionType` was replaced with allowed type
             if !actionTypeTextField.text!.isEmpty { // when not using placeholder
-                actionTypeTextField.text = actionType
+                actionTypeTextField.text = actionType.toString
             }
         }
     }
@@ -124,4 +130,27 @@ private func createUIViewControllerSubclassInstance(named viewControllerClassNam
     let theClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
     objc_registerClassPair(theClass)
     return theClass.alloc() as! UIViewController
+}
+
+extension RUMUserActionType {
+    init(string: String) {
+        switch string {
+        case "tap": self = .tap
+        case "scroll": self = .scroll
+        case "swipe": self = .swipe
+        case "custom": self = .custom
+        default: self = RUMUserActionType.default
+        }
+    }
+
+    var toString: String {
+        switch self {
+        case .tap: return "tap"
+        case .scroll: return "scroll"
+        case .swipe: return "swipe"
+        case .custom: return "custom"
+        }
+    }
+
+    static var `default`: RUMUserActionType = .custom
 }
