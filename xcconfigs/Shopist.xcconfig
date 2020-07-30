@@ -1,0 +1,4 @@
+#include "Datadog.xcconfig"
+
+SHOPIST_BASE_URL=some.url
+#include? "Shopist.local.xcconfig" // overrides SHOPIST_BASE_URL

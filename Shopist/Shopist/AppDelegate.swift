@@ -9,7 +9,7 @@ import Datadog
 
 fileprivate(set) var logger: Logger!
 
-let appConfig = ExampleAppConfig(serviceName: "ios-sdk-example-app")
+let appConfig = ExampleAppConfig(serviceName: "ios-sdk-shopist-app-debug")
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
