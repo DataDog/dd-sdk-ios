@@ -6,16 +6,7 @@
 
 import Foundation
 import os.activity
-
-// Bridging Obj-C variable defined as c-macro. See `activity.h` header.
-private
-let OS_ACTIVITY_CURRENT = unsafeBitCast( dlsym( UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
-
-@_silgen_name("_os_activity_create") private
-func _os_activity_create(_ dso: UnsafeRawPointer?,
-                         _ description: UnsafePointer<Int8>,
-                         _ parent: Unmanaged<AnyObject>?,
-                         _ flags: os_activity_flag_t) -> AnyObject!
+import _Datadog_Private
 
 internal struct DDSpanContext: OTSpanContext {
     /// This span's trace ID.
@@ -37,7 +28,7 @@ internal struct DDSpanContext: OTSpanContext {
         self.baggageItems = baggageItems
 
         let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
-        let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
+        let activity = _os_activity_create(dso, "InitDDSpanContext", ObjcOSActivityUtils.currentActivity, OS_ACTIVITY_FLAG_DEFAULT)
         activityId = os_activity_get_identifier(activity, nil)
         os_activity_scope_enter(activity, &activityState)
     }

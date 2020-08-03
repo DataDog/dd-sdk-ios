@@ -8,4 +8,5 @@ framework module Datadog {
 framework module _Datadog_Private {
   export *
   header "ObjcExceptionHandler.h"
+  header "ObjcOSActivityUtils.h"
 }
