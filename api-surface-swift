@@ -133,7 +133,8 @@ public class Tracer: OTTracer
  public struct Configuration
   public var serviceName: String?
   public var sendNetworkInfo: Bool
-  public init(serviceName: String? = nil,sendNetworkInfo: Bool = false)
+  public var globalTags: [String: Encodable]?
+  public init(serviceName: String? = nil,sendNetworkInfo: Bool = false,globalTags: [String: Encodable]? = nil)
 public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
