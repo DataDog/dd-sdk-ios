@@ -131,7 +131,9 @@ Datadog.initialize(
     )
     ```
 
-8. (Optional) To distribute traces between your environments, for example frontend - backend, inject tracer context in the client request:
+8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation.
+
+    * To manually propagate the trace, inject the span context into `URLRequest` headers:
 
     ```swift
     import Datadog
@@ -147,7 +149,22 @@ Datadog.initialize(
         request.addValue(value, forHTTPHeaderField: headerField)
     }
     ```
-    This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard. Once the request is done, within a completion handler, call `span.finish()`.
+    This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. Once the request is done, within a completion handler, call `span.finish()`. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
+
+    * The SDK will automatically trace all network requests made to given hosts if `tracedHosts` array is specified during Datadog initialization:
+
+    ```swift
+    Datadog.initialize(
+        appContext: .init(),
+        configuration: Datadog.Configuration
+            .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+            .set(tracedHosts: ["example.com", "api.yourdomain.com"])
+            .build()
+    )
+    ```
+    This will trace all requests made to `example.com` and `api.yourdomain.com` (e.g. `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
+
+    **Note**: Auto instrumentation supports only requests made with `URLSession.dataTask(request:completionHandler:)` and `URLSession.dataTask(url:completionHandler:)`. It uses `URLSession` swizzling. This swizzling is fully opt-in: if you do not specify `tracedHosts`, no swizzling is applied.
 
 
 ## Batch collection
