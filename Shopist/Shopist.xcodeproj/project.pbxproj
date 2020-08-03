@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,27 +11,69 @@
 		9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */; };
 		9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */; };
 		9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADF244F43E2003AE249 /* Assets.xcassets */; };
+		9E84A04124D2C90B007A91A2 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E84A03624D2C8EE007A91A2 /* Datadog.framework */; };
+		9E84A04224D2C90B007A91A2 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E84A03624D2C8EE007A91A2 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9E84A04824D2F54F007A91A2 /* ProductsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */; };
+		9E84A04B24D3146D007A91A2 /* AlamofireImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9E84A04A24D3146D007A91A2 /* AlamofireImage */; };
+		9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04D24D31EE9007A91A2 /* UIView+Autolayout.swift */; };
+		9E84A05024D31F15007A91A2 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04F24D31F15007A91A2 /* API.swift */; };
+		9E84A05224D32199007A91A2 /* CollectionViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A05124D32199007A91A2 /* CollectionViewCells.swift */; };
+		9E92D44D24D46344005980A9 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E92D44C24D46344005980A9 /* CategoriesViewController.swift */; };
+		9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E92D44E24D4635C005980A9 /* ListViewController.swift */; };
 		9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */; };
 		9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADE244F43E2003AE249 /* Main.storyboard */; };
 		9EE2AA14244F38E000A2C252 /* ShopistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */; };
-		9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EE2AA29244F3A3300A2C252 /* Datadog.framework */; };
-		9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9EE2AA29244F3A3300A2C252 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		61441C8B2461A531003D8BB8 /* PBXContainerItemProxy */ = {
+		9E84A03524D2C8EE007A91A2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 61133B82242393DE00786299;
+			remoteInfo = Datadog;
+		};
+		9E84A03724D2C8EE007A91A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 61133BF0242397DA00786299;
+			remoteInfo = DatadogObjc;
+		};
+		9E84A03924D2C8EE007A91A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 61133B8B242393DE00786299;
+			remoteInfo = DatadogTests;
+		};
+		9E84A03B24D2C8EE007A91A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 61441C6824619FE4003D8BB8;
 			remoteInfo = DatadogBenchmarkTests;
 		};
-		61441C8D2461A531003D8BB8 /* PBXContainerItemProxy */ = {
+		9E84A03D24D2C8EE007A91A2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 61441C2A24616F1D003D8BB8;
+			remoteInfo = DatadogIntegrationTests;
+		};
+		9E84A03F24D2C8EE007A91A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 61441C0224616DE9003D8BB8;
 			remoteInfo = Example;
+		};
+		9E84A04324D2C915007A91A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133B81242393DE00786299;
+			remoteInfo = Datadog;
 		};
 		9EE2AA10244F38E000A2C252 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -39,34 +81,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 9EE2A9ED244F38DE00A2C252;
 			remoteInfo = Shopist;
-		};
-		9EE2AA28244F3A3300A2C252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 61133B82242393DE00786299;
-			remoteInfo = Datadog;
-		};
-		9EE2AA2A244F3A3300A2C252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 61133BF0242397DA00786299;
-			remoteInfo = DatadogObjc;
-		};
-		9EE2AA2C244F3A3300A2C252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 61133B8B242393DE00786299;
-			remoteInfo = DatadogTests;
-		};
-		9EE2AA2E244F3A3300A2C252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9E2FB2772447660E001C9B7B;
-			remoteInfo = DatadogIntegrationTests;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -77,7 +91,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9EE2AA32244F3A4500A2C252 /* Datadog.framework in Embed Frameworks */,
+				9E84A04224D2C90B007A91A2 /* Datadog.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -85,9 +99,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		611E133E2461D75D007B7552 /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
-		611E133F2461D75D007B7552 /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
-		617CEB3C245719E200AD4669 /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = ../Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
 		9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
 		9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -95,11 +106,19 @@
 		9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9E6ABADE244F43E2003AE249 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		9E6ABADF244F43E2003AE249 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Datadog.xcodeproj; path = ../Datadog/Datadog.xcodeproj; sourceTree = "<group>"; };
+		9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsViewController.swift; sourceTree = "<group>"; };
+		9E84A04D24D31EE9007A91A2 /* UIView+Autolayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Autolayout.swift"; sourceTree = "<group>"; };
+		9E84A04F24D31F15007A91A2 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		9E84A05124D32199007A91A2 /* CollectionViewCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCells.swift; sourceTree = "<group>"; };
+		9E92D44C24D46344005980A9 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
+		9E92D44E24D4635C005980A9 /* ListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
+		9E92D45224D4651F005980A9 /* Shopist.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Shopist.xcconfig; path = ../../xcconfigs/Shopist.xcconfig; sourceTree = "<group>"; };
+		9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Shopist.local.xcconfig; path = ../../xcconfigs/Shopist.local.xcconfig; sourceTree = "<group>"; };
 		9EE2A9EE244F38DE00A2C252 /* Shopist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shopist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA0F244F38E000A2C252 /* ShopistUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShopistUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITests.swift; sourceTree = "<group>"; };
 		9EE2AA15244F38E000A2C252 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Datadog.xcodeproj; path = ../Datadog/Datadog.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,7 +126,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EE2AA31244F3A4500A2C252 /* Datadog.framework in Frameworks */,
+				9E84A04124D2C90B007A91A2 /* Datadog.framework in Frameworks */,
+				9E84A04B24D3146D007A91A2 /* AlamofireImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,16 +141,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		611E133D2461D75D007B7552 /* xcconfigs */ = {
-			isa = PBXGroup;
-			children = (
-				611E133E2461D75D007B7552 /* Datadog.xcconfig */,
-				611E133F2461D75D007B7552 /* Datadog.local.xcconfig */,
-			);
-			name = xcconfigs;
-			path = ../xcconfigs;
-			sourceTree = "<group>";
-		};
 		9E6ABAE0244F440B003AE249 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -141,11 +151,49 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		9E84A02D24D2C8EE007A91A2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9E84A03624D2C8EE007A91A2 /* Datadog.framework */,
+				9E84A03824D2C8EE007A91A2 /* DatadogObjc.framework */,
+				9E84A03A24D2C8EE007A91A2 /* DatadogTests.xctest */,
+				9E84A03C24D2C8EE007A91A2 /* DatadogBenchmarkTests.xctest */,
+				9E84A03E24D2C8EE007A91A2 /* DatadogIntegrationTests.xctest */,
+				9E84A04024D2C8EE007A91A2 /* Example.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9E84A04C24D31EB9007A91A2 /* Scenes */ = {
+			isa = PBXGroup;
+			children = (
+				9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */,
+				9E92D44C24D46344005980A9 /* CategoriesViewController.swift */,
+				9E92D44E24D4635C005980A9 /* ListViewController.swift */,
+			);
+			path = Scenes;
+			sourceTree = "<group>";
+		};
+		9E92D45024D463A5005980A9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				9E84A05124D32199007A91A2 /* CollectionViewCells.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		9E92D45124D463B1005980A9 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				9E84A04D24D31EE9007A91A2 /* UIView+Autolayout.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		9EE2A9E5244F38DE00A2C252 = {
 			isa = PBXGroup;
 			children = (
-				9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */,
-				611E133D2461D75D007B7552 /* xcconfigs */,
+				9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */,
 				9EE2A9F0244F38DE00A2C252 /* Shopist */,
 				9EE2AA12244F38E000A2C252 /* ShopistUITests */,
 				9EE2A9EF244F38DE00A2C252 /* Products */,
@@ -165,11 +213,17 @@
 		9EE2A9F0244F38DE00A2C252 /* Shopist */ = {
 			isa = PBXGroup;
 			children = (
+				9E6ABAE0244F440B003AE249 /* Resources */,
 				9E6ABAD9244F43D4003AE249 /* Info.plist */,
+				9E92D45224D4651F005980A9 /* Shopist.xcconfig */,
+				9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */,
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
 				9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */,
 				9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */,
-				9E6ABAE0244F440B003AE249 /* Resources */,
+				9E84A04C24D31EB9007A91A2 /* Scenes */,
+				9E92D45024D463A5005980A9 /* Views */,
+				9E92D45124D463B1005980A9 /* Extensions */,
+				9E84A04F24D31F15007A91A2 /* API.swift */,
 			);
 			path = Shopist;
 			sourceTree = "<group>";
@@ -183,23 +237,9 @@
 			path = ShopistUITests;
 			sourceTree = "<group>";
 		};
-		9EE2AA22244F3A3300A2C252 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				9EE2AA29244F3A3300A2C252 /* Datadog.framework */,
-				9EE2AA2B244F3A3300A2C252 /* DatadogObjc.framework */,
-				9EE2AA2D244F3A3300A2C252 /* DatadogTests.xctest */,
-				61441C8C2461A531003D8BB8 /* DatadogBenchmarkTests.xctest */,
-				9EE2AA2F244F3A3300A2C252 /* DatadogIntegrationTests.xctest */,
-				61441C8E2461A531003D8BB8 /* Example.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		9EE2AA30244F3A4500A2C252 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				617CEB3C245719E200AD4669 /* OpenTracing.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -219,8 +259,12 @@
 			buildRules = (
 			);
 			dependencies = (
+				9E84A04424D2C915007A91A2 /* PBXTargetDependency */,
 			);
 			name = Shopist;
+			packageProductDependencies = (
+				9E84A04A24D3146D007A91A2 /* AlamofireImage */,
+			);
 			productName = Shopist;
 			productReference = 9EE2A9EE244F38DE00A2C252 /* Shopist.app */;
 			productType = "com.apple.product-type.application";
@@ -272,12 +316,15 @@
 				Base,
 			);
 			mainGroup = 9EE2A9E5244F38DE00A2C252;
+			packageReferences = (
+				9E84A04924D3146D007A91A2 /* XCRemoteSwiftPackageReference "AlamofireImage" */,
+			);
 			productRefGroup = 9EE2A9EF244F38DE00A2C252 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 9EE2AA22244F3A3300A2C252 /* Products */;
-					ProjectRef = 9EE2AA21244F3A3300A2C252 /* Datadog.xcodeproj */;
+					ProductGroup = 9E84A02D24D2C8EE007A91A2 /* Products */;
+					ProjectRef = 9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -289,46 +336,46 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		61441C8C2461A531003D8BB8 /* DatadogBenchmarkTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = DatadogBenchmarkTests.xctest;
-			remoteRef = 61441C8B2461A531003D8BB8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		61441C8E2461A531003D8BB8 /* Example.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = Example.app;
-			remoteRef = 61441C8D2461A531003D8BB8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		9EE2AA29244F3A3300A2C252 /* Datadog.framework */ = {
+		9E84A03624D2C8EE007A91A2 /* Datadog.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Datadog.framework;
-			remoteRef = 9EE2AA28244F3A3300A2C252 /* PBXContainerItemProxy */;
+			remoteRef = 9E84A03524D2C8EE007A91A2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		9EE2AA2B244F3A3300A2C252 /* DatadogObjc.framework */ = {
+		9E84A03824D2C8EE007A91A2 /* DatadogObjc.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = DatadogObjc.framework;
-			remoteRef = 9EE2AA2A244F3A3300A2C252 /* PBXContainerItemProxy */;
+			remoteRef = 9E84A03724D2C8EE007A91A2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		9EE2AA2D244F3A3300A2C252 /* DatadogTests.xctest */ = {
+		9E84A03A24D2C8EE007A91A2 /* DatadogTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = DatadogTests.xctest;
-			remoteRef = 9EE2AA2C244F3A3300A2C252 /* PBXContainerItemProxy */;
+			remoteRef = 9E84A03924D2C8EE007A91A2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		9EE2AA2F244F3A3300A2C252 /* DatadogIntegrationTests.xctest */ = {
+		9E84A03C24D2C8EE007A91A2 /* DatadogBenchmarkTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = DatadogBenchmarkTests.xctest;
+			remoteRef = 9E84A03B24D2C8EE007A91A2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9E84A03E24D2C8EE007A91A2 /* DatadogIntegrationTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = DatadogIntegrationTests.xctest;
-			remoteRef = 9EE2AA2E244F3A3300A2C252 /* PBXContainerItemProxy */;
+			remoteRef = 9E84A03D24D2C8EE007A91A2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9E84A04024D2C8EE007A91A2 /* Example.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = Example.app;
+			remoteRef = 9E84A03F24D2C8EE007A91A2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -358,9 +405,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E92D44D24D46344005980A9 /* CategoriesViewController.swift in Sources */,
+				9E84A05224D32199007A91A2 /* CollectionViewCells.swift in Sources */,
 				9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */,
 				9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */,
+				9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */,
+				9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */,
 				9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */,
+				9E84A05024D31F15007A91A2 /* API.swift in Sources */,
+				9E84A04824D2F54F007A91A2 /* ProductsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -375,6 +428,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9E84A04424D2C915007A91A2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Datadog;
+			targetProxy = 9E84A04324D2C915007A91A2 /* PBXContainerItemProxy */;
+		};
 		9EE2AA11244F38E000A2C252 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9EE2A9ED244F38DE00A2C252 /* Shopist */;
@@ -385,7 +443,7 @@
 /* Begin XCBuildConfiguration section */
 		9EE2AA16244F38E000A2C252 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 611E133E2461D75D007B7552 /* Datadog.xcconfig */;
+			baseConfigurationReference = 9E92D45224D4651F005980A9 /* Shopist.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -410,6 +468,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -446,7 +505,7 @@
 		};
 		9EE2AA17244F38E000A2C252 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 611E133E2461D75D007B7552 /* Datadog.xcconfig */;
+			baseConfigurationReference = 9E92D45224D4651F005980A9 /* Shopist.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -471,6 +530,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -605,6 +665,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9E84A04924D3146D007A91A2 /* XCRemoteSwiftPackageReference "AlamofireImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/AlamofireImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9E84A04A24D3146D007A91A2 /* AlamofireImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E84A04924D3146D007A91A2 /* XCRemoteSwiftPackageReference "AlamofireImage" */;
+			productName = AlamofireImage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9EE2A9E6244F38DE00A2C252 /* Project object */;
 }
