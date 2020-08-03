@@ -6,9 +6,9 @@
 
 import UIKit
 
-final class DetailViewController: ListViewController {
+final class ProductsViewController: ListViewController {
     let category: Category
-    private var items = [Item]()
+    private var items = [Product]()
 
     init(with category: Category) {
         self.category = category
@@ -16,6 +16,11 @@ final class DetailViewController: ListViewController {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = category.title
+    }
 
     override func fetch(with api: API) {
         api.getItems(for: category) { result in
@@ -31,7 +36,7 @@ final class DetailViewController: ListViewController {
 
     override func config(cell: Cell, for index: Int) {
         let item = items[index]
-        var text = "\(item.id): \(item.name)\n\(item.price)"
+        var text = "\(item.name)\n\(item.price)"
         if item.isInStock {
             text.append(" IN STOCK!")
         }

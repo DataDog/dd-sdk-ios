@@ -16,9 +16,6 @@ class ListViewController: UICollectionViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
-        collectionView.refreshControl = refreshControl
         collectionView.backgroundColor = .white
         collectionView.register(Cell.self, forCellWithReuseIdentifier: Self.cellIdentifier)
         collectionView.delegate = self
@@ -27,7 +24,7 @@ class ListViewController: UICollectionViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        refresh(force: true)
+        fetch(with: api)
     }
 
     func fetch(with api: API) {
@@ -38,13 +35,6 @@ class ListViewController: UICollectionViewController {
     func config(cell: Cell, for index: Int) {
         // to be overridden
         return
-    }
-
-    @objc
-    private func refresh(force: Bool = false) {
-        let refreshNeeded = force || (self.collectionView.refreshControl?.isRefreshing ?? true)
-        if !refreshNeeded { return }
-        fetch(with: api)
     }
 
     func reload() {

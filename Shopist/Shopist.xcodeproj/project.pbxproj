@@ -13,14 +13,13 @@
 		9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADF244F43E2003AE249 /* Assets.xcassets */; };
 		9E84A04124D2C90B007A91A2 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E84A03624D2C8EE007A91A2 /* Datadog.framework */; };
 		9E84A04224D2C90B007A91A2 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E84A03624D2C8EE007A91A2 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9E84A04824D2F54F007A91A2 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04724D2F54F007A91A2 /* DetailViewController.swift */; };
+		9E84A04824D2F54F007A91A2 /* ProductsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */; };
 		9E84A04B24D3146D007A91A2 /* AlamofireImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9E84A04A24D3146D007A91A2 /* AlamofireImage */; };
 		9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04D24D31EE9007A91A2 /* UIView+Autolayout.swift */; };
 		9E84A05024D31F15007A91A2 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04F24D31F15007A91A2 /* API.swift */; };
 		9E84A05224D32199007A91A2 /* CollectionViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A05124D32199007A91A2 /* CollectionViewCells.swift */; };
-		9E92D44D24D46344005980A9 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E92D44C24D46344005980A9 /* MasterViewController.swift */; };
+		9E92D44D24D46344005980A9 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E92D44C24D46344005980A9 /* CategoriesViewController.swift */; };
 		9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E92D44E24D4635C005980A9 /* ListViewController.swift */; };
-		9E92D45324D4651F005980A9 /* Shopist.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9E92D45224D4651F005980A9 /* Shopist.xcconfig */; };
 		9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */; };
 		9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADE244F43E2003AE249 /* Main.storyboard */; };
 		9EE2AA14244F38E000A2C252 /* ShopistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */; };
@@ -108,13 +107,14 @@
 		9E6ABADE244F43E2003AE249 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		9E6ABADF244F43E2003AE249 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9E84A02C24D2C8EE007A91A2 /* Datadog.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Datadog.xcodeproj; path = ../Datadog/Datadog.xcodeproj; sourceTree = "<group>"; };
-		9E84A04724D2F54F007A91A2 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsViewController.swift; sourceTree = "<group>"; };
 		9E84A04D24D31EE9007A91A2 /* UIView+Autolayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Autolayout.swift"; sourceTree = "<group>"; };
 		9E84A04F24D31F15007A91A2 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		9E84A05124D32199007A91A2 /* CollectionViewCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCells.swift; sourceTree = "<group>"; };
-		9E92D44C24D46344005980A9 /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
+		9E92D44C24D46344005980A9 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
 		9E92D44E24D4635C005980A9 /* ListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
 		9E92D45224D4651F005980A9 /* Shopist.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Shopist.xcconfig; path = ../../xcconfigs/Shopist.xcconfig; sourceTree = "<group>"; };
+		9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Shopist.local.xcconfig; path = ../../xcconfigs/Shopist.local.xcconfig; sourceTree = "<group>"; };
 		9EE2A9EE244F38DE00A2C252 /* Shopist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shopist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA0F244F38E000A2C252 /* ShopistUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShopistUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITests.swift; sourceTree = "<group>"; };
@@ -167,8 +167,8 @@
 		9E84A04C24D31EB9007A91A2 /* Scenes */ = {
 			isa = PBXGroup;
 			children = (
-				9E84A04724D2F54F007A91A2 /* DetailViewController.swift */,
-				9E92D44C24D46344005980A9 /* MasterViewController.swift */,
+				9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */,
+				9E92D44C24D46344005980A9 /* CategoriesViewController.swift */,
 				9E92D44E24D4635C005980A9 /* ListViewController.swift */,
 			);
 			path = Scenes;
@@ -216,6 +216,7 @@
 				9E6ABAE0244F440B003AE249 /* Resources */,
 				9E6ABAD9244F43D4003AE249 /* Info.plist */,
 				9E92D45224D4651F005980A9 /* Shopist.xcconfig */,
+				9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */,
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
 				9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */,
 				9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */,
@@ -385,7 +386,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */,
-				9E92D45324D4651F005980A9 /* Shopist.xcconfig in Resources */,
 				9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */,
 				9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */,
 			);
@@ -405,7 +405,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E92D44D24D46344005980A9 /* MasterViewController.swift in Sources */,
+				9E92D44D24D46344005980A9 /* CategoriesViewController.swift in Sources */,
 				9E84A05224D32199007A91A2 /* CollectionViewCells.swift in Sources */,
 				9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */,
 				9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */,
@@ -413,7 +413,7 @@
 				9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */,
 				9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */,
 				9E84A05024D31F15007A91A2 /* API.swift in Sources */,
-				9E84A04824D2F54F007A91A2 /* DetailViewController.swift in Sources */,
+				9E84A04824D2F54F007A91A2 /* ProductsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,6 +468,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -529,6 +530,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

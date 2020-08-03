@@ -22,8 +22,8 @@ final class Cell: UICollectionViewCell {
 
     private let imageView: UIImageView = {
         let imageView = UIImageView(frame: CGRect.zero)
-        imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = UIColor.lightGray.withAlphaComponent(0.25)
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
         return imageView
     }()
     private let label: UILabel = {

@@ -6,8 +6,13 @@
 
 import UIKit
 
-final class MasterViewController: ListViewController {
+final class CategoriesViewController: ListViewController {
     private var categories = [Category]()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "Categories"
+    }
 
     override func fetch(with api: API) {
         api.getCategories { result in
@@ -23,7 +28,7 @@ final class MasterViewController: ListViewController {
 
     override func config(cell: Cell, for index: Int) {
         let category = categories[index]
-        cell.text = "\(category.id): \(category.title)"
+        cell.text = category.title
         cell.setImage(url: category.cover)
     }
 
@@ -33,7 +38,7 @@ final class MasterViewController: ListViewController {
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedCategory = categories[indexPath.row]
-        let detailVC = DetailViewController(with: selectedCategory)
+        let detailVC = ProductsViewController(with: selectedCategory)
         show(detailVC, sender: self)
     }
 }

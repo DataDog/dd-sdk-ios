@@ -13,7 +13,7 @@ struct Category: Decodable {
     let cover: URL
 }
 
-struct Item: Decodable {
+struct Product: Decodable {
     let name: String
     let price: String
     let cover: URL
@@ -31,7 +31,7 @@ final class API {
         get("\(Self.baseURL)/categories.json", completion: completion)
     }
 
-    func getItems(for category: Category, completion: @escaping Completion<[Item]>) {
+    func getItems(for category: Category, completion: @escaping Completion<[Product]>) {
         let categoryID = category.id
         let urlString = "\(Self.baseURL)/category_\(categoryID).json"
         get(urlString, completion: completion)
@@ -39,7 +39,6 @@ final class API {
 
     private func get<T: Decodable>(_ urlString: String, completion: @escaping Completion<T>) {
         guard let url = URL(string: urlString) else {
-            // Datadog.log maybe?
             fatalError("\(urlString) is not a valid URL!")
         }
         let request = URLRequest(url: url)
