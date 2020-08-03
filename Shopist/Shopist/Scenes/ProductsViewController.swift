@@ -47,4 +47,10 @@ final class ProductsViewController: ListViewController {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return items.count
     }
+
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedProduct = items[indexPath.row]
+        let detailVC = ProductDetailViewController(product: selectedProduct)
+        show(detailVC, sender: self)
+    }
 }

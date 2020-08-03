@@ -22,6 +22,8 @@
 		9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E92D44E24D4635C005980A9 /* ListViewController.swift */; };
 		9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADC244F43E2003AE249 /* LaunchScreen.storyboard */; };
 		9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADE244F43E2003AE249 /* Main.storyboard */; };
+		9EE1E1C624D878FC00A7A613 /* ProductDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE1E1C424D878FC00A7A613 /* ProductDetailViewController.swift */; };
+		9EE1E1C724D878FC00A7A613 /* ProductDetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9EE1E1C524D878FC00A7A613 /* ProductDetailViewController.xib */; };
 		9EE2AA14244F38E000A2C252 /* ShopistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */; };
 /* End PBXBuildFile section */
 
@@ -115,6 +117,8 @@
 		9E92D44E24D4635C005980A9 /* ListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
 		9E92D45224D4651F005980A9 /* Shopist.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Shopist.xcconfig; path = ../../xcconfigs/Shopist.xcconfig; sourceTree = "<group>"; };
 		9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Shopist.local.xcconfig; path = ../../xcconfigs/Shopist.local.xcconfig; sourceTree = "<group>"; };
+		9EE1E1C424D878FC00A7A613 /* ProductDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewController.swift; sourceTree = "<group>"; };
+		9EE1E1C524D878FC00A7A613 /* ProductDetailViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProductDetailViewController.xib; sourceTree = "<group>"; };
 		9EE2A9EE244F38DE00A2C252 /* Shopist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shopist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA0F244F38E000A2C252 /* ShopistUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShopistUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE2AA13244F38E000A2C252 /* ShopistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITests.swift; sourceTree = "<group>"; };
@@ -170,6 +174,8 @@
 				9E84A04724D2F54F007A91A2 /* ProductsViewController.swift */,
 				9E92D44C24D46344005980A9 /* CategoriesViewController.swift */,
 				9E92D44E24D4635C005980A9 /* ListViewController.swift */,
+				9EE1E1C424D878FC00A7A613 /* ProductDetailViewController.swift */,
+				9EE1E1C524D878FC00A7A613 /* ProductDetailViewController.xib */,
 			);
 			path = Scenes;
 			sourceTree = "<group>";
@@ -294,7 +300,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1140;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Shopist;
 				TargetAttributes = {
 					9EE2A9ED244F38DE00A2C252 = {
@@ -388,6 +394,7 @@
 				9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */,
 				9EE0E1B0244F65900030DC52 /* LaunchScreen.storyboard in Resources */,
 				9EE0E1B1244F65900030DC52 /* Main.storyboard in Resources */,
+				9EE1E1C724D878FC00A7A613 /* ProductDetailViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,6 +419,7 @@
 				9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */,
 				9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */,
 				9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */,
+				9EE1E1C624D878FC00A7A613 /* ProductDetailViewController.swift in Sources */,
 				9E84A05024D31F15007A91A2 /* API.swift in Sources */,
 				9E84A04824D2F54F007A91A2 /* ProductsViewController.swift in Sources */,
 			);
