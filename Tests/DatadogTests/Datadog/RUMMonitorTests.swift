@@ -79,12 +79,94 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.resource.statusCode, 200)
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
         }
-        try rumEventMatchers[3].model(ofType: RUMResourceEvent.self) { rumModel in
+    }
+
+    func testStartingView_thenTappingButton() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+
+        monitor.startView(viewController: mockView)
+        monitor.registerUserAction(type: .tap)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 4)
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "application_start")
+        }
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "tap")
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 2)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+    }
+
+    func testStartingView_thenLoadingResources_whileScrolling() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+
+        monitor.startView(viewController: mockView)
+        monitor.startUserAction(type: .scroll)
+        monitor.startResourceLoading(resourceName: "/resource/1", request: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/1", response: .mockResponseWith(statusCode: 200))
+        monitor.startResourceLoading(resourceName: "/resource/2", request: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/2", response: .mockResponseWith(statusCode: 202))
+        monitor.stopUserAction(type: .scroll)
+
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 8)
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "application_start")
+        }
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 200)
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 1)
+        }
+        try rumEventMatchers[4].model(ofType: RUMResourceEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.resource.statusCode, 202)
+        }
+        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 2)
+        }
+        try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.resource?.count, 2)
+            XCTAssertEqual(rumModel.action.error?.count, 0)
+        }
+        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 2)
+            XCTAssertEqual(rumModel.view.resource.count, 2)
         }
     }
 
@@ -96,14 +178,14 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
-        let mockView = UIViewController()
+        let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
             let modulo = iteration % 9
 
             switch modulo {
-            case 0: monitor.start(view: mockView, attributes: nil)
-            case 1: monitor.stop(view: mockView, attributes: nil)
+            case 0: monitor.start(view: view, attributes: nil)
+            case 1: monitor.stop(view: view, attributes: nil)
             case 2: monitor.addViewError(message: .mockAny(), error: ErrorMock(), attributes: nil)
             case 3: monitor.start(resource: .mockAny(), url: .mockAny(), httpMethod: .mockAny(), attributes: nil)
             case 4: monitor.stop(resource: .mockAny(), type: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)

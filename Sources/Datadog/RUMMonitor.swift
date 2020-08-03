@@ -7,6 +7,13 @@
 import UIKit
 import Foundation
 
+public enum RUMUserActionType {
+    case tap
+    case scroll
+    case swipe
+    case custom
+}
+
 public class RUMMonitor: RUMMonitorInternal {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMScope
@@ -103,6 +110,34 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
+    /// Notifies that the User Action has started.
+    /// This is used to track long running user actions (e.g. "scroll").
+    /// Such an User Action must be stopped with `stopUserAction(type:)`, and will be stopped automatically if it lasts more than 10 seconds.
+    /// - Parameters:
+    ///   - type: the User Action type
+    ///   - attributes: custom attributes to attach to the User Action.
+    public func startUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
+        start(userAction: type, attributes: attributes)
+    }
+
+    /// Notifies that the User Action has stopped.
+    /// This is used to stop tracking long running user actions (e.g. "scroll"), started with `startUserAction(type:)`.
+    /// - Parameters:
+    ///   - type: the User Action type
+    ///   - attributes: custom attributes to attach to the User Action.
+    public func stopUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
+        stop(userAction: type, attributes: attributes)
+    }
+
+    /// Registers the occurence of an User Action.
+    /// This is used to track discrete User Actions (e.g. "tap").
+    /// - Parameters:
+    ///   - type: the User Action type
+    ///   - attributes: custom attributes to attach to the User Action.
+    public func registerUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
+        add(userAction: type, attributes: attributes)
+    }
+
     // MARK: - RUMMonitorInternal
 
     func start(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
@@ -174,32 +209,32 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func start(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+    func start(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                action: userAction
+                actionType: userAction
             )
         )
     }
 
-    func stop(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+    func stop(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                action: userAction
+                actionType: userAction
             )
         )
     }
 
-    func add(userAction: RUMUserAction, attributes: [AttributeKey: AttributeValue]?) {
+    func add(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                action: userAction
+                actionType: userAction
             )
         )
     }
@@ -218,38 +253,5 @@ public class RUMMonitor: RUMMonitorInternal {
 
     private func resourceSize(from response: HTTPURLResponse) -> UInt64? {
         return nil // TODO: RUMM-633 Add Resource type and size
-    }
-
-    // MARK: - TODO: RUMM-585 Temporary APIs to remove
-
-    public func sendFakeActionEvent(viewURL: String, actionType: String) {
-        guard let rumFeature = RUMFeature.instance else {
-            fatalError("RUMFeature must be initialized.")
-        }
-
-        let dataModel = RUMActionEvent(
-            date: Date().timeIntervalSince1970.toMilliseconds,
-            application: .init(id: applicationScope.context.rumApplicationID),
-            session: .init(id: UUID().uuidString.lowercased(), type: "user"),
-            view: .init(
-                id: UUID().uuidString.lowercased(),
-                url: viewURL
-            ),
-            action: .init(
-                id: UUID().uuidString.lowercased(),
-                type: actionType
-            ),
-            dd: .init()
-        )
-
-        let builder = RUMEventBuilder(
-            userInfoProvider: rumFeature.userInfoProvider,
-            networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-            carrierInfoProvider: rumFeature.carrierInfoProvider
-        )
-
-        let event = builder.createRUMEvent(with: dataModel, attributes: [:])
-
-        rumFeature.storage.writer.write(value: event)
     }
 }

@@ -23,33 +23,15 @@ class RUMScopeTests: XCTestCase {
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: true)
-        RUMScopeMock().manage(childScope: &scope, byPropagatingCommand: RUMCommandMock())
+        scope = RUMScopeMock().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNil(scope)
-
-        // Dictionary item reference
-        var dictionaryOfScopes: [String: CompletableScope] = [
-            "a": CompletableScope(isCompleted: true),
-            "b": CompletableScope(isCompleted: false)
-        ]
-        RUMScopeMock().manage(childScope: &dictionaryOfScopes["a"], byPropagatingCommand: RUMCommandMock())
-        XCTAssertNil(dictionaryOfScopes["a"])
-        XCTAssertNotNil(dictionaryOfScopes["b"])
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: false)
-        RUMScopeMock().manage(childScope: &scope, byPropagatingCommand: RUMCommandMock())
+        scope = RUMScopeMock().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNotNil(scope)
-
-        // Dictionary item reference
-        var dictionaryOfScopes: [String: CompletableScope] = [
-            "a": CompletableScope(isCompleted: true),
-            "b": CompletableScope(isCompleted: false)
-        ]
-        RUMScopeMock().manage(childScope: &dictionaryOfScopes["b"], byPropagatingCommand: RUMCommandMock())
-        XCTAssertNotNil(dictionaryOfScopes["a"])
-        XCTAssertNotNil(dictionaryOfScopes["b"])
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScopes() {
@@ -60,7 +42,7 @@ class RUMScopeTests: XCTestCase {
             CompletableScope(isCompleted: false)
         ]
 
-        RUMScopeMock().manage(childScopes: &scopes, byPropagatingCommand: RUMCommandMock())
+        scopes = RUMScopeMock().manage(childScopes: scopes, byPropagatingCommand: RUMCommandMock())
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { !$0.isCompleted }.count, 2)

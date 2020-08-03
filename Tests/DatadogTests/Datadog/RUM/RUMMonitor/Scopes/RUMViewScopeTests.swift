@@ -34,6 +34,28 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
+    func testContextWhenViewHasAnActiveUserAction() {
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
+        let scope = RUMViewScope(
+            parent: sessionScope,
+            dependencies: .mockAny(),
+            identity: view,
+            attributes: [:],
+            startTime: .mockAny()
+        )
+
+        _ = scope.process(
+            command: RUMStartUserActionCommand(time: Date(), attributes: [:], actionType: .swipe)
+        )
+
+        XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
+        XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
+        XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
+        XCTAssertEqual(scope.context.activeViewURI, scope.viewURI)
+        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
+    }
+
     func testWhenInitialViewIsStarted_itSendsApplicationStartAction() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -180,31 +202,93 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
 
+    // MARK: - Resources Tracking
+
     func testItManagesResourceScopesLifecycle() throws {
         let scope = RUMViewScope(parent: parent, dependencies: dependencies, identity: view, attributes: [:], startTime: Date())
-        _ = scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
+        )
 
         XCTAssertEqual(scope.resourceScopes.count, 0)
-        _ = scope.process(
-            command: RUMStartResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+            )
         )
         XCTAssertEqual(scope.resourceScopes.count, 1)
-        _ = scope.process(
-            command: RUMStartResourceCommand(resourceName: "/resource/2", time: Date(), attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand(resourceName: "/resource/2", time: Date(), attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+            )
         )
         XCTAssertEqual(scope.resourceScopes.count, 2)
-        _ = scope.process(
-            command: RUMStopResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+            )
         )
         XCTAssertEqual(scope.resourceScopes.count, 1)
-        _ = scope.process(
-            command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .mockAny(), httpStatusCode: 400)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .mockAny(), httpStatusCode: 400)
+            )
         )
         XCTAssertEqual(scope.resourceScopes.count, 0)
 
-        _ = scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
-
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).dropFirst(2).first)
+        XCTAssertFalse(
+            scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
+        )
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.resource.count, 2, "View should record 2 resources")
+    }
+
+    // MARK: - User Action Tracking
+
+    func testItManagesContinuousUserActionScopeLifecycle() throws {
+        let scope = RUMViewScope(parent: parent, dependencies: dependencies, identity: view, attributes: [:], startTime: Date())
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
+        )
+
+        XCTAssertNil(scope.userActionScope)
+        XCTAssertTrue(
+            scope.process(command: RUMStartUserActionCommand(time: Date(), attributes: [:], actionType: .swipe))
+        )
+        XCTAssertNotNil(scope.userActionScope)
+        XCTAssertTrue(
+            scope.process(command: RUMStopUserActionCommand(time: Date(), attributes: [:], actionType: .swipe))
+        )
+        XCTAssertNil(scope.userActionScope)
+
+        XCTAssertFalse(
+            scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
+        )
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
+    }
+
+    func testItManagesDiscreteUserActionScopeLifecycle() throws {
+        var currentTime = Date()
+        let scope = RUMViewScope(parent: parent, dependencies: dependencies, identity: view, attributes: [:], startTime: currentTime)
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand(time: currentTime, attributes: [:], identity: view))
+        )
+
+        currentTime.addTimeInterval(0.5)
+
+        XCTAssertNil(scope.userActionScope)
+        XCTAssertTrue(
+            scope.process(command: RUMAddUserActionCommand(time: currentTime, attributes: [:], actionType: .tap))
+        )
+        XCTAssertNotNil(scope.userActionScope)
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+
+        XCTAssertFalse(
+            scope.process(command: RUMStopViewCommand(time: currentTime, attributes: [:], identity: view))
+        )
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
     }
 }

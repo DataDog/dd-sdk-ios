@@ -93,26 +93,31 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
 
 // MARK: - RUM User Action related commands
 
-internal struct RUMStartUserActionCommand: RUMCommand {
-    let time: Date
-    let attributes: [AttributeKey: AttributeValue]
-
+internal protocol RUMUserActionCommand: RUMCommand {
     /// The action identifying the RUM User Action.
-    let action: RUMUserAction
+    var actionType: RUMUserActionType { get }
 }
 
-internal struct RUMStopUserActionCommand: RUMCommand {
+/// Starts continuous User Action.
+internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     let time: Date
     let attributes: [AttributeKey: AttributeValue]
 
-    /// The action identifying the RUM User Action.
-    let action: RUMUserAction
+    let actionType: RUMUserActionType
 }
 
-internal struct RUMAddUserActionCommand: RUMCommand {
+/// Stops continuous User Action.
+internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     let time: Date
     let attributes: [AttributeKey: AttributeValue]
 
-    /// The action identifying the RUM User Action.
-    let action: RUMUserAction
+    let actionType: RUMUserActionType
+}
+
+/// Adds discrete (discontinuous) User Action.
+internal struct RUMAddUserActionCommand: RUMUserActionCommand {
+    let time: Date
+    let attributes: [AttributeKey: AttributeValue]
+
+    let actionType: RUMUserActionType
 }
