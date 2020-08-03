@@ -34,9 +34,9 @@ extension RUMScope {
     ///
     /// Returns the `childScopes` array by removing scopes which requested to be closed.
     func manage<S: RUMScope>(childScopes: [S], byPropagatingCommand command: RUMCommand) -> [S] {
-        return childScopes.compactMap { childScope in
+        return childScopes.filter { childScope in
             let shouldBeKept = childScope.process(command: command)
-            return shouldBeKept ? childScope : nil
+            return shouldBeKept
         }
     }
 }
