@@ -6,9 +6,9 @@
 
 import Foundation
 import os.activity
+import _Datadog_Private
 
-//This symbol is only exported like this for objective-C since uses a macro to create it, we must reproduce it 
-internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
+//internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
 /// Helper class to get the current Span
 internal class ActiveSpansPool {
@@ -19,7 +19,7 @@ internal class ActiveSpansPool {
     func getActiveSpan() -> DDSpan? {
         // We should try to traverse all hierarchy to locate the Span, but I could not find a way, just direct parent
         var parentIdent: os_activity_id_t = 0
-        let activityIdent = os_activity_get_identifier(OS_ACTIVITY_CURRENT, &parentIdent)
+        let activityIdent = os_activity_get_identifier(ObjcOSActivityUtils.currentActivity, &parentIdent)
         var returnSpan: DDSpan?
         rlock.lock()
         returnSpan = contextMap[activityIdent] ?? contextMap[parentIdent]

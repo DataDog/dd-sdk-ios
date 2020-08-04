@@ -63,7 +63,7 @@ internal class DDSpan: OTSpan {
         self.unsafeIsFinished = false
 
         let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
-        let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
+        let activity = _os_activity_create(dso, "InitDDSpanContext", ObjcOSActivityUtils.currentActivity, OS_ACTIVITY_FLAG_DEFAULT)
         activityId = os_activity_get_identifier(activity, nil)
         os_activity_scope_enter(activity, &activityState)
         tracer.activeSpansPool.addSpan(span: self, activityId: activityId)
