@@ -12,11 +12,11 @@ internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(b
 
 /// Helper class to get the current Span
 internal class ActiveSpansPool {
-    var contextMap = [os_activity_id_t: DDSpan]()
-    let rlock = NSRecursiveLock()
+    private var contextMap = [os_activity_id_t: DDSpan]()
+    private let rlock = NSRecursiveLock()
 
     /// Returns the Span from the current context
-    internal func getActiveSpan() -> DDSpan? {
+    func getActiveSpan() -> DDSpan? {
         // We should try to traverse all hierarchy to locate the Span, but I could not find a way, just direct parent
         var parentIdent: os_activity_id_t = 0
         let activityIdent = os_activity_get_identifier(OS_ACTIVITY_CURRENT, &parentIdent)
@@ -33,7 +33,7 @@ internal class ActiveSpansPool {
         rlock.unlock()
     }
 
-    func removeSpan(span: DDSpan, activityId: os_activity_id_t) {
+    func removeSpan(activityId: os_activity_id_t) {
         rlock.lock()
         contextMap[activityId] = nil
         rlock.unlock()

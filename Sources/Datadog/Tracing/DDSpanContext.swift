@@ -16,13 +16,6 @@ internal struct DDSpanContext: OTSpanContext {
     /// The baggage items of this span.
     let baggageItems: BaggageItems
 
-    init(traceID: TracingUUID, spanID: TracingUUID, parentSpanID: TracingUUID?, baggageItems: BaggageItems) {
-        self.traceID = traceID
-        self.spanID = spanID
-        self.parentSpanID = parentSpanID
-        self.baggageItems = baggageItems
-    }
-
     // MARK: - Open Tracing interface
 
     func forEachBaggageItem(callback: (String, String) -> Bool) {

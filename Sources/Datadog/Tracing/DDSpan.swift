@@ -113,7 +113,7 @@ internal class DDSpan: OTSpan {
         }
         isFinished = true
         os_activity_scope_leave(&activityState)
-        ddTracer.activeSpansPool.removeSpan(span: self, activityId: activityId)
+        ddTracer.activeSpansPool.removeSpan(activityId: activityId)
         ddTracer.write(span: self, finishTime: time)
     }
 
