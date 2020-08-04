@@ -6,8 +6,8 @@
 
 import Foundation
 import os.activity
-import _Datadog_Private
 
+//This symbol is only exported like this for objective-C since uses a macro to create it, we must reproduce it 
 internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
 /// Helper class to get the current Span
