@@ -10,6 +10,7 @@
 @implementation ObjcOSActivityUtils
 
 + (os_activity_t) currentActivity {
+
     return OS_ACTIVITY_CURRENT;
 }
 
