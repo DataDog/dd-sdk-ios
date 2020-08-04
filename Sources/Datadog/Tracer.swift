@@ -170,7 +170,6 @@ public class Tracer: OTTracer {
             startTime: startTime ?? dateProvider.currentDate(),
             tags: combinedTags
         )
-        activeSpansPool.addSpan(span)
         return span
     }
 

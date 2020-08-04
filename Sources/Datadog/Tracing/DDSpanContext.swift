@@ -5,8 +5,6 @@
  */
 
 import Foundation
-import os.activity
-import _Datadog_Private
 
 internal struct DDSpanContext: OTSpanContext {
     /// This span's trace ID.
@@ -18,19 +16,11 @@ internal struct DDSpanContext: OTSpanContext {
     /// The baggage items of this span.
     let baggageItems: BaggageItems
 
-    let activityId: os_activity_id_t
-    var activityState = os_activity_scope_state_s()
-
     init(traceID: TracingUUID, spanID: TracingUUID, parentSpanID: TracingUUID?, baggageItems: BaggageItems) {
         self.traceID = traceID
         self.spanID = spanID
         self.parentSpanID = parentSpanID
         self.baggageItems = baggageItems
-
-        let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
-        let activity = _os_activity_create(dso, "InitDDSpanContext", ObjcOSActivityUtils.currentActivity, OS_ACTIVITY_FLAG_DEFAULT)
-        activityId = os_activity_get_identifier(activity, nil)
-        os_activity_scope_enter(activity, &activityState)
     }
 
     // MARK: - Open Tracing interface

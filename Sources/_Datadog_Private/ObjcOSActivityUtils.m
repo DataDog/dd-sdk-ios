@@ -9,10 +9,8 @@
 
 @implementation ObjcOSActivityUtils
 
-static os_activity_t _currentActivity = OS_ACTIVITY_CURRENT;
-
 + (os_activity_t) currentActivity {
-    return _currentActivity;
+    return OS_ACTIVITY_CURRENT;
 }
 
 @end

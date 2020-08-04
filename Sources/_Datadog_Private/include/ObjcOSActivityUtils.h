@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ObjcOSActivityUtils : NSObject
 
-@property (class, nonatomic, assign, readonly) os_activity_t currentActivity;
+@property (class, atomic, assign, readonly) os_activity_t currentActivity;
 
 @end
 

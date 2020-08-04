@@ -25,15 +25,15 @@ internal class ActiveSpansPool {
         return returnSpan
     }
 
-    func addSpan(_ span: DDSpan) {
+    func addSpan(span: DDSpan, activityId: os_activity_id_t) {
         rlock.lock()
-        contextMap[span.ddContext.activityId] = span
+        contextMap[activityId] = span
         rlock.unlock()
     }
 
-    func removeSpan(_ span: DDSpan) {
+    func removeSpan(span: DDSpan, activityId: os_activity_id_t) {
         rlock.lock()
-        contextMap[span.ddContext.activityId] = nil
+        contextMap[activityId] = nil
         rlock.unlock()
     }
 }
