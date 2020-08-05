@@ -7,7 +7,8 @@
 import Foundation
 import os.activity
 
-//This symbol is only exported like this for objective-C since uses a macro to create it, we must reproduce it 
+/// This symbol is only accesible in Activity framework from Objective-C because uses a macro to create it, to use it from Swift
+/// we must recreate whats done in the macro in Swift code.
 internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
 /// Helper class to get the current Span

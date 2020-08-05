@@ -55,7 +55,8 @@ public protocol OTTracer {
     /// 
     func extract(reader: OTFormatReader) -> OTSpanContext?
 
-    /// Returns the active span in the current execution context, this span will be automatically
+    /// Returns the active span in the current execution context, this span will be automatically assigned as the parent of any
+    /// created Span without explicit parent.
     var activeSpan: OTSpan? { get }
 }
 
