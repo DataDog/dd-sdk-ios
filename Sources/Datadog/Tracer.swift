@@ -53,6 +53,8 @@ public class Tracer: OTTracer {
     /// Tags to be set on all spans. They are set at initialization from Tracer.Configuration
     private let globalTags: [String: Encodable]?
 
+    internal let activeSpansPool = ActiveSpansPool()
+
     // MARK: - Initialization
 
     /// Initializes the Datadog Tracer.
@@ -139,14 +141,19 @@ public class Tracer: OTTracer {
         return nil
     }
 
+    public var activeSpan: OTSpan? {
+        return activeSpansPool.getActiveSpan()
+    }
+
     // MARK: - Internal
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+        let parentContext = parentSpanContext ?? activeSpan?.context as? DDSpanContext
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: parentContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentSpanContext?.spanID,
-            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
+            parentSpanID: parentContext?.spanID,
+            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentContext?.baggageItems)
         )
     }
 
@@ -156,13 +163,14 @@ public class Tracer: OTTracer {
             combinedTags.merge(tags) { _, last in last }
         }
 
-        return DDSpan(
+        let span = DDSpan(
             tracer: self,
             context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),
             tags: combinedTags
         )
+        return span
     }
 
     internal func write(span: DDSpan, finishTime: Date) {

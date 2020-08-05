@@ -676,5 +676,41 @@ class TracerTests: XCTestCase {
 
         try Datadog.deinitializeOrThrow()
     }
+
+    func testSendingSpanWithImplicitParent() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let queue1 = DispatchQueue(label: "\(#function)-queue1")
+        let queue2 = DispatchQueue(label: "\(#function)-queue2")
+
+        let rootSpan = tracer.startSpan(operationName: "root operation")
+
+        queue1.sync {
+            let child1Span = tracer.startSpan(operationName: "child 1 operation")
+            child1Span.finish()
+        }
+
+        queue2.sync {
+            let child2Span = tracer.startSpan(operationName: "child 2 operation")
+            child2Span.finish()
+        }
+
+        rootSpan.finish()
+
+        let spanMatchers = try server.waitAndReturnSpanMatchers(count: 3)
+        let rootMatcher = spanMatchers[2]
+        let child1Matcher = spanMatchers[1]
+        let child2Matcher = spanMatchers[0]
+
+        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
+        XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
+    }
 }
 // swiftlint:enable multiline_arguments_brackets
