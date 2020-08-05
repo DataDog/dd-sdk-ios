@@ -75,9 +75,9 @@ class URLSessionSwizzlerTests: XCTestCase {
         let resumeExpectations: [XCTestExpectation] = [
             mock1.observationStartingExpectation,
             mock3.observationStartingExpectation,
-            completionExpectation,
+            mock1.observationCompletedExpectation,
             mock3.observationCompletedExpectation,
-            mock1.observationCompletedExpectation
+            completionExpectation
         ]
         wait(
             for: resumeExpectations,
@@ -117,9 +117,9 @@ class URLSessionSwizzlerTests: XCTestCase {
         let resumeExpectations: [XCTestExpectation] = [
             mock1.observationStartingExpectation,
             mock3.observationStartingExpectation,
-            completionExpectation,
+            mock1.observationCompletedExpectation,
             mock3.observationCompletedExpectation,
-            mock1.observationCompletedExpectation
+            completionExpectation
         ]
         wait(
             for: resumeExpectations,
@@ -155,8 +155,8 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let resumeExpectations: [XCTestExpectation] = [
             interceptor.observationStartingExpectation,
-            completionExpectation,
-            interceptor.observationCompletedExpectation
+            interceptor.observationCompletedExpectation,
+            completionExpectation
         ]
         wait(for: resumeExpectations, timeout: timeout)
     }
@@ -183,8 +183,8 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let resumeExpectations: [XCTestExpectation] = [
             interceptor.observationStartingExpectation,
-            completionExpectation,
-            interceptor.observationCompletedExpectation
+            interceptor.observationCompletedExpectation,
+            completionExpectation
         ]
         wait(for: resumeExpectations, timeout: timeout)
     }
