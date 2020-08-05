@@ -105,22 +105,22 @@ class RUMResourceScopeTests: XCTestCase {
                     time: currentTime,
                     attributes: ["foo": "bar"],
                     errorMessage: "error message",
-                    errorSource: "network",
+                    errorSource: .network,
                     httpStatusCode: 404
                 )
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
-        XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toMilliseconds)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMError>.self).first)
+        XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toString)
-        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toString)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertEqual(event.model.error.message, "error message")
-        XCTAssertEqual(event.model.error.source, "network")
-        XCTAssertEqual(event.model.error.resource?.method, "POST")
+        XCTAssertEqual(event.model.error.source, .network)
+        XCTAssertEqual(event.model.error.resource?.method, .post)
         XCTAssertEqual(event.model.error.resource?.statusCode, 404)
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), parent.context.activeUserActionID?.toString)

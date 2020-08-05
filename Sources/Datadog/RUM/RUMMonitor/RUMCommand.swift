@@ -43,8 +43,39 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 
     /// The error message.
     let message: String
-    /// The error object.
-    let error: Error?
+    /// The origin of this error.
+    let source: RUMErrorSource
+    /// Error stacktrace.
+    let stack: String?
+
+    init(
+        time: Date,
+        message: String,
+        source: RUMErrorSource,
+        stack: (file: StaticString, line: UInt)?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        self.time = time
+        self.source = source
+        self.attributes = attributes
+        self.message = message
+        self.stack = stack.flatMap { "\($0.file): \($0.line)" }
+    }
+
+    init(
+        time: Date,
+        source: RUMErrorSource,
+        error: Error,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        self.time = time
+        self.source = source
+        self.attributes = attributes
+
+        let dderror = DDError(error: error)
+        self.message = dderror.message
+        self.stack = dderror.details
+    }
 }
 
 // MARK: - RUM Resource related commands
@@ -86,7 +117,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     /// The error message.
     let errorMessage: String
     /// The origin of the error (network, webview, ...)
-    let errorSource: String
+    let errorSource: RUMErrorSource
     /// HTTP status code of the Ressource error.
     let httpStatusCode: Int?
 }

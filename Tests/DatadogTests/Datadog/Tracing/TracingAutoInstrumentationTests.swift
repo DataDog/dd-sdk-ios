@@ -122,9 +122,12 @@ class TracingURLSessionHooksTests: XCTestCase {
 
         let recordedSpanTags = spanRecorder.recorded!.span.tags
         XCTAssertEqual(recordedSpanTags[OTTags.error] as? Bool, true)
-        XCTAssertEqual(recordedSpanTags[DDTags.errorType] as? String, "\(error.domain) - \(error.code)")
+        XCTAssertEqual(recordedSpanTags[DDTags.errorType] as? String, "unit-test - 123")
         XCTAssertEqual(recordedSpanTags[DDTags.errorMessage] as? String, errorDescription)
-        XCTAssertEqual(recordedSpanTags[DDTags.errorStack] as? String, String(describing: error))
+        XCTAssertEqual(
+            recordedSpanTags[DDTags.errorStack] as? String,
+            #"Error Domain=unit-test Code=123 "something happened" UserInfo={NSLocalizedDescription=something happened}"#
+        )
     }
 
     func testTaskObserver_wrongOrder() throws {

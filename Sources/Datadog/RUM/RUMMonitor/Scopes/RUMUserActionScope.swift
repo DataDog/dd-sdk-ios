@@ -95,6 +95,9 @@ internal class RUMUserActionScope: RUMScope {
                 trackResourceError()
             }
 
+        case _ as RUMAddCurrentViewErrorCommand:
+            trackViewError()
+
         default:
             break
         }
@@ -118,6 +121,10 @@ internal class RUMUserActionScope: RUMScope {
 
     private func trackResourceError() {
         activeResourcesCount -= 1
+        errorsCount += 1
+    }
+
+    private func trackViewError() {
         errorsCount += 1
     }
 

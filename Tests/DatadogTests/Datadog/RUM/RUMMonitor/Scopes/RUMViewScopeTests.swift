@@ -231,7 +231,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.resourceScopes.count, 1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .mockAny(), httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 0)
@@ -290,5 +290,87 @@ class RUMViewScopeTests: XCTestCase {
         )
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
+    }
+
+    // MARK: - Error Tracking
+
+    func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: view,
+            attributes: [:],
+            startTime: currentTime
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar"], identity: view, isInitialView: true)
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand(time: currentTime, message: "view error", source: .source, stack: nil, attributes: [:])
+            )
+        )
+
+        let error = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMError>.self).last)
+        XCTAssertEqual(error.model.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(error.model.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(error.model.session.id, scope.context.sessionID.toString)
+        XCTAssertEqual(error.model.session.type, .user)
+        XCTAssertValidRumUUID(error.model.view.id)
+        XCTAssertEqual(error.model.view.url, "ViewControllerMock")
+        XCTAssertNil(error.model.usr)
+        XCTAssertNil(error.model.connectivity)
+        XCTAssertEqual(error.model.error.message, "view error")
+        XCTAssertEqual(error.model.error.source, .source)
+        XCTAssertNil(error.model.error.stack)
+        XCTAssertNil(error.model.error.isCrash)
+        XCTAssertNil(error.model.error.resource)
+        XCTAssertNil(error.model.action)
+        XCTAssertEqual(error.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(error.userInfo, dependencies.eventBuilder.userInfoProvider.value)
+        XCTAssertEqual(error.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
+        XCTAssertEqual(error.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.error.count, 1)
+    }
+
+    func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: view,
+            attributes: [:],
+            startTime: Date()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand(time: Date(), attributes: ["foo": "bar"], identity: view, isInitialView: true)
+            )
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+            )
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/1", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+            )
+        )
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.resource.count, 1)
+        XCTAssertEqual(viewUpdate.model.view.error.count, 1)
     }
 }

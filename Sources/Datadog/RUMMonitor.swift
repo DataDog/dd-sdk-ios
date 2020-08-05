@@ -14,6 +14,15 @@ public enum RUMUserActionType {
     case custom
 }
 
+public enum RUMErrorSource {
+    case source
+    case console
+    case network
+    case agent
+    case logger
+    case webview
+}
+
 public class RUMMonitor: RUMMonitorInternal {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMScope
@@ -78,6 +87,41 @@ public class RUMMonitor: RUMMonitorInternal {
     ///   - attributes: custom attributes to attach to the View.
     public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
         stop(view: viewController, attributes: attributes)
+    }
+
+    /// Notifies that an Error occurred in currently presented View.
+    /// - Parameters:
+    ///   - message: a message explaining the Error.
+    ///   - source: the origin of the Error.
+    ///   - attributes: custom attributes to attach to the Error
+    ///   - file: the file in which the Error occurred (the default is the file name in which this method was called).
+    ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
+    public func addViewError(
+        message: String,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue]? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        add(
+            viewErrorMessage: message,
+            source: source,
+            attributes: attributes,
+            stack: (file: file, line: line)
+        )
+    }
+
+    /// Notifies that an Error occurred in currently presented View.
+    /// - Parameters:
+    ///   - error: the `Error` object. It will be used to build the Error description.
+    ///   - source: the origin of the Error.
+    ///   - attributes: custom attributes to attach to the Error
+    public func addViewError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue]? = nil
+    ) {
+        add(viewError: error, source: source, attributes: attributes)
     }
 
     /// Notifies that the Resource starts being loaded.
@@ -160,13 +204,25 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func addViewError(message: String, error: Error?, attributes: [AttributeKey: AttributeValue]?) {
+    func add(viewErrorMessage: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, stack: (file: StaticString, line: UInt)?) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
-                message: message,
-                error: error
+                message: viewErrorMessage,
+                source: source,
+                stack: stack,
+                attributes: attributes ?? [:]
+            )
+        )
+    }
+
+    func add(viewError: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?) {
+        process(
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.currentDate(),
+                source: source,
+                error: viewError,
+                attributes: attributes ?? [:]
             )
         )
     }
@@ -196,7 +252,7 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func stop(resource resourceName: String, withError errorMessage: String, errorSource: String, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
+    func stop(resource resourceName: String, withError errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceName: resourceName,
