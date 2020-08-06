@@ -170,6 +170,53 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
+    func testStartingView_thenIssuingAnError_whileScrolling() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+
+        monitor.startView(viewController: mockView)
+        monitor.startUserAction(type: .scroll)
+        #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
+        monitor.addViewError(message: "View error message", source: .source)
+        #sourceLocation()
+        monitor.stopUserAction(type: .scroll)
+
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 6)
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "application_start")
+        }
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "View error message")
+            XCTAssertEqual(rumModel.error.stack, "Foo.swift: 100")
+            XCTAssertEqual(rumModel.error.source, .source)
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+            XCTAssertEqual(rumModel.view.error.count, 1)
+        }
+        try rumEventMatchers[4].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, "scroll")
+            XCTAssertEqual(rumModel.action.error?.count, 1)
+        }
+        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 2)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+            XCTAssertEqual(rumModel.view.error.count, 1)
+        }
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
