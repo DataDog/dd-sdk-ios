@@ -220,8 +220,8 @@ public class RUMMonitor: RUMMonitorInternal {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
-                source: source,
                 error: viewError,
+                source: source,
                 attributes: attributes ?? [:]
             )
         )

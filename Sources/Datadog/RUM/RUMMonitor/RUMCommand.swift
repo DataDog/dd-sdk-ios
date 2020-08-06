@@ -59,13 +59,18 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.source = source
         self.attributes = attributes
         self.message = message
-        self.stack = stack.flatMap { "\($0.file): \($0.line)" }
+
+        if let stack = stack, let fileName = "\(stack.file)".split(separator: "/").last {
+            self.stack = "\(fileName): \(stack.line)"
+        } else {
+            self.stack = nil
+        }
     }
 
     init(
         time: Date,
-        source: RUMErrorSource,
         error: Error,
+        source: RUMErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time
@@ -73,7 +78,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.attributes = attributes
 
         let dderror = DDError(error: error)
-        self.message = dderror.message
+        self.message = dderror.title
         self.stack = dderror.details
     }
 }
