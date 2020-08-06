@@ -202,13 +202,13 @@ internal class RUMViewScope: RUMScope {
         let eventData = RUMActionEvent(
             date: viewStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
             view: .init(
-                id: viewUUID.toString,
+                id: viewUUID.toRUMDataFormat,
                 url: viewURI
             ),
             action: .init(
-                id: dependencies.rumUUIDGenerator.generateUnique().toString,
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 type: "application_start",
                 loadingTime: nil,
                 resource: nil,
@@ -228,9 +228,9 @@ internal class RUMViewScope: RUMScope {
         let eventData = RUMViewEvent(
             date: viewStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
             view: .init(
-                id: viewUUID.toString,
+                id: viewUUID.toRUMDataFormat,
                 url: viewURI,
                 timeSpent: command.time.timeIntervalSince(viewStartTime).toNanoseconds,
                 action: .init(count: actionsCount),
@@ -250,9 +250,9 @@ internal class RUMViewScope: RUMScope {
         let eventData = RUMError(
             date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: .user),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
-                id: context.activeViewID.orNull.toString,
+                id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
@@ -261,29 +261,18 @@ internal class RUMViewScope: RUMScope {
             dd: .init(),
             error: .init(
                 message: command.message,
-                source: encodableErrorSource(for: command.source),
+                source: command.source.toRUMDataFormat,
                 stack: command.stack,
                 isCrash: nil,
                 resource: nil
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toString)
+                .init(id: rumUUID.toRUMDataFormat)
             }
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
-    }
-
-    private func encodableErrorSource(for errorSource: RUMErrorSource) -> RUMSource {
-        switch errorSource {
-        case .source: return .source
-        case .console: return .console
-        case .network: return .network
-        case .agent: return .agent
-        case .logger: return .logger
-        case .webview: return .webview
-        }
     }
 
     // MARK: - Private

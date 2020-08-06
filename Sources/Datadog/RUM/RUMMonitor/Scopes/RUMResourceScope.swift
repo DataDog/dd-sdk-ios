@@ -71,9 +71,9 @@ internal class RUMResourceScope: RUMScope {
         let eventData = RUMResourceEvent(
             date: resourceLoadingStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
             view: .init(
-                id: context.activeViewID.orNull.toString,
+                id: context.activeViewID.orNull.toRUMDataFormat,
                 url: context.activeViewURI ?? ""
             ),
             resource: .init(
@@ -85,7 +85,7 @@ internal class RUMResourceScope: RUMScope {
                 size: command.size
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toString)
+                .init(id: rumUUID.toRUMDataFormat)
             },
             dd: .init()
         )
@@ -100,9 +100,9 @@ internal class RUMResourceScope: RUMScope {
         let eventData = RUMError(
             date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: .user),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
-                id: context.activeViewID.orNull.toString,
+                id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
@@ -111,7 +111,7 @@ internal class RUMResourceScope: RUMScope {
             dd: .init(),
             error: .init(
                 message: command.errorMessage,
-                source: encodableErrorSource(for: command.errorSource),
+                source: command.errorSource.toRUMDataFormat,
                 stack: nil,
                 isCrash: false,
                 resource: .init(
@@ -121,22 +121,11 @@ internal class RUMResourceScope: RUMScope {
                 )
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toString)
+                .init(id: rumUUID.toRUMDataFormat)
             }
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
-    }
-
-    private func encodableErrorSource(for errorSource: RUMErrorSource) -> RUMSource {
-        switch errorSource {
-        case .source: return .source
-        case .console: return .console
-        case .network: return .network
-        case .agent: return .agent
-        case .logger: return .logger
-        case .webview: return .webview
-        }
     }
 }

@@ -138,14 +138,14 @@ internal class RUMUserActionScope: RUMScope {
         let eventData = RUMActionEvent(
             date: actionStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
             view: .init(
-                id: context.activeViewID.orNull.toString,
+                id: context.activeViewID.orNull.toRUMDataFormat,
                 url: context.activeViewURI ?? ""
             ),
             action: .init(
-                id: actionUUID.toString,
-                type: rawActionType(for: actionType),
+                id: actionUUID.toRUMDataFormat,
+                type: actionType.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toNanoseconds,
                 resource: .init(count: resourcesCount),
                 error: .init(count: errorsCount)
@@ -155,16 +155,6 @@ internal class RUMUserActionScope: RUMScope {
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
-    }
-
-    // TODO: RUMM-517 Map `RUMUserActionType` to enum cases from generated models
-    private func rawActionType(for actionType: RUMUserActionType) -> String {
-        switch actionType {
-        case .tap: return "tap"
-        case .scroll: return "scroll"
-        case .swipe: return "swipe"
-        case .custom: return "custom"
-        }
     }
 
     // MARK: - Private

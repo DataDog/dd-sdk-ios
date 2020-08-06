@@ -137,6 +137,7 @@
 		617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CD0DC24CEDDD300B0B557 /* RUMUserActionScopeTests.swift */; };
 		617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
 		618715F724DC0CDE00FC0F69 /* RUMCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */; };
+		618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
 		618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C365E248E85B400520CDE /* DateFormattingTests.swift */; };
 		618DCFD724C7265300589570 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
 		618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */; };
@@ -443,6 +444,7 @@
 		617CD0DC24CEDDD300B0B557 /* RUMUserActionScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScopeTests.swift; sourceTree = "<group>"; };
 		617CEB382456BC3A00AD4669 /* TracingUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUID.swift; sourceTree = "<group>"; };
 		618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommandTests.swift; sourceTree = "<group>"; };
+		618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMapping.swift; sourceTree = "<group>"; };
 		618C365E248E85B400520CDE /* DateFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormattingTests.swift; sourceTree = "<group>"; };
 		618DCFD624C7265300589570 /* RUMUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUID.swift; sourceTree = "<group>"; };
 		618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUIDGenerator.swift; sourceTree = "<group>"; };
@@ -1410,6 +1412,7 @@
 				61E5333324B7A545003D6C4E /* RUMViewEvent.swift */,
 				61C2C20424C0862700C0321C /* RUMActionEvent.swift */,
 				9E26E6B824C87693000B3270 /* RUMDataModels.swift */,
+				618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */,
 				61494CB224C844570082C633 /* RUMResourceEvent.swift */,
 			);
 			path = DataModels;
@@ -1853,6 +1856,7 @@
 				61C2C20724C098FC00C0321C /* RUMSessionScope.swift in Sources */,
 				617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */,
 				61FF282624B8A248000B3D9B /* RUMEventOutput.swift in Sources */,
+				618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */,
 				61C3E63324BF1456008053F2 /* RUMMonitorInternal.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
