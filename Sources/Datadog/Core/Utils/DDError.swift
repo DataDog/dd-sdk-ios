@@ -13,13 +13,14 @@ internal struct DDError {
     let details: String
 
     init(error: Error) {
-        let isNSError = type(of: error) == NSError.self
-        let isPerhapsAnNSErrorSubclass = !(error as NSError).userInfo.isEmpty
-
-        if isNSError || isPerhapsAnNSErrorSubclass {
+        if isNSErrorOrItsSubclass(error) {
             let nsError = error as NSError
             self.title = "\(nsError.domain) - \(nsError.code)"
-            self.message = nsError.localizedDescription
+            if nsError.userInfo[NSLocalizedDescriptionKey] != nil {
+                self.message = nsError.localizedDescription
+            } else {
+                self.message = nsError.description
+            }
             self.details = "\(nsError)"
         } else {
             let swiftError = error
@@ -28,4 +29,16 @@ internal struct DDError {
             self.details = "\(swiftError)"
         }
     }
+}
+
+private func isNSErrorOrItsSubclass(_ error: Error) -> Bool {
+    var mirror: Mirror? = Mirror(reflecting: error)
+
+    while mirror != nil {
+        if mirror?.subjectType == NSError.self {
+            return true
+        }
+        mirror = mirror?.superclassMirror
+    }
+    return false
 }

@@ -57,24 +57,24 @@ class DDErrorTests: XCTestCase {
     func testFormattingNSErrorSubclass() {
         class NSErrorSubclass: NSError {}
 
-        let dderror1 = DDError(
+        let dderrorWithDescription = DDError(
             error: NSErrorSubclass(
                 domain: "custom-domain",
                 code: 10,
-                userInfo: [NSLocalizedDescriptionKey: "error description"]
+                userInfo: [NSLocalizedDescriptionKey: "localized description"]
             )
         )
 
-        XCTAssertEqual(dderror1.title, "custom-domain - 10")
-        XCTAssertEqual(dderror1.message, "error description")
+        XCTAssertEqual(dderrorWithDescription.title, "custom-domain - 10")
+        XCTAssertEqual(dderrorWithDescription.message, "localized description")
         XCTAssertEqual(
-            dderror1.details,
+            dderrorWithDescription.details,
             """
-            Error Domain=custom-domain Code=10 "error description" UserInfo={NSLocalizedDescription=error description}
+            Error Domain=custom-domain Code=10 "localized description" UserInfo={NSLocalizedDescription=localized description}
             """
         )
 
-        let dderror2 = DDError(
+        let dderrorNoDescription = DDError(
             error: NSErrorSubclass(
                 domain: "custom-domain",
                 code: 10,
@@ -82,13 +82,13 @@ class DDErrorTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(dderror2.title, "NSErrorSubclass")
+        XCTAssertEqual(dderrorNoDescription.title, "custom-domain - 10")
         XCTAssertEqual(
-            dderror2.message,
+            dderrorNoDescription.message,
             #"Error Domain=custom-domain Code=10 "(null)""#
         )
         XCTAssertEqual(
-            dderror2.details,
+            dderrorNoDescription.details,
             #"Error Domain=custom-domain Code=10 "(null)""#
         )
     }
