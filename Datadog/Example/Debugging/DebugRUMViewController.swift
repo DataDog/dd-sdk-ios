@@ -102,17 +102,14 @@ class DebugRUMViewController: UIViewController {
             let url = URL(string: "https://foo.com" + self.resourceURL)!
             rumMonitor.startResourceLoading(
                 resourceName: "/resource/1",
-                request: URLRequest(url: url)
+                url: url,
+                httpMethod: .GET
             )
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 rumMonitor.stopResourceLoading(
                     resourceName: "/resource/1",
-                    response: HTTPURLResponse(
-                        url: url,
-                        mimeType: "image/jpeg",
-                        expectedContentLength: -1,
-                        textEncodingName: nil
-                    )
+                    kind: .image,
+                    httpStatusCode: 200
                 )
             }
         }

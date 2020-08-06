@@ -23,7 +23,7 @@ internal class RUMResourceScope: RUMScope {
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
     /// The HTTP method used to load this Resource.
-    private var resourceHTTPMethod: String
+    private var resourceHTTPMethod: RUMHTTPMethod
 
     init(
         parent: RUMScope,
@@ -32,7 +32,7 @@ internal class RUMResourceScope: RUMScope {
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         url: String,
-        httpMethod: String
+        httpMethod: RUMHTTPMethod
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -68,26 +68,35 @@ internal class RUMResourceScope: RUMScope {
     private func sendResourceEvent(on command: RUMStopResourceCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMResourceEvent(
-            date: resourceLoadingStartTime.timeIntervalSince1970.toMilliseconds,
+        let eventData = RUMResource(
+            date: resourceLoadingStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
+            usr: nil,
+            connectivity: nil,
+            dd: .init(),
             resource: .init(
-                type: command.type,
+                type: command.kind.toRUMDataFormat,
+                method: resourceHTTPMethod.toRUMDataFormat,
                 url: resourceURL,
-                method: resourceHTTPMethod,
-                statusCode: command.httpStatusCode,
-                duration: command.time.timeIntervalSince(resourceLoadingStartTime).toNanoseconds,
-                size: command.size
+                statusCode: command.httpStatusCode?.toInt64,
+                duration: command.time.timeIntervalSince(resourceLoadingStartTime).toInt64Nanoseconds,
+                size: command.size?.toInt64 ?? 0,
+                redirect: nil,
+                dns: nil,
+                connect: nil,
+                ssl: nil,
+                firstByte: nil,
+                download: nil
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
-            },
-            dd: .init()
+            }
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
@@ -115,8 +124,8 @@ internal class RUMResourceScope: RUMScope {
                 stack: nil,
                 isCrash: false,
                 resource: .init(
-                    method: RUMMethod(rawValue: resourceHTTPMethod.uppercased()) ?? .methodGET,
-                    statusCode: Int64(command.httpStatusCode ?? 0),
+                    method: resourceHTTPMethod.toRUMDataFormat,
+                    statusCode: command.httpStatusCode?.toInt64 ?? 0,
                     url: resourceURL
                 )
             ),

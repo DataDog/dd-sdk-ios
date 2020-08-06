@@ -57,7 +57,7 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertTrue(
             scope.process(
                 command: RUMStopResourceCommand(
-                    resourceName: .mockAny(), time: .mockAny(), attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0
+                    resourceName: .mockAny(), time: .mockAny(), attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: 0
                 )
             )
         )

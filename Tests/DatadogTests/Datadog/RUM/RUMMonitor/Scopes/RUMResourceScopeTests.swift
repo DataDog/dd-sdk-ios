@@ -47,7 +47,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: "POST"
+            httpMethod: .POST
         )
 
         currentTime.addTimeInterval(2)
@@ -58,21 +58,21 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceName: "/resource/1",
                     time: currentTime,
                     attributes: ["foo": "bar"],
-                    type: "image",
+                    kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
                 )
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResource>.self).first)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.resource.type, "image")
+        XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(event.model.resource.statusCode, 200)
         XCTAssertEqual(event.model.resource.duration, 2_000_000_000)
@@ -93,7 +93,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: "POST"
+            httpMethod: .POST
         )
 
         currentTime.addTimeInterval(2)

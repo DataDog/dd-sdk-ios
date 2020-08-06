@@ -13,8 +13,8 @@ internal protocol RUMMonitorInternal {
     func add(viewErrorMessage: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, stack: (file: StaticString, line: UInt)?)
     func add(viewError: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?)
 
-    func start(resource resourceName: String, url: String, httpMethod: String, attributes: [AttributeKey: AttributeValue]?)
-    func stop(resource resourceName: String, type: String, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
+    func start(resource resourceName: String, url: URL, method: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]?)
+    func stop(resource resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
     func stop(resource resourceName: String, withError errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
 
     func start(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?)

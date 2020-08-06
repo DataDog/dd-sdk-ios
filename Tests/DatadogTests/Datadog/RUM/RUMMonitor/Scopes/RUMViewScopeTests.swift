@@ -225,7 +225,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.resourceScopes.count, 2)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+                command: RUMStopResourceCommand(resourceName: "/resource/1", time: Date(), attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: 0)
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 1)

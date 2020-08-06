@@ -68,8 +68,8 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceName: "/resource/1", request: .mockAny())
-        monitor.stopResourceLoading(resourceName: "/resource/1", response: .mockResponseWith(statusCode: 200))
+        monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/1", kind: .image, httpStatusCode: 200)
 
         let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 4)
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
@@ -79,7 +79,8 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMResource.self) { rumModel in
+            XCTAssertEqual(rumModel.resource.type, .image)
             XCTAssertEqual(rumModel.resource.statusCode, 200)
         }
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
@@ -132,10 +133,10 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll)
-        monitor.startResourceLoading(resourceName: "/resource/1", request: .mockAny())
-        monitor.stopResourceLoading(resourceName: "/resource/1", response: .mockResponseWith(statusCode: 200))
-        monitor.startResourceLoading(resourceName: "/resource/2", request: .mockAny())
-        monitor.stopResourceLoading(resourceName: "/resource/2", response: .mockResponseWith(statusCode: 202))
+        monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .GET)
+        monitor.stopResourceLoading(resourceName: "/resource/1", kind: .image, httpStatusCode: 200)
+        monitor.startResourceLoading(resourceName: "/resource/2", url: .mockAny(), httpMethod: .GET)
+        monitor.stopResourceLoading(resourceName: "/resource/2", kind: .image, httpStatusCode: 202)
         monitor.stopUserAction(type: .scroll)
 
         let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 8)
@@ -146,14 +147,14 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 200)
         }
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
         }
-        try rumEventMatchers[4].model(ofType: RUMResourceEvent.self) { rumModel in
+        try rumEventMatchers[4].model(ofType: RUMResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 202)
         }
         try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
@@ -235,8 +236,8 @@ class RUMMonitorTests: XCTestCase {
             case 1: monitor.stop(view: view, attributes: nil)
             case 2: monitor.add(viewError: ErrorMock(), source: .agent, attributes: nil)
             case 3: monitor.add(viewErrorMessage: .mockAny(), source: .agent, attributes: nil, stack: nil)
-            case 4: monitor.start(resource: .mockAny(), url: .mockAny(), httpMethod: .mockAny(), attributes: nil)
-            case 5: monitor.stop(resource: .mockAny(), type: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
+            case 4: monitor.start(resource: .mockAny(), url: .mockAny(), method: .mockAny(), attributes: nil)
+            case 5: monitor.stop(resource: .mockAny(), kind: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
             case 6: monitor.stop(resource: .mockAny(), withError: .mockAny(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
             case 7: monitor.start(userAction: .scroll, attributes: nil)
             case 8: monitor.stop(userAction: .scroll, attributes: nil)
@@ -264,8 +265,8 @@ class RUMMonitorTests: XCTestCase {
         monitor.add(viewError: mockError, source: .agent, attributes: nil)
         monitor.add(viewErrorMessage: .mockAny(), source: .agent, attributes: nil, stack: nil)
 
-        monitor.start(resource: .mockAny(), url: .mockAny(), httpMethod: .mockAny(), attributes: nil)
-        monitor.stop(resource: .mockAny(), type: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
+        monitor.start(resource: .mockAny(), url: .mockAny(), method: .mockAny(), attributes: nil)
+        monitor.stop(resource: .mockAny(), kind: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
         monitor.stop(resource: .mockAny(), withError: .mockAny(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
 
         monitor.start(userAction: .scroll, attributes: nil)

@@ -62,11 +62,11 @@ class RUMIntegrationTests: IntegrationTests {
         XCTAssertEqual(view1UpdateA.view.resource.count, 0)
 
         // --------> Resource event on stopResourceLoading()
-        let resourceLoaded: RUMResourceEvent = try rumEventsMatchers[2].model()
+        let resourceLoaded: RUMResource = try rumEventsMatchers[2].model()
         XCTAssertEqual(resourceLoaded.view.id, view1UpdateA.view.id)
         XCTAssertEqual(resourceLoaded.resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(resourceLoaded.resource.statusCode, 200)
-        XCTAssertEqual(resourceLoaded.resource.type, "other")
+        XCTAssertEqual(resourceLoaded.resource.type, .image)
         XCTAssertGreaterThan(resourceLoaded.resource.duration, 100_000_000 - 1) // ~0.1s
         XCTAssertLessThan(resourceLoaded.resource.duration, 100_000_000 * 3) // less than 0.3s
 

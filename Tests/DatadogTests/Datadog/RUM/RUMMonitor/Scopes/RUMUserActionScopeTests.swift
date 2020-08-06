@@ -132,7 +132,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: nil)
             )
         )
 
@@ -240,7 +240,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: 0)
             ),
             "Discrete User Action should not yet complete as it still has 1 pending Resource"
         )

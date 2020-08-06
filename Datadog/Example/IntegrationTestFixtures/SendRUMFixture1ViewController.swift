@@ -40,18 +40,15 @@ internal class SendRUMFixture1ViewController: UIViewController {
 
         rumMonitor.startResourceLoading(
             resourceName: simulatedResourceName,
-            request: URLRequest(url: simulatedResourceURL)
+            url: simulatedResourceURL,
+            httpMethod: .GET
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
             rumMonitor.stopResourceLoading(
                 resourceName: simulatedResourceName,
-                response: HTTPURLResponse(
-                    url: simulatedResourceURL,
-                    mimeType: "image/jpeg",
-                    expectedContentLength: -1,
-                    textEncodingName: nil
-                )
+                kind: .image,
+                httpStatusCode: 200
             )
 
             // Reveal the "Push Next Screen" button so UITest can continue

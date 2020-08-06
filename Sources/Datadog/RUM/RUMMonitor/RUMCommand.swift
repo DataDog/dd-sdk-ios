@@ -98,7 +98,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     /// Resource url
     let url: String
     /// HTTP method used to load the Resource
-    let httpMethod: String
+    let httpMethod: RUMHTTPMethod
 }
 
 internal struct RUMStopResourceCommand: RUMResourceCommand {
@@ -106,8 +106,8 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     let time: Date
     let attributes: [AttributeKey: AttributeValue]
 
-    /// A type of the Resource (image, font, ...)
-    let type: String
+    /// A type of the Resource
+    let kind: RUMResourceKind
     /// HTTP status code of loading the Ressource
     let httpStatusCode: Int?
     /// The size of loaded Resource
