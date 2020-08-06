@@ -231,7 +231,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.resourceScopes.count, 1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: Date(), error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 0)
@@ -365,7 +365,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/1", time: Date(), attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/1", time: Date(), error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
             )
         )
 

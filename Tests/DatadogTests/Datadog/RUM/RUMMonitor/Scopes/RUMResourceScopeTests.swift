@@ -103,10 +103,10 @@ class RUMResourceScopeTests: XCTestCase {
                 command: RUMStopResourceWithErrorCommand(
                     resourceName: "/resource/1",
                     time: currentTime,
-                    attributes: ["foo": "bar"],
-                    errorMessage: "error message",
-                    errorSource: .network,
-                    httpStatusCode: 404
+                    error: ErrorMock("network issue explanation"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    attributes: ["foo": "bar"]
                 )
             )
         )
@@ -118,10 +118,11 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.error.message, "error message")
+        XCTAssertEqual(event.model.error.message, "ErrorMock")
         XCTAssertEqual(event.model.error.source, .network)
+        XCTAssertEqual(event.model.error.stack, "network issue explanation")
         XCTAssertEqual(event.model.error.resource?.method, .post)
-        XCTAssertEqual(event.model.error.resource?.statusCode, 404)
+        XCTAssertEqual(event.model.error.resource?.statusCode, 500)
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), parent.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])

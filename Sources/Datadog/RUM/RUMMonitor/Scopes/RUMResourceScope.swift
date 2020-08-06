@@ -121,7 +121,7 @@ internal class RUMResourceScope: RUMScope {
             error: .init(
                 message: command.errorMessage,
                 source: command.errorSource.toRUMDataFormat,
-                stack: nil,
+                stack: command.stack,
                 isCrash: false,
                 resource: .init(
                     method: resourceHTTPMethod.toRUMDataFormat,

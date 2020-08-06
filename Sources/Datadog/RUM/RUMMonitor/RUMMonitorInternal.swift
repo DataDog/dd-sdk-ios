@@ -15,7 +15,8 @@ internal protocol RUMMonitorInternal {
 
     func start(resource resourceName: String, url: URL, method: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]?)
     func stop(resource resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
-    func stop(resource resourceName: String, withError errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
+    func stop(resource resourceName: String, withErrorMessage errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
+    func stop(resource resourceName: String, withError error: Error, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
 
     func start(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?)
     func stop(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?)

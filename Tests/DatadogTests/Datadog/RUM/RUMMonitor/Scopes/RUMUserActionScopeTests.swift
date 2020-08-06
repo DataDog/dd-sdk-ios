@@ -138,7 +138,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
             )
         )
 
@@ -247,7 +247,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
             ),
             "Discrete User Action should not yet complete as it haven't reached the time out duration"
         )

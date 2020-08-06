@@ -114,7 +114,7 @@ public class RUMMonitor: RUMMonitorInternal {
     /// Notifies that an Error occurred in currently presented View.
     /// - Parameters:
     ///   - message: a message explaining the Error.
-    ///   - source: the origin of the Error.
+    ///   - source: the origin of the error.
     ///   - attributes: custom attributes to attach to the Error
     ///   - file: the file in which the Error occurred (the default is the file name in which this method was called).
     ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
@@ -136,7 +136,7 @@ public class RUMMonitor: RUMMonitorInternal {
     /// Notifies that an Error occurred in currently presented View.
     /// - Parameters:
     ///   - error: the `Error` object. It will be used to build the Error description.
-    ///   - source: the origin of the Error.
+    ///   - source: the origin of the error.
     ///   - attributes: custom attributes to attach to the Error.
     public func addViewError(
         error: Error,
@@ -161,7 +161,7 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    /// Notifies that the Resource stops being loaded.
+    /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
     ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - kind: the type of the Resource.
@@ -176,6 +176,30 @@ public class RUMMonitor: RUMMonitorInternal {
             size: size,
             attributes: attributes
         )
+    }
+
+    /// Notifies that the Resource stops being loaded with error.
+    /// This should be used when `Error` object is received on Resource failure.
+    /// - Parameters:
+    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - error: the `Error` object received when loading the Resource.
+    ///   - source: the origin of the error.
+    ///   - httpStatusCode: HTTP status code (optional).
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]? = nil) {
+        stop(resource: resourceName, withError: error, errorSource: source, httpStatusCode: httpStatusCode, attributes: attributes)
+    }
+
+    /// Notifies that the Resource stops being loaded with error.
+    /// If `Error` object available on Resource failure `stopResourceLoadingWithError(..., error:, ...)` should be used instead.
+    /// - Parameters:
+    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - errorMessage: the message explaining Resource failure.
+    ///   - source: the origin of the error.
+    ///   - httpStatusCode: HTTP status code (optional).
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        stop(resource: resourceName, withErrorMessage: errorMessage, errorSource: source, httpStatusCode: httpStatusCode, attributes: attributes)
     }
 
     /// Notifies that the User Action has started.
@@ -276,15 +300,28 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func stop(resource resourceName: String, withError errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
+    func stop(resource resourceName: String, withError error: Error, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
-                errorMessage: errorMessage,
-                errorSource: errorSource,
-                httpStatusCode: httpStatusCode
+                error: error,
+                source: errorSource,
+                httpStatusCode: httpStatusCode,
+                attributes: attributes ?? [:]
+            )
+        )
+    }
+
+    func stop(resource resourceName: String, withErrorMessage errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
+        process(
+            command: RUMStopResourceWithErrorCommand(
+                resourceName: resourceName,
+                time: dateProvider.currentDate(),
+                message: errorMessage,
+                source: errorSource,
+                httpStatusCode: httpStatusCode,
+                attributes: attributes ?? [:]
             )
         )
     }

@@ -238,7 +238,7 @@ class RUMMonitorTests: XCTestCase {
             case 3: monitor.add(viewErrorMessage: .mockAny(), source: .agent, attributes: nil, stack: nil)
             case 4: monitor.start(resource: .mockAny(), url: .mockAny(), method: .mockAny(), attributes: nil)
             case 5: monitor.stop(resource: .mockAny(), kind: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
-            case 6: monitor.stop(resource: .mockAny(), withError: .mockAny(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
+            case 6: monitor.stop(resource: .mockAny(), withError: ErrorMock(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
             case 7: monitor.start(userAction: .scroll, attributes: nil)
             case 8: monitor.stop(userAction: .scroll, attributes: nil)
             case 9: monitor.add(userAction: .tap, attributes: nil)
@@ -267,7 +267,7 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.start(resource: .mockAny(), url: .mockAny(), method: .mockAny(), attributes: nil)
         monitor.stop(resource: .mockAny(), kind: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
-        monitor.stop(resource: .mockAny(), withError: .mockAny(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
+        monitor.stop(resource: .mockAny(), withError: ErrorMock(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
 
         monitor.start(userAction: .scroll, attributes: nil)
         monitor.stop(userAction: .scroll, attributes: nil)
