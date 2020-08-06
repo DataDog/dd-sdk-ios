@@ -13,7 +13,7 @@ struct Category: Decodable {
     let cover: URL
 }
 
-struct Product: Decodable {
+struct Product: Decodable, Equatable {
     let name: String
     let price: String
     let cover: URL

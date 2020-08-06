@@ -20,6 +20,7 @@ class ListViewController: UICollectionViewController {
         collectionView.register(Cell.self, forCellWithReuseIdentifier: Self.cellIdentifier)
         collectionView.delegate = self
         setupLayout(for: view.bounds.size)
+        addGoToCartButton()
     }
 
     override func viewWillAppear(_ animated: Bool) {

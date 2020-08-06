@@ -26,5 +26,30 @@ class ProductDetailViewController: UIViewController {
         imageView.af.setImage(withURL: product.cover)
         descriptionLabel.text = product.name
         priceLabel.text = "€\(product.price)"
+
+        setupBarButtons()
+    }
+
+    private func setupBarButtons() {
+        let cartActionButton: UIBarButtonItem
+        if cart.products.contains(product) {
+            cartActionButton = UIBarButtonItem(image: UIImage(systemName: "cart.badge.minus"), style: .plain, target: self, action: #selector(removeFromCart))
+        } else {
+            cartActionButton = UIBarButtonItem(image: UIImage(systemName: "cart.badge.plus"), style: .plain, target: self, action: #selector(addToCart))
+        }
+        navigationItem.rightBarButtonItems = [cartActionButton]
+        addGoToCartButton()
+    }
+
+    @objc private func addToCart() {
+        cart.products.append(product)
+        setupBarButtons()
+    }
+
+    @objc private func removeFromCart() {
+        if let indexToRemove = cart.products.firstIndex(of: product) {
+            cart.products.remove(at: indexToRemove)
+        }
+        setupBarButtons()
     }
 }
