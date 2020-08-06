@@ -19,30 +19,23 @@ extension Optional {
 // MARK: - TimeInterval
 
 extension TimeInterval {
-    // NOTE: RUMM-182 counterpart of currentTimeMillis in Java
-    // https://docs.oracle.com/javase/7/docs/api/java/lang/System.html#currentTimeMillis()
+    /// `TimeInterval` represented in milliseconds (capped to `UInt64.max`).
     var toMilliseconds: UInt64 {
-        do {
-            let miliseconds = self * 1_000
-            return try UInt64(withReportingOverflow: miliseconds)
-        } catch {
-            userLogger.error("🔥 Failed to convert `\(self)` time interval in milliseconds: \(error)")
-            developerLogger?.error("🔥 Failed to convert `\(self)` time interval in milliseconds: \(error)")
-            return UInt64.max
-        }
+        let miliseconds = self * 1_000
+        return (try? UInt64(withReportingOverflow: miliseconds)) ?? .max
     }
 
-    /// Returns `TimeInterval` represented in nanoseconds.
+    /// `TimeInterval` represented in milliseconds (capped to `Int64.max`).
+    var toInt64Milliseconds: Int64 {
+        let miliseconds = self * 1_000
+        return (try? Int64(withReportingOverflow: miliseconds)) ?? .max
+    }
+
+    /// `TimeInterval` represented in nanoseconds (capped to `UInt64.max`).
     /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
     var toNanoseconds: UInt64 {
-        do {
-            let nanoseconds = self * 1_000_000_000
-            return try UInt64(withReportingOverflow: nanoseconds)
-        } catch {
-            userLogger.error("🔥 Failed to convert `\(self)` time interval in nanoseconds: \(error)")
-            developerLogger?.error("🔥 Failed to convert `\(self)` time interval in nanoseconds: \(error)")
-            return UInt64.max
-        }
+        let nanoseconds = self * 1_000_000_000
+        return (try? UInt64(withReportingOverflow: nanoseconds)) ?? .max
     }
 }
 

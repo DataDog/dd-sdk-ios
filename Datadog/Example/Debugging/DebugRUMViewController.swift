@@ -24,6 +24,8 @@ class DebugRUMViewController: UIViewController {
         actionTypeTextField.placeholder = RUMUserActionType.default.toString
         resourceViewURLTextField.placeholder = resourceViewURL
         resourceURLTextField.placeholder = resourceURL
+        errorViewURLTextField.placeholder = errorViewURL
+        errorMessageTextField.placeholder = errorMessage
     }
 
     // MARK: - View Event
@@ -120,6 +122,33 @@ class DebugRUMViewController: UIViewController {
         }
         simulatedViewControllers.append(viewController)
         sendResourceEventButton.disableFor(seconds: 0.5)
+    }
+
+    // MARK: - Error Event
+
+    @IBOutlet weak var errorViewURLTextField: UITextField!
+    @IBOutlet weak var errorMessageTextField: UITextField!
+    @IBOutlet weak var sendErrorEventButton: UIButton!
+
+    private var errorViewURL: String {
+        errorViewURLTextField.text!.isEmpty ? "FooViewController" : errorViewURLTextField.text!
+    }
+
+    private var errorMessage: String {
+        errorMessageTextField.text!.isEmpty ? "Error message" : errorMessageTextField.text!
+    }
+
+    @IBAction func didTapSendErrorEvent(_ sender: Any) {
+        let viewController = createUIViewControllerSubclassInstance(named: errorViewURL)
+        rumMonitor.startView(viewController: viewController)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            rumMonitor.addViewError(message: self.errorMessage, source: .source)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            rumMonitor.stopView(viewController: viewController)
+        }
+        simulatedViewControllers.append(viewController)
+        sendErrorEventButton.disableFor(seconds: 0.5)
     }
 }
 

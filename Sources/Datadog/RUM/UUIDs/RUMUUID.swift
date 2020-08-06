@@ -11,11 +11,6 @@ internal struct RUMUUID: Equatable {
 
     /// UUID with all zeros, used to represent no-op values.
     static let nullUUID = RUMUUID(rawValue: UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID())
-
-    /// A string representation of UUID conforming to rum-events-format.
-    var toString: String {
-        return rawValue.uuidString.lowercased()
-    }
 }
 
 extension Optional where Wrapped == RUMUUID {

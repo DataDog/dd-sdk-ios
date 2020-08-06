@@ -93,8 +93,8 @@ private enum TracingRequestInterceptor {
                 guard let completedSpan = startedSpan else {
                     break
                 }
-                if let someError = error {
-                    completedSpan.handleError(someError)
+                if let error = error {
+                    completedSpan.setError(error)
                 }
                 if let statusCode = (response as? HTTPURLResponse)?.statusCode {
                     completedSpan.setTag(key: OTTags.httpStatusCode, value: statusCode)
@@ -113,13 +113,12 @@ private enum TracingRequestInterceptor {
 }
 
 private extension OTSpan {
-    func handleError(_ error: Error) {
+    func setError(_ error: Error) {
         setTag(key: OTTags.error, value: true)
-        setTag(key: DDTags.errorStack, value: String(describing: error))
-        let nsError = error as NSError
-        let errorKind = "\(nsError.domain) - \(nsError.code)"
-        setTag(key: DDTags.errorType, value: errorKind)
-        let errorMessage = nsError.localizedDescription
-        setTag(key: DDTags.errorMessage, value: errorMessage)
+
+        let dderror = DDError(error: error)
+        setTag(key: DDTags.errorType, value: dderror.title)
+        setTag(key: DDTags.errorMessage, value: dderror.message)
+        setTag(key: DDTags.errorStack, value: dderror.details)
     }
 }

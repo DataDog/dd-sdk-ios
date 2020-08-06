@@ -14,7 +14,7 @@ class DefaultRUMUUIDGeneratorTests: XCTestCase {
         let generator = DefaultRUMUUIDGenerator()
 
         (0...50).forEach { _ in
-            XCTAssertValidRumUUID(generator.generateUnique().toString)
+            XCTAssertValidRumUUID(generator.generateUnique().toRUMDataFormat)
         }
     }
 }

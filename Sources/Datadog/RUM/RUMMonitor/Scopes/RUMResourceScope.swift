@@ -71,9 +71,9 @@ internal class RUMResourceScope: RUMScope {
         let eventData = RUMResourceEvent(
             date: resourceLoadingStartTime.timeIntervalSince1970.toMilliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
             view: .init(
-                id: context.activeViewID.orNull.toString,
+                id: context.activeViewID.orNull.toRUMDataFormat,
                 url: context.activeViewURI ?? ""
             ),
             resource: .init(
@@ -85,7 +85,7 @@ internal class RUMResourceScope: RUMScope {
                 size: command.size
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toString)
+                .init(id: rumUUID.toRUMDataFormat)
             },
             dd: .init()
         )
@@ -97,27 +97,32 @@ internal class RUMResourceScope: RUMScope {
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMErrorEvent(
-            date: command.time.timeIntervalSince1970.toMilliseconds,
+        let eventData = RUMError(
+            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toString, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
-                id: context.activeViewID.orNull.toString,
+                id: context.activeViewID.orNull.toRUMDataFormat,
+                referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
+            usr: nil,
+            connectivity: nil,
+            dd: .init(),
             error: .init(
                 message: command.errorMessage,
-                source: command.errorSource,
+                source: command.errorSource.toRUMDataFormat,
+                stack: nil,
+                isCrash: false,
                 resource: .init(
-                    method: resourceHTTPMethod,
-                    statusCode: command.httpStatusCode ?? 0,
+                    method: RUMMethod(rawValue: resourceHTTPMethod.uppercased()) ?? .methodGET,
+                    statusCode: Int64(command.httpStatusCode ?? 0),
                     url: resourceURL
                 )
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toString)
-            },
-            dd: .init()
+                .init(id: rumUUID.toRUMDataFormat)
+            }
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

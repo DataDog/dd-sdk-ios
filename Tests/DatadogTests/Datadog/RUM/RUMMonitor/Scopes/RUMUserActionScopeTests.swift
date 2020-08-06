@@ -65,11 +65,11 @@ class RUMUserActionScopeTests: XCTestCase {
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
         XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toString)
+        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.model.session.type, "user")
-        XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toString)
+        XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.action.id, scope.actionUUID.toString)
+        XCTAssertEqual(event.model.action.id, scope.actionUUID.toRUMDataFormat)
         XCTAssertEqual(event.model.action.type, "swipe")
         XCTAssertEqual(event.model.action.loadingTime, 1_000_000_000)
         XCTAssertEqual(event.model.action.resource?.count, 0)
@@ -138,7 +138,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .mockAny(), httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
             )
         )
 
@@ -150,6 +150,37 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
         XCTAssertEqual(event.model.action.resource?.count, 2)
+        XCTAssertEqual(event.model.action.error?.count, 1)
+    }
+
+    func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope(
+            parent: parent,
+            dependencies: dependencies,
+            actionType: .scroll,
+            attributes: [:],
+            startTime: currentTime,
+            isContinuous: true
+        )
+
+        currentTime.addTimeInterval(0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand(time: currentTime, message: "view error", source: .source, stack: nil, attributes: [:])
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(time: currentTime, attributes: [:], actionType: .scroll)
+            )
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
 
@@ -216,7 +247,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .mockAny(), httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
             ),
             "Discrete User Action should not yet complete as it haven't reached the time out duration"
         )
@@ -230,6 +261,36 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
         XCTAssertEqual(event.model.action.resource?.count, 2)
+        XCTAssertEqual(event.model.action.error?.count, 1)
+    }
+
+    func testWhileDiscreteUserActionIsActive_itCountsViewErrors() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope(
+            parent: parent,
+            dependencies: dependencies,
+            actionType: .scroll,
+            attributes: [:],
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(0.05)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand(time: currentTime, message: "view error", source: .source, stack: nil, attributes: [:])
+            )
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+
+        XCTAssertFalse(
+            scope.process(command: RUMCommandMock(time: currentTime)),
+            "Discrete User Action should complete as it reached the timeout duration"
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
 }

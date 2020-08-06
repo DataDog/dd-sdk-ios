@@ -80,7 +80,7 @@ extension Array where Element == RUMEventMatcher {
             "RUMEventMatcher<RUMViewEvent>": { matcher in matcher.model(isTypeOf: RUMViewEvent.self) },
             "RUMEventMatcher<RUMActionEvent>": { matcher in matcher.model(isTypeOf: RUMActionEvent.self) },
             "RUMEventMatcher<RUMResourceEvent>": { matcher in matcher.model(isTypeOf: RUMResourceEvent.self) },
-            "RUMEventMatcher<RUMErrorEvent>": { matcher in matcher.model(isTypeOf: RUMErrorEvent.self) }
+            "RUMEventMatcher<RUMError>": { matcher in matcher.model(isTypeOf: RUMError.self) }
         ]
 
         let bestMatcherEntry = allPossibleMatchers

@@ -49,7 +49,6 @@ class RUMIntegrationTests: IntegrationTests {
         let rumEventsMatchers = try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
-        rumEventsMatchers.inspect()
         // Assert Fixture 1 VC ⬇️
 
         // ----> `application_start` Action due to initial startView()
@@ -97,19 +96,32 @@ class RUMIntegrationTests: IntegrationTests {
         let view2UpdateA: RUMViewEvent = try rumEventsMatchers[6].model()
         XCTAssertEqual(view2UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view2UpdateA.view.action.count, 0)
+        XCTAssertEqual(view2UpdateA.view.error.count, 0)
 
-        // ----> View update on stopView()
-        let view2UpdateB: RUMViewEvent = try rumEventsMatchers[7].model()
+        // --------> Error event after starting View 2
+        let view2Error: RUMError = try rumEventsMatchers[7].model()
+        XCTAssertEqual(view2Error.error.message, "Simulated view error")
+        XCTAssertEqual(view2Error.error.source, .source)
+
+        // ----> View update after Error
+        let view2UpdateB: RUMViewEvent = try rumEventsMatchers[8].model()
         XCTAssertEqual(view2UpdateB.dd.documentVersion, 2)
         XCTAssertEqual(view2UpdateB.view.action.count, 0)
+        XCTAssertEqual(view2UpdateB.view.error.count, 1)
+
+        // ----> View update on stopView()
+        let view2UpdateC: RUMViewEvent = try rumEventsMatchers[9].model()
+        XCTAssertEqual(view2UpdateC.dd.documentVersion, 3)
+        XCTAssertEqual(view2UpdateC.view.action.count, 0)
+        XCTAssertEqual(view2UpdateC.view.error.count, 1)
 
         // Assert Fixture 3 VC ⬇️
 
         // ----> View update on startView()
-        let view3UpdateA: RUMViewEvent = try rumEventsMatchers[8].model()
+        let view3UpdateA: RUMViewEvent = try rumEventsMatchers[10].model()
         XCTAssertEqual(view3UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view3UpdateA.view.action.count, 0)
 
-        XCTAssertEqual(rumEventsMatchers.count, 9)
+        XCTAssertEqual(rumEventsMatchers.count, 11)
     }
 }
