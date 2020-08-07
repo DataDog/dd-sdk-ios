@@ -98,7 +98,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     /// Resource url
     let url: String
     /// HTTP method used to load the Resource
-    let httpMethod: String
+    let httpMethod: RUMHTTPMethod
 }
 
 internal struct RUMStopResourceCommand: RUMResourceCommand {
@@ -106,8 +106,8 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     let time: Date
     let attributes: [AttributeKey: AttributeValue]
 
-    /// A type of the Resource (image, font, ...)
-    let type: String
+    /// A type of the Resource
+    let kind: RUMResourceKind
     /// HTTP status code of loading the Ressource
     let httpStatusCode: Int?
     /// The size of loaded Resource
@@ -123,8 +123,48 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let errorMessage: String
     /// The origin of the error (network, webview, ...)
     let errorSource: RUMErrorSource
+    /// Error stacktrace.
+    let stack: String?
     /// HTTP status code of the Ressource error.
     let httpStatusCode: Int?
+
+    init(
+        resourceName: String,
+        time: Date,
+        message: String,
+        source: RUMErrorSource,
+        httpStatusCode: Int?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        self.resourceName = resourceName
+        self.time = time
+        self.errorMessage = message
+        self.errorSource = source
+        self.attributes = attributes
+        self.httpStatusCode = httpStatusCode
+        // The stack will be meaningless in most cases as it will go down to the networking code:
+        self.stack = nil
+    }
+
+    init(
+        resourceName: String,
+        time: Date,
+        error: Error,
+        source: RUMErrorSource,
+        httpStatusCode: Int?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        self.resourceName = resourceName
+        self.time = time
+        self.errorSource = source
+        self.attributes = attributes
+        self.httpStatusCode = httpStatusCode
+
+        let dderror = DDError(error: error)
+        self.errorMessage = dderror.title
+        // The stack will give the networking error (`NSError`) description in most cases:
+        self.stack = dderror.details
+    }
 }
 
 // MARK: - RUM User Action related commands

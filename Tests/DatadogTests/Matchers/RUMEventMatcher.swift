@@ -51,13 +51,24 @@ internal class RUMEventMatcher {
 
     // MARK: - Partial matches
 
-    func model<DM: Decodable>() throws -> DM {
-        return try jsonDataDecoder.decode(DM.self, from: jsonData)
+    func model<DM: Decodable>(file: StaticString = #file, line: UInt = #line) throws -> DM {
+        do {
+            let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
+            return model
+        } catch {
+            XCTFail("\(error)", file: file, line: line)
+            throw error
+        }
     }
 
-    func model<DM: Decodable>(ofType type: DM.Type, matches matcher: (DM) -> Void) throws {
-        let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
-        matcher(model)
+    func model<DM: Decodable>(ofType type: DM.Type, file: StaticString = #file, line: UInt = #line, matches matcher: (DM) -> Void) throws {
+        do {
+            let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
+            matcher(model)
+        } catch {
+            XCTFail("\(error)", file: file, line: line)
+            throw error
+        }
     }
 
     func model<DM: Decodable>(isTypeOf type: DM.Type) -> Bool {
@@ -99,14 +110,15 @@ extension RUMEventMatcher: CustomStringConvertible {
 }
 
 func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
+    let schemaReference = "given by https://github.com/DataDog/rum-events-format/blob/master/schemas/_common-schema.json"
     guard let string = string else {
-        XCTFail("`nil` is not valid RUM UUID", file: file, line: line)
+        XCTFail("`nil` is not valid RUM UUID \(schemaReference)", file: file, line: line)
         return
     }
     let regex = #"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"#
     XCTAssertNotNil(
         string.range(of: regex, options: .regularExpression, range: nil, locale: nil),
-        "\(string) is not valid RUM UUID - it doesn't match \(regex)",
+        "\(string) is not valid RUM UUID - it doesn't match \(regex) \(schemaReference)",
         file: file,
         line: line
     )

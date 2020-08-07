@@ -65,7 +65,7 @@ extension Array where Element == RUMEventMatcher {
     ///
     ///     [0] - RUMEventMatcher<RUMActionEvent>
     ///     [1] - RUMEventMatcher<RUMViewEvent>
-    ///     [2] - RUMEventMatcher<RUMResourceEvent>
+    ///     [2] - RUMEventMatcher<RUMResource>
     ///     [3] - RUMEventMatcher<RUMViewEvent>
     ///     [4] - RUMEventMatcher<RUMActionEvent>
     ///
@@ -79,7 +79,7 @@ extension Array where Element == RUMEventMatcher {
         let allPossibleMatchers: [String: (RUMEventMatcher) -> Bool] = [
             "RUMEventMatcher<RUMViewEvent>": { matcher in matcher.model(isTypeOf: RUMViewEvent.self) },
             "RUMEventMatcher<RUMActionEvent>": { matcher in matcher.model(isTypeOf: RUMActionEvent.self) },
-            "RUMEventMatcher<RUMResourceEvent>": { matcher in matcher.model(isTypeOf: RUMResourceEvent.self) },
+            "RUMEventMatcher<RUMResource>": { matcher in matcher.model(isTypeOf: RUMResource.self) },
             "RUMEventMatcher<RUMError>": { matcher in matcher.model(isTypeOf: RUMError.self) }
         ]
 

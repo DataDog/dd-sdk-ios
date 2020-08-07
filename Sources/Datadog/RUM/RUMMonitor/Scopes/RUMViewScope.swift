@@ -31,7 +31,7 @@ internal class RUMViewScope: RUMScope {
     /// The URI of this View, used as the `view.url` in RUM Explorer.
     let viewURI: String
     /// The start time of this View.
-    private var viewStartTime: Date
+    private let viewStartTime: Date
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -39,6 +39,7 @@ internal class RUMViewScope: RUMScope {
     private var resourcesCount: UInt = 0
     /// Number of Errors tracked by this View.
     private var errorsCount: UInt = 0
+
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
 
@@ -69,6 +70,8 @@ internal class RUMViewScope: RUMScope {
     }
 
     func process(command: RUMCommand) -> Bool {
+        // Tells if the View did change and an update event should be send
+        var needsViewUpdate = false
         // Tells if this scope should complete after processing the `command`
         var shouldComplete = false
 
@@ -76,15 +79,23 @@ internal class RUMViewScope: RUMScope {
         switch command {
         // View commands
         case let command as RUMStartViewCommand where command.identity === identity:
-            startView(on: command)
+            if command.isInitialView {
+                actionsCount += 1
+                sendApplicationStartAction()
+            }
+            needsViewUpdate = true
         case let command as RUMStopViewCommand where command.identity === identity:
             shouldComplete = true
 
         // Resource commands
         case let command as RUMStartResourceCommand:
             startResource(on: command)
-        case let command as RUMStopResourceWithErrorCommand:
-            addResourceError(on: command)
+        case _ as RUMStopResourceCommand:
+            resourcesCount += 1
+            needsViewUpdate = true
+        case _ as RUMStopResourceWithErrorCommand:
+            errorsCount += 1
+            needsViewUpdate = true
 
         // User Action commands
         case let command as RUMStartUserActionCommand:
@@ -94,15 +105,13 @@ internal class RUMViewScope: RUMScope {
 
         // Error command
         case let command as RUMAddCurrentViewErrorCommand:
-            addViewError(on: command)
+            errorsCount += 1
+            sendErrorEvent(on: command)
+            needsViewUpdate = true
 
         default:
             break
         }
-
-        // Track active scopes
-        let beforeResourcesCount = resourceScopes.count
-        let beforeHadUserAction = userActionScope != nil
 
         // Propagate to Resource scopes
         if let resourceCommand = command as? RUMResourceCommand {
@@ -113,28 +122,16 @@ internal class RUMViewScope: RUMScope {
         }
 
         // Propagate to User Action scope
+        let beforeHadUserAction = userActionScope != nil
         userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
-
-        let afterResourcesCount = resourceScopes.count
         let afterHasUserAction = userActionScope != nil
 
-        // Consider closed scopes
-        let didTrackResource = afterResourcesCount < beforeResourcesCount
-        let didTrackUserAction = beforeHadUserAction && !afterHasUserAction
-
-        if didTrackResource {
-            resourcesCount += 1
-            sendViewUpdateEvent(on: command)
-        }
-
-        if didTrackUserAction {
+        if beforeHadUserAction && !afterHasUserAction { // if User Action was tracked
             actionsCount += 1
-            sendViewUpdateEvent(on: command)
+            needsViewUpdate = true
         }
 
-        if shouldComplete && !(didTrackResource || didTrackUserAction) {
-            // If the View will complete, but it didn't sent the View update due
-            // to User Action or Resource completion.
+        if shouldComplete || needsViewUpdate {
             sendViewUpdateEvent(on: command)
         }
 
@@ -142,14 +139,6 @@ internal class RUMViewScope: RUMScope {
     }
 
     // MARK: - RUMCommands Processing
-
-    private func startView(on command: RUMStartViewCommand) {
-        if command.isInitialView {
-            actionsCount += 1
-            sendApplicationStartAction()
-        }
-        sendViewUpdateEvent(on: command)
-    }
 
     private func startResource(on command: RUMStartResourceCommand) {
         resourceScopes[command.resourceName] = RUMResourceScope(
@@ -183,17 +172,6 @@ internal class RUMViewScope: RUMScope {
             startTime: command.time,
             isContinuous: false
         )
-    }
-
-    private func addViewError(on command: RUMAddCurrentViewErrorCommand) {
-        errorsCount += 1
-        sendErrorEvent(on: command)
-        sendViewUpdateEvent(on: command)
-    }
-
-    private func addResourceError(on command: RUMStopResourceWithErrorCommand) {
-        errorsCount += 1
-        sendViewUpdateEvent(on: command)
     }
 
     // MARK: - Sending RUM Events

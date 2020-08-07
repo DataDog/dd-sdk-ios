@@ -70,6 +70,16 @@ extension RUMFeature {
     }
 }
 
+// MARK: - Public API Mocks
+
+extension RUMHTTPMethod {
+    static func mockAny() -> RUMHTTPMethod { .GET }
+}
+
+extension RUMResourceKind {
+    static func mockAny() -> RUMResourceKind { .image }
+}
+
 // MARK: - RUMDataModel Mocks
 
 struct RUMDataModelMock: RUMDataModel, Equatable {

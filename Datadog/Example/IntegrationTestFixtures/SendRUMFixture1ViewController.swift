@@ -29,8 +29,10 @@ internal class SendRUMFixture1ViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: Any) {
-        let simulatedResourceName = "/resource/1"
-        let simulatedResourceURL = URL(string: "https://foo.com/resource/1")!
+        let simulatedResourceName1 = "/resource/1"
+        let simulatedResourceURL1 = URL(string: "https://foo.com/resource/1")!
+        let simulatedResourceName2 = "/resource/2"
+        let simulatedResourceURL2 = URL(string: "https://foo.com/resource/2")!
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
         rumMonitor.registerUserAction(
@@ -39,19 +41,33 @@ internal class SendRUMFixture1ViewController: UIViewController {
         )
 
         rumMonitor.startResourceLoading(
-            resourceName: simulatedResourceName,
-            request: URLRequest(url: simulatedResourceURL)
+            resourceName: simulatedResourceName1,
+            url: simulatedResourceURL1,
+            httpMethod: .GET
+        )
+
+        rumMonitor.startResourceLoading(
+            resourceName: simulatedResourceName2,
+            url: simulatedResourceURL2,
+            httpMethod: .GET
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
             rumMonitor.stopResourceLoading(
-                resourceName: simulatedResourceName,
-                response: HTTPURLResponse(
-                    url: simulatedResourceURL,
-                    mimeType: "image/jpeg",
-                    expectedContentLength: -1,
-                    textEncodingName: nil
-                )
+                resourceName: simulatedResourceName1,
+                kind: .image,
+                httpStatusCode: 200
+            )
+
+            rumMonitor.stopResourceLoadingWithError(
+                resourceName: simulatedResourceName2,
+                error: NSError(
+                    domain: NSURLErrorDomain,
+                    code: NSURLErrorBadServerResponse,
+                    userInfo: [NSLocalizedDescriptionKey: "Bad response."]
+                ),
+                source: .network,
+                httpStatusCode: 400
             )
 
             // Reveal the "Push Next Screen" button so UITest can continue

@@ -117,9 +117,7 @@
 		61441C9D2461A796003D8BB8 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C9C2461A796003D8BB8 /* AppConfig.swift */; };
 		614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
 		61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
-		61494CB324C844570082C633 /* RUMResourceEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB224C844570082C633 /* RUMResourceEvent.swift */; };
 		61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
-		61494CB824C9D8810082C633 /* RUMResourceEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB224C844570082C633 /* RUMResourceEvent.swift */; };
 		61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
@@ -138,10 +136,10 @@
 		617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
 		618715F724DC0CDE00FC0F69 /* RUMCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */; };
 		618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
+		618715FC24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */; };
 		618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C365E248E85B400520CDE /* DateFormattingTests.swift */; };
 		618DCFD724C7265300589570 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
 		618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */; };
-		618DCFDD24C7287900589570 /* DefaultRUMUUIDGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */; };
 		618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDE24C75FD300589570 /* RUMScopeTests.swift */; };
 		618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */; };
 		618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */; };
@@ -426,7 +424,6 @@
 		61441C9C2461A796003D8BB8 /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		614872762485067300E3EBDB /* SpanTagsReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanTagsReducer.swift; sourceTree = "<group>"; };
 		61494CB024C839460082C633 /* RUMResourceScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScope.swift; sourceTree = "<group>"; };
-		61494CB224C844570082C633 /* RUMResourceEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceEvent.swift; sourceTree = "<group>"; };
 		61494CB424C864680082C633 /* RUMResourceScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScopeTests.swift; sourceTree = "<group>"; };
 		61494CB924CB126F0082C633 /* RUMUserActionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScope.swift; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* BundleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleType.swift; sourceTree = "<group>"; };
@@ -445,10 +442,10 @@
 		617CEB382456BC3A00AD4669 /* TracingUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUID.swift; sourceTree = "<group>"; };
 		618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommandTests.swift; sourceTree = "<group>"; };
 		618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMapping.swift; sourceTree = "<group>"; };
+		618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMappingTests.swift; sourceTree = "<group>"; };
 		618C365E248E85B400520CDE /* DateFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormattingTests.swift; sourceTree = "<group>"; };
 		618DCFD624C7265300589570 /* RUMUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUID.swift; sourceTree = "<group>"; };
 		618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUIDGenerator.swift; sourceTree = "<group>"; };
-		618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultRUMUUIDGeneratorTests.swift; sourceTree = "<group>"; };
 		618DCFDE24C75FD300589570 /* RUMScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScopeTests.swift; sourceTree = "<group>"; };
 		618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture2ViewController.swift; sourceTree = "<group>"; };
 		618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture3ViewController.swift; sourceTree = "<group>"; };
@@ -1215,6 +1212,14 @@
 			path = UUIDs;
 			sourceTree = "<group>";
 		};
+		618715FA24DC5EE700FC0F69 /* DataModels */ = {
+			isa = PBXGroup;
+			children = (
+				618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */,
+			);
+			path = DataModels;
+			sourceTree = "<group>";
+		};
 		618C365D248E858200520CDE /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -1230,14 +1235,6 @@
 			children = (
 				618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */,
 				618DCFD624C7265300589570 /* RUMUUID.swift */,
-			);
-			path = UUIDs;
-			sourceTree = "<group>";
-		};
-		618DCFDA24C7274700589570 /* UUIDs */ = {
-			isa = PBXGroup;
-			children = (
-				618DCFDB24C7276900589570 /* DefaultRUMUUIDGeneratorTests.swift */,
 			);
 			path = UUIDs;
 			sourceTree = "<group>";
@@ -1398,10 +1395,10 @@
 			isa = PBXGroup;
 			children = (
 				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
+				618715FA24DC5EE700FC0F69 /* DataModels */,
 				617B953B24BF4D7300E6F443 /* RUMMonitor */,
 				61FF281F24B89807000B3D9B /* RUMEvent */,
 				61FF282E24BC5E0E000B3D9B /* RUMEventOutputs */,
-				618DCFDA24C7274700589570 /* UUIDs */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1413,7 +1410,6 @@
 				61C2C20424C0862700C0321C /* RUMActionEvent.swift */,
 				9E26E6B824C87693000B3270 /* RUMDataModels.swift */,
 				618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */,
-				61494CB224C844570082C633 /* RUMResourceEvent.swift */,
 			);
 			path = DataModels;
 			sourceTree = "<group>";
@@ -1900,7 +1896,6 @@
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
 				61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */,
 				61FF281E24B8968D000B3D9B /* RUMEventBuilder.swift in Sources */,
-				61494CB324C844570082C633 /* RUMResourceEvent.swift in Sources */,
 				E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */,
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
@@ -1988,6 +1983,7 @@
 				61133C6C2423990D00786299 /* SwiftExtensions.swift in Sources */,
 				61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */,
 				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
+				618715FC24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift in Sources */,
 				61C5A89624509BF600DA608C /* TracerTests.swift in Sources */,
 				61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */,
 				61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */,
@@ -1996,7 +1992,6 @@
 				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
 				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
-				618DCFDD24C7287900589570 /* DefaultRUMUUIDGeneratorTests.swift in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
 				618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */,
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
@@ -2069,7 +2064,6 @@
 				61C2C20E24C196E800C0321C /* RUMActionEvent.swift in Sources */,
 				61C2C20F24C196EB00C0321C /* RUMViewEvent.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingIntegrationTests.swift in Sources */,
-				61494CB824C9D8810082C633 /* RUMResourceEvent.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMIntegrationTests.swift in Sources */,
 				61FF282924B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */,
 				61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */,

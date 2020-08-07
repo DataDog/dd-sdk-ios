@@ -37,6 +37,13 @@ extension TimeInterval {
         let nanoseconds = self * 1_000_000_000
         return (try? UInt64(withReportingOverflow: nanoseconds)) ?? .max
     }
+
+    /// `TimeInterval` represented in nanoseconds (capped to `Int64.max`).
+    /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
+    var toInt64Nanoseconds: Int64 {
+        let nanoseconds = self * 1_000_000_000
+        return (try? Int64(withReportingOverflow: nanoseconds)) ?? .max
+    }
 }
 
 // MARK: - Safe floating point to integer conversion

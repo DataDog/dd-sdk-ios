@@ -6,11 +6,53 @@
 
 import Foundation
 
-/* Collection of mappings from SDK models to `RUMDataModel` format. */
+/* Collection of mappings from various types to `RUMDataModel` format. */
+
+extension Int {
+    var toInt64: Int64 {
+        return Int64(exactly: self) ?? .max
+    }
+}
+
+extension UInt64 {
+    var toInt64: Int64 {
+        return Int64(exactly: self) ?? .max
+    }
+}
 
 internal extension RUMUUID {
     var toRUMDataFormat: String {
         return rawValue.uuidString.lowercased()
+    }
+}
+
+internal extension RUMHTTPMethod {
+    var toRUMDataFormat: RUMMethod {
+        switch self {
+        case .GET: return .methodGET
+        case .POST: return .post
+        case .PUT: return .put
+        case .DELETE: return .delete
+        case .HEAD: return .head
+        case .PATCH: return .patch
+        }
+    }
+}
+
+internal extension RUMResourceKind {
+    var toRUMDataFormat: RUMResourceType {
+        switch self {
+        case .image: return .image
+        case .xhr: return .xhr
+        case .beacon: return .beacon
+        case .css: return .css
+        case .document: return .document
+        case .fetch: return .fetch
+        case .font: return .font
+        case .js: return .js
+        case .media: return .media
+        case .other: return .other
+        }
     }
 }
 

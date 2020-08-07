@@ -132,13 +132,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: nil)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
             )
         )
 
@@ -149,8 +149,8 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
-        XCTAssertEqual(event.model.action.resource?.count, 2)
-        XCTAssertEqual(event.model.action.error?.count, 1)
+        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
+        XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
     func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
@@ -240,14 +240,14 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], type: .mockAny(), httpStatusCode: 200, size: 0)
+                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: 0)
             ),
             "Discrete User Action should not yet complete as it still has 1 pending Resource"
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], errorMessage: .mockAny(), errorSource: .network, httpStatusCode: 400)
+                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
             ),
             "Discrete User Action should not yet complete as it haven't reached the time out duration"
         )
@@ -260,8 +260,8 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
-        XCTAssertEqual(event.model.action.resource?.count, 2)
-        XCTAssertEqual(event.model.action.error?.count, 1)
+        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
+        XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
     func testWhileDiscreteUserActionIsActive_itCountsViewErrors() throws {
