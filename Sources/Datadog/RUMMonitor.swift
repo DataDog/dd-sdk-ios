@@ -45,7 +45,7 @@ public enum RUMErrorSource {
     case webview
 }
 
-public class RUMMonitor: RUMMonitorInternal {
+public class RUMMonitor {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMScope
     /// Time provider.
@@ -100,7 +100,13 @@ public class RUMMonitor: RUMMonitorInternal {
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - attributes: custom attributes to attach to the View.
     public func startView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
-        start(view: viewController, attributes: attributes)
+        process(
+            command: RUMStartViewCommand(
+                time: dateProvider.currentDate(),
+                attributes: attributes ?? [:],
+                identity: viewController
+            )
+        )
     }
 
     /// Notifies that the View stops being presented to the user.
@@ -108,7 +114,13 @@ public class RUMMonitor: RUMMonitorInternal {
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - attributes: custom attributes to attach to the View.
     public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
-        stop(view: viewController, attributes: attributes)
+        process(
+            command: RUMStopViewCommand(
+                time: dateProvider.currentDate(),
+                attributes: attributes ?? [:],
+                identity: viewController
+            )
+        )
     }
 
     /// Notifies that an Error occurred in currently presented View.
@@ -125,11 +137,14 @@ public class RUMMonitor: RUMMonitorInternal {
         file: StaticString = #file,
         line: UInt = #line
     ) {
-        add(
-            viewErrorMessage: message,
-            source: source,
-            attributes: attributes,
-            stack: (file: file, line: line)
+        process(
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.currentDate(),
+                message: message,
+                source: source,
+                stack: (file: file, line: line),
+                attributes: attributes ?? [:]
+            )
         )
     }
 
@@ -143,7 +158,14 @@ public class RUMMonitor: RUMMonitorInternal {
         source: RUMErrorSource,
         attributes: [AttributeKey: AttributeValue]? = nil
     ) {
-        add(viewError: error, source: source, attributes: attributes)
+        process(
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.currentDate(),
+                error: error,
+                source: source,
+                attributes: attributes ?? [:]
+            )
+        )
     }
 
     /// Notifies that the Resource starts being loaded.
@@ -153,11 +175,14 @@ public class RUMMonitor: RUMMonitorInternal {
     ///   - httpMethod: the HTTP method used to load the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
     public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]? = nil) {
-        start(
-            resource: resourceName,
-            url: url,
-            method: httpMethod,
-            attributes: attributes
+        process(
+            command: RUMStartResourceCommand(
+                resourceName: resourceName,
+                time: dateProvider.currentDate(),
+                attributes: attributes ?? [:],
+                url: url.absoluteString,
+                httpMethod: httpMethod
+            )
         )
     }
 
@@ -169,125 +194,6 @@ public class RUMMonitor: RUMMonitorInternal {
     ///   - size: the size of the Resource (in bytes).
     ///   - attributes: custom attributes to attach to the Resource.
     public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        stop(
-            resource: resourceName,
-            kind: kind,
-            httpStatusCode: httpStatusCode,
-            size: size,
-            attributes: attributes
-        )
-    }
-
-    /// Notifies that the Resource stops being loaded with error.
-    /// This should be used when `Error` object is received on Resource failure.
-    /// - Parameters:
-    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
-    ///   - error: the `Error` object received when loading the Resource.
-    ///   - source: the origin of the error.
-    ///   - httpStatusCode: HTTP status code (optional).
-    ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]? = nil) {
-        stop(resource: resourceName, withError: error, errorSource: source, httpStatusCode: httpStatusCode, attributes: attributes)
-    }
-
-    /// Notifies that the Resource stops being loaded with error.
-    /// If `Error` object available on Resource failure `stopResourceLoadingWithError(..., error:, ...)` should be used instead.
-    /// - Parameters:
-    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
-    ///   - errorMessage: the message explaining Resource failure.
-    ///   - source: the origin of the error.
-    ///   - httpStatusCode: HTTP status code (optional).
-    ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        stop(resource: resourceName, withErrorMessage: errorMessage, errorSource: source, httpStatusCode: httpStatusCode, attributes: attributes)
-    }
-
-    /// Notifies that the User Action has started.
-    /// This is used to track long running user actions (e.g. "scroll").
-    /// Such an User Action must be stopped with `stopUserAction(type:)`, and will be stopped automatically if it lasts more than 10 seconds.
-    /// - Parameters:
-    ///   - type: the User Action type
-    ///   - attributes: custom attributes to attach to the User Action.
-    public func startUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
-        start(userAction: type, attributes: attributes)
-    }
-
-    /// Notifies that the User Action has stopped.
-    /// This is used to stop tracking long running user actions (e.g. "scroll"), started with `startUserAction(type:)`.
-    /// - Parameters:
-    ///   - type: the User Action type
-    ///   - attributes: custom attributes to attach to the User Action.
-    public func stopUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
-        stop(userAction: type, attributes: attributes)
-    }
-
-    /// Registers the occurence of an User Action.
-    /// This is used to track discrete User Actions (e.g. "tap").
-    /// - Parameters:
-    ///   - type: the User Action type
-    ///   - attributes: custom attributes to attach to the User Action.
-    public func registerUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
-        add(userAction: type, attributes: attributes)
-    }
-
-    // MARK: - RUMMonitorInternal
-
-    func start(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
-        process(
-            command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
-                identity: id
-            )
-        )
-    }
-
-    func stop(view id: AnyObject, attributes: [AttributeKey: AttributeValue]?) {
-        process(
-            command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
-                identity: id
-            )
-        )
-    }
-
-    func add(viewErrorMessage: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, stack: (file: StaticString, line: UInt)?) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
-                time: dateProvider.currentDate(),
-                message: viewErrorMessage,
-                source: source,
-                stack: stack,
-                attributes: attributes ?? [:]
-            )
-        )
-    }
-
-    func add(viewError: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
-                time: dateProvider.currentDate(),
-                error: viewError,
-                source: source,
-                attributes: attributes ?? [:]
-            )
-        )
-    }
-
-    func start(resource resourceName: String, url: URL, method: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]?) {
-        process(
-            command: RUMStartResourceCommand(
-                resourceName: resourceName,
-                time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
-                url: url.absoluteString,
-                httpMethod: method
-            )
-        )
-    }
-
-    func stop(resource resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStopResourceCommand(
                 resourceName: resourceName,
@@ -300,58 +206,90 @@ public class RUMMonitor: RUMMonitorInternal {
         )
     }
 
-    func stop(resource resourceName: String, withError error: Error, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
+    /// Notifies that the Resource stops being loaded with error.
+    /// This should be used when `Error` object is received on Resource failure.
+    /// - Parameters:
+    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - error: the `Error` object received when loading the Resource.
+    ///   - source: the origin of the error.
+    ///   - httpStatusCode: HTTP status code (optional).
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
                 error: error,
-                source: errorSource,
+                source: source,
                 httpStatusCode: httpStatusCode,
                 attributes: attributes ?? [:]
             )
         )
     }
 
-    func stop(resource resourceName: String, withErrorMessage errorMessage: String, errorSource: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
+    /// Notifies that the Resource stops being loaded with error.
+    /// If `Error` object available on Resource failure `stopResourceLoadingWithError(..., error:, ...)` should be used instead.
+    /// - Parameters:
+    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - errorMessage: the message explaining Resource failure.
+    ///   - source: the origin of the error.
+    ///   - httpStatusCode: HTTP status code (optional).
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
-                source: errorSource,
+                source: source,
                 httpStatusCode: httpStatusCode,
                 attributes: attributes ?? [:]
             )
         )
     }
 
-    func start(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
+    /// Notifies that the User Action has started.
+    /// This is used to track long running user actions (e.g. "scroll").
+    /// Such an User Action must be stopped with `stopUserAction(type:)`, and will be stopped automatically if it lasts more than 10 seconds.
+    /// - Parameters:
+    ///   - type: the User Action type
+    ///   - attributes: custom attributes to attach to the User Action.
+    public func startUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                actionType: userAction
+                actionType: type
             )
         )
     }
 
-    func stop(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
+    /// Notifies that the User Action has stopped.
+    /// This is used to stop tracking long running user actions (e.g. "scroll"), started with `startUserAction(type:)`.
+    /// - Parameters:
+    ///   - type: the User Action type
+    ///   - attributes: custom attributes to attach to the User Action.
+    public func stopUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                actionType: userAction
+                actionType: type
             )
         )
     }
 
-    func add(userAction: RUMUserActionType, attributes: [AttributeKey: AttributeValue]?) {
+    /// Registers the occurence of an User Action.
+    /// This is used to track discrete User Actions (e.g. "tap").
+    /// - Parameters:
+    ///   - type: the User Action type
+    ///   - attributes: custom attributes to attach to the User Action.
+    public func registerUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                actionType: userAction
+                actionType: type
             )
         )
     }

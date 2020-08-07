@@ -236,16 +236,17 @@ class RUMMonitorTests: XCTestCase {
             let modulo = iteration % 10
 
             switch modulo {
-            case 0: monitor.start(view: view, attributes: nil)
-            case 1: monitor.stop(view: view, attributes: nil)
-            case 2: monitor.add(viewError: ErrorMock(), source: .agent, attributes: nil)
-            case 3: monitor.add(viewErrorMessage: .mockAny(), source: .agent, attributes: nil, stack: nil)
-            case 4: monitor.start(resource: .mockAny(), url: .mockAny(), method: .mockAny(), attributes: nil)
-            case 5: monitor.stop(resource: .mockAny(), kind: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
-            case 6: monitor.stop(resource: .mockAny(), withError: ErrorMock(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
-            case 7: monitor.start(userAction: .scroll, attributes: nil)
-            case 8: monitor.stop(userAction: .scroll, attributes: nil)
-            case 9: monitor.add(userAction: .tap, attributes: nil)
+            case 0: monitor.startView(viewController: view)
+            case 1: monitor.stopView(viewController: view)
+            case 2: monitor.addViewError(error: ErrorMock(), source: .agent)
+            case 3: monitor.addViewError(message: .mockAny(), source: .agent)
+            case 4: monitor.startResourceLoading(resourceName: .mockAny(), url: .mockAny(), httpMethod: .mockAny())
+            case 5: monitor.stopResourceLoading(resourceName: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
+            case 6: monitor.stopResourceLoadingWithError(resourceName: .mockAny(), error: ErrorMock(), source: .network, httpStatusCode: .mockAny())
+            case 7: monitor.stopResourceLoadingWithError(resourceName: .mockAny(), errorMessage: .mockAny(), source: .network)
+            case 8: monitor.startUserAction(type: .scroll)
+            case 9: monitor.stopUserAction(type: .scroll)
+            case 10: monitor.registerUserAction(type: .tap)
             default: break
             }
         }
@@ -260,24 +261,19 @@ class RUMMonitorTests: XCTestCase {
         let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         let monitor = RUMMonitor(applicationScope: scope, dateProvider: dateProvider)
 
-        let mockView = UIViewController()
-        let mockError = ErrorMock()
+        monitor.startView(viewController: mockView)
+        monitor.stopView(viewController: mockView)
+        monitor.addViewError(error: ErrorMock(), source: .agent)
+        monitor.addViewError(message: .mockAny(), source: .agent)
+        monitor.startResourceLoading(resourceName: .mockAny(), url: .mockAny(), httpMethod: .mockAny())
+        monitor.stopResourceLoading(resourceName: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceName: .mockAny(), error: ErrorMock(), source: .network, httpStatusCode: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceName: .mockAny(), errorMessage: .mockAny(), source: .network)
+        monitor.startUserAction(type: .scroll)
+        monitor.stopUserAction(type: .scroll)
+        monitor.registerUserAction(type: .tap)
 
-        // TODO: RUMM-585 Replace these internal API calls with public APIs
-        monitor.start(view: mockView, attributes: nil)
-        monitor.stop(view: mockView, attributes: nil)
-        monitor.add(viewError: mockError, source: .agent, attributes: nil)
-        monitor.add(viewErrorMessage: .mockAny(), source: .agent, attributes: nil, stack: nil)
-
-        monitor.start(resource: .mockAny(), url: .mockAny(), method: .mockAny(), attributes: nil)
-        monitor.stop(resource: .mockAny(), kind: .mockAny(), httpStatusCode: 200, size: 0, attributes: nil)
-        monitor.stop(resource: .mockAny(), withError: ErrorMock(), errorSource: .agent, httpStatusCode: 400, attributes: nil)
-
-        monitor.start(userAction: .scroll, attributes: nil)
-        monitor.stop(userAction: .scroll, attributes: nil)
-        monitor.add(userAction: .tap, attributes: nil)
-
-        let commands = scope.waitAndReturnProcessedCommands(count: 10, timeout: 0.5)
+        let commands = scope.waitAndReturnProcessedCommands(count: 11, timeout: 0.5)
 
         XCTAssertTrue(commands[0] is RUMStartViewCommand)
         XCTAssertTrue(commands[1] is RUMStopViewCommand)
@@ -286,8 +282,9 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertTrue(commands[4] is RUMStartResourceCommand)
         XCTAssertTrue(commands[5] is RUMStopResourceCommand)
         XCTAssertTrue(commands[6] is RUMStopResourceWithErrorCommand)
-        XCTAssertTrue(commands[7] is RUMStartUserActionCommand)
-        XCTAssertTrue(commands[8] is RUMStopUserActionCommand)
-        XCTAssertTrue(commands[9] is RUMAddUserActionCommand)
+        XCTAssertTrue(commands[7] is RUMStopResourceWithErrorCommand)
+        XCTAssertTrue(commands[8] is RUMStartUserActionCommand)
+        XCTAssertTrue(commands[9] is RUMStopUserActionCommand)
+        XCTAssertTrue(commands[10] is RUMAddUserActionCommand)
     }
 }

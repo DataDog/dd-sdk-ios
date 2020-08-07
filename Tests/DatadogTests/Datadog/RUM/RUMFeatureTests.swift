@@ -43,7 +43,7 @@ class RUMFeatureTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
 
         // Starting first view sends `application_start` action event
-        monitor.start(view: UIViewController(), attributes: nil)
+        monitor.startView(viewController: mockView)
 
         let request = server.waitAndReturnRequests(count: 1)[0]
         XCTAssertEqual(request.httpMethod, "POST")
