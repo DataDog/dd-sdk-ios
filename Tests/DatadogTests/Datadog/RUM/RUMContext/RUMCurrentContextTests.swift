@@ -104,6 +104,16 @@ class RUMCurrentContextTests: XCTestCase {
         let secondContext = provider.context
 
         XCTAssertNotEqual(firstContext.sessionID, secondContext.sessionID)
+        XCTAssertNotEqual(
+            firstContext.activeViewID,
+            secondContext.activeViewID,
+            "A new View should be started on session renewal."
+        )
+        XCTAssertEqual(
+            firstContext.activeViewURI,
+            secondContext.activeViewURI,
+            "The View URI should be the same as in previous session."
+        )
 
         try XCTAssertEqual(
             provider.context,
