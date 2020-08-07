@@ -113,22 +113,28 @@ internal class RUMUserActionScope: RUMScope {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
 
-        let eventData = RUMActionEvent(
-            date: actionStartTime.timeIntervalSince1970.toMilliseconds,
+        let eventData = RUMAction(
+            date: actionStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
+            usr: nil,
+            connectivity: nil,
+            dd: .init(),
             action: .init(
-                id: actionUUID.toRUMDataFormat,
                 type: actionType.toRUMDataFormat,
-                loadingTime: completionTime.timeIntervalSince(actionStartTime).toNanoseconds,
-                resource: .init(count: resourcesCount),
-                error: .init(count: errorsCount)
-            ),
-            dd: .init()
+                id: actionUUID.toRUMDataFormat,
+                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
+                target: nil,
+                error: .init(count: errorsCount.toInt64),
+                crash: nil,
+                longTask: nil,
+                resource: .init(count: resourcesCount.toInt64)
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

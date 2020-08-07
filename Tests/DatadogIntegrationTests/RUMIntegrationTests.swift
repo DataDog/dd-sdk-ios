@@ -52,8 +52,8 @@ class RUMIntegrationTests: IntegrationTests {
         // Assert Fixture 1 VC ⬇️
 
         // ----> `application_start` Action due to initial startView()
-        let applicationStartAction: RUMActionEvent = try rumEventsMatchers[0].model()
-        XCTAssertEqual(applicationStartAction.action.type, "application_start")
+        let applicationStartAction: RUMAction = try rumEventsMatchers[0].model()
+        XCTAssertEqual(applicationStartAction.action.type, .applicationStart)
 
         // ----> View update on startView()
         let view1UpdateA: RUMView = try rumEventsMatchers[1].model()
@@ -100,9 +100,9 @@ class RUMIntegrationTests: IntegrationTests {
         XCTAssertEqual(view1UpdateC.view.error.count, 1)
 
         // --------> Action event after tapping "Download Resource" (postponed until Resource finished loading)
-        let downloadResourceTap: RUMActionEvent = try rumEventsMatchers[6].model()
+        let downloadResourceTap: RUMAction = try rumEventsMatchers[6].model()
         XCTAssertEqual(downloadResourceTap.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(downloadResourceTap.action.type, "tap")
+        XCTAssertEqual(downloadResourceTap.action.type, .tap)
         XCTAssertEqual(downloadResourceTap.action.resource?.count, 1, "User Action should track first succesfull Resource")
         XCTAssertEqual(downloadResourceTap.action.error?.count, 1, "User Action should track second Resource failure as Error")
 

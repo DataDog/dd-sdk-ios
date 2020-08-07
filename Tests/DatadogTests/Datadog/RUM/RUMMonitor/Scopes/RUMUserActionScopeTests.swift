@@ -62,15 +62,15 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).first)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertEqual(event.model.action.id, scope.actionUUID.toRUMDataFormat)
-        XCTAssertEqual(event.model.action.type, "swipe")
+        XCTAssertEqual(event.model.action.type, .swipe)
         XCTAssertEqual(event.model.action.loadingTime, 1_000_000_000)
         XCTAssertEqual(event.model.action.resource?.count, 0)
         XCTAssertEqual(event.model.action.error?.count, 0)
@@ -99,7 +99,7 @@ class RUMUserActionScopeTests: XCTestCase {
         currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: expirationInterval)
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)), "Continuous User Action should expire after \(expirationInterval)s")
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).first)
         XCTAssertEqual(event.model.action.loadingTime, 10_000_000_000)
     }
 
@@ -148,7 +148,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).last)
         XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
         XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
@@ -180,7 +180,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).last)
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
 
@@ -205,7 +205,7 @@ class RUMUserActionScopeTests: XCTestCase {
         currentTime.addTimeInterval(timeOutInterval)
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)), "Discrete User Action should time out after \(timeOutInterval)s")
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).first)
         let nanosecondsInSecond: Double = 1_000_000_000
         let actionLoadingTimeInSeconds = Double(try XCTUnwrap(event.model.action.loadingTime)) / nanosecondsInSecond
         XCTAssertEqual(actionLoadingTimeInSeconds, RUMUserActionScope.Constants.discreteActionTimeoutDuration, accuracy: 0.1)
@@ -259,7 +259,7 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it has no more pending Resources and it reached the timeout duration"
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).last)
         XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
         XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
@@ -290,7 +290,7 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it reached the timeout duration"
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).last)
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
 }

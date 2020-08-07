@@ -76,10 +76,10 @@ class RUMDataModelsMappingTests: XCTestCase {
     }
 
     func testRUMUserActionType() {
-        verify(value: RUMUserActionType.tap, matches: "tap")
-        verify(value: RUMUserActionType.swipe, matches: "swipe")
-        verify(value: RUMUserActionType.scroll, matches: "scroll")
-        verify(value: RUMUserActionType.custom, matches: "custom")
+        verify(value: RUMUserActionType.tap, matches: .tap)
+        verify(value: RUMUserActionType.swipe, matches: .swipe)
+        verify(value: RUMUserActionType.scroll, matches: .scroll)
+        verify(value: RUMUserActionType.custom, matches: .custom)
     }
 
     // MARK: - Helpers

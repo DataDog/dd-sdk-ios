@@ -177,22 +177,28 @@ internal class RUMViewScope: RUMScope {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() {
-        let eventData = RUMActionEvent(
-            date: viewStartTime.timeIntervalSince1970.toMilliseconds,
+        let eventData = RUMAction(
+            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: viewUUID.toRUMDataFormat,
+                referrer: nil,
                 url: viewURI
             ),
+            usr: nil,
+            connectivity: nil,
+            dd: .init(),
             action: .init(
+                type: .applicationStart,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                type: "application_start",
                 loadingTime: nil,
-                resource: nil,
-                error: nil
-            ),
-            dd: .init()
+                target: nil,
+                error: nil,
+                crash: nil,
+                longTask: nil,
+                resource: nil
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: [:])

@@ -82,13 +82,12 @@ internal extension RUMErrorSource {
 }
 
 internal extension RUMUserActionType {
-    /// TODO: RUMM-517 Map `RUMUserActionType` to enum cases from generated models
-    var toRUMDataFormat: String {
+    var toRUMDataFormat: RUMActionType {
         switch self {
-        case .tap: return "tap"
-        case .scroll: return "scroll"
-        case .swipe: return "swipe"
-        case .custom: return "custom"
+        case .tap: return .tap
+        case .scroll: return .scroll
+        case .swipe: return .swipe
+        case .custom: return .custom
         }
     }
 }
