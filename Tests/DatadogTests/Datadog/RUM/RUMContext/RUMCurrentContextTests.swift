@@ -94,7 +94,8 @@ class RUMCurrentContextTests: XCTestCase {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope)
 
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+        let view = createMockView()
+        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
         let firstContext = provider.context
 
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)

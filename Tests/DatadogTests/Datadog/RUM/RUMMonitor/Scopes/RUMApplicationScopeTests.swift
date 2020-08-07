@@ -33,7 +33,8 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
         var currentTime = Date()
 
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime))
+        let view = createMockView()
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let firstsSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
@@ -46,7 +47,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
         XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
-        XCTAssertTrue(secondSessionViewScopes.first?.identity === mockView)
+        XCTAssertTrue(secondSessionViewScopes.first?.identity === view)
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
