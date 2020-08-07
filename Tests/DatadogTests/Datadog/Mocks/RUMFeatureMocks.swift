@@ -404,15 +404,19 @@ extension RUMViewScope {
     }
 }
 
+class RUMContextProviderMock: RUMContextProvider {
+    init(context: RUMContext = .mockAny()) {
+        self.context = context
+    }
+
+    let context: RUMContext
+}
+
 /// `RUMScope` recording processed commands.
 class RUMScopeMock: RUMScope {
     private let queue = DispatchQueue(label: "com.datadoghq.RUMScopeMock")
     private var expectation: XCTestExpectation?
     private var commands: [RUMCommand] = []
-
-    init(context: RUMContext = .mockAny()) {
-        self.context = context
-    }
 
     func waitAndReturnProcessedCommands(
         count: UInt,
@@ -440,8 +444,6 @@ class RUMScopeMock: RUMScope {
     }
 
     // MARK: - RUMScope
-
-    let context: RUMContext
 
     func process(command: RUMCommand) -> Bool {
         queue.async {

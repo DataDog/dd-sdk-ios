@@ -10,7 +10,7 @@ import XCTest
 class RUMResourceScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
-    private let parent = RUMScopeMock(
+    private let parent = RUMContextProviderMock(
         context: .mockWith(
             rumApplicationID: "rum-123",
             sessionID: .mockRandom(),

@@ -6,11 +6,10 @@
 
 import Foundation
 
-internal class RUMResourceScope: RUMScope {
+internal class RUMResourceScope: RUMScope, RUMContextProvider {
     // MARK: - Initialization
 
-    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
-    private unowned let parent: RUMScope
+    private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
     /// The name used to identify this Resource.
@@ -26,7 +25,7 @@ internal class RUMResourceScope: RUMScope {
     private var resourceHTTPMethod: RUMHTTPMethod
 
     init(
-        parent: RUMScope,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceName: String,
         attributes: [AttributeKey: AttributeValue],
@@ -43,11 +42,13 @@ internal class RUMResourceScope: RUMScope {
         self.resourceHTTPMethod = httpMethod
     }
 
-    // MARK: - RUMScope
+    // MARK: - RUMContextProvider
 
     var context: RUMContext {
         return parent.context
     }
+
+    // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
         switch command {

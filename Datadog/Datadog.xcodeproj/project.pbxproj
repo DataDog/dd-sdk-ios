@@ -120,6 +120,7 @@
 		61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
 		61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
+		6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61570007246AAED100E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
@@ -424,6 +425,7 @@
 		614E9EB2244719FA007EE3E1 /* BundleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleType.swift; sourceTree = "<group>"; };
 		615519252461BCE7002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519262461BCE7002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
+		6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextProvider.swift; sourceTree = "<group>"; };
 		615A4A8224A3431600233986 /* Tracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Tracer+objc.swift"; sourceTree = "<group>"; };
 		615A4A8424A3445700233986 /* TracerConfiguration+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TracerConfiguration+objc.swift"; sourceTree = "<group>"; };
 		615A4A8624A3452800233986 /* DDTracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerConfigurationTests.swift; sourceTree = "<group>"; };
@@ -1164,6 +1166,15 @@
 			path = ../../xcconfigs;
 			sourceTree = "<group>";
 		};
+		6156CB8A24DDA186008CB2B2 /* RUMContext */ = {
+			isa = PBXGroup;
+			children = (
+				61C3E63824BF19B4008053F2 /* RUMContext.swift */,
+				6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */,
+			);
+			path = RUMContext;
+			sourceTree = "<group>";
+		};
 		617B953B24BF4D7300E6F443 /* RUMMonitor */ = {
 			isa = PBXGroup;
 			children = (
@@ -1255,7 +1266,6 @@
 			isa = PBXGroup;
 			children = (
 				61C3E63624BF191F008053F2 /* RUMScope.swift */,
-				61C3E63824BF19B4008053F2 /* RUMContext.swift */,
 				61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */,
 				61C3E63C24BF1B7F008053F2 /* Scopes */,
 			);
@@ -1375,6 +1385,7 @@
 				61E5332B24B75C51003D6C4E /* RUMFeature.swift */,
 				61E5333224B7A504003D6C4E /* DataModels */,
 				61C3E63124BF143C008053F2 /* RUMMonitor */,
+				6156CB8A24DDA186008CB2B2 /* RUMContext */,
 				61E5333B24B87908003D6C4E /* RUMEvent */,
 				61FF282224B8A1AE000B3D9B /* RUMEventOutputs */,
 				618DCFD524C7264100589570 /* UUIDs */,
@@ -1825,6 +1836,7 @@
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
+				6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */,
 				61C2C21224C5951400C0321C /* RUMViewScope.swift in Sources */,
 				614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */,
 				61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */,

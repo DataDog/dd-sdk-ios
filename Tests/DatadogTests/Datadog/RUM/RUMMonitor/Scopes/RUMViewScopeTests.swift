@@ -10,7 +10,7 @@ import UIKit
 
 class RUMViewScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
-    private let parent = RUMScopeMock()
+    private let parent = RUMContextProviderMock()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
     func testDefaultContext() {

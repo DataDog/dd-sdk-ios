@@ -21,7 +21,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         var currentTime = Date()
-        let parent = RUMScopeMock()
+        let parent = RUMContextProviderMock()
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
@@ -34,7 +34,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         var currentTime = Date()
-        let parent = RUMScopeMock()
+        let parent = RUMContextProviderMock()
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
@@ -51,7 +51,7 @@ class RUMSessionScopeTests: XCTestCase {
     }
 
     func testItManagesViewScopeLifecycle() {
-        let parent = RUMScopeMock()
+        let parent = RUMContextProviderMock()
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)

@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class RUMUserActionScope: RUMScope {
+internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     struct Constants {
         /// If no activity is observed within this period in a discrete (discontinous) User Action, it is condiered ended.
         /// The activity may be i.e. due to Resource started loading.
@@ -17,8 +17,7 @@ internal class RUMUserActionScope: RUMScope {
 
     // MARK: - Initialization
 
-    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
-    private unowned let parent: RUMScope
+    private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
     /// The type of this User Action.
@@ -43,7 +42,7 @@ internal class RUMUserActionScope: RUMScope {
     private var activeResourcesCount: Int = 0
 
     init(
-        parent: RUMScope,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         actionType: RUMUserActionType,
         attributes: [AttributeKey: AttributeValue],
@@ -60,11 +59,13 @@ internal class RUMUserActionScope: RUMScope {
         self.lastActivityTime = startTime
     }
 
-    // MARK: - RUMScope
+    // MARK: - RUMContextProvider
 
     var context: RUMContext {
         return parent.context
     }
+
+    // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
         if isContinuous { // e.g. "scroll"

@@ -7,7 +7,7 @@
 import Foundation
 import UIKit
 
-internal class RUMViewScope: RUMScope {
+internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by the Resource name.
@@ -17,8 +17,7 @@ internal class RUMViewScope: RUMScope {
 
     // MARK: - Initialization
 
-    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
-    private unowned let parent: RUMScope
+    private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
     /// Weak reference to corresponding `UIViewController`, used to identify this View.
@@ -44,7 +43,7 @@ internal class RUMViewScope: RUMScope {
     private var version: UInt = 0
 
     init(
-        parent: RUMScope,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: AnyObject,
         attributes: [AttributeKey: AttributeValue],
@@ -59,7 +58,7 @@ internal class RUMViewScope: RUMScope {
         self.viewStartTime = startTime
     }
 
-    // MARK: - RUMScope
+    // MARK: - RUMContextProvider
 
     var context: RUMContext {
         var context = parent.context
@@ -68,6 +67,8 @@ internal class RUMViewScope: RUMScope {
         context.activeUserActionID = userActionScope?.actionUUID
         return context
     }
+
+    // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
         // Tells if the View did change and an update event should be send
