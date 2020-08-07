@@ -26,9 +26,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private(set) var attributes: [AttributeKey: AttributeValue]
 
     /// This User Action's UUID.
-    internal let actionUUID: RUMUUID
+    let actionUUID: RUMUUID
     /// The start time of this User Action.
-    private var actionStartTime: Date
+    private let actionStartTime: Date
     /// Tells if this action is continuous over time, like "scroll" (or discrete, like "tap").
     internal let isContinuous: Bool
     /// Time of the last RUM activity noticed by this User Action (i.e. Resource loading).

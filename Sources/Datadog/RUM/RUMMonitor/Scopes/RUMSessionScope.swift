@@ -26,9 +26,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private let dependencies: RUMScopeDependencies
 
     /// This Session UUID.
-    private var sessionUUID: RUMUUID
+    let sessionUUID: RUMUUID
     /// The start time of this Session.
-    private var sessionStartTime: Date
+    private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
 
