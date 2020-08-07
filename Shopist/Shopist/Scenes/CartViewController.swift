@@ -18,15 +18,40 @@ private struct CellModel {
 }
 
 final class CartViewController: UITableViewController {
+    private static var randomError: NSError? {
+        if UInt8.random(in: 1...20) == 1 {
+            return NSError(
+                domain: "GraphQL",
+                code: 11235,
+                userInfo: [NSLocalizedDescriptionKey: "Something happened..."]
+            )
+        }
+        return nil
+    }
+    private let discountField: UITextField = {
+        let title = UILabel(frame: .zero)
+        title.text = "Discount Code "
+        let field = UITextField(frame: .zero)
+        field.placeholder = "12345"
+        field.leftView = title
+        field.leftViewMode = .always
+        return field
+    }()
     private var models = [CellModel]()
     private static let cellIdentifier = "cell"
+    private let api = API()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Cart"
         tableView.register(TableViewCell.self, forCellReuseIdentifier: Self.cellIdentifier)
-        tableView.tableFooterView = UIView()
         tableView.allowsSelection = false
+        tableView.tableFooterView = {
+            let footerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 60))
+            footerView.layoutMargins = UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15)
+            discountField.cover(footerView)
+            return footerView
+        }()
 
         let dismissButton = UIBarButtonItem(image: UIImage(systemName: "chevron.down"), style: .plain, target: self, action: #selector(dismissPage))
         navigationItem.leftBarButtonItem = dismissButton
@@ -56,9 +81,47 @@ final class CartViewController: UITableViewController {
     }
 
     @objc private func pay() {
-        print("Paid")
-        cart.products.removeAll()
-        dismissPage()
+        if let randomError = Self.randomError {
+            self.handleError(randomError)
+            return
+        }
+        api.checkout(with: discountField.text) { result in
+            switch result {
+            case .success:
+                self.handleSuccess()
+            case .failure(let error):
+                self.handleError(error)
+            }
+        }
+    }
+
+    private func handleSuccess() {
+        let alert = UIAlertController(title: "Success", message: nil, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default) { action in
+            cart.products.removeAll()
+            self.goToHomepage()
+        }
+        alert.addAction(action)
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+
+    private func handleError(_ error: Error) {
+        let nsError = error as NSError
+        let title = "Error"
+        let message = nsError.localizedDescription
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+
+    private func goToHomepage() {
+        let navController = self.presentingViewController as? UINavigationController
+        navController?.popViewController(animated: false)
+        self.dismissPage()
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

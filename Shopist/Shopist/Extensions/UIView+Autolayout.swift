@@ -10,18 +10,20 @@ extension UIView {
     func cover(_ superview: UIView) {
         superview.addSubview(self)
         self.translatesAutoresizingMaskIntoConstraints = false
-        superview.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
-        superview.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
-        superview.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
-        superview.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+        let container = superview.layoutMarginsGuide
+        container.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
+        container.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
+        container.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
+        container.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
     }
 
     func center(in superview: UIView) {
         superview.addSubview(self)
         self.translatesAutoresizingMaskIntoConstraints = false
-        superview.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
-        superview.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        superview.leadingAnchor.constraint(lessThanOrEqualTo: self.leadingAnchor).isActive = true
-        superview.trailingAnchor.constraint(greaterThanOrEqualTo: self.trailingAnchor).isActive = true
+        let container = superview.layoutMarginsGuide
+        container.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        container.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        container.leadingAnchor.constraint(lessThanOrEqualTo: self.leadingAnchor).isActive = true
+        container.trailingAnchor.constraint(greaterThanOrEqualTo: self.trailingAnchor).isActive = true
     }
 }
