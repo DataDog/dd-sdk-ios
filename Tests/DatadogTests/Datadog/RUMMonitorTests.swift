@@ -45,14 +45,14 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, "application_start")
         }
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
         }
-        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.timeSpent, 1_000_000_000)
         }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
         }
     }
@@ -75,7 +75,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, "application_start")
         }
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
@@ -83,7 +83,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.resource.type, .image)
             XCTAssertEqual(rumModel.resource.statusCode, 200)
         }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
         }
@@ -108,14 +108,14 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, "application_start")
         }
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
         try rumEventMatchers[2].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, "tap")
         }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
@@ -143,7 +143,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, "application_start")
         }
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 0)
@@ -151,7 +151,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[2].model(ofType: RUMResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 200)
         }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
             XCTAssertEqual(rumModel.view.error.count, 0)
@@ -159,7 +159,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[4].model(ofType: RUMResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 202)
         }
-        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[5].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 2)
             XCTAssertEqual(rumModel.view.error.count, 0)
@@ -168,7 +168,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.action.resource?.count, 2)
             XCTAssertEqual(rumModel.action.error?.count, 0)
         }
-        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[7].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 2)
             XCTAssertEqual(rumModel.view.error.count, 0)
@@ -197,7 +197,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, "application_start")
         }
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
@@ -206,7 +206,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.error.stack, "Foo.swift: 100")
             XCTAssertEqual(rumModel.error.source, .source)
         }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 1)
@@ -215,7 +215,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.action.type, "scroll")
             XCTAssertEqual(rumModel.action.error?.count, 1)
         }
-        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[5].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 1)

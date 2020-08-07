@@ -24,6 +24,12 @@ class RUMDataModelsMappingTests: XCTestCase {
         XCTAssertEqual(Int.max.toInt64, Int64.max)
     }
 
+    func testUInt() {
+        XCTAssertEqual(UInt.min.toInt64, 0)
+        XCTAssertEqual(UInt(42).toInt64, 42)
+        XCTAssertEqual(UInt.max.toInt64, Int64.max)
+    }
+
     func testUInt64() {
         XCTAssertEqual(UInt64.min.toInt64, 0)
         XCTAssertEqual(UInt64(42).toInt64, 42)

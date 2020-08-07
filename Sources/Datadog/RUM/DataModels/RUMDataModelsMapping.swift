@@ -14,6 +14,15 @@ extension Int {
     }
 }
 
+extension UInt {
+    var toInt64: Int64 {
+        if self > Int64.max {
+            return .max
+        }
+        return Int64(exactly: self) ?? .max
+    }
+}
+
 extension UInt64 {
     var toInt64: Int64 {
         if self > Int64.max {

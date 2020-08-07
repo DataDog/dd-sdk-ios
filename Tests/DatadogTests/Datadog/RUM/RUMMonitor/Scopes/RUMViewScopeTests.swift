@@ -103,11 +103,11 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).first)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "ViewControllerMock")
         XCTAssertEqual(event.model.view.timeSpent, 0)
@@ -137,11 +137,11 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).first)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "ViewControllerMock")
         XCTAssertEqual(event.model.view.timeSpent, 0)
@@ -174,24 +174,24 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
-        let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self)
+        let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMView>.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
             XCTAssertEqual(
                 viewEvent.model.date,
-                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds,
+                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds,
                 "All View events must share the same creation date"
             )
         }
 
         let event = try XCTUnwrap(viewEvents.dropFirst().first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toMilliseconds)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, "user")
+        XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "ViewControllerMock")
-        XCTAssertEqual(event.model.view.timeSpent, TimeInterval(2).toNanoseconds)
+        XCTAssertEqual(event.model.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
         XCTAssertEqual(event.model.view.action.count, 0)
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
@@ -239,7 +239,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
         )
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
         XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
         XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
     }
@@ -265,7 +265,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
         )
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
         XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
     }
 
@@ -289,7 +289,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(command: RUMStopViewCommand(time: currentTime, attributes: [:], identity: view))
         )
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
         XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
     }
 
@@ -339,7 +339,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(error.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
 
-        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)
     }
 
@@ -370,7 +370,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
         XCTAssertEqual(viewUpdate.model.view.resource.count, 0, "Failed Resource should not be counted")
         XCTAssertEqual(viewUpdate.model.view.error.count, 1, "Failed Resource should be counted as Error")
     }
