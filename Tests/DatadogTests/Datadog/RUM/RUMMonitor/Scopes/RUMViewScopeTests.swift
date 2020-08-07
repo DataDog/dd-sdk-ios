@@ -240,7 +240,8 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
         )
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(event.model.view.resource.count, 2, "View should record 2 resources")
+        XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
+        XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
     }
 
     // MARK: - User Action Tracking
@@ -370,7 +371,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(viewUpdate.model.view.resource.count, 1)
-        XCTAssertEqual(viewUpdate.model.view.error.count, 1)
+        XCTAssertEqual(viewUpdate.model.view.resource.count, 0, "Failed Resource should not be counted")
+        XCTAssertEqual(viewUpdate.model.view.error.count, 1, "Failed Resource should be counted as Error")
     }
 }

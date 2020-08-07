@@ -51,13 +51,24 @@ internal class RUMEventMatcher {
 
     // MARK: - Partial matches
 
-    func model<DM: Decodable>() throws -> DM {
-        return try jsonDataDecoder.decode(DM.self, from: jsonData)
+    func model<DM: Decodable>(file: StaticString = #file, line: UInt = #line) throws -> DM {
+        do {
+            let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
+            return model
+        } catch {
+            XCTFail("\(error)", file: file, line: line)
+            throw error
+        }
     }
 
-    func model<DM: Decodable>(ofType type: DM.Type, matches matcher: (DM) -> Void) throws {
-        let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
-        matcher(model)
+    func model<DM: Decodable>(ofType type: DM.Type, file: StaticString = #file, line: UInt = #line, matches matcher: (DM) -> Void) throws {
+        do {
+            let model = try jsonDataDecoder.decode(DM.self, from: jsonData)
+            matcher(model)
+        } catch {
+            XCTFail("\(error)", file: file, line: line)
+            throw error
+        }
     }
 
     func model<DM: Decodable>(isTypeOf type: DM.Type) -> Bool {
