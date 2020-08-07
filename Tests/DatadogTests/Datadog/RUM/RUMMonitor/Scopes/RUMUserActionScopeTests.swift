@@ -118,13 +118,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2", time: currentTime)
             )
         )
 
@@ -132,19 +132,19 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: nil)
+                command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
+                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceName: "/resource/2", time: currentTime)
             )
         )
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopUserActionCommand(time: currentTime, attributes: [:], actionType: .scroll)
+                command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .scroll)
             )
         )
 
@@ -168,7 +168,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMAddCurrentViewErrorCommand(time: currentTime, message: "view error", source: .source, stack: nil, attributes: [:])
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime)
             )
         )
 
@@ -176,7 +176,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopUserActionCommand(time: currentTime, attributes: [:], actionType: .scroll)
+                command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .scroll)
             )
         )
 
@@ -226,13 +226,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand(resourceName: "/resource/2", time: currentTime, attributes: [:], url: .mockAny(), httpMethod: .mockAny())
+                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2", time: currentTime)
             )
         )
 
@@ -240,14 +240,14 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand(resourceName: "/resource/1", time: currentTime, attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: 0)
+                command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
             ),
             "Discrete User Action should not yet complete as it still has 1 pending Resource"
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceName: "/resource/2", time: currentTime, error: ErrorMock(), source: .network, httpStatusCode: 400, attributes: [:])
+                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceName: "/resource/2", time: currentTime)
             ),
             "Discrete User Action should not yet complete as it haven't reached the time out duration"
         )
@@ -279,7 +279,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMAddCurrentViewErrorCommand(time: currentTime, message: "view error", source: .source, stack: nil, attributes: [:])
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime)
             )
         )
 

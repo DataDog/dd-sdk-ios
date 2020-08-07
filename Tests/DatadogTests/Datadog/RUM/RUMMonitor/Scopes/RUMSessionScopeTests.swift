@@ -52,18 +52,17 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testItManagesViewScopeLifecycle() {
         let parent = RUMScopeMock()
-        let view = UIViewController()
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
-        _ = scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 1)
-        _ = scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 0)
 
-        _ = scope.process(command: RUMStartViewCommand(time: Date(), attributes: [:], identity: view))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 1)
-        _ = scope.process(command: RUMStopViewCommand(time: Date(), attributes: [:], identity: view))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 }
