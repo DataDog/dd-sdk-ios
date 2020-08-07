@@ -149,8 +149,8 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
-        XCTAssertEqual(event.model.action.resource?.count, 2)
-        XCTAssertEqual(event.model.action.error?.count, 1)
+        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
+        XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
     func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
@@ -260,8 +260,8 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
-        XCTAssertEqual(event.model.action.resource?.count, 2)
-        XCTAssertEqual(event.model.action.error?.count, 1)
+        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
+        XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
     func testWhileDiscreteUserActionIsActive_itCountsViewErrors() throws {

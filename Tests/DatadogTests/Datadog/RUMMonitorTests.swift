@@ -146,6 +146,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
+            XCTAssertEqual(rumModel.view.error.count, 0)
         }
         try rumEventMatchers[2].model(ofType: RUMResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 200)
@@ -153,6 +154,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
+            XCTAssertEqual(rumModel.view.error.count, 0)
         }
         try rumEventMatchers[4].model(ofType: RUMResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 202)
@@ -160,6 +162,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 2)
+            XCTAssertEqual(rumModel.view.error.count, 0)
         }
         try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.resource?.count, 2)
@@ -168,6 +171,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 2)
+            XCTAssertEqual(rumModel.view.error.count, 0)
         }
     }
 

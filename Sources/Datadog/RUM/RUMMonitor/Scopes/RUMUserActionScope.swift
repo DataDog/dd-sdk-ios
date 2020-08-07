@@ -83,49 +83,27 @@ internal class RUMUserActionScope: RUMScope {
 
         switch command {
         case let command as RUMStopUserActionCommand:
-            willStopUserAction(on: command)
+            sendActionEvent(completionTime: command.time, on: command)
             return false
 
         case let command as RUMResourceCommand:
             if command is  RUMStartResourceCommand {
-                startTrackingResource()
+                activeResourcesCount += 1
             } else if command is RUMStopResourceCommand {
-                stopTrackingResource()
+                activeResourcesCount -= 1
+                resourcesCount += 1
             } else if command is RUMStopResourceWithErrorCommand {
-                trackResourceError()
+                activeResourcesCount -= 1
+                errorsCount += 1
             }
 
         case _ as RUMAddCurrentViewErrorCommand:
-            trackViewError()
+            errorsCount += 1
 
         default:
             break
         }
         return true
-    }
-
-    // MARK: - RUMCommands Processing
-
-    private func willStopUserAction(on command: RUMStopUserActionCommand) {
-        sendActionEvent(completionTime: command.time, on: command)
-    }
-
-    private func startTrackingResource() {
-        resourcesCount += 1
-        activeResourcesCount += 1
-    }
-
-    private func stopTrackingResource() {
-        activeResourcesCount -= 1
-    }
-
-    private func trackResourceError() {
-        activeResourcesCount -= 1
-        errorsCount += 1
-    }
-
-    private func trackViewError() {
-        errorsCount += 1
     }
 
     // MARK: - Sending RUM Events
