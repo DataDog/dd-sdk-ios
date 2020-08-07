@@ -7,7 +7,7 @@
 import UIKit
 import Foundation
 
-public enum RUMHTTPMethod {
+public enum RUMHTTPMethod: String {
     case GET
     case POST
     case PUT
