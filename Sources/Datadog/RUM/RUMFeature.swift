@@ -21,6 +21,11 @@ internal final class RUMFeature {
 
     let configuration: Datadog.ValidConfiguration
 
+    // MARK: - Integration With Other Features
+
+    /// Provides global RUM context for other features.
+    var contextProvider: RUMContextProvider?
+
     // MARK: - Dependencies
 
     let dateProvider: DateProvider

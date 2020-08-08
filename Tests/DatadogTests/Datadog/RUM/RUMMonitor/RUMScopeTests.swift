@@ -20,17 +20,21 @@ class RUMScopeTests: XCTestCase {
         func process(command: RUMCommand) -> Bool { !isCompleted }
     }
 
+    private class AnyScope: RUMScope {
+        func process(command: RUMCommand) -> Bool { .mockAny() }
+    }
+
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: true)
-        scope = RUMScopeMock().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
+        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNil(scope)
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: false)
-        scope = RUMScopeMock().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
+        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
         XCTAssertNotNil(scope)
     }
 
@@ -42,7 +46,7 @@ class RUMScopeTests: XCTestCase {
             CompletableScope(isCompleted: false)
         ]
 
-        scopes = RUMScopeMock().manage(childScopes: scopes, byPropagatingCommand: RUMCommandMock())
+        scopes = AnyScope().manage(childScopes: scopes, byPropagatingCommand: RUMCommandMock())
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { !$0.isCompleted }.count, 2)

@@ -233,7 +233,7 @@ class RUMMonitorTests: XCTestCase {
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
-            let modulo = iteration % 10
+            let modulo = iteration % 12
 
             switch modulo {
             case 0: monitor.startView(viewController: view)
@@ -247,6 +247,7 @@ class RUMMonitorTests: XCTestCase {
             case 8: monitor.startUserAction(type: .scroll)
             case 9: monitor.stopUserAction(type: .scroll)
             case 10: monitor.registerUserAction(type: .tap)
+            case 11: _ = monitor.contextProvider.context
             default: break
             }
         }
@@ -254,37 +255,22 @@ class RUMMonitorTests: XCTestCase {
         server.waitAndAssertNoRequestsSent()
     }
 
-    // MARK: - Usage
+    // MARK: - Initialization
 
-    func testWhenCallingPublicAPI_itProcessesExpectedCommandsThrougScopes() {
-        let scope = RUMScopeMock()
-        let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-        let monitor = RUMMonitor(applicationScope: scope, dateProvider: dateProvider)
+    func testWhenMonitorIsInitialized_itRegistersGlobalRUMContextProvider() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
 
-        monitor.startView(viewController: mockView)
-        monitor.stopView(viewController: mockView)
-        monitor.addViewError(error: ErrorMock(), source: .agent)
-        monitor.addViewError(message: .mockAny(), source: .agent)
-        monitor.startResourceLoading(resourceName: .mockAny(), url: .mockAny(), httpMethod: .mockAny())
-        monitor.stopResourceLoading(resourceName: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceName: .mockAny(), error: ErrorMock(), source: .network, httpStatusCode: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceName: .mockAny(), errorMessage: .mockAny(), source: .network)
-        monitor.startUserAction(type: .scroll)
-        monitor.stopUserAction(type: .scroll)
-        monitor.registerUserAction(type: .tap)
+        XCTAssertNil(RUMFeature.instance!.contextProvider)
 
-        let commands = scope.waitAndReturnProcessedCommands(count: 11, timeout: 0.5)
+        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
 
-        XCTAssertTrue(commands[0] is RUMStartViewCommand)
-        XCTAssertTrue(commands[1] is RUMStopViewCommand)
-        XCTAssertTrue(commands[2] is RUMAddCurrentViewErrorCommand)
-        XCTAssertTrue(commands[3] is RUMAddCurrentViewErrorCommand)
-        XCTAssertTrue(commands[4] is RUMStartResourceCommand)
-        XCTAssertTrue(commands[5] is RUMStopResourceCommand)
-        XCTAssertTrue(commands[6] is RUMStopResourceWithErrorCommand)
-        XCTAssertTrue(commands[7] is RUMStopResourceWithErrorCommand)
-        XCTAssertTrue(commands[8] is RUMStartUserActionCommand)
-        XCTAssertTrue(commands[9] is RUMStopUserActionCommand)
-        XCTAssertTrue(commands[10] is RUMAddUserActionCommand)
+        XCTAssertNotNil(RUMFeature.instance!.contextProvider)
+        XCTAssertTrue(RUMFeature.instance!.contextProvider is RUMCurrentContext)
+
+        _ = monitor
+
+        server.waitAndAssertNoRequestsSent()
     }
 }

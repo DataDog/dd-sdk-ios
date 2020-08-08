@@ -47,10 +47,12 @@ public enum RUMErrorSource {
 
 public class RUMMonitor {
     /// The root scope of RUM monitoring.
-    internal let applicationScope: RUMScope
+    internal let applicationScope: RUMApplicationScope
+    /// Current RUM context provider for integrations with Logging and Tracing.
+    internal let contextProvider: RUMCurrentContext
     /// Time provider.
     private let dateProvider: DateProvider
-    /// Queue for processing RUM events off the main thread..
+    /// Queue for processing RUM commands off the main thread and providing current RUM context.
     private let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
@@ -65,7 +67,9 @@ public class RUMMonitor {
             fatalError("RUMFeature not initialized")
         }
 
-        return RUMMonitor(rumFeature: rumFeature, rumApplicationID: rumApplicationID)
+        let monitor = RUMMonitor(rumFeature: rumFeature, rumApplicationID: rumApplicationID)
+        rumFeature.contextProvider = monitor.contextProvider
+        return monitor
     }
 
     internal convenience init(rumFeature: RUMFeature, rumApplicationID: String) {
@@ -88,9 +92,13 @@ public class RUMMonitor {
         )
     }
 
-    internal init(applicationScope: RUMScope, dateProvider: DateProvider) {
+    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider) {
         self.applicationScope = applicationScope
         self.dateProvider = dateProvider
+        self.contextProvider = RUMCurrentContext(
+            applicationScope: applicationScope,
+            queue: queue
+        )
     }
 
     // MARK: - Public API

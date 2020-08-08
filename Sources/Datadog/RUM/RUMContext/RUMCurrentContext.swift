@@ -9,15 +9,20 @@ import Foundation
 /// Current `RUMContext` provider.
 internal class RUMCurrentContext: RUMContextProvider {
     private let applicationScope: RUMApplicationScope
+    /// Queue used to compute the context.
+    private let queue: DispatchQueue
 
-    init(applicationScope: RUMApplicationScope) {
+    init(applicationScope: RUMApplicationScope, queue: DispatchQueue) {
         self.applicationScope = applicationScope
+        self.queue = queue
     }
 
     // MARK: - RUMContextProvider
 
     var context: RUMContext {
-        activeViewContext ?? sessionContext ?? applicationContext
+        queue.sync {
+            activeViewContext ?? sessionContext ?? applicationContext
+        }
     }
 
     // MARK: - Private
