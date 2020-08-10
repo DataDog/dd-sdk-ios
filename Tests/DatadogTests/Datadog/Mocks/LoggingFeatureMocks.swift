@@ -115,6 +115,24 @@ extension Log.Status {
 
 // MARK: - Component Mocks
 
+extension Logger {
+    static func mockWith(
+        logOutput: LogOutput = LogOutputMock(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        identifier: String = .mockAny(),
+        rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
+        rumErrorsIntegration: LoggingWithRUMErrorsIntegration? = nil
+    ) -> Logger {
+        return Logger(
+            logOutput: logOutput,
+            dateProvider: dateProvider,
+            identifier: identifier,
+            rumContextIntegration: rumContextIntegration,
+            rumErrorsIntegration: rumErrorsIntegration
+        )
+    }
+}
+
 extension LogBuilder {
     static func mockAny() -> LogBuilder {
         return mockWith()

@@ -13,11 +13,7 @@ class WarningsTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(
-            logOutput: output,
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            identifier: "sdk-user"
-        )
+        userLogger = .mockWith(logOutput: output, dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()))
 
         XCTAssertTrue(warn(if: true, message: "message"))
         XCTAssertEqual(output.recordedLog, .init(level: .warn, message: "message", date: .mockDecember15th2019At10AMUTC()))

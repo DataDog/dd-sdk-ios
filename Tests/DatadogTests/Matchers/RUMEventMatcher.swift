@@ -72,7 +72,7 @@ internal class RUMEventMatcher {
     }
 
     func model<DM: Decodable>(isTypeOf type: DM.Type) -> Bool {
-        return (try? model() as DM) != nil
+        return (try? jsonDataDecoder.decode(DM.self, from: jsonData)) != nil
     }
 
     func userID()               throws -> String { try jsonMatcher.value(forKeyPath: "usr.id") }

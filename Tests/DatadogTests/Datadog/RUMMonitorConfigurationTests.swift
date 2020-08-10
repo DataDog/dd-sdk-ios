@@ -43,8 +43,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
 
         let feature = try XCTUnwrap(RUMFeature.instance)
-        let applicationScope = try XCTUnwrap(monitor.applicationScope as? RUMApplicationScope)
-        let rumEventBuilder = applicationScope.dependencies.eventBuilder
+        let rumEventBuilder = monitor.applicationScope.dependencies.eventBuilder
 
         XCTAssertTrue(rumEventBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(rumEventBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)

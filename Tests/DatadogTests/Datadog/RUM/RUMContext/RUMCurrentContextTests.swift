@@ -10,9 +10,11 @@ import XCTest
 extension RUMContext: EquatableInTests {}
 
 class RUMCurrentContextTests: XCTestCase {
+    private let queue = DispatchQueue(label: "\(#file)")
+
     func testContextAfterInitializingTheApplication() {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny())
-        let provider = RUMCurrentContext(applicationScope: applicationScope)
+        let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         XCTAssertEqual(
             provider.context,
@@ -28,7 +30,7 @@ class RUMCurrentContextTests: XCTestCase {
 
     func testContextAfterStartingView() throws {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny())
-        let provider = RUMCurrentContext(applicationScope: applicationScope)
+        let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
 
@@ -46,7 +48,7 @@ class RUMCurrentContextTests: XCTestCase {
 
     func testContextWhilePendingUserAction() throws {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny())
-        let provider = RUMCurrentContext(applicationScope: applicationScope)
+        let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         _ = applicationScope.process(command: RUMAddUserActionCommand.mockWith(actionType: .tap))
@@ -65,7 +67,7 @@ class RUMCurrentContextTests: XCTestCase {
 
     func testContextChangeWhenNavigatingBetweenViews() throws {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny())
-        let provider = RUMCurrentContext(applicationScope: applicationScope)
+        let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let firstView = createMockView()
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: firstView))
@@ -92,7 +94,7 @@ class RUMCurrentContextTests: XCTestCase {
     func testContextChangeWhenSessionIsRenewed() throws {
         var currentTime = Date()
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny())
-        let provider = RUMCurrentContext(applicationScope: applicationScope)
+        let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let view = createMockView()
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))

@@ -502,7 +502,7 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.url"), "https://example.com/image.png")
     }
 
-    // MARK: - Sending logs
+    // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
@@ -663,7 +663,13 @@ class TracerTests: XCTestCase {
         )
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
+        userLogger = Logger(
+            logOutput: output,
+            dateProvider: SystemDateProvider(),
+            identifier: "sdk-user",
+            rumContextIntegration: nil,
+            rumErrorsIntegration: nil
+        )
 
         // when
         let tracer = Tracer.initialize(configuration: .init())

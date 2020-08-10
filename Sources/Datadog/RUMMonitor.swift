@@ -47,16 +47,22 @@ public enum RUMErrorSource {
 
 public class RUMMonitor {
     /// The root scope of RUM monitoring.
-    internal let applicationScope: RUMScope
+    internal let applicationScope: RUMApplicationScope
+    /// Current RUM context provider for integrations with Logging and Tracing.
+    internal let contextProvider: RUMCurrentContext
     /// Time provider.
     private let dateProvider: DateProvider
-    /// Queue for processing RUM events off the main thread..
+    /// Queue for processing RUM commands off the main thread and providing current RUM context.
     private let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
 
     // MARK: - Initialization
+
+    // TODO: RUMM-614 Reference shared `RUMMonitor` in a more elegant and correct way
+    //       when initialization and configuration API is provided
+    internal static weak var shared: RUMMonitor?
 
     // TODO: RUMM-614 `RUMMonitor` initialization and configuration API
     public static func initialize(rumApplicationID: String) -> RUMMonitor {
@@ -65,7 +71,9 @@ public class RUMMonitor {
             fatalError("RUMFeature not initialized")
         }
 
-        return RUMMonitor(rumFeature: rumFeature, rumApplicationID: rumApplicationID)
+        let monitor = RUMMonitor(rumFeature: rumFeature, rumApplicationID: rumApplicationID)
+        RUMMonitor.shared = monitor
+        return monitor
     }
 
     internal convenience init(rumFeature: RUMFeature, rumApplicationID: String) {
@@ -88,9 +96,13 @@ public class RUMMonitor {
         )
     }
 
-    internal init(applicationScope: RUMScope, dateProvider: DateProvider) {
+    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider) {
         self.applicationScope = applicationScope
         self.dateProvider = dateProvider
+        self.contextProvider = RUMCurrentContext(
+            applicationScope: applicationScope,
+            queue: queue
+        )
     }
 
     // MARK: - Public API
@@ -134,15 +146,19 @@ public class RUMMonitor {
         message: String,
         source: RUMErrorSource,
         attributes: [AttributeKey: AttributeValue]? = nil,
-        file: StaticString = #file,
-        line: UInt = #line
+        file: StaticString? = #file,
+        line: UInt? = #line
     ) {
+        var stack: (file: StaticString, line: UInt)? = nil
+        if let file = file, let line = line {
+            stack = (file: file, line: line)
+        }
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 message: message,
                 source: source,
-                stack: (file: file, line: line),
+                stack: stack,
                 attributes: attributes ?? [:]
             )
         )

@@ -61,7 +61,9 @@ internal func createSDKDeveloperLogger(
     return Logger(
         logOutput: consoleOutput,
         dateProvider: dateProvider,
-        identifier: "sdk-developer"
+        identifier: "sdk-developer",
+        rumContextIntegration: nil,
+        rumErrorsIntegration: nil
     )
 }
 
@@ -69,7 +71,9 @@ internal func createNoOpSDKUserLogger() -> Logger {
     return Logger(
         logOutput: NoOpLogOutput(),
         dateProvider: SystemDateProvider(),
-        identifier: "no-op"
+        identifier: "no-op",
+        rumContextIntegration: nil,
+        rumErrorsIntegration: nil
     )
 }
 
@@ -99,6 +103,8 @@ internal func createSDKUserLogger(
             logLevel.rawValue >= (Datadog.verbosityLevel?.rawValue ?? .max)
         },
         dateProvider: dateProvider,
-        identifier: "sdk-user"
+        identifier: "sdk-user",
+        rumContextIntegration: nil,
+        rumErrorsIntegration: nil
     )
 }

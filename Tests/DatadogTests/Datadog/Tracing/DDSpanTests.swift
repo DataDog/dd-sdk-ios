@@ -53,7 +53,7 @@ class DDSpanTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
+        userLogger = .mockWith(logOutput: output)
 
         let span: DDSpan = .mockWith(operationName: "the span")
         span.finish()
