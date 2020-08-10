@@ -7,7 +7,7 @@
 import Foundation
 import class UIKit.UIViewController
 
-internal class RUMSessionScope: RUMScope {
+internal class RUMSessionScope: RUMScope, RUMContextProvider {
     struct Constants {
         /// If no interaction is registered within this period, a new session is started.
         static let sessionTimeoutDuration: TimeInterval = 15 * 60 // 15 minutes
@@ -22,19 +22,18 @@ internal class RUMSessionScope: RUMScope {
 
     // MARK: - Initialization
 
-    // TODO: RUMM-597: Consider using `parent: RUMContextProvider`
-    unowned let parent: RUMScope
+    unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
     /// This Session UUID.
-    private var sessionUUID: RUMUUID
+    let sessionUUID: RUMUUID
     /// The start time of this Session.
-    private var sessionStartTime: Date
+    private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
 
     init(
-        parent: RUMScope,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         startTime: Date
     ) {
@@ -74,13 +73,15 @@ internal class RUMSessionScope: RUMScope {
         }
     }
 
-    // MARK: - RUMScope
+    // MARK: - RUMContextProvider
 
     var context: RUMContext {
         var context = parent.context
         context.sessionID = sessionUUID
         return context
     }
+
+    // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
         if timedOutOrExpired(currentTime: command.time) {

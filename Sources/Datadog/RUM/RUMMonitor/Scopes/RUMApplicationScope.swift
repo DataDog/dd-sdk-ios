@@ -13,7 +13,7 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
 }
 
-internal class RUMApplicationScope: RUMScope {
+internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Session scope. It gets created with the first `.startView` event.
@@ -38,9 +38,11 @@ internal class RUMApplicationScope: RUMScope {
         )
     }
 
-    // MARK: - RUMScope
+    // MARK: - RUMContextProvider
 
     let context: RUMContext
+
+    // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
         if let currentSession = sessionScope {

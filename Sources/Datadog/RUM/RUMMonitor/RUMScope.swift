@@ -7,9 +7,6 @@
 import Foundation
 
 internal protocol RUMScope: class {
-    /// The context of this scope. Should inherit data from parent scope's context.
-    var context: RUMContext { get }
-
     /// Processes given command. Returns:
     /// * `true` if the scope should be kept open.
     /// * `false` if the scope should be closed.
