@@ -60,6 +60,10 @@ public class RUMMonitor {
 
     // MARK: - Initialization
 
+    // TODO: RUMM-614 Reference shared `RUMMonitor` in a more elegant and correct way
+    //       when initialization and configuration API is provided
+    internal static weak var shared: RUMMonitor?
+
     // TODO: RUMM-614 `RUMMonitor` initialization and configuration API
     public static func initialize(rumApplicationID: String) -> RUMMonitor {
         guard let rumFeature = RUMFeature.instance else {
@@ -68,7 +72,7 @@ public class RUMMonitor {
         }
 
         let monitor = RUMMonitor(rumFeature: rumFeature, rumApplicationID: rumApplicationID)
-        rumFeature.contextProvider = monitor.contextProvider
+        RUMMonitor.shared = monitor
         return monitor
     }
 
@@ -142,15 +146,19 @@ public class RUMMonitor {
         message: String,
         source: RUMErrorSource,
         attributes: [AttributeKey: AttributeValue]? = nil,
-        file: StaticString = #file,
-        line: UInt = #line
+        file: StaticString? = #file,
+        line: UInt? = #line
     ) {
+        var stack: (file: StaticString, line: UInt)? = nil
+        if let file = file, let line = line {
+            stack = (file: file, line: line)
+        }
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 message: message,
                 source: source,
-                stack: (file: file, line: line),
+                stack: stack,
                 attributes: attributes ?? [:]
             )
         )

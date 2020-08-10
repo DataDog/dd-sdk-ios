@@ -43,14 +43,26 @@ public class Logger {
     private var loggerTags: Set<String> = []
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
+    /// Integration with RUM Context. `nil` if disabled for this Logger.
+    private let rumContextIntegration: LoggingWithRUMContextIntegration?
+    /// Integration with RUM Errors. `nil` if not available for this Logger.
+    private let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
-    init(logOutput: LogOutput, dateProvider: DateProvider, identifier: String) {
+    init(
+        logOutput: LogOutput,
+        dateProvider: DateProvider,
+        identifier: String,
+        rumContextIntegration: LoggingWithRUMContextIntegration?,
+        rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
+    ) {
         self.logOutput = logOutput
         self.dateProvider = dateProvider
         self.queue = DispatchQueue(
             label: "com.datadoghq.logger-\(identifier)",
             target: .global(qos: .userInteractive)
         )
+        self.rumContextIntegration = rumContextIntegration
+        self.rumErrorsIntegration = rumErrorsIntegration
     }
 
     // MARK: - Logging
@@ -211,9 +223,16 @@ public class Logger {
             level: level,
             message: message,
             date: date,
-            attributes: LogAttributes(userAttributes: combinedAttributes, internalAttributes: nil),
+            attributes: LogAttributes(
+                userAttributes: combinedAttributes,
+                internalAttributes: rumContextIntegration?.currentRUMContextAttributes
+            ),
             tags: tags
         )
+
+        if level.rawValue >= LogLevel.error.rawValue {
+            rumErrorsIntegration?.addError(with: message)
+        }
     }
 
     // MARK: - Logger.Builder
@@ -235,6 +254,7 @@ public class Logger {
         internal var serviceName: String?
         internal var loggerName: String?
         internal var sendNetworkInfo: Bool = false
+        internal var bundleWithRUM: Bool = true
         internal var useFileOutput = true
         internal var useConsoleLogFormat: ConsoleLogFormat?
 
@@ -258,6 +278,15 @@ public class Logger {
         /// - Parameter enabled: `false` by default
         public func sendNetworkInfo(_ enabled: Bool) -> Builder {
             sendNetworkInfo = enabled
+            return self
+        }
+
+        /// Enables the logs integration with RUM.
+        /// If enabled all the logs will be enriched with the current RUM View information and
+        /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
+        /// - Parameter enabled: `true` by default
+        public func bundleWithRUM(_ enabled: Bool) -> Builder {
+            bundleWithRUM = enabled
             return self
         }
 
@@ -302,7 +331,9 @@ public class Logger {
                 return Logger(
                     logOutput: NoOpLogOutput(),
                     dateProvider: SystemDateProvider(),
-                    identifier: "no-op"
+                    identifier: "no-op",
+                    rumContextIntegration: nil,
+                    rumErrorsIntegration: nil
                 )
             }
         }
@@ -319,7 +350,9 @@ public class Logger {
             return Logger(
                 logOutput: resolveLogsOutput(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
-                identifier: resolveLoggerName(for: loggingFeature)
+                identifier: resolveLoggerName(for: loggingFeature),
+                rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil,
+                rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
             )
         }
 

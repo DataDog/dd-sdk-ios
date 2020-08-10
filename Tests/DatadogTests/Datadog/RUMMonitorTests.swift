@@ -257,19 +257,21 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Initialization
 
-    func testWhenMonitorIsInitialized_itRegistersGlobalRUMContextProvider() throws {
+    // TODO: RUMM-614 Change this test when final initialization API is provided
+    func testWhenMonitorIsInitialized_itIsRegisteredAsGlobalMonitor() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
-        XCTAssertNil(RUMFeature.instance!.contextProvider)
+        XCTAssertNil(RUMMonitor.shared)
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        autoreleasepool {
+            let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+            XCTAssertNotNil(RUMMonitor.shared)
+            _ = monitor
+        }
 
-        XCTAssertNotNil(RUMFeature.instance!.contextProvider)
-        XCTAssertTrue(RUMFeature.instance!.contextProvider is RUMCurrentContext)
-
-        _ = monitor
+        XCTAssertNil(RUMMonitor.shared)
 
         server.waitAndAssertNoRequestsSent()
     }

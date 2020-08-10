@@ -52,7 +52,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
+        userLogger = .mockWith(logOutput: output)
 
         let writer = FileWriter(
             dataFormat: .mockWith(prefix: "[", suffix: "]"),
@@ -93,7 +93,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
+        userLogger = .mockWith(logOutput: output)
 
         let writer = FileWriter(
             dataFormat: .mockAny(),
@@ -120,7 +120,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = Logger(logOutput: output, dateProvider: SystemDateProvider(), identifier: "sdk-user")
+        userLogger = .mockWith(logOutput: output)
 
         let writer = FileWriter(
             dataFormat: .mockAny(),

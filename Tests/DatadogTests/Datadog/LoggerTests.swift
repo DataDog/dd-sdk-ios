@@ -458,6 +458,84 @@ class LoggerTests: XCTestCase {
         server.waitAndAssertNoRequestsSent()
     }
 
+    // MARK: - Integration With RUM Feature
+
+    func testGivenBundlingWithRUMEnabled_whenSendingLog_itContainsCurrentRUMContext() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            configuration: .mockWith(environment: "tests")
+        )
+        defer { LoggingFeature.instance = nil }
+
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let logger = Logger.builder
+            .bundleWithRUM(true)
+            .build()
+
+        // when
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+        logger.info("info message 3")
+
+        // then
+        let logMatchers = try server.waitAndReturnLogMatchers(count: 1)
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithRUMContextIntegration.RUMLogAttributes.applicationID, equals: "rum-123"
+        )
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithRUMContextIntegration.RUMLogAttributes.sessionID,
+            isTypeOf: String.self
+        )
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithRUMContextIntegration.RUMLogAttributes.viewID,
+            isTypeOf: String.self
+        )
+    }
+
+    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { LoggingFeature.instance = nil }
+
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        let logger = Logger.builder.build()
+
+        // when
+
+        logger.debug("debug message")
+        logger.info("info message")
+        logger.notice("notice message")
+        logger.warn("warn message")
+        logger.error("error message")
+        logger.critical("critical message")
+
+        // then
+        // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 6)
+        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
+        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMError.self) }
+        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "error message")
+        }
+        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "critical message")
+        }
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
