@@ -43,6 +43,9 @@ class LoggerBuilderTests: XCTestCase {
     func testDefaultLogger() throws {
         let logger = Logger.builder.build()
 
+        XCTAssertNotNil(logger.rumContextIntegration)
+        XCTAssertNotNil(logger.rumErrorsIntegration)
+
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
             return
@@ -63,7 +66,11 @@ class LoggerBuilderTests: XCTestCase {
             .set(serviceName: "custom-service-name")
             .set(loggerName: "custom-logger-name")
             .sendNetworkInfo(true)
+            .bundleWithRUM(false)
             .build()
+
+        XCTAssertNil(logger.rumContextIntegration)
+        XCTAssertNotNil(logger.rumErrorsIntegration)
 
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()

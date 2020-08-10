@@ -44,9 +44,9 @@ public class Logger {
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Logger.
-    private let rumContextIntegration: LoggingWithRUMContextIntegration?
+    internal let rumContextIntegration: LoggingWithRUMContextIntegration?
     /// Integration with RUM Errors. `nil` if not available for this Logger.
-    private let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
+    internal let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
     init(
         logOutput: LogOutput,
