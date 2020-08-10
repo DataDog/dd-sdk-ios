@@ -6,15 +6,15 @@
 
 import Foundation
 
-/// Provides the current RUM context attributes for produced `Logs`.
-internal struct LoggingWithRUMContextIntegration {
+/// Provides the current RUM context tags for produced `Spans`.
+internal struct TracingWithRUMContextIntegration {
     private let rumContextIntegration = RUMContextIntegration()
 
-    /// Produces `Log` attributes describing the current RUM context.
+    /// Produces `Span` tags describing the current RUM context.
     /// Returns `nil` and prints warning if global `RUMMonitor` is not registered.
-    var currentRUMContextAttributes: [String: Encodable]? {
+    var currentRUMContextTags: [String: Encodable]? {
         guard let attributes = rumContextIntegration.currentRUMContextAttributes else {
-            userLogger.warn("No `RUMMonitor` is registered, so RUM integration with Logging will not work.")
+            userLogger.warn("No `RUMMonitor` is registered, so RUM integration with Tracing will not work.")
             return nil
         }
 

@@ -544,6 +544,82 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
     }
 
+    // MARK: - Integration With RUM Feature
+
+    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // when
+        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
+        span.finish()
+
+        // then
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"), "rum-123")
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
+    }
+
+    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        XCTAssertNil(RUMMonitor.shared)
+
+        // when
+        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
+        span.finish()
+
+        // then
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        try XCTAssertTrue(
+            XCTUnwrap(output.recordedLog?.message)
+                .contains("No `RUMMonitor` is registered, so RUM integration with Tracing will not work.")
+        )
+
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
+    }
+
+    func testWhenSendingSpanError_itCreatesRUMErrorForCurrentView() throws {
+        // TODO: RUMM-522
+    }
+
+    func testWhenLoggingSpanError_itCreatesRUMErrorForCurrentView() throws {
+        // TODO: RUMM-522
+    }
+
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
@@ -663,13 +739,7 @@ class TracerTests: XCTestCase {
         )
 
         let output = LogOutputMock()
-        userLogger = Logger(
-            logOutput: output,
-            dateProvider: SystemDateProvider(),
-            identifier: "sdk-user",
-            rumContextIntegration: nil,
-            rumErrorsIntegration: nil
-        )
+        userLogger = .mockWith(logOutput: output)
 
         // when
         let tracer = Tracer.initialize(configuration: .init())

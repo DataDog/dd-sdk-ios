@@ -46,14 +46,14 @@ public class Logger {
     /// Integration with RUM Context. `nil` if disabled for this Logger.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
     /// Integration with RUM Errors. `nil` if not available for this Logger.
-    internal let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
+    internal let rumErrorsIntegration: RUMErrorsIntegration?
 
     init(
         logOutput: LogOutput,
         dateProvider: DateProvider,
         identifier: String,
         rumContextIntegration: LoggingWithRUMContextIntegration?,
-        rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
+        rumErrorsIntegration: RUMErrorsIntegration?
     ) {
         self.logOutput = logOutput
         self.dateProvider = dateProvider
@@ -352,7 +352,7 @@ public class Logger {
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
                 rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil,
-                rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
+                rumErrorsIntegration: RUMErrorsIntegration()
             )
         }
 

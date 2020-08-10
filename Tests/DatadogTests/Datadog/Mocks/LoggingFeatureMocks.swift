@@ -121,7 +121,7 @@ extension Logger {
         dateProvider: DateProvider = SystemDateProvider(),
         identifier: String = .mockAny(),
         rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
-        rumErrorsIntegration: LoggingWithRUMErrorsIntegration? = nil
+        rumErrorsIntegration: RUMErrorsIntegration? = nil
     ) -> Logger {
         return Logger(
             logOutput: logOutput,
