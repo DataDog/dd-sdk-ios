@@ -8,24 +8,9 @@ import Foundation
 
 /* Collection of mappings from various types to `RUMDataModel` format. */
 
-extension Int {
+extension BinaryInteger {
     var toInt64: Int64 {
-        return Int64(exactly: self) ?? .max
-    }
-}
-
-extension UInt {
-    var toInt64: Int64 {
-        if self > Int64.max {
-            return .max
-        }
-        return Int64(exactly: self) ?? .max
-    }
-}
-
-extension UInt64 {
-    var toInt64: Int64 {
-        return Int64(exactly: self) ?? .max
+        return Int64(clamping: self)
     }
 }
 
