@@ -177,22 +177,28 @@ internal class RUMViewScope: RUMScope {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() {
-        let eventData = RUMActionEvent(
-            date: viewStartTime.timeIntervalSince1970.toMilliseconds,
+        let eventData = RUMAction(
+            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: viewUUID.toRUMDataFormat,
+                referrer: nil,
                 url: viewURI
             ),
+            usr: nil,
+            connectivity: nil,
+            dd: .init(),
             action: .init(
+                type: .applicationStart,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                type: "application_start",
                 loadingTime: nil,
-                resource: nil,
-                error: nil
-            ),
-            dd: .init()
+                target: nil,
+                error: nil,
+                crash: nil,
+                longTask: nil,
+                resource: nil
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: [:])
@@ -203,19 +209,31 @@ internal class RUMViewScope: RUMScope {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMViewEvent(
-            date: viewStartTime.timeIntervalSince1970.toMilliseconds,
+        let eventData = RUMView(
+            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
-            session: .init(id: context.sessionID.toRUMDataFormat, type: "user"),
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: viewUUID.toRUMDataFormat,
+                referrer: nil,
                 url: viewURI,
-                timeSpent: command.time.timeIntervalSince(viewStartTime).toNanoseconds,
-                action: .init(count: actionsCount),
-                error: .init(count: errorsCount),
-                resource: .init(count: resourcesCount)
+                loadingTime: nil,
+                loadingType: nil,
+                timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
+                firstContentfulPaint: nil,
+                domComplete: nil,
+                domContentLoaded: nil,
+                domInteractive: nil,
+                loadEvent: nil,
+                action: .init(count: actionsCount.toInt64),
+                error: .init(count: errorsCount.toInt64),
+                crash: nil,
+                longTask: nil,
+                resource: .init(count: resourcesCount.toInt64)
             ),
-            dd: .init(documentVersion: version)
+            usr: nil,
+            connectivity: nil,
+            dd: .init(documentVersion: version.toInt64)
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

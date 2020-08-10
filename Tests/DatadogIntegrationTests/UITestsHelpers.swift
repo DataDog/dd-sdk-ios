@@ -63,11 +63,11 @@ extension Array where Element == RUMEventMatcher {
     ///
     /// Example output:
     ///
-    ///     [0] - RUMEventMatcher<RUMActionEvent>
-    ///     [1] - RUMEventMatcher<RUMViewEvent>
+    ///     [0] - RUMEventMatcher<RUMAction>
+    ///     [1] - RUMEventMatcher<RUMView>
     ///     [2] - RUMEventMatcher<RUMResource>
-    ///     [3] - RUMEventMatcher<RUMViewEvent>
-    ///     [4] - RUMEventMatcher<RUMActionEvent>
+    ///     [3] - RUMEventMatcher<RUMView>
+    ///     [4] - RUMEventMatcher<RUMAction>
     ///
     func inspect() {
         enumerated().forEach { index, matcher in
@@ -77,8 +77,8 @@ extension Array where Element == RUMEventMatcher {
 
     private func getTypeOf(matcher: RUMEventMatcher) -> String {
         let allPossibleMatchers: [String: (RUMEventMatcher) -> Bool] = [
-            "RUMEventMatcher<RUMViewEvent>": { matcher in matcher.model(isTypeOf: RUMViewEvent.self) },
-            "RUMEventMatcher<RUMActionEvent>": { matcher in matcher.model(isTypeOf: RUMActionEvent.self) },
+            "RUMEventMatcher<RUMView>": { matcher in matcher.model(isTypeOf: RUMView.self) },
+            "RUMEventMatcher<RUMAction>": { matcher in matcher.model(isTypeOf: RUMAction.self) },
             "RUMEventMatcher<RUMResource>": { matcher in matcher.model(isTypeOf: RUMResource.self) },
             "RUMEventMatcher<RUMError>": { matcher in matcher.model(isTypeOf: RUMError.self) }
         ]

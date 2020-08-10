@@ -14,6 +14,15 @@ extension Int {
     }
 }
 
+extension UInt {
+    var toInt64: Int64 {
+        if self > Int64.max {
+            return .max
+        }
+        return Int64(exactly: self) ?? .max
+    }
+}
+
 extension UInt64 {
     var toInt64: Int64 {
         return Int64(exactly: self) ?? .max
@@ -70,13 +79,12 @@ internal extension RUMErrorSource {
 }
 
 internal extension RUMUserActionType {
-    /// TODO: RUMM-517 Map `RUMUserActionType` to enum cases from generated models
-    var toRUMDataFormat: String {
+    var toRUMDataFormat: RUMActionType {
         switch self {
-        case .tap: return "tap"
-        case .scroll: return "scroll"
-        case .swipe: return "swipe"
-        case .custom: return "custom"
+        case .tap: return .tap
+        case .scroll: return .scroll
+        case .swipe: return .swipe
+        case .custom: return .custom
         }
     }
 }

@@ -52,11 +52,11 @@ class RUMIntegrationTests: IntegrationTests {
         // Assert Fixture 1 VC ⬇️
 
         // ----> `application_start` Action due to initial startView()
-        let applicationStartAction: RUMActionEvent = try rumEventsMatchers[0].model()
-        XCTAssertEqual(applicationStartAction.action.type, "application_start")
+        let applicationStartAction: RUMAction = try rumEventsMatchers[0].model()
+        XCTAssertEqual(applicationStartAction.action.type, .applicationStart)
 
         // ----> View update on startView()
-        let view1UpdateA: RUMViewEvent = try rumEventsMatchers[1].model()
+        let view1UpdateA: RUMView = try rumEventsMatchers[1].model()
         XCTAssertEqual(view1UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view1UpdateA.view.action.count, 1)
         XCTAssertEqual(view1UpdateA.view.resource.count, 0)
@@ -71,7 +71,7 @@ class RUMIntegrationTests: IntegrationTests {
         XCTAssertLessThan(resourceLoaded.resource.duration, 100_000_000 * 3) // less than 0.3s
 
         // ----> View update after stopResourceLoading()
-        let view1UpdateB: RUMViewEvent = try rumEventsMatchers[3].model()
+        let view1UpdateB: RUMView = try rumEventsMatchers[3].model()
         XCTAssertEqual(view1UpdateB.view.id, view1UpdateA.view.id)
         XCTAssertEqual(view1UpdateB.dd.documentVersion, 2)
         XCTAssertEqual(view1UpdateB.view.action.count, 1)
@@ -92,7 +92,7 @@ class RUMIntegrationTests: IntegrationTests {
         XCTAssertEqual(resourceError.error.resource?.statusCode, 400)
 
         // ----> View update after stopResourceLoadingWithError()
-        let view1UpdateC: RUMViewEvent = try rumEventsMatchers[5].model()
+        let view1UpdateC: RUMView = try rumEventsMatchers[5].model()
         XCTAssertEqual(view1UpdateC.view.id, view1UpdateA.view.id)
         XCTAssertEqual(view1UpdateC.dd.documentVersion, 3)
         XCTAssertEqual(view1UpdateC.view.action.count, 1)
@@ -100,14 +100,14 @@ class RUMIntegrationTests: IntegrationTests {
         XCTAssertEqual(view1UpdateC.view.error.count, 1)
 
         // --------> Action event after tapping "Download Resource" (postponed until Resource finished loading)
-        let downloadResourceTap: RUMActionEvent = try rumEventsMatchers[6].model()
+        let downloadResourceTap: RUMAction = try rumEventsMatchers[6].model()
         XCTAssertEqual(downloadResourceTap.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(downloadResourceTap.action.type, "tap")
+        XCTAssertEqual(downloadResourceTap.action.type, .tap)
         XCTAssertEqual(downloadResourceTap.action.resource?.count, 1, "User Action should track first succesfull Resource")
         XCTAssertEqual(downloadResourceTap.action.error?.count, 1, "User Action should track second Resource failure as Error")
 
         // ----> View update on stopView()
-        let view1UpdateD: RUMViewEvent = try rumEventsMatchers[7].model()
+        let view1UpdateD: RUMView = try rumEventsMatchers[7].model()
         XCTAssertEqual(view1UpdateD.view.id, view1UpdateA.view.id)
         XCTAssertEqual(view1UpdateD.dd.documentVersion, 4)
         XCTAssertEqual(view1UpdateD.view.action.count, 2)
@@ -117,7 +117,7 @@ class RUMIntegrationTests: IntegrationTests {
         // Assert Fixture 2 VC ⬇️
 
         // ----> View update on startView()
-        let view2UpdateA: RUMViewEvent = try rumEventsMatchers[8].model()
+        let view2UpdateA: RUMView = try rumEventsMatchers[8].model()
         XCTAssertEqual(view2UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view2UpdateA.view.action.count, 0)
         XCTAssertEqual(view2UpdateA.view.error.count, 0)
@@ -128,13 +128,13 @@ class RUMIntegrationTests: IntegrationTests {
         XCTAssertEqual(view2Error.error.source, .source)
 
         // ----> View update after Error
-        let view2UpdateB: RUMViewEvent = try rumEventsMatchers[10].model()
+        let view2UpdateB: RUMView = try rumEventsMatchers[10].model()
         XCTAssertEqual(view2UpdateB.dd.documentVersion, 2)
         XCTAssertEqual(view2UpdateB.view.action.count, 0)
         XCTAssertEqual(view2UpdateB.view.error.count, 1)
 
         // ----> View update on stopView()
-        let view2UpdateC: RUMViewEvent = try rumEventsMatchers[11].model()
+        let view2UpdateC: RUMView = try rumEventsMatchers[11].model()
         XCTAssertEqual(view2UpdateC.dd.documentVersion, 3)
         XCTAssertEqual(view2UpdateC.view.action.count, 0)
         XCTAssertEqual(view2UpdateC.view.error.count, 1)
@@ -142,7 +142,7 @@ class RUMIntegrationTests: IntegrationTests {
         // Assert Fixture 3 VC ⬇️
 
         // ----> View update on startView()
-        let view3UpdateA: RUMViewEvent = try rumEventsMatchers[12].model()
+        let view3UpdateA: RUMView = try rumEventsMatchers[12].model()
         XCTAssertEqual(view3UpdateA.dd.documentVersion, 1)
         XCTAssertEqual(view3UpdateA.view.action.count, 0)
 
