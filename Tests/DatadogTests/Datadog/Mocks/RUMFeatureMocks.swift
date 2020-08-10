@@ -123,8 +123,165 @@ class RUMEventOutputMock: RUMEventOutput {
 // MARK: - RUMCommand Mocks
 
 struct RUMCommandMock: RUMCommand {
-    var time: Date = .mockAny()
+    var time = Date()
     var attributes: [AttributeKey: AttributeValue] = [:]
+}
+
+extension RUMStartViewCommand {
+    static func mockAny() -> RUMStartViewCommand { mockWith() }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        identity: AnyObject = mockView,
+        isInitialView: Bool = false
+    ) -> RUMStartViewCommand {
+        return RUMStartViewCommand(
+            time: time, attributes: attributes, identity: identity, isInitialView: isInitialView
+        )
+    }
+}
+
+extension RUMStopViewCommand {
+    static func mockAny() -> RUMStopViewCommand { mockWith() }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        identity: AnyObject = mockView
+    ) -> RUMStopViewCommand {
+        return RUMStopViewCommand(
+            time: time, attributes: attributes, identity: identity
+        )
+    }
+}
+
+extension RUMAddCurrentViewErrorCommand {
+    static func mockWithErrorObject(
+        time: Date = Date(),
+        error: Error = ErrorMock(),
+        source: RUMErrorSource = .source,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMAddCurrentViewErrorCommand {
+        return RUMAddCurrentViewErrorCommand(
+            time: time, error: error, source: source, attributes: attributes
+        )
+    }
+
+    static func mockWithErrorMessage(
+        time: Date = Date(),
+        message: String = .mockAny(),
+        source: RUMErrorSource = .source,
+        stack: (file: StaticString, line: UInt)? = (file: "Foo.swift", line: 10),
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMAddCurrentViewErrorCommand {
+        return RUMAddCurrentViewErrorCommand(
+            time: time, message: message, source: source, stack: stack, attributes: attributes
+        )
+    }
+}
+
+extension RUMStartResourceCommand {
+    static func mockAny() -> RUMStartResourceCommand { mockWith() }
+
+    static func mockWith(
+        resourceName: String = .mockAny(),
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        url: String = .mockAny(),
+        httpMethod: RUMHTTPMethod = .mockAny()
+    ) -> RUMStartResourceCommand {
+        return RUMStartResourceCommand(
+            resourceName: resourceName, time: time, attributes: attributes, url: url, httpMethod: httpMethod
+        )
+    }
+}
+
+extension RUMStopResourceCommand {
+    static func mockAny() -> RUMStopResourceCommand { mockWith() }
+
+    static func mockWith(
+        resourceName: String = .mockAny(),
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        kind: RUMResourceKind = .mockAny(),
+        httpStatusCode: Int? = .mockAny(),
+        size: UInt64? = .mockAny()
+    ) -> RUMStopResourceCommand {
+        return RUMStopResourceCommand(
+            resourceName: resourceName, time: time, attributes: attributes, kind: kind, httpStatusCode: httpStatusCode, size: size
+        )
+    }
+}
+
+extension RUMStopResourceWithErrorCommand {
+    static func mockWithErrorObject(
+        resourceName: String = .mockAny(),
+        time: Date = Date(),
+        error: Error = ErrorMock(),
+        source: RUMErrorSource = .source,
+        httpStatusCode: Int? = .mockAny(),
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMStopResourceWithErrorCommand {
+        return RUMStopResourceWithErrorCommand(
+            resourceName: resourceName, time: time, error: error, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+        )
+    }
+
+    static func mockWithErrorMessage(
+        resourceName: String = .mockAny(),
+        time: Date = Date(),
+        message: String = .mockAny(),
+        source: RUMErrorSource = .source,
+        httpStatusCode: Int? = .mockAny(),
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMStopResourceWithErrorCommand {
+        return RUMStopResourceWithErrorCommand(
+            resourceName: resourceName, time: time, message: message, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+        )
+    }
+}
+
+extension RUMStartUserActionCommand {
+    static func mockAny() -> RUMStartUserActionCommand { mockWith() }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        actionType: RUMUserActionType = .swipe
+    ) -> RUMStartUserActionCommand {
+        return RUMStartUserActionCommand(
+            time: time, attributes: attributes, actionType: actionType
+        )
+    }
+}
+
+extension RUMStopUserActionCommand {
+    static func mockAny() -> RUMStopUserActionCommand { mockWith() }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        actionType: RUMUserActionType = .swipe
+    ) -> RUMStopUserActionCommand {
+        return RUMStopUserActionCommand(
+            time: time, attributes: attributes, actionType: actionType
+        )
+    }
+}
+
+extension RUMAddUserActionCommand {
+    static func mockAny() -> RUMAddUserActionCommand { mockWith() }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        actionType: RUMUserActionType = .tap
+    ) -> RUMAddUserActionCommand {
+        return RUMAddUserActionCommand(
+            time: time, attributes: attributes, actionType: actionType
+        )
+    }
 }
 
 // MARK: - RUMContext Mocks

@@ -25,7 +25,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
         XCTAssertNil(scope.sessionScope)
-        XCTAssertTrue(scope.process(command: RUMStartViewCommand(time: .mockAny(), attributes: [:], identity: mockView)))
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockAny()))
         XCTAssertNotNil(scope.sessionScope)
     }
 
@@ -33,14 +33,14 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
         var currentTime = Date()
 
-        _ = scope.process(command: RUMStartViewCommand(time: currentTime, attributes: [:], identity: mockView))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let firstsSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        _ = scope.process(command: RUMAddUserActionCommand(time: currentTime, attributes: [:], actionType: .tap))
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
@@ -52,15 +52,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
 
-        XCTAssertTrue(scope.process(command: RUMStopViewCommand(time: .mockAny(), attributes: [:], identity: mockView)))
-        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand(time: .mockAny(), attributes: [:], actionType: .tap)))
-        XCTAssertTrue(
-            scope.process(
-                command: RUMStopResourceCommand(
-                    resourceName: .mockAny(), time: .mockAny(), attributes: [:], kind: .mockAny(), httpStatusCode: 200, size: 0
-                )
-            )
-        )
+        XCTAssertTrue(scope.process(command: RUMStopViewCommand.mockAny()))
+        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand.mockAny()))
+        XCTAssertTrue(scope.process(command: RUMStopResourceCommand.mockAny()))
         XCTAssertNil(scope.sessionScope)
     }
 }
