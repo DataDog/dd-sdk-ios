@@ -50,6 +50,11 @@ public class Tracer: OTTracer {
     private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
 
+    /// Tags to be set on all spans. They are set at initialization from Tracer.Configuration
+    private let globalTags: [String: Encodable]?
+
+    internal let activeSpansPool = ActiveSpansPool()
+
     // MARK: - Initialization
 
     /// Initializes the Datadog Tracer.
@@ -91,7 +96,8 @@ public class Tracer: OTTracer {
                 .loggingFeatureAdapter?
                 .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration),
             dateProvider: tracingFeature.dateProvider,
-            tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator
+            tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
+            globalTags: tracerConfiguration.globalTags
         )
     }
 
@@ -99,7 +105,8 @@ public class Tracer: OTTracer {
         spanOutput: SpanOutput,
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
         dateProvider: DateProvider,
-        tracingUUIDGenerator: TracingUUIDGenerator
+        tracingUUIDGenerator: TracingUUIDGenerator,
+        globalTags: [String: Encodable]?
     ) {
         self.spanOutput = spanOutput
         self.logOutput = logOutput
@@ -109,6 +116,7 @@ public class Tracer: OTTracer {
         )
         self.dateProvider = dateProvider
         self.tracingUUIDGenerator = tracingUUIDGenerator
+        self.globalTags = globalTags
     }
 
     // MARK: - Open Tracing interface
@@ -133,25 +141,36 @@ public class Tracer: OTTracer {
         return nil
     }
 
+    public var activeSpan: OTSpan? {
+        return activeSpansPool.getActiveSpan()
+    }
+
     // MARK: - Internal
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+        let parentContext = parentSpanContext ?? activeSpan?.context as? DDSpanContext
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: parentContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentSpanContext?.spanID,
-            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
+            parentSpanID: parentContext?.spanID,
+            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentContext?.baggageItems)
         )
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        return DDSpan(
+        var combinedTags = globalTags ?? [:]
+        if let tags = tags {
+            combinedTags.merge(tags) { _, last in last }
+        }
+
+        let span = DDSpan(
             tracer: self,
             context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),
-            tags: tags ?? [:]
+            tags: combinedTags
         )
+        return span
     }
 
     internal func write(span: DDSpan, finishTime: Date) {

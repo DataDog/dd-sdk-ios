@@ -13,6 +13,7 @@ internal struct DDNoopGlobals {
 }
 
 internal struct DDNoopTracer: OTTracer {
+    var activeSpan: OTSpan? = nil
     func extract(reader: OTFormatReader) -> OTSpanContext? { DDNoopGlobals.context }
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {}
     func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }

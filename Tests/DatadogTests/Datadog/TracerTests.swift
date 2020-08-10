@@ -108,6 +108,34 @@ class TracerTests: XCTestCase {
         }
     }
 
+    func testSendingSpanWithGlobalTags() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(
+            configuration: .init(
+                serviceName: "custom-service-name",
+                globalTags: [
+                    "globaltag1": "globalValue1",
+                    "globaltag2": "globalValue2"
+                ]
+            )
+        )
+
+        let span = tracer.startSpan(operationName: .mockAny())
+        span.setTag(key: "globaltag2", value: "overwrittenValue" )
+        span.finish()
+
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag1"), "globalValue1")
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "overwrittenValue")
+    }
+
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
@@ -647,6 +675,42 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 
         try Datadog.deinitializeOrThrow()
+    }
+
+    func testSendingSpanWithImplicitParent() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let queue1 = DispatchQueue(label: "\(#function)-queue1")
+        let queue2 = DispatchQueue(label: "\(#function)-queue2")
+
+        let rootSpan = tracer.startSpan(operationName: "root operation")
+
+        queue1.sync {
+            let child1Span = tracer.startSpan(operationName: "child 1 operation")
+            child1Span.finish()
+        }
+
+        queue2.sync {
+            let child2Span = tracer.startSpan(operationName: "child 2 operation")
+            child2Span.finish()
+        }
+
+        rootSpan.finish()
+
+        let spanMatchers = try server.waitAndReturnSpanMatchers(count: 3)
+        let rootMatcher = spanMatchers[2]
+        let child1Matcher = spanMatchers[1]
+        let child2Matcher = spanMatchers[0]
+
+        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
+        XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
     }
 }
 // swiftlint:enable multiline_arguments_brackets

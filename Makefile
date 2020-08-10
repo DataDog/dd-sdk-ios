@@ -56,6 +56,7 @@ bump:
 
 ship:
 		pod spec lint DatadogSDK.podspec
-		pod spec lint DatadogSDKObjc.podspec
 		pod trunk push DatadogSDK.podspec
+		pod repo update
+		pod spec lint DatadogSDKObjc.podspec
 		pod trunk push DatadogSDKObjc.podspec

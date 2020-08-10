@@ -5,6 +5,8 @@
  */
 
 import Foundation
+import os.activity
+import _Datadog_Private
 
 internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
@@ -43,6 +45,9 @@ internal class DDSpan: OTSpan {
         set { ddTracer.queue.async { self.unsafeLogFields = newValue } }
     }
 
+    private let activityId: os_activity_id_t
+    private var activityState = os_activity_scope_state_s()
+
     init(
         tracer: Tracer,
         context: DDSpanContext,
@@ -56,6 +61,12 @@ internal class DDSpan: OTSpan {
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
         self.unsafeIsFinished = false
+
+        let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
+        let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
+        activityId = os_activity_get_identifier(activity, nil)
+        os_activity_scope_enter(activity, &activityState)
+        tracer.activeSpansPool.addSpan(span: self, activityId: activityId)
     }
 
     // MARK: - Open Tracing interface
@@ -101,6 +112,8 @@ internal class DDSpan: OTSpan {
             return
         }
         isFinished = true
+        os_activity_scope_leave(&activityState)
+        ddTracer.activeSpansPool.removeSpan(activityId: activityId)
         ddTracer.write(span: self, finishTime: time)
     }
 

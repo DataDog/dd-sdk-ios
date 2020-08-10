@@ -10,9 +10,9 @@ See the dedicated [Datadog iOS Log Collection](https://docs.datadoghq.com/logs/l
 
 ![Datadog iOS Log Collection](docs/images/logging.png)
 
-### Trace Collection (beta)
+### Trace Collection
 
-This feature is currently in beta. See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/?tab=us) documentation to try it out.
+See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/?tab=us) documentation to try it out.
 
 ![Datadog iOS Log Collection](docs/images/tracing.png)
 

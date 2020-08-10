@@ -12,6 +12,10 @@ internal final class HTTPClient {
 
     convenience init() {
         let configuration: URLSessionConfiguration = .ephemeral
+        // NOTE: RUMM-610 Default behaviour of `.ephemeral` session is to cache requests.
+        // To not leak requests memory (including their `.httpBody` which may be significant)
+        // we explicitly opt-out from using cache. This cannot be achieved using `.requestCachePolicy`.
+        configuration.urlCache = nil
         // TODO: RUMM-123 Optimize `URLSessionConfiguration` for good traffic performance
         // and move session configuration constants to `PerformancePreset`.
         self.init(session: URLSession(configuration: configuration))

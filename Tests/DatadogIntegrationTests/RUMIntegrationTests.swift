@@ -37,7 +37,7 @@ class RUMIntegrationTests: IntegrationTests {
 
         recordedRUMRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1576404000000&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration`
-            let pathRegexp = #"^(.*)(\/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)(&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)([0-9].[0-9].[0-9](-[a-z0-9]*))(,env:integration)$"#
+            let pathRegexp = #"^(.*)(\/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)(&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)([0-9].[0-9].[0-9](-[a-z0-9])*)(,env:integration)$"#
             XCTAssertNotNil(
                 request.path.range(of: pathRegexp, options: .regularExpression, range: nil, locale: nil),
                 "RUM request path: \(request.path) should match regexp: \(pathRegexp)"

@@ -167,13 +167,15 @@ extension Tracer {
         spanOutput: SpanOutput = SpanOutputMock(),
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
         dateProvider: DateProvider = SystemDateProvider(),
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        globalTags: [String: Encodable]? = nil
     ) -> Tracer {
         return Tracer(
             spanOutput: spanOutput,
             logOutput: logOutput,
             dateProvider: dateProvider,
-            tracingUUIDGenerator: tracingUUIDGenerator
+            tracingUUIDGenerator: tracingUUIDGenerator,
+            globalTags: globalTags
         )
     }
 }

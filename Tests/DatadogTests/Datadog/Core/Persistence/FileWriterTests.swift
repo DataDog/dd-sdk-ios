@@ -185,7 +185,7 @@ class FileWriterTests: XCTestCase {
 
         ioInterruptionQueue.sync { }
         waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 7, handler: nil)
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
 
         let fileData = try temporaryDirectory.files()[0].read()
