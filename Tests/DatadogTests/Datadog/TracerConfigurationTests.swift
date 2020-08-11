@@ -45,6 +45,8 @@ class TracerConfigurationTests: XCTestCase {
             configuration: .init()
         ).dd
 
+        XCTAssertNotNil(tracer.rumContextIntegration)
+
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
             XCTFail()
             return
@@ -76,9 +78,12 @@ class TracerConfigurationTests: XCTestCase {
         let tracer = Tracer.initialize(
             configuration: .init(
                 serviceName: "custom-service-name",
-                sendNetworkInfo: true
+                sendNetworkInfo: true,
+                bundleWithRUM: false
             )
         ).dd
+
+        XCTAssertNil(tracer.rumContextIntegration)
 
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
             XCTFail()
