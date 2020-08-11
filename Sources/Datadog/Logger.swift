@@ -363,7 +363,8 @@ public class Logger {
                     combine: [
                         LogFileOutput(
                             logBuilder: logBuilder,
-                            fileWriter: loggingFeature.storage.writer
+                            fileWriter: loggingFeature.storage.writer,
+                            rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
                         ),
                         LogConsoleOutput(
                             logBuilder: logBuilder,
@@ -375,7 +376,8 @@ public class Logger {
             case (true, nil):
                 return LogFileOutput(
                     logBuilder: logBuilder,
-                    fileWriter: loggingFeature.storage.writer
+                    fileWriter: loggingFeature.storage.writer,
+                    rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
                 )
             case (false, let format?):
                 return LogConsoleOutput(
