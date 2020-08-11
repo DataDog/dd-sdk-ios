@@ -636,7 +636,7 @@ class TracerTests: XCTestCase {
         let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "operation name")
+            XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
         }
@@ -661,18 +661,37 @@ class TracerTests: XCTestCase {
         // when
         let span = tracer.startSpan(operationName: "operation name")
         span.log(fields: [OTLogFields.message: "hello"])
-        span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
+        span.log(
+            fields: [
+                OTLogFields.event: "error",
+                OTLogFields.errorKind: "Swift error",
+                OTLogFields.message: "span error message",
+                OTLogFields.stack: "Foo.swift:123"
+            ]
+        )
         span.finish()
 
         // then
         // [RUMView, RUMAction, RUMError] events sent:
         let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
-        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
-        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "operation name")
+        let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) })
+        try rumErrorMatcher.model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
         }
+        try XCTAssertEqual(
+            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorMessage),
+            "span error message"
+        )
+        try XCTAssertEqual(
+            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorType),
+            "Swift error"
+        )
+        try XCTAssertEqual(
+            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorStack),
+            "Foo.swift:123"
+        )
     }
 
     // MARK: - Injecting span context into carrier

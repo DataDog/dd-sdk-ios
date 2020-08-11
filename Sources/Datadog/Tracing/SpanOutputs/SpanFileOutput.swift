@@ -11,7 +11,7 @@ internal struct SpanFileOutput: SpanOutput {
     let spanBuilder: SpanBuilder
     let fileWriter: FileWriter
     /// Integration with RUM Errors.
-    let rumErrorsIntegration = RUMErrorsIntegration()
+    let rumErrorsIntegration = TracingWithRUMErrorsIntegration()
 
     func write(ddspan: DDSpan, finishTime: Date) {
         let span = spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
@@ -19,7 +19,7 @@ internal struct SpanFileOutput: SpanOutput {
         fileWriter.write(value: envelope)
 
         if span.isError {
-            rumErrorsIntegration.addError(with: span.operationName)
+            rumErrorsIntegration.addError(for: ddspan)
         }
     }
 }

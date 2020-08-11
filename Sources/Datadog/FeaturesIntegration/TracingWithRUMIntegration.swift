@@ -21,3 +21,44 @@ internal struct TracingWithRUMContextIntegration {
         return attributes
     }
 }
+
+/// Sends given `Span` as RUM Errors.
+internal struct TracingWithRUMErrorsIntegration {
+    struct Attributes {
+        static let spanErrorMessage = "span.error_message"
+        static let spanErrorType = "span.error_type"
+        static let spanErrorStack = "span.error_stack"
+    }
+
+    private let rumErrorsIntegration = RUMErrorsIntegration()
+
+    func addError(for ddspan: DDSpan) {
+        let rumErrorMessage = "Span \"\(ddspan.operationName)\" reported an error"
+        let rumErrorAttributes = captureRUMErrorAttributesFromOTLogFields(in: ddspan)
+
+        rumErrorsIntegration.addError(with: rumErrorMessage, attributes: rumErrorAttributes)
+    }
+
+    /// Inspects the `DDSpan` tags set explicitly by the user with `span.setTag(key:value:)`
+    /// or passed by `span.log(fields:)` using Open Tracing fields.
+    ///
+    /// Captures the ones describing the error context and maps them to RUM Error event attributes.
+    private func captureRUMErrorAttributesFromOTLogFields(in ddspan: DDSpan) -> [AttributeKey: AttributeValue] {
+        let openTracingFieldsReducer = SpanTagsReducer(spanTags: ddspan.tags, logFields: ddspan.logFields)
+        let spanTags = openTracingFieldsReducer.reducedSpanTags
+
+        var rumErrorAttributes: [AttributeKey: AttributeValue] = [:]
+
+        if let spanErrorMessage = spanTags[DDTags.errorMessage] {
+            rumErrorAttributes[Attributes.spanErrorMessage] = spanErrorMessage
+        }
+        if let spanErrorType = spanTags[DDTags.errorType] {
+            rumErrorAttributes[Attributes.spanErrorType] = spanErrorType
+        }
+        if let spanErrorStack = spanTags[DDTags.errorStack] {
+            rumErrorAttributes[Attributes.spanErrorStack] = spanErrorStack
+        }
+
+        return rumErrorAttributes
+    }
+}
