@@ -30,6 +30,16 @@ class ProductDetailViewController: UIViewController {
         setupBarButtons()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        rum?.startView(viewController: self)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        rum?.stopView(viewController: self)
+    }
+
     private func setupBarButtons() {
         let cartActionButton: UIBarButtonItem
         if cart.products.contains(product) {

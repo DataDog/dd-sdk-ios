@@ -61,7 +61,13 @@ final class CartViewController: UITableViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        rum?.startView(viewController: self)
         setupModels(from: cart)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        rum?.stopView(viewController: self)
     }
 
     func setupModels(from cart: Cart) {
@@ -81,6 +87,7 @@ final class CartViewController: UITableViewController {
     }
 
     @objc private func pay() {
+        rum?.registerUserAction(type: .tap, attributes: ["info": "button tap -> pay"])
         if let randomError = Self.randomError {
             self.handleError(randomError)
             return

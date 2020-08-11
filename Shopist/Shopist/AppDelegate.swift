@@ -9,7 +9,8 @@ import Datadog
 
 fileprivate(set) var logger: Logger!
 
-let appConfig = ExampleAppConfig(serviceName: "ios-sdk-shopist-app")
+let appConfig = AppConfig(serviceName: "ios-sdk-shopist-app")
+var rum: RUMMonitor?
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -53,6 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Send some logs 🚀
         logger.info("application did finish launching")
+
+        rum = RUMMonitor.initialize(rumApplicationID: appConfig.rumAppID)
 
         return true
     }

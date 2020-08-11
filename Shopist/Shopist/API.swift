@@ -6,6 +6,7 @@
 
 import Foundation
 import Alamofire
+import Datadog
 
 struct Category: Decodable {
     let id: String
@@ -73,13 +74,14 @@ final class API {
     }()
 
     func getCategories(completion: @escaping Completion<[Category]>) {
-        get("\(Self.baseURL)/categories.json", completion: completion)
+        let urlString = "\(Self.baseURL)/categories.json"
+        make(request: URLRequest(urlString), completion: completion)
     }
 
     func getItems(for category: Category, completion: @escaping Completion<[Product]>) {
         let categoryID = category.id
         let urlString = "\(Self.baseURL)/category_\(categoryID).json"
-        get(urlString, completion: completion)
+        make(request: URLRequest(urlString), completion: completion)
     }
 
     func checkout(with discountCode: String?, payment: Payment = Payment(), completion: @escaping Completion<Payment.Response>) {
@@ -90,30 +92,22 @@ final class API {
         var request = try! URLRequest(url: url, method: .post)
         request.httpBody = try! jsonEncoder.encode(payment)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        httpClient.request(request).validate().response { response in
-            if let someError = response.error {
-                completion(.failure(someError))
-            } else if let someData = response.data {
-                do {
-                    let paymentResponse = try self.jsonDecoder.decode(Payment.Response.self, from: someData)
-                    completion(.success(paymentResponse))
-                } catch {
-                    completion(.failure(error))
-                }
-            }
-        }
+
+        make(request: request, completion: completion)
     }
 
-    private func get<T: Decodable>(_ urlString: String, completion: @escaping Completion<T>) {
-        guard let url = URL(string: urlString) else {
-            fatalError("\(urlString) is not a valid URL!")
-        }
-        let request = URLRequest(url: url)
-
-        httpClient.request(request).response { response in
+    private func make<T: Decodable>(request: URLRequest, completion: @escaping Completion<T>) {
+        let url = request.url!
+        let resourceName = url.pathComponents.joined()
+        let httpMethod = RUMHTTPMethod(rawValue: request.httpMethod!)!
+        rum?.startResourceLoading(resourceName: resourceName, url: url, httpMethod: httpMethod)
+        httpClient.request(request).validate().response { response in
+            let statusCode = response.response?.statusCode
             if let someError = response.error {
+                rum?.stopResourceLoadingWithError(resourceName: resourceName, error: someError, source: .network, httpStatusCode: statusCode)
                 completion(.failure(someError))
             } else if let someData = response.data {
+                rum?.stopResourceLoading(resourceName: resourceName, kind: .fetch, httpStatusCode: statusCode)
                 do {
                     let decoded = try self.jsonDecoder.decode(T.self, from: someData)
                     completion(.success(decoded))
@@ -122,5 +116,11 @@ final class API {
                 }
             }
         }
+    }
+}
+
+private extension URLRequest {
+    init(_ string: String) {
+        self = URLRequest(url: URL(string: string)!)
     }
 }
