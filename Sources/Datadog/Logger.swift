@@ -45,15 +45,12 @@ public class Logger {
     private let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Logger.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
-    /// Integration with RUM Errors. `nil` if not available for this Logger.
-    internal let rumErrorsIntegration: RUMErrorsIntegration?
 
     init(
         logOutput: LogOutput,
         dateProvider: DateProvider,
         identifier: String,
-        rumContextIntegration: LoggingWithRUMContextIntegration?,
-        rumErrorsIntegration: RUMErrorsIntegration?
+        rumContextIntegration: LoggingWithRUMContextIntegration?
     ) {
         self.logOutput = logOutput
         self.dateProvider = dateProvider
@@ -62,7 +59,6 @@ public class Logger {
             target: .global(qos: .userInteractive)
         )
         self.rumContextIntegration = rumContextIntegration
-        self.rumErrorsIntegration = rumErrorsIntegration
     }
 
     // MARK: - Logging
@@ -229,10 +225,6 @@ public class Logger {
             ),
             tags: tags
         )
-
-        if level.rawValue >= LogLevel.error.rawValue {
-            rumErrorsIntegration?.addError(with: message)
-        }
     }
 
     // MARK: - Logger.Builder
@@ -332,8 +324,7 @@ public class Logger {
                     logOutput: NoOpLogOutput(),
                     dateProvider: SystemDateProvider(),
                     identifier: "no-op",
-                    rumContextIntegration: nil,
-                    rumErrorsIntegration: nil
+                    rumContextIntegration: nil
                 )
             }
         }
@@ -351,8 +342,7 @@ public class Logger {
                 logOutput: resolveLogsOutput(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
-                rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil,
-                rumErrorsIntegration: RUMErrorsIntegration()
+                rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil
             )
         }
 
