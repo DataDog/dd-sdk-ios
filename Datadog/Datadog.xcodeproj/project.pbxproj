@@ -118,6 +118,7 @@
 		61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
 		61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
 		61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
+		614D812C24E3EA15004C9C5D /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D812B24E3EA15004C9C5D /* Feature.swift */; };
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		6152C83E24BE1C91006A1679 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 6152C83D24BE1C91006A1679 /* HTTPServerMock */; };
 		6152C84024BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */; };
@@ -420,6 +421,7 @@
 		61494CB024C839460082C633 /* RUMResourceScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScope.swift; sourceTree = "<group>"; };
 		61494CB424C864680082C633 /* RUMResourceScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScopeTests.swift; sourceTree = "<group>"; };
 		61494CB924CB126F0082C633 /* RUMUserActionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScope.swift; sourceTree = "<group>"; };
+		614D812B24E3EA15004C9C5D /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* BundleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleType.swift; sourceTree = "<group>"; };
 		6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploaderBenchmarkTests.swift; sourceTree = "<group>"; };
 		6152C84124BE1F47006A1679 /* DatadogBenchmarkTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogBenchmarkTests.xcconfig; sourceTree = "<group>"; };
@@ -678,6 +680,7 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				614D812B24E3EA15004C9C5D /* Feature.swift */,
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
 				9E5D2D4A249137E900763FE4 /* AutoInstrumentation */,
@@ -1891,6 +1894,7 @@
 				9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
+				614D812C24E3EA15004C9C5D /* Feature.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				618DCFD724C7265300589570 /* RUMUUID.swift in Sources */,
 				9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */,

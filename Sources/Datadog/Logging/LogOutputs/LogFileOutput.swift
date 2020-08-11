@@ -9,7 +9,7 @@ import Foundation
 /// `LogOutput` which saves logs to file.
 internal struct LogFileOutput: LogOutput {
     let logBuilder: LogBuilder
-    let fileWriter: FileWriter
+    let fileWriter: FileWriterType
     /// Integration with RUM Errors.
     let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 

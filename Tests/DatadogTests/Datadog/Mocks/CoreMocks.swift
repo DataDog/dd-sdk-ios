@@ -173,6 +173,32 @@ extension PerformancePreset {
 
 // MARK: - Features Common Mocks
 
+extension FeaturesCommonDependencies {
+    static func mockAny() -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            configuration: .mockAny(),
+            performance: .default,
+            httpClient: .mockAny(),
+            mobileDevice: .mockAny(),
+            dateProvider: SystemDateProvider(),
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockAny()),
+            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: .mockAny())
+        )
+    }
+}
+
+class NoOpFileWriter: FileWriterType {
+    func write<T>(value: T) where T: Encodable {}
+}
+
+class NoOpFileReader: FileReaderType {
+    func readNextBatch() -> Batch? { return nil }
+    func markBatchAsRead(_ batch: Batch) {}
+}
+
+class NoOpDataUploadWorker: DataUploadWorkerType {}
+
 extension DataFormat {
     static func mockAny() -> DataFormat {
         return mockWith()

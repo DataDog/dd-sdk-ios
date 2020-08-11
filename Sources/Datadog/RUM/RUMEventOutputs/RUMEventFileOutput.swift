@@ -7,7 +7,7 @@
 import Foundation
 
 internal struct RUMEventFileOutput: RUMEventOutput {
-    let fileWriter: FileWriter
+    let fileWriter: FileWriterType
 
     func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {
         fileWriter.write(value: rumEvent)

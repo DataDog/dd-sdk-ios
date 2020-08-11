@@ -6,7 +6,12 @@
 
 import Foundation
 
-internal final class FileWriter {
+/// Abstracts the `FileWriter`, so we can have no-op writer in tests.
+internal protocol FileWriterType {
+    func write<T: Encodable>(value: T)
+}
+
+internal final class FileWriter: FileWriterType {
     /// Data writting format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to writable file.

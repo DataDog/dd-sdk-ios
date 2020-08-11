@@ -24,7 +24,7 @@ class LogFileOutputTests: XCTestCase {
         let output = LogFileOutput(
             logBuilder: .mockAny(),
             fileWriter: FileWriter(
-                dataFormat: LoggingFeature.Storage.dataFormat,
+                dataFormat: LoggingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
                     performance: PerformancePreset.combining(

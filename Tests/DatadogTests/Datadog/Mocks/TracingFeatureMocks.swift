@@ -10,21 +10,11 @@ extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp(temporaryDirectory: Directory) -> TracingFeature {
         return TracingFeature(
-            directory: temporaryDirectory,
-            configuration: .mockAny(),
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            upload: .init(uploader: NoOpDataUploadWorker()),
+            commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
-            mobileDevice: .mockAny(),
-            httpClient: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                networkConnectionInfo: .mockWith(
-                    reachability: .no // so it doesn't meet the upload condition
-                )
-            ),
-            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
+            tracingUUIDGenerator: DefaultTracingUUIDGenerator()
         )
     }
 
@@ -59,18 +49,21 @@ extension TracingFeature {
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> TracingFeature {
-        return TracingFeature(
-            directory: directory,
+        let commonDependencies = FeaturesCommonDependencies(
             configuration: configuration,
             performance: performance,
-            loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-            mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
+            mobileDevice: mobileDevice,
             dateProvider: dateProvider,
-            tracingUUIDGenerator: tracingUUIDGenerator,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
+        )
+        return TracingFeature(
+            directory: directory,
+            commonDependencies: commonDependencies,
+            loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
+            tracingUUIDGenerator: tracingUUIDGenerator
         )
     }
 }

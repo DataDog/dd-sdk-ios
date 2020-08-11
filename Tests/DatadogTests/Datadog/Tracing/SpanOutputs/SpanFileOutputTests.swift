@@ -23,7 +23,7 @@ class SpanFileOutputTests: XCTestCase {
         let output = SpanFileOutput(
             spanBuilder: .mockAny(),
             fileWriter: FileWriter(
-                dataFormat: TracingFeature.Storage.dataFormat,
+                dataFormat: TracingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
                     performance: PerformancePreset.default,

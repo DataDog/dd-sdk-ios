@@ -11,19 +11,9 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp(temporaryDirectory: Directory) -> RUMFeature {
         return RUMFeature(
-            directory: temporaryDirectory,
-            configuration: .mockAny(),
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            mobileDevice: .mockAny(),
-            httpClient: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                networkConnectionInfo: .mockWith(
-                    reachability: .no // so it doesn't meet the upload condition
-                )
-            ),
-            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            upload: .init(uploader: NoOpDataUploadWorker()),
+            commonDependencies: .mockAny()
         )
     }
 
@@ -56,16 +46,19 @@ extension RUMFeature {
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> RUMFeature {
-        return RUMFeature(
-            directory: directory,
+        let commonDependencies = FeaturesCommonDependencies(
             configuration: configuration,
             performance: performance,
-            mobileDevice: mobileDevice,
             httpClient: HTTPClient(session: server.urlSession),
+            mobileDevice: mobileDevice,
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
+        )
+        return RUMFeature(
+            directory: directory,
+            commonDependencies: commonDependencies
         )
     }
 }

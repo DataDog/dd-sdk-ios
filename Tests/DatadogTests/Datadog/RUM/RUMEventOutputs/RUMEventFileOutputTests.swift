@@ -28,7 +28,7 @@ class RUMEventFileOutputTests: XCTestCase {
         )
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
-                dataFormat: RUMFeature.Storage.dataFormat,
+                dataFormat: RUMFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
                     performance: PerformancePreset.combining(
