@@ -474,7 +474,6 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.builder.build()
-
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
         monitor.startView(viewController: mockView)
 
@@ -546,13 +545,11 @@ class LoggerTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         // given
+        let logger = Logger.builder.build()
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
         monitor.startView(viewController: mockView)
 
-        let logger = Logger.builder.build()
-
         // when
-
         logger.debug("debug message")
         logger.info("info message")
         logger.notice("notice message")
@@ -567,9 +564,13 @@ class LoggerTests: XCTestCase {
         let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
         }
         try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "critical message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
         }
     }
 

@@ -559,7 +559,6 @@ class TracerTests: XCTestCase {
 
         // given
         let tracer = Tracer.initialize(configuration: .init()).dd
-
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
         monitor.startView(viewController: mockView)
 
@@ -613,11 +612,67 @@ class TracerTests: XCTestCase {
     }
 
     func testWhenSendingSpanError_itCreatesRUMErrorForCurrentView() throws {
-        // TODO: RUMM-522
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // when
+        let errorSpan = tracer.startSpan(operationName: "operation name", tags: [OTTags.error: true])
+        errorSpan.finish()
+
+        // then
+        // [RUMView, RUMAction, RUMError] events sent:
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
+        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
+        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "operation name")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+        }
     }
 
     func testWhenLoggingSpanError_itCreatesRUMErrorForCurrentView() throws {
-        // TODO: RUMM-522
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // when
+        let span = tracer.startSpan(operationName: "operation name")
+        span.log(fields: [OTLogFields.message: "hello"])
+        span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
+        span.finish()
+
+        // then
+        // [RUMView, RUMAction, RUMError] events sent:
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
+        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
+        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "operation name")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+        }
     }
 
     // MARK: - Injecting span context into carrier

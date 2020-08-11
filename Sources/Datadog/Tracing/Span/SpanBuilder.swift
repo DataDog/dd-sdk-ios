@@ -24,7 +24,7 @@ internal struct SpanBuilder {
     /// Encodes tag `Span` tag values as JSON string
     private let tagsJSONEncoder: JSONEncoder = .default()
 
-    func createSpan(from ddspan: DDSpan, finishTime: Date) throws -> Span {
+    func createSpan(from ddspan: DDSpan, finishTime: Date) -> Span {
         let tagsReducer = SpanTagsReducer(spanTags: ddspan.tags, logFields: ddspan.logFields)
 
         var jsonStringEncodedTags: [String: JSONStringEncodableValue] = [:]

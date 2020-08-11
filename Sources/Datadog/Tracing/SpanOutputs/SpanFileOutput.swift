@@ -10,14 +10,16 @@ import Foundation
 internal struct SpanFileOutput: SpanOutput {
     let spanBuilder: SpanBuilder
     let fileWriter: FileWriter
+    /// Integration with RUM Errors.
+    let rumErrorsIntegration = RUMErrorsIntegration()
 
     func write(ddspan: DDSpan, finishTime: Date) {
-        do {
-            let span = try spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
-            let envelope = SpanEnvelope(span: span, environment: spanBuilder.environment)
-            fileWriter.write(value: envelope)
-        } catch {
-            userLogger.error("🔥 Failed to build span: \(error)")
+        let span = spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
+        let envelope = SpanEnvelope(span: span, environment: spanBuilder.environment)
+        fileWriter.write(value: envelope)
+
+        if span.isError {
+            rumErrorsIntegration.addError(with: span.operationName)
         }
     }
 }
