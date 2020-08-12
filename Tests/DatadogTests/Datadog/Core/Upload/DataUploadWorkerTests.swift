@@ -41,7 +41,7 @@ class DataUploadWorkerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.urlSession),
+            httpClient: HTTPClient(session: .serverMockURLSession),
             httpHeaders: .mockAny()
         )
 

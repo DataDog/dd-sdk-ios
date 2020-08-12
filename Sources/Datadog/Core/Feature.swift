@@ -19,9 +19,9 @@ internal struct FeaturesCommonDependencies {
 }
 
 internal struct FeatureStorage {
-    /// Writes spans to files.
+    /// Writes data to files.
     let writer: FileWriterType
-    /// Reads spans from files.
+    /// Reads data from files.
     let reader: FileReaderType
 
     init(
@@ -53,7 +53,7 @@ internal struct FeatureStorage {
 }
 
 internal struct FeatureUpload {
-    /// Uploads spans to server.
+    /// Uploads data to server.
     let uploader: DataUploadWorkerType
 
     init(

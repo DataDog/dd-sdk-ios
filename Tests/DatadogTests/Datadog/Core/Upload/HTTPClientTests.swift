@@ -11,7 +11,7 @@ class HTTPClientTests: XCTestCase {
     func testWhenRequestIsDelivered_itReturnsHTTPResponse() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let expectation = self.expectation(description: "receive response")
-        let client = HTTPClient(session: server.urlSession)
+        let client = HTTPClient(session: .serverMockURLSession)
 
         client.send(request: .mockAny()) { result in
             switch result {
@@ -30,7 +30,7 @@ class HTTPClientTests: XCTestCase {
     func testWhenRequestIsNotDelivered_itReturnsHTTPRequestDeliveryError() {
         let server = ServerMock(delivery: .failure(error: ErrorMock("no internet connection")))
         let expectation = self.expectation(description: "receive response")
-        let client = HTTPClient(session: server.urlSession)
+        let client = HTTPClient(session: .serverMockURLSession)
 
         client.send(request: .mockAny()) { result in
             switch result {

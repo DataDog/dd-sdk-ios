@@ -72,8 +72,6 @@ extension URLSession {
 class ServerMock {
     static weak var activeInstance: ServerMock?
 
-    /// `URLSession` to be used for all networking that should be mocked by this `ServerMock`.
-    let urlSession: URLSession = sharedURLSession
     private let queue = DispatchQueue(label: "com.datadoghq.ServerMock-\(UUID().uuidString)")
 
     fileprivate let mockedResponse: HTTPURLResponse?
