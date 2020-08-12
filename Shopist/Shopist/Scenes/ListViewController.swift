@@ -25,7 +25,13 @@ class ListViewController: UICollectionViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        rum?.startView(viewController: self)
         fetch(with: api)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        rum?.stopView(viewController: self)
     }
 
     func fetch(with api: API) {

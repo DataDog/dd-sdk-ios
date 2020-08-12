@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		9E5F903824DAF838004A0673 /* Cart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F903724DAF838004A0673 /* Cart.swift */; };
 		9E5F903F24DAF85E004A0673 /* TableViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F903E24DAF85E004A0673 /* TableViewCells.swift */; };
-		9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */; };
+		9E6ABAD3244F43BD003AE249 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABACC244F43BC003AE249 /* AppConfig.swift */; };
 		9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */; };
 		9E6ABAD8244F43BD003AE249 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */; };
 		9E6ABAE1244F4450003AE249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E6ABADF244F43E2003AE249 /* Assets.xcassets */; };
@@ -107,7 +107,7 @@
 /* Begin PBXFileReference section */
 		9E5F903724DAF838004A0673 /* Cart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cart.swift; sourceTree = "<group>"; };
 		9E5F903E24DAF85E004A0673 /* TableViewCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCells.swift; sourceTree = "<group>"; };
-		9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleAppConfig.swift; sourceTree = "<group>"; };
+		9E6ABACC244F43BC003AE249 /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9E6ABAD9244F43D4003AE249 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -235,7 +235,7 @@
 				9E92D45224D4651F005980A9 /* Shopist.xcconfig */,
 				9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */,
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
-				9E6ABACC244F43BC003AE249 /* ExampleAppConfig.swift */,
+				9E6ABACC244F43BC003AE249 /* AppConfig.swift */,
 				9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */,
 				9E84A04C24D31EB9007A91A2 /* Scenes */,
 				9E92D45024D463A5005980A9 /* Views */,
@@ -428,7 +428,7 @@
 				9E84A05224D32199007A91A2 /* CollectionViewCells.swift in Sources */,
 				9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */,
 				9E5F903824DAF838004A0673 /* Cart.swift in Sources */,
-				9E6ABAD3244F43BD003AE249 /* ExampleAppConfig.swift in Sources */,
+				9E6ABAD3244F43BD003AE249 /* AppConfig.swift in Sources */,
 				9E5F903F24DAF85E004A0673 /* TableViewCells.swift in Sources */,
 				9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */,
 				9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */,
