@@ -601,12 +601,12 @@ class TracerTests: XCTestCase {
     }
 
     func testWhenSendingSpanError_itCreatesRUMErrorForCurrentView() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
-        RUMFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        let uploadWorker = DataUploadWorkerMock()
+        RUMFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: uploadWorker,
             directory: temporaryDirectory
         )
         defer { RUMFeature.instance = nil }
@@ -622,7 +622,7 @@ class TracerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError] events sent:
-        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
@@ -632,12 +632,12 @@ class TracerTests: XCTestCase {
     }
 
     func testWhenLoggingSpanError_itCreatesRUMErrorForCurrentView() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
-        RUMFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        let uploadWorker = DataUploadWorkerMock()
+        RUMFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: uploadWorker,
             directory: temporaryDirectory
         )
         defer { RUMFeature.instance = nil }
@@ -662,7 +662,7 @@ class TracerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError] events sent:
-        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) })
         try rumErrorMatcher.model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)

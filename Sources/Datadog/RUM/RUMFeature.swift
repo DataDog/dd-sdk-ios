@@ -41,17 +41,17 @@ internal final class RUMFeature {
 
     // MARK: - Initialization
 
-    convenience init(
-        directory: Directory,
-        commonDependencies: FeaturesCommonDependencies
-    ) {
-        let storage = FeatureStorage(
+    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directory: directory,
             commonDependencies: commonDependencies
         )
-        let upload = FeatureUpload(
+    }
+
+    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+        return FeatureUpload(
             featureName: RUMFeature.featureName,
             storage: storage,
             uploadHTTPHeaders: HTTPHeaders(
@@ -81,6 +81,14 @@ internal final class RUMFeature {
             ),
             commonDependencies: commonDependencies
         )
+    }
+
+    convenience init(
+        directory: Directory,
+        commonDependencies: FeaturesCommonDependencies
+    ) {
+        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
+        let upload = RUMFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,

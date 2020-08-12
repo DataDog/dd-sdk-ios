@@ -53,9 +53,9 @@ class RUMErrorsIntegrationTests: XCTestCase {
     }
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        let uploadWorker = DataUploadWorkerMock()
+        RUMFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: uploadWorker,
             directory: temporaryDirectory
         )
         defer { RUMFeature.instance = nil }
@@ -68,7 +68,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
         integration.addError(with: "error message")
 
         // then
-        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
+        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")

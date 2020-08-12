@@ -10,32 +10,26 @@ import XCTest
 class RUMMonitorConfigurationTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
-    private var mockServer: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
-
-        mockServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockWorkingFeatureWith(
-            server: mockServer,
+        RUMFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: DataUploadWorkerMock(),
             directory: temporaryDirectory,
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                serviceName: "service-name",
-                environment: "tests"
-            ),
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            dependencies: .mockForWorkingFeature(
+                configuration: .mockWith(
+                    applicationVersion: "1.2.3",
+                    serviceName: "service-name",
+                    environment: "tests"
+                ),
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            )
         )
     }
 
     override func tearDown() {
-        mockServer.waitAndAssertNoRequestsSent()
         RUMFeature.instance = nil
-        mockServer = nil
-
-        temporaryDirectory.delete()
         super.tearDown()
     }
 

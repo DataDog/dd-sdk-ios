@@ -13,7 +13,6 @@ class TracerConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-
         TracingFeature.instance = .mockPartialFeature(
             dataUploadWorkerMock: DataUploadWorkerMock(),
             directory: temporaryDirectory,
@@ -32,7 +31,6 @@ class TracerConfigurationTests: XCTestCase {
 
     override func tearDown() {
         TracingFeature.instance = nil
-
         super.tearDown()
     }
 

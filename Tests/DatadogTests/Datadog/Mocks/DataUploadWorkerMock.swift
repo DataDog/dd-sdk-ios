@@ -134,3 +134,14 @@ extension DataUploadWorkerMock {
         }
     }
 }
+
+// MARK: - RUM feature helpers
+
+extension DataUploadWorkerMock {
+    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        return try waitAndReturnBatchedData(count: count, file: file, line: line)
+        .flatMap { batchData in
+            try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData)
+        }
+    }
+}

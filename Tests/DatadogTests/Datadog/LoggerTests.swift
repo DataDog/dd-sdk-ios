@@ -550,12 +550,12 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance = nil }
 
-        RUMFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        let uploadWorker = DataUploadWorkerMock()
+        RUMFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: uploadWorker,
             directory: temporaryDirectory
         )
         defer { RUMFeature.instance = nil }
@@ -575,7 +575,7 @@ class LoggerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
-        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 6)
         let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMError.self) { rumModel in
