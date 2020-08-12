@@ -16,48 +16,33 @@ extension LoggingFeature {
         )
     }
 
-    /// Mocks feature instance which performs uploads to given `ServerMock` with performance optimized for fast delivery in unit tests.
-    static func mockWorkingFeatureWith(
-        server: ServerMock,
+    static func mockFullFeature(
         directory: Directory,
-        configuration: Datadog.ValidConfiguration = .mockAny(),
-        performance: PerformancePreset = .combining(
-            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-            uploadPerformance: .veryQuick
-        ),
-        mobileDevice: MobileDevice = .mockWith(
-            currentBatteryStatus: {
-                // Mock full battery, so it doesn't rely on battery condition for the upload
-                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
-            }
-        ),
-        dateProvider: DateProvider = SystemDateProvider(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
     ) -> LoggingFeature {
-        let commonDependencies = FeaturesCommonDependencies(
-            configuration: configuration,
-            performance: performance,
-            httpClient: HTTPClient(session: server.urlSession),
-            mobileDevice: mobileDevice,
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
         return LoggingFeature(
             directory: directory,
-            commonDependencies: commonDependencies
+            commonDependencies: dependencies
+        )
+    }
+
+    static func mockPartialFeature(
+        dataUploadWorkerMock: DataUploadWorkerMock,
+        directory: Directory,
+        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature(),
+        loggingFeature: LoggingFeature? = nil,
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+    ) -> LoggingFeature {
+        let fullFeature: LoggingFeature = .mockFullFeature(
+            directory: directory,
+            dependencies: dependencies
+        )
+        let observedStorage = dataUploadWorkerMock.observe(featureStorage: fullFeature.storage)
+        let upload = FeatureUpload(uploader: dataUploadWorkerMock)
+        return LoggingFeature(
+            storage: observedStorage,
+            upload: upload,
+            commonDependencies: dependencies
         )
     }
 }

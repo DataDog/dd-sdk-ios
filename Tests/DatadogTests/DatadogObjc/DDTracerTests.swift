@@ -116,10 +116,11 @@ class DDTracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let loggingFeature = LoggingFeature.mockWorkingFeatureWith(
-            server: server,
+        let loggingFeature = LoggingFeature.mockFullFeature(
             directory: temporaryDirectory,
-            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            dependencies: .mockForWorkingFeature(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
         )
         TracingFeature.instance = .mockPartialFeature(
             dataUploadWorkerMock: DataUploadWorkerMock(),

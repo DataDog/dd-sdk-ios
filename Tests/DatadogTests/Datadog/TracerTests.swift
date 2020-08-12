@@ -365,9 +365,6 @@ class TracerTests: XCTestCase {
 
         tracer.startSpan(operationName: "offline span").finish()
 
-        // put the network back online so last span can be send
-        networkConnectionInfoProvider.set(current: .mockWith(reachability: .yes))
-
         let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].meta.networkReachability(), "yes")
         XCTAssertEqual(try spanMatchers[0].meta.networkAvailableInterfaces(), "wifi+cellular")
@@ -501,10 +498,11 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let loggingFeature = LoggingFeature.mockWorkingFeatureWith(
-            server: server,
+        let loggingFeature = LoggingFeature.mockFullFeature(
             directory: temporaryDirectory,
-            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            dependencies: .mockForWorkingFeature(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
         )
         TracingFeature.instance = .mockPartialFeature(
             dataUploadWorkerMock: DataUploadWorkerMock(),

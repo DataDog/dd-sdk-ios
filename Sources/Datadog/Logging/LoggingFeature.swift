@@ -41,17 +41,17 @@ internal final class LoggingFeature {
 
     // MARK: - Initialization
 
-    convenience init(
-        directory: Directory,
-        commonDependencies: FeaturesCommonDependencies
-    ) {
-        let storage = FeatureStorage(
+    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
             featureName: LoggingFeature.featureName,
             dataFormat: LoggingFeature.dataFormat,
             directory: directory,
             commonDependencies: commonDependencies
         )
-        let upload = FeatureUpload(
+    }
+
+    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+        return FeatureUpload(
             featureName: LoggingFeature.featureName,
             storage: storage,
             uploadHTTPHeaders: HTTPHeaders(
@@ -73,6 +73,14 @@ internal final class LoggingFeature {
             ),
             commonDependencies: commonDependencies
         )
+    }
+
+    convenience init(
+        directory: Directory,
+        commonDependencies: FeaturesCommonDependencies
+    ) {
+        let storage = LoggingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
+        let upload = LoggingFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,

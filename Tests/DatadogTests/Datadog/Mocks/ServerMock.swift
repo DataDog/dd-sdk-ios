@@ -209,8 +209,8 @@ extension ServerMock {
             file: file,
             line: line
         )
-            .map { request in try request.httpBody.unwrapOrThrow() }
-            .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody, file: file, line: line) }
+        .map { request in try request.httpBody.unwrapOrThrow() }
+        .flatMap { requestBody in try LogMatcher.fromArrayOfJSONObjectsData(requestBody, file: file, line: line) }
     }
 }
 

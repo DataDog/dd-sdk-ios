@@ -113,6 +113,17 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     }
 }
 
+// MARK: - Logging feature helpers
+
+extension DataUploadWorkerMock {
+    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        return try waitAndReturnBatchedData(count: count, file: file, line: line)
+        .flatMap { batchData in
+            try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line)
+        }
+    }
+}
+
 // MARK: - Tracing feature helpers
 
 extension DataUploadWorkerMock {
