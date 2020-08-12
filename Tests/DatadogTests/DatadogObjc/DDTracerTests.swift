@@ -22,11 +22,8 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingCustomizedSpans() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
+        let uploadWorker = DataUploadWorkerMock()
+        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
@@ -85,7 +82,7 @@ class DDTracerTests: XCTestCase {
             XCTAssertTrue(span.tracer === objcTracer)
         }
 
-        let spanMatchers = try server.waitAndReturnSpanMatchers(count: 5)
+        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 5)
 
         // assert operation name
         try spanMatchers[0...3].forEach { spanMatcher in
@@ -124,10 +121,12 @@ class DDTracerTests: XCTestCase {
             directory: temporaryDirectory,
             performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
         )
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        TracingFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: DataUploadWorkerMock(),
             directory: temporaryDirectory,
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
+            dependencies: .mockForWorkingFeature(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
             loggingFeature: loggingFeature
         )
         defer { TracingFeature.instance = nil }

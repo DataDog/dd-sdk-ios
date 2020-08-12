@@ -48,20 +48,18 @@ internal final class TracingFeature {
 
     // MARK: - Initialization
 
-    convenience init(
-        directory: Directory,
-        commonDependencies: FeaturesCommonDependencies,
-        loggingFeatureAdapter: LoggingForTracingAdapter?,
-        tracingUUIDGenerator: TracingUUIDGenerator
-    ) {
-        let storage = FeatureStorage(
+    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
             featureName: TracingFeature.featureName,
             dataFormat: TracingFeature.dataFormat,
             directory: directory,
             commonDependencies: commonDependencies
         )
-        let upload = FeatureUpload(
-            featureName: LoggingFeature.featureName,
+    }
+
+    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+        return FeatureUpload(
+            featureName: TracingFeature.featureName,
             storage: storage,
             uploadHTTPHeaders: HTTPHeaders(
                 headers: [
@@ -81,6 +79,16 @@ internal final class TracingFeature {
             ),
             commonDependencies: commonDependencies
         )
+    }
+
+    convenience init(
+        directory: Directory,
+        commonDependencies: FeaturesCommonDependencies,
+        loggingFeatureAdapter: LoggingForTracingAdapter?,
+        tracingUUIDGenerator: TracingUUIDGenerator
+    ) {
+        let storage = TracingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
+        let upload = TracingFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,

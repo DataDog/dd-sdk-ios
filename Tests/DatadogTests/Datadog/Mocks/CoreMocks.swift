@@ -186,6 +186,45 @@ extension FeaturesCommonDependencies {
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: .mockAny())
         )
     }
+
+    /// Mocks dependencies for feature with both Storage and Upload working with performance optimized for unit tests.
+    static func mockForWorkingFeature(
+        configuration: Datadog.ValidConfiguration = .mockAny(),
+        performance: PerformancePreset = .combining(
+            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+            uploadPerformance: .veryQuick
+        ),
+        mobileDevice: MobileDevice = .mockWith(
+            currentBatteryStatus: {
+                // Mock full battery, so it doesn't rely on battery condition for the upload
+                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
+            }
+        ),
+        dateProvider: DateProvider = SystemDateProvider(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            configuration: configuration,
+            performance: performance,
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            mobileDevice: mobileDevice,
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
 }
 
 class NoOpFileWriter: FileWriterType {

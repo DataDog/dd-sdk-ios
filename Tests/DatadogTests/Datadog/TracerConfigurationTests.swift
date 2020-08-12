@@ -10,30 +10,28 @@ import XCTest
 class TracerConfigurationTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
-    private var mockServer: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
 
-        mockServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: mockServer,
+        TracingFeature.instance = .mockPartialFeature(
+            dataUploadWorkerMock: DataUploadWorkerMock(),
             directory: temporaryDirectory,
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                serviceName: "service-name",
-                environment: "tests"
+            dependencies: .mockForWorkingFeature(
+                configuration: .mockWith(
+                    applicationVersion: "1.2.3",
+                    serviceName: "service-name",
+                    environment: "tests"
+                ),
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
             ),
-            loggingFeature: .mockNoOp(),
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            loggingFeature: .mockNoOp()
         )
     }
 
     override func tearDown() {
-        mockServer.waitAndAssertNoRequestsSent()
         TracingFeature.instance = nil
-        mockServer = nil
 
         super.tearDown()
     }

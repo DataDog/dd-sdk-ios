@@ -65,6 +65,10 @@ private let sharedURLSession: URLSession = {
     return URLSession(configuration: configuration)
 }()
 
+extension URLSession {
+    static var serverMockURLSession: URLSession { sharedURLSession }
+}
+
 class ServerMock {
     static weak var activeInstance: ServerMock?
 
@@ -186,7 +190,7 @@ class ServerMock {
 
     // MARK: - Utils
 
-    /// Returns recommended timeout for delivering given number of requests if `.mockUnitTestsPerformancePreset()` is used for upload.
+    /// Returns recommended timeout for delivering given number of requests if test-tuned values are used for `PerformancePreset`.
     func recommendedTimeoutFor(numberOfRequestsMade: UInt) -> TimeInterval {
         let uploadPerformanceForTests = UploadPerformanceMock.veryQuick
         // Set the timeout to 40 times more than expected.
@@ -195,7 +199,7 @@ class ServerMock {
     }
 }
 
-// MARK: - Feature helpers
+// MARK: - Logging feature helpers
 
 extension ServerMock {
     func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
