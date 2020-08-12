@@ -469,7 +469,7 @@ class LoggerTests: XCTestCase {
         )
         defer { LoggingFeature.instance = nil }
 
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         // given
@@ -504,7 +504,7 @@ class LoggerTests: XCTestCase {
         )
         defer { LoggingFeature.instance = nil }
 
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         let previousUserLogger = userLogger
@@ -535,7 +535,7 @@ class LoggerTests: XCTestCase {
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance = nil }
 
         RUMFeature.instance = .mockWorkingFeatureWith(
@@ -578,7 +578,7 @@ class LoggerTests: XCTestCase {
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder

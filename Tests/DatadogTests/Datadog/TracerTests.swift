@@ -554,7 +554,7 @@ class TracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         // given
@@ -581,7 +581,7 @@ class TracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         let previousUserLogger = userLogger
@@ -613,7 +613,7 @@ class TracerTests: XCTestCase {
 
     func testWhenSendingSpanError_itCreatesRUMErrorForCurrentView() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
         RUMFeature.instance = .mockWorkingFeatureWith(
@@ -644,7 +644,7 @@ class TracerTests: XCTestCase {
 
     func testWhenLoggingSpanError_itCreatesRUMErrorForCurrentView() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
         RUMFeature.instance = .mockWorkingFeatureWith(
@@ -716,7 +716,7 @@ class TracerTests: XCTestCase {
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(configuration: .init())

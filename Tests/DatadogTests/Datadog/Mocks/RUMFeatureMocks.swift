@@ -9,7 +9,7 @@ import XCTest
 
 extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(temporaryDirectory: Directory) -> RUMFeature {
+    static func mockNoOp() -> RUMFeature {
         return RUMFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),

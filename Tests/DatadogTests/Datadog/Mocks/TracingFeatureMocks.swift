@@ -8,7 +8,7 @@
 
 extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(temporaryDirectory: Directory) -> TracingFeature {
+    static func mockNoOp() -> TracingFeature {
         return TracingFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),

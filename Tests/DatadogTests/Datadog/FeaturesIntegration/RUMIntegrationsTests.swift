@@ -11,7 +11,7 @@ class RUMIntegrationsTests: XCTestCase {
     private let integration = RUMContextIntegration()
 
     func testWhenRUMMonitorIsRegistered_itProvidesRUMContextAttributes() throws {
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         // when
@@ -28,7 +28,7 @@ class RUMIntegrationsTests: XCTestCase {
     }
 
     func testWhenRUMMonitorIsNotRegistered_itReturnsNil() throws {
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         // when

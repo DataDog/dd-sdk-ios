@@ -226,7 +226,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
@@ -260,7 +260,7 @@ class RUMMonitorTests: XCTestCase {
     // TODO: RUMM-614 Change this test when final initialization API is provided
     func testWhenMonitorIsInitialized_itIsRegisteredAsGlobalMonitor() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         XCTAssertNil(RUMMonitor.shared)

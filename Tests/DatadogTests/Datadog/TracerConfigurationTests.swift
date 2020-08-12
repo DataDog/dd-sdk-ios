@@ -14,7 +14,6 @@ class TracerConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
 
         mockServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWorkingFeatureWith(
@@ -25,7 +24,7 @@ class TracerConfigurationTests: XCTestCase {
                 serviceName: "service-name",
                 environment: "tests"
             ),
-            loggingFeature: .mockNoOp(temporaryDirectory: temporaryDirectory),
+            loggingFeature: .mockNoOp(),
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
@@ -36,7 +35,6 @@ class TracerConfigurationTests: XCTestCase {
         TracingFeature.instance = nil
         mockServer = nil
 
-        temporaryDirectory.delete()
         super.tearDown()
     }
 
