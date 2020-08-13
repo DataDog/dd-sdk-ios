@@ -68,39 +68,30 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
-        if isContinuous { // e.g. "scroll"
-            if expired(currentTime: command.time) {
-                sendActionEvent(completionTime: command.time)
-                return false
-            }
-        } else { // e.g. "tap"
-            if timedOut(currentTime: command.time) && allResourcesCompletedLoading() {
-                sendActionEvent(completionTime: lastActivityTime)
-                return false
-            }
+        if let expirationTime = possibleExpirationTime(currentTime: command.time),
+           allResourcesCompletedLoading() {
+            sendActionEvent(completionTime: expirationTime)
+            return false
         }
 
         lastActivityTime = command.time
-
         switch command {
+        case is RUMStopViewCommand:
+            sendActionEvent(completionTime: command.time)
+            return false
         case let command as RUMStopUserActionCommand:
             sendActionEvent(completionTime: command.time, on: command)
             return false
-
-        case let command as RUMResourceCommand:
-            if command is  RUMStartResourceCommand {
-                activeResourcesCount += 1
-            } else if command is RUMStopResourceCommand {
-                activeResourcesCount -= 1
-                resourcesCount += 1
-            } else if command is RUMStopResourceWithErrorCommand {
-                activeResourcesCount -= 1
-                errorsCount += 1
-            }
-
-        case _ as RUMAddCurrentViewErrorCommand:
+        case is RUMStartResourceCommand:
+            activeResourcesCount += 1
+        case is RUMStopResourceCommand:
+            activeResourcesCount -= 1
+            resourcesCount += 1
+        case is RUMStopResourceWithErrorCommand:
+            activeResourcesCount -= 1
             errorsCount += 1
-
+        case is RUMAddCurrentViewErrorCommand:
+            errorsCount += 1
         default:
             break
         }
@@ -144,16 +135,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Private
 
-    private func timedOut(currentTime: Date) -> Bool {
-        let timeElapsedSinceLastActivity = currentTime.timeIntervalSince(lastActivityTime)
-        let timedOut = timeElapsedSinceLastActivity >= Constants.discreteActionTimeoutDuration
-        return timedOut
-    }
-
-    private func expired(currentTime: Date) -> Bool {
-        let actionDuration = currentTime.timeIntervalSince(actionStartTime)
-        let expired = actionDuration >= Constants.continuousActionMaxDuration
-        return expired
+    private func possibleExpirationTime(currentTime: Date) -> Date? {
+        var expirationDate: Date? = nil
+        let elapsedTime = currentTime.timeIntervalSince(actionStartTime)
+        let maxInterval = isContinuous ? Constants.continuousActionMaxDuration : Constants.discreteActionTimeoutDuration
+        if elapsedTime >= maxInterval {
+            expirationDate = actionStartTime + maxInterval
+        }
+        return expirationDate
     }
 
     private func allResourcesCompletedLoading() -> Bool {

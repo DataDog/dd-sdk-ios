@@ -37,6 +37,25 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
     }
 
+    func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)))
+        let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
+        XCTAssertTrue(scope.process(command: mockUserActionCmd))
+        XCTAssertFalse(scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)))
+
+        let recordedActionEvents = try output.recordedEvents(ofType: RUMEvent<RUMAction>.self)
+        XCTAssertEqual(recordedActionEvents.count, 1)
+        let recordedAction = try XCTUnwrap(recordedActionEvents.last)
+        XCTAssertEqual(recordedAction.model.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
+    }
+
     // MARK: - Continuous User Action
 
     func testWhenContinuousUserActionEnds_itSendsActionEvent() throws {
@@ -96,11 +115,11 @@ class RUMUserActionScopeTests: XCTestCase {
         currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: expirationInterval * 0.5)
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)), "Continuous User Action should not expire after \(expirationInterval * 0.5)s")
 
-        currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: expirationInterval)
+        currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: expirationInterval * 2.0)
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)), "Continuous User Action should expire after \(expirationInterval)s")
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).first)
-        XCTAssertEqual(event.model.action.loadingTime, 10_000_000_000)
+        XCTAssertEqual(event.model.action.loadingTime, 10_000_000_000, "Loading time should not exceed expirationInterval")
     }
 
     func testWhileContinuousUserActionIsActive_itTracksCompletedResources() throws {
