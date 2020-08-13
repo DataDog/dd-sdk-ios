@@ -109,6 +109,23 @@ extension RUMEventMatcher: CustomStringConvertible {
     }
 }
 
+extension Array where Element == RUMEventMatcher {
+    func filterRUMEvents<DM: Decodable>(ofType type: DM.Type, where predicate: ((DM) -> Bool)? = nil) -> [Element] {
+        return filter { matcher in matcher.model(isTypeOf: type) }
+            .filter { matcher in predicate?(try! matcher.model()) ?? true }
+    }
+
+    func lastRUMEvent<DM: Decodable>(
+        ofType type: DM.Type,
+        file: StaticString = #file,
+        line: UInt = #line,
+        where predicate: ((DM) -> Bool)? = nil
+    ) throws -> Element {
+        let last = filterRUMEvents(ofType: type, where: predicate).last
+        return try XCTUnwrap(last, file: file, line: line)
+    }
+}
+
 func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
     let schemaReference = "given by https://github.com/DataDog/rum-events-format/blob/master/schemas/_common-schema.json"
     guard let string = string else {
