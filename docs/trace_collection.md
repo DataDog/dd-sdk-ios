@@ -151,7 +151,7 @@ Datadog.initialize(
     ```
     This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. Once the request is done, within a completion handler, call `span.finish()`. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
 
-    * The SDK will automatically trace all network requests made to given hosts if `tracedHosts` array is specified during Datadog initialization:
+    * To have the SDK automatically trace all network requests made to given hosts, specify `tracedHosts` array during Datadog initialization:
 
     ```swift
     Datadog.initialize(
@@ -162,7 +162,7 @@ Datadog.initialize(
             .build()
     )
     ```
-    This will trace all requests made to `example.com` and `api.yourdomain.com` (e.g. `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
+    This will trace all requests made to `example.com` and `api.yourdomain.com` (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
 
     **Note**: Auto instrumentation supports only requests made with `URLSession.dataTask(request:completionHandler:)` and `URLSession.dataTask(url:completionHandler:)`. It uses `URLSession` swizzling. This swizzling is fully opt-in: if you do not specify `tracedHosts`, no swizzling is applied.
 
