@@ -13,8 +13,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: DataUploadWorkerMock(),
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(

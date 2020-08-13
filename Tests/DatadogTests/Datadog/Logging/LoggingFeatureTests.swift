@@ -26,7 +26,7 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockFullFeature(
+        LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(
@@ -53,7 +53,7 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockFullFeature(
+        LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(

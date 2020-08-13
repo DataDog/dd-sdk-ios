@@ -26,9 +26,7 @@ class TracerTests: XCTestCase {
     // MARK: - Customizing Tracer
 
     func testSendingSpanWithDefaultTracer() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(
@@ -48,7 +46,7 @@ class TracerTests: XCTestCase {
         let span = tracer.startSpan(operationName: "operation")
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         try spanMatcher.assertItFullyMatches(jsonString: """
         {
           "spans": [
@@ -76,8 +74,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithCustomizedTracer() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(
@@ -90,7 +87,7 @@ class TracerTests: XCTestCase {
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
 
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
         XCTAssertNoThrow(try spanMatcher.meta.networkAvailableInterfaces())
         XCTAssertNoThrow(try spanMatcher.meta.networkConnectionIsExpensive())
@@ -107,8 +104,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithGlobalTags() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(
@@ -125,7 +121,7 @@ class TracerTests: XCTestCase {
         span.setTag(key: "globaltag2", value: "overwrittenValue" )
         span.finish()
 
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag1"), "globalValue1")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "overwrittenValue")
@@ -134,8 +130,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(configuration: .init()).dd
@@ -152,7 +147,7 @@ class TracerTests: XCTestCase {
         span.setTag(key: "tag2", value: 123)
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
         XCTAssertEqual(try spanMatcher.resource(), "GET /foo.png")
         XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
@@ -163,8 +158,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithParentAndBaggageItems() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(configuration: .init()).dd
@@ -183,7 +177,7 @@ class TracerTests: XCTestCase {
         childSpan.finish()
         rootSpan.finish()
 
-        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 3)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
         let rootMatcher = spanMatchers[2]
         let childMatcher = spanMatchers[1]
         let grandchildMatcher = spanMatchers[0]
@@ -231,9 +225,7 @@ class TracerTests: XCTestCase {
         )
         defer { Datadog.instance = nil }
 
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 userInfoProvider: Datadog.instance!.userInfoProvider
@@ -254,7 +246,7 @@ class TracerTests: XCTestCase {
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
         tracer.startSpan(operationName: "span with no user info").finish()
 
-        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 4)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 4)
         XCTAssertNil(try? spanMatchers[0].meta.userID())
         XCTAssertNil(try? spanMatchers[0].meta.userName())
         XCTAssertNil(try? spanMatchers[0].meta.userEmail())
@@ -275,10 +267,8 @@ class TracerTests: XCTestCase {
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
-        let uploadWorker = DataUploadWorkerMock()
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 carrierInfoProvider: carrierInfoProvider
@@ -307,7 +297,7 @@ class TracerTests: XCTestCase {
 
         tracer.startSpan(operationName: "span with no carrier info").finish()
 
-        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 2)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].meta.mobileNetworkCarrierName(), "Carrier")
         XCTAssertEqual(try spanMatchers[0].meta.mobileNetworkCarrierISOCountryCode(), "US")
         XCTAssertEqual(try spanMatchers[0].meta.mobileNetworkCarrierRadioTechnology(), "LTE")
@@ -322,10 +312,8 @@ class TracerTests: XCTestCase {
     // MARK: - Sending network info
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
-        let uploadWorker = DataUploadWorkerMock()
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
@@ -365,7 +353,7 @@ class TracerTests: XCTestCase {
 
         tracer.startSpan(operationName: "offline span").finish()
 
-        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 2)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].meta.networkReachability(), "yes")
         XCTAssertEqual(try spanMatchers[0].meta.networkAvailableInterfaces(), "wifi+cellular")
         XCTAssertEqual(try spanMatchers[0].meta.networkConnectionIsConstrained(), "1")
@@ -385,7 +373,7 @@ class TracerTests: XCTestCase {
 
     func testGivenBadBatteryConditions_itDoesNotTryToSendTraces() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockFullFeature(
+        TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 mobileDevice: .mockWith(
@@ -406,7 +394,7 @@ class TracerTests: XCTestCase {
 
     func testGivenNoNetworkConnection_itDoesNotTryToSendTraces() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockFullFeature(
+        TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
@@ -426,8 +414,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(configuration: .init()).dd
@@ -474,7 +461,7 @@ class TracerTests: XCTestCase {
 
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.string"), "hello")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.bool"), "true")
@@ -497,21 +484,20 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        let loggingFeature = LoggingFeature.mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: DataUploadWorkerMock(),
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: loggingFeature
+            loggingFeature: LoggingFeature.instance!
         )
         defer { TracingFeature.instance = nil }
 
@@ -521,7 +507,7 @@ class TracerTests: XCTestCase {
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
 
         let regularLogMatcher = logMatchers[0]
         let errorLogMatcher = logMatchers[1]
@@ -543,8 +529,7 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         RUMFeature.instance = .mockNoOp()
@@ -560,15 +545,14 @@ class TracerTests: XCTestCase {
         span.finish()
 
         // then
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"), "rum-123")
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         RUMFeature.instance = .mockNoOp()
@@ -595,7 +579,7 @@ class TracerTests: XCTestCase {
                 .contains("No `RUMMonitor` is registered, so RUM integration with Tracing will not work.")
         )
 
-        let spanMatcher = try uploadWorker.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"))
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
@@ -605,11 +589,7 @@ class TracerTests: XCTestCase {
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
         // given
@@ -623,7 +603,7 @@ class TracerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError] events sent:
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
@@ -636,11 +616,7 @@ class TracerTests: XCTestCase {
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
         // given
@@ -663,7 +639,7 @@ class TracerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError] events sent:
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) })
         try rumErrorMatcher.model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
@@ -815,8 +791,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithImplicitParent() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let tracer = Tracer.initialize(configuration: .init()).dd
@@ -837,7 +812,7 @@ class TracerTests: XCTestCase {
 
         rootSpan.finish()
 
-        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 3)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
         let rootMatcher = spanMatchers[2]
         let child1Matcher = spanMatchers[1]
         let child2Matcher = spanMatchers[0]

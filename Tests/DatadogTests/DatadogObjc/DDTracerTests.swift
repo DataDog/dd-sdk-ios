@@ -22,8 +22,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingCustomizedSpans() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        TracingFeature.instance = .mockPartialFeature(dataUploadWorkerMock: uploadWorker, directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
@@ -82,7 +81,7 @@ class DDTracerTests: XCTestCase {
             XCTAssertTrue(span.tracer === objcTracer)
         }
 
-        let spanMatchers = try uploadWorker.waitAndReturnSpanMatchers(count: 5)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 5)
 
         // assert operation name
         try spanMatchers[0...3].forEach { spanMatcher in
@@ -115,21 +114,20 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        let loggingFeature = LoggingFeature.mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: DataUploadWorkerMock(),
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: loggingFeature
+            loggingFeature: LoggingFeature.instance!
         )
         defer { TracingFeature.instance = nil }
 
@@ -140,7 +138,7 @@ class DDTracerTests: XCTestCase {
         objcSpan.log(["bizz": NSNumber(10.5)])
         objcSpan.log(["buzz": NSURL(string: "https://example.com/image.png")!], timestamp: nil)
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
         logMatchers[1].assertValue(forKey: "bizz", equals: 10.5)

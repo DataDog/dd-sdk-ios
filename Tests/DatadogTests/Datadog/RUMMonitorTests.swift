@@ -27,9 +27,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView() throws {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 dateProvider: dateProvider
@@ -43,7 +41,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
         monitor.startView(viewController: mockView)
 
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 4)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -60,11 +58,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResource() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
@@ -73,7 +67,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
         monitor.stopResourceLoading(resourceName: "/resource/1", kind: .image, httpStatusCode: 200)
 
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 4)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -92,9 +86,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenTappingButton() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
@@ -108,7 +100,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.registerUserAction(type: .tap)
         monitor.stopView(viewController: mockView)
 
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 4)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -126,11 +118,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResources_whileScrolling() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
@@ -143,7 +131,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceLoading(resourceName: "/resource/2", kind: .image, httpStatusCode: 202)
         monitor.stopUserAction(type: .scroll)
 
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 8)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -180,9 +168,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenIssuingAnError_whileScrolling() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
@@ -199,7 +185,7 @@ class RUMMonitorTests: XCTestCase {
         #sourceLocation()
         monitor.stopUserAction(type: .scroll)
 
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }

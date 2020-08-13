@@ -13,8 +13,7 @@ class TracerConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        TracingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: DataUploadWorkerMock(),
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(

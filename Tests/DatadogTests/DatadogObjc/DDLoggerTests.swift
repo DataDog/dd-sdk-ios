@@ -24,11 +24,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -40,7 +36,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message")
         objcLogger.critical("message")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -50,11 +46,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -66,7 +58,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message", attributes: ["foo": "bar"])
         objcLogger.critical("message", attributes: ["foo": "bar"])
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -79,11 +71,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -107,7 +95,7 @@ class DDLoggerTests: XCTestCase {
         )
         objcLogger.info("message")
 
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(forKey: "nsstring", equals: "hello")
         logMatcher.assertValue(forKey: "nsbool", equals: true)
         logMatcher.assertValue(forKey: "nsint", equals: 10)
@@ -120,9 +108,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSettingTagsAndAttributes() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(environment: "test")
@@ -146,7 +132,7 @@ class DDLoggerTests: XCTestCase {
 
         objcLogger.info(.mockAny())
 
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
         logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test"])

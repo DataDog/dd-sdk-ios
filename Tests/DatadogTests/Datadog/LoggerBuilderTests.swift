@@ -13,8 +13,7 @@ class LoggerBuilderTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: DataUploadWorkerMock(),
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(

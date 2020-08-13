@@ -16,7 +16,7 @@ extension LoggingFeature {
         )
     }
 
-    static func mockFullFeature(
+    static func mockWith(
         directory: Directory,
         dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
     ) -> LoggingFeature {
@@ -26,24 +26,27 @@ extension LoggingFeature {
         )
     }
 
-    static func mockPartialFeature(
-        dataUploadWorkerMock: DataUploadWorkerMock,
+    static func mockByRecordingLogMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature(),
-        loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
     ) -> LoggingFeature {
-        let fullFeature: LoggingFeature = .mockFullFeature(
-            directory: directory,
-            dependencies: dependencies
-        )
-        let observedStorage = dataUploadWorkerMock.observe(featureStorage: fullFeature.storage)
-        let upload = FeatureUpload(uploader: dataUploadWorkerMock)
-        return LoggingFeature(
-            storage: observedStorage,
-            upload: upload,
-            commonDependencies: dependencies
-        )
+        // Get the full feature mock:
+        let fullFeature: LoggingFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let uploadWorker = DataUploadWorkerMock()
+        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
+        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        return LoggingFeature(storage: observedStorage, upload: mockedUpload, commonDependencies: dependencies)
+    }
+
+    // MARK: - Expecting Logs Data
+
+    static func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let uploadWorker = LoggingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
+        }
+        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
+            .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
     }
 }
 

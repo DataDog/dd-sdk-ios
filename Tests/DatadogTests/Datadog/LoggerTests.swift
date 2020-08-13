@@ -26,9 +26,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Customizing Logger
 
     func testSendingLogWithDefaultLogger() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(
@@ -45,7 +43,7 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         logger.debug("message")
 
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         try logMatcher.assertItFullyMatches(jsonString: """
         {
           "status" : "debug",
@@ -62,11 +60,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogWithCustomizedLogger() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder
@@ -76,7 +70,7 @@ class LoggerTests: XCTestCase {
             .build()
         logger.debug("message")
 
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
 
         logMatcher.assertServiceName(equals: "custom-service-name")
         logMatcher.assertLoggerName(equals: "custom-logger-name")
@@ -97,9 +91,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
@@ -112,7 +104,7 @@ class LoggerTests: XCTestCase {
         logger.info("message 2")
         logger.info("message 3")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
         // swiftlint:disable trailing_closure
         logMatchers[0].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC() })
         logMatchers[1].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1) })
@@ -121,11 +113,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
@@ -136,7 +124,7 @@ class LoggerTests: XCTestCase {
         logger.error("message")
         logger.critical("message")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -153,9 +141,7 @@ class LoggerTests: XCTestCase {
         )
         defer { Datadog.instance = nil }
 
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 userInfoProvider: Datadog.instance!.userInfoProvider
@@ -175,7 +161,7 @@ class LoggerTests: XCTestCase {
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
         logger.debug("message with no user info")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 4)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 4)
         logMatchers[0].assertUserInfo(equals: nil)
         logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
         logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com"))
@@ -186,9 +172,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 carrierInfoProvider: carrierInfoProvider
@@ -217,7 +201,7 @@ class LoggerTests: XCTestCase {
 
         logger.debug("message")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.name", equals: "Carrier")
         logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.iso_country", equals: "US")
         logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.technology", equals: "LTE")
@@ -229,9 +213,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
@@ -271,7 +253,7 @@ class LoggerTests: XCTestCase {
 
         logger.debug("message")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(forKeyPath: "network.client.reachability", equals: "yes")
         logMatchers[0].assertValue(forKeyPath: "network.client.available_interfaces", equals: ["wifi", "cellular"])
         logMatchers[0].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
@@ -290,11 +272,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
@@ -340,7 +318,7 @@ class LoggerTests: XCTestCase {
 
         logger.info("message")
 
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(forKey: "string", equals: "hello")
         logMatcher.assertValue(forKey: "bool", equals: true)
         logMatcher.assertValue(forKey: "int", equals: 10)
@@ -358,11 +336,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
@@ -382,7 +356,7 @@ class LoggerTests: XCTestCase {
         // send message
         logger.info("info message 3")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
         logMatchers[0].assertValue(forKey: "attribute", equals: "logger's value")
         logMatchers[1].assertValue(forKey: "attribute", equals: "message's value")
         logMatchers[2].assertNoValue(forKey: "attribute")
@@ -391,9 +365,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingTags() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(environment: "tests")
@@ -424,7 +396,7 @@ class LoggerTests: XCTestCase {
         // send message
         logger.info("info message 3")
 
-        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
         logMatchers[0].assertTags(equal: ["tag1", "env:tests"])
         logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests"])
         logMatchers[2].assertTags(equal: ["env:tests"])
@@ -434,7 +406,7 @@ class LoggerTests: XCTestCase {
 
     func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockFullFeature(
+        LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 mobileDevice: .mockWith(
@@ -454,7 +426,7 @@ class LoggerTests: XCTestCase {
 
     func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockFullFeature(
+        LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
@@ -473,9 +445,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(environment: "tests")
@@ -495,7 +465,7 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(
             forKeyPath: RUMContextIntegration.Attributes.applicationID, equals: "rum-123"
         )
@@ -510,9 +480,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        let uploadWorker = DataUploadWorkerMock()
-        LoggingFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(environment: "tests")
@@ -543,7 +511,7 @@ class LoggerTests: XCTestCase {
                 .contains("No `RUMMonitor` is registered, so RUM integration with Logging will not work.")
         )
 
-        let logMatcher = try uploadWorker.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.applicationID)
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.sessionID)
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.viewID)
@@ -553,11 +521,7 @@ class LoggerTests: XCTestCase {
         LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance = nil }
 
-        let uploadWorker = DataUploadWorkerMock()
-        RUMFeature.instance = .mockPartialFeature(
-            dataUploadWorkerMock: uploadWorker,
-            directory: temporaryDirectory
-        )
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
         // given
@@ -575,7 +539,7 @@ class LoggerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
-        let rumEventMatchers = try uploadWorker.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
         let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMError.self) { rumModel in

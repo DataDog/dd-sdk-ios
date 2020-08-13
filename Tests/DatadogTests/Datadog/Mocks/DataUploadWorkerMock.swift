@@ -8,6 +8,7 @@ import Foundation
 import XCTest
 @testable import Datadog
 
+/// Observers the `FileWriter` and notifies when data was written, so `DataUploaderMock` can read it immediatelly.
 private class FileWriterObserver: FileWriterType {
     let observedWriter: FileWriter
     let writeCallback: (() -> Void)
@@ -33,6 +34,8 @@ class DataUploadWorkerMock: DataUploadWorkerType {
 
     // MARK: - Observing FeatureStorage
 
+    /// Observes the `FeatureStorage` to immediately capture written data.
+    /// Returns new instance of the `FeatureStorage` which shuold be used instead of the original one.
     func observe(featureStorage: FeatureStorage) -> FeatureStorage {
         let fileWriter = featureStorage.writer as! FileWriter
         let observedFileWriter = FileWriterObserver(fileWriter) { [weak self] in
@@ -62,6 +65,8 @@ class DataUploadWorkerMock: DataUploadWorkerType {
 
     private var waitAndReturnDataExpectation: XCTestExpectation?
 
+    /// Waits until given number of data batches is written and returns data from these batches.
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
     func waitAndReturnBatchedData(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [Data] {
         precondition(waitAndReturnDataExpectation == nil, "The `DataUploadWorkerMock` is already waiting on `waitAndReturnProcessedCommands`.")
 
@@ -110,38 +115,5 @@ class DataUploadWorkerMock: DataUploadWorkerType {
         // to writting it to the file.
         let arbitraryTimeoutForOneBatch = 0.1
         return Double(numberOfBatches) * arbitraryTimeoutForOneBatch
-    }
-}
-
-// MARK: - Logging feature helpers
-
-extension DataUploadWorkerMock {
-    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        return try waitAndReturnBatchedData(count: count, file: file, line: line)
-        .flatMap { batchData in
-            try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line)
-        }
-    }
-}
-
-// MARK: - Tracing feature helpers
-
-extension DataUploadWorkerMock {
-    func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        return try waitAndReturnBatchedData(count: count, file: file, line: line)
-        .flatMap { batchData in
-            try SpanMatcher.fromNewlineSeparatedJSONObjectsData(batchData)
-        }
-    }
-}
-
-// MARK: - RUM feature helpers
-
-extension DataUploadWorkerMock {
-    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        return try waitAndReturnBatchedData(count: count, file: file, line: line)
-        .flatMap { batchData in
-            try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData)
-        }
     }
 }

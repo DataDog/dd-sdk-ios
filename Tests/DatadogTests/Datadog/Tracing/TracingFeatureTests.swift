@@ -26,7 +26,7 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockFullFeature(
+        TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(
@@ -55,7 +55,7 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockFullFeature(
+        TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(

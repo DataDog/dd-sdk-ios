@@ -26,7 +26,7 @@ class RUMFeatureTests: XCTestCase {
 
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockFullFeature(
+        RUMFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 configuration: .mockWith(
@@ -62,7 +62,7 @@ class RUMFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockFullFeature(
+        RUMFeature.instance = .mockWith(
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(

@@ -58,7 +58,7 @@ private class ServerMockProtocol: URLProtocol {
     }
 }
 
-/// All unit tests use this shared `URLSession`.
+/// All unit tests should use this shared `URLSession` through `URLSession.serverMockURLSession`.
 private let sharedURLSession: URLSession = {
     let configuration = URLSessionConfiguration.ephemeral
     configuration.protocolClasses = [ServerMockProtocol.self]

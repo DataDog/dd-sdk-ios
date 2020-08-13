@@ -17,7 +17,7 @@ extension RUMFeature {
         )
     }
 
-    static func mockFullFeature(
+    static func mockWith(
         directory: Directory,
         dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
     ) -> RUMFeature {
@@ -27,22 +27,27 @@ extension RUMFeature {
         )
     }
 
-    static func mockPartialFeature(
-        dataUploadWorkerMock: DataUploadWorkerMock,
+    static func mockByRecordingRUMEventMatchers(
         directory: Directory,
         dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
     ) -> RUMFeature {
-        let fullFeature: RUMFeature = .mockFullFeature(
-            directory: directory,
-            dependencies: dependencies
-        )
-        let observedStorage = dataUploadWorkerMock.observe(featureStorage: fullFeature.storage)
-        let upload = FeatureUpload(uploader: dataUploadWorkerMock)
-        return RUMFeature(
-            storage: observedStorage,
-            upload: upload,
-            commonDependencies: dependencies
-        )
+        // Get the full feature mock:
+        let fullFeature: RUMFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let uploadWorker = DataUploadWorkerMock()
+        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
+        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        return RUMFeature(storage: observedStorage, upload: mockedUpload, commonDependencies: dependencies)
+    }
+
+    // MARK: - Expecting RUMEvent Data
+
+    static func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        guard let uploadWorker = RUMFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
+        }
+        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
+            .flatMap { batchData in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
     }
 }
 

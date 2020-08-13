@@ -18,7 +18,7 @@ extension TracingFeature {
         )
     }
 
-    static func mockFullFeature(
+    static func mockWith(
         directory: Directory,
         dependencies: FeaturesCommonDependencies = .mockForWorkingFeature(),
         loggingFeature: LoggingFeature? = nil,
@@ -32,28 +32,37 @@ extension TracingFeature {
         )
     }
 
-    static func mockPartialFeature(
-        dataUploadWorkerMock: DataUploadWorkerMock,
+    static func mockByRecordingSpanMatchers(
         directory: Directory,
         dependencies: FeaturesCommonDependencies = .mockForWorkingFeature(),
         loggingFeature: LoggingFeature? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {
-        let fullFeature: TracingFeature = .mockFullFeature(
-            directory: directory,
-            dependencies: dependencies,
-            loggingFeature: loggingFeature,
-            tracingUUIDGenerator: tracingUUIDGenerator
+        // Get the full feature mock:
+        let fullFeature: TracingFeature = .mockWith(
+            directory: directory, dependencies: dependencies, loggingFeature: loggingFeature, tracingUUIDGenerator: tracingUUIDGenerator
         )
-        let observedStorage = dataUploadWorkerMock.observe(featureStorage: fullFeature.storage)
-        let upload = FeatureUpload(uploader: dataUploadWorkerMock)
+        let uploadWorker = DataUploadWorkerMock()
+        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
+        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        let mockedUpload = FeatureUpload(uploader: uploadWorker)
         return TracingFeature(
             storage: observedStorage,
-            upload: upload,
+            upload: mockedUpload,
             commonDependencies: dependencies,
             loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
             tracingUUIDGenerator: fullFeature.tracingUUIDGenerator
         )
+    }
+
+    // MARK: - Expecting Spans Data
+
+    static func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        guard let uploadWorker = TracingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingSpanMatchers()`")
+        }
+        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
+            .flatMap { batchData in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
     }
 }
 
