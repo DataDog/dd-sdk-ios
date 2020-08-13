@@ -17,19 +17,20 @@ extension RUMFeature {
         )
     }
 
+    /// Mocks the feature instance which performs uploads to `URLSession`.
+    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
+        dependencies: FeaturesCommonDependencies = .mockWith()
     ) -> RUMFeature {
-        return RUMFeature(
-            directory: directory,
-            commonDependencies: dependencies
-        )
+        return RUMFeature(directory: directory, commonDependencies: dependencies)
     }
 
+    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
+        dependencies: FeaturesCommonDependencies = .mockWith()
     ) -> RUMFeature {
         // Get the full feature mock:
         let fullFeature: RUMFeature = .mockWith(directory: directory, dependencies: dependencies)

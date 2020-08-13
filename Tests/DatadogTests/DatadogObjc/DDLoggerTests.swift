@@ -110,7 +110,7 @@ class DDLoggerTests: XCTestCase {
     func testSettingTagsAndAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(environment: "test")
             )
         )

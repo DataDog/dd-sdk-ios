@@ -29,7 +29,7 @@ class RUMMonitorTests: XCTestCase {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 dateProvider: dateProvider
             )
         )
@@ -88,7 +88,7 @@ class RUMMonitorTests: XCTestCase {
     func testStartingView_thenTappingButton() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
@@ -170,7 +170,7 @@ class RUMMonitorTests: XCTestCase {
     func testStartingView_thenIssuingAnError_whileScrolling() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
             )
         )

@@ -15,7 +15,7 @@ class TracerConfigurationTests: XCTestCase {
         super.setUp()
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.2.3",
                     serviceName: "service-name",

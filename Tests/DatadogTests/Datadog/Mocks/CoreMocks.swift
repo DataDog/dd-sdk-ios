@@ -175,20 +175,12 @@ extension PerformancePreset {
 
 extension FeaturesCommonDependencies {
     static func mockAny() -> FeaturesCommonDependencies {
-        return FeaturesCommonDependencies(
-            configuration: .mockAny(),
-            performance: .default,
-            httpClient: .mockAny(),
-            mobileDevice: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockAny()),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: .mockAny())
-        )
+        return .mockWith()
     }
 
-    /// Mocks dependencies for feature with both Storage and Upload working with performance optimized for unit tests.
-    static func mockForWorkingFeature(
+    /// Mocks features common dependencies.
+    /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
+    static func mockWith(
         configuration: Datadog.ValidConfiguration = .mockAny(),
         performance: PerformancePreset = .combining(
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,

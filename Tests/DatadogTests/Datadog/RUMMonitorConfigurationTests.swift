@@ -15,7 +15,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
         super.setUp()
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.2.3",
                     serviceName: "service-name",

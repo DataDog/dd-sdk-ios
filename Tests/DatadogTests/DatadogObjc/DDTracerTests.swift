@@ -116,7 +116,7 @@ class DDTracerTests: XCTestCase {
     func testSendingSpanLogs() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
@@ -124,7 +124,7 @@ class DDTracerTests: XCTestCase {
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
             loggingFeature: LoggingFeature.instance!

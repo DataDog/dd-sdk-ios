@@ -18,9 +18,11 @@ extension TracingFeature {
         )
     }
 
+    /// Mocks the feature instance which performs uploads to `URLSession`.
+    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature(),
+        dependencies: FeaturesCommonDependencies = .mockWith(),
         loggingFeature: LoggingFeature? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {
@@ -32,9 +34,11 @@ extension TracingFeature {
         )
     }
 
+    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature(),
+        dependencies: FeaturesCommonDependencies = .mockWith(),
         loggingFeature: LoggingFeature? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {

@@ -28,7 +28,7 @@ class TracerTests: XCTestCase {
     func testSendingSpanWithDefaultTracer() throws {
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
@@ -227,7 +227,7 @@ class TracerTests: XCTestCase {
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 userInfoProvider: Datadog.instance!.userInfoProvider
             )
         )
@@ -270,7 +270,7 @@ class TracerTests: XCTestCase {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
         )
@@ -315,7 +315,7 @@ class TracerTests: XCTestCase {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
         )
@@ -375,7 +375,7 @@ class TracerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 mobileDevice: .mockWith(
                     currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
                         .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
@@ -396,7 +396,7 @@ class TracerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                     networkConnectionInfo: .mockWith(reachability: .no)
                 )
@@ -486,7 +486,7 @@ class TracerTests: XCTestCase {
     func testSendingSpanLogs() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
@@ -494,7 +494,7 @@ class TracerTests: XCTestCase {
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
             loggingFeature: LoggingFeature.instance!

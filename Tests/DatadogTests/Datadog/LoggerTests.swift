@@ -28,7 +28,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithDefaultLogger() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
@@ -93,7 +93,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentDates() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
         )
@@ -143,7 +143,7 @@ class LoggerTests: XCTestCase {
 
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 userInfoProvider: Datadog.instance!.userInfoProvider
             )
         )
@@ -174,7 +174,7 @@ class LoggerTests: XCTestCase {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
         )
@@ -215,7 +215,7 @@ class LoggerTests: XCTestCase {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
         )
@@ -367,7 +367,7 @@ class LoggerTests: XCTestCase {
     func testSendingTags() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(environment: "tests")
             )
         )
@@ -408,7 +408,7 @@ class LoggerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 mobileDevice: .mockWith(
                     currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
                         .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
@@ -428,7 +428,7 @@ class LoggerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                     networkConnectionInfo: .mockWith(reachability: .no)
                 )
@@ -447,7 +447,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(environment: "tests")
             )
         )
@@ -482,7 +482,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(environment: "tests")
             )
         )

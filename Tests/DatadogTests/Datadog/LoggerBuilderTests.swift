@@ -15,7 +15,7 @@ class LoggerBuilderTests: XCTestCase {
         super.setUp()
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.2.3",
                     applicationBundleIdentifier: "com.datadog.unit-tests",

@@ -28,7 +28,7 @@ class RUMFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 configuration: .mockWith(
                     applicationName: "FoobarApp",
                     applicationVersion: "2.1.0",
@@ -64,7 +64,7 @@ class RUMFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockForWorkingFeature(
+            dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
                         maxFileSize: .max,

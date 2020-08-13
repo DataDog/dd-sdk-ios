@@ -7,7 +7,7 @@
 @testable import Datadog
 
 extension LoggingFeature {
-    /// Mocks feature instance which performs no writes and no uploads.
+    /// Mocks the feature instance which performs no writes and no uploads.
     static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
@@ -16,19 +16,20 @@ extension LoggingFeature {
         )
     }
 
+    /// Mocks the feature instance which performs uploads to `URLSession`.
+    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
+        dependencies: FeaturesCommonDependencies = .mockWith()
     ) -> LoggingFeature {
-        return LoggingFeature(
-            directory: directory,
-            commonDependencies: dependencies
-        )
+        return LoggingFeature(directory: directory, commonDependencies: dependencies)
     }
 
+    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockForWorkingFeature()
+        dependencies: FeaturesCommonDependencies = .mockWith()
     ) -> LoggingFeature {
         // Get the full feature mock:
         let fullFeature: LoggingFeature = .mockWith(directory: directory, dependencies: dependencies)
