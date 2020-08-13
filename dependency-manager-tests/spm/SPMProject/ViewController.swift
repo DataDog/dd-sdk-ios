@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogObjc
 
 internal class ViewController: UIViewController {
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
