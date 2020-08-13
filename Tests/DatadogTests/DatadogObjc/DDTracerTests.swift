@@ -115,8 +115,9 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let loggingFeature = LoggingFeature.mockFullFeature(
+        let uploadWorker = DataUploadWorkerMock()
+        let loggingFeature = LoggingFeature.mockPartialFeature(
+            dataUploadWorkerMock: uploadWorker,
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
@@ -139,7 +140,7 @@ class DDTracerTests: XCTestCase {
         objcSpan.log(["bizz": NSNumber(10.5)])
         objcSpan.log(["buzz": NSURL(string: "https://example.com/image.png")!], timestamp: nil)
 
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 3)
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
         logMatchers[1].assertValue(forKey: "bizz", equals: 10.5)

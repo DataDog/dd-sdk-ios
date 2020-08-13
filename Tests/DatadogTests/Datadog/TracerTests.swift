@@ -497,8 +497,9 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let loggingFeature = LoggingFeature.mockFullFeature(
+        let uploadWorker = DataUploadWorkerMock()
+        let loggingFeature = LoggingFeature.mockPartialFeature(
+            dataUploadWorkerMock: uploadWorker,
             directory: temporaryDirectory,
             dependencies: .mockForWorkingFeature(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
@@ -520,7 +521,7 @@ class TracerTests: XCTestCase {
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
 
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try uploadWorker.waitAndReturnLogMatchers(count: 2)
 
         let regularLogMatcher = logMatchers[0]
         let errorLogMatcher = logMatchers[1]
