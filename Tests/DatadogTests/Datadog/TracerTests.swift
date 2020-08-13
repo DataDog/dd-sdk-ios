@@ -544,6 +544,156 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
     }
 
+    // MARK: - Integration With RUM Feature
+
+    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // when
+        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
+        span.finish()
+
+        // then
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"), "rum-123")
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
+    }
+
+    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        XCTAssertNil(RUMMonitor.shared)
+
+        // when
+        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
+        span.finish()
+
+        // then
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        try XCTAssertTrue(
+            XCTUnwrap(output.recordedLog?.message)
+                .contains("No `RUMMonitor` is registered, so RUM integration with Tracing will not work.")
+        )
+
+        let spanMatcher = try server.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
+    }
+
+    func testWhenSendingSpanError_itCreatesRUMErrorForCurrentView() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // when
+        let errorSpan = tracer.startSpan(operationName: "operation name", tags: [OTTags.error: true])
+        errorSpan.finish()
+
+        // then
+        // [RUMView, RUMAction, RUMError] events sent:
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
+        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
+        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+        }
+    }
+
+    func testWhenLoggingSpanError_itCreatesRUMErrorForCurrentView() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        RUMFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // when
+        let span = tracer.startSpan(operationName: "operation name")
+        span.log(fields: [OTLogFields.message: "hello"])
+        span.log(
+            fields: [
+                OTLogFields.event: "error",
+                OTLogFields.errorKind: "Swift error",
+                OTLogFields.message: "span error message",
+                OTLogFields.stack: "Foo.swift:123"
+            ]
+        )
+        span.finish()
+
+        // then
+        // [RUMView, RUMAction, RUMError] events sent:
+        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3)
+        let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) })
+        try rumErrorMatcher.model(ofType: RUMError.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+        }
+        try XCTAssertEqual(
+            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorMessage),
+            "span error message"
+        )
+        try XCTAssertEqual(
+            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorType),
+            "Swift error"
+        )
+        try XCTAssertEqual(
+            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorStack),
+            "Foo.swift:123"
+        )
+    }
+
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextIntoHTTPHeadersWriter() {
@@ -663,13 +813,7 @@ class TracerTests: XCTestCase {
         )
 
         let output = LogOutputMock()
-        userLogger = Logger(
-            logOutput: output,
-            dateProvider: SystemDateProvider(),
-            identifier: "sdk-user",
-            rumContextIntegration: nil,
-            rumErrorsIntegration: nil
-        )
+        userLogger = .mockWith(logOutput: output)
 
         // when
         let tracer = Tracer.initialize(configuration: .init())

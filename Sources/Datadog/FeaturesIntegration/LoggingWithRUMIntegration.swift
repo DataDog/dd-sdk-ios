@@ -6,37 +6,27 @@
 
 import Foundation
 
-/// Global `RUMMonitor` (if registered).
-private var rumMonitor: RUMMonitor? { RUMMonitor.shared }
-
-/// Provides the current RUM context attributes to produced Logs.
+/// Provides the current RUM context attributes for produced `Logs`.
 internal struct LoggingWithRUMContextIntegration {
-    internal struct RUMLogAttributes {
-        static let applicationID = "application_id"
-        static let sessionID = "session_id"
-        static let viewID = "view.id"
-    }
+    private let rumContextIntegration = RUMContextIntegration()
 
     /// Produces `Log` attributes describing the current RUM context.
     /// Returns `nil` and prints warning if global `RUMMonitor` is not registered.
     var currentRUMContextAttributes: [String: Encodable]? {
-        guard let rumContext = rumMonitor?.contextProvider.context else {
+        guard let attributes = rumContextIntegration.currentRUMContextAttributes else {
             userLogger.warn("No `RUMMonitor` is registered, so RUM integration with Logging will not work.")
             return nil
         }
 
-        return [
-            RUMLogAttributes.applicationID: rumContext.rumApplicationID,
-            RUMLogAttributes.sessionID: rumContext.sessionID.rawValue.uuidString.lowercased(),
-            RUMLogAttributes.viewID: rumContext.activeViewID?.rawValue.uuidString.lowercased(),
-        ]
+        return attributes
     }
 }
 
-/// Creates RUM Errors for Logs.
+/// Sends given `Log` as RUM Errors.
 internal struct LoggingWithRUMErrorsIntegration {
-    /// Adds RUM Error with given message to current RUM View.
-    func addError(with logMessage: String) {
-        rumMonitor?.addViewError(message: logMessage, source: .logger, attributes: nil, file: nil, line: nil)
+    private let rumErrorsIntegration = RUMErrorsIntegration()
+
+    func addError(for log: Log) {
+        rumErrorsIntegration.addError(with: log.message)
     }
 }

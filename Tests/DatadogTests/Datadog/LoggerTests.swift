@@ -460,7 +460,7 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Integration With RUM Feature
 
-    func testGivenBundlingWithRUMEnabled_whenSendingLog_itContainsCurrentRUMContext() throws {
+    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -473,28 +473,64 @@ class LoggerTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         // given
-        let logger = Logger.builder
-            .bundleWithRUM(true)
-            .build()
-
-        // when
+        let logger = Logger.builder.build()
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
         monitor.startView(viewController: mockView)
-        logger.info("info message 3")
+
+        // when
+        logger.info("info message")
 
         // then
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 1)
-        logMatchers[0].assertValue(
-            forKeyPath: LoggingWithRUMContextIntegration.RUMLogAttributes.applicationID, equals: "rum-123"
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        logMatcher.assertValue(
+            forKeyPath: RUMContextIntegration.Attributes.applicationID, equals: "rum-123"
         )
-        logMatchers[0].assertValue(
-            forKeyPath: LoggingWithRUMContextIntegration.RUMLogAttributes.sessionID,
+        logMatcher.assertValue(
+            forKeyPath: RUMContextIntegration.Attributes.sessionID,
             isTypeOf: String.self
         )
-        logMatchers[0].assertValue(
-            forKeyPath: LoggingWithRUMContextIntegration.RUMLogAttributes.viewID,
+        logMatcher.assertValue(
+            forKeyPath: RUMContextIntegration.Attributes.viewID,
             isTypeOf: String.self
         )
+    }
+
+    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        LoggingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory,
+            configuration: .mockWith(environment: "tests")
+        )
+        defer { LoggingFeature.instance = nil }
+
+        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        // given
+        let logger = Logger.builder.build()
+        XCTAssertNil(RUMMonitor.shared)
+
+        // when
+        logger.info("info message")
+
+        // then
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        try XCTAssertTrue(
+            XCTUnwrap(output.recordedLog?.message)
+                .contains("No `RUMMonitor` is registered, so RUM integration with Logging will not work.")
+        )
+
+        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.applicationID)
+        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.sessionID)
+        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.viewID)
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
@@ -509,13 +545,11 @@ class LoggerTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         // given
+        let logger = Logger.builder.build()
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
         monitor.startView(viewController: mockView)
 
-        let logger = Logger.builder.build()
-
         // when
-
         logger.debug("debug message")
         logger.info("info message")
         logger.notice("notice message")
@@ -530,9 +564,13 @@ class LoggerTests: XCTestCase {
         let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
         }
         try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "critical message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
         }
     }
 

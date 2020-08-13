@@ -44,7 +44,6 @@ class LoggerBuilderTests: XCTestCase {
         let logger = Logger.builder.build()
 
         XCTAssertNotNil(logger.rumContextIntegration)
-        XCTAssertNotNil(logger.rumErrorsIntegration)
 
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
@@ -70,7 +69,6 @@ class LoggerBuilderTests: XCTestCase {
             .build()
 
         XCTAssertNil(logger.rumContextIntegration)
-        XCTAssertNotNil(logger.rumErrorsIntegration)
 
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()

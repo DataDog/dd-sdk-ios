@@ -1,0 +1,40 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-2020 Datadog, Inc.
+ */
+
+import Foundation
+
+/// Global `RUMMonitor` (if registered).
+private var rumMonitor: RUMMonitor? { RUMMonitor.shared }
+
+/// Integration providing the current RUM context attributes.
+internal struct RUMContextIntegration {
+    struct Attributes {
+        static let applicationID = "application_id"
+        static let sessionID = "session_id"
+        static let viewID = "view.id"
+    }
+
+    /// Returns attributes describing the current RUM context or `nil`if global `RUMMonitor` is not registered.
+    var currentRUMContextAttributes: [String: Encodable]? {
+        guard let rumContext = rumMonitor?.contextProvider.context else {
+            return nil
+        }
+
+        return [
+            Attributes.applicationID: rumContext.rumApplicationID,
+            Attributes.sessionID: rumContext.sessionID.rawValue.uuidString.lowercased(),
+            Attributes.viewID: rumContext.activeViewID?.rawValue.uuidString.lowercased(),
+        ]
+    }
+}
+
+/// Creates RUM Errors with given message.
+internal struct RUMErrorsIntegration {
+    /// Adds RUM Error with given message to current RUM View.
+    func addError(with message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
+        rumMonitor?.addViewError(message: message, source: .logger, attributes: attributes, file: nil, line: nil)
+    }
+}

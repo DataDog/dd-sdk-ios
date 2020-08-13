@@ -16,9 +16,9 @@ internal struct LogSanitizer {
             OTLogFields.errorKind,
             LoggingForTracingAdapter.TracingAttributes.traceID,
             LoggingForTracingAdapter.TracingAttributes.spanID,
-            LoggingWithRUMContextIntegration.RUMLogAttributes.applicationID,
-            LoggingWithRUMContextIntegration.RUMLogAttributes.sessionID,
-            LoggingWithRUMContextIntegration.RUMLogAttributes.viewID,
+            RUMContextIntegration.Attributes.applicationID,
+            RUMContextIntegration.Attributes.sessionID,
+            RUMContextIntegration.Attributes.viewID,
         ]
         /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
         /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).

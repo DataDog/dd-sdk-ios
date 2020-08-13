@@ -62,8 +62,7 @@ internal func createSDKDeveloperLogger(
         logOutput: consoleOutput,
         dateProvider: dateProvider,
         identifier: "sdk-developer",
-        rumContextIntegration: nil,
-        rumErrorsIntegration: nil
+        rumContextIntegration: nil
     )
 }
 
@@ -72,8 +71,7 @@ internal func createNoOpSDKUserLogger() -> Logger {
         logOutput: NoOpLogOutput(),
         dateProvider: SystemDateProvider(),
         identifier: "no-op",
-        rumContextIntegration: nil,
-        rumErrorsIntegration: nil
+        rumContextIntegration: nil
     )
 }
 
@@ -104,7 +102,6 @@ internal func createSDKUserLogger(
         },
         dateProvider: dateProvider,
         identifier: "sdk-user",
-        rumContextIntegration: nil,
-        rumErrorsIntegration: nil
+        rumContextIntegration: nil
     )
 }

@@ -46,6 +46,8 @@ public class Tracer: OTTracer {
     internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
+    /// Integration with RUM Context. `nil` if disabled for this Tracer.
+    internal let rumContextIntegration: TracingWithRUMContextIntegration?
 
     private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
@@ -97,7 +99,8 @@ public class Tracer: OTTracer {
                 .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration),
             dateProvider: tracingFeature.dateProvider,
             tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
-            globalTags: tracerConfiguration.globalTags
+            globalTags: tracerConfiguration.globalTags,
+            rumContextIntegration: tracerConfiguration.bundleWithRUM ? TracingWithRUMContextIntegration() : nil
         )
     }
 
@@ -106,7 +109,8 @@ public class Tracer: OTTracer {
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
         dateProvider: DateProvider,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        globalTags: [String: Encodable]?
+        globalTags: [String: Encodable]?,
+        rumContextIntegration: TracingWithRUMContextIntegration?
     ) {
         self.spanOutput = spanOutput
         self.logOutput = logOutput
@@ -117,6 +121,7 @@ public class Tracer: OTTracer {
         self.dateProvider = dateProvider
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.globalTags = globalTags
+        self.rumContextIntegration = rumContextIntegration
     }
 
     // MARK: - Open Tracing interface
@@ -159,8 +164,11 @@ public class Tracer: OTTracer {
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         var combinedTags = globalTags ?? [:]
-        if let tags = tags {
-            combinedTags.merge(tags) { _, last in last }
+        if let userTags = tags {
+            combinedTags.merge(userTags) { _, last in last }
+        }
+        if let currentRUMContextTags = rumContextIntegration?.currentRUMContextTags {
+            combinedTags.merge(currentRUMContextTags) { _, last in last }
         }
 
         let span = DDSpan(

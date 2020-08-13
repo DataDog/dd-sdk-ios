@@ -17,7 +17,7 @@ class SpanBuilderTests: XCTestCase {
             startTime: .mockDecember15th2019At10AMUTC(),
             tags: ["foo": "bar", "bizz": 123]
         )
-        let span = try builder.createSpan(from: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
+        let span = builder.createSpan(from: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
         XCTAssertEqual(span.traceID, 1)
         XCTAssertEqual(span.spanID, 2)
@@ -37,7 +37,7 @@ class SpanBuilderTests: XCTestCase {
 
         // given
         var ddspan: DDSpan = .mockWith(tags: [OTTags.error: true])
-        var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        var span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -45,7 +45,7 @@ class SpanBuilderTests: XCTestCase {
 
         // given
         ddspan = .mockWith(tags: [OTTags.error: false])
-        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertFalse(span.isError)
@@ -58,7 +58,7 @@ class SpanBuilderTests: XCTestCase {
         // given
         var ddspan: DDSpan = .mockWith(tags: [:])
         ddspan.log(fields: [OTLogFields.errorKind: "Swift error"])
-        var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        var span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -74,7 +74,7 @@ class SpanBuilderTests: XCTestCase {
                 OTLogFields.stack: "Foo.swift:42",
             ]
         )
-        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -92,7 +92,7 @@ class SpanBuilderTests: XCTestCase {
         ddspan.log(fields: ["foo": "bar"]) // ignored
         ddspan.log(fields: [OTLogFields.errorKind: "Swift error 1"]) // captured
         ddspan.log(fields: [OTLogFields.errorKind: "Swift error 2"]) // ignored
-        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -105,7 +105,7 @@ class SpanBuilderTests: XCTestCase {
         // given
         var ddspan: DDSpan = .mockWith(tags: ["error": true])
         ddspan.log(fields: [OTLogFields.event: "error"])
-        var span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        var span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -113,7 +113,7 @@ class SpanBuilderTests: XCTestCase {
         // given
         ddspan = .mockWith(tags: ["error": false])
         ddspan.log(fields: [OTLogFields.event: "error"])
-        span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -124,7 +124,7 @@ class SpanBuilderTests: XCTestCase {
 
         // given
         let ddspan: DDSpan = .mockWith(tags: [DDTags.resource: "custom resource name"])
-        let span = try builder.createSpan(from: ddspan, finishTime: .mockAny())
+        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertEqual(span.resource, "custom resource name")

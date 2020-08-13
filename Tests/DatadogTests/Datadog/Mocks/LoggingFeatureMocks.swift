@@ -120,15 +120,13 @@ extension Logger {
         logOutput: LogOutput = LogOutputMock(),
         dateProvider: DateProvider = SystemDateProvider(),
         identifier: String = .mockAny(),
-        rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
-        rumErrorsIntegration: LoggingWithRUMErrorsIntegration? = nil
+        rumContextIntegration: LoggingWithRUMContextIntegration? = nil
     ) -> Logger {
         return Logger(
             logOutput: logOutput,
             dateProvider: dateProvider,
             identifier: identifier,
-            rumContextIntegration: rumContextIntegration,
-            rumErrorsIntegration: rumErrorsIntegration
+            rumContextIntegration: rumContextIntegration
         )
     }
 }

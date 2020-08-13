@@ -168,14 +168,16 @@ extension Tracer {
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        globalTags: [String: Encodable]? = nil
+        globalTags: [String: Encodable]? = nil,
+        rumContextIntegration: TracingWithRUMContextIntegration? = nil
     ) -> Tracer {
         return Tracer(
             spanOutput: spanOutput,
             logOutput: logOutput,
             dateProvider: dateProvider,
             tracingUUIDGenerator: tracingUUIDGenerator,
-            globalTags: globalTags
+            globalTags: globalTags,
+            rumContextIntegration: rumContextIntegration
         )
     }
 }

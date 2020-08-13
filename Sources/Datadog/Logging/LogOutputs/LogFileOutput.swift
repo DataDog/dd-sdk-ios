@@ -10,9 +10,15 @@ import Foundation
 internal struct LogFileOutput: LogOutput {
     let logBuilder: LogBuilder
     let fileWriter: FileWriter
+    /// Integration with RUM Errors.
+    let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
     func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
         let log = logBuilder.createLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags)
         fileWriter.write(value: log)
+
+        if level.rawValue >= LogLevel.error.rawValue {
+            rumErrorsIntegration?.addError(for: log)
+        }
     }
 }

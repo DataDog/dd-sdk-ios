@@ -7,10 +7,10 @@
 import XCTest
 @testable import Datadog
 
-class LoggingWithRUMContextIntegrationTests: XCTestCase {
-    private let integration = LoggingWithRUMContextIntegration()
+class RUMIntegrationsTests: XCTestCase {
+    private let integration = RUMContextIntegration()
 
-    func testWhenRUMMonitorIsRegistered_itProvidesRUMContextAttributesForLogs() throws {
+    func testWhenRUMMonitorIsRegistered_itProvidesRUMContextAttributes() throws {
         RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
@@ -19,39 +19,28 @@ class LoggingWithRUMContextIntegrationTests: XCTestCase {
         monitor.startView(viewController: mockView)
 
         // then
-        let logAttributes = try XCTUnwrap(integration.currentRUMContextAttributes)
+        let attributes = try XCTUnwrap(integration.currentRUMContextAttributes)
 
-        XCTAssertEqual(logAttributes.count, 3)
-        XCTAssertEqual(logAttributes["application_id"] as? String, "rum-123")
-        XCTAssertValidRumUUID(logAttributes["session_id"] as? String)
-        XCTAssertValidRumUUID(logAttributes["view.id"] as? String)
+        XCTAssertEqual(attributes.count, 3)
+        XCTAssertEqual(attributes["application_id"] as? String, "rum-123")
+        XCTAssertValidRumUUID(attributes["session_id"] as? String)
+        XCTAssertValidRumUUID(attributes["view.id"] as? String)
     }
 
-    func testWhenRUMMonitorIsNotRegistered_itPrintsUserWarningWhenRequestingRUMContextAttributesForLogs() throws {
+    func testWhenRUMMonitorIsNotRegistered_itReturnsNil() throws {
         RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
-
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
 
         // when
         XCTAssertNil(RUMMonitor.shared)
 
         // then
         XCTAssertNil(integration.currentRUMContextAttributes)
-        XCTAssertEqual(output.recordedLog?.level, .warn)
-        try XCTAssertTrue(
-            XCTUnwrap(output.recordedLog?.message)
-                .contains("No `RUMMonitor` is registered, so RUM integration with Logging will not work.")
-        )
     }
 }
 
-class LoggingWithRUMErrorsIntegrationTests: XCTestCase {
-    private let integration = LoggingWithRUMErrorsIntegration()
+class RUMErrorsIntegrationTests: XCTestCase {
+    private let integration = RUMErrorsIntegration()
 
     override class func setUp() {
         super.setUp()
@@ -63,7 +52,7 @@ class LoggingWithRUMErrorsIntegrationTests: XCTestCase {
         temporaryDirectory.delete()
     }
 
-    func testGivenRUMMonitorRegistered_whenLoggignErrorMessage_itSendsRUMErrorForCurrentView() throws {
+    func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWorkingFeatureWith(
             server: server,
@@ -76,13 +65,13 @@ class LoggingWithRUMErrorsIntegrationTests: XCTestCase {
         monitor.startView(viewController: mockView)
 
         // when
-        integration.addError(with: "log error message")
+        integration.addError(with: "error message")
 
         // then
         let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "log error message")
+            XCTAssertEqual(rumModel.error.message, "error message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
         }

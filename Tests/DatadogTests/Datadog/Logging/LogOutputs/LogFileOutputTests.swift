@@ -34,7 +34,8 @@ class LogFileOutputTests: XCTestCase {
                     dateProvider: fileCreationDateProvider
                 ),
                 queue: queue
-            )
+            ),
+            rumErrorsIntegration: nil
         )
 
         output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: .mockAny(), tags: [])
