@@ -112,8 +112,9 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     /// Returns recommended timeout for receiving given number of batches.
     private func recommendedTimeoutFor(numberOfBatches: UInt) -> TimeInterval {
         // One batch timeout is arbitrary. It stands for the time interval from receiving the data
-        // to writting it to the file.
-        let arbitraryTimeoutForOneBatch = 0.1
+        // to writting it to the file. Needs to be relatively big as the CI is very slow. Higher value
+        // doesn't impact the execution time of tests.
+        let arbitraryTimeoutForOneBatch = 2.0
         return Double(numberOfBatches) * arbitraryTimeoutForOneBatch
     }
 }
