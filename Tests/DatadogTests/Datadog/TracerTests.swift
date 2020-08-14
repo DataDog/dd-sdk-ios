@@ -742,7 +742,7 @@ class TracerTests: XCTestCase {
 
         let spanMatchers = try server.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].parentSpanID(), "0")
-        XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0") // fails, as 2 is child of 1
+        XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0")
     }
 }
 // swiftlint:enable multiline_arguments_brackets
