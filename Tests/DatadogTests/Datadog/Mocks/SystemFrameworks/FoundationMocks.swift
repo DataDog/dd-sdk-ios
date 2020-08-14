@@ -97,6 +97,10 @@ extension URL {
     static func mockAny() -> URL {
         return URL(string: "https://www.datadoghq.com")!
     }
+
+    static func mockWith(pathComponent: String) -> URL {
+        return URL(string: "https://www.foo.com/")!.appendingPathComponent(pathComponent)
+    }
 }
 
 extension String {

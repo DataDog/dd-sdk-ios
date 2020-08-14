@@ -122,7 +122,7 @@ extension Array where Element == RUMEventMatcher {
         where predicate: ((DM) -> Bool)? = nil
     ) throws -> Element {
         let last = filterRUMEvents(ofType: type, where: predicate).last
-        return try XCTUnwrap(last, file: file, line: line)
+        return try XCTUnwrap(last, "Cannot find RUMEventMatcher matching the predicate", file: file, line: line)
     }
 }
 

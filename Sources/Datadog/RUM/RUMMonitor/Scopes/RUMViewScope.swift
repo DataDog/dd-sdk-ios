@@ -33,6 +33,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private let viewStartTime: Date
     /// Tells if this View is the active one. `true` for every new started View. `false` if any other View was started before this one is stopped.
     private var isActiveView: Bool = true
+    /// Tells if this scope has received the "stop" command. Used to delay the actual completion of this scope  until all tracked Resources are finished.
+    private var didReceiveStopCommand = false
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -73,10 +75,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
-        // Tells if the View did change and an update event should be send
+        // Tells if the View did change and an update event should be send.
         var needsViewUpdate = false
-        // Tells if this scope should complete after processing the `command`
-        var shouldComplete = false
 
         // Apply side effects
         switch command {
@@ -89,19 +89,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
         case let command as RUMStartViewCommand where command.identity !== identity:
             isActiveView = false
+            needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
         case let command as RUMStopViewCommand where command.identity === identity:
             isActiveView = false
-            shouldComplete = true
+            needsViewUpdate = true
+            didReceiveStopCommand = true
 
         // Resource commands
         case let command as RUMStartResourceCommand where isActiveView:
             startResource(on: command)
-        case _ as RUMStopResourceCommand where isActiveView:
-            resourcesCount += 1
-            needsViewUpdate = true
-        case _ as RUMStopResourceWithErrorCommand where isActiveView:
-            errorsCount += 1
-            needsViewUpdate = true
 
         // User Action commands
         case let command as RUMStartUserActionCommand where isActiveView:
@@ -120,11 +116,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate to Resource scopes
+        let beforeResourcesCount = resourceScopes.count
         if let resourceCommand = command as? RUMResourceCommand {
             resourceScopes[resourceCommand.resourceName] = manage(
                 childScope: resourceScopes[resourceCommand.resourceName],
                 byPropagatingCommand: resourceCommand
             )
+        }
+        let afterResourcesCount = resourceScopes.count
+
+        if beforeResourcesCount != afterResourcesCount { // if Resource was tracked
+            if command is RUMStopResourceWithErrorCommand { // if Resource completed with error
+                errorsCount += 1
+            } else {
+                resourcesCount += 1
+            }
+            needsViewUpdate = true
         }
 
         // Propagate to User Action scope
@@ -137,9 +144,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
         }
 
-        if shouldComplete || needsViewUpdate {
+        // Consider scope state and completion
+        if needsViewUpdate {
             sendViewUpdateEvent(on: command)
         }
+
+        let hasNoPendingResources = resourceScopes.isEmpty
+        let shouldComplete = didReceiveStopCommand && hasNoPendingResources
 
         return !shouldComplete
     }
