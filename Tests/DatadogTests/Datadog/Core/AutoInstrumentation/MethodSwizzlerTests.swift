@@ -107,7 +107,7 @@ class MethodSwizzlerTests: XCTestCase {
         let secondSwizzlingReturnValue = "Second swizzling"
         let newImp: TypedBlockIMPReturnString = { _ in secondSwizzlingReturnValue }
         XCTAssertFalse(
-            swizzler.swizzle(foundMethod, impProvider: { _ in newImp }, onlyIfNonSwizzled: true),
+            swizzler.swizzle(foundMethod, onlyIfNonSwizzled: true) { _ in newImp },
             "Already swizzled method should not be swizzled again"
         )
 
@@ -130,12 +130,11 @@ class MethodSwizzlerTests: XCTestCase {
         XCTAssertFalse(
             swizzler.swizzle(
                 foundMethod,
-                impProvider: { _ -> TypedBlockIMPReturnString in
-                    XCTFail("New IMP should not be created after error")
-                    return newIMPReturnString
-                },
                 onlyIfNonSwizzled: true
-            ),
+            ) { _ -> TypedBlockIMPReturnString in
+                XCTFail("New IMP should not be created after error")
+                return newIMPReturnString
+            },
             "Already swizzled method should not be swizzled again"
         )
     }
@@ -178,13 +177,12 @@ class MethodSwizzlerTests: XCTestCase {
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
             swizzler.swizzle(
                 foundMethod,
-                impProvider: { originalImp -> TypedBlockIMPReturnString in
-                    return { impSelf -> String in
-                        return originalImp(impSelf, selector).appending(appendString)
-                    }
-                },
                 onlyIfNonSwizzled: true
-            )
+            ) { originalImp -> TypedBlockIMPReturnString in
+                return { impSelf -> String in
+                    return originalImp(impSelf, selector).appending(appendString)
+                }
+            }
             expectation.fulfill()
         }
 

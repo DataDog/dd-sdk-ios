@@ -46,60 +46,84 @@ internal struct File: WritableFile, ReadableFile {
     func append(data: Data) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
 
+        // NOTE: RUMM-669
+        // https://github.com/DataDog/dd-sdk-ios/issues/214
+        // https://en.wikipedia.org/wiki/Xcode#11.x_series
+        // compiler version needs to have iOS 13.4+ as base SDK
+        #if compiler(>=5.2)
+        /**
+         Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
+         ```
+         @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+         public func seekToEnd() throws -> UInt64
+         ```
+         it crashes on iOS Simulators prior to iOS 13.4:
+         ```
+         Symbol not found: _$sSo12NSFileHandleC10FoundationE9seekToEnds6UInt64VyKF
+         ```
+         This is fixed in iOS 14/Xcode 12
+        */
         if #available(iOS 13.4, *) {
-            /**
-             Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
-             ```
-             @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-             public func seekToEnd() throws -> UInt64
-             ```
-             it crashes on iOS Simulators prior to iOS 13.4:
-             ```
-             Symbol not found: _$sSo12NSFileHandleC10FoundationE9seekToEnds6UInt64VyKF
-             ```
-            */
             defer { try? fileHandle.close() }
             try fileHandle.seekToEnd()
             try fileHandle.write(contentsOf: data)
         } else {
-            defer {
-                try? objcExceptionHandler.rethrowToSwift {
-                    fileHandle.closeFile()
-                }
-            }
+            try legacyAppend(data, to: fileHandle)
+        }
+        #else
+        try legacyAppend(data, to: fileHandle)
+        #endif
+    }
 
-            try objcExceptionHandler.rethrowToSwift {
-                fileHandle.seekToEndOfFile()
-                fileHandle.write(data)
+    private func legacyAppend(_ data: Data, to fileHandle: FileHandle) throws {
+        defer {
+            try? objcExceptionHandler.rethrowToSwift {
+                fileHandle.closeFile()
             }
+        }
+        try objcExceptionHandler.rethrowToSwift {
+            fileHandle.seekToEndOfFile()
+            fileHandle.write(data)
         }
     }
 
     func read() throws -> Data {
         let fileHandle = try FileHandle(forReadingFrom: url)
 
+        // NOTE: RUMM-669
+        // https://github.com/DataDog/dd-sdk-ios/issues/214
+        // https://en.wikipedia.org/wiki/Xcode#11.x_series
+        // compiler version needs to have iOS 13.4+ as base SDK
+        #if compiler(>=5.2)
+        /**
+         Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
+         ```
+         @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+         public func readToEnd() throws -> Data?
+         ```
+         it crashes on iOS Simulators prior to iOS 13.4:
+         ```
+         Symbol not found: _$sSo12NSFileHandleC10FoundationE9readToEndAC4DataVSgyKF
+         ```
+        This is fixed in iOS 14/Xcode 12
+        */
         if #available(iOS 13.4, *) {
-            /**
-             Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
-             ```
-             @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-             public func readToEnd() throws -> Data?
-             ```
-             it crashes on iOS Simulators prior to iOS 13.4:
-             ```
-             Symbol not found: _$sSo12NSFileHandleC10FoundationE9readToEndAC4DataVSgyKF
-             ```
-            */
             defer { try? fileHandle.close() }
             return try fileHandle.readToEnd() ?? Data()
         } else {
-            defer {
-                try? objcExceptionHandler.rethrowToSwift {
-                    fileHandle.closeFile()
-                }
-            }
-            return fileHandle.readDataToEndOfFile()
+            return try legacyRead(from: fileHandle)
         }
+        #else
+        return try legacyRead(from: fileHandle)
+        #endif
+    }
+
+    private func legacyRead(from fileHandle: FileHandle) throws -> Data {
+        let data = fileHandle.readDataToEndOfFile()
+        try? objcExceptionHandler.rethrowToSwift {
+            fileHandle.closeFile()
+        }
+        return data
     }
 
     func size() throws -> UInt64 {
