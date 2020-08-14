@@ -14,8 +14,8 @@
 		61C363E624374D6000C4D4E6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61C363E424374D6000C4D4E6 /* LaunchScreen.storyboard */; };
 		61C363F124374D6100C4D4E6 /* SPMProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363F024374D6100C4D4E6 /* SPMProjectTests.swift */; };
 		61C363FC24374D6100C4D4E6 /* SPMProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* SPMProjectUITests.swift */; };
-		61C3640B24374DF200C4D4E6 /* Datadog in Frameworks */ = {isa = PBXBuildFile; productRef = 61C3640A24374DF200C4D4E6 /* Datadog */; };
-		9E1F996A244DDABE00BD10FC /* Datadog in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 61C3640A24374DF200C4D4E6 /* Datadog */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		9EC32C6224E596C20063BCCE /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = 9EC32C6124E596C20063BCCE /* DatadogObjc */; };
+		9EC32C6324E596C20063BCCE /* DatadogObjc in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 9EC32C6124E596C20063BCCE /* DatadogObjc */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,7 +42,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9E1F996A244DDABE00BD10FC /* Datadog in Embed Frameworks */,
+				9EC32C6324E596C20063BCCE /* DatadogObjc in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,7 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61C3640B24374DF200C4D4E6 /* Datadog in Frameworks */,
+				9EC32C6224E596C20063BCCE /* DatadogObjc in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +101,7 @@
 				61C363EF24374D6100C4D4E6 /* SPMProjectTests */,
 				61C363FA24374D6100C4D4E6 /* SPMProjectUITests */,
 				61C363D724374D5F00C4D4E6 /* Products */,
+				9EC32C6024E596C20063BCCE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -155,6 +156,13 @@
 			path = ../../xcconfigs;
 			sourceTree = "<group>";
 		};
+		9EC32C6024E596C20063BCCE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -174,7 +182,7 @@
 			);
 			name = SPMProject;
 			packageProductDependencies = (
-				61C3640A24374DF200C4D4E6 /* Datadog */,
+				9EC32C6124E596C20063BCCE /* DatadogObjc */,
 			);
 			productName = SPMProject;
 			productReference = 61C363D624374D5F00C4D4E6 /* SPMProject.app */;
@@ -653,10 +661,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		61C3640A24374DF200C4D4E6 /* Datadog */ = {
+		9EC32C6124E596C20063BCCE /* DatadogObjc */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = Datadog;
+			productName = DatadogObjc;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

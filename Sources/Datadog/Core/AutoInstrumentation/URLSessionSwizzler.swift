@@ -146,14 +146,13 @@ internal class URLSessionSwizzler {
             typealias BlockIMP = @convention(block) (URLSessionTask) -> Void
             swizzle(
                 foundMethod,
-                impProvider: { currentTypedImp -> BlockIMP in
-                    return { impSelf in
-                        impSelf.consumePayloads { $0(.starting(impSelf.currentRequest)) }
-                        return currentTypedImp(impSelf, Self.selector)
-                    }
-                },
                 onlyIfNonSwizzled: true
-            )
+            ) { currentTypedImp -> BlockIMP in
+                return { impSelf in
+                    impSelf.consumePayloads { $0(.starting(impSelf.currentRequest)) }
+                    return currentTypedImp(impSelf, Self.selector)
+                }
+            }
         }
     }
 }

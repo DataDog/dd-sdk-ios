@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
+
 internal let noopTracer: OTTracer = DDNoopTracer()
 internal let noopSpan: OTSpan = DDNoopSpan()
 internal let noopSpanContext: OTSpanContext = DDNoopSpanContext()
