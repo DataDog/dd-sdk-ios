@@ -44,6 +44,7 @@ public protocol OTSpan {
     /// Sets this span as the active span in the current execution context, this span is assigned as the parent of any
     /// created Span in the same execution context without explicit parent.
     /// Will be the active span until it finishes or another span is set as active.
+    @discardableResult
     func setActive() -> OTSpan
 }
 

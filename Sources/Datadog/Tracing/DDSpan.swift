@@ -113,6 +113,7 @@ internal class DDSpan: OTSpan {
         ddTracer.write(span: self, finishTime: time)
     }
 
+    @discardableResult
     func setActive() -> OTSpan {
         let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
         let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)

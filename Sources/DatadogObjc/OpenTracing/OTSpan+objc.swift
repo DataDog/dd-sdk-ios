@@ -25,5 +25,6 @@ public protocol OTSpan {
     func finish()
     func finishWithTime(_ finishTime: Date?)
 
+    @discardableResult
     func setActive() -> OTSpan
 }
