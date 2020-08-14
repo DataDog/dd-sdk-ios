@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
 public let OTFormatHTTPHeaders = "OTFormatHTTPHeaders"
 
 @objc

@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
 import protocol Datadog.OTSpanContext
 
 internal class DDSpanContextObjc: NSObject, OTSpanContext {
