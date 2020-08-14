@@ -689,7 +689,7 @@ class TracerTests: XCTestCase {
         let queue1 = DispatchQueue(label: "\(#function)-queue1")
         let queue2 = DispatchQueue(label: "\(#function)-queue2")
 
-        let rootSpan = tracer.startSpan(operationName: "root operation")
+        let rootSpan = tracer.startSpan(operationName: "root operation").setActive()
 
         queue1.sync {
             let child1Span = tracer.startSpan(operationName: "child 1 operation")
@@ -711,6 +711,38 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
         XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
         XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
+    }
+
+    func testSendingSpansWithNoParent() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        TracingFeature.instance = .mockWorkingFeatureWith(
+            server: server,
+            directory: temporaryDirectory
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let queue = DispatchQueue(label: "\(#function)-queue")
+
+        func makeAPIRequest(completion: @escaping () -> Void) {
+            queue.asyncAfter(deadline: .now() + 1) {
+                completion()
+            }
+        }
+
+        let request1Span = tracer.startSpan(operationName: "/resource/1")
+        makeAPIRequest {
+            request1Span.finish()
+        }
+
+        let request2Span = tracer.startSpan(operationName: "/resource/2")
+        makeAPIRequest {
+            request2Span.finish()
+        }
+
+        let spanMatchers = try server.waitAndReturnSpanMatchers(count: 2)
+        XCTAssertEqual(try spanMatchers[0].parentSpanID(), "0")
+        XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0") // fails, as 2 is child of 1
     }
 }
 // swiftlint:enable multiline_arguments_brackets

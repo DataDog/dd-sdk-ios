@@ -45,7 +45,7 @@ internal class DDSpan: OTSpan {
         set { ddTracer.queue.async { self.unsafeLogFields = newValue } }
     }
 
-    private let activityId: os_activity_id_t
+    private var activityId: os_activity_id_t?
     private var activityState = os_activity_scope_state_s()
 
     init(
@@ -61,12 +61,6 @@ internal class DDSpan: OTSpan {
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
         self.unsafeIsFinished = false
-
-        let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
-        let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
-        activityId = os_activity_get_identifier(activity, nil)
-        os_activity_scope_enter(activity, &activityState)
-        tracer.activeSpansPool.addSpan(span: self, activityId: activityId)
     }
 
     // MARK: - Open Tracing interface
@@ -113,8 +107,21 @@ internal class DDSpan: OTSpan {
         }
         isFinished = true
         os_activity_scope_leave(&activityState)
-        ddTracer.activeSpansPool.removeSpan(activityId: activityId)
+        if let activityId = activityId {
+            ddTracer.activeSpansPool.removeSpan(activityId: activityId)
+        }
         ddTracer.write(span: self, finishTime: time)
+    }
+
+    func setActive() -> OTSpan {
+        let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
+        let activity = _os_activity_create(dso, "InitDDSpanContext", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
+        activityId = os_activity_get_identifier(activity, nil)
+        os_activity_scope_enter(activity, &activityState)
+        if let activityId = activityId {
+            ddTracer.activeSpansPool.addSpan(span: self, activityId: activityId)
+        }
+        return self
     }
 
     func log(fields: [String: Encodable], timestamp: Date) {

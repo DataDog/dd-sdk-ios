@@ -24,4 +24,6 @@ public protocol OTSpan {
 
     func finish()
     func finishWithTime(_ finishTime: Date?)
+
+    func setActive() -> OTSpan
 }

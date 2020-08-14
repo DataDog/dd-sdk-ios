@@ -31,6 +31,7 @@ private class DDNoopSpan: OTSpan {
     func getBaggageItem(_ key: String) -> String? { nil }
     func finish() {}
     func finishWithTime(_ finishTime: Date?) {}
+    func setActive() -> OTSpan { self }
 }
 
 private class DDNoopSpanContext: OTSpanContext {
