@@ -33,7 +33,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         var currentTime = Date()
         let parent = RUMContextProviderMock()
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: currentTime)
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -46,7 +46,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         var currentTime = Date()
         let parent = RUMContextProviderMock()
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: currentTime)
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -82,7 +82,10 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
-        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            "Sampled session should be kept until it expires or reaches the timeout."
+        )
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 }
