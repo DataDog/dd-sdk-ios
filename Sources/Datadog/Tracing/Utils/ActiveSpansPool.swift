@@ -11,6 +11,23 @@ import os.activity
 /// we must recreate whats done in the macro in Swift code.
 internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
+/// Used to reference the active span in the current execution context.
+internal class ActivityReference {
+    let activityId: os_activity_id_t
+    fileprivate var activityState = os_activity_scope_state_s()
+
+    init() {
+        let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
+        let activity = _os_activity_create(dso, "DDSpanActivityReference", OS_ACTIVITY_CURRENT, OS_ACTIVITY_FLAG_DEFAULT)
+        activityId = os_activity_get_identifier(activity, nil)
+        os_activity_scope_enter(activity, &activityState)
+    }
+
+    deinit {
+        os_activity_scope_leave(&activityState)
+    }
+}
+
 /// Helper class to get the current Span
 internal class ActiveSpansPool {
     private var contextMap = [os_activity_id_t: DDSpan]()
@@ -28,15 +45,15 @@ internal class ActiveSpansPool {
         return returnSpan
     }
 
-    func addSpan(span: DDSpan, activityId: os_activity_id_t) {
+    func addSpan(span: DDSpan, activityReference: ActivityReference) {
         rlock.lock()
-        contextMap[activityId] = span
+        contextMap[activityReference.activityId] = span
         rlock.unlock()
     }
 
-    func removeSpan(activityId: os_activity_id_t) {
+    func removeSpan(activityReference: ActivityReference) {
         rlock.lock()
-        contextMap[activityId] = nil
+        contextMap[activityReference.activityId] = nil
         rlock.unlock()
     }
 }
