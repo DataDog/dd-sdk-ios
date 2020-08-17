@@ -21,6 +21,8 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(defaultConfiguration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertEqual(defaultConfiguration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.com/v1/input/")
         XCTAssertNil(defaultConfiguration.serviceName)
+        XCTAssertEqual(defaultConfiguration.tracedHosts, [])
+        XCTAssertEqual(defaultConfiguration.rumSessionsSamplingRate, 100.0)
     }
 
     func testCustomConfiguration() {
@@ -29,6 +31,8 @@ class DatadogConfigurationTests: XCTestCase {
             .enableLogging(false)
             .enableTracing(false)
             .enableRUM(false)
+            .set(tracedHosts: ["example.com"])
+            .set(rumSessionsSamplingRate: 42.5)
             .build()
         XCTAssertEqual(configuration.clientToken, "abcd")
         XCTAssertEqual(configuration.environment, "tests")
@@ -36,6 +40,8 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertFalse(configuration.tracingEnabled)
         XCTAssertFalse(configuration.rumEnabled)
         XCTAssertEqual(configuration.serviceName, "service-name")
+        XCTAssertEqual(configuration.tracedHosts, ["example.com"])
+        XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
     }
 
     // MARK: - Log endpoints
@@ -173,6 +179,15 @@ class DatadogValidConfigurationTests: XCTestCase {
             appContext: .mockWith(bundleIdentifier: nil)
         )
         XCTAssertEqual(configuration.serviceName, "ios")
+    }
+
+    func testRUMSessionSamplingRate() throws {
+        // it equals `Datadog.Configuration.rumSessionSamplingRate`
+        let configuration = try Configuration(
+            configuration: .mockWith(rumSessionsSamplingRate: 42.5),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.rumSessionSamplingRate, 42.5)
     }
 
     // MARK: - Validation

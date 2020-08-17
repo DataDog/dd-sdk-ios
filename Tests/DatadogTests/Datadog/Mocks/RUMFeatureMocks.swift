@@ -327,11 +327,13 @@ extension RUMApplicationScope {
 
     static func mockWith(
         rumApplicationID: String = .mockAny(),
-        dependencies: RUMScopeDependencies = .mockAny()
+        dependencies: RUMScopeDependencies = .mockAny(),
+        samplingRate: Float = 100
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
-            dependencies: dependencies
+            dependencies: dependencies,
+            samplingRate: samplingRate
         )
     }
 }
@@ -344,11 +346,13 @@ extension RUMSessionScope {
     static func mockWith(
         parent: RUMApplicationScope = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
+        samplingRate: Float = 100,
         startTime: Date = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             parent: parent,
             dependencies: dependencies,
+            samplingRate: samplingRate,
             startTime: startTime
         )
     }

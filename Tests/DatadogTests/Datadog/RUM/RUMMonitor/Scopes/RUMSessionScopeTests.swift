@@ -10,7 +10,7 @@ import XCTest
 class RUMSessionScopeTests: XCTestCase {
     func testDefaultContext() {
         let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: .mockAny())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: .mockAny())
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertNotEqual(scope.context.sessionID, .nullUUID)
@@ -19,10 +19,21 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
+    func testContextWhenSessionIsSampled() {
+        let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: .mockAny())
+
+        XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
+        XCTAssertEqual(scope.context.sessionID, .nullUUID)
+        XCTAssertNil(scope.context.activeViewID)
+        XCTAssertNil(scope.context.activeViewURI)
+        XCTAssertNil(scope.context.activeUserActionID)
+    }
+
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         var currentTime = Date()
         let parent = RUMContextProviderMock()
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: currentTime)
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -35,7 +46,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         var currentTime = Date()
         let parent = RUMContextProviderMock()
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: currentTime)
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -53,7 +64,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testItManagesViewScopeLifecycle() {
         let parent = RUMContextProviderMock()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 1)
@@ -63,6 +74,15 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 1)
         _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testWhenSessionIsSampled_itDoesNotCreateViewScopes() {
+        let parent = RUMContextProviderMock()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: Date())
+        XCTAssertEqual(scope.viewScopes.count, 0)
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 }

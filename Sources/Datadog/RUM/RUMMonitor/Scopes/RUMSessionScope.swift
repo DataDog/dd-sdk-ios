@@ -25,8 +25,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
-    /// This Session UUID.
+    /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
+    /// RUM Session sampling rate.
+    private let samplingRate: Float
+    /// Tells if events from this Session should be sampled-out (not send).
+    private let shouldBeSampledOut: Bool
     /// The start time of this Session.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
@@ -35,11 +39,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
+        samplingRate: Float,
         startTime: Date
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.sessionUUID = dependencies.rumUUIDGenerator.generateUnique()
+        self.samplingRate = samplingRate
+        self.shouldBeSampledOut = RUMSessionScope.randomizeSampling(using: samplingRate)
+        self.sessionUUID = shouldBeSampledOut ? .nullUUID : dependencies.rumUUIDGenerator.generateUnique()
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
     }
@@ -52,6 +59,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.init(
             parent: expiredSession.parent,
             dependencies: expiredSession.dependencies,
+            samplingRate: expiredSession.samplingRate,
             startTime: startTime
         )
 
@@ -59,9 +67,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
             guard let expiredViewIdentity = expiredView.identity else {
                 return nil // if the underlying `UIVIewController` no longer exists, skip transferring its scope
-            }
-            guard (expiredViewIdentity as? UIViewController)?.view?.window != nil else {
-                return nil // TODO: RUMM-634 Produce a RUM error when the VC is leaked
             }
             return RUMViewScope(
                 parent: self,
@@ -88,6 +93,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return false // no longer keep this session
         }
         lastInteractionTime = command.time
+
+        if shouldBeSampledOut {
+            return true
+        }
 
         // Apply side effects
         switch command {
@@ -127,5 +136,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         let expired = sessionDuration >= Constants.sessionMaxDuration
 
         return timedOut || expired
+    }
+
+    private static func randomizeSampling(using samplingRate: Float) -> Bool {
+        let sendSessionEvents = Float.random(in: 0.0..<100.0) < samplingRate
+        return !sendSessionEvents
     }
 }

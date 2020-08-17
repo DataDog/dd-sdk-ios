@@ -19,6 +19,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Session scope. It gets created with the first `.startView` event.
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
+    /// RUM Sessions sampling rate.
+    private let samplingRate: Float
 
     // MARK: - Initialization
 
@@ -26,9 +28,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     init(
         rumApplicationID: String,
-        dependencies: RUMScopeDependencies
+        dependencies: RUMScopeDependencies,
+        samplingRate: Float
     ) {
         self.dependencies = dependencies
+        self.samplingRate = samplingRate
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: .nullUUID,
@@ -74,7 +78,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func startInitialSession(on command: RUMStartViewCommand) {
         var startInitialViewCommand = command
         startInitialViewCommand.isInitialView = true
-        let initialSession = RUMSessionScope(parent: self, dependencies: dependencies, startTime: command.time)
+
+        let initialSession = RUMSessionScope(
+            parent: self,
+            dependencies: dependencies,
+            samplingRate: samplingRate,
+            startTime: command.time
+        )
+
         sessionScope = initialSession
         _ = initialSession.process(command: startInitialViewCommand)
     }

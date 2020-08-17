@@ -23,6 +23,10 @@ internal struct RUMContextIntegration {
             return nil
         }
 
+        if rumContext.sessionID == .nullUUID { // if Session was sampled or not yet started
+            return [:]
+        }
+
         return [
             Attributes.applicationID: rumContext.rumApplicationID,
             Attributes.sessionID: rumContext.sessionID.rawValue.uuidString.lowercased(),
