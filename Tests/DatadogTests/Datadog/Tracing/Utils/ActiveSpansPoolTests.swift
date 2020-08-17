@@ -33,10 +33,11 @@ class ActiveSpansPoolTests: XCTestCase {
     func testsSpanWithoutParentInheritsActiveSpan() throws {
         let tracer = Tracer.mockAny()
         let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-
+        firstSpan.setActive()
         let previousActiveSpan = tracer.activeSpan
         let secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-
+        firstSpan.setActive()
+        secondSpan.setActive()
         XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, previousActiveSpan?.dd.ddContext.spanID)
         XCTAssertEqual(secondSpan.dd.ddContext.spanID,  tracer.activeSpan?.dd.ddContext.spanID)
         XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, firstSpan.dd.ddContext.spanID)
@@ -84,5 +85,26 @@ class ActiveSpansPoolTests: XCTestCase {
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
         waitForExpectations(timeout: 5, handler: nil)
         oneSpan.finish()
+    }
+
+    func testsSetActiveSpanCalledMultipleTimes() throws {
+        let tracer = Tracer.mockAny()
+        let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+        firstSpan.setActive()
+
+        let previousActiveSpan = tracer.activeSpan
+
+        let secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+        firstSpan.setActive()
+        secondSpan.setActive()
+
+        XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, previousActiveSpan?.dd.ddContext.spanID)
+        XCTAssertEqual(secondSpan.dd.ddContext.spanID,  tracer.activeSpan?.dd.ddContext.spanID)
+        XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, firstSpan.dd.ddContext.spanID)
+
+        secondSpan.finish()
+        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
+        firstSpan.finish()
+        XCTAssertNil(tracer.activeSpan)
     }
 }
