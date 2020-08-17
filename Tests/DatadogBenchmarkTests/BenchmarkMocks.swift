@@ -18,7 +18,8 @@ extension FeaturesCommonDependencies {
                 environment: "",
                 logsUploadURLWithClientToken: anyURL,
                 tracesUploadURLWithClientToken: anyURL,
-                rumUploadURLWithClientToken: anyURL
+                rumUploadURLWithClientToken: anyURL,
+                rumSessionSamplingRate: 100.0
             ),
             performance: .default,
             httpClient: HTTPClient(),
