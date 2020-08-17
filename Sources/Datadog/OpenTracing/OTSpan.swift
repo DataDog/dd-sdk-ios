@@ -41,9 +41,21 @@ public protocol OTSpan {
     /// - parameter time: If non-nil, time at which to finish the span; default time is used if nil
     func finish(at time: Date)
 
-    /// Sets this span as the active span in the current execution context, this span is assigned as the parent of any
-    /// created Span in the same execution context without explicit parent.
-    /// Will be the active span until it finishes or another span is set as active.
+    /// Sets this span as the active span in the current execution context.
+    /// The active span becomes the parent of any other span created in the same execution context
+    /// if the parent is not set explicitly. The span remains active until it finishes or another span is set as active.
+    ///
+    /// Example:
+    ///
+    ///     // `span1` becomes active in this thread:
+    ///     let span1 = tracer.startSpan(operationName: "root").setActive()
+    ///
+    ///     // As `span2` has no explicit parent, it becomes the child of the active `span1`:
+    ///     let span2 = tracer.startSpan(operationName: "child of `span1`")
+    ///
+    ///     // As `span3` has the explicit parent (nil) it won't become the child of the active span:
+    ///     let span3 = tracer.startSpan(operationName: "another root", childOf: nil)
+    ///
     @discardableResult
     func setActive() -> OTSpan
 }

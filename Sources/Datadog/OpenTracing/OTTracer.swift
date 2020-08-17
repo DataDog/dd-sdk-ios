@@ -57,7 +57,7 @@ public protocol OTTracer {
 
     /// Returns the active span in the current execution context, this span will be automatically assigned as the parent of any
     /// created Span without explicit parent.
-    /// For a span to be set as the active one in the current context,  it must explicitly call span.setActive()
+    /// For a span to be set as the active one in the current context, it must explicitly call `span.setActive()`.
     /// This method can return different results depending on the context that is executed.
     var activeSpan: OTSpan? { get }
 }
