@@ -75,4 +75,9 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
             swiftSpan.finish()
         }
     }
+
+    func setActive() -> DatadogObjc.OTSpan {
+        _ = swiftSpan.setActive()
+        return self
+    }
 }
