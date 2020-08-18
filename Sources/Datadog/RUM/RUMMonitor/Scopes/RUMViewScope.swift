@@ -204,7 +204,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 url: viewURI
             ),
             usr: dependencies.userInfoProvider.current,
-            connectivity: nil,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(),
             action: .init(
                 type: .applicationStart,
@@ -249,7 +249,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 resource: .init(count: resourcesCount.toInt64)
             ),
             usr: dependencies.userInfoProvider.current,
-            connectivity: nil,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(documentVersion: version.toInt64)
         )
 
@@ -270,7 +270,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 url: context.activeViewURI ?? ""
             ),
             usr: dependencies.userInfoProvider.current,
-            connectivity: nil,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(),
             error: .init(
                 message: command.message,

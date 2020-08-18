@@ -82,10 +82,11 @@ public class RUMMonitor {
                 rumApplicationID: rumApplicationID,
                 dependencies: RUMScopeDependencies(
                     userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
-                    eventBuilder: RUMEventBuilder(
+                    connectivityInfoProvider: RUMConnectivityInfoProvider(
                         networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
                         carrierInfoProvider: rumFeature.carrierInfoProvider
                     ),
+                    eventBuilder: RUMEventBuilder(),
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),

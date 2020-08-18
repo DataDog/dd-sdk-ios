@@ -21,10 +21,7 @@ class RUMEventFileOutputTests: XCTestCase {
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
         let queue = DispatchQueue(label: "com.datadohq.testItWritesRUMEventToFileAsJSON")
-        let builder = RUMEventBuilder(
-            networkConnectionInfoProvider: nil,
-            carrierInfoProvider: nil
-        )
+        let builder = RUMEventBuilder()
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
                 dataFormat: RUMFeature.dataFormat,

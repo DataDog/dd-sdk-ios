@@ -369,6 +369,54 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
+    // MARK: - Sending connectivity info
+
+    func testWhenNetworkAndCarrierInfoAreProvided_thenConnectivityInfoIsSendWithAllEvents() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directory: temporaryDirectory,
+            dependencies: .mockWith(
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(
+                    networkConnectionInfo: .mockWith(reachability: .yes, availableInterfaces: [.cellular])
+                ),
+                carrierInfoProvider: CarrierInfoProviderMock(
+                    carrierInfo: .mockWith(carrierName: "Carrier Name", radioAccessTechnology: .GPRS)
+                )
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+
+        monitor.startView(viewController: mockView)
+        monitor.startUserAction(type: .scroll)
+        monitor.startResourceLoading(resourceName: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceName: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
+        monitor.stopUserAction(type: .scroll)
+        monitor.stopResourceLoading(resourceName: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceName: "/resource/2", errorMessage: .mockAny(), source: .network)
+        monitor.addViewError(message: .mockAny(), source: .source)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
+        let expectedConnectivityInfo = RUMConnectivity(
+            status: .connected,
+            interfaces: [.cellular],
+            cellular: RUMCellular(technology: "GPRS", carrierName: "Carrier Name")
+        )
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMAction.self) { action in
+            XCTAssertEqual(action.connectivity, expectedConnectivityInfo)
+        }
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMView.self) { view in
+            XCTAssertEqual(view.connectivity, expectedConnectivityInfo)
+        }
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMResource.self) { resource in
+            XCTAssertEqual(resource.connectivity, expectedConnectivityInfo)
+        }
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMError.self) { error in
+            XCTAssertEqual(error.connectivity, expectedConnectivityInfo)
+        }
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {

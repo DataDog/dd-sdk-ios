@@ -77,8 +77,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertValidRumUUID(event.model.action.id)
         XCTAssertEqual(event.model.action.type, .applicationStart)
         XCTAssertTrue(event.attributes.isEmpty, "The `application_start` event must have no attributes.")
-        XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
-        XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
 
     func testWhenInitialViewIsStarted_itSendsViewUpdateEvent() throws {
@@ -110,8 +108,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
-        XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
 
     func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
@@ -143,8 +139,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
-        XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
-        XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
@@ -189,8 +183,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 2)
         XCTAssertTrue(event.attributes.isEmpty)
-        XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
-        XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
 
     // MARK: - Resources Tracking
@@ -385,8 +377,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.error.resource)
         XCTAssertNil(error.model.action)
         XCTAssertEqual(error.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(error.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
-        XCTAssertEqual(error.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)

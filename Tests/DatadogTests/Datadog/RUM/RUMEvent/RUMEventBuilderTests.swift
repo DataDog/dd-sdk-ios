@@ -9,27 +9,13 @@ import XCTest
 
 class RUMEventBuilderTests: XCTestCase {
     func testItBuildsRUMEvent() {
-        let builder = RUMEventBuilder(
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                networkConnectionInfo: .mockWith(
-                    reachability: .yes,
-                    availableInterfaces: [.wifi, .cellular]
-                )
-            ),
-            carrierInfoProvider: CarrierInfoProviderMock.mockWith(
-                carrierInfo: .mockWith(carrierName: "AT&T")
-            )
-        )
-
+        let builder = RUMEventBuilder()
         let event = builder.createRUMEvent(
             with: RUMDataModelMock(attribute: "foo"),
             attributes: ["foo": "bar", "fizz": "buzz"]
         )
 
         XCTAssertEqual(event.model.attribute, "foo")
-        XCTAssertEqual(event.mobileCarrierInfo?.carrierName, "AT&T")
-        XCTAssertEqual(event.networkConnectionInfo?.reachability, .yes)
-        XCTAssertEqual(event.networkConnectionInfo?.availableInterfaces, [.wifi, .cellular])
         XCTAssertEqual((event.attributes as? [String: String])?["foo"], "bar")
         XCTAssertEqual((event.attributes as? [String: String])?["fizz"], "buzz")
     }

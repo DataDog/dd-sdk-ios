@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Maps the value from shared `UserInfoProvider` to RUM data format.
+/// Maps the value from shared `UserInfoProvider` to `RUMUSR` format.
 internal struct RUMUserInfoProvider {
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
@@ -17,7 +17,7 @@ internal struct RUMUserInfoProvider {
         if userInfo.id == nil && userInfo.name == nil && userInfo.email == nil {
             return nil
         } else {
-            return .init(id: userInfo.id, name: userInfo.name, email: userInfo.email)
+            return RUMUSR(id: userInfo.id, name: userInfo.name, email: userInfo.email)
         }
     }
 }

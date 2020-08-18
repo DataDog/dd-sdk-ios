@@ -124,7 +124,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 url: context.activeViewURI ?? ""
             ),
             usr: dependencies.userInfoProvider.current,
-            connectivity: nil,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(),
             action: .init(
                 type: actionType.toRUMDataFormat,
