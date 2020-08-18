@@ -11,7 +11,7 @@ class RUMIntegrationsTests: XCTestCase {
     private let integration = RUMContextIntegration()
 
     func testWhenRUMMonitorIsRegistered_itProvidesRUMContextAttributes() throws {
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         // when
@@ -28,7 +28,7 @@ class RUMIntegrationsTests: XCTestCase {
     }
 
     func testWhenRUMMonitorIsNotRegistered_itReturnsNil() throws {
-        RUMFeature.instance = .mockNoOp(temporaryDirectory: temporaryDirectory)
+        RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
         // when
@@ -53,11 +53,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
     }
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
         // given
@@ -68,7 +64,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
         integration.addError(with: "error message")
 
         // then
-        let rumEventMatchers = try server.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")

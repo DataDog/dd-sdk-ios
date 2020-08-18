@@ -24,11 +24,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -40,7 +36,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message")
         objcLogger.critical("message")
 
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -50,11 +46,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -66,7 +58,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message", attributes: ["foo": "bar"])
         objcLogger.critical("message", attributes: ["foo": "bar"])
 
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -79,11 +71,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -107,7 +95,7 @@ class DDLoggerTests: XCTestCase {
         )
         objcLogger.info("message")
 
-        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(forKey: "nsstring", equals: "hello")
         logMatcher.assertValue(forKey: "nsbool", equals: true)
         logMatcher.assertValue(forKey: "nsint", equals: 10)
@@ -120,11 +108,11 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSettingTagsAndAttributes() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            configuration: .mockWith(environment: "test")
+            dependencies: .mockWith(
+                configuration: .mockWith(environment: "test")
+            )
         )
         defer { LoggingFeature.instance = nil }
 
@@ -144,7 +132,7 @@ class DDLoggerTests: XCTestCase {
 
         objcLogger.info(.mockAny())
 
-        let logMatcher = try server.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
         logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test"])

@@ -17,18 +17,12 @@ class TracingStorageBenchmarkTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        self.queue = DispatchQueue(label: "com.datadoghq.benchmark-traces-io", target: .global(qos: .utility))
         self.directory = try Directory(withSubdirectoryPath: "tracing-benchmark")
 
-        let storage = TracingFeature.Storage(
-            directory: directory,
-            performance: .default,
-            dateProvider: SystemDateProvider(),
-            readWriteQueue: queue
-        )
-
-        self.writer = storage.writer
-        self.reader = storage.reader
+        let storage = TracingFeature.createStorage(directory: directory, commonDependencies: .mockAny())
+        self.writer = storage.writer as? FileWriter
+        self.reader = storage.reader as? FileReader
+        self.queue = self.writer.queue
 
         XCTAssertTrue(try directory.files().count == 0)
     }

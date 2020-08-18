@@ -13,7 +13,13 @@ internal struct Batch {
     fileprivate let file: ReadableFile
 }
 
-internal final class FileReader {
+/// Abstracts the `FileReader`, so we can have no-op reader in tests.
+internal protocol FileReaderType {
+    func readNextBatch() -> Batch?
+    func markBatchAsRead(_ batch: Batch)
+}
+
+internal final class FileReader: FileReaderType {
     /// Data reading format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to readable file.

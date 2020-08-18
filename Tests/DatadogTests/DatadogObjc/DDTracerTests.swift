@@ -22,11 +22,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingCustomizedSpans() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
-            directory: temporaryDirectory
-        )
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
         let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
@@ -85,7 +81,7 @@ class DDTracerTests: XCTestCase {
             XCTAssertTrue(span.tracer === objcTracer)
         }
 
-        let spanMatchers = try server.waitAndReturnSpanMatchers(count: 5)
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 5)
 
         // assert operation name
         try spanMatchers[0...3].forEach { spanMatcher in
@@ -118,17 +114,20 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let loggingFeature = LoggingFeature.mockWorkingFeatureWith(
-            server: server,
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
         )
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            loggingFeature: loggingFeature
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
+            loggingFeature: LoggingFeature.instance!
         )
         defer { TracingFeature.instance = nil }
 
@@ -139,7 +138,7 @@ class DDTracerTests: XCTestCase {
         objcSpan.log(["bizz": NSNumber(10.5)])
         objcSpan.log(["buzz": NSURL(string: "https://example.com/image.png")!], timestamp: nil)
 
-        let logMatchers = try server.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
         logMatchers[1].assertValue(forKey: "bizz", equals: 10.5)

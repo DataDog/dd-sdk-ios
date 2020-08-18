@@ -30,146 +30,88 @@ internal final class RUMFeature {
 
     // MARK: - Components
 
+    static let featureName = "rum"
+    /// NOTE: any change to data format requires updating the directory url to be unique
+    static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
+
     /// RUM files storage.
-    let storage: Storage
+    let storage: FeatureStorage
     /// RUM upload worker.
-    let upload: Upload
-
-    /// Encapsulates  storage stack setup for `RUMFeature`.
-    class Storage {
-        /// Writes RUM events to files.
-        let writer: FileWriter
-        /// Reads RUM events from files.
-        let reader: FileReader
-
-        /// NOTE: any change to logs data format requires updating the RUM directory url to be unique
-        static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
-
-        init(
-            directory: Directory,
-            performance: PerformancePreset,
-            dateProvider: DateProvider,
-            readWriteQueue: DispatchQueue
-        ) {
-            let orchestrator = FilesOrchestrator(
-                directory: directory,
-                performance: performance,
-                dateProvider: dateProvider
-            )
-
-            self.writer = FileWriter(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-            self.reader = FileReader(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-        }
-    }
-
-    /// Encapsulates upload stack setup for `RUMFeature`.
-    class Upload {
-        /// Uploads RUM events to server.
-        let uploader: DataUploadWorker
-
-        init(
-            storage: Storage,
-            configuration: Datadog.ValidConfiguration,
-            performance: PerformancePreset,
-            mobileDevice: MobileDevice,
-            httpClient: HTTPClient,
-            dateProvider: DateProvider,
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-            uploadQueue: DispatchQueue
-        ) {
-            let httpHeaders = HTTPHeaders(
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: configuration.applicationName,
-                        appVersion: configuration.applicationVersion,
-                        device: mobileDevice
-                    )
-                ]
-            )
-            let uploadConditions = DataUploadConditions(
-                batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                networkConnectionInfo: networkConnectionInfoProvider
-            )
-
-            let dataUploader = DataUploader(
-                urlProvider: UploadURLProvider(
-                    urlWithClientToken: configuration.rumUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .ddsource(),
-                        .batchTime(using: dateProvider),
-                        .ddtags(
-                            tags: [
-                                "service:\(configuration.serviceName)",
-                                "version:\(configuration.applicationVersion)",
-                                "sdk_version:\(sdkVersion)",
-                                "env:\(configuration.environment)"
-                            ]
-                        )
-                    ]
-                ),
-                httpClient: httpClient,
-                httpHeaders: httpHeaders
-            )
-
-            self.uploader = DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: storage.reader,
-                dataUploader: dataUploader,
-                uploadConditions: uploadConditions,
-                delay: DataUploadDelay(performance: performance),
-                featureName: "RUM"
-            )
-        }
-    }
+    let upload: FeatureUpload
 
     // MARK: - Initialization
 
-    init(
+    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
+            featureName: RUMFeature.featureName,
+            dataFormat: RUMFeature.dataFormat,
+            directory: directory,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+        return FeatureUpload(
+            featureName: RUMFeature.featureName,
+            storage: storage,
+            uploadHTTPHeaders: HTTPHeaders(
+                headers: [
+                    .contentTypeHeader(contentType: .textPlainUTF8),
+                    .userAgentHeader(
+                        appName: commonDependencies.configuration.applicationName,
+                        appVersion: commonDependencies.configuration.applicationVersion,
+                        device: commonDependencies.mobileDevice
+                    )
+                ]
+            ),
+            uploadURLProvider: UploadURLProvider(
+                urlWithClientToken: commonDependencies.configuration.rumUploadURLWithClientToken,
+                queryItemProviders: [
+                    .ddsource(),
+                    .batchTime(using: commonDependencies.dateProvider),
+                    .ddtags(
+                        tags: [
+                            "service:\(commonDependencies.configuration.serviceName)",
+                            "version:\(commonDependencies.configuration.applicationVersion)",
+                            "sdk_version:\(sdkVersion)",
+                            "env:\(commonDependencies.configuration.environment)"
+                        ]
+                    )
+                ]
+            ),
+            commonDependencies: commonDependencies
+        )
+    }
+
+    convenience init(
         directory: Directory,
-        configuration: Datadog.ValidConfiguration,
-        performance: PerformancePreset,
-        mobileDevice: MobileDevice,
-        httpClient: HTTPClient,
-        dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType
+        commonDependencies: FeaturesCommonDependencies
+    ) {
+        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
+        let upload = RUMFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
+        self.init(
+            storage: storage,
+            upload: upload,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        commonDependencies: FeaturesCommonDependencies
     ) {
         // Configuration
-        self.configuration = configuration
+        self.configuration = commonDependencies.configuration
 
         // Bundle dependencies
-        self.dateProvider = dateProvider
-        self.userInfoProvider = userInfoProvider
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
+        self.dateProvider = commonDependencies.dateProvider
+        self.userInfoProvider = commonDependencies.userInfoProvider
+        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
+        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
 
-        // Initialize components
-        let readWriteQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-rum-read-write",
-            target: .global(qos: .utility)
-        )
-        self.storage = Storage(
-            directory: directory,
-            performance: performance,
-            dateProvider: dateProvider,
-            readWriteQueue: readWriteQueue
-        )
-
-        let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-rum-upload",
-            target: .global(qos: .utility)
-        )
-        self.upload = Upload(
-            storage: self.storage,
-            configuration: configuration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            dateProvider: dateProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            uploadQueue: uploadQueue
-        )
+        // Initialize stacks
+        self.storage = storage
+        self.upload = upload
     }
 }

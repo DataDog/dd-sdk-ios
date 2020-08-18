@@ -173,6 +173,63 @@ extension PerformancePreset {
 
 // MARK: - Features Common Mocks
 
+extension FeaturesCommonDependencies {
+    static func mockAny() -> FeaturesCommonDependencies {
+        return .mockWith()
+    }
+
+    /// Mocks features common dependencies.
+    /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
+    static func mockWith(
+        configuration: Datadog.ValidConfiguration = .mockAny(),
+        performance: PerformancePreset = .combining(
+            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+            uploadPerformance: .veryQuick
+        ),
+        mobileDevice: MobileDevice = .mockWith(
+            currentBatteryStatus: {
+                // Mock full battery, so it doesn't rely on battery condition for the upload
+                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
+            }
+        ),
+        dateProvider: DateProvider = SystemDateProvider(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            configuration: configuration,
+            performance: performance,
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            mobileDevice: mobileDevice,
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+}
+
+class NoOpFileWriter: FileWriterType {
+    func write<T>(value: T) where T: Encodable {}
+}
+
+class NoOpFileReader: FileReaderType {
+    func readNextBatch() -> Batch? { return nil }
+    func markBatchAsRead(_ batch: Batch) {}
+}
+
+class NoOpDataUploadWorker: DataUploadWorkerType {}
+
 extension DataFormat {
     static func mockAny() -> DataFormat {
         return mockWith()

@@ -26,15 +26,16 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            configuration: .mockWith(
-                applicationName: "FoobarApp",
-                applicationVersion: "2.1.0"
-            ),
-            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            dependencies: .mockWith(
+                configuration: .mockWith(
+                    applicationName: "FoobarApp",
+                    applicationVersion: "2.1.0"
+                ),
+                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            )
         )
         defer { LoggingFeature.instance = nil }
 
@@ -52,25 +53,26 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            performance: .combining(
-                storagePerformance: StoragePerformanceMock(
-                    maxFileSize: .max,
-                    maxDirectorySize: .max,
-                    maxFileAgeForWrite: .distantFuture, // write all spans to single file,
-                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
-                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                    maxObjectsInFile: 3, // write 3 spans to payload,
-                    maxObjectSize: .max
-                ),
-                uploadPerformance: UploadPerformanceMock(
-                    initialUploadDelay: 0.5, // wait enough until spans are written,
-                    defaultUploadDelay: 1,
-                    minUploadDelay: 1,
-                    maxUploadDelay: 1,
-                    uploadDelayDecreaseFactor: 1
+            dependencies: .mockWith(
+                performance: .combining(
+                    storagePerformance: StoragePerformanceMock(
+                        maxFileSize: .max,
+                        maxDirectorySize: .max,
+                        maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                        minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                        maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                        maxObjectsInFile: 3, // write 3 spans to payload,
+                        maxObjectSize: .max
+                    ),
+                    uploadPerformance: UploadPerformanceMock(
+                        initialUploadDelay: 0.5, // wait enough until spans are written,
+                        defaultUploadDelay: 1,
+                        minUploadDelay: 1,
+                        maxUploadDelay: 1,
+                        uploadDelayDecreaseFactor: 1
+                    )
                 )
             )
         )

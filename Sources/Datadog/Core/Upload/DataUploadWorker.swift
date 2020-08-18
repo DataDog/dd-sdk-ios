@@ -6,11 +6,14 @@
 
 import Foundation
 
-internal class DataUploadWorker {
+/// Abstracts the `DataUploadWorker`, so we can have no-op uploader in tests.
+internal protocol DataUploadWorkerType {}
+
+internal class DataUploadWorker: DataUploadWorkerType {
     /// Queue to execute uploads.
     private let queue: DispatchQueue
     /// File reader providing data to upload.
-    private let fileReader: FileReader
+    private let fileReader: FileReaderType
     /// Data uploader sending data to server.
     private let dataUploader: DataUploader
     /// Variable system conditions determining if upload should be performed.
@@ -28,7 +31,7 @@ internal class DataUploadWorker {
 
     init(
         queue: DispatchQueue,
-        fileReader: FileReader,
+        fileReader: FileReaderType,
         dataUploader: DataUploader,
         uploadConditions: DataUploadConditions,
         delay: DataUploadDelay,

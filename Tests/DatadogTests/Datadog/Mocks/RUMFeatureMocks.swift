@@ -9,64 +9,46 @@ import XCTest
 
 extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(temporaryDirectory: Directory) -> RUMFeature {
+    static func mockNoOp() -> RUMFeature {
         return RUMFeature(
-            directory: temporaryDirectory,
-            configuration: .mockAny(),
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            mobileDevice: .mockAny(),
-            httpClient: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                networkConnectionInfo: .mockWith(
-                    reachability: .no // so it doesn't meet the upload condition
-                )
-            ),
-            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            upload: .init(uploader: NoOpDataUploadWorker()),
+            commonDependencies: .mockAny()
         )
     }
 
-    /// Mocks feature instance which performs uploads to given `ServerMock` with performance optimized for fast delivery in unit tests.
-    static func mockWorkingFeatureWith(
-        server: ServerMock,
+    /// Mocks the feature instance which performs uploads to `URLSession`.
+    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
+    static func mockWith(
         directory: Directory,
-        configuration: Datadog.ValidConfiguration = .mockAny(),
-        performance: PerformancePreset = .combining(
-            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-            uploadPerformance: .veryQuick
-        ),
-        mobileDevice: MobileDevice = .mockWith(
-            currentBatteryStatus: {
-                // Mock full battery, so it doesn't rely on battery condition for the upload
-                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
-            }
-        ),
-        dateProvider: DateProvider = SystemDateProvider(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        dependencies: FeaturesCommonDependencies = .mockWith()
     ) -> RUMFeature {
-        return RUMFeature(
-            directory: directory,
-            configuration: configuration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: HTTPClient(session: server.urlSession),
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
+        return RUMFeature(directory: directory, commonDependencies: dependencies)
+    }
+
+    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
+    static func mockByRecordingRUMEventMatchers(
+        directory: Directory,
+        dependencies: FeaturesCommonDependencies = .mockWith()
+    ) -> RUMFeature {
+        // Get the full feature mock:
+        let fullFeature: RUMFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let uploadWorker = DataUploadWorkerMock()
+        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
+        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        return RUMFeature(storage: observedStorage, upload: mockedUpload, commonDependencies: dependencies)
+    }
+
+    // MARK: - Expecting RUMEvent Data
+
+    static func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        guard let uploadWorker = RUMFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
+        }
+        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
+            .flatMap { batchData in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
     }
 }
 

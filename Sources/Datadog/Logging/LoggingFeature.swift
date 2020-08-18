@@ -30,138 +30,80 @@ internal final class LoggingFeature {
 
     // MARK: - Components
 
+    static let featureName = "logging"
+    /// NOTE: any change to data format requires updating the directory url to be unique
+    static let dataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
+
     /// Log files storage.
-    let storage: Storage
+    let storage: FeatureStorage
     /// Logs upload worker.
-    let upload: Upload
-
-    /// Encapsulates  storage stack setup for `LoggingFeature`.
-    class Storage {
-        /// Writes logs to files.
-        let writer: FileWriter
-        /// Reads logs from files.
-        let reader: FileReader
-
-        /// NOTE: any change to logs data format requires updating the logs directory url to be unique
-        static let dataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
-
-        init(
-            directory: Directory,
-            performance: PerformancePreset,
-            dateProvider: DateProvider,
-            readWriteQueue: DispatchQueue
-        ) {
-            let orchestrator = FilesOrchestrator(
-                directory: directory,
-                performance: performance,
-                dateProvider: dateProvider
-            )
-
-            self.writer = FileWriter(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-            self.reader = FileReader(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-        }
-    }
-
-    /// Encapsulates upload stack setup for `LoggingFeature`.
-    class Upload {
-        /// Uploads logs to server.
-        let uploader: DataUploadWorker
-
-        init(
-            storage: Storage,
-            configuration: Datadog.ValidConfiguration,
-            performance: PerformancePreset,
-            mobileDevice: MobileDevice,
-            httpClient: HTTPClient,
-            dateProvider: DateProvider,
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-            uploadQueue: DispatchQueue
-        ) {
-            let httpHeaders = HTTPHeaders(
-                headers: [
-                    .contentTypeHeader(contentType: .applicationJSON),
-                    .userAgentHeader(
-                        appName: configuration.applicationName,
-                        appVersion: configuration.applicationVersion,
-                        device: mobileDevice
-                    )
-                ]
-            )
-            let uploadConditions = DataUploadConditions(
-                batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                networkConnectionInfo: networkConnectionInfoProvider
-            )
-
-            let dataUploader = DataUploader(
-                urlProvider: UploadURLProvider(
-                    urlWithClientToken: configuration.logsUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .ddsource(),
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
-                httpClient: httpClient,
-                httpHeaders: httpHeaders
-            )
-
-            self.uploader = DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: storage.reader,
-                dataUploader: dataUploader,
-                uploadConditions: uploadConditions,
-                delay: DataUploadDelay(performance: performance),
-                featureName: "logging"
-            )
-        }
-    }
+    let upload: FeatureUpload
 
     // MARK: - Initialization
 
-    init(
+    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
+            featureName: LoggingFeature.featureName,
+            dataFormat: LoggingFeature.dataFormat,
+            directory: directory,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+        return FeatureUpload(
+            featureName: LoggingFeature.featureName,
+            storage: storage,
+            uploadHTTPHeaders: HTTPHeaders(
+                headers: [
+                    .contentTypeHeader(contentType: .applicationJSON),
+                    .userAgentHeader(
+                        appName: commonDependencies.configuration.applicationName,
+                        appVersion: commonDependencies.configuration.applicationVersion,
+                        device: commonDependencies.mobileDevice
+                    )
+                ]
+            ),
+            uploadURLProvider: UploadURLProvider(
+                urlWithClientToken: commonDependencies.configuration.logsUploadURLWithClientToken,
+                queryItemProviders: [
+                    .ddsource(),
+                    .batchTime(using: commonDependencies.dateProvider)
+                ]
+            ),
+            commonDependencies: commonDependencies
+        )
+    }
+
+    convenience init(
         directory: Directory,
-        configuration: Datadog.ValidConfiguration,
-        performance: PerformancePreset,
-        mobileDevice: MobileDevice,
-        httpClient: HTTPClient,
-        dateProvider: DateProvider,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType
+        commonDependencies: FeaturesCommonDependencies
+    ) {
+        let storage = LoggingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
+        let upload = LoggingFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
+        self.init(
+            storage: storage,
+            upload: upload,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        commonDependencies: FeaturesCommonDependencies
     ) {
         // Configuration
-        self.configuration = configuration
+        self.configuration = commonDependencies.configuration
 
         // Bundle dependencies
-        self.dateProvider = dateProvider
-        self.userInfoProvider = userInfoProvider
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
+        self.dateProvider = commonDependencies.dateProvider
+        self.userInfoProvider = commonDependencies.userInfoProvider
+        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
+        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
 
-        // Initialize components
-        let readWriteQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-logs-read-write",
-            target: .global(qos: .utility)
-        )
-        self.storage = Storage(
-            directory: directory,
-            performance: performance,
-            dateProvider: dateProvider,
-            readWriteQueue: readWriteQueue
-        )
-
-        let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-logs-upload",
-            target: .global(qos: .utility)
-        )
-        self.upload = Upload(
-            storage: self.storage,
-            configuration: configuration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            dateProvider: dateProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            uploadQueue: uploadQueue
-        )
+        // Initialize stacks
+        self.storage = storage
+        self.upload = upload
     }
 }

@@ -103,54 +103,41 @@ public class Datadog {
 
         // Then, initialize features:
 
-        let httpClient = HTTPClient()
-        let mobileDevice = MobileDevice.current
-
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
 
+        let commonDependencies = FeaturesCommonDependencies(
+            configuration: validConfiguration,
+            performance: performance,
+            httpClient: HTTPClient(),
+            mobileDevice: MobileDevice.current,
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+
         if configuration.loggingEnabled {
             logging = LoggingFeature(
                 directory: try obtainLoggingFeatureDirectory(),
-                configuration: validConfiguration,
-                performance: performance,
-                mobileDevice: mobileDevice,
-                httpClient: httpClient,
-                dateProvider: dateProvider,
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                commonDependencies: commonDependencies
             )
         }
 
         if configuration.tracingEnabled {
             tracing = TracingFeature(
                 directory: try obtainTracingFeatureDirectory(),
-                configuration: validConfiguration,
-                performance: performance,
+                commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-                mobileDevice: mobileDevice,
-                httpClient: httpClient,
-                dateProvider: dateProvider,
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator()
             )
         }
 
         if configuration.rumEnabled {
             rum = RUMFeature(
                 directory: try obtainRUMFeatureDirectory(),
-                configuration: validConfiguration,
-                performance: performance,
-                mobileDevice: mobileDevice,
-                httpClient: httpClient,
-                dateProvider: dateProvider,
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                commonDependencies: commonDependencies
             )
         }
 
