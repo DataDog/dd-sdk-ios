@@ -31,6 +31,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewURI: String
     /// The start time of this View.
     private let viewStartTime: Date
+    /// Tells if this View is the active one. `true` for every new started View. `false` if any other View was started before this one is stopped.
+    private var isActiveView: Bool = true
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -85,27 +87,30 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 sendApplicationStartAction()
             }
             needsViewUpdate = true
+        case let command as RUMStartViewCommand where command.identity !== identity:
+            isActiveView = false
         case let command as RUMStopViewCommand where command.identity === identity:
+            isActiveView = false
             shouldComplete = true
 
         // Resource commands
-        case let command as RUMStartResourceCommand:
+        case let command as RUMStartResourceCommand where isActiveView:
             startResource(on: command)
-        case _ as RUMStopResourceCommand:
+        case _ as RUMStopResourceCommand where isActiveView:
             resourcesCount += 1
             needsViewUpdate = true
-        case _ as RUMStopResourceWithErrorCommand:
+        case _ as RUMStopResourceWithErrorCommand where isActiveView:
             errorsCount += 1
             needsViewUpdate = true
 
         // User Action commands
-        case let command as RUMStartUserActionCommand:
+        case let command as RUMStartUserActionCommand where isActiveView:
             startContinuousUserAction(on: command)
-        case let command as RUMAddUserActionCommand:
+        case let command as RUMAddUserActionCommand where isActiveView:
             addDiscreteUserAction(on: command)
 
         // Error command
-        case let command as RUMAddCurrentViewErrorCommand:
+        case let command as RUMAddCurrentViewErrorCommand where isActiveView:
             errorsCount += 1
             sendErrorEvent(on: command)
             needsViewUpdate = true

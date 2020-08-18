@@ -363,6 +363,16 @@ func createMockView() -> UIViewController {
     return viewController
 }
 
+/// Creates an instance of `UIViewController` subclass with a given name.
+func createMockView(viewControllerClassName: String) -> UIViewController {
+    let theClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
+    objc_registerClassPair(theClass)
+    let viewController = theClass.alloc() as! UIViewController
+    mockWindow.rootViewController = viewController
+    mockWindow.makeKeyAndVisible()
+    return viewController
+}
+
 /// Holds the `mockView` object so it can be weakily referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockView()
 
