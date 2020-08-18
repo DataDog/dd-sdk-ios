@@ -365,8 +365,16 @@ func createMockView() -> UIViewController {
 
 /// Creates an instance of `UIViewController` subclass with a given name.
 func createMockView(viewControllerClassName: String) -> UIViewController {
-    let theClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
-    objc_registerClassPair(theClass)
+    var theClass: AnyClass! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    if let existingClass = objc_lookUpClass(viewControllerClassName) {
+        theClass = existingClass
+    } else {
+        let newClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
+        objc_registerClassPair(newClass)
+        theClass = newClass
+    }
+
     let viewController = theClass.alloc() as! UIViewController
     mockWindow.rootViewController = viewController
     mockWindow.makeKeyAndVisible()

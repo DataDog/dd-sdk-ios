@@ -245,6 +245,47 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
     }
 
+    func testGivenViewWithPendingResources_whenItGetsStopped_itDoesNotFinishUntilResourcesComplete() throws {
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            attributes: [:],
+            startTime: Date()
+        )
+
+        // given
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        )
+        XCTAssertTrue(
+            scope.process(command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1"))
+        )
+        XCTAssertTrue(
+            scope.process(command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2"))
+        )
+
+        // when
+        XCTAssertTrue(
+            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
+            "The View should be kept alive as its Resources havent yet finished loading"
+        )
+
+        // then
+        XCTAssertTrue(
+            scope.process(command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1")),
+            "The View should be kept alive as all its Resources havent yet finished loading"
+        )
+        XCTAssertFalse(
+            scope.process(command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceName: "/resource/2")),
+            "The View should stop as all its Resources finished loading"
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
+        XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
+        XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
+    }
+
     // MARK: - User Action Tracking
 
     func testItManagesContinuousUserActionScopeLifecycle() throws {

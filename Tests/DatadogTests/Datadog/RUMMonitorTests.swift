@@ -230,7 +230,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
@@ -265,6 +265,64 @@ class RUMMonitorTests: XCTestCase {
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResource.self)
+            .model(ofType: RUMResource.self) { rumModel in
+                XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+            }
+    }
+
+    func testStartingLoadingResourcesFromTheFirstView_thenStartingAnotherViewWhichAlsoLoadsResources() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+
+        let view1 = createMockView(viewControllerClassName: "FirstViewController")
+        monitor.startView(viewController: view1)
+        monitor.startResourceLoading(resourceName: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceName: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
+        monitor.stopView(viewController: view1)
+
+        let view2 = createMockView(viewControllerClassName: "SecondViewController")
+        monitor.startView(viewController: view2)
+        monitor.startResourceLoading(resourceName: "/resource/3", url: .mockWith(pathComponent: "/resource/3"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceName: "/resource/4", url: .mockWith(pathComponent: "/resource/4"), httpMethod: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceName: "/resource/2", errorMessage: .mockAny(), source: .network)
+        monitor.stopResourceLoading(resourceName: "/resource/3", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoading(resourceName: "/resource/4", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopView(viewController: view2)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 13)
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMView.self) { rumModel in rumModel.view.url == "FirstViewController" }
+            .model(ofType: RUMView.self) { rumModel in
+                XCTAssertEqual(rumModel.view.url, "FirstViewController")
+                XCTAssertEqual(rumModel.view.resource.count, 1, "First View should track 1 Resource")
+                XCTAssertEqual(rumModel.view.error.count, 1, "First View should track 1 Resource Error")
+            }
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMView.self) { rumModel in rumModel.view.url == "SecondViewController" }
+            .model(ofType: RUMView.self) { rumModel in
+                XCTAssertEqual(rumModel.view.url, "SecondViewController")
+                XCTAssertEqual(rumModel.view.resource.count, 2, "Second View should track 2 Resources")
+            }
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMResource.self) { rumModel in rumModel.resource.url.contains("/resource/1") }
+            .model(ofType: RUMResource.self) { rumModel in
+                XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
+            }
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMError.self) { rumModel in rumModel.error.resource?.url.contains("/resource/2") ?? false }
+            .model(ofType: RUMError.self) { rumModel in
+                XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
+            }
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMResource.self) { rumModel in rumModel.resource.url.contains("/resource/3") }
+            .model(ofType: RUMResource.self) { rumModel in
+                XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+            }
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMResource.self) { rumModel in rumModel.resource.url.contains("/resource/4") }
             .model(ofType: RUMResource.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
             }
