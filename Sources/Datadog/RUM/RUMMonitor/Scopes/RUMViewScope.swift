@@ -203,7 +203,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: viewURI
             ),
-            usr: nil,
+            usr: dependencies.userInfoProvider.current,
             connectivity: nil,
             dd: .init(),
             action: .init(
@@ -248,7 +248,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 longTask: nil,
                 resource: .init(count: resourcesCount.toInt64)
             ),
-            usr: nil,
+            usr: dependencies.userInfoProvider.current,
             connectivity: nil,
             dd: .init(documentVersion: version.toInt64)
         )
@@ -269,7 +269,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
+            usr: dependencies.userInfoProvider.current,
             connectivity: nil,
             dd: .init(),
             error: .init(

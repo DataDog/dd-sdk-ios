@@ -123,7 +123,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
+            usr: dependencies.userInfoProvider.current,
             connectivity: nil,
             dd: .init(),
             action: .init(

@@ -76,12 +76,10 @@ extension RUMEventBuilder {
     }
 
     static func mockWith(
-        userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> RUMEventBuilder {
         return RUMEventBuilder(
-            userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
         )
@@ -304,8 +302,8 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
+        userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(
-            userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: nil,
             carrierInfoProvider: nil
         ),
@@ -313,6 +311,7 @@ extension RUMScopeDependencies {
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            userInfoProvider: userInfoProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator

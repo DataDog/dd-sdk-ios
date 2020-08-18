@@ -81,8 +81,8 @@ public class RUMMonitor {
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumApplicationID,
                 dependencies: RUMScopeDependencies(
+                    userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
                     eventBuilder: RUMEventBuilder(
-                        userInfoProvider: rumFeature.userInfoProvider,
                         networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
                         carrierInfoProvider: rumFeature.carrierInfoProvider
                     ),

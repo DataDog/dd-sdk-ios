@@ -11,7 +11,6 @@ internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     /// The actual RUM event model created by `RUMMonitor`
     let model: DM
 
-    let userInfo: UserInfo
     let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
 
@@ -27,12 +26,6 @@ internal struct RUMEvent<DM: RUMDataModel>: Encodable {
 internal struct RUMEventEncoder {
     /// Coding keys for permanent `RUMEvent` attributes.
     enum StaticCodingKeys: String, CodingKey {
-        // MARK: - User info
-
-        case userId = "usr.id"
-        case userName = "usr.name"
-        case userEmail = "usr.email"
-
         // MARK: - Network connection info
 
         case networkReachability = "network.client.reachability"
@@ -61,11 +54,6 @@ internal struct RUMEventEncoder {
 
     func encode<DM: RUMDataModel>(_ event: RUMEvent<DM>, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
-
-        // Encode user info
-        try event.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
-        try event.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
-        try event.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
 
         // Encode network info
         try container.encodeIfPresent(event.networkConnectionInfo?.reachability, forKey: .networkReachability)

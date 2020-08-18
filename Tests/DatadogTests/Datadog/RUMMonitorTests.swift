@@ -328,6 +328,47 @@ class RUMMonitorTests: XCTestCase {
             }
     }
 
+    // MARK: - Sending user info
+
+    func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directory: temporaryDirectory,
+            dependencies: .mockWith(
+                userInfoProvider: .mockWith(
+                    userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com")
+                )
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+
+        monitor.startView(viewController: mockView)
+        monitor.startUserAction(type: .scroll)
+        monitor.startResourceLoading(resourceName: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceName: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
+        monitor.stopUserAction(type: .scroll)
+        monitor.stopResourceLoading(resourceName: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceName: "/resource/2", errorMessage: .mockAny(), source: .network)
+        monitor.addViewError(message: .mockAny(), source: .source)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
+        let expectedUserInfo = RUMUSR(id: "abc-123", name: "Foo", email: "foo@bar.com")
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMAction.self) { action in
+            XCTAssertEqual(action.usr, expectedUserInfo)
+        }
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMView.self) { view in
+            XCTAssertEqual(view.usr, expectedUserInfo)
+        }
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMResource.self) { resource in
+            XCTAssertEqual(resource.usr, expectedUserInfo)
+        }
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMError.self) { error in
+            XCTAssertEqual(error.usr, expectedUserInfo)
+        }
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {

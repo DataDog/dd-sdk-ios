@@ -77,7 +77,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertValidRumUUID(event.model.action.id)
         XCTAssertEqual(event.model.action.type, .applicationStart)
         XCTAssertTrue(event.attributes.isEmpty, "The `application_start` event must have no attributes.")
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
@@ -111,7 +110,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
@@ -145,7 +143,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
@@ -192,7 +189,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 2)
         XCTAssertTrue(event.attributes.isEmpty)
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
@@ -389,7 +385,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.error.resource)
         XCTAssertNil(error.model.action)
         XCTAssertEqual(error.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(error.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(error.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(error.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
 

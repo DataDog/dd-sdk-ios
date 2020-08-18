@@ -79,7 +79,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.resource.size, 1_024)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), parent.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
@@ -126,7 +125,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), parent.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }

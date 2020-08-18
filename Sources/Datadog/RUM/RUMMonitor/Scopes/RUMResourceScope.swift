@@ -78,7 +78,7 @@ internal class RUMResourceScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
+            usr: dependencies.userInfoProvider.current,
             connectivity: nil,
             dd: .init(),
             resource: .init(
@@ -116,7 +116,7 @@ internal class RUMResourceScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
+            usr: dependencies.userInfoProvider.current,
             connectivity: nil,
             dd: .init(),
             error: .init(

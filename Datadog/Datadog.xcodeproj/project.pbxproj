@@ -118,6 +118,8 @@
 		61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
 		61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
 		61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
+		614B0A4B24EBC43D00A2A780 /* RUMUserInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4A24EBC43D00A2A780 /* RUMUserInfoProvider.swift */; };
+		614B0A4D24EBD71500A2A780 /* RUMUserInfoProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4C24EBD71500A2A780 /* RUMUserInfoProviderTests.swift */; };
 		614D812C24E3EA15004C9C5D /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D812B24E3EA15004C9C5D /* Feature.swift */; };
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		6152C83E24BE1C91006A1679 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 6152C83D24BE1C91006A1679 /* HTTPServerMock */; };
@@ -423,6 +425,8 @@
 		61494CB024C839460082C633 /* RUMResourceScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScope.swift; sourceTree = "<group>"; };
 		61494CB424C864680082C633 /* RUMResourceScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScopeTests.swift; sourceTree = "<group>"; };
 		61494CB924CB126F0082C633 /* RUMUserActionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScope.swift; sourceTree = "<group>"; };
+		614B0A4A24EBC43D00A2A780 /* RUMUserInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserInfoProvider.swift; sourceTree = "<group>"; };
+		614B0A4C24EBD71500A2A780 /* RUMUserInfoProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserInfoProviderTests.swift; sourceTree = "<group>"; };
 		614D812B24E3EA15004C9C5D /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* BundleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleType.swift; sourceTree = "<group>"; };
 		6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploaderBenchmarkTests.swift; sourceTree = "<group>"; };
@@ -1453,6 +1457,7 @@
 		61E5333B24B87908003D6C4E /* RUMEvent */ = {
 			isa = PBXGroup;
 			children = (
+				614B0A4A24EBC43D00A2A780 /* RUMUserInfoProvider.swift */,
 				61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */,
 				61E5333C24B8791A003D6C4E /* RUMEventEncoder.swift */,
 			);
@@ -1502,6 +1507,7 @@
 		61FF281F24B89807000B3D9B /* RUMEvent */ = {
 			isa = PBXGroup;
 			children = (
+				614B0A4C24EBD71500A2A780 /* RUMUserInfoProviderTests.swift */,
 				61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */,
 			);
 			path = RUMEvent;
@@ -1957,6 +1963,7 @@
 				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,
 				61C5A88C24509A0C00DA608C /* HTTPHeadersWriter.swift in Sources */,
 				61BB2B1B244A185D009F3F56 /* PerformancePreset.swift in Sources */,
+				614B0A4B24EBC43D00A2A780 /* RUMUserInfoProvider.swift in Sources */,
 				61133BD22423979B00786299 /* Directory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2051,6 +2058,7 @@
 				61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */,
 				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,
 				61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */,
+				614B0A4D24EBD71500A2A780 /* RUMUserInfoProviderTests.swift in Sources */,
 				61133C552423990D00786299 /* BatteryStatusProviderTests.swift in Sources */,
 				617B954024BF4DB300E6F443 /* RUMApplicationScopeTests.swift in Sources */,
 				6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */,

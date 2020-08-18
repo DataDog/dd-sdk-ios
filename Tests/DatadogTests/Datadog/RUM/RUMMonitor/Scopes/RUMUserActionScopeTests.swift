@@ -75,7 +75,6 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.resource?.count, 0)
         XCTAssertEqual(event.model.action.error?.count, 0)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.userInfo, dependencies.eventBuilder.userInfoProvider.value)
         XCTAssertEqual(event.networkConnectionInfo, dependencies.eventBuilder.networkConnectionInfoProvider?.current)
         XCTAssertEqual(event.mobileCarrierInfo, dependencies.eventBuilder.carrierInfoProvider?.current)
     }
