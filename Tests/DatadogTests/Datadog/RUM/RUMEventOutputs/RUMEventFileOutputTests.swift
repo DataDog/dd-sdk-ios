@@ -21,11 +21,7 @@ class RUMEventFileOutputTests: XCTestCase {
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
         let queue = DispatchQueue(label: "com.datadohq.testItWritesRUMEventToFileAsJSON")
-        let builder = RUMEventBuilder(
-            userInfoProvider: .mockWith(userInfo: UserInfo(id: "abc-123", name: "bar", email: "foo@bar.com")),
-            networkConnectionInfoProvider: nil,
-            carrierInfoProvider: nil
-        )
+        let builder = RUMEventBuilder()
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
                 dataFormat: RUMFeature.dataFormat,
@@ -70,15 +66,12 @@ class RUMEventFileOutputTests: XCTestCase {
             jsonString: """
             {
                 "attribute": "foo",
-                "custom.attribute": "value",
-                "usr.email": "foo@bar.com",
-                "usr.id": "abc-123",
-                "usr.name": "bar"
+                "custom.attribute": "value"
             }
             """
         )
 
-        // TODO: RUMM-585 We also need to test (in `RUMMonitorTests`) that custom user attributes
+        // TODO: RUMM-638 We also need to test (in `RUMMonitorTests`) that custom user attributes
         // do not overwrite values given by `RUMDataModel`.
     }
 }

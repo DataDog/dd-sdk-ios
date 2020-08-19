@@ -7,20 +7,7 @@
 import Foundation
 
 internal struct RUMEventBuilder {
-    /// Shared user info provider.
-    let userInfoProvider: UserInfoProvider
-    /// Shared network connection info provider (or `nil` if disabled for given `RUMMonitor`).
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
-    /// Shared mobile carrier info provider (or `nil` if disabled for given `RUMMonitor`).
-    let carrierInfoProvider: CarrierInfoProviderType?
-
     func createRUMEvent<DM: RUMDataModel>(with model: DM, attributes: [String: Encodable]) -> RUMEvent<DM> {
-        return RUMEvent(
-            model: model,
-            userInfo: userInfoProvider.value,
-            networkConnectionInfo: networkConnectionInfoProvider?.current,
-            mobileCarrierInfo: carrierInfoProvider?.current,
-            attributes: attributes
-        )
+        return RUMEvent(model: model, attributes: attributes)
     }
 }

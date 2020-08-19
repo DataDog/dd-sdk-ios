@@ -78,8 +78,8 @@ internal class RUMResourceScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
-            connectivity: nil,
+            usr: dependencies.userInfoProvider.current,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(),
             resource: .init(
                 type: command.kind.toRUMDataFormat,
@@ -116,8 +116,8 @@ internal class RUMResourceScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
-            connectivity: nil,
+            usr: dependencies.userInfoProvider.current,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(),
             error: .init(
                 message: command.errorMessage,

@@ -124,6 +124,11 @@ extension Array where Element == RUMEventMatcher {
         let last = filterRUMEvents(ofType: type, where: predicate).last
         return try XCTUnwrap(last, "Cannot find RUMEventMatcher matching the predicate", file: file, line: line)
     }
+
+    func forEachRUMEvent<DM: Decodable>(ofType type: DM.Type, body: ((DM) -> Void)) throws {
+        return try filter { matcher in matcher.model(isTypeOf: type) }
+            .forEach { matcher in body(try matcher.model()) }
+    }
 }
 
 func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {

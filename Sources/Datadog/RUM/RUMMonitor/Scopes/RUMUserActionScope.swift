@@ -114,8 +114,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             ),
-            usr: nil,
-            connectivity: nil,
+            usr: dependencies.userInfoProvider.current,
+            connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(),
             action: .init(
                 type: actionType.toRUMDataFormat,
