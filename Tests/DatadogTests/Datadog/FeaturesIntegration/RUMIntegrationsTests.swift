@@ -10,11 +10,11 @@ import XCTest
 class RUMIntegrationsTests: XCTestCase {
     private let integration = RUMContextIntegration()
 
-    func testWhenRUMMonitorIsRegistered_itProvidesRUMContextAttributes() throws {
+    func testGivenRUMMonitorRegistered_itProvidesRUMContextAttributes() throws {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
-        // when
+        // given
         let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
         monitor.startView(viewController: mockView)
 
@@ -25,6 +25,24 @@ class RUMIntegrationsTests: XCTestCase {
         XCTAssertEqual(attributes["application_id"] as? String, "rum-123")
         XCTAssertValidRumUUID(attributes["session_id"] as? String)
         XCTAssertValidRumUUID(attributes["view.id"] as? String)
+    }
+
+    func testGivenRUMMonitorRegistered_whenSessionIsSampled_itProvidesEmptyRUMContextAttributes() throws {
+        RUMFeature.instance = RUMFeature(
+            storage: FeatureStorage(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            upload: FeatureUpload(uploader: NoOpDataUploadWorker()),
+            commonDependencies: .mockWith(configuration: .mockWith(rumSessionSamplingRate: 0.0))
+        )
+        defer { RUMFeature.instance = nil }
+
+        // given
+        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        monitor.startView(viewController: mockView)
+
+        // then
+        let attributes = try XCTUnwrap(integration.currentRUMContextAttributes)
+
+        XCTAssertTrue(attributes.isEmpty)
     }
 
     func testWhenRUMMonitorIsNotRegistered_itReturnsNil() throws {

@@ -76,14 +76,15 @@ extension Datadog {
 
         internal let clientToken: String
         internal let environment: String
-        internal var loggingEnabled: Bool
-        internal var tracingEnabled: Bool
-        internal var rumEnabled: Bool
+        internal let loggingEnabled: Bool
+        internal let tracingEnabled: Bool
+        internal let rumEnabled: Bool
         internal let logsEndpoint: LogsEndpoint
-        internal var tracesEndpoint: TracesEndpoint
-        internal var rumEndpoint: RUMEndpoint
+        internal let tracesEndpoint: TracesEndpoint
+        internal let rumEndpoint: RUMEndpoint
         internal let serviceName: String?
-        internal var tracedHosts = Set<String>()
+        internal let tracedHosts: Set<String>
+        internal let rumSessionsSamplingRate: Float
 
         /// Creates configuration builder and sets client token.
         /// - Parameter clientToken: client token obtained on Datadog website.
@@ -112,6 +113,7 @@ extension Datadog {
             internal var rumEndpoint: RUMEndpoint = .us
             internal var serviceName: String? = nil
             internal var tracedHosts = Set<String>()
+            internal var rumSessionsSamplingRate: Float = 100.0
 
             internal init(clientToken: String, environment: String) {
                 self.clientToken = clientToken
@@ -162,19 +164,29 @@ extension Datadog {
             /// Sets the hosts to be automatically traced.
             ///
             /// Every request made to a traced host and its subdomains will create its Span with related information; _such as url, method, status code, error (if any)_.
-            /// Example, if `tracedHosts` is ["example.com"], then every network request such as the ones below will be automatically traced and generate a span.
-            /// "https://example.com/any/path"
-            /// "https://api.example.com/any/path"
+            /// Example, if `tracedHosts` is `["example.com"]`, then every network request such as the ones below will be automatically traced and generate a span:
+            /// * https://example.com/any/path
+            /// * https://api.example.com/any/path
             ///
-            /// If your backend is also being traced with Datadog agents, you can see the full trace (eg: client>server>database) in your dashboard with our distributed tracing feature.
+            /// If your backend is also being traced with Datadog agents, you can see the full trace (e.g.: client → server → database) in your dashboard with our distributed tracing feature.
             /// A few HTTP headers are injected to auto-traced network requests so that you can see your spans in your backend as well.
             ///
             /// If `tracedHosts` is empty, automatic tracing is disabled.
-            /// **IMPORTANT:** Non-empty `tracedHost`s will lead to modifying implementation of some `URLSession` methods, in case your app relies on `URLSession` internals please refer to `URLSessionSwizzler.swift` file for details
+            ///
+            /// **NOTE:** Non-empty `tracedHost`s will lead to modifying implementation of some `URLSession` methods, in case your app relies on `URLSession` internals please refer to `URLSessionSwizzler.swift` file for details
             ///
             /// - Parameter tracedHosts: empty by default
             public func set(tracedHosts: Set<String>) -> Builder {
                 self.tracedHosts = tracedHosts
+                return self
+            }
+
+            /// Sets the sampling rate for RUM Sessions.
+            ///
+            /// - Parameter rumSessionsSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// means no RUM events will be sent, `100.0` means all sessions will be kept (default value is `100.0`).
+            public func set(rumSessionsSamplingRate: Float) -> Builder {
+                self.rumSessionsSamplingRate = rumSessionsSamplingRate
                 return self
             }
 
@@ -223,7 +235,8 @@ extension Datadog {
                     tracesEndpoint: tracesEndpoint,
                     rumEndpoint: rumEndpoint,
                     serviceName: serviceName,
-                    tracedHosts: tracedHosts
+                    tracedHosts: tracedHosts,
+                    rumSessionsSamplingRate: rumSessionsSamplingRate
                 )
             }
         }
@@ -243,6 +256,8 @@ extension Datadog {
         internal let logsUploadURLWithClientToken: URL
         internal let tracesUploadURLWithClientToken: URL
         internal let rumUploadURLWithClientToken: URL
+
+        internal let rumSessionSamplingRate: Float
     }
 }
 
@@ -265,7 +280,8 @@ extension Datadog.ValidConfiguration {
             rumUploadURLWithClientToken: try ifValid(
                 endpointURLString: configuration.rumEndpoint.url,
                 clientToken: configuration.clientToken
-            )
+            ),
+            rumSessionSamplingRate: configuration.rumSessionsSamplingRate
         )
     }
 }

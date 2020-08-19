@@ -90,7 +90,8 @@ public class RUMMonitor {
                         fileWriter: rumFeature.storage.writer
                     ),
                     rumUUIDGenerator: DefaultRUMUUIDGenerator()
-                )
+                ),
+                samplingRate: rumFeature.configuration.rumSessionSamplingRate
             ),
             dateProvider: rumFeature.dateProvider
         )

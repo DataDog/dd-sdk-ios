@@ -11,7 +11,8 @@ class RUMApplicationScopeTests: XCTestCase {
     func testRootContext() {
         let scope = RUMApplicationScope(
             rumApplicationID: "abc-123",
-            dependencies: .mockAny()
+            dependencies: .mockAny(),
+            samplingRate: .mockAny()
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "abc-123")
@@ -22,7 +23,7 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testWhenFirstViewIsStarted_itStartsNewSession() {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100)
 
         XCTAssertNil(scope.sessionScope)
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockAny()))
@@ -30,7 +31,7 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100)
         var currentTime = Date()
 
         let view = createMockView()
@@ -51,11 +52,58 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny())
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100)
 
         XCTAssertTrue(scope.process(command: RUMStopViewCommand.mockAny()))
         XCTAssertTrue(scope.process(command: RUMAddUserActionCommand.mockAny()))
         XCTAssertTrue(scope.process(command: RUMStopResourceCommand.mockAny()))
         XCTAssertNil(scope.sessionScope)
+    }
+
+    // MARK: - RUM Session Sampling
+
+    func testWhenSamplingRateIs100_allEventsAreSent() {
+        let output = RUMEventOutputMock()
+        let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
+
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 100)
+
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+
+        XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMView>.self).count, 2)
+    }
+
+    func testWhenSamplingRateIs0_noEventsAreSent() {
+        let output = RUMEventOutputMock()
+        let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
+
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 0)
+
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+
+        XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMView>.self).count, 0)
+    }
+
+    func testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent() throws {
+        let output = RUMEventOutputMock()
+        let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
+
+        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 50)
+
+        var currentTime = Date()
+        let simulatedSessionsCount = 200
+        (0..<simulatedSessionsCount).forEach { _ in
+            _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+            _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
+            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
+        }
+
+        let viewEventsCount = try output.recordedEvents(ofType: RUMEvent<RUMView>.self).count
+        let trackedSessionsCount = Double(viewEventsCount) / 2 // each Session should send 2 View updates
+
+        XCTAssertGreaterThan(trackedSessionsCount, 100 * 0.85) // -15%
+        XCTAssertLessThan(trackedSessionsCount, 100 * 1.15) // +15%
     }
 }
