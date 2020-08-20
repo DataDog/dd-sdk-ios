@@ -7,15 +7,15 @@
 import Foundation
 
 struct AppConfig {
-    /// Client token read from `Datadog.xcconfig`.
-    let clientToken: String
     /// Service name used for logs and traces.
     let serviceName: String
     /// RUM application identifier
     let rumAppID: String
+    /// Client token read from `Datadog.xcconfig`.
+    let rumClientToken: String
 
     init(serviceName: String) {
-        guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
+        guard let rumClientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !rumClientToken.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `DATADOG_CLIENT_TOKEN` from `Info.plist` dictionary.
             Please update `Datadog.xcconfig` in the repository root with your own
@@ -32,7 +32,7 @@ struct AppConfig {
             """)
         }
 
-        self.clientToken = clientToken
+        self.rumClientToken = rumClientToken
         self.serviceName = serviceName
         self.rumAppID = rumAppID
     }
