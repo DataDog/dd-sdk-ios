@@ -11,29 +11,26 @@ class RUMMonitorConfigurationTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
-    override func setUp() {
-        super.setUp()
+    func testRUMMonitorConfiguration() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(
+            configuration: .mockWith(
+                common: .mockWith(
                     applicationVersion: "1.2.3",
                     serviceName: "service-name",
                     environment: "tests"
                 ),
+                applicationID: "rum-123",
+                sessionSamplingRate: 42.5
+            ),
+            dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
             )
         )
-    }
+        defer { RUMFeature.instance = nil }
 
-    override func tearDown() {
-        RUMFeature.instance = nil
-        super.tearDown()
-    }
-
-    func testDefaultRUMMonitor() throws {
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let monitor = RUMMonitor.initialize().dd
 
         let feature = try XCTUnwrap(RUMFeature.instance)
         let scopeDependencies = monitor.applicationScope.dependencies
@@ -41,9 +38,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
         XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
-    }
-
-    func testCustomizedRUMMonitor() {
-        // TODO: RUMM-614 Test customized `RUMMonitor`
+        XCTAssertEqual(monitor.applicationScope.samplingRate, 42.5)
+        XCTAssertEqual(monitor.applicationScope.context.rumApplicationID, "rum-123")
     }
 }
