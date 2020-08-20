@@ -28,13 +28,15 @@ class TracerTests: XCTestCase {
     func testSendingSpanWithDefaultTracer() throws {
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(
+            configuration: .mockWith(
+                common: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                     serviceName: "default-service-name",
                     environment: "custom"
-                ),
+                )
+            ),
+            dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             ),
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
@@ -598,8 +600,9 @@ class TracerTests: XCTestCase {
 
         // given
         let tracer = Tracer.initialize(configuration: .init()).dd
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
         let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
@@ -607,7 +610,10 @@ class TracerTests: XCTestCase {
 
         // then
         let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
-        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"), "rum-123")
+        XCTAssertEqual(
+            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"),
+            try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
+        )
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
     }
@@ -627,7 +633,7 @@ class TracerTests: XCTestCase {
 
         // given
         let tracer = Tracer.initialize(configuration: .init()).dd
-        XCTAssertNil(RUMMonitor.shared)
+        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
         // when
         let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
@@ -655,8 +661,9 @@ class TracerTests: XCTestCase {
 
         // given
         let tracer = Tracer.initialize(configuration: .init()).dd
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
         let errorSpan = tracer.startSpan(operationName: "operation name", tags: [OTTags.error: true])
@@ -682,8 +689,9 @@ class TracerTests: XCTestCase {
 
         // given
         let tracer = Tracer.initialize(configuration: .init()).dd
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
         let span = tracer.startSpan(operationName: "operation name")

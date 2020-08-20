@@ -7,20 +7,8 @@
 @testable import Datadog
 
 extension FeaturesCommonDependencies {
-    static func mockAny() -> FeaturesCommonDependencies {
-        let anyURL = URL(string: "https://foo.com")!
-        return FeaturesCommonDependencies(
-            configuration: .init(
-                applicationName: "",
-                applicationVersion: "",
-                applicationBundleIdentifier: "",
-                serviceName: "",
-                environment: "",
-                logsUploadURLWithClientToken: anyURL,
-                tracesUploadURLWithClientToken: anyURL,
-                rumUploadURLWithClientToken: anyURL,
-                rumSessionSamplingRate: 100.0
-            ),
+    static func mockAny() -> Self {
+        return .init(
             performance: .default,
             httpClient: HTTPClient(),
             mobileDevice: .current,

@@ -12,6 +12,7 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),
+            configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
     }
@@ -20,16 +21,18 @@ extension LoggingFeature {
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockWith()
+        configuration: FeaturesConfiguration.Logging = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
-        return LoggingFeature(directory: directory, commonDependencies: dependencies)
+        return LoggingFeature(directory: directory, configuration: configuration, commonDependencies: dependencies)
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockWith()
+        configuration: FeaturesConfiguration.Logging = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
         // Get the full feature mock:
         let fullFeature: LoggingFeature = .mockWith(directory: directory, dependencies: dependencies)
@@ -37,7 +40,12 @@ extension LoggingFeature {
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        return LoggingFeature(storage: observedStorage, upload: mockedUpload, commonDependencies: dependencies)
+        return LoggingFeature(
+            storage: observedStorage,
+            upload: mockedUpload,
+            configuration: configuration,
+            commonDependencies: dependencies
+        )
     }
 
     // MARK: - Expecting Logs Data

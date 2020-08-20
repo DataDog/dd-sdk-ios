@@ -9,11 +9,10 @@
 // MARK: - Configuration Mocks
 
 extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration {
-        return .mockWith()
-    }
+    static func mockAny() -> Datadog.Configuration { .mockWith() }
 
     static func mockWith(
+        rumApplicationID: String? = .mockAny(),
         clientToken: String = .mockAny(),
         environment: String = .mockAny(),
         loggingEnabled: Bool = false,
@@ -27,6 +26,7 @@ extension Datadog.Configuration {
         rumSessionsSamplingRate: Float = 100.0
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
+            rumApplicationID: rumApplicationID,
             clientToken: clientToken,
             environment: environment,
             loggingEnabled: loggingEnabled,
@@ -42,10 +42,21 @@ extension Datadog.Configuration {
     }
 }
 
-extension Datadog.ValidConfiguration {
-    static func mockAny() -> Datadog.ValidConfiguration {
-        return mockWith()
+extension FeaturesConfiguration {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: Common = .mockAny(),
+        logging: Logging? = .mockAny(),
+        tracing: Tracing? = .mockAny(),
+        rum: RUM? = .mockAny()
+    ) -> Self {
+        return .init(common: common, logging: logging, tracing: tracing, rum: rum)
     }
+}
+
+extension FeaturesConfiguration.Common {
+    static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         applicationName: String = .mockAny(),
@@ -53,21 +64,63 @@ extension Datadog.ValidConfiguration {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        logsUploadURLWithClientToken: URL = .mockAny(),
-        tracesUploadURLWithClientToken: URL = .mockAny(),
-        rumUploadURLWithClientToken: URL = .mockAny(),
-        rumSessionSamplingRate: Float = 100.0
-    ) -> Datadog.ValidConfiguration {
-        return Datadog.ValidConfiguration(
+        performance: PerformancePreset = .best(for: .iOSApp)
+    ) -> Self {
+        return .init(
             applicationName: applicationName,
             applicationVersion: applicationVersion,
             applicationBundleIdentifier: applicationBundleIdentifier,
             serviceName: serviceName,
             environment: environment,
-            logsUploadURLWithClientToken: logsUploadURLWithClientToken,
-            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken,
-            rumUploadURLWithClientToken: rumUploadURLWithClientToken,
-            rumSessionSamplingRate: rumSessionSamplingRate
+            performance: performance
+        )
+    }
+}
+
+extension FeaturesConfiguration.Logging {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        uploadURLWithClientToken: URL = .mockAny()
+    ) -> Self {
+        return .init(common: common, uploadURLWithClientToken: uploadURLWithClientToken)
+    }
+}
+
+extension FeaturesConfiguration.Tracing {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        uploadURLWithClientToken: URL = .mockAny(),
+        autoInstrumentation: FeaturesConfiguration.Tracing.AutoInstrumentation = .init(
+            tracedHosts: [],
+            excludedHosts: []
+        )
+    ) -> Self {
+        return .init(
+            common: common,
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            autoInstrumentation: autoInstrumentation
+        )
+    }
+}
+
+extension FeaturesConfiguration.RUM {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        uploadURLWithClientToken: URL = .mockAny(),
+        applicationID: String = .mockAny(),
+        sessionSamplingRate: Float = 100.0
+    ) -> Self {
+        return .init(
+            common: common,
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            applicationID: applicationID,
+            sessionSamplingRate: sessionSamplingRate
         )
     }
 }
@@ -187,7 +240,6 @@ extension FeaturesCommonDependencies {
     /// Mocks features common dependencies.
     /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
     static func mockWith(
-        configuration: Datadog.ValidConfiguration = .mockAny(),
         performance: PerformancePreset = .combining(
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
@@ -213,7 +265,6 @@ extension FeaturesCommonDependencies {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
-            configuration: configuration,
             performance: performance,
             httpClient: HTTPClient(session: .serverMockURLSession),
             mobileDevice: mobileDevice,

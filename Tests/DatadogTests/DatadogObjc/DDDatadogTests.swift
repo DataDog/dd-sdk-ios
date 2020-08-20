@@ -36,8 +36,8 @@ class DDDatadogTests: XCTestCase {
         )
 
         XCTAssertNotNil(Datadog.instance)
-        XCTAssertEqual(LoggingFeature.instance?.configuration.applicationName, "app-name")
-        XCTAssertEqual(LoggingFeature.instance?.configuration.environment, "tests")
+        XCTAssertEqual(LoggingFeature.instance?.configuration.common.applicationName, "app-name")
+        XCTAssertEqual(LoggingFeature.instance?.configuration.common.environment, "tests")
         XCTAssertNotNil(TracingAutoInstrumentation.instance)
 
         TracingAutoInstrumentation.instance?.swizzler.unswizzle()
