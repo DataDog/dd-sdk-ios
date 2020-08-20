@@ -85,9 +85,9 @@ public class Tracer: OTTracer {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
-                    applicationVersion: tracingFeature.configuration.applicationVersion,
-                    environment: tracingFeature.configuration.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
+                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                    environment: tracingFeature.configuration.common.environment,
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                     carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
