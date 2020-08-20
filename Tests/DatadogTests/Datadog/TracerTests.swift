@@ -217,6 +217,67 @@ class TracerTests: XCTestCase {
         XCTAssertLessThan(try childMatcher.duration(), try rootMatcher.duration())
     }
 
+    func testSendingSpanWithActiveSpanAsAParent() throws {
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let queue1 = DispatchQueue(label: "\(#function)-queue1")
+        let queue2 = DispatchQueue(label: "\(#function)-queue2")
+
+        let rootSpan = tracer.startSpan(operationName: "root operation").setActive()
+
+        queue1.sync {
+            let child1Span = tracer.startSpan(operationName: "child 1 operation")
+            child1Span.finish()
+        }
+
+        queue2.sync {
+            let child2Span = tracer.startSpan(operationName: "child 2 operation")
+            child2Span.finish()
+        }
+
+        rootSpan.finish()
+
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
+        let rootMatcher = spanMatchers[2]
+        let child1Matcher = spanMatchers[1]
+        let child2Matcher = spanMatchers[0]
+
+        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
+        XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
+    }
+
+    func testSendingSpansWithNoParent() throws {
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init()).dd
+        let queue = DispatchQueue(label: "\(#function)-queue")
+
+        func makeAPIRequest(completion: @escaping () -> Void) {
+            queue.asyncAfter(deadline: .now() + 1) {
+                completion()
+            }
+        }
+
+        let request1Span = tracer.startSpan(operationName: "/resource/1")
+        makeAPIRequest {
+            request1Span.finish()
+        }
+
+        let request2Span = tracer.startSpan(operationName: "/resource/2")
+        makeAPIRequest {
+            request2Span.finish()
+        }
+        tracer.activeSpan?.finish()
+
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
+        XCTAssertEqual(try spanMatchers[0].parentSpanID(), "0")
+        XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0")
+    }
+
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
@@ -788,38 +849,6 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 
         try Datadog.deinitializeOrThrow()
-    }
-
-    func testSendingSpanWithImplicitParent() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
-        defer { TracingFeature.instance = nil }
-
-        let tracer = Tracer.initialize(configuration: .init()).dd
-        let queue1 = DispatchQueue(label: "\(#function)-queue1")
-        let queue2 = DispatchQueue(label: "\(#function)-queue2")
-
-        let rootSpan = tracer.startSpan(operationName: "root operation")
-
-        queue1.sync {
-            let child1Span = tracer.startSpan(operationName: "child 1 operation")
-            child1Span.finish()
-        }
-
-        queue2.sync {
-            let child2Span = tracer.startSpan(operationName: "child 2 operation")
-            child2Span.finish()
-        }
-
-        rootSpan.finish()
-
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
-        let rootMatcher = spanMatchers[2]
-        let child1Matcher = spanMatchers[1]
-        let child2Matcher = spanMatchers[0]
-
-        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
-        XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
-        XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
     }
 }
 // swiftlint:enable multiline_arguments_brackets

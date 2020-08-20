@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
+
 internal let noopTracer: OTTracer = DDNoopTracer()
 internal let noopSpan: OTSpan = DDNoopSpan()
 internal let noopSpanContext: OTSpanContext = DDNoopSpanContext()
@@ -31,6 +33,8 @@ private class DDNoopSpan: OTSpan {
     func getBaggageItem(_ key: String) -> String? { nil }
     func finish() {}
     func finishWithTime(_ finishTime: Date?) {}
+    @discardableResult
+    func setActive() -> OTSpan { self }
 }
 
 private class DDNoopSpanContext: OTSpanContext {

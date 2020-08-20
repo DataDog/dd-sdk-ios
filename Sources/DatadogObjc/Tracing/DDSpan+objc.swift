@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
 import protocol Datadog.OTSpan
 
 internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
@@ -73,5 +74,10 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
         } else {
             swiftSpan.finish()
         }
+    }
+
+    func setActive() -> DatadogObjc.OTSpan {
+        _ = swiftSpan.setActive()
+        return self
     }
 }

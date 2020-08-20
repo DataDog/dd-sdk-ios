@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
 import class Datadog.Tracer
 import protocol Datadog.OTTracer
 import struct Datadog.OTReference

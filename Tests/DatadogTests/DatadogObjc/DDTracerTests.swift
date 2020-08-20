@@ -215,8 +215,8 @@ class DDTracerTests: XCTestCase {
         let firstSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext)
         XCTAssertNil(firstSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
 
-        let secondSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary())
-        XCTAssertEqual(secondSpan.dd!.swiftSpan.dd.ddContext.parentSpanID, firstSpan.dd!.swiftSpan.dd.ddContext.spanID)
+        let secondSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary()).setActive()
+        XCTAssertNil(secondSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
 
         let thirdSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary(), startTime: .mockAny())
         XCTAssertEqual(thirdSpan.dd!.swiftSpan.dd.ddContext.parentSpanID, secondSpan .dd!.swiftSpan.dd.ddContext.spanID)

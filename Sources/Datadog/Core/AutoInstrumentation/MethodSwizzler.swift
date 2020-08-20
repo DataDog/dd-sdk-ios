@@ -62,8 +62,8 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
     @discardableResult
     func swizzle(
         _ foundMethod: FoundMethod,
-        impProvider: (TypedIMP) -> TypedBlockIMP,
-        onlyIfNonSwizzled: Bool = false
+        onlyIfNonSwizzled: Bool = false,
+        impProvider: (TypedIMP) -> TypedBlockIMP
     ) -> Bool {
         sync {
             if onlyIfNonSwizzled &&
