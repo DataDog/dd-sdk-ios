@@ -96,8 +96,9 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
 
+        let actionName = String.mockRandom()
         monitor.startView(viewController: mockView)
-        monitor.registerUserAction(type: .tap)
+        monitor.registerUserAction(type: .tap, name: actionName)
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
@@ -110,6 +111,7 @@ class RUMMonitorTests: XCTestCase {
         }
         try rumEventMatchers[2].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .tap)
+            XCTAssertEqual(rumModel.action.target?.name, actionName)
         }
         try rumEventMatchers[3].model(ofType: RUMView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
@@ -124,7 +126,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll)
+        monitor.startUserAction(type: .scroll, name: .mockAny())
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .GET)
         monitor.stopResourceLoading(resourceName: "/resource/1", kind: .image, httpStatusCode: 200)
         monitor.startResourceLoading(resourceName: "/resource/2", url: .mockAny(), httpMethod: .GET)
@@ -183,7 +185,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll)
+        monitor.startUserAction(type: .scroll, name: .mockAny())
         #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
         monitor.addViewError(message: "View error message", source: .source)
         #sourceLocation()
@@ -236,7 +238,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: view1)
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         monitor.startView(viewController: view2)
-        monitor.registerUserAction(type: .tap)
+        monitor.registerUserAction(type: .tap, name: .mockAny())
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
         monitor.stopResourceLoading(resourceName: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
         monitor.stopView(viewController: view1)
@@ -344,7 +346,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll)
+        monitor.startUserAction(type: .scroll, name: .mockAny())
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
         monitor.startResourceLoading(resourceName: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
         monitor.stopUserAction(type: .scroll)
@@ -388,7 +390,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll)
+        monitor.startUserAction(type: .scroll, name: .mockAny())
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
         monitor.startResourceLoading(resourceName: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
         monitor.stopUserAction(type: .scroll)
@@ -438,9 +440,9 @@ class RUMMonitorTests: XCTestCase {
             case 5: monitor.stopResourceLoading(resourceName: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
             case 6: monitor.stopResourceLoadingWithError(resourceName: .mockAny(), error: ErrorMock(), source: .network, httpStatusCode: .mockAny())
             case 7: monitor.stopResourceLoadingWithError(resourceName: .mockAny(), errorMessage: .mockAny(), source: .network)
-            case 8: monitor.startUserAction(type: .scroll)
+            case 8: monitor.startUserAction(type: .scroll, name: String.mockRandom())
             case 9: monitor.stopUserAction(type: .scroll)
-            case 10: monitor.registerUserAction(type: .tap)
+            case 10: monitor.registerUserAction(type: .tap, name: String.mockRandom())
             case 11: _ = monitor.contextProvider.context
             default: break
             }

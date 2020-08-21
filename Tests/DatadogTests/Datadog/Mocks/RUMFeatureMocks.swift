@@ -218,10 +218,11 @@ extension RUMStartUserActionCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        actionType: RUMUserActionType = .swipe
+        actionType: RUMUserActionType = .swipe,
+        name: String = .mockAny()
     ) -> RUMStartUserActionCommand {
         return RUMStartUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType
+            time: time, attributes: attributes, actionType: actionType, name: name
         )
     }
 }
@@ -232,10 +233,11 @@ extension RUMStopUserActionCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        actionType: RUMUserActionType = .swipe
+        actionType: RUMUserActionType = .swipe,
+        name: String? = nil
     ) -> RUMStopUserActionCommand {
         return RUMStopUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType
+            time: time, attributes: attributes, actionType: actionType, name: name
         )
     }
 }
@@ -246,10 +248,11 @@ extension RUMAddUserActionCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        actionType: RUMUserActionType = .tap
+        actionType: RUMUserActionType = .tap,
+        name: String = .mockAny()
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType
+            time: time, attributes: attributes, actionType: actionType, name: name
         )
     }
 }

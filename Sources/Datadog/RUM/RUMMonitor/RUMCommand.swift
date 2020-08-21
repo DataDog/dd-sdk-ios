@@ -180,6 +180,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     let attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
+    let name: String
 }
 
 /// Stops continuous User Action.
@@ -188,6 +189,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     let attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
+    let name: String?
 }
 
 /// Adds discrete (discontinuous) User Action.
@@ -196,4 +198,5 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
+    let name: String
 }

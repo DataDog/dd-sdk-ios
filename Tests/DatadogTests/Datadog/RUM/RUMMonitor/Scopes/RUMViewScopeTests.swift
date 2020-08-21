@@ -289,10 +289,12 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         XCTAssertNil(scope.userActionScope)
+        let actionName = String.mockRandom()
         XCTAssertTrue(
-            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe))
+            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: actionName))
         )
         XCTAssertNotNil(scope.userActionScope)
+        XCTAssertEqual(scope.userActionScope?.name, actionName)
         XCTAssertTrue(
             scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe))
         )
@@ -301,8 +303,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
         )
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
-        XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
+        let viewEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMView>.self).last)
+        XCTAssertEqual(viewEvent.model.view.action.count, 1, "View should record 1 action")
     }
 
     func testItManagesDiscreteUserActionScopeLifecycle() throws {
@@ -321,10 +323,12 @@ class RUMViewScopeTests: XCTestCase {
         currentTime.addTimeInterval(0.5)
 
         XCTAssertNil(scope.userActionScope)
+        let actionName = String.mockRandom()
         XCTAssertTrue(
-            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap))
+            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: actionName))
         )
         XCTAssertNotNil(scope.userActionScope)
+        XCTAssertEqual(scope.userActionScope?.name, actionName)
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 

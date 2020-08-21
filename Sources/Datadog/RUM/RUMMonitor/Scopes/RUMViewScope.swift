@@ -173,6 +173,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
+            name: command.name,
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
@@ -184,6 +185,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
+            name: command.name,
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
