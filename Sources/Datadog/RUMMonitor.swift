@@ -123,12 +123,13 @@ public class RUMMonitor: DDRUMMonitor {
 
     // MARK: - Public DDRUMMonitor conformance
 
-    override public func startView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]?) {
+    override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
-                identity: viewController
+                identity: viewController,
+                path: path,
+                attributes: aggregate(attributes)
             )
         )
     }
