@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import UIKit
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
@@ -50,6 +49,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: AnyObject,
+        uri: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date
     ) {
@@ -58,7 +58,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.identity = identity
         self.attributes = attributes
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
-        self.viewURI = RUMViewScope.viewURI(from: identity)
+        self.viewURI = uri
         self.viewStartTime = startTime
     }
 
@@ -292,15 +292,5 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
-    }
-
-    // MARK: - Private
-
-    private static func viewURI(from id: AnyObject) -> String {
-        guard let viewController = id as? UIViewController else {
-            return ""
-        }
-
-        return "\(type(of: viewController))"
     }
 }

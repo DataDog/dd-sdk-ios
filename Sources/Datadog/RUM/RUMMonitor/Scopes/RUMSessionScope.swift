@@ -72,6 +72,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 parent: self,
                 dependencies: dependencies,
                 identity: expiredViewIdentity,
+                uri: expiredView.viewURI,
                 attributes: expiredView.attributes,
                 startTime: startTime
             )
@@ -120,6 +121,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 parent: self,
                 dependencies: dependencies,
                 identity: command.identity,
+                uri: command.path,
                 attributes: command.attributes,
                 startTime: command.time
             )

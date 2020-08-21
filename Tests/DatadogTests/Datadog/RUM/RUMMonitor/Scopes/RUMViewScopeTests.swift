@@ -20,6 +20,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: .mockAny()
         )
@@ -38,6 +39,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: .mockAny()
         )
@@ -57,13 +59,14 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: currentTime
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
             )
         )
 
@@ -85,13 +88,14 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: currentTime
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
             )
         )
 
@@ -116,13 +120,14 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: ["foo": "bar", "fizz": "buzz"],
             startTime: currentTime
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand(time: currentTime, attributes: ["foo": "bar 2"], identity: mockView)
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar 2"], identity: mockView)
             )
         )
 
@@ -147,6 +152,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: currentTime
         )
@@ -192,6 +198,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: Date()
         )
@@ -238,6 +245,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: Date()
         )
@@ -281,6 +289,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: Date()
         )
@@ -319,6 +328,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: currentTime
         )
@@ -358,6 +368,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: currentTime
         )
@@ -402,6 +413,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
+            uri: "UIViewController",
             attributes: [:],
             startTime: Date()
         )
