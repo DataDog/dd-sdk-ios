@@ -57,6 +57,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
 
+        // Enable RUM Views debug utility.
+        Datadog.debugRUM = true
+
         // Add attributes
         logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
 

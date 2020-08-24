@@ -61,6 +61,8 @@ public class RUMMonitor: DDRUMMonitor {
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
+    /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
+    private var debugging: RUMDebugging? = nil
 
     // MARK: - Initialization
 
@@ -110,13 +112,19 @@ public class RUMMonitor: DDRUMMonitor {
         )
     }
 
-    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider) {
+    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider, debugRUMViews: Bool = false) {
         self.applicationScope = applicationScope
         self.dateProvider = dateProvider
         self.contextProvider = RUMCurrentContext(
             applicationScope: applicationScope,
             queue: queue
         )
+
+        super.init()
+
+        if Datadog.debugRUM {
+            self.enableRUMDebugging(true)
+        }
     }
 
     // MARK: - Public DDRUMMonitor conformance
@@ -253,11 +261,26 @@ public class RUMMonitor: DDRUMMonitor {
         )
     }
 
+    // MARK: - Internal
+
+    func enableRUMDebugging(_ enabled: Bool) {
+        #if targetEnvironment(simulator)
+        queue.async {
+            self.debugging = enabled ? RUMDebuggingInSimulator() : nil
+            self.debugging?.debug(applicationScope: self.applicationScope)
+        }
+        #endif
+    }
+
     // MARK: - Private
 
     private func process(command: RUMCommand) {
         queue.async {
             _ = self.applicationScope.process(command: command)
+
+            #if targetEnvironment(simulator)
+            self.debugging?.debug(applicationScope: self.applicationScope)
+            #endif
         }
     }
 }
