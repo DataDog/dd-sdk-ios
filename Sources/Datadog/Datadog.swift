@@ -61,6 +61,16 @@ public class Datadog {
     /// Default is `nil`.
     public static var verbosityLevel: LogLevel? = nil
 
+    /// Utility setting to inspect the active RUM View. It only makes effect on the iOS Simulator.
+    /// If set, a debugging outline will be diesplayed on top of the application, describing the name of the active RUM View.
+    /// May be used to debug issues with RUM instrumentation in your app.
+    /// Default is `false`.
+    public static var debugRUM: Bool = false {
+        didSet {
+            (Global.rum as? RUMMonitor)?.enableRUMDebugging(debugRUM)
+        }
+    }
+
     public static func setUserInfo(
         id: String? = nil,
         name: String? = nil,

@@ -31,7 +31,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The start time of this View.
     private let viewStartTime: Date
     /// Tells if this View is the active one. `true` for every new started View. `false` if any other View was started before this one is stopped.
-    private var isActiveView: Bool = true
+    private(set) var isActiveView: Bool = true
     /// Tells if this scope has received the "stop" command. Used to delay the actual completion of this scope  until all tracked Resources are finished.
     private var didReceiveStopCommand = false
 
