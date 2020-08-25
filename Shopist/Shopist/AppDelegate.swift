@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             configuration: Datadog.Configuration
                 .builderUsing(
                     rumApplicationID: appConfig.rumAppID,
-                    rumClientToken: appConfig.rumClientToken,
+                    clientToken: appConfig.rumClientToken,
                     environment: "tests"
                 )
                 .build()
