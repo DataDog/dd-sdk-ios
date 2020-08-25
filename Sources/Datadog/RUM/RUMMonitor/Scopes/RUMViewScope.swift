@@ -13,7 +13,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Active Resource scopes, keyed by the Resource name.
     private(set) var resourceScopes: [String: RUMResourceScope] = [:]
     /// Active User Action scope. There can be only one active user action at a time.
-    private(set) var userActionScope: RUMUserActionScope?
+    private var userActionScopes: [RUMUserActionScope] = []
+    var userActionScope: RUMUserActionScope? { userActionScopes.first }
 
     // MARK: - Initialization
 
@@ -135,13 +136,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate to User Action scope
-        let beforeHadUserAction = userActionScope != nil
-        userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
-        let afterHasUserAction = userActionScope != nil
+        // Find the first active user action index
+        let activeUserActionIndex = userActionScopes.firstIndex {
+            $0.process(command: command)
+        }
+        // If none of our userActionScopes is active, all are tracked
+        let numberOfTrackedActions = UInt(activeUserActionIndex ?? userActionScopes.count)
 
-        if beforeHadUserAction && !afterHasUserAction { // if User Action was tracked
-            actionsCount += 1
-            needsViewUpdate = true
+        actionsCount += numberOfTrackedActions
+        needsViewUpdate = (numberOfTrackedActions > 0) || needsViewUpdate
+        // There can be only 1 active user action at most
+        if let someIndex = activeUserActionIndex {
+            userActionScopes = [userActionScopes[someIndex]]
+        } else {
+            userActionScopes = []
         }
 
         // Consider scope state and completion
@@ -170,26 +178,30 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     private func startContinuousUserAction(on command: RUMStartUserActionCommand) {
-        userActionScope = RUMUserActionScope(
-            parent: self,
-            dependencies: dependencies,
-            name: command.name,
-            actionType: command.actionType,
-            attributes: command.attributes,
-            startTime: command.time,
-            isContinuous: true
+        userActionScopes.append(
+            RUMUserActionScope(
+                parent: self,
+                dependencies: dependencies,
+                name: command.name,
+                actionType: command.actionType,
+                attributes: command.attributes,
+                startTime: command.time,
+                isContinuous: true
+            )
         )
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
-        userActionScope = RUMUserActionScope(
-            parent: self,
-            dependencies: dependencies,
-            name: command.name,
-            actionType: command.actionType,
-            attributes: command.attributes,
-            startTime: command.time,
-            isContinuous: false
+        userActionScopes.append(
+            RUMUserActionScope(
+                parent: self,
+                dependencies: dependencies,
+                name: command.name,
+                actionType: command.actionType,
+                attributes: command.attributes,
+                startTime: command.time,
+                isContinuous: false
+            )
         )
     }
 
