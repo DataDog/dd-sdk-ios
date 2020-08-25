@@ -17,7 +17,7 @@ private struct CellModel {
     let kind: Kind
 }
 
-internal final class CartViewController: UITableViewController {
+internal final class CheckoutViewController: UITableViewController {
     private static var randomError: NSError? {
         if UInt8.random(in: 1...20) == 1 {
             return NSError(
@@ -37,9 +37,16 @@ internal final class CartViewController: UITableViewController {
         field.leftViewMode = .always
         return field
     }()
-    private var models = [CellModel]()
+    private var models = [CellModel]() {
+        didSet {
+            self.tableView.reloadData()
+        }
+    }
     private static let cellIdentifier = "cell"
     private let api = API()
+    private var hasOngoingComputation = false
+    private var viewDidAppearDate: Date?
+    private var totalAmount: Float = 0.0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,14 +62,27 @@ internal final class CartViewController: UITableViewController {
 
         let dismissButton = UIBarButtonItem(image: UIImage(systemName: "chevron.down"), style: .plain, target: self, action: #selector(dismissPage))
         navigationItem.leftBarButtonItem = dismissButton
-        let payButton = UIBarButtonItem(image: UIImage(systemName: "creditcard"), style: .plain, target: self, action: #selector(pay))
-        navigationItem.rightBarButtonItem = payButton
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         rum?.startView(viewController: self)
-        setupModels(from: cart)
+        if !hasOngoingComputation {
+            hasOngoingComputation = true
+            cart.generateBreakdown {
+                logger.info("Cart is shown with \($0.products.count) items")
+                self.hasOngoingComputation = false
+                self.setupModels(from: $0)
+            }
+        }
+
+        api.fakeUpdateInfoCall()
+        api.fakeFetchFontCall()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewDidAppearDate = Date()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -70,16 +90,31 @@ internal final class CartViewController: UITableViewController {
         rum?.stopView(viewController: self)
     }
 
-    func setupModels(from cart: Cart) {
-        var newModels = cart.products.map { CellModel(title: $0.name, price: "€\($0.price)", kind: .normal) }
-        newModels.append(CellModel(title: "Order Value", price: cart.orderValue.moneyString, kind: .bold))
-        newModels.append(CellModel(title: "Tax", price: cart.tax.moneyString, kind: .bold))
-        newModels.append(CellModel(title: "Shipping", price: cart.shipping.moneyString, kind: .bold))
-        if let someDiscount = cart.discount {
+    func setupModels(from cartBreakdown: Cart.Breakdown) {
+        api.fakeFetchShippingAndTax()
+        var newModels = cartBreakdown.products.map { CellModel(title: $0.name, price: "€\($0.price)", kind: .normal) }
+        newModels.append(CellModel(title: "Order Value", price: cartBreakdown.orderValue.moneyString, kind: .bold))
+        newModels.append(CellModel(title: "Tax", price: cartBreakdown.tax.moneyString, kind: .bold))
+        newModels.append(CellModel(title: "Shipping", price: cartBreakdown.shipping.moneyString, kind: .bold))
+        if let someDiscount = cartBreakdown.discount {
             newModels.append(CellModel(title: "Discount", price: someDiscount.moneyString, kind: .bold))
         }
-        newModels.append(CellModel(title: "Total", price: cart.total.moneyString, kind: .summary))
+        newModels.append(CellModel(title: "Total", price: cartBreakdown.total.moneyString, kind: .summary))
         models = newModels
+
+        if cartBreakdown.products.isEmpty {
+            rum?.addViewError(message: "Cart is empty -> Pay button is hidden", source: .source)
+        } else {
+            addPayButton()
+        }
+
+        totalAmount = cartBreakdown.total
+    }
+
+    private func addPayButton() {
+        let payButton = UIBarButtonItem(image: UIImage(systemName: "creditcard"), style: .plain, target: self, action: #selector(pay))
+        payButton.accessibilityIdentifier = "pay"
+        navigationItem.rightBarButtonItem = payButton
     }
 
     @objc
@@ -87,7 +122,13 @@ internal final class CartViewController: UITableViewController {
         presentingViewController?.dismiss(animated: true)
     }
 
-    @objc private func pay() {
+    @objc
+    private func pay() {
+        rum?.addAttribute(forKey: "hasPurchased", value: true)
+        if let someDate = viewDidAppearDate {
+            let timeToTapPayButton = Date().timeIntervalSince(someDate)
+            logger.info(String(format: "Pay is tapped in %.2f seconds", timeToTapPayButton))
+        }
         rum?.registerUserAction(type: .tap, name: "Pay")
         if let randomError = Self.randomError {
             self.handleError(randomError)
@@ -104,6 +145,7 @@ internal final class CartViewController: UITableViewController {
     }
 
     private func handleSuccess() {
+        rum?.registerUserAction(type: .custom, name: "Purchase", attributes: ["purchaseAmount": totalAmount])
         let alert = UIAlertController(title: "Success", message: nil, preferredStyle: .alert)
         let action = UIAlertAction(title: "OK", style: .default) { action in
             cart.products.removeAll()
@@ -116,6 +158,7 @@ internal final class CartViewController: UITableViewController {
     }
 
     private func handleError(_ error: Error) {
+        rum?.registerUserAction(type: .custom, name: "Purchase failed")
         let nsError = error as NSError
         let title = "Error"
         let message = nsError.localizedDescription
@@ -128,7 +171,7 @@ internal final class CartViewController: UITableViewController {
 
     private func goToHomepage() {
         let navController = self.presentingViewController as? UINavigationController
-        navController?.popViewController(animated: false)
+        navController?.popToRootViewController(animated: false)
         self.dismissPage()
     }
 

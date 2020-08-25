@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal final class ProductsViewController: ListViewController {
+internal final class CatalogViewController: ListViewController {
     let category: Category
     private var items = [Product]()
 
@@ -52,7 +52,7 @@ internal final class ProductsViewController: ListViewController {
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedProduct = items[indexPath.row]
         rum?.registerUserAction(type: .tap, name: selectedProduct.name)
-        let detailVC = ProductDetailViewController(product: selectedProduct)
+        let detailVC = ProductViewController(product: selectedProduct)
         show(detailVC, sender: self)
     }
 }

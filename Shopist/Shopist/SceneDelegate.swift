@@ -18,7 +18,7 @@ internal class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         let window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window.windowScene = windowScene
-        let homepage = CategoriesViewController()
+        let homepage = HomeViewController()
         let navController = UINavigationController(rootViewController: homepage)
         window.rootViewController = navController
         window.makeKeyAndVisible()

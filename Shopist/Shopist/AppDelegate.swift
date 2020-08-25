@@ -9,7 +9,39 @@ import Datadog
 
 internal fileprivate(set) var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 internal let appConfig = AppConfig(serviceName: "ios-sdk-shopist-app")
-var rum: DDRUMMonitor? { Global.rum }
+internal var rum: DDRUMMonitor? { Global.rum }
+
+private struct User {
+    let id: String = UUID().uuidString
+    let name: String
+    var email: String {
+        return name.lowercased()
+            .replacingOccurrences(of: " ", with: "@")
+            .appending(".com")
+    }
+
+    static let users: [User] = [
+        User(name: "John Doe"),
+        User(name: "Jane Doe"),
+        User(name: "Pat Doe"),
+        User(name: "Sam Doe"),
+        User(name: "Maynard Keenan"),
+        User(name: "Adam Jones"),
+        User(name: "Justin Chancellor"),
+        User(name: "Danny Carey"),
+        User(name: "Karina Round"),
+        User(name: "Martin Lopez"),
+        User(name: "Anneke Giersbergen"),
+        User(name: "Billie Eilish"),
+        User(name: "Cardi B"),
+        User(name: "Nicki Minaj"),
+        User(name: "Beyonce Knowles")
+    ]
+
+    static func any() -> Self {
+        return users.randomElement()! // swiftlint:disable:this force_unwrapping
+    }
+}
 
 @UIApplicationMain
 internal class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,14 +52,17 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
             configuration: Datadog.Configuration
                 .builderUsing(
                     rumApplicationID: appConfig.rumAppID,
-                    clientToken: appConfig.rumClientToken,
+                    clientToken: appConfig.clientToken,
                     environment: "tests"
                 )
+                // Currently, SDK doesn't auto-trace Alamofire requests
+                // .set(tracedHosts: [API.baseHost])
                 .build()
         )
 
         // Set user information
-        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com")
+        let user = User.any()
+        Datadog.setUserInfo(id: user.id, name: user.name, email: user.email)
 
         // Create logger instance
         logger = Logger.builder
@@ -40,6 +75,8 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Register global `RUMMonitor`
         Global.rum = RUMMonitor.initialize()
+        rum?.addAttribute(forKey: "usr.handle", value: user.email)
+        rum?.addAttribute(forKey: "hasPurchased", value: false)
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
@@ -67,14 +104,6 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-    }
-
-    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 }

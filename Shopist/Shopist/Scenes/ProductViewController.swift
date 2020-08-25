@@ -5,12 +5,14 @@
  */
 
 import UIKit
+import Datadog
 
-internal class ProductDetailViewController: UIViewController {
+internal class ProductViewController: UIViewController {
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var priceLabel: UILabel!
     let product: Product
+    private var layoutSpan: OTSpan? = nil
 
     init(product: Product) {
         self.product = product
@@ -24,7 +26,6 @@ internal class ProductDetailViewController: UIViewController {
         super.viewDidLoad()
         title = product.name
 
-        imageView.af.setImage(withURL: product.cover)
         descriptionLabel.text = product.name
         priceLabel.text = "€\(product.price)"
 
@@ -34,6 +35,7 @@ internal class ProductDetailViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         rum?.startView(viewController: self)
+        imageView.setImage(with: product.cover)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -41,20 +43,51 @@ internal class ProductDetailViewController: UIViewController {
         rum?.stopView(viewController: self)
     }
 
+    override func viewWillLayoutSubviews() {
+        if layoutSpan == nil {
+            layoutSpan = Global.sharedTracer.startSpan(operationName: "ProductDetail.layout")
+            layoutSpan?.setTag(key: "ProductDetail.view.width", value: view.bounds.width)
+            layoutSpan?.setTag(key: "ProductDetail.view.height", value: view.bounds.height)
+            let orientation: String = {
+                let keyWindow = UIApplication.shared.windows.first { $0.isKeyWindow }
+                let orientiation = keyWindow?.windowScene?.interfaceOrientation
+                switch orientiation {
+                case .portrait, .portraitUpsideDown: return "portrait"
+                case .landscapeLeft, .landscapeRight: return "landscape"
+                default: return "unknown"
+                }
+            }()
+            layoutSpan?.setTag(key: "ProductDetail.view.orientation", value: orientation)
+        }
+        super.viewWillLayoutSubviews()
+    }
+
+    override func viewDidLayoutSubviews() {
+        if let someSpan = layoutSpan {
+            someSpan.finish()
+            layoutSpan = nil
+        }
+        super.viewDidLayoutSubviews()
+    }
+
     private func setupBarButtons() {
         let cartActionButton: UIBarButtonItem
         if cart.products.contains(product) {
             cartActionButton = UIBarButtonItem(image: UIImage(systemName: "cart.badge.minus"), style: .plain, target: self, action: #selector(removeFromCart))
+            cartActionButton.accessibilityIdentifier = "removeFromCart"
         } else {
             cartActionButton = UIBarButtonItem(image: UIImage(systemName: "cart.badge.plus"), style: .plain, target: self, action: #selector(addToCart))
+            cartActionButton.accessibilityIdentifier = "addToCart"
         }
         navigationItem.rightBarButtonItems = [cartActionButton]
-        addGoToCartButton()
+        addDefaultNavBarButtons()
     }
 
     @objc
     private func addToCart() {
         cart.products.append(product)
+        rum?.addAttribute(forKey: "hasPurchased", value: false)
+        rum?.registerUserAction(type: .tap, name: "Add \(product.name) to cart")
         setupBarButtons()
     }
 
@@ -62,6 +95,7 @@ internal class ProductDetailViewController: UIViewController {
     private func removeFromCart() {
         if let indexToRemove = cart.products.firstIndex(of: product) {
             cart.products.remove(at: indexToRemove)
+            rum?.registerUserAction(type: .tap, name: "Remove \(product.name) from cart")
         }
         setupBarButtons()
     }

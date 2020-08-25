@@ -13,7 +13,6 @@ workflows:
     - run_linter
     - run_unit_tests
     - run_integration_tests
-    - run_ui_tests
     - check_dependency_managers
     - _deploy_artifacts
 
@@ -109,26 +108,6 @@ workflows:
         - scheme: HTTPServerMock-Package
         - destination: platform=OS X,arch=x86_64
         - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
-
-  run_ui_tests:
-    description: |-
-        Runs UI tests for Shopist app on iOS Simulator.
-    steps:
-    - script@1.1.6:
-        title: Generate client token for Shopist
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            echo 'DATADOG_CLIENT_TOKEN="fake-client-token-for-shopist"' > xcconfigs/Datadog.local.xcconfig
-    - xcode-test@2.4.5:
-        title: Run UI tests for Shopist - iOS Simulator
-        inputs:
-        - scheme: Shopist
-        - simulator_device: iPhone 11
-        - generate_code_coverage_files: 'yes'
-        - project_path: Shopist/Shopist.xcodeproj
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Shopist-UI-tests.html"
 
   run_integration_tests:
     description: |-

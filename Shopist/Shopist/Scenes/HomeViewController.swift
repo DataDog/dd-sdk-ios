@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal final class CategoriesViewController: ListViewController {
+internal final class HomeViewController: ListViewController {
     private var categories = [Category]()
 
     override func viewDidLoad() {
@@ -39,7 +39,7 @@ internal final class CategoriesViewController: ListViewController {
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedCategory = categories[indexPath.row]
         rum?.registerUserAction(type: .tap, name: selectedCategory.title)
-        let detailVC = ProductsViewController(with: selectedCategory)
+        let detailVC = CatalogViewController(with: selectedCategory)
         show(detailVC, sender: self)
     }
 }

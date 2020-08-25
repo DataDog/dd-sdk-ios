@@ -5,7 +5,6 @@
  */
 
 import UIKit
-import AlamofireImage
 
 internal final class Cell: UICollectionViewCell {
     var text: String? {
@@ -17,7 +16,7 @@ internal final class Cell: UICollectionViewCell {
         set { imageView.image = newValue }
     }
     func setImage(url: URL) {
-        imageView.af.setImage(withURL: url)
+        imageView.setImage(with: url)
     }
 
     private let imageView: UIImageView = {

@@ -19,19 +19,26 @@ internal class ListViewController: UICollectionViewController {
         collectionView.backgroundColor = .white
         collectionView.register(Cell.self, forCellWithReuseIdentifier: Self.cellIdentifier)
         collectionView.delegate = self
+
         setupLayout(for: view.bounds.size)
-        addGoToCartButton()
+        addDefaultNavBarButtons()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        rum?.startView(viewController: self)
+        rum?.startView(viewController: self, attributes: (isMovingToParent ? nil : ["info": "Redisplay"]))
         fetch(with: api)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let zeroPoint = CGPoint(x: 0, y: -collectionView.safeAreaInsets.top)
+        collectionView.setContentOffset(zeroPoint, animated: false)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        rum?.stopView(viewController: self)
+        rum?.stopView(viewController: self, attributes: (isMovingFromParent ? ["info": "Dismissal"] : nil))
     }
 
     func fetch(with api: API) {
@@ -74,5 +81,14 @@ internal class ListViewController: UICollectionViewController {
         layout.minimumLineSpacing = 30
         layout.sectionInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
         layout.scrollDirection = .vertical
+    }
+
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        rum?.startUserAction(type: .scroll, name: "Scroll")
+    }
+
+    override func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let direction = velocity.y > 0 ? "Scroll down" : "Scroll up"
+        rum?.stopUserAction(type: .scroll, name: direction)
     }
 }
