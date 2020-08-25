@@ -493,4 +493,31 @@ class RUMMonitorTests: XCTestCase {
 
         try Datadog.deinitializeOrThrow()
     }
+
+    func testGivenRUMMonitorInitialized_whenInitializingAnotherTime_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny()).build()
+        )
+        Global.rum = RUMMonitor.initialize()
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // when
+        _ = RUMMonitor.initialize()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: The `RUMMonitor` instance was already created. Use existing `Global.rum` instead of initializing the `RUMMonitor` another time.
+            """
+        )
+
+        try Datadog.deinitializeOrThrow()
+    }
 }

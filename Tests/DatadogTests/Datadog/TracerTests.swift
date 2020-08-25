@@ -858,5 +858,32 @@ class TracerTests: XCTestCase {
 
         try Datadog.deinitializeOrThrow()
     }
+
+    func testGivenTracerInitialized_whenInitializingAnotherTime_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny()).build()
+        )
+        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        // when
+        _ = Tracer.initialize(configuration: .init())
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: The `Tracer` instance was already created. Use existing `Global.sharedTracer` instead of initializing the `Tracer` another time.
+            """
+        )
+
+        try Datadog.deinitializeOrThrow()
+    }
 }
 // swiftlint:enable multiline_arguments_brackets

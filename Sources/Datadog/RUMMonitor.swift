@@ -67,6 +67,13 @@ public class RUMMonitor: DDRUMMonitor {
     /// Initializes the Datadog RUM Monitor.
     public static func initialize() -> DDRUMMonitor {
         do {
+            if Global.rum is RUMMonitor {
+                throw ProgrammerError(
+                    description: """
+                    The `RUMMonitor` instance was already created. Use existing `Global.rum` instead of initializing the `RUMMonitor` another time.
+                    """
+                )
+            }
             guard let rumFeature = RUMFeature.instance else {
                 throw ProgrammerError(
                     description: Datadog.instance == nil
