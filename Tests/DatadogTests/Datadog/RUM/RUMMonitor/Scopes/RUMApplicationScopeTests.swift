@@ -103,7 +103,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let viewEventsCount = try output.recordedEvents(ofType: RUMEvent<RUMView>.self).count
         let trackedSessionsCount = Double(viewEventsCount) / 2 // each Session should send 2 View updates
 
-        XCTAssertGreaterThan(trackedSessionsCount, 100 * 0.85) // -15%
-        XCTAssertLessThan(trackedSessionsCount, 100 * 1.15) // +15%
+        XCTAssertGreaterThan(trackedSessionsCount, 100 * 0.8) // -20%
+        XCTAssertLessThan(trackedSessionsCount, 100 * 1.2) // +20%
     }
 }
