@@ -19,7 +19,7 @@ internal final class RUMFeature {
 
     // MARK: - Configuration
 
-    let configuration: Datadog.ValidConfiguration
+    let configuration: FeaturesConfiguration.RUM
 
     // MARK: - Dependencies
 
@@ -50,7 +50,12 @@ internal final class RUMFeature {
         )
     }
 
-    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+    static func createUpload(
+        storage: FeatureStorage,
+        directory: Directory,
+        configuration: FeaturesConfiguration.RUM,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureUpload {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
             storage: storage,
@@ -58,23 +63,23 @@ internal final class RUMFeature {
                 headers: [
                     .contentTypeHeader(contentType: .textPlainUTF8),
                     .userAgentHeader(
-                        appName: commonDependencies.configuration.applicationName,
-                        appVersion: commonDependencies.configuration.applicationVersion,
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
                     )
                 ]
             ),
             uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: commonDependencies.configuration.rumUploadURLWithClientToken,
+                urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
                     .ddsource(),
                     .batchTime(using: commonDependencies.dateProvider),
                     .ddtags(
                         tags: [
-                            "service:\(commonDependencies.configuration.serviceName)",
-                            "version:\(commonDependencies.configuration.applicationVersion)",
+                            "service:\(configuration.common.serviceName)",
+                            "version:\(configuration.common.applicationVersion)",
                             "sdk_version:\(sdkVersion)",
-                            "env:\(commonDependencies.configuration.environment)"
+                            "env:\(configuration.common.environment)"
                         ]
                     )
                 ]
@@ -85,13 +90,15 @@ internal final class RUMFeature {
 
     convenience init(
         directory: Directory,
+        configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
         let storage = RUMFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = RUMFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
+        let upload = RUMFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
+            configuration: configuration,
             commonDependencies: commonDependencies
         )
     }
@@ -99,10 +106,11 @@ internal final class RUMFeature {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
+        configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
         // Configuration
-        self.configuration = commonDependencies.configuration
+        self.configuration = configuration
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider

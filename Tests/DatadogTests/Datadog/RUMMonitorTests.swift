@@ -35,7 +35,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+        let monitor = RUMMonitor.initialize()
 
         monitor.startView(viewController: mockView)
         monitor.stopView(viewController: mockView)
@@ -61,7 +61,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+        let monitor = RUMMonitor.initialize()
 
         monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
@@ -94,7 +94,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+        let monitor = RUMMonitor.initialize()
 
         let actionName = String.mockRandom()
         monitor.startView(viewController: mockView)
@@ -123,7 +123,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+        let monitor = RUMMonitor.initialize()
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -182,7 +182,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
+        let monitor = RUMMonitor.initialize()
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -232,7 +232,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let monitor = RUMMonitor.initialize()
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
@@ -276,7 +276,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let monitor = RUMMonitor.initialize()
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
@@ -343,7 +343,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let monitor = RUMMonitor.initialize()
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -387,7 +387,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let monitor = RUMMonitor.initialize()
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -425,7 +425,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
+        let monitor = RUMMonitor.initialize()
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
@@ -440,30 +440,84 @@ class RUMMonitorTests: XCTestCase {
             case 5: monitor.stopResourceLoading(resourceName: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
             case 6: monitor.stopResourceLoadingWithError(resourceName: .mockAny(), error: ErrorMock(), source: .network, httpStatusCode: .mockAny())
             case 7: monitor.stopResourceLoadingWithError(resourceName: .mockAny(), errorMessage: .mockAny(), source: .network)
-            case 8: monitor.startUserAction(type: .scroll, name: String.mockRandom())
+            case 8: monitor.startUserAction(type: .scroll, name: .mockRandom())
             case 9: monitor.stopUserAction(type: .scroll)
-            case 10: monitor.registerUserAction(type: .tap, name: String.mockRandom())
-            case 11: _ = monitor.contextProvider.context
+            case 10: monitor.registerUserAction(type: .tap, name: .mockRandom())
+            case 11: _ = monitor.dd.contextProvider.context
             default: break
             }
         }
     }
 
-    // MARK: - Initialization
+    // MARK: - Usage errors
 
-    // TODO: RUMM-614 Change this test when final initialization API is provided
-    func testWhenMonitorIsInitialized_itIsRegisteredAsGlobalMonitor() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+    func testGivenDatadogNotInitialized_whenInitializingRUMMonitor_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
 
-        XCTAssertNil(RUMMonitor.shared)
+        // given
+        XCTAssertNil(Datadog.instance)
 
-        autoreleasepool {
-            let monitor = RUMMonitor.initialize(rumApplicationID: .mockAny())
-            XCTAssertNotNil(RUMMonitor.shared)
-            _ = monitor
-        }
+        // when
+        let monitor = RUMMonitor.initialize()
 
-        XCTAssertNil(RUMMonitor.shared)
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+        )
+        XCTAssertTrue(monitor is DDNoopRUMMonitor)
+    }
+
+    func testGivenRUMFeatureDisabled_whenInitializingRUMMonitor_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(clientToken: "abc-def", environment: "tests").build()
+        )
+
+        // when
+        let monitor = RUMMonitor.initialize()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
+        )
+        XCTAssertTrue(monitor is DDNoopRUMMonitor)
+
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testGivenRUMMonitorInitialized_whenInitializingAnotherTime_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration.builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny()).build()
+        )
+        Global.rum = RUMMonitor.initialize()
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // when
+        _ = RUMMonitor.initialize()
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: The `RUMMonitor` instance was already created. Use existing `Global.rum` instead of initializing the `RUMMonitor` another time.
+            """
+        )
+
+        try Datadog.deinitializeOrThrow()
     }
 }

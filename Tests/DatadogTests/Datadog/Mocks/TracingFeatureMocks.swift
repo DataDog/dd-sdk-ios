@@ -12,6 +12,7 @@ extension TracingFeature {
         return TracingFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),
+            configuration: .mockAny(),
             commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
             tracingUUIDGenerator: DefaultTracingUUIDGenerator()
@@ -22,12 +23,14 @@ extension TracingFeature {
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockWith(),
+        configuration: FeaturesConfiguration.Tracing = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {
         return TracingFeature(
             directory: directory,
+            configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
             tracingUUIDGenerator: tracingUUIDGenerator
@@ -38,7 +41,8 @@ extension TracingFeature {
     /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockWith(),
+        configuration: FeaturesConfiguration.Tracing = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {
@@ -53,6 +57,7 @@ extension TracingFeature {
         return TracingFeature(
             storage: observedStorage,
             upload: mockedUpload,
+            configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
             tracingUUIDGenerator: fullFeature.tracingUUIDGenerator

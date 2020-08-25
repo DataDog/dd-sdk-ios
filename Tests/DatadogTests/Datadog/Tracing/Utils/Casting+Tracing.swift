@@ -14,7 +14,6 @@
  without considering if the `parentID` is `nil`. Using `span.context.dd.parentID` mitigates it.
  */
 
-// swiftlint:disable identifier_name
 internal extension OTTracer {
     var dd: Tracer { self as! Tracer }
 }
@@ -26,4 +25,3 @@ internal extension OTSpan {
 internal extension OTSpanContext {
     var dd: DDSpanContext { self as! DDSpanContext }
 }
-// swiftlint:enable identifier_name

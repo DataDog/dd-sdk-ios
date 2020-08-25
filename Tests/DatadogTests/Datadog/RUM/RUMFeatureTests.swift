@@ -28,20 +28,22 @@ class RUMFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(
+            configuration: .mockWith(
+                common: .mockWith(
                     applicationName: "FoobarApp",
                     applicationVersion: "2.1.0",
                     serviceName: "service-name",
                     environment: "environment-name"
-                ),
+                )
+            ),
+            dependencies: .mockWith(
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
         defer { RUMFeature.instance = nil }
 
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
+        let monitor = RUMMonitor.initialize()
 
         // Starting first view sends `application_start` action event
         monitor.startView(viewController: mockView)

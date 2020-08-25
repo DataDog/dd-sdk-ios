@@ -20,9 +20,9 @@ internal struct LoggingForTracingAdapter {
         return AdaptedLogOutput(
             loggingOutput: LogFileOutput(
                 logBuilder: LogBuilder(
-                    applicationVersion: tracingFeature.configuration.applicationVersion,
-                    environment: tracingFeature.configuration.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
+                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                    environment: tracingFeature.configuration.common.environment,
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                     loggerName: "trace",
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,

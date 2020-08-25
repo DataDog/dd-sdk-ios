@@ -19,7 +19,7 @@ internal final class TracingFeature {
 
     // MARK: - Configuration
 
-    let configuration: Datadog.ValidConfiguration
+    let configuration: FeaturesConfiguration.Tracing
 
     // MARK: - Integration With Other Features
 
@@ -57,7 +57,12 @@ internal final class TracingFeature {
         )
     }
 
-    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+    static func createUpload(
+        storage: FeatureStorage,
+        directory: Directory,
+        configuration: FeaturesConfiguration.Tracing,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureUpload {
         return FeatureUpload(
             featureName: TracingFeature.featureName,
             storage: storage,
@@ -65,14 +70,14 @@ internal final class TracingFeature {
                 headers: [
                     .contentTypeHeader(contentType: .textPlainUTF8),
                     .userAgentHeader(
-                        appName: commonDependencies.configuration.applicationName,
-                        appVersion: commonDependencies.configuration.applicationVersion,
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
                     )
                 ]
             ),
             uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: commonDependencies.configuration.tracesUploadURLWithClientToken,
+                urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
                     .batchTime(using: commonDependencies.dateProvider)
                 ]
@@ -83,15 +88,17 @@ internal final class TracingFeature {
 
     convenience init(
         directory: Directory,
+        configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
         tracingUUIDGenerator: TracingUUIDGenerator
     ) {
         let storage = TracingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = TracingFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
+        let upload = TracingFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
+            configuration: configuration,
             commonDependencies: commonDependencies,
             loggingFeatureAdapter: loggingFeatureAdapter,
             tracingUUIDGenerator: tracingUUIDGenerator
@@ -101,12 +108,13 @@ internal final class TracingFeature {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
+        configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
         tracingUUIDGenerator: TracingUUIDGenerator
     ) {
         // Configuration
-        self.configuration = commonDependencies.configuration
+        self.configuration = configuration
 
         // Integration with other features
         self.loggingFeatureAdapter = loggingFeatureAdapter

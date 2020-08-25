@@ -28,11 +28,13 @@ class LoggingFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(
+            configuration: .mockWith(
+                common: .mockWith(
                     applicationName: "FoobarApp",
                     applicationVersion: "2.1.0"
-                ),
+                )
+            ),
+            dependencies: .mockWith(
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )

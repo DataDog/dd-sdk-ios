@@ -13,6 +13,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),
+            configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
     }
@@ -21,16 +22,18 @@ extension RUMFeature {
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockWith()
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
-        return RUMFeature(directory: directory, commonDependencies: dependencies)
+        return RUMFeature(directory: directory, configuration: configuration, commonDependencies: dependencies)
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
         directory: Directory,
-        dependencies: FeaturesCommonDependencies = .mockWith()
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
         // Get the full feature mock:
         let fullFeature: RUMFeature = .mockWith(directory: directory, dependencies: dependencies)
@@ -38,7 +41,12 @@ extension RUMFeature {
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        return RUMFeature(storage: observedStorage, upload: mockedUpload, commonDependencies: dependencies)
+        return RUMFeature(
+            storage: observedStorage,
+            upload: mockedUpload,
+            configuration: configuration,
+            commonDependencies: dependencies
+        )
     }
 
     // MARK: - Expecting RUMEvent Data

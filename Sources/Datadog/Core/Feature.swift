@@ -8,7 +8,6 @@ import Foundation
 
 /// Container with dependencies common to all features (Logging, Tracing and RUM).
 internal struct FeaturesCommonDependencies {
-    let configuration: Datadog.ValidConfiguration
     let performance: PerformancePreset
     let httpClient: HTTPClient
     let mobileDevice: MobileDevice

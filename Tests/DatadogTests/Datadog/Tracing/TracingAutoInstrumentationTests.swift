@@ -15,18 +15,15 @@ private struct MockURLFilter: URLFiltering {
 }
 
 class TracingAutoInstrumentationTests: XCTestCase {
-    func testInitializationWithDatadogConfiguration() throws {
-        let configuration: Datadog.Configuration = .mockWith(tracingEnabled: true, tracedHosts: [String.mockAny()])
-        let autoInstrumentation = TracingAutoInstrumentation(with: configuration)
+    func testInitialization() throws {
+        let autoInstrumentation = TracingAutoInstrumentation(
+            with: .init(tracedHosts: ["included.com"], excludedHosts: ["excluded.com"])
+        )
 
         let urlFilter = try XCTUnwrap(autoInstrumentation?.urlFilter as? URLFilter)
         let expectedURLFilter = URLFilter(
-            includedHosts: [String.mockAny()],
-            excludedURLs: [
-                configuration.logsEndpoint.url,
-                configuration.tracesEndpoint.url,
-                configuration.rumEndpoint.url
-            ]
+            includedHosts: ["included.com"],
+            excludedURLs: ["excluded.com"]
         )
 
         XCTAssertEqual(urlFilter, expectedURLFilter)

@@ -64,6 +64,13 @@ public class Tracer: OTTracer {
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration) -> OTTracer {
         do {
+            if Global.sharedTracer is Tracer {
+                throw ProgrammerError(
+                    description: """
+                    The `Tracer` instance was already created. Use existing `Global.sharedTracer` instead of initializing the `Tracer` another time.
+                    """
+                )
+            }
             guard let tracingFeature = TracingFeature.instance else {
                 throw ProgrammerError(
                     description: Datadog.instance == nil
@@ -85,9 +92,9 @@ public class Tracer: OTTracer {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
-                    applicationVersion: tracingFeature.configuration.applicationVersion,
-                    environment: tracingFeature.configuration.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
+                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                    environment: tracingFeature.configuration.common.environment,
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                     carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil

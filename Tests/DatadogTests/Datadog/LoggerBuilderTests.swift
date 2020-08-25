@@ -15,13 +15,15 @@ class LoggerBuilderTests: XCTestCase {
         super.setUp()
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(
+            configuration: .mockWith(
+                common: .mockWith(
                     applicationVersion: "1.2.3",
                     applicationBundleIdentifier: "com.datadog.unit-tests",
                     serviceName: "service-name",
                     environment: "tests"
-                ),
+                )
+            ),
+            dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
             )

@@ -15,19 +15,13 @@ internal class TracingAutoInstrumentation {
         TracingRequestInterceptor.build(with: urlFilter)
     }
 
-    convenience init?(with configuration: Datadog.Configuration) {
-        if !configuration.tracingEnabled || configuration.tracedHosts.isEmpty {
-            return nil
-        }
-        let urlFilter = URLFilter(
-            includedHosts: configuration.tracedHosts,
-            excludedURLs: [
-                configuration.logsEndpoint.url,
-                configuration.tracesEndpoint.url,
-                configuration.rumEndpoint.url
-            ]
+    convenience init?(with configuration: FeaturesConfiguration.Tracing.AutoInstrumentation) {
+        self.init(
+            urlFilter: URLFilter(
+                includedHosts: configuration.tracedHosts,
+                excludedURLs: configuration.excludedHosts
+            )
         )
-        self.init(urlFilter: urlFilter)
     }
 
     init?(urlFilter: URLFiltering) {

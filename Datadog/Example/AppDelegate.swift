@@ -9,7 +9,7 @@ import Datadog
 
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
-var rumMonitor: RUMMonitor!
+var rumMonitor: DDRUMMonitor { Global.rum }
 
 let appConfig: AppConfig = currentAppConfig()
 
@@ -52,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         // Create RUM monitor instance
-        rumMonitor = RUMMonitor.initialize(rumApplicationID: appConfig.rumApplicationID)
+        Global.rum = RUMMonitor.initialize()
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug

@@ -15,14 +15,18 @@ class RUMIntegrationsTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         // given
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // then
         let attributes = try XCTUnwrap(integration.currentRUMContextAttributes)
 
         XCTAssertEqual(attributes.count, 3)
-        XCTAssertEqual(attributes["application_id"] as? String, "rum-123")
+        XCTAssertEqual(
+            attributes["application_id"] as? String,
+            try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
+        )
         XCTAssertValidRumUUID(attributes["session_id"] as? String)
         XCTAssertValidRumUUID(attributes["view.id"] as? String)
     }
@@ -31,13 +35,15 @@ class RUMIntegrationsTests: XCTestCase {
         RUMFeature.instance = RUMFeature(
             storage: FeatureStorage(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: FeatureUpload(uploader: NoOpDataUploadWorker()),
-            commonDependencies: .mockWith(configuration: .mockWith(rumSessionSamplingRate: 0.0))
+            configuration: .mockWith(sessionSamplingRate: 0.0),
+            commonDependencies: .mockAny()
         )
         defer { RUMFeature.instance = nil }
 
         // given
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // then
         let attributes = try XCTUnwrap(integration.currentRUMContextAttributes)
@@ -50,7 +56,7 @@ class RUMIntegrationsTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         // when
-        XCTAssertNil(RUMMonitor.shared)
+        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
         // then
         XCTAssertNil(integration.currentRUMContextAttributes)
@@ -75,8 +81,9 @@ class RUMErrorsIntegrationTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         // given
-        let monitor = RUMMonitor.initialize(rumApplicationID: "abc-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
         integration.addError(with: "error message")

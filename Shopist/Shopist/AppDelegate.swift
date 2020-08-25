@@ -10,7 +10,7 @@ import Datadog
 fileprivate(set) var logger: Logger!
 
 let appConfig = AppConfig(serviceName: "ios-sdk-shopist-app")
-var rum: RUMMonitor?
+var rum: DDRUMMonitor? { Global.rum }
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,7 +21,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             appContext: .init(),
             configuration: Datadog.Configuration
                 .builderUsing(
-                    clientToken: appConfig.clientToken, // use your own client token obtained on Datadog website
+                    rumApplicationID: appConfig.rumAppID,
+                    clientToken: appConfig.rumClientToken,
                     environment: "tests"
                 )
                 .build()
@@ -39,6 +40,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Register global tracer
         Global.sharedTracer = Tracer.initialize(configuration: .init(serviceName: appConfig.serviceName))
 
+        // Register global `RUMMonitor`
+        Global.rum = RUMMonitor.initialize()
+
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
 
@@ -54,8 +58,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Send some logs 🚀
         logger.info("application did finish launching")
-
-        rum = RUMMonitor.initialize(rumApplicationID: appConfig.rumAppID)
 
         return true
     }

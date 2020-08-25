@@ -10,8 +10,6 @@ import Datadog
 protocol AppConfig {
     /// Example app's service name.
     var serviceName: String { get }
-    /// RUM application id.
-    var rumApplicationID: String { get }
     /// SDK configuration
     var datadogConfiguration: Datadog.Configuration { get }
     /// Endpoints for arbitrary network requests
@@ -22,8 +20,6 @@ protocol AppConfig {
 struct ExampleAppConfig: AppConfig {
     /// Service name used for logs and traces.
     let serviceName = "ios-sdk-example-app"
-    /// RUM application ID obtained on datadohq.com
-    let rumApplicationID: String
     /// Configuration for uploading logs to Datadog servers
     let datadogConfiguration: Datadog.Configuration
 
@@ -45,7 +41,7 @@ struct ExampleAppConfig: AppConfig {
             """)
         }
 
-        guard let rumApplicationID = Bundle.main.infoDictionary!["RUMApplicationID"] as? String, !clientToken.isEmpty else {
+        guard let rumApplicationID = Bundle.main.infoDictionary!["RUMApplicationID"] as? String, !rumApplicationID.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `RUM_APPLICATION_ID` from `Info.plist` dictionary.
             Please update `Datadog.xcconfig` in the repository root with your own
@@ -54,9 +50,8 @@ struct ExampleAppConfig: AppConfig {
             """)
         }
 
-        self.rumApplicationID = rumApplicationID
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(clientToken: clientToken, environment: "tests")
+            .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: "tests")
             .set(serviceName: serviceName)
             .set(tracedHosts: [arbitraryNetworkURL.host!, "foo.bar"])
             .build()
@@ -66,8 +61,6 @@ struct ExampleAppConfig: AppConfig {
 struct UITestAppConfig: AppConfig {
     /// Mocked service name for UITests
     let serviceName = "ui-tests-service-name"
-    /// Mocked RUM application ID
-    let rumApplicationID: String = "rum-application-id"
     /// Configuration for uploading logs to mock servers
     let datadogConfiguration: Datadog.Configuration
     let arbitraryNetworkURL: URL
@@ -80,7 +73,7 @@ struct UITestAppConfig: AppConfig {
         let sourceEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_SOURCE_ENDPOINT_URL"]!
         let tracedhost = URL(string: sourceEndpoint)!.host!
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
+            .builderUsing(rumApplicationID: "rum-application-id", clientToken: "ui-tests-client-token", environment: "integration")
             .set(serviceName: serviceName)
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))

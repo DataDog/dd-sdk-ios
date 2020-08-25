@@ -22,7 +22,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
     /// RUM Sessions sampling rate.
-    private let samplingRate: Float
+    internal let samplingRate: Float
 
     // MARK: - Initialization
 

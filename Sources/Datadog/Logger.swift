@@ -348,9 +348,9 @@ public class Logger {
 
         private func resolveLogsOutput(for loggingFeature: LoggingFeature) -> LogOutput {
             let logBuilder = LogBuilder(
-                applicationVersion: loggingFeature.configuration.applicationVersion,
-                environment: loggingFeature.configuration.environment,
-                serviceName: serviceName ?? loggingFeature.configuration.serviceName,
+                applicationVersion: loggingFeature.configuration.common.applicationVersion,
+                environment: loggingFeature.configuration.common.environment,
+                serviceName: serviceName ?? loggingFeature.configuration.common.serviceName,
                 loggerName: resolveLoggerName(for: loggingFeature),
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
@@ -391,7 +391,7 @@ public class Logger {
         }
 
         private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
-            return loggerName ?? loggingFeature.configuration.applicationBundleIdentifier
+            return loggerName ?? loggingFeature.configuration.common.applicationBundleIdentifier
         }
     }
 }

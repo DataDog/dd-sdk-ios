@@ -28,13 +28,15 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithDefaultLogger() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(
+            configuration: .mockWith(
+                common: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                     serviceName: "default-service-name",
                     environment: "tests"
-                ),
+                )
+            ),
+            dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
@@ -367,9 +369,7 @@ class LoggerTests: XCTestCase {
     func testSendingTags() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(environment: "tests")
-            )
+            configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { LoggingFeature.instance = nil }
 
@@ -447,9 +447,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(environment: "tests")
-            )
+            configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { LoggingFeature.instance = nil }
 
@@ -458,8 +456,9 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.builder.build()
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
         logger.info("info message")
@@ -467,7 +466,8 @@ class LoggerTests: XCTestCase {
         // then
         let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(
-            forKeyPath: RUMContextIntegration.Attributes.applicationID, equals: "rum-123"
+            forKeyPath: RUMContextIntegration.Attributes.applicationID,
+            equals: try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
         )
         logMatcher.assertValue(
             forKeyPath: RUMContextIntegration.Attributes.sessionID,
@@ -482,9 +482,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            dependencies: .mockWith(
-                configuration: .mockWith(environment: "tests")
-            )
+            configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { LoggingFeature.instance = nil }
 
@@ -499,7 +497,7 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.builder.build()
-        XCTAssertNil(RUMMonitor.shared)
+        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
         // when
         logger.info("info message")
@@ -526,8 +524,9 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.builder.build()
-        let monitor = RUMMonitor.initialize(rumApplicationID: "rum-123")
-        monitor.startView(viewController: mockView)
+        Global.rum = RUMMonitor.initialize()
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
         logger.debug("debug message")

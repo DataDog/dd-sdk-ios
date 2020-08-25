@@ -19,7 +19,7 @@ internal final class LoggingFeature {
 
     // MARK: - Configuration
 
-    let configuration: Datadog.ValidConfiguration
+    let configuration: FeaturesConfiguration.Logging
 
     // MARK: - Dependencies
 
@@ -50,7 +50,12 @@ internal final class LoggingFeature {
         )
     }
 
-    static func createUpload(storage: FeatureStorage, directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureUpload {
+    static func createUpload(
+        storage: FeatureStorage,
+        directory: Directory,
+        configuration: FeaturesConfiguration.Logging,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureUpload {
         return FeatureUpload(
             featureName: LoggingFeature.featureName,
             storage: storage,
@@ -58,14 +63,14 @@ internal final class LoggingFeature {
                 headers: [
                     .contentTypeHeader(contentType: .applicationJSON),
                     .userAgentHeader(
-                        appName: commonDependencies.configuration.applicationName,
-                        appVersion: commonDependencies.configuration.applicationVersion,
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
                     )
                 ]
             ),
             uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: commonDependencies.configuration.logsUploadURLWithClientToken,
+                urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
                     .ddsource(),
                     .batchTime(using: commonDependencies.dateProvider)
@@ -77,13 +82,15 @@ internal final class LoggingFeature {
 
     convenience init(
         directory: Directory,
+        configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies
     ) {
         let storage = LoggingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = LoggingFeature.createUpload(storage: storage, directory: directory, commonDependencies: commonDependencies)
+        let upload = LoggingFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
+            configuration: configuration,
             commonDependencies: commonDependencies
         )
     }
@@ -91,10 +98,11 @@ internal final class LoggingFeature {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
+        configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies
     ) {
         // Configuration
-        self.configuration = commonDependencies.configuration
+        self.configuration = configuration
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider

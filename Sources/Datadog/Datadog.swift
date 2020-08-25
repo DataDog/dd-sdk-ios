@@ -48,7 +48,9 @@ public class Datadog {
     ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
     public static func initialize(appContext: AppContext, configuration: Configuration) {
         do {
-            try initializeOrThrow(appContext: appContext, configuration: configuration)
+            try initializeOrThrow(
+                configuration: try FeaturesConfiguration(configuration: configuration, appContext: appContext)
+            )
         } catch {
             consolePrint("\(error)")
         }
@@ -73,16 +75,11 @@ public class Datadog {
 
     internal let userInfoProvider: UserInfoProvider
 
-    private static func initializeOrThrow(appContext: AppContext, configuration: Configuration) throws {
+    private static func initializeOrThrow(configuration: FeaturesConfiguration) throws {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        let validConfiguration = try ValidConfiguration(
-            configuration: configuration,
-            appContext: appContext
-        )
 
-        let performance = PerformancePreset.best(for: appContext.bundleType)
         let dateProvider = SystemDateProvider()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -91,8 +88,8 @@ public class Datadog {
         // First, initialize internal loggers:
 
         let internalLoggerConfiguration = InternalLoggerConfiguration(
-            applicationVersion: validConfiguration.applicationVersion,
-            environment: validConfiguration.environment,
+            applicationVersion: configuration.common.applicationVersion,
+            environment: configuration.common.environment,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
@@ -107,9 +104,10 @@ public class Datadog {
         var tracing: TracingFeature?
         var rum: RUMFeature?
 
+        var tracingAutoInstrumentation: TracingAutoInstrumentation?
+
         let commonDependencies = FeaturesCommonDependencies(
-            configuration: validConfiguration,
-            performance: performance,
+            performance: configuration.common.performance,
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
@@ -118,25 +116,31 @@ public class Datadog {
             carrierInfoProvider: carrierInfoProvider
         )
 
-        if configuration.loggingEnabled {
+        if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
                 directory: try obtainLoggingFeatureDirectory(),
+                configuration: loggingConfiguration,
                 commonDependencies: commonDependencies
             )
         }
 
-        if configuration.tracingEnabled {
+        if let tracingConfiguration = configuration.tracing {
             tracing = TracingFeature(
                 directory: try obtainTracingFeatureDirectory(),
+                configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
                 tracingUUIDGenerator: DefaultTracingUUIDGenerator()
             )
+            if let autoInstrumentationConfiguration = tracingConfiguration.autoInstrumentation {
+                tracingAutoInstrumentation = TracingAutoInstrumentation(with: autoInstrumentationConfiguration)
+            }
         }
 
-        if configuration.rumEnabled {
+        if let rumConfiguration = configuration.rum {
             rum = RUMFeature(
                 directory: try obtainRUMFeatureDirectory(),
+                configuration: rumConfiguration,
                 commonDependencies: commonDependencies
             )
         }
@@ -145,7 +149,7 @@ public class Datadog {
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
 
-        TracingAutoInstrumentation.instance = TracingAutoInstrumentation(with: configuration)
+        TracingAutoInstrumentation.instance = tracingAutoInstrumentation
         TracingAutoInstrumentation.instance?.apply()
 
         // Only after all features were initialized with no error thrown:
