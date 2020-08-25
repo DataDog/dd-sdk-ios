@@ -151,7 +151,7 @@ private func ifValid(endpointURLString: String, clientToken: String) throws -> U
     guard let endpointURL = URL(string: endpointURLString) else {
         throw ProgrammerError(description: "The `url` in `.custom(url:)` must be a valid URL string.")
     }
-    guard !clientToken.isEmpty else {
+    if clientToken.isEmpty {
         throw ProgrammerError(description: "`clientToken` cannot be empty.")
     }
     let endpointURLWithClientToken = endpointURL.appendingPathComponent(clientToken)

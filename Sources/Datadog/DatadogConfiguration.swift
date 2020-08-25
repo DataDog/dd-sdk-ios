@@ -91,11 +91,11 @@ extension Datadog {
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
-        /// - Parameter rumClientToken: RUM Client Token (generated for the RUM Application ID) obtained on Datadog website.
+        /// - Parameter clientToken: the client token (generated for the RUM Application) obtained on Datadog website.
         /// - Parameter environment: the environment name which will be sent to Datadog. This can be used
         ///  to filter events on different environments (e.g. "staging" or "production").
-        public static func builderUsing(rumApplicationID: String, rumClientToken: String, environment: String) -> Builder {
-            return Builder(rumApplicationID: rumApplicationID, rumClientToken: rumClientToken, environment: environment)
+        public static func builderUsing(rumApplicationID: String, clientToken: String, environment: String) -> Builder {
+            return Builder(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: environment)
         }
 
         /// Creates the builder for configuring the SDK to work with Logging and Tracing features.
@@ -103,14 +103,14 @@ extension Datadog {
         /// - Parameter environment: the environment name which will be sent to Datadog. This can be used
         ///  to filter events on different environments (e.g. "staging" or "production").
         public static func builderUsing(clientToken: String, environment: String) -> Builder {
-            return Builder(clientToken: clientToken, environment: environment)
+            return Builder(rumApplicationID: nil, clientToken: clientToken, environment: environment)
         }
 
         /// `Datadog.Configuration` builder.
         ///
         /// Usage (to enable RUM, Logging and Tracing):
         ///
-        ///     Datadog.Configuration.builderUsing(rumApplicationID:rumClientToken:environment:)
+        ///     Datadog.Configuration.builderUsing(rumApplicationID:clientToken:environment:)
         ///                           ... // customize using builder methods
         ///                          .build()
         ///
@@ -123,18 +123,8 @@ extension Datadog {
         public class Builder {
             internal var configuration: Configuration
 
-            /// Initializer invoked when initializing the SDK to use any of (including all): RUM, Logging, Tracing.
-            internal convenience init(rumApplicationID: String, rumClientToken: String, environment: String) {
-                self.init(rumApplicationID: rumApplicationID, clientToken: rumClientToken, environment: environment)
-            }
-
-            /// Initializer invoked when initializing the SDK to use any of: Logging, Tracing.
-            internal convenience init(clientToken: String, environment: String) {
-                self.init(rumApplicationID: nil, clientToken: clientToken, environment: environment)
-            }
-
             /// Private initializer providing default configuration values.
-            private init(rumApplicationID: String?, clientToken: String, environment: String) {
+            init(rumApplicationID: String?, clientToken: String, environment: String) {
                 self.configuration = Configuration(
                     rumApplicationID: rumApplicationID,
                     clientToken: clientToken,
@@ -178,7 +168,7 @@ extension Datadog {
             /// and your app will be using the no-op tracer instance.
             ///
             /// If `enableTracing(false)` is set, the SDK won't instantiate underlying resources required for
-            /// running the tracing feature. This will give you additional performance optimization if you only use RUM or tracing.
+            /// running the tracing feature. This will give you additional performance optimization if you only use RUM or logging.
             ///
             /// - Parameter enabled: `true` by default
             public func enableTracing(_ enabled: Bool) -> Builder {
@@ -193,7 +183,7 @@ extension Datadog {
             /// and your app will be using the no-op monitor instance.
             ///
             /// If `enableRUM(false)` is set, the SDK won't instantiate underlying resources required for
-            /// running the RUM feature. This will give you additional performance optimization if you only use logging or tracing.
+            /// running the RUM feature. This will give you additional performance optimization if you only use logging and/or tracing.
             ///
             /// **NOTE**: This setting only applies if you use `Datadog.Configuration.builderUsing(rumApplicationID:rumClientToken:environment:)`.
             /// When using other constructors for obtaining the builder, RUM is disabled by default.

@@ -13,7 +13,7 @@ class DatadogTests: XCTestCase {
         Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
     }
     private var rumBuilder: Datadog.Configuration.Builder {
-        Datadog.Configuration.builderUsing(rumApplicationID: "rum-123", rumClientToken: "abc-123", environment: "tests")
+        Datadog.Configuration.builderUsing(rumApplicationID: "rum-123", clientToken: "abc-123", environment: "tests")
     }
 
     override func setUp() {

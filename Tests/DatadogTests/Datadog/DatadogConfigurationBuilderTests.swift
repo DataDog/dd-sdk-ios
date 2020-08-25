@@ -14,7 +14,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             .build()
 
         let rumConfiguration = Datadog.Configuration
-            .builderUsing(rumApplicationID: "rum-app-id", rumClientToken: "abc-123", environment: "tests")
+            .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
             .build()
 
         XCTAssertFalse(configuration.rumEnabled)
@@ -54,7 +54,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         let defaultBuilder = Datadog.Configuration
             .builderUsing(clientToken: "abc-123", environment: "tests")
         let defaultRUMBuilder = Datadog.Configuration
-        .builderUsing(rumApplicationID: "rum-app-id", rumClientToken: "abc-123", environment: "tests")
+        .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
 
         let configuration = customized(defaultBuilder).build()
         let rumConfiguration = customized(defaultRUMBuilder).build()

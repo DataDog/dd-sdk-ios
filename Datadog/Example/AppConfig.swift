@@ -32,7 +32,7 @@ struct ExampleAppConfig: AppConfig {
     }()
 
     init() {
-        guard let rumClientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !rumClientToken.isEmpty else {
+        guard let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String, !clientToken.isEmpty else {
             fatalError("""
             ✋⛔️ Cannot read `DATADOG_CLIENT_TOKEN` from `Info.plist` dictionary.
             Please update `Datadog.xcconfig` in the repository root with your own
@@ -51,7 +51,7 @@ struct ExampleAppConfig: AppConfig {
         }
 
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(rumApplicationID: rumApplicationID, rumClientToken: rumClientToken, environment: "tests")
+            .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: "tests")
             .set(serviceName: serviceName)
             .set(tracedHosts: [arbitraryNetworkURL.host!, "foo.bar"])
             .build()
@@ -73,7 +73,7 @@ struct UITestAppConfig: AppConfig {
         let sourceEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_SOURCE_ENDPOINT_URL"]!
         let tracedhost = URL(string: sourceEndpoint)!.host!
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(rumApplicationID: "rum-application-id", rumClientToken: "ui-tests-client-token", environment: "integration")
+            .builderUsing(rumApplicationID: "rum-application-id", clientToken: "ui-tests-client-token", environment: "integration")
             .set(serviceName: serviceName)
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
