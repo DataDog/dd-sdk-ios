@@ -6,7 +6,7 @@
 
 import UIKit
 
-final class CategoriesViewController: ListViewController {
+internal final class CategoriesViewController: ListViewController {
     private var categories = [Category]()
 
     override func viewDidLoad() {

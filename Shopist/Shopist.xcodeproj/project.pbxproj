@@ -273,6 +273,7 @@
 				9EE2A9EB244F38DE00A2C252 /* Frameworks */,
 				9EE2A9EC244F38DE00A2C252 /* Resources */,
 				9EE2AA33244F3A4500A2C252 /* Embed Frameworks */,
+				9EB311FB24EB164B001811BF /* Run Linter */,
 			);
 			buildRules = (
 			);
@@ -418,6 +419,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9EB311FB24EB164B001811BF /* Run Linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9EE2A9EA244F38DE00A2C252 /* Sources */ = {

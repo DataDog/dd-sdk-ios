@@ -7,7 +7,7 @@
 import UIKit
 import AlamofireImage
 
-final class Cell: UICollectionViewCell {
+internal final class Cell: UICollectionViewCell {
     var text: String? {
         get { label.text }
         set { label.text = newValue }
@@ -45,5 +45,6 @@ final class Cell: UICollectionViewCell {
         image = nil
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
 }

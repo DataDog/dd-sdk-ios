@@ -6,7 +6,7 @@
 
 import UIKit
 
-class ListViewController: UICollectionViewController {
+internal class ListViewController: UICollectionViewController {
     private static let cellIdentifier = "cell"
     private let api = API()
 
@@ -75,5 +75,4 @@ class ListViewController: UICollectionViewController {
         layout.sectionInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
         layout.scrollDirection = .vertical
     }
-
 }

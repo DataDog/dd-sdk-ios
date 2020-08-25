@@ -6,7 +6,7 @@
 
 import UIKit
 
-class ProductDetailViewController: UIViewController {
+internal class ProductDetailViewController: UIViewController {
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var priceLabel: UILabel!
@@ -17,6 +17,7 @@ class ProductDetailViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     override func viewDidLoad() {
@@ -51,12 +52,14 @@ class ProductDetailViewController: UIViewController {
         addGoToCartButton()
     }
 
-    @objc private func addToCart() {
+    @objc
+    private func addToCart() {
         cart.products.append(product)
         setupBarButtons()
     }
 
-    @objc private func removeFromCart() {
+    @objc
+    private func removeFromCart() {
         if let indexToRemove = cart.products.firstIndex(of: product) {
             cart.products.remove(at: indexToRemove)
         }

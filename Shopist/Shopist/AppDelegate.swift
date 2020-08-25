@@ -7,15 +7,13 @@
 import UIKit
 import Datadog
 
-fileprivate(set) var logger: Logger!
-
-let appConfig = AppConfig(serviceName: "ios-sdk-shopist-app")
+internal fileprivate(set) var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+internal let appConfig = AppConfig(serviceName: "ios-sdk-shopist-app")
 var rum: DDRUMMonitor? { Global.rum }
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+internal class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
@@ -62,7 +60,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         return true
     }
 

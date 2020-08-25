@@ -6,7 +6,7 @@
 
 import UIKit
 
-class DebugLoggingViewController: UIViewController {
+internal class DebugLoggingViewController: UIViewController {
     @IBOutlet weak var logLevelSegmentedControl: UISegmentedControl!
     @IBOutlet weak var logMessageTextField: UITextField!
     @IBOutlet weak var logServiceNameTextField: UITextField!
@@ -26,7 +26,9 @@ class DebugLoggingViewController: UIViewController {
     }
 
     private var message: String {
+        // swiftlint:disable force_unwrapping
         logMessageTextField.text!.isEmpty ? "message" : logMessageTextField.text!
+        // swiftlint:enable force_unwrapping
     }
 
     @IBAction func didTapSendSingleLog(_ sender: Any) {

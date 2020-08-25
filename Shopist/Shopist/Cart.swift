@@ -6,13 +6,13 @@
 
 import Foundation
 
-let cart = Cart()
+internal let cart = Cart()
 
 extension Float {
     var moneyString: String { String(format: "€%.2f", self) }
 }
 
-final class Cart {
+internal final class Cart {
     static let taxPercentage: Float = 0.18
     static let shippingPerItem: Float = 10.0
 

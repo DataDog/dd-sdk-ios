@@ -17,12 +17,12 @@ private struct CellModel {
     let kind: Kind
 }
 
-final class CartViewController: UITableViewController {
+internal final class CartViewController: UITableViewController {
     private static var randomError: NSError? {
         if UInt8.random(in: 1...20) == 1 {
             return NSError(
                 domain: "GraphQL",
-                code: 11235,
+                code: 11_235,
                 userInfo: [NSLocalizedDescriptionKey: "Something happened..."]
             )
         }
@@ -82,7 +82,8 @@ final class CartViewController: UITableViewController {
         models = newModels
     }
 
-    @objc private func dismissPage() {
+    @objc
+    private func dismissPage() {
         presentingViewController?.dismiss(animated: true)
     }
 

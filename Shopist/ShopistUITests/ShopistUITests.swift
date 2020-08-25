@@ -7,7 +7,7 @@
 import XCTest
 
 class ShopistUITests: XCTestCase {
-    override func setUp() {
+    override func setUp() { // swiftlint:disable:this empty_xctest_method
         continueAfterFailure = false
     }
 

@@ -6,7 +6,9 @@
 
 import Foundation
 
-struct AppConfig {
+internal struct AppConfig {
+    /// Client token read from `Datadog.xcconfig`.
+    let clientToken: String
     /// Service name used for logs and traces.
     let serviceName: String
     /// RUM application identifier
@@ -21,15 +23,18 @@ struct AppConfig {
             Please update `Datadog.xcconfig` in the repository root with your own
             client token obtained on datadoghq.com.
             You might need to run `Product > Clean Build Folder` before retrying.
-            """)
+            """
+            )
         }
         guard let rumAppID = Bundle.main.infoDictionary?["RUMAppID"] as? String, !rumAppID.isEmpty else {
-            fatalError("""
+            fatalError(
+                """
             ✋⛔️ Cannot read `RUM_APP_ID` from `Info.plist` dictionary.
             Please update `Shopist.xcconfig` in the repository root with your own
             RUM application identifier obtained on datadoghq.com.
             You might need to run `Product > Clean Build Folder` before retrying.
-            """)
+            """
+            )
         }
 
         self.rumClientToken = rumClientToken

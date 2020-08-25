@@ -85,6 +85,7 @@ included:
   - instrumented-tests/http-server-mock/Sources
   - tools/api-surface/Sources
   - tools/api-surface/Fixtures/Sources
+  - Shopist/Shopist
   - dependency-manager-tests/carthage/CTProject
   - dependency-manager-tests/cocoapods/CPProject
   - dependency-manager-tests/spm/SPMProject

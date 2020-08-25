@@ -8,13 +8,13 @@ import Foundation
 import Alamofire
 import Datadog
 
-struct Category: Decodable {
+internal struct Category: Decodable {
     let id: String
     let title: String
     let cover: URL
 }
 
-struct Product: Decodable, Equatable {
+internal struct Product: Decodable, Equatable {
     let name: String
     let price: String
     let cover: URL
@@ -22,7 +22,7 @@ struct Product: Decodable, Equatable {
     let isInStock: Bool
 }
 
-struct Payment: Encodable {
+internal struct Payment: Encodable {
     struct Checkout: Encodable {
         let cardNumber: String
         let cvc: Int
@@ -34,7 +34,7 @@ struct Payment: Encodable {
             exp = "\(Int.random(in: 1...12))/\(Int.random(in: 21...30))"
         }
 
-        static private func random(length: UInt8) -> Int {
+        private static func random(length: UInt8) -> Int {
             let max = Int(pow(10.0, Double(length)))
             let min = max / 10
             let output = Int.random(in: min..<max)
@@ -55,8 +55,10 @@ struct Payment: Encodable {
     }
 }
 
-final class API {
+internal final class API {
+    // swiftlint:disable force_cast
     private static let baseHost = (Bundle.main.object(forInfoDictionaryKey: "ShopistBaseURL") as! String)
+    // swiftlint:enable force_cast
     private static let baseURL = "https://" + baseHost
     private static let apiURL = "https://api." + baseHost
 
@@ -89,17 +91,21 @@ final class API {
         if let someCode = discountCode {
             url.append("?coupon_code=\(someCode)")
         }
+        // swiftlint:disable force_try
         var request = try! URLRequest(url: url, method: .post)
         request.httpBody = try! jsonEncoder.encode(payment)
+        // swiftlint:enable force_try
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         make(request: request, completion: completion)
     }
 
     private func make<T: Decodable>(request: URLRequest, completion: @escaping Completion<T>) {
+        // swiftlint:disable force_unwrapping
         let url = request.url!
         let resourceName = url.pathComponents.joined()
         let httpMethod = RUMHTTPMethod(rawValue: request.httpMethod!)!
+        // swiftlint:enable force_unwrapping
         rum?.startResourceLoading(resourceName: resourceName, url: url, httpMethod: httpMethod)
         httpClient.request(request).validate().response { response in
             let statusCode = response.response?.statusCode
@@ -121,6 +127,6 @@ final class API {
 
 private extension URLRequest {
     init(_ string: String) {
-        self = URLRequest(url: URL(string: string)!)
+        self = URLRequest(url: URL(string: string)!) // swiftlint:disable:this force_unwrapping
     }
 }

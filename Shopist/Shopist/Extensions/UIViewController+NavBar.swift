@@ -14,7 +14,8 @@ extension UIViewController {
         navigationItem.rightBarButtonItems = buttonItems
     }
 
-    @objc private func goToCart() {
+    @objc
+    private func goToCart() {
         let cartVC = CartViewController()
         let containerVC = UINavigationController(rootViewController: cartVC)
         present(containerVC, animated: true, completion: nil)
