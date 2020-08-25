@@ -24,6 +24,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .swipe,
             attributes: [:],
             startTime: .mockAny(),
@@ -63,6 +64,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .swipe,
             attributes: [:],
             startTime: currentTime,
@@ -76,7 +78,8 @@ class RUMUserActionScopeTests: XCTestCase {
                 command: RUMStopUserActionCommand(
                     time: currentTime,
                     attributes: ["foo": "bar"],
-                    actionType: .swipe
+                    actionType: .swipe,
+                    name: nil
                 )
             )
         )
@@ -101,6 +104,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .swipe,
             attributes: [:],
             startTime: currentTime,
@@ -124,6 +128,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
@@ -174,6 +179,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
@@ -200,6 +206,34 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
 
+    func testWhenContinuousUserActionStopsWithName_itChangesItsName() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope(
+            parent: parent,
+            dependencies: dependencies,
+            name: .mockAny(),
+            actionType: .scroll,
+            attributes: [:],
+            startTime: currentTime,
+            isContinuous: true
+        )
+
+        currentTime.addTimeInterval(0.5)
+
+        XCTAssertTrue(scope.process(command: RUMCommandMock()))
+
+        currentTime.addTimeInterval(1)
+        let differentName = String.mockRandom()
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .scroll, name: differentName)
+            )
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMAction>.self).last)
+        XCTAssertEqual(event.model.action.target?.name, differentName)
+    }
+
     // MARK: - Discrete User Action
 
     func testWhenDiscreteUserActionTimesOut_itSendsActionEvent() throws {
@@ -207,6 +241,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .swipe,
             attributes: [:],
             startTime: currentTime,
@@ -232,6 +267,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
@@ -285,6 +321,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope(
             parent: parent,
             dependencies: dependencies,
+            name: .mockAny(),
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,

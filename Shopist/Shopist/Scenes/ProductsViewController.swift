@@ -49,8 +49,8 @@ final class ProductsViewController: ListViewController {
     }
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        rum?.registerUserAction(type: .tap, attributes: ["info": "cell tap -> product details"])
         let selectedProduct = items[indexPath.row]
+        rum?.registerUserAction(type: .tap, name: selectedProduct.name)
         let detailVC = ProductDetailViewController(product: selectedProduct)
         show(detailVC, sender: self)
     }

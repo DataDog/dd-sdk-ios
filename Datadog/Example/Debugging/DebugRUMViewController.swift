@@ -66,7 +66,7 @@ class DebugRUMViewController: UIViewController {
         let viewController = createUIViewControllerSubclassInstance(named: actionViewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.registerUserAction(type: self.actionType)
+            rumMonitor.registerUserAction(type: self.actionType, name: (sender as! UIButton).currentTitle!)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             rumMonitor.stopView(viewController: viewController)

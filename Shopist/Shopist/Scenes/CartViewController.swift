@@ -87,7 +87,7 @@ final class CartViewController: UITableViewController {
     }
 
     @objc private func pay() {
-        rum?.registerUserAction(type: .tap, attributes: ["info": "button tap -> pay"])
+        rum?.registerUserAction(type: .tap, name: "Pay")
         if let randomError = Self.randomError {
             self.handleError(randomError)
             return

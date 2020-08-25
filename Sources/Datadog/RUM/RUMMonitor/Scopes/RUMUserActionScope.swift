@@ -22,6 +22,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     /// The type of this User Action.
     internal let actionType: RUMUserActionType
+    /// The name of this User Action.
+    private(set) var name: String
     /// User Action attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
 
@@ -44,6 +46,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
+        name: String,
         actionType: RUMUserActionType,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
@@ -51,6 +54,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     ) {
         self.parent = parent
         self.dependencies = dependencies
+        self.name = name
         self.actionType = actionType
         self.attributes = attributes
         self.actionUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -80,6 +84,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             sendActionEvent(completionTime: command.time)
             return false
         case let command as RUMStopUserActionCommand:
+            name = command.name ?? name
             sendActionEvent(completionTime: command.time, on: command)
             return false
         case is RUMStartResourceCommand:
@@ -121,7 +126,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 type: actionType.toRUMDataFormat,
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
-                target: nil,
+                target: RUMTarget(name: name),
                 error: .init(count: errorsCount.toInt64),
                 crash: nil,
                 longTask: nil,

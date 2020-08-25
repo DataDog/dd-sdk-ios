@@ -37,7 +37,8 @@ internal class SendRUMFixture1ViewController: UIViewController {
 
         rumMonitor.registerUserAction(
             type: .tap,
-            attributes: ["button.label": (sender as! UIButton).currentTitle!]
+            name: (sender as! UIButton).currentTitle!,
+            attributes: ["button.description": String(describing: sender)]
         )
 
         rumMonitor.startResourceLoading(

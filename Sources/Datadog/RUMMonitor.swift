@@ -271,13 +271,15 @@ public class RUMMonitor {
     /// Such an User Action must be stopped with `stopUserAction(type:)`, and will be stopped automatically if it lasts more than 10 seconds.
     /// - Parameters:
     ///   - type: the User Action type
+    ///   - name: the User Action name
     ///   - attributes: custom attributes to attach to the User Action.
-    public func startUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                actionType: type
+                actionType: type,
+                name: name
             )
         )
     }
@@ -286,13 +288,15 @@ public class RUMMonitor {
     /// This is used to stop tracking long running user actions (e.g. "scroll"), started with `startUserAction(type:)`.
     /// - Parameters:
     ///   - type: the User Action type
+    ///   - name: the User Action name. If `nil`, `name` used in `startUserAction` will be effective.
     ///   - attributes: custom attributes to attach to the User Action.
-    public func stopUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                actionType: type
+                actionType: type,
+                name: name
             )
         )
     }
@@ -301,13 +305,15 @@ public class RUMMonitor {
     /// This is used to track discrete User Actions (e.g. "tap").
     /// - Parameters:
     ///   - type: the User Action type
+    ///   - name: the User Action name
     ///   - attributes: custom attributes to attach to the User Action.
-    public func registerUserAction(type: RUMUserActionType, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),
                 attributes: attributes ?? [:],
-                actionType: type
+                actionType: type,
+                name: name
             )
         )
     }
