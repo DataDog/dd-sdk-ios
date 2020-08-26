@@ -94,7 +94,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStartViewCommand where command.identity === identity:
             if command.isInitialView {
                 actionsCount += 1
-                sendApplicationStartAction()
+                sendApplicationStartAction(on: command)
             }
             needsViewUpdate = true
         case let command as RUMStartViewCommand where command.identity !== identity:
@@ -199,7 +199,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction() {
+    private func sendApplicationStartAction(on command: RUMCommand) {
         let eventData = RUMAction(
             date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
@@ -224,7 +224,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: [:])
+        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: command.attributes)
         dependencies.eventOutput.write(rumEvent: event)
     }
 

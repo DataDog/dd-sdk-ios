@@ -36,12 +36,14 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
         monitor.stopView(viewController: mockView)
         monitor.startView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -62,12 +64,14 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceName: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
         monitor.stopResourceLoading(resourceName: "/resource/1", kind: .image, httpStatusCode: 200)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -95,6 +99,7 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         let actionName = String.mockRandom()
         monitor.startView(viewController: mockView)
@@ -102,6 +107,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -124,6 +130,7 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -134,6 +141,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopUserAction(type: .scroll)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -183,6 +191,7 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -192,6 +201,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopUserAction(type: .scroll)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMAction.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
@@ -233,6 +243,7 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
@@ -245,6 +256,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: view2)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 9)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMView.self) { rumModel in rumModel.view.url == "FirstViewController" }
             .model(ofType: RUMView.self) { rumModel in
@@ -277,6 +289,7 @@ class RUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
@@ -295,6 +308,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: view2)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 13)
+        verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMView.self) { rumModel in rumModel.view.url == "FirstViewController" }
             .model(ofType: RUMView.self) { rumModel in
@@ -450,6 +464,48 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
+    // MARK: - Sending Attributes
+
+    func testSendingAttributes() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let view1 = createMockView(viewControllerClassName: "FirstViewController")
+        let view2 = createMockView(viewControllerClassName: "SecondViewController")
+
+        let monitor = RUMMonitor.initialize()
+
+        // set global attributes:
+        monitor.addAttribute(forKey: "attribute1", value: "value 1")
+        monitor.addAttribute(forKey: "attribute2", value: "value 2")
+
+        // start View 1:
+        monitor.startView(viewController: view1)
+
+        // update global attributes while the View 1 is active
+        monitor.addAttribute(forKey: "attribute1", value: "changed value 1") // change the attribute value
+        monitor.removeAttribute(forKey: "attribute2") // remove the attribute
+
+        monitor.stopView(viewController: view1)
+
+        // start View 2:
+        monitor.startView(viewController: view2)
+        monitor.stopView(viewController: view2)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
+        let firstViewEvent = try rumEventMatchers
+            .lastRUMEvent(ofType: RUMView.self) { rumModel in rumModel.view.url == "FirstViewController" }
+
+        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "attribute1") as String, "changed value 1")
+        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "attribute2") as String, "value 2")
+
+        let secondViewEvent = try rumEventMatchers
+            .lastRUMEvent(ofType: RUMView.self) { rumModel in rumModel.view.url == "SecondViewController" }
+
+        XCTAssertEqual(try secondViewEvent.attribute(forKeyPath: "attribute1") as String, "changed value 1")
+        XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute2") as String)
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
@@ -460,7 +516,7 @@ class RUMMonitorTests: XCTestCase {
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
-            let modulo = iteration % 12
+            let modulo = iteration % 14
 
             switch modulo {
             case 0: monitor.startView(viewController: view)
@@ -475,6 +531,8 @@ class RUMMonitorTests: XCTestCase {
             case 9: monitor.stopUserAction(type: .scroll)
             case 10: monitor.registerUserAction(type: .tap, name: .mockRandom())
             case 11: _ = monitor.dd.contextProvider.context
+            case 12: monitor.addAttribute(forKey: String.mockRandom(), value: String.mockRandom())
+            case 13: monitor.removeAttribute(forKey: String.mockRandom())
             default: break
             }
         }
@@ -550,5 +608,23 @@ class RUMMonitorTests: XCTestCase {
         )
 
         try Datadog.deinitializeOrThrow()
+    }
+
+    // MARK: - Private helpers
+
+    private var expectedAttributes = [String: String]()
+    private func setGlobalAttributes(of monitor: DDRUMMonitor) {
+        expectedAttributes = [String.mockRandom(): String.mockRandom()]
+        expectedAttributes.forEach {
+            monitor.addAttribute(forKey: $0, value: $1)
+        }
+    }
+
+    private func verifyGlobalAttributes(in matchers: [RUMEventMatcher]) {
+        for matcher in matchers {
+            expectedAttributes.forEach { attrKey, attrValue in
+                XCTAssertEqual(try? matcher.attribute(forKeyPath: attrKey), attrValue)
+            }
+        }
     }
 }

@@ -56,6 +56,8 @@ public class RUMMonitor: DDRUMMonitor {
     internal let contextProvider: RUMCurrentContext
     /// Time provider.
     private let dateProvider: DateProvider
+    /// Attributes associated with every command.
+    private var rumAttributes: [AttributeKey: AttributeValue] = [:]
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
     private let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
@@ -125,7 +127,7 @@ public class RUMMonitor: DDRUMMonitor {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 identity: viewController
             )
         )
@@ -135,7 +137,7 @@ public class RUMMonitor: DDRUMMonitor {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 identity: viewController
             )
         )
@@ -152,7 +154,7 @@ public class RUMMonitor: DDRUMMonitor {
                 message: message,
                 source: source,
                 stack: stack,
-                attributes: attributes ?? [:]
+                attributes: aggregate(attributes)
             )
         )
     }
@@ -163,7 +165,7 @@ public class RUMMonitor: DDRUMMonitor {
                 time: dateProvider.currentDate(),
                 error: error,
                 source: source,
-                attributes: attributes ?? [:]
+                attributes: aggregate(attributes)
             )
         )
     }
@@ -173,7 +175,7 @@ public class RUMMonitor: DDRUMMonitor {
             command: RUMStartResourceCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 url: url.absoluteString,
                 httpMethod: httpMethod
             )
@@ -185,7 +187,7 @@ public class RUMMonitor: DDRUMMonitor {
             command: RUMStopResourceCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 kind: kind,
                 httpStatusCode: httpStatusCode,
                 size: size
@@ -201,7 +203,7 @@ public class RUMMonitor: DDRUMMonitor {
                 error: error,
                 source: source,
                 httpStatusCode: httpStatusCode,
-                attributes: attributes ?? [:]
+                attributes: aggregate(attributes)
             )
         )
     }
@@ -214,7 +216,7 @@ public class RUMMonitor: DDRUMMonitor {
                 message: errorMessage,
                 source: source,
                 httpStatusCode: httpStatusCode,
-                attributes: attributes ?? [:]
+                attributes: aggregate(attributes)
             )
         )
     }
@@ -223,7 +225,7 @@ public class RUMMonitor: DDRUMMonitor {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 actionType: type,
                 name: name
             )
@@ -234,7 +236,7 @@ public class RUMMonitor: DDRUMMonitor {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 actionType: type,
                 name: name
             )
@@ -245,14 +247,34 @@ public class RUMMonitor: DDRUMMonitor {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),
-                attributes: attributes ?? [:],
+                attributes: aggregate(attributes),
                 actionType: type,
                 name: name
             )
         )
     }
 
+    // MARK: - Attributes
+
+    override public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        queue.async {
+            self.rumAttributes[key] = value
+        }
+    }
+
+    override public func removeAttribute(forKey key: AttributeKey) {
+        queue.async {
+            self.rumAttributes[key] = nil
+        }
+    }
+
     // MARK: - Private
+
+    private func aggregate(_ localAttributes: [AttributeKey: AttributeValue]?) -> [AttributeKey: AttributeValue] {
+        var mergedAttributes = queue.sync { return self.rumAttributes }
+        mergedAttributes.merge(rumCommandAttributes: localAttributes)
+        return mergedAttributes
+    }
 
     private func process(command: RUMCommand) {
         queue.async {
