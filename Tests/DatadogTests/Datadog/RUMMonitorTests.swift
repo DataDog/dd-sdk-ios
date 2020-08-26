@@ -330,6 +330,37 @@ class RUMMonitorTests: XCTestCase {
             }
     }
 
+    func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directory: temporaryDirectory,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        monitor.startView(viewController: mockView)
+        monitor.registerUserAction(type: .tap, name: "1st action")
+        monitor.registerUserAction(type: .swipe, name: "2nd action")
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        try rumEventMatchers.lastRUMEvent(ofType: RUMAction.self) { $0.action.target?.name == "1st action" }
+            .model(ofType: RUMAction.self) { rumModel in
+                XCTAssertEqual(rumModel.action.type, .tap)
+            }
+        try rumEventMatchers.lastRUMEvent(ofType: RUMAction.self) { $0.action.target?.name == "2nd action" }
+            .model(ofType: RUMAction.self) { rumModel in
+                XCTAssertEqual(rumModel.action.type, .swipe)
+            }
+        try rumEventMatchers.lastRUMEvent(ofType: RUMView.self)
+            .model(ofType: RUMView.self) { rumModel in
+                XCTAssertEqual(rumModel.view.action.count, 3)
+            }
+    }
+
     // MARK: - Sending user info
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {

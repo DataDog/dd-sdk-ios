@@ -78,6 +78,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Tells if the View did change and an update event should be send.
         var needsViewUpdate = false
 
+        // Propagate to User Action scope
+        let beforeHadUserAction = userActionScope != nil
+        userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
+        let afterHasUserAction = userActionScope != nil
+
+        if beforeHadUserAction && !afterHasUserAction { // if User Action was tracked
+            actionsCount += 1
+            needsViewUpdate = true
+        }
+
         // Apply side effects
         switch command {
         // View commands
@@ -101,9 +111,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // User Action commands
         case let command as RUMStartUserActionCommand where isActiveView:
-            startContinuousUserAction(on: command)
+            if userActionScope == nil {
+                startContinuousUserAction(on: command)
+            }
         case let command as RUMAddUserActionCommand where isActiveView:
-            addDiscreteUserAction(on: command)
+            if userActionScope == nil {
+                addDiscreteUserAction(on: command)
+            }
 
         // Error command
         case let command as RUMAddCurrentViewErrorCommand where isActiveView:
@@ -131,16 +145,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             } else {
                 resourcesCount += 1
             }
-            needsViewUpdate = true
-        }
-
-        // Propagate to User Action scope
-        let beforeHadUserAction = userActionScope != nil
-        userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
-        let afterHasUserAction = userActionScope != nil
-
-        if beforeHadUserAction && !afterHasUserAction { // if User Action was tracked
-            actionsCount += 1
             needsViewUpdate = true
         }
 
