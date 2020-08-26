@@ -191,6 +191,64 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(event.attributes.isEmpty)
     }
 
+    func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
+        let view1 = createMockView(viewControllerClassName: "FirstViewController")
+        let view2 = createMockView(viewControllerClassName: "SecondViewController")
+        var currentTime = Date()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: view1,
+            uri: "FirstViewController",
+            attributes: [:],
+            startTime: currentTime
+        )
+
+        XCTAssertTrue(
+             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view1))
+         )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertFalse(
+            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view2)),
+            "The scope should end as another View is started."
+        )
+
+        let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMView>.self)
+        let event = try XCTUnwrap(viewEvents.dropFirst().first)
+        XCTAssertEqual(event.model.view.url, "FirstViewController")
+        XCTAssertEqual(event.model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
+    }
+
+    func testWhenTheViewIsStartedAnotherTime_itEndsTheScope() throws {
+        var currentTime = Date()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            uri: "FirstViewController",
+            attributes: [:],
+            startTime: currentTime
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView)),
+            "The scope should be kept as the View was started for the first time."
+        )
+        XCTAssertFalse(
+            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView)),
+            "The scope should end as the View was started for another time."
+        )
+
+        let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMView>.self)
+        let event = try XCTUnwrap(viewEvents.first)
+        XCTAssertEqual(event.model.view.url, "FirstViewController")
+        XCTAssertEqual(event.model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
+    }
+
     // MARK: - Resources Tracking
 
     func testItManagesResourceScopesLifecycle() throws {
