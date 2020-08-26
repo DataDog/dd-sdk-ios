@@ -111,9 +111,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // User Action commands
         case let command as RUMStartUserActionCommand where isActiveView:
-            startContinuousUserAction(on: command)
+            if userActionScope == nil {
+                startContinuousUserAction(on: command)
+            }
         case let command as RUMAddUserActionCommand where isActiveView:
-            addDiscreteUserAction(on: command)
+            if userActionScope == nil {
+                addDiscreteUserAction(on: command)
+            }
 
         // Error command
         case let command as RUMAddCurrentViewErrorCommand where isActiveView:

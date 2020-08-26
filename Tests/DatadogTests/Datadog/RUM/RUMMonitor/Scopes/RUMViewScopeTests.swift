@@ -295,6 +295,12 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertNotNil(scope.userActionScope)
         XCTAssertEqual(scope.userActionScope?.name, actionName)
+
+        XCTAssertTrue(
+            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom()))
+        )
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+
         XCTAssertTrue(
             scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe))
         )
@@ -329,6 +335,11 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertNotNil(scope.userActionScope)
         XCTAssertEqual(scope.userActionScope?.name, actionName)
+
+        XCTAssertTrue(
+            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom()))
+        )
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
