@@ -110,17 +110,17 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
 }
 
 private class RUMViewOutline: RUMDebugView {
-    struct Constants {
-        static let activeViewColor =  #colorLiteral(red: 0.4686954021, green: 0.2687242031, blue: 0.7103499174, alpha: 1)
+    private struct Constants {
+        static let activeViewColor =  #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
         static let inactiveViewColor =  #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
-        static let lineWidth: CGFloat = 16
+        static let labelHeight: CGFloat = 16
 
         static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.lineWidth * 0.8, weight: .semibold),
+            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
             .foregroundColor: UIColor.white,
         ]
         static let viewDetailsTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.lineWidth * 0.5, weight: .regular),
+            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
             .foregroundColor: UIColor.white,
         ]
     }
@@ -130,7 +130,7 @@ private class RUMViewOutline: RUMDebugView {
 
     init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
         self.label = UILabel(frame: .zero)
-        self.stackOffset = CGFloat(stack.index) * Constants.lineWidth
+        self.stackOffset = CGFloat(stack.index) * Constants.labelHeight
 
         let viewName = viewInfo.uri
         let separator = " # "
@@ -163,9 +163,9 @@ private class RUMViewOutline: RUMDebugView {
         let safeAreaBounds = bounds.inset(by: safeAreaInsets)
         label.frame = .init(
             x: bounds.minX,
-            y: safeAreaBounds.maxY - stackOffset - Constants.lineWidth,
+            y: safeAreaBounds.maxY - stackOffset - Constants.labelHeight,
             width: bounds.width,
-            height: Constants.lineWidth
+            height: Constants.labelHeight
         )
     }
 }
