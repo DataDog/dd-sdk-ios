@@ -12,7 +12,7 @@ internal protocol RUMDebugging {
 import UIKit
 import Foundation
 
-internal struct RUMDebugInfo {
+private struct RUMDebugInfo {
     struct View {
         let uri: String
         let isActive: Bool
@@ -35,16 +35,41 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
     private lazy var canvas: UIView = {
         let window = UIApplication.shared.keyWindow
         let view = RUMDebugView(frame: window?.bounds ?? .zero)
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         window?.addSubview(view)
         return view
     }()
 
+    // MARK: - Initialization
+
+    init() {
+        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+
+        NotificationCenter.default
+            .addObserver(
+                self,
+                selector: #selector(RUMDebuggingInSimulator.updateLayout),
+                name: UIDevice.orientationDidChangeNotification,
+                object: nil
+        )
+    }
+
     deinit {
+        UIDevice.current.endGeneratingDeviceOrientationNotifications()
+
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
+
         let canvas = self.canvas
         DispatchQueue.main.async {
             canvas.removeFromSuperview()
         }
     }
+
+    // MARK: - Internal
 
     func debug(applicationScope: RUMApplicationScope) {
         // `RUMDebugInfo` must be created on the caller thread.
@@ -56,39 +81,39 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
         }
     }
 
+    // MARK: - Private
+
     private func renderOnMainThread(rumDebugInfo: RUMDebugInfo) {
-        canvas.subviews.forEach {
-            $0.removeFromSuperview()
+        canvas.subviews.forEach { view in
+            view.removeFromSuperview()
         }
 
-        let viewOutlines = rumDebugInfo.views.map { RUMViewOutline(viewInfo: $0) }
+        let viewOutlines: [RUMViewOutline] = zip(rumDebugInfo.views, 0..<rumDebugInfo.views.count)
+            .map { viewInfo, stackIndex in
+                RUMViewOutline(
+                    viewInfo: viewInfo,
+                    stack: (index: stackIndex, total: rumDebugInfo.views.count)
+                )
+            }
 
-        var nextOutlineFrame = canvas.bounds.inset(by: canvas.safeAreaInsets)
-        var nextOutlineAlpha = CGFloat(0.75)
-
-        viewOutlines.forEach { viewOutline in
-            viewOutline.frame = nextOutlineFrame
-            viewOutline.alpha = nextOutlineAlpha
-
-            nextOutlineFrame = nextOutlineFrame.insetBy(
-                dx: RUMViewOutline.Constants.lineWidth,
-                dy: RUMViewOutline.Constants.lineWidth
-            )
-            nextOutlineAlpha *= nextOutlineAlpha
+        viewOutlines.forEach { view in
+            view.frame = canvas.frame
+            view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            canvas.addSubview(view)
         }
+    }
 
-        viewOutlines.forEach {
-            canvas.addSubview($0)
-            $0.setNeedsDisplay()
-        }
+    @objc
+    private func updateLayout() {
+        canvas.subviews.forEach { $0.setNeedsLayout() }
     }
 }
 
 private class RUMViewOutline: RUMDebugView {
     struct Constants {
         static let activeViewColor =  #colorLiteral(red: 0.4686954021, green: 0.2687242031, blue: 0.7103499174, alpha: 1)
-        static let inactiveViewColor =  #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
-        static let lineWidth: CGFloat = 15
+        static let inactiveViewColor =  #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
+        static let lineWidth: CGFloat = 16
 
         static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.lineWidth * 0.8, weight: .semibold),
@@ -100,18 +125,19 @@ private class RUMViewOutline: RUMDebugView {
         ]
     }
 
-    private let color: UIColor
     private let label: UILabel
+    private let stackOffset: CGFloat
 
-    init(viewInfo: RUMDebugInfo.View) {
-        self.color = viewInfo.isActive ? Constants.activeViewColor : Constants.inactiveViewColor
+    init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
         self.label = UILabel(frame: .zero)
+        self.stackOffset = CGFloat(stack.index) * Constants.lineWidth
 
         let viewName = viewInfo.uri
         let separator = " # "
         let viewDetails = (viewInfo.isActive ? "ACTIVE" : "INACTIVE")
         let labelText = "\(viewName)\(separator)\(viewDetails)"
         let labelAttributedText = NSMutableAttributedString(string: labelText)
+        let labelBackgroundColor = viewInfo.isActive ? Constants.activeViewColor : Constants.inactiveViewColor
 
         labelAttributedText.setAttributes(
             Constants.viewNameTextAttributes,
@@ -124,24 +150,21 @@ private class RUMViewOutline: RUMDebugView {
         )
 
         label.attributedText = labelAttributedText
-        label.textAlignment = .left
+        label.textAlignment = .center
+        label.backgroundColor = labelBackgroundColor
+        label.alpha = CGFloat(pow(0.75, Double(stack.total - stack.index)))
+
         super.init(frame: .zero)
+
         addSubview(label)
     }
 
-    override func draw(_ rect: CGRect) {
-        let innerRect = rect.insetBy(dx: Constants.lineWidth * 0.5, dy: Constants.lineWidth * 0.5)
-        let path = UIBezierPath(rect: innerRect)
-        color.set()
-        path.lineWidth = Constants.lineWidth
-        path.stroke()
-    }
-
     override func layoutSubviews() {
+        let safeAreaBounds = bounds.inset(by: safeAreaInsets)
         label.frame = .init(
-            x: bounds.minX + Constants.lineWidth,
-            y: bounds.maxY - Constants.lineWidth,
-            width: bounds.width - 2 * Constants.lineWidth,
+            x: bounds.minX,
+            y: safeAreaBounds.maxY - stackOffset - Constants.lineWidth,
+            width: bounds.width,
             height: Constants.lineWidth
         )
     }
