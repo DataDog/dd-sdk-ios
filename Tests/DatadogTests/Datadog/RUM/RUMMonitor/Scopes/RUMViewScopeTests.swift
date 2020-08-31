@@ -76,7 +76,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.url, "UIViewController")
         XCTAssertValidRumUUID(event.model.action.id)
         XCTAssertEqual(event.model.action.type, .applicationStart)
-        XCTAssertTrue(event.attributes.isEmpty, "The `application_start` event must have no attributes.")
     }
 
     func testWhenInitialViewIsStarted_itSendsViewUpdateEvent() throws {

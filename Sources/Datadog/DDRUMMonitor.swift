@@ -11,7 +11,7 @@ import UIKit
 /// `DDRUMMonitor` allows you to record User events that can be explored and analyzed in Datadog Dashboards.
 /// You can only have one active `RUMMonitor`, and should register/retrieve it from the `Global` object.
 public class DDRUMMonitor {
-    // MARK: - Public
+    // MARK: - Public methods
 
     /// Notifies that the View starts being presented to the user.
     /// - Parameters:
@@ -122,6 +122,23 @@ public class DDRUMMonitor {
     ///   - name: the User Action name
     ///   - attributes: custom attributes to attach to the User Action.
     public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil) {
+    }
+
+    // MARK: - Attributes
+
+    /// Adds a custom attribute to all future commands sent by this monitor.
+    /// - Parameters:
+    ///   - key: key for this attribute. See `AttributeKey` documentation for information about
+    ///   nesting attribute values using dot `.` syntax.
+    ///   - value: any value that conforms to `AttributeValue` typealias. See `AttributeValue` documentation
+    ///   for information about nested encoding containers limitation.
+    public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
+    }
+
+    /// Removes the custom attribute from all future commands sent by this monitor.
+    /// Previous commands won't lose this attribute if they were created prior to this call.
+    /// - Parameter key: key for the attribute that will be removed.
+    public func removeAttribute(forKey key: AttributeKey) {
     }
 
     // MARK: - Internal
