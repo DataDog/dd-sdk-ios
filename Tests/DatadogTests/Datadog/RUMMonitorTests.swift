@@ -460,7 +460,7 @@ class RUMMonitorTests: XCTestCase {
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
-            let modulo = iteration % 12
+            let modulo = iteration % 13
 
             switch modulo {
             case 0: monitor.startView(viewController: view)
@@ -475,12 +475,13 @@ class RUMMonitorTests: XCTestCase {
             case 9: monitor.stopUserAction(type: .scroll)
             case 10: monitor.registerUserAction(type: .tap, name: .mockRandom())
             case 11: _ = monitor.dd.contextProvider.context
+            case 12: monitor.dd.enableRUMDebugging(.random())
             default: break
             }
         }
     }
 
-    // MARK: - Usage errors
+    // MARK: - Usage
 
     func testGivenDatadogNotInitialized_whenInitializingRUMMonitor_itPrintsError() {
         let printFunction = PrintFunctionMock()
@@ -550,5 +551,35 @@ class RUMMonitorTests: XCTestCase {
         )
 
         try Datadog.deinitializeOrThrow()
+    }
+
+    func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
+        #if targetEnvironment(simulator)
+        // given
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: .mockWith(rumApplicationID: "rum-123", rumEnabled: true)
+        )
+        Global.rum = RUMMonitor.initialize()
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        let monitor = Global.rum.dd
+        monitor.queue.sync {
+            XCTAssertNil(monitor.debugging)
+        }
+
+        // when & then
+        Datadog.debugRUM = true
+        monitor.queue.sync {
+            XCTAssertNotNil(monitor.debugging)
+        }
+
+        Datadog.debugRUM = false
+        monitor.queue.sync {
+            XCTAssertNil(monitor.debugging)
+        }
+
+        try Datadog.deinitializeOrThrow()
+        #endif
     }
 }

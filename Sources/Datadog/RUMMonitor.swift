@@ -57,12 +57,12 @@ public class RUMMonitor: DDRUMMonitor {
     /// Time provider.
     private let dateProvider: DateProvider
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
-    private let queue = DispatchQueue(
+    internal let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
-    private var debugging: RUMDebugging? = nil
+    private(set) var debugging: RUMDebugging? = nil
 
     // MARK: - Initialization
 

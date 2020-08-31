@@ -189,6 +189,10 @@ class DatadogTests: XCTestCase {
 
         try Datadog.deinitializeOrThrow()
     }
+
+    func testDefaultDebugRUM() {
+        XCTAssertFalse(Datadog.debugRUM)
+    }
 }
 
 class AppContextTests: XCTestCase {

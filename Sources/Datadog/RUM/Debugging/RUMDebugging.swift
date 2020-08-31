@@ -109,7 +109,7 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
     }
 }
 
-private class RUMViewOutline: RUMDebugView {
+internal class RUMViewOutline: RUMDebugView {
     private struct Constants {
         static let activeViewColor =  #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
         static let inactiveViewColor =  #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
@@ -128,7 +128,7 @@ private class RUMViewOutline: RUMDebugView {
     private let label: UILabel
     private let stackOffset: CGFloat
 
-    init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
+    fileprivate init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
         self.label = UILabel(frame: .zero)
         self.stackOffset = CGFloat(stack.index) * Constants.labelHeight
 
@@ -170,7 +170,7 @@ private class RUMViewOutline: RUMDebugView {
     }
 }
 
-private class RUMDebugView: UIView {
+internal class RUMDebugView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.backgroundColor = .clear
