@@ -59,12 +59,12 @@ public class RUMMonitor: DDRUMMonitor {
     /// Attributes associated with every command.
     private var rumAttributes: [AttributeKey: AttributeValue] = [:]
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
-    private let queue = DispatchQueue(
+    internal let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
-    private var debugging: RUMDebugging? = nil
+    private(set) var debugging: RUMDebugging? = nil
 
     // MARK: - Initialization
 
