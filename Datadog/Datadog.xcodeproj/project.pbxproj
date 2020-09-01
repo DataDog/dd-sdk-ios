@@ -144,7 +144,6 @@
 		615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
 		61786F7724FCDE05009E6BAB /* RUMDebuggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */; };
 		617876B124FE5B6D009E6BAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617876B024FE5B6D009E6BAB /* AppDelegate.swift */; };
-		617876B324FE5B6D009E6BAB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617876B224FE5B6D009E6BAB /* ViewController.swift */; };
 		617876B624FE5B6D009E6BAB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617876B424FE5B6D009E6BAB /* Main.storyboard */; };
 		617876B824FE5B71009E6BAB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617876B724FE5B71009E6BAB /* Assets.xcassets */; };
 		617876BB24FE5B71009E6BAB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617876B924FE5B71009E6BAB /* LaunchScreen.storyboard */; };
@@ -252,6 +251,10 @@
 		6178773C24FE60AC009E6BAB /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		6178774424FE643D009E6BAB /* Datadog_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 6178774024FE642D009E6BAB /* Datadog_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6178774724FE6541009E6BAB /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		6178774924FE7515009E6BAB /* Screen1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6178774824FE7515009E6BAB /* Screen1ViewController.swift */; };
+		6178774B24FE7524009E6BAB /* Screen2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6178774A24FE7524009E6BAB /* Screen2ViewController.swift */; };
+		6178774D24FE752B009E6BAB /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6178774C24FE752B009E6BAB /* MenuViewController.swift */; };
+		6178774F24FE75A0009E6BAB /* AppConfig+tvOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6178774E24FE759F009E6BAB /* AppConfig+tvOS.swift */; };
 		617B953D24BF4D8F00E6F443 /* RUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B953C24BF4D8F00E6F443 /* RUMMonitorTests.swift */; };
 		617B954024BF4DB300E6F443 /* RUMApplicationScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B953F24BF4DB300E6F443 /* RUMApplicationScopeTests.swift */; };
 		617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B954124BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift */; };
@@ -587,7 +590,6 @@
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
 		617876AE24FE5B6D009E6BAB /* Example-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		617876B024FE5B6D009E6BAB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		617876B224FE5B6D009E6BAB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		617876B524FE5B6D009E6BAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		617876B724FE5B71009E6BAB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		617876BA24FE5B71009E6BAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -596,6 +598,10 @@
 		6178774024FE642D009E6BAB /* Datadog_tvOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Datadog_tvOS.h; sourceTree = "<group>"; };
 		6178774124FE642D009E6BAB /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6178774624FE6452009E6BAB /* Datadog_tvOS.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = Datadog_tvOS.modulemap; sourceTree = "<group>"; };
+		6178774824FE7515009E6BAB /* Screen1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen1ViewController.swift; sourceTree = "<group>"; };
+		6178774A24FE7524009E6BAB /* Screen2ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen2ViewController.swift; sourceTree = "<group>"; };
+		6178774C24FE752B009E6BAB /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
+		6178774E24FE759F009E6BAB /* AppConfig+tvOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppConfig+tvOS.swift"; sourceTree = "<group>"; };
 		617B953C24BF4D8F00E6F443 /* RUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorTests.swift; sourceTree = "<group>"; };
 		617B953F24BF4DB300E6F443 /* RUMApplicationScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMApplicationScopeTests.swift; sourceTree = "<group>"; };
 		617B954124BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorConfigurationTests.swift; sourceTree = "<group>"; };
@@ -1410,7 +1416,10 @@
 			isa = PBXGroup;
 			children = (
 				617876B024FE5B6D009E6BAB /* AppDelegate.swift */,
-				617876B224FE5B6D009E6BAB /* ViewController.swift */,
+				6178774E24FE759F009E6BAB /* AppConfig+tvOS.swift */,
+				6178774C24FE752B009E6BAB /* MenuViewController.swift */,
+				6178774824FE7515009E6BAB /* Screen1ViewController.swift */,
+				6178774A24FE7524009E6BAB /* Screen2ViewController.swift */,
 				617876B424FE5B6D009E6BAB /* Main.storyboard */,
 				617876B724FE5B71009E6BAB /* Assets.xcassets */,
 				617876B924FE5B71009E6BAB /* LaunchScreen.storyboard */,
@@ -2453,8 +2462,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				617876B324FE5B6D009E6BAB /* ViewController.swift in Sources */,
+				6178774924FE7515009E6BAB /* Screen1ViewController.swift in Sources */,
+				6178774F24FE75A0009E6BAB /* AppConfig+tvOS.swift in Sources */,
 				617876B124FE5B6D009E6BAB /* AppDelegate.swift in Sources */,
+				6178774B24FE7524009E6BAB /* Screen2ViewController.swift in Sources */,
+				6178774D24FE752B009E6BAB /* MenuViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3067,6 +3079,7 @@
 		};
 		617876BD24FE5B71009E6BAB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
@@ -3089,6 +3102,7 @@
 		};
 		617876BE24FE5B71009E6BAB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
@@ -3110,6 +3124,7 @@
 		};
 		617876BF24FE5B71009E6BAB /* Integration */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";

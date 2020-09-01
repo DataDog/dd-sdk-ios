@@ -18,8 +18,12 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>DatadogClientToken</key>
+	<string>$(DATADOG_CLIENT_TOKEN)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>RUMApplicationID</key>
+	<string>$(RUM_APPLICATION_ID)</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
