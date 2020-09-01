@@ -11,8 +11,7 @@ import XCTest
 extension Datadog.Configuration.LogsEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us): return true
-        case (.eu, .eu): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -22,8 +21,7 @@ extension Datadog.Configuration.LogsEndpoint: Equatable {
 extension Datadog.Configuration.TracesEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.TracesEndpoint, _ rhs: Datadog.Configuration.TracesEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us): return true
-        case (.eu, .eu): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -63,6 +61,12 @@ class DDConfigurationTests: XCTestCase {
         let swiftConfigurationUS = objcBuilder.build().sdkConfiguration
         XCTAssertEqual(swiftConfigurationUS.logsEndpoint, .us)
         XCTAssertEqual(swiftConfigurationUS.tracesEndpoint, .us)
+
+        objcBuilder.set(logsEndpoint: .gov())
+        objcBuilder.set(tracesEndpoint: .gov())
+        let swiftConfigurationGov = objcBuilder.build().sdkConfiguration
+        XCTAssertEqual(swiftConfigurationGov.logsEndpoint, .gov)
+        XCTAssertEqual(swiftConfigurationGov.tracesEndpoint, .gov)
 
         objcBuilder.set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs"))
         objcBuilder.set(tracesEndpoint: .custom(url: "https://api.example.com/v1/logs"))
