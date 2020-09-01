@@ -23,10 +23,24 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// The object (typically `UIViewController`) identifying the RUM View.
     let identity: AnyObject
 
+    /// The path of this View, rendered in RUM Explorer.
+    let path: String
+
     /// Used to indicate if this command starts the very first View in the app.
     /// * default `false` means _it's not yet known_,
     /// * it can be set to `true` by the `RUMApplicationScope` which tracks this state.
     var isInitialView = false
+
+    init(time: Date, identity: AnyObject, path: String?, attributes: [AttributeKey: AttributeValue]) {
+        self.time = time
+        self.attributes = attributes
+        self.identity = identity
+        self.path = path ?? RUMStartViewCommand.viewPath(from: identity)
+    }
+
+    private static func viewPath(from id: AnyObject) -> String {
+        return "\(type(of: id))"
+    }
 }
 
 internal struct RUMStopViewCommand: RUMCommand {

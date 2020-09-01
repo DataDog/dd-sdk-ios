@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import UIKit
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
@@ -31,10 +30,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewURI: String
     /// The start time of this View.
     private let viewStartTime: Date
-    /// Tells if this View is the active one. `true` for every new started View. `false` if any other View was started before this one is stopped.
-    private var isActiveView: Bool = true
-    /// Tells if this scope has received the "stop" command. Used to delay the actual completion of this scope  until all tracked Resources are finished.
-    private var didReceiveStopCommand = false
+    /// Tells if this View is the active one.
+    /// `true` for every new started View.
+    /// `false` if the View was stopped or any other View was started.
+    private(set) var isActiveView: Bool = true
+    /// Tells if this scope has received the "start" command.
+    /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
+    private var didReceiveStartCommand = false
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -50,6 +52,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: AnyObject,
+        uri: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date
     ) {
@@ -58,7 +61,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.identity = identity
         self.attributes = attributes
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
-        self.viewURI = RUMViewScope.viewURI(from: identity)
+        self.viewURI = uri
         self.viewStartTime = startTime
     }
 
@@ -92,10 +95,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         switch command {
         // View commands
         case let command as RUMStartViewCommand where command.identity === identity:
+            if didReceiveStartCommand {
+                // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
+                // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
+                isActiveView = false
+            }
             if command.isInitialView {
                 actionsCount += 1
                 sendApplicationStartAction(on: command)
             }
+            didReceiveStartCommand = true
             needsViewUpdate = true
         case let command as RUMStartViewCommand where command.identity !== identity:
             isActiveView = false
@@ -103,7 +112,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStopViewCommand where command.identity === identity:
             isActiveView = false
             needsViewUpdate = true
-            didReceiveStopCommand = true
 
         // Resource commands
         case let command as RUMStartResourceCommand where isActiveView:
@@ -154,7 +162,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         let hasNoPendingResources = resourceScopes.isEmpty
-        let shouldComplete = didReceiveStopCommand && hasNoPendingResources
+        let shouldComplete = !isActiveView && hasNoPendingResources
 
         return !shouldComplete
     }
@@ -292,15 +300,5 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
-    }
-
-    // MARK: - Private
-
-    private static func viewURI(from id: AnyObject) -> String {
-        guard let viewController = id as? UIViewController else {
-            return ""
-        }
-
-        return "\(type(of: viewController))"
     }
 }

@@ -16,8 +16,9 @@ public class DDRUMMonitor {
     /// Notifies that the View starts being presented to the user.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this View.
+    ///   - path: the View path used for RUM Explorer. If not provided, the `UIViewController` class name will be used.
     ///   - attributes: custom attributes to attach to the View.
-    public func startView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
     }
 
     /// Notifies that the View stops being presented to the user.

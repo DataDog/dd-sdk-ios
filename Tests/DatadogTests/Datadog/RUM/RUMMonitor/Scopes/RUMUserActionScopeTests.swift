@@ -39,7 +39,7 @@ class RUMUserActionScopeTests: XCTestCase {
     }
 
     func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
-        let scope = RUMViewScope(
+        let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             identity: mockView,

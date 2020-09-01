@@ -59,10 +59,12 @@ public class RUMMonitor: DDRUMMonitor {
     /// Attributes associated with every command.
     private var rumAttributes: [AttributeKey: AttributeValue] = [:]
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
-    private let queue = DispatchQueue(
+    internal let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
+    /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
+    private(set) var debugging: RUMDebugging? = nil
 
     // MARK: - Initialization
 
@@ -112,23 +114,30 @@ public class RUMMonitor: DDRUMMonitor {
         )
     }
 
-    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider) {
+    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider, debugRUMViews: Bool = false) {
         self.applicationScope = applicationScope
         self.dateProvider = dateProvider
         self.contextProvider = RUMCurrentContext(
             applicationScope: applicationScope,
             queue: queue
         )
+
+        super.init()
+
+        if Datadog.debugRUM {
+            self.enableRUMDebugging(true)
+        }
     }
 
     // MARK: - Public DDRUMMonitor conformance
 
-    override public func startView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]?) {
+    override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
-                identity: viewController
+                identity: viewController,
+                path: path,
+                attributes: aggregate(attributes)
             )
         )
     }
@@ -268,6 +277,15 @@ public class RUMMonitor: DDRUMMonitor {
         }
     }
 
+    // MARK: - Internal
+
+    func enableRUMDebugging(_ enabled: Bool) {
+        queue.async {
+            self.debugging = enabled ? RUMDebugging() : nil
+            self.debugging?.debug(applicationScope: self.applicationScope)
+        }
+    }
+
     // MARK: - Private
 
     private func aggregate(_ localAttributes: [AttributeKey: AttributeValue]?) -> [AttributeKey: AttributeValue] {
@@ -279,6 +297,10 @@ public class RUMMonitor: DDRUMMonitor {
     private func process(command: RUMCommand) {
         queue.async {
             _ = self.applicationScope.process(command: command)
+
+            if let debugging = self.debugging {
+                debugging.debug(applicationScope: self.applicationScope)
+            }
         }
     }
 }
