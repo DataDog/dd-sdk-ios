@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import UIKit
 
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
@@ -40,11 +39,7 @@ internal struct RUMStartViewCommand: RUMCommand {
     }
 
     private static func viewPath(from id: AnyObject) -> String {
-        guard let viewController = id as? UIViewController else {
-            return ""
-        }
-
-        return "\(type(of: viewController))"
+        return "\(type(of: id))"
     }
 }
 
