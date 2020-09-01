@@ -6,10 +6,10 @@
 
 import Foundation
 
-internal class RUMResourceScope: RUMScope, RUMContextProvider {
+internal class RUMResourceScope: RUMScope {
     // MARK: - Initialization
 
-    private unowned let parent: RUMContextProvider
+    let context: RUMContext
     private let dependencies: RUMScopeDependencies
 
     /// The name used to identify this Resource.
@@ -25,7 +25,7 @@ internal class RUMResourceScope: RUMScope, RUMContextProvider {
     private var resourceHTTPMethod: RUMHTTPMethod
 
     init(
-        parent: RUMContextProvider,
+        context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceName: String,
         attributes: [AttributeKey: AttributeValue],
@@ -33,19 +33,13 @@ internal class RUMResourceScope: RUMScope, RUMContextProvider {
         url: String,
         httpMethod: RUMHTTPMethod
     ) {
-        self.parent = parent
+        self.context = context
         self.dependencies = dependencies
         self.resourceName = resourceName
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
         self.resourceHTTPMethod = httpMethod
-    }
-
-    // MARK: - RUMContextProvider
-
-    var context: RUMContext {
-        return parent.context
     }
 
     // MARK: - RUMScope

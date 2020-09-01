@@ -163,7 +163,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func startResource(on command: RUMStartResourceCommand) {
         resourceScopes[command.resourceName] = RUMResourceScope(
-            parent: self,
+            context: context,
             dependencies: dependencies,
             resourceName: command.resourceName,
             attributes: command.attributes,

@@ -417,5 +417,5 @@ class RUMContextProviderMock: RUMContextProvider {
         self.context = context
     }
 
-    let context: RUMContext
+    var context: RUMContext
 }

@@ -10,19 +10,17 @@ import XCTest
 class RUMResourceScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
-    private let parent = RUMContextProviderMock(
-        context: .mockWith(
-            rumApplicationID: "rum-123",
-            sessionID: .mockRandom(),
-            activeViewID: .mockRandom(),
-            activeViewURI: "FooViewController",
-            activeUserActionID: .mockRandom()
-        )
+    private let context = RUMContext.mockWith(
+        rumApplicationID: "rum-123",
+        sessionID: .mockRandom(),
+        activeViewID: .mockRandom(),
+        activeViewURI: "FooViewController",
+        activeUserActionID: .mockRandom()
     )
 
     func testDefaultContext() {
         let scope = RUMResourceScope(
-            parent: parent,
+            context: context,
             dependencies: .mockAny(),
             resourceName: .mockAny(),
             attributes: [:],
@@ -31,17 +29,17 @@ class RUMResourceScopeTests: XCTestCase {
             httpMethod: .mockAny()
         )
 
-        XCTAssertEqual(scope.context.rumApplicationID, parent.context.rumApplicationID)
-        XCTAssertEqual(scope.context.sessionID, parent.context.sessionID)
-        XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(parent.context.activeViewID))
-        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(parent.context.activeViewURI))
-        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
+        XCTAssertEqual(scope.context.rumApplicationID, context.rumApplicationID)
+        XCTAssertEqual(scope.context.sessionID, context.sessionID)
+        XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(context.activeViewID))
+        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(context.activeViewURI))
+        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(context.activeUserActionID))
     }
 
     func testWhenResourceLoadingEnds_itSendsResourceEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMResourceScope(
-            parent: parent,
+            context: context,
             dependencies: dependencies,
             resourceName: "/resource/1",
             attributes: [:],
@@ -70,21 +68,21 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.model.session.type, .user)
-        XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(event.model.resource.statusCode, 200)
         XCTAssertEqual(event.model.resource.duration, 2_000_000_000)
         XCTAssertEqual(event.model.resource.size, 1_024)
-        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), parent.context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
     }
 
     func testWhenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMResourceScope(
-            parent: parent,
+            context: context,
             dependencies: dependencies,
             resourceName: "/resource/1",
             attributes: [:],
@@ -113,7 +111,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.model.session.type, .user)
-        XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertEqual(event.model.error.message, "ErrorMock")
         XCTAssertEqual(event.model.error.source, .network)
@@ -121,7 +119,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.resource?.method, .post)
         XCTAssertEqual(event.model.error.resource?.statusCode, 500)
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), parent.context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
     }
 }
