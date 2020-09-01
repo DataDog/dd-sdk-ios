@@ -280,6 +280,37 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0")
     }
 
+    func testStartingRootActiveSpanInAsynchronousJobs() throws {
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+        let queue = DispatchQueue(label: "\(#function)")
+
+        func makeFakeAPIRequest(on queue: DispatchQueue, completion: @escaping () -> Void) {
+            let requestSpan = tracer.startRootSpan(operationName: "request").setActive()
+            queue.asyncAfter(deadline: .now() + 1) {
+                let responseDecodingSpan = tracer.startSpan(operationName: "response decoding")
+                responseDecodingSpan.finish()
+                requestSpan.finish()
+                completion()
+            }
+        }
+        makeFakeAPIRequest(on: queue) {}
+        makeFakeAPIRequest(on: queue) {}
+
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 4)
+        let response1Matcher = spanMatchers[0]
+        let request1Matcher = spanMatchers[1]
+        let response2Matcher = spanMatchers[2]
+        let request2Matcher = spanMatchers[3]
+
+        XCTAssertEqual(try response1Matcher.parentSpanID(), try request1Matcher.spanID())
+        XCTAssertEqual(try request1Matcher.parentSpanID(), "0")
+        XCTAssertEqual(try response2Matcher.parentSpanID(), try request2Matcher.spanID())
+        XCTAssertEqual(try request2Matcher.parentSpanID(), "0")
+    }
+
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {

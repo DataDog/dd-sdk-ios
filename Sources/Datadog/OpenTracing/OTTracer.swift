@@ -8,15 +8,31 @@ public protocol OTTracer {
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
-    /// - parameter references:    an optional list of Reference instances to record causal relationships
-    /// - parameter tags:          a set of tag keys and values per OTSpan#setTag:value:, or nil to start with
+    /// - parameter references:    an optional list of Reference instances to record causal relationships. If no
+    ///                            reference is provided, and an active span exists in the current execution context
+    ///                            the active span will be used as the parent.
+    /// - parameter tags:          a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
     ///                            an empty tag map
-    /// - parameter startTime:     an explicitly specified start timestamp for the OTSpan, or nil to use the
+    /// - parameter startTime:     an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
     ///                            current walltime
-    /// - returns:                 a valid Span instance; it is the caller's responsibility to call finish()
+    /// - returns:                 a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startSpan(
         operationName: String,
         references: [OTReference]?,
+        tags: [String: Encodable]?,
+        startTime: Date?
+    ) -> OTSpan
+
+    /// Start a new root span with the given operation name.
+    /// - Parameters:
+    ///   - operationName: the operation name for the newly-started span
+    ///   - tags:          a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
+    ///                    an empty tag map
+    ///   - startTime:     an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
+    ///                    current walltime
+    /// - returns:         a valid Span instance; it is the caller's responsibility to call `finish()`.
+    func startRootSpan(
+        operationName: String,
         tags: [String: Encodable]?,
         startTime: Date?
     ) -> OTSpan
@@ -67,7 +83,9 @@ public extension OTTracer {
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
-    /// - parameter parent:        span context that will be a parent reference
+    /// - parameter parent:        span context that will be a parent reference. If no
+    ///                            reference is provided, and an active span exists in the current execution context
+    ///                            the active span will be used as the parent.
     /// - parameter tags:          a set of tag keys and values per OTSpan#setTag:value:, or nil to start with
     ///                            an empty tag map
     /// - parameter startTime:     an explicitly specified start timestamp for the OTSpan, or nil to use the
@@ -83,6 +101,26 @@ public extension OTTracer {
         return self.startSpan(
             operationName: operationName,
             references: references,
+            tags: tags,
+            startTime: startTime
+        )
+    }
+
+    /// Start a new root span with the given operation name.
+    /// - Parameters:
+    ///   - operationName: the operation name for the newly-started span
+    ///   - tags:          a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
+    ///                    an empty tag map
+    ///   - startTime:     an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
+    ///                    current walltime
+    /// - returns:         a valid Span instance; it is the caller's responsibility to call `finish()`.
+    func startRootSpan(
+        operationName: String,
+        tags: [String: Encodable]? = nil,
+        startTime: Date? = nil
+    ) -> OTSpan {
+        return self.startRootSpan(
+            operationName: operationName,
             tags: tags,
             startTime: startTime
         )
