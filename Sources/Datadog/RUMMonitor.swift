@@ -280,12 +280,10 @@ public class RUMMonitor: DDRUMMonitor {
     // MARK: - Internal
 
     func enableRUMDebugging(_ enabled: Bool) {
-        #if targetEnvironment(simulator)
         queue.async {
-            self.debugging = enabled ? RUMDebuggingInSimulator() : nil
+            self.debugging = enabled ? RUMDebugging() : nil
             self.debugging?.debug(applicationScope: self.applicationScope)
         }
-        #endif
     }
 
     // MARK: - Private
@@ -300,9 +298,9 @@ public class RUMMonitor: DDRUMMonitor {
         queue.async {
             _ = self.applicationScope.process(command: command)
 
-            #if targetEnvironment(simulator)
-            self.debugging?.debug(applicationScope: self.applicationScope)
-            #endif
+            if let debugging = self.debugging {
+                debugging.debug(applicationScope: self.applicationScope)
+            }
         }
     }
 }

@@ -612,7 +612,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
-        #if targetEnvironment(simulator)
         // given
         Datadog.initialize(
             appContext: .mockAny(),
@@ -638,7 +637,6 @@ class RUMMonitorTests: XCTestCase {
         }
 
         try Datadog.deinitializeOrThrow()
-        #endif
     }
 
     // MARK: - Private helpers

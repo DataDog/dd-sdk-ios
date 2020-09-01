@@ -4,11 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-internal protocol RUMDebugging {
-    func debug(applicationScope: RUMApplicationScope)
-}
-
-#if targetEnvironment(simulator)
 import UIKit
 import Foundation
 
@@ -31,7 +26,7 @@ private struct RUMDebugInfo {
     }
 }
 
-internal class RUMDebuggingInSimulator: RUMDebugging {
+internal class RUMDebugging {
     private lazy var canvas: UIView = {
         let window = UIApplication.shared.keyWindow
         let view = RUMDebugView(frame: window?.bounds ?? .zero)
@@ -48,7 +43,7 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
         NotificationCenter.default
             .addObserver(
                 self,
-                selector: #selector(RUMDebuggingInSimulator.updateLayout),
+                selector: #selector(RUMDebugging.updateLayout),
                 name: UIDevice.orientationDidChangeNotification,
                 object: nil
         )
@@ -182,4 +177,3 @@ internal class RUMDebugView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 }
-#endif

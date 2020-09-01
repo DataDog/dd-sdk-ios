@@ -4,7 +4,6 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#if targetEnvironment(simulator)
 import XCTest
 import UIKit
 @testable import Datadog
@@ -23,7 +22,7 @@ class RUMDebuggingTests: XCTestCase {
             command: RUMStartViewCommand.mockWith(identity: mockView, path: "FirstViewController")
         )
 
-        let debugging = RUMDebuggingInSimulator()
+        let debugging = RUMDebugging()
         debugging.debug(applicationScope: applicationScope)
 
         DispatchQueue.main.async { expectation.fulfill() }
@@ -60,7 +59,7 @@ class RUMDebuggingTests: XCTestCase {
             command: RUMStartViewCommand.mockWith(identity: mockView, path: "SecondViewController")
         )
 
-        let debugging = RUMDebuggingInSimulator()
+        let debugging = RUMDebugging()
         debugging.debug(applicationScope: applicationScope)
 
         DispatchQueue.main.async { expectation.fulfill() }
@@ -82,5 +81,3 @@ class RUMDebuggingTests: XCTestCase {
         XCTAssertLessThan(firstViewOutlineLabel.alpha, secondViewOutlineLabel.alpha)
     }
 }
-
-#endif
