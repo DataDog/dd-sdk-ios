@@ -134,10 +134,18 @@ public class Tracer: OTTracer {
     // MARK: - Open Tracing interface
 
     public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        let parentSpanContext = references?.compactMap { $0.context.dd }.last
-        let spanContext = createSpanContext(parentSpanContext: parentSpanContext)
+        let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
         return startSpan(
-            spanContext: spanContext,
+            spanContext: createSpanContext(parentSpanContext: parentSpanContext),
+            operationName: operationName,
+            tags: tags,
+            startTime: startTime
+        )
+    }
+
+    public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+        return startSpan(
+            spanContext: createSpanContext(parentSpanContext: nil),
             operationName: operationName,
             tags: tags,
             startTime: startTime
@@ -160,12 +168,11 @@ public class Tracer: OTTracer {
     // MARK: - Internal
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
-        let parentContext = parentSpanContext ?? activeSpan?.context as? DDSpanContext
         return DDSpanContext(
-            traceID: parentContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentContext?.spanID,
-            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentContext?.baggageItems)
+            parentSpanID: parentSpanContext?.spanID,
+            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
         )
     }
 
