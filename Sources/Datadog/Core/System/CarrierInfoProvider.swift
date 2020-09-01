@@ -4,7 +4,9 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if os(iOS)
 import CoreTelephony
+#endif
 
 /// Network connection details specific to cellular radio access.
 internal struct CarrierInfo {
@@ -35,6 +37,7 @@ internal protocol CarrierInfoProviderType {
     var current: CarrierInfo? { get }
 }
 
+#if os(iOS)
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
@@ -89,3 +92,8 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
         )
     }
 }
+#else
+internal class NoopCarrierInfoProvider: CarrierInfoProviderType {
+    var current: CarrierInfo? { nil }
+}
+#endif

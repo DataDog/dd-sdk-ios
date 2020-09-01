@@ -53,6 +53,7 @@ internal class MobileDevice {
     }
 
     convenience init(uiDevice: UIDevice, processInfo: ProcessInfo) {
+        #if os(iOS)
         let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
         self.init(
             model: uiDevice.model,
@@ -68,6 +69,22 @@ internal class MobileDevice {
                 )
             }
         )
+        #else
+        self.init(
+            model: uiDevice.model,
+            osName: uiDevice.systemName,
+            osVersion: uiDevice.systemVersion,
+            enableBatteryStatusMonitoring: { },
+            resetBatteryStatusMonitoring: { },
+            currentBatteryStatus: {
+                return BatteryStatus(
+                    state: .full,
+                    level: 1.0,
+                    isLowPowerModeEnabled: false
+                )
+            }
+        )
+        #endif
     }
 
     /// Returns current mobile device  if `UIDevice` is available on this platform.
@@ -89,6 +106,7 @@ internal class MobileDevice {
         #endif
     }
 
+    #if os(iOS)
     private static func toBatteryState(_ uiDeviceBatteryState: UIDevice.BatteryState) -> BatteryStatus.State {
         switch uiDeviceBatteryState {
         case .unknown:      return .unknown
@@ -98,4 +116,5 @@ internal class MobileDevice {
         @unknown default:   return.unknown
         }
     }
+    #endif
 }

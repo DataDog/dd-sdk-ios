@@ -43,6 +43,7 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
     // MARK: - Initialization
 
     init() {
+        #if os(iOS)
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
 
         NotificationCenter.default
@@ -52,9 +53,11 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
                 name: UIDevice.orientationDidChangeNotification,
                 object: nil
         )
+        #endif
     }
 
     deinit {
+        #if os(iOS)
         UIDevice.current.endGeneratingDeviceOrientationNotifications()
 
         NotificationCenter.default.removeObserver(
@@ -62,6 +65,7 @@ internal class RUMDebuggingInSimulator: RUMDebugging {
             name: UIDevice.orientationDidChangeNotification,
             object: nil
         )
+        #endif
 
         let canvas = self.canvas
         DispatchQueue.main.async {

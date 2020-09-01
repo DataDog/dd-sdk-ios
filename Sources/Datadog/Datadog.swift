@@ -93,7 +93,11 @@ public class Datadog {
         let dateProvider = SystemDateProvider()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
+        #if os(iOS)
         let carrierInfoProvider = CarrierInfoProvider()
+        #else
+        let carrierInfoProvider = NoopCarrierInfoProvider()
+        #endif
 
         // First, initialize internal loggers:
 

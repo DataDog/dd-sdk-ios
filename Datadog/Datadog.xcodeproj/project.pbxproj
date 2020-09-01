@@ -143,6 +143,115 @@
 		615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8A24A3568900233986 /* OTSpan+objc.swift */; };
 		615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
 		61786F7724FCDE05009E6BAB /* RUMDebuggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */; };
+		617876B124FE5B6D009E6BAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617876B024FE5B6D009E6BAB /* AppDelegate.swift */; };
+		617876B324FE5B6D009E6BAB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617876B224FE5B6D009E6BAB /* ViewController.swift */; };
+		617876B624FE5B6D009E6BAB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617876B424FE5B6D009E6BAB /* Main.storyboard */; };
+		617876B824FE5B71009E6BAB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 617876B724FE5B71009E6BAB /* Assets.xcassets */; };
+		617876BB24FE5B71009E6BAB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 617876B924FE5B71009E6BAB /* LaunchScreen.storyboard */; };
+		617876D224FE601D009E6BAB /* Datadog_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617876CB24FE601D009E6BAB /* Datadog_tvOS.framework */; };
+		617876D324FE601D009E6BAB /* Datadog_tvOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617876CB24FE601D009E6BAB /* Datadog_tvOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		617876D924FE608E009E6BAB /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBB2423979B00786299 /* Datadog.swift */; };
+		617876DA24FE608E009E6BAB /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB52423979B00786299 /* DatadogConfiguration.swift */; };
+		617876DB24FE608E009E6BAB /* Attributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63424BF1794008053F2 /* Attributes.swift */; };
+		617876DC24FE608E009E6BAB /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB62423979B00786299 /* Logger.swift */; };
+		617876DD24FE608E009E6BAB /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E824A24DD3005EA2DE /* Global.swift */; };
+		617876DE24FE608E009E6BAB /* Tracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88D24509A1F00DA608C /* Tracer.swift */; };
+		617876DF24FE608E009E6BAB /* TracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* TracerConfiguration.swift */; };
+		617876E024FE608E009E6BAB /* RUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333524B84B43003D6C4E /* RUMMonitor.swift */; };
+		617876E124FE608E009E6BAB /* DDRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A5224EBFE5500A2A780 /* DDRUMMonitor.swift */; };
+		617876E224FE608E009E6BAB /* Versioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5AEA624B4D45A007F194B /* Versioning.swift */; };
+		617876E324FE608E009E6BAB /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D812B24E3EA15004C9C5D /* Feature.swift */; };
+		617876E424FE608E009E6BAB /* FeaturesConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */; };
+		617876E524FE608E009E6BAB /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
+		617876E624FE608E009E6BAB /* PerformancePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */; };
+		617876E724FE608E009E6BAB /* MethodSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */; };
+		617876E824FE608E009E6BAB /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB47B91247443FA004F90BE /* URLSessionSwizzler.swift */; };
+		617876E924FE608E009E6BAB /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC02423979B00786299 /* UserInfo.swift */; };
+		617876EA24FE608E009E6BAB /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D447E124917F8F00649287 /* DateFormatting.swift */; };
+		617876EB24FE608E009E6BAB /* EncodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* EncodableValue.swift */; };
+		617876EC24FE608E009E6BAB /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
+		617876ED24FE608E009E6BAB /* DDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9C24D999F70084CD6F /* DDError.swift */; };
+		617876EE24FE608E009E6BAB /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA82423979B00786299 /* DateProvider.swift */; };
+		617876EF24FE608E009E6BAB /* CarrierInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA22423979B00786299 /* CarrierInfoProvider.swift */; };
+		617876F024FE608E009E6BAB /* MobileDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA32423979B00786299 /* MobileDevice.swift */; };
+		617876F124FE608E009E6BAB /* NetworkConnectionInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */; };
+		617876F224FE608E009E6BAB /* BatteryStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA52423979B00786299 /* BatteryStatusProvider.swift */; };
+		617876F324FE608E009E6BAB /* DataFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3724531500006E34EA /* DataFormat.swift */; };
+		617876F424FE608E009E6BAB /* FilesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA92423979B00786299 /* FilesOrchestrator.swift */; };
+		617876F524FE608E009E6BAB /* FileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA72423979B00786299 /* FileWriter.swift */; };
+		617876F624FE608E009E6BAB /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAD2423979B00786299 /* FileReader.swift */; };
+		617876F724FE608E009E6BAB /* Directory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAB2423979B00786299 /* Directory.swift */; };
+		617876F824FE608E009E6BAB /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAC2423979B00786299 /* File.swift */; };
+		617876F924FE608E009E6BAB /* DataUploadConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAF2423979B00786299 /* DataUploadConditions.swift */; };
+		617876FA24FE608E009E6BAB /* DataUploadDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB32423979B00786299 /* DataUploadDelay.swift */; };
+		617876FB24FE608E009E6BAB /* DataUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB02423979B00786299 /* DataUploader.swift */; };
+		617876FC24FE608E009E6BAB /* DataUploadWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB12423979B00786299 /* DataUploadWorker.swift */; };
+		617876FD24FE608E009E6BAB /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB22423979B00786299 /* HTTPClient.swift */; };
+		617876FE24FE608E009E6BAB /* HTTPHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB42423979B00786299 /* HTTPHeaders.swift */; };
+		617876FF24FE608E009E6BAB /* LoggingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612983CC2449E62E00D4424B /* LoggingFeature.swift */; };
+		6178770024FE608E009E6BAB /* LogEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC22423979B00786299 /* LogEncoder.swift */; };
+		6178770124FE608E009E6BAB /* LogBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC32423979B00786299 /* LogBuilder.swift */; };
+		6178770224FE608E009E6BAB /* LogSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC42423979B00786299 /* LogSanitizer.swift */; };
+		6178770324FE608E009E6BAB /* LogUtilityOutputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC62423979B00786299 /* LogUtilityOutputs.swift */; };
+		6178770424FE608E009E6BAB /* LogFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC72423979B00786299 /* LogFileOutput.swift */; };
+		6178770524FE608E009E6BAB /* LogOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC82423979B00786299 /* LogOutput.swift */; };
+		6178770624FE608E009E6BAB /* LogConsoleOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC92423979B00786299 /* LogConsoleOutput.swift */; };
+		6178770724FE608E009E6BAB /* TracingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88F24509AA700DA608C /* TracingFeature.swift */; };
+		6178770824FE608E009E6BAB /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
+		6178770924FE608E009E6BAB /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87824509A0C00DA608C /* DDSpan.swift */; };
+		6178770A24FE608E009E6BAB /* DDSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87E24509A0C00DA608C /* DDSpanContext.swift */; };
+		6178770B24FE608E009E6BAB /* TracingAutoInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ED583A22498C222004CFF2A /* TracingAutoInstrumentation.swift */; };
+		6178770C24FE608E009E6BAB /* SpanEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A424509FAA00DA608C /* SpanEncoder.swift */; };
+		6178770D24FE608E009E6BAB /* SpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A524509FAA00DA608C /* SpanBuilder.swift */; };
+		6178770E24FE608F009E6BAB /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
+		6178770F24FE608F009E6BAB /* SpanFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88024509A0C00DA608C /* SpanFileOutput.swift */; };
+		6178771024FE608F009E6BAB /* SpanOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88124509A0C00DA608C /* SpanOutput.swift */; };
+		6178771124FE608F009E6BAB /* HTTPHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */; };
+		6178771224FE608F009E6BAB /* TracingUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */; };
+		6178771324FE608F009E6BAB /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
+		6178771424FE608F009E6BAB /* Casting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87C24509A0C00DA608C /* Casting.swift */; };
+		6178771524FE608F009E6BAB /* ActiveSpansPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */; };
+		6178771624FE608F009E6BAB /* Warnings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87D24509A0C00DA608C /* Warnings.swift */; };
+		6178771724FE608F009E6BAB /* URLFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* URLFilter.swift */; };
+		6178771824FE608F009E6BAB /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5332B24B75C51003D6C4E /* RUMFeature.swift */; };
+		6178771924FE608F009E6BAB /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
+		6178771A24FE608F009E6BAB /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
+		6178771B24FE608F009E6BAB /* RUMScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63624BF191F008053F2 /* RUMScope.swift */; };
+		6178771C24FE608F009E6BAB /* RUMCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */; };
+		6178771D24FE608F009E6BAB /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
+		6178771E24FE608F009E6BAB /* RUMSessionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20624C098FC00C0321C /* RUMSessionScope.swift */; };
+		6178771F24FE608F009E6BAB /* RUMViewScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C21124C5951400C0321C /* RUMViewScope.swift */; };
+		6178772024FE608F009E6BAB /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
+		6178772124FE608F009E6BAB /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
+		6178772224FE608F009E6BAB /* RUMContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63824BF19B4008053F2 /* RUMContext.swift */; };
+		6178772324FE608F009E6BAB /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
+		6178772424FE608F009E6BAB /* RUMCurrentContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8F24DDA8BE008CB2B2 /* RUMCurrentContext.swift */; };
+		6178772524FE608F009E6BAB /* RUMUserInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4A24EBC43D00A2A780 /* RUMUserInfoProvider.swift */; };
+		6178772624FE608F009E6BAB /* RUMEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */; };
+		6178772724FE608F009E6BAB /* RUMEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333C24B8791A003D6C4E /* RUMEventEncoder.swift */; };
+		6178772824FE608F009E6BAB /* RUMConnectivityInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */; };
+		6178772924FE608F009E6BAB /* RUMEventOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282524B8A248000B3D9B /* RUMEventOutput.swift */; };
+		6178772A24FE608F009E6BAB /* RUMEventFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282324B8A1C3000B3D9B /* RUMEventFileOutput.swift */; };
+		6178772B24FE608F009E6BAB /* RUMUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */; };
+		6178772C24FE608F009E6BAB /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
+		6178772D24FE608F009E6BAB /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
+		6178772E24FE608F009E6BAB /* RUMIntegrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D980B924E28D0100E03345 /* RUMIntegrations.swift */; };
+		6178772F24FE608F009E6BAB /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
+		6178773024FE608F009E6BAB /* LoggingWithRUMIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9724DEFD44008CB2B2 /* LoggingWithRUMIntegration.swift */; };
+		6178773124FE608F009E6BAB /* TracingWithRUMIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */; };
+		6178773224FE608F009E6BAB /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
+		6178773324FE608F009E6BAB /* InternalLoggers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB82423979B00786299 /* InternalLoggers.swift */; };
+		6178773424FE608F009E6BAB /* CompilationConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB92423979B00786299 /* CompilationConditions.swift */; };
+		6178773524FE608F009E6BAB /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBA2423979B00786299 /* SwiftExtensions.swift */; };
+		6178773624FE608F009E6BAB /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
+		6178773724FE608F009E6BAB /* OTFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E724A24DD3005EA2DE /* OTFormat.swift */; };
+		6178773824FE608F009E6BAB /* OTTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E924A24DD3005EA2DE /* OTTracer.swift */; };
+		6178773924FE608F009E6BAB /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EA24A24DD3005EA2DE /* OTReference.swift */; };
+		6178773A24FE608F009E6BAB /* OTConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EB24A24DD3005EA2DE /* OTConstants.swift */; };
+		6178773B24FE608F009E6BAB /* OTSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */; };
+		6178773C24FE60AC009E6BAB /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
+		6178774424FE643D009E6BAB /* Datadog_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 6178774024FE642D009E6BAB /* Datadog_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6178774724FE6541009E6BAB /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		617B953D24BF4D8F00E6F443 /* RUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B953C24BF4D8F00E6F443 /* RUMMonitorTests.swift */; };
 		617B954024BF4DB300E6F443 /* RUMApplicationScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B953F24BF4DB300E6F443 /* RUMApplicationScopeTests.swift */; };
 		617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B954124BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift */; };
@@ -302,6 +411,13 @@
 			remoteGlobalIDString = 61441C0124616DE9003D8BB8;
 			remoteInfo = Example;
 		};
+		617876D024FE601D009E6BAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 617876CA24FE601D009E6BAB;
+			remoteInfo = "Datadog-tvOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -315,6 +431,17 @@
 				61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		617876C524FE5D3B009E6BAB /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				617876D324FE601D009E6BAB /* Datadog_tvOS.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -458,6 +585,17 @@
 		615A4A8A24A3568900233986 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
+		617876AE24FE5B6D009E6BAB /* Example-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		617876B024FE5B6D009E6BAB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		617876B224FE5B6D009E6BAB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		617876B524FE5B6D009E6BAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		617876B724FE5B71009E6BAB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		617876BA24FE5B71009E6BAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		617876BC24FE5B71009E6BAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		617876CB24FE601D009E6BAB /* Datadog_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6178774024FE642D009E6BAB /* Datadog_tvOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Datadog_tvOS.h; sourceTree = "<group>"; };
+		6178774124FE642D009E6BAB /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6178774624FE6452009E6BAB /* Datadog_tvOS.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = Datadog_tvOS.modulemap; sourceTree = "<group>"; };
 		617B953C24BF4D8F00E6F443 /* RUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorTests.swift; sourceTree = "<group>"; };
 		617B953F24BF4DB300E6F443 /* RUMApplicationScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMApplicationScopeTests.swift; sourceTree = "<group>"; };
 		617B954124BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorConfigurationTests.swift; sourceTree = "<group>"; };
@@ -627,6 +765,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		617876AB24FE5B6D009E6BAB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				617876D224FE601D009E6BAB /* Datadog_tvOS.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		617876C824FE601D009E6BAB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -634,6 +787,7 @@
 			isa = PBXGroup;
 			children = (
 				61133B9C2423979B00786299 /* Datadog */,
+				6178774524FE6452009E6BAB /* Datadog-tvOS */,
 				61133C082423983800786299 /* DatadogObjc */,
 				9E68FB52244707FD0013A8AA /* _Datadog_Private */,
 				61133C122423990D00786299 /* DatadogTests */,
@@ -641,6 +795,7 @@
 				61441C3524617013003D8BB8 /* DatadogIntegrationTests */,
 				61133C07242397F200786299 /* TargetSupport */,
 				61441C0324616DE9003D8BB8 /* Example */,
+				617876AF24FE5B6D009E6BAB /* Example-tvOS */,
 				61133B83242393DE00786299 /* Products */,
 				61133C6F2423993200786299 /* Frameworks */,
 			);
@@ -655,6 +810,8 @@
 				61441C0224616DE9003D8BB8 /* Example.app */,
 				61441C2A24616F1D003D8BB8 /* DatadogIntegrationTests.xctest */,
 				61441C6824619FE4003D8BB8 /* DatadogBenchmarkTests.xctest */,
+				617876AE24FE5B6D009E6BAB /* Example-tvOS.app */,
+				617876CB24FE601D009E6BAB /* Datadog_tvOS.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -841,6 +998,7 @@
 			children = (
 				615519242461BCE7002A85CF /* xcconfigs */,
 				61133B84242393DE00786299 /* Datadog */,
+				6178773F24FE642D009E6BAB /* Datadog-tvOS */,
 				61133BF1242397DA00786299 /* DatadogObjc */,
 				61133B8F242393DE00786299 /* DatadogTests */,
 				61441C762461A01D003D8BB8 /* DatadogBenchmarkTests */,
@@ -1248,6 +1406,37 @@
 			path = Debugging;
 			sourceTree = "<group>";
 		};
+		617876AF24FE5B6D009E6BAB /* Example-tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				617876B024FE5B6D009E6BAB /* AppDelegate.swift */,
+				617876B224FE5B6D009E6BAB /* ViewController.swift */,
+				617876B424FE5B6D009E6BAB /* Main.storyboard */,
+				617876B724FE5B71009E6BAB /* Assets.xcassets */,
+				617876B924FE5B71009E6BAB /* LaunchScreen.storyboard */,
+				617876BC24FE5B71009E6BAB /* Info.plist */,
+			);
+			path = "Example-tvOS";
+			sourceTree = "<group>";
+		};
+		6178773F24FE642D009E6BAB /* Datadog-tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				6178774024FE642D009E6BAB /* Datadog_tvOS.h */,
+				6178774124FE642D009E6BAB /* Info.plist */,
+			);
+			path = "Datadog-tvOS";
+			sourceTree = "<group>";
+		};
+		6178774524FE6452009E6BAB /* Datadog-tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				6178774624FE6452009E6BAB /* Datadog_tvOS.modulemap */,
+			);
+			name = "Datadog-tvOS";
+			path = "../Sources/Datadog-tvOS";
+			sourceTree = "<group>";
+		};
 		617B953B24BF4D7300E6F443 /* RUMMonitor */ = {
 			isa = PBXGroup;
 			children = (
@@ -1637,6 +1826,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		617876C624FE601D009E6BAB /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6178774424FE643D009E6BAB /* Datadog_tvOS.h in Headers */,
+				6178774724FE6541009E6BAB /* ObjcExceptionHandler.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -1759,13 +1957,50 @@
 			productReference = 61441C6824619FE4003D8BB8 /* DatadogBenchmarkTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		617876AD24FE5B6D009E6BAB /* Example-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 617876C024FE5B71009E6BAB /* Build configuration list for PBXNativeTarget "Example-tvOS" */;
+			buildPhases = (
+				617876AA24FE5B6D009E6BAB /* Sources */,
+				617876AB24FE5B6D009E6BAB /* Frameworks */,
+				617876AC24FE5B6D009E6BAB /* Resources */,
+				617876C524FE5D3B009E6BAB /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				617876D124FE601D009E6BAB /* PBXTargetDependency */,
+			);
+			name = "Example-tvOS";
+			productName = "Example-tvOS";
+			productReference = 617876AE24FE5B6D009E6BAB /* Example-tvOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		617876CA24FE601D009E6BAB /* Datadog-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 617876D424FE601D009E6BAB /* Build configuration list for PBXNativeTarget "Datadog-tvOS" */;
+			buildPhases = (
+				617876C624FE601D009E6BAB /* Headers */,
+				617876C724FE601D009E6BAB /* Sources */,
+				617876C824FE601D009E6BAB /* Frameworks */,
+				617876C924FE601D009E6BAB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Datadog-tvOS";
+			productName = "Datadog-tvOS";
+			productReference = 617876CB24FE601D009E6BAB /* Datadog_tvOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		61133B79242393DE00786299 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1140;
+				LastSwiftUpdateCheck = 1160;
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = Datadog;
 				TargetAttributes = {
@@ -1790,6 +2025,12 @@
 						CreatedOnToolsVersion = 11.4;
 						TestTargetID = 61441C0124616DE9003D8BB8;
 					};
+					617876AD24FE5B6D009E6BAB = {
+						CreatedOnToolsVersion = 11.6;
+					};
+					617876CA24FE601D009E6BAB = {
+						CreatedOnToolsVersion = 11.6;
+					};
 				};
 			};
 			buildConfigurationList = 61133B7C242393DE00786299 /* Build configuration list for PBXProject "Datadog" */;
@@ -1811,6 +2052,8 @@
 				61441C6724619FE4003D8BB8 /* DatadogBenchmarkTests */,
 				61441C2924616F1D003D8BB8 /* DatadogIntegrationTests */,
 				61441C0124616DE9003D8BB8 /* Example */,
+				617876AD24FE5B6D009E6BAB /* Example-tvOS */,
+				617876CA24FE601D009E6BAB /* Datadog-tvOS */,
 			);
 		};
 /* End PBXProject section */
@@ -1855,6 +2098,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		61441C6624619FE4003D8BB8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		617876AC24FE5B6D009E6BAB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				617876BB24FE5B71009E6BAB /* LaunchScreen.storyboard in Resources */,
+				617876B824FE5B71009E6BAB /* Assets.xcassets in Resources */,
+				617876B624FE5B6D009E6BAB /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		617876C924FE601D009E6BAB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2189,6 +2449,122 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		617876AA24FE5B6D009E6BAB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				617876B324FE5B6D009E6BAB /* ViewController.swift in Sources */,
+				617876B124FE5B6D009E6BAB /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		617876C724FE601D009E6BAB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6178773C24FE60AC009E6BAB /* ObjcExceptionHandler.m in Sources */,
+				617876D924FE608E009E6BAB /* Datadog.swift in Sources */,
+				617876DA24FE608E009E6BAB /* DatadogConfiguration.swift in Sources */,
+				617876DB24FE608E009E6BAB /* Attributes.swift in Sources */,
+				617876DC24FE608E009E6BAB /* Logger.swift in Sources */,
+				617876DD24FE608E009E6BAB /* Global.swift in Sources */,
+				617876DE24FE608E009E6BAB /* Tracer.swift in Sources */,
+				617876DF24FE608E009E6BAB /* TracerConfiguration.swift in Sources */,
+				617876E024FE608E009E6BAB /* RUMMonitor.swift in Sources */,
+				617876E124FE608E009E6BAB /* DDRUMMonitor.swift in Sources */,
+				617876E224FE608E009E6BAB /* Versioning.swift in Sources */,
+				617876E324FE608E009E6BAB /* Feature.swift in Sources */,
+				617876E424FE608E009E6BAB /* FeaturesConfiguration.swift in Sources */,
+				617876E524FE608E009E6BAB /* BundleType.swift in Sources */,
+				617876E624FE608E009E6BAB /* PerformancePreset.swift in Sources */,
+				617876E724FE608E009E6BAB /* MethodSwizzler.swift in Sources */,
+				617876E824FE608E009E6BAB /* URLSessionSwizzler.swift in Sources */,
+				617876E924FE608E009E6BAB /* UserInfo.swift in Sources */,
+				617876EA24FE608E009E6BAB /* DateFormatting.swift in Sources */,
+				617876EB24FE608E009E6BAB /* EncodableValue.swift in Sources */,
+				617876EC24FE608E009E6BAB /* JSONEncoder.swift in Sources */,
+				617876ED24FE608E009E6BAB /* DDError.swift in Sources */,
+				617876EE24FE608E009E6BAB /* DateProvider.swift in Sources */,
+				617876EF24FE608E009E6BAB /* CarrierInfoProvider.swift in Sources */,
+				617876F024FE608E009E6BAB /* MobileDevice.swift in Sources */,
+				617876F124FE608E009E6BAB /* NetworkConnectionInfoProvider.swift in Sources */,
+				617876F224FE608E009E6BAB /* BatteryStatusProvider.swift in Sources */,
+				617876F324FE608E009E6BAB /* DataFormat.swift in Sources */,
+				617876F424FE608E009E6BAB /* FilesOrchestrator.swift in Sources */,
+				617876F524FE608E009E6BAB /* FileWriter.swift in Sources */,
+				617876F624FE608E009E6BAB /* FileReader.swift in Sources */,
+				617876F724FE608E009E6BAB /* Directory.swift in Sources */,
+				617876F824FE608E009E6BAB /* File.swift in Sources */,
+				617876F924FE608E009E6BAB /* DataUploadConditions.swift in Sources */,
+				617876FA24FE608E009E6BAB /* DataUploadDelay.swift in Sources */,
+				617876FB24FE608E009E6BAB /* DataUploader.swift in Sources */,
+				617876FC24FE608E009E6BAB /* DataUploadWorker.swift in Sources */,
+				617876FD24FE608E009E6BAB /* HTTPClient.swift in Sources */,
+				617876FE24FE608E009E6BAB /* HTTPHeaders.swift in Sources */,
+				617876FF24FE608E009E6BAB /* LoggingFeature.swift in Sources */,
+				6178770024FE608E009E6BAB /* LogEncoder.swift in Sources */,
+				6178770124FE608E009E6BAB /* LogBuilder.swift in Sources */,
+				6178770224FE608E009E6BAB /* LogSanitizer.swift in Sources */,
+				6178770324FE608E009E6BAB /* LogUtilityOutputs.swift in Sources */,
+				6178770424FE608E009E6BAB /* LogFileOutput.swift in Sources */,
+				6178770524FE608E009E6BAB /* LogOutput.swift in Sources */,
+				6178770624FE608E009E6BAB /* LogConsoleOutput.swift in Sources */,
+				6178770724FE608E009E6BAB /* TracingFeature.swift in Sources */,
+				6178770824FE608E009E6BAB /* DDNoOps.swift in Sources */,
+				6178770924FE608E009E6BAB /* DDSpan.swift in Sources */,
+				6178770A24FE608E009E6BAB /* DDSpanContext.swift in Sources */,
+				6178770B24FE608E009E6BAB /* TracingAutoInstrumentation.swift in Sources */,
+				6178770C24FE608E009E6BAB /* SpanEncoder.swift in Sources */,
+				6178770D24FE608E009E6BAB /* SpanBuilder.swift in Sources */,
+				6178770E24FE608F009E6BAB /* SpanTagsReducer.swift in Sources */,
+				6178770F24FE608F009E6BAB /* SpanFileOutput.swift in Sources */,
+				6178771024FE608F009E6BAB /* SpanOutput.swift in Sources */,
+				6178771124FE608F009E6BAB /* HTTPHeadersWriter.swift in Sources */,
+				6178771224FE608F009E6BAB /* TracingUUIDGenerator.swift in Sources */,
+				6178771324FE608F009E6BAB /* TracingUUID.swift in Sources */,
+				6178771424FE608F009E6BAB /* Casting.swift in Sources */,
+				6178771524FE608F009E6BAB /* ActiveSpansPool.swift in Sources */,
+				6178771624FE608F009E6BAB /* Warnings.swift in Sources */,
+				6178771724FE608F009E6BAB /* URLFilter.swift in Sources */,
+				6178771824FE608F009E6BAB /* RUMFeature.swift in Sources */,
+				6178771924FE608F009E6BAB /* RUMDataModels.swift in Sources */,
+				6178771A24FE608F009E6BAB /* RUMDataModelsMapping.swift in Sources */,
+				6178771B24FE608F009E6BAB /* RUMScope.swift in Sources */,
+				6178771C24FE608F009E6BAB /* RUMCommand.swift in Sources */,
+				6178771D24FE608F009E6BAB /* RUMApplicationScope.swift in Sources */,
+				6178771E24FE608F009E6BAB /* RUMSessionScope.swift in Sources */,
+				6178771F24FE608F009E6BAB /* RUMViewScope.swift in Sources */,
+				6178772024FE608F009E6BAB /* RUMResourceScope.swift in Sources */,
+				6178772124FE608F009E6BAB /* RUMUserActionScope.swift in Sources */,
+				6178772224FE608F009E6BAB /* RUMContext.swift in Sources */,
+				6178772324FE608F009E6BAB /* RUMContextProvider.swift in Sources */,
+				6178772424FE608F009E6BAB /* RUMCurrentContext.swift in Sources */,
+				6178772524FE608F009E6BAB /* RUMUserInfoProvider.swift in Sources */,
+				6178772624FE608F009E6BAB /* RUMEventBuilder.swift in Sources */,
+				6178772724FE608F009E6BAB /* RUMEventEncoder.swift in Sources */,
+				6178772824FE608F009E6BAB /* RUMConnectivityInfoProvider.swift in Sources */,
+				6178772924FE608F009E6BAB /* RUMEventOutput.swift in Sources */,
+				6178772A24FE608F009E6BAB /* RUMEventFileOutput.swift in Sources */,
+				6178772B24FE608F009E6BAB /* RUMUUIDGenerator.swift in Sources */,
+				6178772C24FE608F009E6BAB /* RUMUUID.swift in Sources */,
+				6178772D24FE608F009E6BAB /* RUMDebugging.swift in Sources */,
+				6178772E24FE608F009E6BAB /* RUMIntegrations.swift in Sources */,
+				6178772F24FE608F009E6BAB /* LoggingForTracingAdapter.swift in Sources */,
+				6178773024FE608F009E6BAB /* LoggingWithRUMIntegration.swift in Sources */,
+				6178773124FE608F009E6BAB /* TracingWithRUMIntegration.swift in Sources */,
+				6178773224FE608F009E6BAB /* Globals.swift in Sources */,
+				6178773324FE608F009E6BAB /* InternalLoggers.swift in Sources */,
+				6178773424FE608F009E6BAB /* CompilationConditions.swift in Sources */,
+				6178773524FE608F009E6BAB /* SwiftExtensions.swift in Sources */,
+				6178773624FE608F009E6BAB /* OTSpan.swift in Sources */,
+				6178773724FE608F009E6BAB /* OTFormat.swift in Sources */,
+				6178773824FE608F009E6BAB /* OTTracer.swift in Sources */,
+				6178773924FE608F009E6BAB /* OTReference.swift in Sources */,
+				6178773A24FE608F009E6BAB /* OTConstants.swift in Sources */,
+				6178773B24FE608F009E6BAB /* OTSpanContext.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2217,6 +2593,11 @@
 			target = 61441C0124616DE9003D8BB8 /* Example */;
 			targetProxy = 61441C7424619FED003D8BB8 /* PBXContainerItemProxy */;
 		};
+		617876D124FE601D009E6BAB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 617876CA24FE601D009E6BAB /* Datadog-tvOS */;
+			targetProxy = 617876D024FE601D009E6BAB /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -2232,6 +2613,22 @@
 			isa = PBXVariantGroup;
 			children = (
 				61441C1024616DEC003D8BB8 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		617876B424FE5B6D009E6BAB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				617876B524FE5B6D009E6BAB /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		617876B924FE5B71009E6BAB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				617876BA24FE5B71009E6BAB /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -2668,6 +3065,152 @@
 			};
 			name = Integration;
 		};
+		617876BD24FE5B71009E6BAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				INFOPLIST_FILE = "Example-tvOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.example-ct-objc.Example-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Debug;
+		};
+		617876BE24FE5B71009E6BAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				INFOPLIST_FILE = "Example-tvOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.example-ct-objc.Example-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Release;
+		};
+		617876BF24FE5B71009E6BAB /* Integration */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				INFOPLIST_FILE = "Example-tvOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.example-ct-objc.Example-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Integration;
+		};
+		617876D524FE601D009E6BAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "TargetSupport/Datadog-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/../Sources/Datadog-tvOS/Datadog_tvOS.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.example-ct-objc.Datadog-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Debug;
+		};
+		617876D624FE601D009E6BAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "TargetSupport/Datadog-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/../Sources/Datadog-tvOS/Datadog_tvOS.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.example-ct-objc.Datadog-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Release;
+		};
+		617876D724FE601D009E6BAB /* Integration */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "TargetSupport/Datadog-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/../Sources/Datadog-tvOS/Datadog_tvOS.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.example-ct-objc.Datadog-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Integration;
+		};
 		9E2FB28224476765001C9B7B /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2868,6 +3411,26 @@
 				61441C7124619FE4003D8BB8 /* Debug */,
 				61441C7224619FE4003D8BB8 /* Release */,
 				61441C7324619FE4003D8BB8 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		617876C024FE5B71009E6BAB /* Build configuration list for PBXNativeTarget "Example-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				617876BD24FE5B71009E6BAB /* Debug */,
+				617876BE24FE5B71009E6BAB /* Release */,
+				617876BF24FE5B71009E6BAB /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		617876D424FE601D009E6BAB /* Build configuration list for PBXNativeTarget "Datadog-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				617876D524FE601D009E6BAB /* Debug */,
+				617876D624FE601D009E6BAB /* Release */,
+				617876D724FE601D009E6BAB /* Integration */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

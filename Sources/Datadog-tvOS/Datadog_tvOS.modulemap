@@ -1,0 +1,11 @@
+framework module Datadog_tvOS {
+  umbrella header "Datadog_tvOS.h"
+
+  export *
+  module * { export * }
+}
+
+framework module _Datadog_Private {
+  export *
+  header "ObjcExceptionHandler.h"
+}
