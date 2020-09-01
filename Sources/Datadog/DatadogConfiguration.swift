@@ -22,6 +22,9 @@ extension Datadog {
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu
+            /// Gov servers.
+            /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case gov
             /// User-defined server.
             case custom(url: String)
 
@@ -29,6 +32,7 @@ extension Datadog {
                 switch self {
                 case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
                 case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
+                case .gov: return "https://mobile-http-intake.logs.ddog-gov.com/v1/input/"
                 case let .custom(url: url): return url
                 }
             }
@@ -42,6 +46,9 @@ extension Datadog {
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu
+            /// Gov servers.
+            /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case gov
             /// User-defined server.
             case custom(url: String)
 
@@ -49,6 +56,7 @@ extension Datadog {
                 switch self {
                 case .us: return "https://public-trace-http-intake.logs.datadoghq.com/v1/input/"
                 case .eu: return "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/"
+                case .gov: return "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/"
                 case let .custom(url: url): return url
                 }
             }
@@ -62,6 +70,9 @@ extension Datadog {
             /// Europe based servers.
             /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu
+            /// Gov servers.
+            /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case gov
             /// User-defined server.
             case custom(url: String)
 
@@ -69,6 +80,7 @@ extension Datadog {
                 switch self {
                 case .us: return "https://rum-http-intake.logs.datadoghq.com/v1/input/"
                 case .eu: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
+                case .gov: return "https://rum-http-intake.logs.ddog-gov.com/v1/input/"
                 case let .custom(url: url): return url
                 }
             }

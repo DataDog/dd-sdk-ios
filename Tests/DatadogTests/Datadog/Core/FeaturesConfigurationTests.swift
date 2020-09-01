@@ -129,6 +129,10 @@ class FeaturesConfigurationTests: XCTestCase {
             URL(string: "https://mobile-http-intake.logs.datadoghq.eu/v1/input/abc")!
         )
         XCTAssertEqual(
+            try createConfiguration(clientToken: "abc", logsEndpoint: .gov).logging?.uploadURLWithClientToken,
+            URL(string: "https://mobile-http-intake.logs.ddog-gov.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
             try createConfiguration(clientToken: "abc", logsEndpoint: .custom(url: "http://example.com/api")).logging?.uploadURLWithClientToken,
             URL(string: "http://example.com/api/abc")!
         )
@@ -147,6 +151,10 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", tracesEndpoint: .eu).tracing?.uploadURLWithClientToken,
             URL(string: "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(clientToken: "abc", tracesEndpoint: .gov).tracing?.uploadURLWithClientToken,
+            URL(string: "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/abc")!
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", tracesEndpoint: .custom(url: "http://example.com/api")).tracing?.uploadURLWithClientToken,
@@ -183,6 +191,10 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", rumEndpoint: .eu).rum?.uploadURLWithClientToken,
             URL(string: "https://rum-http-intake.logs.datadoghq.eu/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(clientToken: "abc", rumEndpoint: .gov).rum?.uploadURLWithClientToken,
+            URL(string: "https://rum-http-intake.logs.ddog-gov.com/v1/input/abc")!
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", rumEndpoint: .custom(url: "http://example.com/api")).rum?.uploadURLWithClientToken,
