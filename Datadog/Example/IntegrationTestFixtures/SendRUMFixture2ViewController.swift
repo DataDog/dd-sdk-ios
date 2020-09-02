@@ -7,6 +7,12 @@
 import UIKit
 
 internal class SendRUMFixture2ViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        ddObserve(viewController: self)
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 

@@ -54,6 +54,7 @@ struct ExampleAppConfig: AppConfig {
             .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: "tests")
             .set(serviceName: serviceName)
             .set(tracedHosts: [arbitraryNetworkURL.host!, "foo.bar"])
+            .enableRUM(false)
             .build()
     }
 }

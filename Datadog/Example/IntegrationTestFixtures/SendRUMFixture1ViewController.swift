@@ -12,6 +12,8 @@ internal class SendRUMFixture1ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        ddObserve(viewController: self)
+
         // Hide the "Push Next Screen" button until simulated resource is loaded
         pushNextScreenButton.isHidden = true
     }
