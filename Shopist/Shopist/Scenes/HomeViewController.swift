@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import Datadog
 
 internal final class HomeViewController: ListViewController {
     private var categories = [Category]()
@@ -38,7 +39,7 @@ internal final class HomeViewController: ListViewController {
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedCategory = categories[indexPath.row]
-        rum?.registerUserAction(type: .tap, name: selectedCategory.title)
+        Global.rum.registerUserAction(type: .tap, name: selectedCategory.title)
         let detailVC = CatalogViewController(with: selectedCategory)
         show(detailVC, sender: self)
     }

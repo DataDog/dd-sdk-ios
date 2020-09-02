@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import Datadog
 
 internal class ListViewController: UICollectionViewController {
     private static let cellIdentifier = "cell"
@@ -26,7 +27,7 @@ internal class ListViewController: UICollectionViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        rum?.startView(viewController: self, attributes: (isMovingToParent ? nil : ["info": "Redisplay"]))
+        Global.rum.startView(viewController: self, attributes: (isMovingToParent ? nil : ["info": "Redisplay"]))
         fetch(with: api)
     }
 
@@ -38,7 +39,7 @@ internal class ListViewController: UICollectionViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        rum?.stopView(viewController: self, attributes: (isMovingFromParent ? ["info": "Dismissal"] : nil))
+        Global.rum.stopView(viewController: self, attributes: (isMovingFromParent ? ["info": "Dismissal"] : nil))
     }
 
     func fetch(with api: API) {
@@ -84,11 +85,11 @@ internal class ListViewController: UICollectionViewController {
     }
 
     override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        rum?.startUserAction(type: .scroll, name: "Scroll")
+        Global.rum.startUserAction(type: .scroll, name: "Scroll")
     }
 
     override func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         let direction = velocity.y > 0 ? "Scroll down" : "Scroll up"
-        rum?.stopUserAction(type: .scroll, name: direction)
+        Global.rum.stopUserAction(type: .scroll, name: direction)
     }
 }

@@ -124,10 +124,11 @@ internal final class API {
         let resourceName = url.pathComponents.joined()
         let httpMethod = RUMHTTPMethod(rawValue: request.httpMethod!)!
         // swiftlint:enable force_unwrapping
-        rum?.startResourceLoading(resourceName: resourceName, url: url, httpMethod: httpMethod)
+        Global.rum.startResourceLoading(resourceName: resourceName, url: url, httpMethod: httpMethod)
 
         let tracer = Global.sharedTracer
-        let span = tracer.startSpan(operationName: request.url?.path ?? "network request").setActive()
+        let span = tracer.startRootSpan(operationName: request.url?.path ?? "network request")
+        span.setActive()
         let headerWriter = HTTPHeadersWriter()
         headerWriter.inject(spanContext: span.context)
         var tracedRequest = request
@@ -140,10 +141,10 @@ internal final class API {
             span.setTag(key: OTTags.httpStatusCode, value: statusCode)
             if let someError = (result.error ?? randomError) {
                 span.handleError(someError)
-                rum?.stopResourceLoadingWithError(resourceName: resourceName, error: someError, source: .network, httpStatusCode: statusCode)
+                Global.rum.stopResourceLoadingWithError(resourceName: resourceName, error: someError, source: .network, httpStatusCode: statusCode)
                 completion(.failure(someError))
             } else if let someData = result.data {
-                rum?.stopResourceLoading(
+                Global.rum.stopResourceLoading(
                     resourceName: resourceName,
                     kind: .fetch,
                     httpStatusCode: statusCode,
@@ -172,13 +173,13 @@ internal final class API {
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
             let resourceName = shippingURL.pathComponents.joined()
-            rum?.startResourceLoading(
+            Global.rum.startResourceLoading(
                 resourceName: resourceName,
                 url: shippingURL,
-                httpMethod: .POST
+                httpMethod: .GET
             )
             Thread.sleep(for: .short)
-            rum?.stopResourceLoadingWithError(
+            Global.rum.stopResourceLoadingWithError(
                 resourceName: resourceName,
                 errorMessage: "Shipping and taxes cannot be fetched from server",
                 source: .network
@@ -191,13 +192,13 @@ internal final class API {
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
             let resourceName = fontURL.pathComponents.joined()
-            rum?.startResourceLoading(
+            Global.rum.startResourceLoading(
                 resourceName: resourceName,
                 url: fontURL,
-                httpMethod: .POST
+                httpMethod: .GET
             )
             Thread.sleep(for: .long)
-            rum?.stopResourceLoading(
+            Global.rum.stopResourceLoading(
                 resourceName: resourceName,
                 kind: .font,
                 httpStatusCode: 200,
@@ -211,13 +212,13 @@ internal final class API {
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
             let resourceName = updateInfoURL.pathComponents.joined()
-            rum?.startResourceLoading(
+            Global.rum.startResourceLoading(
                 resourceName: resourceName,
                 url: updateInfoURL,
                 httpMethod: .POST
             )
             Thread.sleep(for: .medium)
-            rum?.stopResourceLoading(
+            Global.rum.stopResourceLoading(
                 resourceName: resourceName,
                 kind: .xhr,
                 httpStatusCode: 200,

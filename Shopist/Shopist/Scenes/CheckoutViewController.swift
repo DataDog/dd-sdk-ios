@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import Datadog
 
 private struct CellModel {
     enum Kind {
@@ -66,7 +67,7 @@ internal final class CheckoutViewController: UITableViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        rum?.startView(viewController: self)
+        Global.rum.startView(viewController: self)
         if !hasOngoingComputation {
             hasOngoingComputation = true
             cart.generateBreakdown {
@@ -87,7 +88,7 @@ internal final class CheckoutViewController: UITableViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        rum?.stopView(viewController: self)
+        Global.rum.stopView(viewController: self)
     }
 
     func setupModels(from cartBreakdown: Cart.Breakdown) {
@@ -103,7 +104,7 @@ internal final class CheckoutViewController: UITableViewController {
         models = newModels
 
         if cartBreakdown.products.isEmpty {
-            rum?.addViewError(message: "Cart is empty -> Pay button is hidden", source: .source)
+            Global.rum.addViewError(message: "Cart is empty -> Pay button is hidden", source: .source)
         } else {
             addPayButton()
         }
@@ -119,17 +120,21 @@ internal final class CheckoutViewController: UITableViewController {
 
     @objc
     private func dismissPage() {
+        if let someVC = presentingViewController {
+            let topVC = (someVC as? UINavigationController)?.topViewController
+            Global.rum.startView(viewController: topVC ?? someVC)
+        }
         presentingViewController?.dismiss(animated: true)
     }
 
     @objc
     private func pay() {
-        rum?.addAttribute(forKey: "hasPurchased", value: true)
+        Global.rum.addAttribute(forKey: "hasPurchased", value: true)
         if let someDate = viewDidAppearDate {
             let timeToTapPayButton = Date().timeIntervalSince(someDate)
             logger.info(String(format: "Pay is tapped in %.2f seconds", timeToTapPayButton))
         }
-        rum?.registerUserAction(type: .tap, name: "Pay")
+        Global.rum.registerUserAction(type: .tap, name: "Pay")
         if let randomError = Self.randomError {
             self.handleError(randomError)
             return
@@ -145,7 +150,7 @@ internal final class CheckoutViewController: UITableViewController {
     }
 
     private func handleSuccess() {
-        rum?.registerUserAction(type: .custom, name: "Purchase", attributes: ["purchaseAmount": totalAmount])
+        Global.rum.registerUserAction(type: .custom, name: "Purchase", attributes: ["purchaseAmount": totalAmount])
         let alert = UIAlertController(title: "Success", message: nil, preferredStyle: .alert)
         let action = UIAlertAction(title: "OK", style: .default) { action in
             cart.products.removeAll()
@@ -158,7 +163,7 @@ internal final class CheckoutViewController: UITableViewController {
     }
 
     private func handleError(_ error: Error) {
-        rum?.registerUserAction(type: .custom, name: "Purchase failed")
+        Global.rum.registerUserAction(type: .custom, name: "Purchase failed")
         let nsError = error as NSError
         let title = "Error"
         let message = nsError.localizedDescription

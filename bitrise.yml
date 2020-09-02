@@ -14,6 +14,7 @@ workflows:
     - run_unit_tests
     - run_integration_tests
     - check_dependency_managers
+    - shopist-sanity-check
     - _deploy_artifacts
 
   _make_dependencies:
@@ -174,3 +175,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
+
+  shopist-sanity-check:
+    description: |-
+        Shopist sanity check
+    steps:
+    - xcode-build-for-test:
+        title: Build Shopist for testing
+        inputs:
+        - scheme: Shopist
+        - destination: generic/platform=iOS Simulator
+        - project_path: "$BITRISE_SOURCE_DIR/Shopist/Shopist.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Shopist-sanity-check.html"
+    

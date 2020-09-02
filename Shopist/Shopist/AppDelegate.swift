@@ -8,8 +8,7 @@ import UIKit
 import Datadog
 
 internal fileprivate(set) var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
-internal let appConfig = AppConfig(serviceName: "ios-sdk-shopist-app")
-internal var rum: DDRUMMonitor? { Global.rum }
+internal let appConfig = AppConfig(serviceName: "io.shopist.ios")
 
 private struct User {
     let id: String = UUID().uuidString
@@ -53,8 +52,9 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
                 .builderUsing(
                     rumApplicationID: appConfig.rumAppID,
                     clientToken: appConfig.clientToken,
-                    environment: "tests"
+                    environment: "shopist"
                 )
+                .set(serviceName: appConfig.serviceName)
                 // Currently, SDK doesn't auto-trace Alamofire requests
                 // .set(tracedHosts: [API.baseHost])
                 .build()
@@ -66,7 +66,6 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Create logger instance
         logger = Logger.builder
-            .set(serviceName: appConfig.serviceName)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
             .build()
 
@@ -75,8 +74,9 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Register global `RUMMonitor`
         Global.rum = RUMMonitor.initialize()
-        rum?.addAttribute(forKey: "usr.handle", value: user.email)
-        rum?.addAttribute(forKey: "hasPurchased", value: false)
+        // NOTE: usr.handle is used for historical reasons, it's deprecated in favor of usr.email
+        Global.rum.addAttribute(forKey: "usr.handle", value: user.email)
+        Global.rum.addAttribute(forKey: "hasPurchased", value: false)
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug

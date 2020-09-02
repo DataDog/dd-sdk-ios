@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import Datadog
 
 extension UIViewController {
     func addDefaultNavBarButtons() {
@@ -25,13 +26,13 @@ extension UIViewController {
 
     @objc
     private func goBack() {
-        rum?.registerUserAction(type: .tap, name: "Back")
+        Global.rum.registerUserAction(type: .tap, name: "Back")
         navigationController?.popViewController(animated: true)
     }
 
     @objc
     private func goToCart() {
-        rum?.registerUserAction(type: .tap, name: "Go to cart")
+        Global.rum.registerUserAction(type: .tap, name: "Go to cart")
         let cartVC = CheckoutViewController()
         let containerVC = UINavigationController(rootViewController: cartVC)
         present(containerVC, animated: true, completion: nil)

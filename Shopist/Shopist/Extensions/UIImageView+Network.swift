@@ -5,23 +5,30 @@
  */
 
 import UIKit
+import Datadog
 import AlamofireImage
 
 internal extension UIImageView {
+    private static let setupOnce: () = {
+        let config = URLSessionConfiguration.ephemeral
+        config.urlCache = nil
+        let imageDownloader = ImageDownloader(configuration: config, imageCache: nil)
+        UIImageView.af.sharedImageDownloader = imageDownloader
+    }()
+
     func setImage(with url: URL) {
-        rum?.startResourceLoading(resourceName: url.path, url: url, httpMethod: .GET)
-        // randomizing cacheKey forces to make new request
-        let cacheKey = UUID().uuidString
-        af.setImage(withURL: url, cacheKey: cacheKey) { result in
+        _ = Self.setupOnce
+        Global.rum.startResourceLoading(resourceName: url.path, url: url, httpMethod: .GET)
+        af.setImage(withURL: url) { result in
             if let someError = (result.error ?? fakeError(onceIn: 20)) {
-                rum?.stopResourceLoadingWithError(
+                Global.rum.stopResourceLoadingWithError(
                     resourceName: url.path,
                     error: someError,
                     source: .network,
                     httpStatusCode: 500
                 )
             } else {
-                rum?.stopResourceLoading(
+                Global.rum.stopResourceLoading(
                     resourceName: url.path,
                     kind: .image,
                     httpStatusCode: result.response?.statusCode ?? 200,

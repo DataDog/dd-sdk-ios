@@ -29,7 +29,8 @@ internal final class Cart {
             self.products = products
 
             let tracer = Global.sharedTracer
-            let mainSpan = tracer.startSpan(operationName: "Cart computation").setActive()
+            let mainSpan = tracer.startSpan(operationName: "Cart computation")
+            mainSpan.setActive()
 
             let orderValueSpan = tracer.startSpan(operationName: "Order value computation")
             let orderValue = products.compactMap { Float($0.price) }.reduce(0, +)
@@ -43,7 +44,7 @@ internal final class Cart {
             shipping = Cart.shippingPerItem * Float(products.count)
             taxAndShippingSpan.setTag(key: "cart.tax", value: tax)
             taxAndShippingSpan.setTag(key: "cart.shipping", value: shipping)
-            rum?.addViewError(message: "Tax&shipping cost cannot be calculated, default cost is used", source: .source, attributes: ["tax": tax, "shipping": shipping])
+            Global.rum.addViewError(message: "Tax&shipping cost cannot be calculated, default cost is used", source: .source, attributes: ["tax": tax, "shipping": shipping])
             Thread.sleep(for: .long)
             taxAndShippingSpan.finish()
 
