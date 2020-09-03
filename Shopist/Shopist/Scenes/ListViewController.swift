@@ -5,8 +5,9 @@
  */
 
 import UIKit
+import Datadog
 
-class ListViewController: UICollectionViewController {
+internal class ListViewController: UICollectionViewController {
     private static let cellIdentifier = "cell"
     private let api = API()
 
@@ -19,19 +20,26 @@ class ListViewController: UICollectionViewController {
         collectionView.backgroundColor = .white
         collectionView.register(Cell.self, forCellWithReuseIdentifier: Self.cellIdentifier)
         collectionView.delegate = self
+
         setupLayout(for: view.bounds.size)
-        addGoToCartButton()
+        addDefaultNavBarButtons()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        rum?.startView(viewController: self)
+        Global.rum.startView(viewController: self, attributes: (isMovingToParent ? nil : ["info": "Redisplay"]))
         fetch(with: api)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let zeroPoint = CGPoint(x: 0, y: -collectionView.safeAreaInsets.top)
+        collectionView.setContentOffset(zeroPoint, animated: false)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        rum?.stopView(viewController: self)
+        Global.rum.stopView(viewController: self, attributes: (isMovingFromParent ? ["info": "Dismissal"] : nil))
     }
 
     func fetch(with api: API) {
@@ -76,4 +84,12 @@ class ListViewController: UICollectionViewController {
         layout.scrollDirection = .vertical
     }
 
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        Global.rum.startUserAction(type: .scroll, name: "Scroll")
+    }
+
+    override func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let direction = velocity.y > 0 ? "Scroll down" : "Scroll up"
+        Global.rum.stopUserAction(type: .scroll, name: direction)
+    }
 }

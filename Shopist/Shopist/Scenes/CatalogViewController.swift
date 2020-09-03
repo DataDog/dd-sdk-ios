@@ -5,8 +5,9 @@
  */
 
 import UIKit
+import Datadog
 
-final class ProductsViewController: ListViewController {
+internal final class CatalogViewController: ListViewController {
     let category: Category
     private var items = [Product]()
 
@@ -15,6 +16,7 @@ final class ProductsViewController: ListViewController {
         super.init(collectionViewLayout: UICollectionViewFlowLayout())
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
@@ -50,8 +52,8 @@ final class ProductsViewController: ListViewController {
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedProduct = items[indexPath.row]
-        rum?.registerUserAction(type: .tap, name: selectedProduct.name)
-        let detailVC = ProductDetailViewController(product: selectedProduct)
+        Global.rum.registerUserAction(type: .tap, name: selectedProduct.name)
+        let detailVC = ProductViewController(product: selectedProduct)
         show(detailVC, sender: self)
     }
 }

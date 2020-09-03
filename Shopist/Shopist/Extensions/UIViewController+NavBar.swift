@@ -5,17 +5,35 @@
  */
 
 import UIKit
+import Datadog
 
 extension UIViewController {
-    func addGoToCartButton() {
+    func addDefaultNavBarButtons() {
+        let canGoBack = (navigationController?.viewControllers.count ?? 0) > 1
+        if canGoBack {
+            let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(goBack))
+            backButton.accessibilityIdentifier = "back"
+            navigationItem.leftBarButtonItem = backButton
+            navigationController?.interactivePopGestureRecognizer?.delegate = nil
+        }
+
         let cartButton = UIBarButtonItem(image: UIImage(systemName: "cart"), style: .plain, target: self, action: #selector(goToCart))
+        cartButton.accessibilityIdentifier = "cart"
         var buttonItems = navigationItem.rightBarButtonItems ?? []
         buttonItems.append(cartButton)
         navigationItem.rightBarButtonItems = buttonItems
     }
 
-    @objc private func goToCart() {
-        let cartVC = CartViewController()
+    @objc
+    private func goBack() {
+        Global.rum.registerUserAction(type: .tap, name: "Back")
+        navigationController?.popViewController(animated: true)
+    }
+
+    @objc
+    private func goToCart() {
+        Global.rum.registerUserAction(type: .tap, name: "Go to cart")
+        let cartVC = CheckoutViewController()
         let containerVC = UINavigationController(rootViewController: cartVC)
         present(containerVC, animated: true, completion: nil)
     }

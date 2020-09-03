@@ -1,7 +1,6 @@
 #include "Datadog.xcconfig"
 
-// TODO: RUMM-664 temporary value, otherwise test cases fail in CI
-RUM_APPLICATION_ID=12345 // use your own RUM Application ID obtained on datadoghq.com
+RUM_APPLICATION_ID= // use your own RUM Application ID obtained on datadoghq.com
 DATADOG_CLIENT_TOKEN= // use your own Client Token, generated for RUM_APPLICATION_ID
-SHOPIST_BASE_URL=some.url
-#include? "Shopist.local.xcconfig" // overrides SHOPIST_BASE_URL
+SHOPIST_BASE_URL=some.url // use Shopist endpoint without protocol
+#include? "Shopist.local.xcconfig"
