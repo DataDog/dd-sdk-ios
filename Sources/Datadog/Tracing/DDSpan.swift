@@ -25,9 +25,15 @@ internal class DDSpan: OTSpan {
 
     /// Unsynchronized span tags. Use `self.tags` setter & getter.
     private var unsafeTags: [String: Encodable]
-    private(set) var tags: [String: Encodable] {
-        get { ddTracer.queue.sync { unsafeTags } }
-        set { ddTracer.queue.async { self.unsafeTags = newValue } }
+    var tags: [String: Encodable] {
+        ddTracer.queue.sync { unsafeTags }
+    }
+
+    /// Unsychronized span log fields. Use `self.logFields` setter & getter.
+    private var unsafeLogFields: [[String: Encodable]] = []
+    /// A collection of all log fields send for this span.
+    var logFields: [[String: Encodable]] {
+        ddTracer.queue.sync { unsafeLogFields }
     }
 
     /// Unsychronized span completion. Use `self.isFinished` setter & getter.
@@ -35,14 +41,6 @@ internal class DDSpan: OTSpan {
     private(set) var isFinished: Bool {
         get { ddTracer.queue.sync { unsafeIsFinished } }
         set { ddTracer.queue.async { self.unsafeIsFinished = newValue } }
-    }
-
-    /// Unsychronized span log fields. Use `self.logFields` setter & getter.
-    private var unsafeLogFields: [[String: Encodable]] = []
-    /// A collection of all log fields send for this span.
-    private(set) var logFields: [[String: Encodable]] {
-        get { ddTracer.queue.sync { unsafeLogFields } }
-        set { ddTracer.queue.async { self.unsafeLogFields = newValue } }
     }
 
     private var activityReference: ActivityReference?
@@ -83,7 +81,9 @@ internal class DDSpan: OTSpan {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
-        self.tags[key] = value
+        ddTracer.queue.async {
+            self.unsafeTags[key] = value
+        }
     }
 
     func setBaggageItem(key: String, value: String) {
@@ -124,7 +124,9 @@ internal class DDSpan: OTSpan {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }
-        logFields.append(fields)
+        ddTracer.queue.async {
+            self.unsafeLogFields.append(fields)
+        }
         ddTracer.writeLog(for: self, fields: fields, date: timestamp)
     }
 
