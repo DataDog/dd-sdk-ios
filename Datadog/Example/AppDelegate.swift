@@ -55,7 +55,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Global.rum = RUMMonitor.initialize()
 
         // Set highest verbosity level to see internal actions made in SDK
-        Datadog.verbosityLevel = .debug
+//        Datadog.verbosityLevel = .debug
 
         // Enable RUM Views debug utility.
         Datadog.debugRUM = true
