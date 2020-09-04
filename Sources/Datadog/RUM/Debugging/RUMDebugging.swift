@@ -28,10 +28,8 @@ private struct RUMDebugInfo {
 
 internal class RUMDebugging {
     private lazy var canvas: UIView = {
-        let window = UIApplication.shared.keyWindow
-        let view = RUMDebugView(frame: window?.bounds ?? .zero)
+        let view = RUMDebugView(frame: .zero)
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        window?.addSubview(view)
         return view
     }()
 
@@ -96,6 +94,12 @@ internal class RUMDebugging {
             view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             canvas.addSubview(view)
         }
+        if canvas.superview == nil,
+            let someWindow = UIApplication.shared.keyWindow {
+            canvas.frame.size = someWindow.bounds.size
+            someWindow.addSubview(canvas)
+        }
+        canvas.superview?.bringSubviewToFront(canvas)
     }
 
     @objc
