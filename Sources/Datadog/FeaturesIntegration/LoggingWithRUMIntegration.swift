@@ -27,6 +27,6 @@ internal struct LoggingWithRUMErrorsIntegration {
     private let rumErrorsIntegration = RUMErrorsIntegration()
 
     func addError(for log: Log) {
-        rumErrorsIntegration.addError(with: log.message)
+        rumErrorsIntegration.addError(with: log.message, stack: nil, source: .logger)
     }
 }

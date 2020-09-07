@@ -153,16 +153,20 @@ public class RUMMonitor: DDRUMMonitor {
     }
 
     override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, file: StaticString?, line: UInt?) {
-        var stack: (file: StaticString, line: UInt)? = nil
-        if let file = file, let line = line {
-            stack = (file: file, line: line)
+        var stack: String? = nil
+        if let file = file, let fileName = "\(file)".split(separator: "/").last, let line = line {
+            stack = "\(fileName):\(line)"
         }
+        addViewError(message: message, stack: stack, source: source, attributes: attributes)
+    }
+
+    internal func addViewError(message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 message: message,
-                source: source,
                 stack: stack,
+                source: source,
                 attributes: aggregate(attributes)
             )
         )

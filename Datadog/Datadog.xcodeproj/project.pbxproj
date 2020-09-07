@@ -208,6 +208,7 @@
 		61D6FF7E24E53D3B00D0E375 /* BenchmarkMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D6FF7D24E53D3B00D0E375 /* BenchmarkMocks.swift */; };
 		61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D980B924E28D0100E03345 /* RUMIntegrations.swift */; };
 		61D980BC24E293F600E03345 /* RUMIntegrationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */; };
+		61DE6B1625066973004EFCB3 /* TracingWithRUMErrorsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE6B1525066973004EFCB3 /* TracingWithRUMErrorsIntegrationTests.swift */; };
 		61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BCE2450A6EC00F2C652 /* TracingUUIDTests.swift */; };
 		61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BD12450F65B00F2C652 /* SpanBuilderTests.swift */; };
 		61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */; };
@@ -523,6 +524,7 @@
 		61D6FF7D24E53D3B00D0E375 /* BenchmarkMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkMocks.swift; sourceTree = "<group>"; };
 		61D980B924E28D0100E03345 /* RUMIntegrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMIntegrations.swift; sourceTree = "<group>"; };
 		61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMIntegrationsTests.swift; sourceTree = "<group>"; };
+		61DE6B1525066973004EFCB3 /* TracingWithRUMErrorsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithRUMErrorsIntegrationTests.swift; sourceTree = "<group>"; };
 		61E45BCE2450A6EC00F2C652 /* TracingUUIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUIDTests.swift; sourceTree = "<group>"; };
 		61E45BD12450F65B00F2C652 /* SpanBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanBuilderTests.swift; sourceTree = "<group>"; };
 		61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanFileOutputTests.swift; sourceTree = "<group>"; };
@@ -1081,6 +1083,7 @@
 			children = (
 				61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */,
 				61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */,
+				61DE6B1525066973004EFCB3 /* TracingWithRUMErrorsIntegrationTests.swift */,
 			);
 			path = FeaturesIntegration;
 			sourceTree = "<group>";
@@ -2091,6 +2094,7 @@
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
 				E1D203FD24C1885C00D1AF3A /* ActiveSpansPoolTests.swift in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
+				61DE6B1625066973004EFCB3 /* TracingWithRUMErrorsIntegrationTests.swift in Sources */,
 				618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */,
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,

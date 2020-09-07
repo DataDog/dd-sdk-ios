@@ -705,8 +705,8 @@ class TracerTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
-            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertEqual(rumModel.error.message, #"Span error (operation name)"#)
+            XCTAssertEqual(rumModel.error.source, .source)
             XCTAssertNil(rumModel.error.stack)
         }
     }
@@ -742,22 +742,10 @@ class TracerTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) })
         try rumErrorMatcher.model(ofType: RUMError.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, #"Span "operation name" reported an error"#)
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
+            XCTAssertEqual(rumModel.error.message, #"Span error (operation name): Swift error | span error message"#)
+            XCTAssertEqual(rumModel.error.source, .source)
+            XCTAssertEqual(rumModel.error.stack, "Foo.swift:123")
         }
-        try XCTAssertEqual(
-            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorMessage),
-            "span error message"
-        )
-        try XCTAssertEqual(
-            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorType),
-            "Swift error"
-        )
-        try XCTAssertEqual(
-            rumErrorMatcher.attribute(forKeyPath: TracingWithRUMErrorsIntegration.Attributes.spanErrorStack),
-            "Foo.swift:123"
-        )
     }
 
     // MARK: - Injecting span context into carrier
