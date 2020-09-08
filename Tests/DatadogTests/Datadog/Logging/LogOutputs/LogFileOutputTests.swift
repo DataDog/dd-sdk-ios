@@ -24,7 +24,7 @@ class LogFileOutputTests: XCTestCase {
         let output = LogFileOutput(
             logBuilder: .mockAny(),
             fileWriter: FileWriter(
-                dataFormat: LoggingFeature.Storage.dataFormat,
+                dataFormat: LoggingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
                     performance: PerformancePreset.combining(
@@ -34,7 +34,8 @@ class LogFileOutputTests: XCTestCase {
                     dateProvider: fileCreationDateProvider
                 ),
                 queue: queue
-            )
+            ),
+            rumErrorsIntegration: nil
         )
 
         output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: .mockAny(), tags: [])

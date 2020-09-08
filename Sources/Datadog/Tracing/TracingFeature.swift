@@ -19,7 +19,7 @@ internal final class TracingFeature {
 
     // MARK: - Configuration
 
-    let configuration: Datadog.ValidConfiguration
+    let configuration: FeaturesConfiguration.Tracing
 
     // MARK: - Integration With Other Features
 
@@ -37,100 +37,81 @@ internal final class TracingFeature {
 
     // MARK: - Components
 
+    static let featureName = "tracing"
+    /// NOTE: any change to data format requires updating the directory url to be unique
+    static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
+
     /// Span files storage.
-    let storage: Storage
+    let storage: FeatureStorage
     /// Spans upload worker.
-    let upload: Upload
-
-    /// Encapsulates  storage stack setup for `TracingFeature`.
-    class Storage {
-        /// Writes spans to files.
-        let writer: FileWriter
-        /// Reads spans from files.
-        let reader: FileReader
-
-        /// NOTE: any change to tracing data format requires updating the tracing directory url to be unique
-        static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
-
-        init(
-            directory: Directory,
-            performance: PerformancePreset,
-            dateProvider: DateProvider,
-            readWriteQueue: DispatchQueue
-        ) {
-            let orchestrator = FilesOrchestrator(
-                directory: directory,
-                performance: performance,
-                dateProvider: dateProvider
-            )
-
-            self.writer = FileWriter(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-            self.reader = FileReader(dataFormat: Storage.dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
-        }
-    }
-
-    /// Encapsulates upload stack setup for `TracingFeature`.
-    class Upload {
-        /// Uploads spans to server.
-        let uploader: DataUploadWorker
-
-        init(
-            storage: Storage,
-            configuration: Datadog.ValidConfiguration,
-            performance: PerformancePreset,
-            mobileDevice: MobileDevice,
-            httpClient: HTTPClient,
-            tracesUploadURLProvider: UploadURLProvider,
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-            uploadQueue: DispatchQueue
-        ) {
-            let httpHeaders = HTTPHeaders(
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: configuration.applicationName,
-                        appVersion: configuration.applicationVersion,
-                        device: mobileDevice
-                    )
-                ]
-            )
-            let uploadConditions = DataUploadConditions(
-                batteryStatus: BatteryStatusProvider(mobileDevice: mobileDevice),
-                networkConnectionInfo: networkConnectionInfoProvider
-            )
-
-            let dataUploader = DataUploader(
-                urlProvider: tracesUploadURLProvider,
-                httpClient: httpClient,
-                httpHeaders: httpHeaders
-            )
-
-            self.uploader = DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: storage.reader,
-                dataUploader: dataUploader,
-                uploadConditions: uploadConditions,
-                delay: DataUploadDelay(performance: performance),
-                featureName: "tracing"
-            )
-        }
-    }
+    let upload: FeatureUpload
 
     // MARK: - Initialization
 
-    init(
+    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
+            featureName: TracingFeature.featureName,
+            dataFormat: TracingFeature.dataFormat,
+            directory: directory,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    static func createUpload(
+        storage: FeatureStorage,
         directory: Directory,
-        configuration: Datadog.ValidConfiguration,
-        performance: PerformancePreset,
+        configuration: FeaturesConfiguration.Tracing,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureUpload {
+        return FeatureUpload(
+            featureName: TracingFeature.featureName,
+            storage: storage,
+            uploadHTTPHeaders: HTTPHeaders(
+                headers: [
+                    .contentTypeHeader(contentType: .textPlainUTF8),
+                    .userAgentHeader(
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
+                        device: commonDependencies.mobileDevice
+                    )
+                ]
+            ),
+            uploadURLProvider: UploadURLProvider(
+                urlWithClientToken: configuration.uploadURLWithClientToken,
+                queryItemProviders: [
+                    .batchTime(using: commonDependencies.dateProvider)
+                ]
+            ),
+            commonDependencies: commonDependencies
+        )
+    }
+
+    convenience init(
+        directory: Directory,
+        configuration: FeaturesConfiguration.Tracing,
+        commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
-        mobileDevice: MobileDevice,
-        httpClient: HTTPClient,
-        tracesUploadURLProvider: UploadURLProvider,
-        dateProvider: DateProvider,
-        tracingUUIDGenerator: TracingUUIDGenerator,
-        userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType
+        tracingUUIDGenerator: TracingUUIDGenerator
+    ) {
+        let storage = TracingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
+        let upload = TracingFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
+        self.init(
+            storage: storage,
+            upload: upload,
+            configuration: configuration,
+            commonDependencies: commonDependencies,
+            loggingFeatureAdapter: loggingFeatureAdapter,
+            tracingUUIDGenerator: tracingUUIDGenerator
+        )
+    }
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        configuration: FeaturesConfiguration.Tracing,
+        commonDependencies: FeaturesCommonDependencies,
+        loggingFeatureAdapter: LoggingForTracingAdapter?,
+        tracingUUIDGenerator: TracingUUIDGenerator
     ) {
         // Configuration
         self.configuration = configuration
@@ -139,37 +120,14 @@ internal final class TracingFeature {
         self.loggingFeatureAdapter = loggingFeatureAdapter
 
         // Bundle dependencies
-        self.dateProvider = dateProvider
+        self.dateProvider = commonDependencies.dateProvider
         self.tracingUUIDGenerator = tracingUUIDGenerator
-        self.userInfoProvider = userInfoProvider
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
+        self.userInfoProvider = commonDependencies.userInfoProvider
+        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
+        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
 
-        // Initialize components
-        let readWriteQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-spans-read-write",
-            target: .global(qos: .utility)
-        )
-        self.storage = Storage(
-            directory: directory,
-            performance: performance,
-            dateProvider: dateProvider,
-            readWriteQueue: readWriteQueue
-        )
-
-        let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-spans-upload",
-            target: .global(qos: .utility)
-        )
-        self.upload = Upload(
-            storage: self.storage,
-            configuration: configuration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: httpClient,
-            tracesUploadURLProvider: tracesUploadURLProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            uploadQueue: uploadQueue
-        )
+        // Initialize stacks
+        self.storage = storage
+        self.upload = upload
     }
 }

@@ -46,6 +46,8 @@ public class Tracer: OTTracer {
     internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
+    /// Integration with RUM Context. `nil` if disabled for this Tracer.
+    internal let rumContextIntegration: TracingWithRUMContextIntegration?
 
     private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
@@ -62,6 +64,13 @@ public class Tracer: OTTracer {
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration) -> OTTracer {
         do {
+            if Global.sharedTracer is Tracer {
+                throw ProgrammerError(
+                    description: """
+                    The `Tracer` instance was already created. Use existing `Global.sharedTracer` instead of initializing the `Tracer` another time.
+                    """
+                )
+            }
             guard let tracingFeature = TracingFeature.instance else {
                 throw ProgrammerError(
                     description: Datadog.instance == nil
@@ -83,9 +92,9 @@ public class Tracer: OTTracer {
         self.init(
             spanOutput: SpanFileOutput(
                 spanBuilder: SpanBuilder(
-                    applicationVersion: tracingFeature.configuration.applicationVersion,
-                    environment: tracingFeature.configuration.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.serviceName,
+                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                    environment: tracingFeature.configuration.common.environment,
+                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                     carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
@@ -97,7 +106,8 @@ public class Tracer: OTTracer {
                 .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration),
             dateProvider: tracingFeature.dateProvider,
             tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
-            globalTags: tracerConfiguration.globalTags
+            globalTags: tracerConfiguration.globalTags,
+            rumContextIntegration: tracerConfiguration.bundleWithRUM ? TracingWithRUMContextIntegration() : nil
         )
     }
 
@@ -106,7 +116,8 @@ public class Tracer: OTTracer {
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
         dateProvider: DateProvider,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        globalTags: [String: Encodable]?
+        globalTags: [String: Encodable]?,
+        rumContextIntegration: TracingWithRUMContextIntegration?
     ) {
         self.spanOutput = spanOutput
         self.logOutput = logOutput
@@ -117,15 +128,24 @@ public class Tracer: OTTracer {
         self.dateProvider = dateProvider
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.globalTags = globalTags
+        self.rumContextIntegration = rumContextIntegration
     }
 
     // MARK: - Open Tracing interface
 
     public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        let parentSpanContext = references?.compactMap { $0.context.dd }.last
-        let spanContext = createSpanContext(parentSpanContext: parentSpanContext)
+        let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
         return startSpan(
-            spanContext: spanContext,
+            spanContext: createSpanContext(parentSpanContext: parentSpanContext),
+            operationName: operationName,
+            tags: tags,
+            startTime: startTime
+        )
+    }
+
+    public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+        return startSpan(
+            spanContext: createSpanContext(parentSpanContext: nil),
             operationName: operationName,
             tags: tags,
             startTime: startTime
@@ -148,19 +168,21 @@ public class Tracer: OTTracer {
     // MARK: - Internal
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
-        let parentContext = parentSpanContext ?? activeSpan?.context as? DDSpanContext
         return DDSpanContext(
-            traceID: parentContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentContext?.spanID,
-            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentContext?.baggageItems)
+            parentSpanID: parentSpanContext?.spanID,
+            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
         )
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         var combinedTags = globalTags ?? [:]
-        if let tags = tags {
-            combinedTags.merge(tags) { _, last in last }
+        if let userTags = tags {
+            combinedTags.merge(userTags) { _, last in last }
+        }
+        if let currentRUMContextTags = rumContextIntegration?.currentRUMContextTags {
+            combinedTags.merge(currentRUMContextTags) { _, last in last }
         }
 
         let span = DDSpan(

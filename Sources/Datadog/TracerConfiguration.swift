@@ -18,8 +18,14 @@ extension Tracer {
         /// - Parameter enabled: `false` by default
         public var sendNetworkInfo: Bool
 
-        /// Tags that will be added to all new spans created by the tracer.
+        /// Tags that will be added to all spans created by the tracer.
         public var globalTags: [String: Encodable]?
+
+        /// Enables the traces integration with RUM.
+        /// If enabled all the spans will be enriched with the current RUM View information and
+        /// it will be possible to see all the spans produced during a specific View lifespan in the RUM Explorer.
+        /// - Parameter enabled: `true` by default
+        public var bundleWithRUM: Bool
 
         /// Initializes the Datadog Tracer configuration.
         /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
@@ -27,10 +33,12 @@ extension Tracer {
         public init(
             serviceName: String? = nil,
             sendNetworkInfo: Bool = false,
+            bundleWithRUM: Bool = true,
             globalTags: [String: Encodable]? = nil
         ) {
             self.serviceName = serviceName
             self.sendNetworkInfo = sendNetworkInfo
+            self.bundleWithRUM = bundleWithRUM
             self.globalTags = globalTags
         }
     }

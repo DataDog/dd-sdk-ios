@@ -7,68 +7,55 @@
 @testable import Datadog
 
 extension LoggingFeature {
-    /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(temporaryDirectory: Directory) -> LoggingFeature {
+    /// Mocks the feature instance which performs no writes and no uploads.
+    static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
-            directory: temporaryDirectory,
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
-            mobileDevice: .mockAny(),
-            httpClient: .mockAny(),
-            logsUploadURLProvider: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                networkConnectionInfo: .mockWith(
-                    reachability: .no // so it doesn't meet the upload condition
-                )
-            ),
-            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
+            commonDependencies: .mockAny()
         )
     }
 
-    /// Mocks feature instance which performs uploads to given `ServerMock` with performance optimized for fast delivery in unit tests.
-    static func mockWorkingFeatureWith(
-        server: ServerMock,
+    /// Mocks the feature instance which performs uploads to `URLSession`.
+    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
+    static func mockWith(
         directory: Directory,
-        configuration: Datadog.ValidConfiguration = .mockAny(),
-        performance: PerformancePreset = .combining(
-            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-            uploadPerformance: .veryQuick
-        ),
-        mobileDevice: MobileDevice = .mockWith(
-            currentBatteryStatus: {
-                // Mock full battery, so it doesn't rely on battery condition for the upload
-                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
-            }
-        ),
-        logsUploadURLProvider: UploadURLProvider = .mockAny(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        configuration: FeaturesConfiguration.Logging = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
+        return LoggingFeature(directory: directory, configuration: configuration, commonDependencies: dependencies)
+    }
+
+    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
+    static func mockByRecordingLogMatchers(
+        directory: Directory,
+        configuration: FeaturesConfiguration.Logging = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
+    ) -> LoggingFeature {
+        // Get the full feature mock:
+        let fullFeature: LoggingFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let uploadWorker = DataUploadWorkerMock()
+        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
+        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        let mockedUpload = FeatureUpload(uploader: uploadWorker)
         return LoggingFeature(
-            directory: directory,
+            storage: observedStorage,
+            upload: mockedUpload,
             configuration: configuration,
-            performance: performance,
-            mobileDevice: mobileDevice,
-            httpClient: HTTPClient(session: server.urlSession),
-            logsUploadURLProvider: logsUploadURLProvider,
-            dateProvider: dateProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            commonDependencies: dependencies
         )
+    }
+
+    // MARK: - Expecting Logs Data
+
+    static func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let uploadWorker = LoggingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
+        }
+        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
+            .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
     }
 }
 
@@ -117,6 +104,22 @@ extension Log.Status {
 }
 
 // MARK: - Component Mocks
+
+extension Logger {
+    static func mockWith(
+        logOutput: LogOutput = LogOutputMock(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        identifier: String = .mockAny(),
+        rumContextIntegration: LoggingWithRUMContextIntegration? = nil
+    ) -> Logger {
+        return Logger(
+            logOutput: logOutput,
+            dateProvider: dateProvider,
+            identifier: identifier,
+            rumContextIntegration: rumContextIntegration
+        )
+    }
+}
 
 extension LogBuilder {
     static func mockAny() -> LogBuilder {

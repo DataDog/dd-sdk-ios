@@ -10,33 +10,28 @@ import XCTest
 class TracerConfigurationTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
-    private var mockServer: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
-
-        mockServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: mockServer,
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
             configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                serviceName: "service-name",
-                environment: "tests"
+                common: .mockWith(
+                    applicationVersion: "1.2.3",
+                    serviceName: "service-name",
+                    environment: "tests"
+                )
             ),
-            loggingFeature: .mockNoOp(temporaryDirectory: temporaryDirectory),
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            dependencies: .mockWith(
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider
+            ),
+            loggingFeature: .mockNoOp()
         )
     }
 
     override func tearDown() {
-        mockServer.waitAndAssertNoRequestsSent()
         TracingFeature.instance = nil
-        mockServer = nil
-
-        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -44,6 +39,8 @@ class TracerConfigurationTests: XCTestCase {
         let tracer = Tracer.initialize(
             configuration: .init()
         ).dd
+
+        XCTAssertNotNil(tracer.rumContextIntegration)
 
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
             XCTFail()
@@ -76,9 +73,12 @@ class TracerConfigurationTests: XCTestCase {
         let tracer = Tracer.initialize(
             configuration: .init(
                 serviceName: "custom-service-name",
-                sendNetworkInfo: true
+                sendNetworkInfo: true,
+                bundleWithRUM: false
             )
         ).dd
+
+        XCTAssertNil(tracer.rumContextIntegration)
 
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
             XCTFail()

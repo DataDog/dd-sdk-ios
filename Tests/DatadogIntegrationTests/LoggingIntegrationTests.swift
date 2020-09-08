@@ -15,14 +15,19 @@ class LoggingIntegrationTests: IntegrationTests {
     }
 
     func testLaunchTheAppAndSendLogs() throws {
-        let serverSession = server.obtainUniqueRecordingSession()
+        let loggingServerSession = server.obtainUniqueRecordingSession()
 
         let app = ExampleApplication()
-        app.launchWith(mockServerURL: serverSession.recordingURL)
+        app.launchWith(
+            mockLogsEndpointURL: loggingServerSession.recordingURL,
+            mockTracesEndpointURL: server.obtainUniqueRecordingSession().recordingURL,   // mock any
+            mockRUMEndpointURL: server.obtainUniqueRecordingSession().recordingURL,      // mock any
+            mockSourceEndpointURL: server.obtainUniqueRecordingSession().recordingURL    // mock any
+        )
         app.tapSendLogsForUITests()
 
         // Return desired count or timeout
-        let recordedRequests = try serverSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.logsDeliveryTime)
+        let recordedRequests = try loggingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.logsDeliveryTime)
 
         recordedRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`

@@ -24,8 +24,8 @@ extension Int: AllowedSpanMetricValue {}
 // Only string values are allowed for `span.meta.*`.
 extension String: AllowedSpanMetaValue {}
 
-/// Provides set of assertions for single `Span` JSON object or collection of `[Span]`.
-/// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
+/// Provides set of assertions for single `Span` JSON object and collection of `[Span]`.
+/// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced.
 internal class SpanMatcher {
     // MARK: - Initialization
 

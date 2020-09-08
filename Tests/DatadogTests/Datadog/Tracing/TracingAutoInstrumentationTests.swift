@@ -15,14 +15,16 @@ private struct MockURLFilter: URLFiltering {
 }
 
 class TracingAutoInstrumentationTests: XCTestCase {
-    func testInitializationWithDatadogConfiguration() throws {
-        var config = Datadog.Configuration.mockAny()
-        config.tracingEnabled = true
-        config.tracedHosts = [String.mockAny()]
-        let autoInstrumentation = TracingAutoInstrumentation(with: config)
+    func testInitialization() throws {
+        let autoInstrumentation = TracingAutoInstrumentation(
+            with: .init(tracedHosts: ["included.com"], excludedHosts: ["excluded.com"])
+        )
 
         let urlFilter = try XCTUnwrap(autoInstrumentation?.urlFilter as? URLFilter)
-        let expectedURLFilter = URLFilter(includedHosts: [String.mockAny()], excludedURLs: [config.logsEndpoint.url, config.tracesEndpoint.url])
+        let expectedURLFilter = URLFilter(
+            includedHosts: ["included.com"],
+            excludedURLs: ["excluded.com"]
+        )
 
         XCTAssertEqual(urlFilter, expectedURLFilter)
     }
@@ -115,9 +117,12 @@ class TracingURLSessionHooksTests: XCTestCase {
 
         let recordedSpanTags = spanRecorder.recorded!.span.tags
         XCTAssertEqual(recordedSpanTags[OTTags.error] as? Bool, true)
-        XCTAssertEqual(recordedSpanTags[DDTags.errorType] as? String, "\(error.domain) - \(error.code)")
+        XCTAssertEqual(recordedSpanTags[DDTags.errorType] as? String, "unit-test - 123")
         XCTAssertEqual(recordedSpanTags[DDTags.errorMessage] as? String, errorDescription)
-        XCTAssertEqual(recordedSpanTags[DDTags.errorStack] as? String, String(describing: error))
+        XCTAssertEqual(
+            recordedSpanTags[DDTags.errorStack] as? String,
+            #"Error Domain=unit-test Code=123 "something happened" UserInfo={NSLocalizedDescription=something happened}"#
+        )
     }
 
     func testTaskObserver_wrongOrder() throws {

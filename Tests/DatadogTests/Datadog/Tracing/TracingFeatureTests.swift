@@ -22,34 +22,22 @@ class TracingFeatureTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Initialization
+    // MARK: - HTTP Message
 
-    func testInitialization() throws {
-        let appContext: AppContext = .mockAny()
-        Datadog.initialize(
-            appContext: appContext,
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc", environment: "tests")
-                .build()
-        )
-
-        XCTAssertNotNil(TracingFeature.instance)
-
-        try Datadog.deinitializeOrThrow()
-    }
-
-    // MARK: - HTTP Headers
-
-    func testItUsesExpectedHTTPHeaders() throws {
+    func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
             configuration: .mockWith(
-                applicationName: "FoobarApp",
-                applicationVersion: "2.1.0"
+                common: .mockWith(
+                    applicationName: "FoobarApp",
+                    applicationVersion: "2.1.0"
+                )
             ),
-            mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+            dependencies: .mockWith(
+                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            )
         )
         defer { TracingFeature.instance = nil }
 
@@ -58,34 +46,37 @@ class TracingFeatureTests: XCTestCase {
         let span = tracer.startSpan(operationName: "operation 1")
         span.finish()
 
-        let httpHeaders = server.waitAndReturnRequests(count: 1)[0].allHTTPHeaderFields
-        XCTAssertEqual(httpHeaders?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
-        XCTAssertEqual(httpHeaders?["Content-Type"], "text/plain;charset=UTF-8")
+        let request = server.waitAndReturnRequests(count: 1)[0]
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.url?.query, "batch_time=1576404000000")
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
     }
 
-    // MARK: - Payload Format
+    // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWorkingFeatureWith(
-            server: server,
+        TracingFeature.instance = .mockWith(
             directory: temporaryDirectory,
-            performance: .combining(
-                storagePerformance: StoragePerformanceMock(
-                    maxFileSize: .max,
-                    maxDirectorySize: .max,
-                    maxFileAgeForWrite: .distantFuture, // write all spans to single file,
-                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
-                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                    maxObjectsInFile: 3, // write 3 spans to payload,
-                    maxObjectSize: .max
-                ),
-                uploadPerformance: UploadPerformanceMock(
-                    initialUploadDelay: 0.5, // wait enough until spans are written,
-                    defaultUploadDelay: 1,
-                    minUploadDelay: 1,
-                    maxUploadDelay: 1,
-                    uploadDelayDecreaseFactor: 1
+            dependencies: .mockWith(
+                performance: .combining(
+                    storagePerformance: StoragePerformanceMock(
+                        maxFileSize: .max,
+                        maxDirectorySize: .max,
+                        maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                        minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                        maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                        maxObjectsInFile: 3, // write 3 spans to payload,
+                        maxObjectSize: .max
+                    ),
+                    uploadPerformance: UploadPerformanceMock(
+                        initialUploadDelay: 0.5, // wait enough until spans are written,
+                        defaultUploadDelay: 1,
+                        minUploadDelay: 1,
+                        maxUploadDelay: 1,
+                        uploadDelayDecreaseFactor: 1
+                    )
                 )
             )
         )
@@ -98,6 +89,13 @@ class TracingFeatureTests: XCTestCase {
         tracer.startSpan(operationName: "operation 3").finish()
 
         let payload = server.waitAndReturnRequests(count: 1)[0].httpBody!
+
+        // Expected payload format:
+        // ```
+        // span1JSON
+        // span2JSON
+        // span3JSON
+        // ```
 
         let spanMatchers = try SpanMatcher.fromNewlineSeparatedJSONObjectsData(payload)
         XCTAssertEqual(try spanMatchers[0].operationName(), "operation 1")

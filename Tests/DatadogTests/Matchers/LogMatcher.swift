@@ -6,8 +6,8 @@
 
 import XCTest
 
-/// Provides set of assertions for single `Log` JSON object or collection of `[Log]`.
-/// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
+/// Provides set of assertions for single `Log` JSON object and collection of `[Log]`.
+/// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced.
 internal class LogMatcher: JSONDataMatcher {
     /// Log JSON keys.
     struct JSONKey {

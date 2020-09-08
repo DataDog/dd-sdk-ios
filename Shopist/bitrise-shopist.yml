@@ -1,0 +1,38 @@
+---
+format_version: '8'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+
+# To customize how workflows are run on different triggers,
+# go to Workflow Editor on Bitrise.io.
+
+workflows:
+  shopist_demo:
+    envs:
+    - IS_DEMO: true
+    after_run:
+    - run_shopist_scenarios
+  shopist_org2:
+    envs:
+    - IS_DEMO: false
+    after_run:
+    - run_shopist_scenarios
+
+  run_shopist_scenarios:
+    description: |-
+        Runs Shopist demo scenarios on iOS Simulator
+    steps:
+    - script@1.1.6:
+        title: Generate secrets for Shopist app
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            cd Shopist && make
+    - xcode-test@2.4.5:
+        title: Run UI tests for Shopist - iOS Simulator
+        inputs:
+        - scheme: Shopist
+        - simulator_device: iPhone 11 Pro
+        - project_path: Shopist/Shopist.xcodeproj
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Shopist-UI-tests.html"

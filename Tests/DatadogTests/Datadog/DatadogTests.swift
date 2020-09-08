@@ -7,6 +7,194 @@
 import XCTest
 @testable import Datadog
 
+class DatadogTests: XCTestCase {
+    private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var defaultBuilder: Datadog.Configuration.Builder {
+        Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
+    }
+    private var rumBuilder: Datadog.Configuration.Builder {
+        Datadog.Configuration.builderUsing(rumApplicationID: "rum-123", clientToken: "abc-123", environment: "tests")
+    }
+
+    override func setUp() {
+        super.setUp()
+        XCTAssertNil(Datadog.instance)
+        printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+    }
+
+    override func tearDown() {
+        consolePrint = { print($0) }
+        printFunction = nil
+        XCTAssertNil(Datadog.instance)
+        super.tearDown()
+    }
+
+    // MARK: - Initializing with different configurations
+
+    func testGivenDefaultConfiguration_itCanBeInitialized() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: defaultBuilder.build())
+        XCTAssertNotNil(Datadog.instance)
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testGivenDefaultRUMConfiguration_itCanBeInitialized() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: rumBuilder.build())
+        XCTAssertNotNil(Datadog.instance)
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testGivenInvalidConfiguration_itPrintsError() throws {
+        let invalidConiguration = Datadog.Configuration
+            .builderUsing(clientToken: "", environment: "tests")
+            .build()
+
+        Datadog.initialize(appContext: .mockAny(), configuration: invalidConiguration)
+
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
+        )
+        XCTAssertNil(Datadog.instance)
+    }
+
+    func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: defaultBuilder.build())
+        Datadog.initialize(appContext: .mockAny(), configuration: rumBuilder.build())
+
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: SDK is already initialized."
+        )
+
+        try Datadog.deinitializeOrThrow()
+    }
+
+    // MARK: - Toggling features
+
+    func testEnablingAndDisablingFeatures() throws {
+        func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) throws {
+            Datadog.initialize(appContext: .mockAny(), configuration: configuration)
+            verificationBlock()
+            try Datadog.deinitializeOrThrow()
+        }
+
+        defer {
+            TracingAutoInstrumentation.instance?.swizzler.unswizzle()
+        }
+
+        try verify(configuration: defaultBuilder.build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+            // verify integrations:
+            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(configuration: rumBuilder.build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNotNil(RUMFeature.instance, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+            // verify integrations:
+            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+
+        try verify(configuration: defaultBuilder.enableLogging(false).build()) {
+            // verify features:
+            XCTAssertNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+            // verify integrations:
+            XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(configuration: rumBuilder.enableLogging(false).build()) {
+            // verify features:
+            XCTAssertNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNotNil(RUMFeature.instance, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+            // verify integrations:
+            XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+
+        try verify(configuration: defaultBuilder.enableTracing(false).build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNil(TracingFeature.instance)
+            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature should be disabled by default")
+            // verify integrations:
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(configuration: rumBuilder.enableTracing(false).build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNil(TracingFeature.instance)
+            XCTAssertNotNil(RUMFeature.instance, "When using `rumBuilder` RUM feature should be enabled by default")
+            // verify integrations:
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+
+        try verify(configuration: defaultBuilder.enableRUM(true).build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature cannot be enabled")
+            // verify integrations:
+            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(configuration: rumBuilder.enableRUM(false).build()) {
+            // verify features:
+            XCTAssertNotNil(LoggingFeature.instance)
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNil(RUMFeature.instance)
+            // verify integrations:
+            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+
+        try verify(configuration: defaultBuilder.set(tracedHosts: ["example.com"]).build()) {
+            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertNotNil(TracingAutoInstrumentation.instance)
+        }
+        try verify(
+            configuration: defaultBuilder.enableTracing(false).set(tracedHosts: ["example.com"]).build()
+        ) {
+            XCTAssertNil(TracingFeature.instance)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+    }
+
+    // MARK: - Defaults
+
+    func testDefaultVerbosityLevel() {
+        XCTAssertNil(Datadog.verbosityLevel)
+    }
+
+    func testDefaultUserInfo() throws {
+        Datadog.initialize(appContext: .mockAny(), configuration: defaultBuilder.build())
+
+        XCTAssertNotNil(Datadog.instance?.userInfoProvider.value)
+        XCTAssertNil(Datadog.instance?.userInfoProvider.value.id)
+        XCTAssertNil(Datadog.instance?.userInfoProvider.value.email)
+        XCTAssertNil(Datadog.instance?.userInfoProvider.value.name)
+
+        try Datadog.deinitializeOrThrow()
+    }
+
+    func testDefaultDebugRUM() {
+        XCTAssertFalse(Datadog.debugRUM)
+    }
+}
+
 class AppContextTests: XCTestCase {
     func testBundleType() {
         let iOSAppBundle: Bundle = .mockWith(bundlePath: "mock.app")
@@ -43,143 +231,5 @@ class AppContextTests: XCTestCase {
             AppContext(mainBundle: .mockWith(bundlePath: .mockAny(), CFBundleExecutable: "FooApp")).bundleName,
             "FooApp"
         )
-    }
-}
-
-class DatadogTests: XCTestCase {
-    private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var configurationBuilder: Datadog.Configuration.Builder {
-        Datadog.Configuration.builderUsing(clientToken: "abc-def", environment: "tests")
-    }
-
-    override func setUp() {
-        super.setUp()
-        XCTAssertNil(Datadog.instance)
-        printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-    }
-
-    override func tearDown() {
-        consolePrint = { print($0) }
-        printFunction = nil
-        XCTAssertNil(Datadog.instance)
-        super.tearDown()
-    }
-
-    // MARK: - Initializing with configuration
-
-    func testGivenValidConfiguration_itCanBeInitialized() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
-
-        XCTAssertNotNil(Datadog.instance)
-
-        try Datadog.deinitializeOrThrow()
-    }
-
-    func testGivenInvalidConfiguration_whenInitializing_itPrintsError() throws {
-        let invalidConfig: Datadog.Configuration = .mockWith(clientToken: "")
-        Datadog.initialize(appContext: .mockAny(), configuration: invalidConfig)
-
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
-        )
-        XCTAssertNil(Datadog.instance)
-    }
-
-    func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
-        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
-
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: SDK is already initialized."
-        )
-
-        try Datadog.deinitializeOrThrow()
-    }
-
-    // MARK: - Toggling features
-
-    func testEnablingAndDisablingFeatures() throws {
-        func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) throws {
-            Datadog.initialize(appContext: .mockAny(), configuration: configuration)
-            verificationBlock()
-            try Datadog.deinitializeOrThrow()
-        }
-
-        defer {
-            TracingAutoInstrumentation.instance?.swizzler.unswizzle()
-        }
-
-        try verify(configuration: configurationBuilder.build()) {
-            // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
-            // verify integrations:
-            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
-        }
-        try verify(configuration: configurationBuilder.enableLogging(false).build()) {
-            // verify features:
-            XCTAssertNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
-            // verify integrations:
-            XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
-        }
-        try verify(configuration: configurationBuilder.enableTracing(false).build()) {
-            // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNil(TracingFeature.instance)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
-        }
-        try verify(configuration: configurationBuilder.enableLogging(false).enableTracing(false).build()) {
-            // verify features:
-            XCTAssertNil(LoggingFeature.instance)
-            XCTAssertNil(TracingFeature.instance)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
-        }
-
-        let autoTracingConfig = configurationBuilder
-            .enableTracing(true)
-            .set(tracedHosts: [String.mockAny()])
-            .build()
-        try verify(configuration: autoTracingConfig) {
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNotNil(TracingAutoInstrumentation.instance)
-
-            let urlFilter = TracingAutoInstrumentation.instance?.urlFilter as? URLFilter
-            let expectedURLFilter = TracingAutoInstrumentation(with: autoTracingConfig)?.urlFilter as? URLFilter
-
-            XCTAssertNotNil(urlFilter)
-            XCTAssertEqual(urlFilter, expectedURLFilter)
-        }
-        try verify(
-            configuration: configurationBuilder
-            .enableTracing(false)
-            .set(tracedHosts: [String.mockAny()])
-            .build()
-        ) {
-            XCTAssertNil(TracingFeature.instance)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
-        }
-    }
-
-    // MARK: - Defaults
-
-    func testDefaultVerbosityLevel() {
-        XCTAssertNil(Datadog.verbosityLevel)
-    }
-
-    func testDefaultUserInfo() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: configurationBuilder.build())
-
-        XCTAssertNotNil(Datadog.instance?.userInfoProvider.value)
-        XCTAssertNil(Datadog.instance?.userInfoProvider.value.id)
-        XCTAssertNil(Datadog.instance?.userInfoProvider.value.email)
-        XCTAssertNil(Datadog.instance?.userInfoProvider.value.name)
-
-        try Datadog.deinitializeOrThrow()
     }
 }

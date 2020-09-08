@@ -78,6 +78,7 @@ included:
   - Tests
   - instrumented-tests/http-server-mock/Tests
   - tools/api-surface/Tests
+  - Shopist/ShopistUITests
   - dependency-manager-tests/carthage/CTProjectTests
   - dependency-manager-tests/carthage/CTProjectUITests
   - dependency-manager-tests/cocoapods/CTProjectTests

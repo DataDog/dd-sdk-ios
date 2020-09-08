@@ -19,6 +19,7 @@ public class DDLogsEndpoint: NSObject {
 
     public static func eu() -> DDLogsEndpoint { .init(sdkEndpoint: .eu) }
     public static func us() -> DDLogsEndpoint { .init(sdkEndpoint: .us) }
+    public static func gov() -> DDLogsEndpoint { .init(sdkEndpoint: .gov) }
     public static func custom(url: String) -> DDLogsEndpoint { .init(sdkEndpoint: .custom(url: url)) }
 }
 
@@ -34,6 +35,7 @@ public class DDTracesEndpoint: NSObject {
 
     public static func eu() -> DDTracesEndpoint { .init(sdkEndpoint: .eu) }
     public static func us() -> DDTracesEndpoint { .init(sdkEndpoint: .us) }
+    public static func gov() -> DDTracesEndpoint { .init(sdkEndpoint: .gov) }
     public static func custom(url: String) -> DDTracesEndpoint { .init(sdkEndpoint: .custom(url: url)) }
 }
 

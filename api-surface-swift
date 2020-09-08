@@ -1,27 +1,58 @@
+public typealias AttributeKey = String
+public typealias AttributeValue = Encodable
+public class DDRUMMonitor
+ public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func addViewError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue]? = nil,file: StaticString? = #file,line: UInt? = #line)
+ public func addViewError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue]? = nil)
+ public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+ public func removeAttribute(forKey key: AttributeKey)
 public class Datadog
  public struct AppContext
   public init(mainBundle: Bundle = Bundle.main)
  public static func initialize(appContext: AppContext, configuration: Configuration)
  public static var verbosityLevel: LogLevel? = nil
+ public static var debugRUM: Bool = false
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil)
  public struct Configuration
   public enum LogsEndpoint
    case us
    case eu
+   case gov
    case custom(url: String)
   public enum TracesEndpoint
    case us
    case eu
+   case gov
    case custom(url: String)
+  public enum RUMEndpoint
+   case us
+   case eu
+   case gov
+   case custom(url: String)
+  public static func builderUsing(rumApplicationID: String, clientToken: String, environment: String) -> Builder
   public static func builderUsing(clientToken: String, environment: String) -> Builder
   public class Builder
    public func enableLogging(_ enabled: Bool) -> Builder
    public func enableTracing(_ enabled: Bool) -> Builder
+   public func enableRUM(_ enabled: Bool) -> Builder
    public func set(tracedHosts: Set<String>) -> Builder
+   public func set(rumSessionsSamplingRate: Float) -> Builder
    public func set(logsEndpoint: LogsEndpoint) -> Builder
    public func set(tracesEndpoint: TracesEndpoint) -> Builder
+   public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(serviceName: String) -> Builder
    public func build() -> Configuration
+public struct Global
+ public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
+ public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
 public enum LogLevel: Int, Codable
  case debug
  case info
@@ -29,8 +60,6 @@ public enum LogLevel: Int, Codable
  case warn
  case error
  case critical
-public typealias AttributeKey = String
-public typealias AttributeValue = Encodable
 public typealias DDLogger = Logger
 public class Logger
  public func debug(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
@@ -50,6 +79,7 @@ public class Logger
   public func set(serviceName: String) -> Builder
   public func set(loggerName: String) -> Builder
   public func sendNetworkInfo(_ enabled: Bool) -> Builder
+  public func bundleWithRUM(_ enabled: Bool) -> Builder
   public func sendLogsToDatadog(_ enabled: Bool) -> Builder
   public enum ConsoleLogFormat
    case short
@@ -92,8 +122,6 @@ public protocol OTCustomFormatReader
  func extract() -> OTSpanContext?
 public protocol OTCustomFormatWriter
  func inject(spanContext: OTSpanContext)
-public struct Global
- public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
 public struct OTReference
  public let type: OTReferenceType
  public let context: OTSpanContext
@@ -111,6 +139,7 @@ public protocol OTSpan
  func setBaggageItem(key: String, value: String)
  func baggageItem(withKey key: String) -> String?
  func finish(at time: Date)
+ func setActive() -> OTSpan
 public extension OTSpan
  func log(fields: [String: Encodable])
  func finish()
@@ -118,23 +147,74 @@ public protocol OTSpanContext
  func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
  func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+ func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
  func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
  func extract(reader: OTFormatReader) -> OTSpanContext?
+ var activeSpan: OTSpan?
 public extension OTTracer
  func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+ func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+public enum RUMHTTPMethod: String
+ case GET
+ case POST
+ case PUT
+ case DELETE
+ case HEAD
+ case PATCH
+public enum RUMResourceKind
+ case image
+ case xhr
+ case beacon
+ case css
+ case document
+ case fetch
+ case font
+ case js
+ case media
+ case other
+public enum RUMUserActionType
+ case tap
+ case scroll
+ case swipe
+ case custom
+public enum RUMErrorSource
+ case source
+ case console
+ case network
+ case agent
+ case logger
+ case webview
+public class RUMMonitor: DDRUMMonitor
+ public static func initialize() -> DDRUMMonitor
+ override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue]?)
+ override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]?)
+ override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, file: StaticString?, line: UInt?)
+ override public func addViewError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?)
+ override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]?)
+ override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
+ override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
+ override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]?)
+ override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]?)
+ override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue]?)
+ override public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]?)
+ override public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+ override public func removeAttribute(forKey key: AttributeKey)
 public struct DDTags
  public static let resource = "resource.name"
 public typealias DDTracer = Tracer
 public class Tracer: OTTracer
  public static func initialize(configuration: Configuration) -> OTTracer
  public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan
+ public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan
  public func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
  public func extract(reader: OTFormatReader) -> OTSpanContext?
+ public var activeSpan: OTSpan?
  public struct Configuration
   public var serviceName: String?
   public var sendNetworkInfo: Bool
   public var globalTags: [String: Encodable]?
-  public init(serviceName: String? = nil,sendNetworkInfo: Bool = false,globalTags: [String: Encodable]? = nil)
+  public var bundleWithRUM: Bool
+  public init(serviceName: String? = nil,sendNetworkInfo: Bool = false,bundleWithRUM: Bool = true,globalTags: [String: Encodable]? = nil)
 public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]

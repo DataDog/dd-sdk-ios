@@ -8,7 +8,7 @@ import Foundation
 import Datadog
 
 protocol AppConfig {
-    /// Service name used for logs and traces.
+    /// Example app's service name.
     var serviceName: String { get }
     /// SDK configuration
     var datadogConfiguration: Datadog.Configuration { get }
@@ -41,8 +41,18 @@ struct ExampleAppConfig: AppConfig {
             """)
         }
 
+        guard let rumApplicationID = Bundle.main.infoDictionary!["RUMApplicationID"] as? String, !rumApplicationID.isEmpty else {
+            fatalError("""
+            ✋⛔️ Cannot read `RUM_APPLICATION_ID` from `Info.plist` dictionary.
+            Please update `Datadog.xcconfig` in the repository root with your own
+            RUM application id obtained on datadoghq.com.
+            You might need to run `Product > Clean Build Folder` before retrying.
+            """)
+        }
+
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(clientToken: clientToken, environment: "tests")
+            .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: "tests")
+            .set(serviceName: serviceName)
             .set(tracedHosts: [arbitraryNetworkURL.host!, "foo.bar"])
             .build()
     }
@@ -59,12 +69,15 @@ struct UITestAppConfig: AppConfig {
     init() {
         let mockLogsEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_LOGS_ENDPOINT_URL"]!
         let mockTracesEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_TRACES_ENDPOINT_URL"]!
+        let mockRUMEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_RUM_ENDPOINT_URL"]!
         let sourceEndpoint = ProcessInfo.processInfo.environment["DD_MOCK_SOURCE_ENDPOINT_URL"]!
         let tracedhost = URL(string: sourceEndpoint)!.host!
         self.datadogConfiguration = Datadog.Configuration
-            .builderUsing(clientToken: "ui-tests-client-token", environment: "integration")
+            .builderUsing(rumApplicationID: "rum-application-id", clientToken: "ui-tests-client-token", environment: "integration")
+            .set(serviceName: serviceName)
             .set(logsEndpoint: .custom(url: mockLogsEndpoint))
             .set(tracesEndpoint: .custom(url: mockTracesEndpoint))
+            .set(rumEndpoint: .custom(url: mockRUMEndpoint))
             .set(tracedHosts: [tracedhost, "foo.bar"])
             .build()
 

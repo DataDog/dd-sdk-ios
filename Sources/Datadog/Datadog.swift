@@ -48,7 +48,9 @@ public class Datadog {
     ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
     public static func initialize(appContext: AppContext, configuration: Configuration) {
         do {
-            try initializeOrThrow(appContext: appContext, configuration: configuration)
+            try initializeOrThrow(
+                configuration: try FeaturesConfiguration(configuration: configuration, appContext: appContext)
+            )
         } catch {
             consolePrint("\(error)")
         }
@@ -58,6 +60,16 @@ public class Datadog {
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
     public static var verbosityLevel: LogLevel? = nil
+
+    /// Utility setting to inspect the active RUM View.
+    /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
+    /// May be used to debug issues with RUM instrumentation in your app.
+    /// Default is `false`.
+    public static var debugRUM: Bool = false {
+        didSet {
+            (Global.rum as? RUMMonitor)?.enableRUMDebugging(debugRUM)
+        }
+    }
 
     public static func setUserInfo(
         id: String? = nil,
@@ -73,16 +85,11 @@ public class Datadog {
 
     internal let userInfoProvider: UserInfoProvider
 
-    private static func initializeOrThrow(appContext: AppContext, configuration: Configuration) throws {
+    private static func initializeOrThrow(configuration: FeaturesConfiguration) throws {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
-        let validConfiguration = try ValidConfiguration(
-            configuration: configuration,
-            appContext: appContext
-        )
 
-        let performance = PerformancePreset.best(for: appContext.bundleType)
         let dateProvider = SystemDateProvider()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -91,8 +98,8 @@ public class Datadog {
         // First, initialize internal loggers:
 
         let internalLoggerConfiguration = InternalLoggerConfiguration(
-            applicationVersion: validConfiguration.applicationVersion,
-            environment: validConfiguration.environment,
+            applicationVersion: configuration.common.applicationVersion,
+            environment: configuration.common.environment,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider
@@ -103,58 +110,56 @@ public class Datadog {
 
         // Then, initialize features:
 
-        let httpClient = HTTPClient()
-        let mobileDevice = MobileDevice.current
-
         var logging: LoggingFeature?
         var tracing: TracingFeature?
+        var rum: RUMFeature?
 
-        if configuration.loggingEnabled {
+        var tracingAutoInstrumentation: TracingAutoInstrumentation?
+
+        let commonDependencies = FeaturesCommonDependencies(
+            performance: configuration.common.performance,
+            httpClient: HTTPClient(),
+            mobileDevice: MobileDevice.current,
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+
+        if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
                 directory: try obtainLoggingFeatureDirectory(),
-                configuration: validConfiguration,
-                performance: performance,
-                mobileDevice: mobileDevice,
-                httpClient: httpClient,
-                logsUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.logsUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .ddsource(),
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
-                dateProvider: dateProvider,
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                configuration: loggingConfiguration,
+                commonDependencies: commonDependencies
             )
         }
 
-        if configuration.tracingEnabled {
+        if let tracingConfiguration = configuration.tracing {
             tracing = TracingFeature(
                 directory: try obtainTracingFeatureDirectory(),
-                configuration: validConfiguration,
-                performance: performance,
+                configuration: tracingConfiguration,
+                commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-                mobileDevice: mobileDevice,
-                httpClient: httpClient,
-                tracesUploadURLProvider: UploadURLProvider(
-                    urlWithClientToken: validConfiguration.tracesUploadURLWithClientToken,
-                    queryItemProviders: [
-                        .batchTime(using: dateProvider)
-                    ]
-                ),
-                dateProvider: dateProvider,
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator()
+            )
+            if let autoInstrumentationConfiguration = tracingConfiguration.autoInstrumentation {
+                tracingAutoInstrumentation = TracingAutoInstrumentation(with: autoInstrumentationConfiguration)
+            }
+        }
+
+        if let rumConfiguration = configuration.rum {
+            rum = RUMFeature(
+                directory: try obtainRUMFeatureDirectory(),
+                configuration: rumConfiguration,
+                commonDependencies: commonDependencies
             )
         }
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
-        TracingAutoInstrumentation.instance = TracingAutoInstrumentation(with: configuration)
+        RUMFeature.instance = rum
+
+        TracingAutoInstrumentation.instance = tracingAutoInstrumentation
         TracingAutoInstrumentation.instance?.apply()
 
         // Only after all features were initialized with no error thrown:
@@ -180,6 +185,7 @@ public class Datadog {
         // Then, deinitialize features:
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
+        RUMFeature.instance = nil
         TracingAutoInstrumentation.instance = nil
 
         // Deinitialize `Datadog`:

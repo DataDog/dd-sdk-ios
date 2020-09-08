@@ -9,35 +9,54 @@
 // MARK: - Configuration Mocks
 
 extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration {
-        return .mockWith()
-    }
+    static func mockAny() -> Datadog.Configuration { .mockWith() }
 
     static func mockWith(
+        rumApplicationID: String? = .mockAny(),
         clientToken: String = .mockAny(),
         environment: String = .mockAny(),
         loggingEnabled: Bool = false,
         tracingEnabled: Bool = false,
+        rumEnabled: Bool = false,
         logsEndpoint: LogsEndpoint = .us,
         tracesEndpoint: TracesEndpoint = .us,
-        serviceName: String? = .mockAny()
+        rumEndpoint: RUMEndpoint = .us,
+        serviceName: String? = .mockAny(),
+        tracedHosts: Set<String> = [],
+        rumSessionsSamplingRate: Float = 100.0
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
+            rumApplicationID: rumApplicationID,
             clientToken: clientToken,
             environment: environment,
             loggingEnabled: loggingEnabled,
             tracingEnabled: tracingEnabled,
+            rumEnabled: rumEnabled,
             logsEndpoint: logsEndpoint,
             tracesEndpoint: tracesEndpoint,
-            serviceName: serviceName
+            rumEndpoint: rumEndpoint,
+            serviceName: serviceName,
+            tracedHosts: tracedHosts,
+            rumSessionsSamplingRate: rumSessionsSamplingRate
         )
     }
 }
 
-extension Datadog.ValidConfiguration {
-    static func mockAny() -> Datadog.ValidConfiguration {
-        return mockWith()
+extension FeaturesConfiguration {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: Common = .mockAny(),
+        logging: Logging? = .mockAny(),
+        tracing: Tracing? = .mockAny(),
+        rum: RUM? = .mockAny()
+    ) -> Self {
+        return .init(common: common, logging: logging, tracing: tracing, rum: rum)
     }
+}
+
+extension FeaturesConfiguration.Common {
+    static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         applicationName: String = .mockAny(),
@@ -45,17 +64,63 @@ extension Datadog.ValidConfiguration {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        logsUploadURLWithClientToken: URL = .mockAny(),
-        tracesUploadURLWithClientToken: URL = .mockAny()
-    ) -> Datadog.ValidConfiguration {
-        return Datadog.ValidConfiguration(
+        performance: PerformancePreset = .best(for: .iOSApp)
+    ) -> Self {
+        return .init(
             applicationName: applicationName,
             applicationVersion: applicationVersion,
             applicationBundleIdentifier: applicationBundleIdentifier,
             serviceName: serviceName,
             environment: environment,
-            logsUploadURLWithClientToken: logsUploadURLWithClientToken,
-            tracesUploadURLWithClientToken: tracesUploadURLWithClientToken
+            performance: performance
+        )
+    }
+}
+
+extension FeaturesConfiguration.Logging {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        uploadURLWithClientToken: URL = .mockAny()
+    ) -> Self {
+        return .init(common: common, uploadURLWithClientToken: uploadURLWithClientToken)
+    }
+}
+
+extension FeaturesConfiguration.Tracing {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        uploadURLWithClientToken: URL = .mockAny(),
+        autoInstrumentation: FeaturesConfiguration.Tracing.AutoInstrumentation = .init(
+            tracedHosts: [],
+            excludedHosts: []
+        )
+    ) -> Self {
+        return .init(
+            common: common,
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            autoInstrumentation: autoInstrumentation
+        )
+    }
+}
+
+extension FeaturesConfiguration.RUM {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        uploadURLWithClientToken: URL = .mockAny(),
+        applicationID: String = .mockAny(),
+        sessionSamplingRate: Float = 100.0
+    ) -> Self {
+        return .init(
+            common: common,
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            applicationID: applicationID,
+            sessionSamplingRate: sessionSamplingRate
         )
     }
 }
@@ -167,6 +232,61 @@ extension PerformancePreset {
 
 // MARK: - Features Common Mocks
 
+extension FeaturesCommonDependencies {
+    static func mockAny() -> FeaturesCommonDependencies {
+        return .mockWith()
+    }
+
+    /// Mocks features common dependencies.
+    /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
+    static func mockWith(
+        performance: PerformancePreset = .combining(
+            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+            uploadPerformance: .veryQuick
+        ),
+        mobileDevice: MobileDevice = .mockWith(
+            currentBatteryStatus: {
+                // Mock full battery, so it doesn't rely on battery condition for the upload
+                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
+            }
+        ),
+        dateProvider: DateProvider = SystemDateProvider(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+    ) -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            performance: performance,
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            mobileDevice: mobileDevice,
+            dateProvider: dateProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider
+        )
+    }
+}
+
+class NoOpFileWriter: FileWriterType {
+    func write<T>(value: T) where T: Encodable {}
+}
+
+class NoOpFileReader: FileReaderType {
+    func readNextBatch() -> Batch? { return nil }
+    func markBatchAsRead(_ batch: Batch) {}
+}
+
+class NoOpDataUploadWorker: DataUploadWorkerType {}
+
 extension DataFormat {
     static func mockAny() -> DataFormat {
         return mockWith()
@@ -191,14 +311,17 @@ class RelativeDateProvider: DateProvider {
     internal let timeInterval: TimeInterval
     private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
 
-    init(using date: Date = Date()) {
+    private init(date: Date, timeInterval: TimeInterval) {
         self.date = date
-        self.timeInterval = 0
+        self.timeInterval = timeInterval
     }
 
-    init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
-        self.date = referenceDate
-        self.timeInterval = timeInterval
+    convenience init(using date: Date = Date()) {
+        self.init(date: date, timeInterval: 0)
+    }
+
+    convenience init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
+        self.init(date: referenceDate, timeInterval: timeInterval)
     }
 
     /// Returns current date and advances next date by `timeInterval`.
@@ -230,6 +353,8 @@ extension UserInfo {
         return UserInfo(id: nil, name: nil, email: nil)
     }
 }
+
+extension UserInfo: EquatableInTests {}
 
 extension UserInfoProvider {
     static func mockAny() -> UserInfoProvider {
@@ -352,6 +477,8 @@ extension NetworkConnectionInfo {
     }
 }
 
+extension NetworkConnectionInfo: EquatableInTests {}
+
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
     private var _current: NetworkConnectionInfo?
@@ -406,6 +533,8 @@ extension CarrierInfo {
         )
     }
 }
+
+extension CarrierInfo: EquatableInTests {}
 
 class CarrierInfoProviderMock: CarrierInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")

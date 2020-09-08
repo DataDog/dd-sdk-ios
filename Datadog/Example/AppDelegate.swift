@@ -9,6 +9,7 @@ import Datadog
 
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
+var rumMonitor: DDRUMMonitor { Global.rum }
 
 let appConfig: AppConfig = currentAppConfig()
 
@@ -38,7 +39,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Create logger instance
         logger = Logger.builder
-            .set(serviceName: appConfig.serviceName)
             .set(loggerName: "logger-name")
             .sendNetworkInfo(true)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
@@ -47,13 +47,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Register global tracer
         Global.sharedTracer = Tracer.initialize(
             configuration: Tracer.Configuration(
-                serviceName: appConfig.serviceName,
                 sendNetworkInfo: true
             )
         )
 
+        // Create RUM monitor instance
+        Global.rum = RUMMonitor.initialize()
+
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
+
+        // Enable RUM Views debug utility.
+        Datadog.debugRUM = true
 
         // Add attributes
         logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)

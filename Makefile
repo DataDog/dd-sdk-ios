@@ -31,6 +31,12 @@ test-carthage:
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
+# Generate RUM data models from rum-events-format JSON Schemas
+generate-rum-models:
+		@echo "⚙️  Generating RUM models..."
+		./tools/generate-models/run.sh generate
+		@echo "OK 👌"
+
 # Generate api-surface files for Datadog and DatadogObjc.
 api-surface:
 		@cd tools/api-surface/ && swift build --configuration release

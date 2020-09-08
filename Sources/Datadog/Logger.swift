@@ -17,62 +17,6 @@ public enum LogLevel: Int, Codable {
     case critical
 }
 
-/// A `String` value naming the attribute.
-///
-/// Dot syntax can be used to nest objects:
-///
-///     logger.addAttribute(forKey: "person.name", value: "Adam")
-///     logger.addAttribute(forKey: "person.age", value: 32)
-///
-///     // When seen in Datadog console:
-///     {
-///         person: {
-///             name: "Adam"
-///             age: 32
-///         }
-///     }
-///
-/// - Important
-/// Values can be nested up to 10 levels deep. Keys using more than 10 levels will be sanitized by SDK.
-///
-public typealias AttributeKey = String
-
-/// Any `Ecodable` value of the attribute (`String`, `Int`, `Bool`, `Date` etc.).
-///
-/// Custom `Encodable` types are supported as well with nested encoding containers:
-///
-///     struct Person: Codable {
-///         let name: String
-///         let age: Int
-///         let address: Address
-///     }
-///
-///     struct Address: Codable {
-///         let city: String
-///         let street: String
-///     }
-///
-///     let address = Address(city: "Paris", street: "Champs Elysees")
-///     let person = Person(name: "Adam", age: 32, address: address)
-///
-///     // When seen in Datadog console:
-///     {
-///         person: {
-///             name: "Adam"
-///             age: 32
-///             address: {
-///                 city: "Paris",
-///                 street: "Champs Elysees"
-///             }
-///         }
-///     }
-///
-/// - Important
-/// Attributes in Datadog console can be nested up to 10 levels deep. If number of nested attribute levels
-/// defined as sum of key levels and value levels exceeds 10, the log will not be delivered.
-///
-public typealias AttributeValue = Encodable
-
 /// Because `Logger` is a common name widely used across different projects, the `Datadog.Logger` may conflict when
 /// using `Logger.builder`. In such case, following `DDLogger` typealias can be used to avoid compiler ambiguity.
 ///
@@ -99,14 +43,22 @@ public class Logger {
     private var loggerTags: Set<String> = []
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
+    /// Integration with RUM Context. `nil` if disabled for this Logger.
+    internal let rumContextIntegration: LoggingWithRUMContextIntegration?
 
-    init(logOutput: LogOutput, dateProvider: DateProvider, identifier: String) {
+    init(
+        logOutput: LogOutput,
+        dateProvider: DateProvider,
+        identifier: String,
+        rumContextIntegration: LoggingWithRUMContextIntegration?
+    ) {
         self.logOutput = logOutput
         self.dateProvider = dateProvider
         self.queue = DispatchQueue(
             label: "com.datadoghq.logger-\(identifier)",
             target: .global(qos: .userInteractive)
         )
+        self.rumContextIntegration = rumContextIntegration
     }
 
     // MARK: - Logging
@@ -267,7 +219,10 @@ public class Logger {
             level: level,
             message: message,
             date: date,
-            attributes: LogAttributes(userAttributes: combinedAttributes, internalAttributes: nil),
+            attributes: LogAttributes(
+                userAttributes: combinedAttributes,
+                internalAttributes: rumContextIntegration?.currentRUMContextAttributes
+            ),
             tags: tags
         )
     }
@@ -291,6 +246,7 @@ public class Logger {
         internal var serviceName: String?
         internal var loggerName: String?
         internal var sendNetworkInfo: Bool = false
+        internal var bundleWithRUM: Bool = true
         internal var useFileOutput = true
         internal var useConsoleLogFormat: ConsoleLogFormat?
 
@@ -314,6 +270,15 @@ public class Logger {
         /// - Parameter enabled: `false` by default
         public func sendNetworkInfo(_ enabled: Bool) -> Builder {
             sendNetworkInfo = enabled
+            return self
+        }
+
+        /// Enables the logs integration with RUM.
+        /// If enabled all the logs will be enriched with the current RUM View information and
+        /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
+        /// - Parameter enabled: `true` by default
+        public func bundleWithRUM(_ enabled: Bool) -> Builder {
+            bundleWithRUM = enabled
             return self
         }
 
@@ -358,7 +323,8 @@ public class Logger {
                 return Logger(
                     logOutput: NoOpLogOutput(),
                     dateProvider: SystemDateProvider(),
-                    identifier: "no-op"
+                    identifier: "no-op",
+                    rumContextIntegration: nil
                 )
             }
         }
@@ -375,15 +341,16 @@ public class Logger {
             return Logger(
                 logOutput: resolveLogsOutput(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
-                identifier: resolveLoggerName(for: loggingFeature)
+                identifier: resolveLoggerName(for: loggingFeature),
+                rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil
             )
         }
 
         private func resolveLogsOutput(for loggingFeature: LoggingFeature) -> LogOutput {
             let logBuilder = LogBuilder(
-                applicationVersion: loggingFeature.configuration.applicationVersion,
-                environment: loggingFeature.configuration.environment,
-                serviceName: serviceName ?? loggingFeature.configuration.serviceName,
+                applicationVersion: loggingFeature.configuration.common.applicationVersion,
+                environment: loggingFeature.configuration.common.environment,
+                serviceName: serviceName ?? loggingFeature.configuration.common.serviceName,
                 loggerName: resolveLoggerName(for: loggingFeature),
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
@@ -396,7 +363,8 @@ public class Logger {
                     combine: [
                         LogFileOutput(
                             logBuilder: logBuilder,
-                            fileWriter: loggingFeature.storage.writer
+                            fileWriter: loggingFeature.storage.writer,
+                            rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
                         ),
                         LogConsoleOutput(
                             logBuilder: logBuilder,
@@ -408,7 +376,8 @@ public class Logger {
             case (true, nil):
                 return LogFileOutput(
                     logBuilder: logBuilder,
-                    fileWriter: loggingFeature.storage.writer
+                    fileWriter: loggingFeature.storage.writer,
+                    rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
                 )
             case (false, let format?):
                 return LogConsoleOutput(
@@ -422,7 +391,7 @@ public class Logger {
         }
 
         private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
-            return loggerName ?? loggingFeature.configuration.applicationBundleIdentifier
+            return loggerName ?? loggingFeature.configuration.common.applicationBundleIdentifier
         }
     }
 }

@@ -8,73 +8,70 @@
 
 extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(temporaryDirectory: Directory) -> TracingFeature {
+    static func mockNoOp() -> TracingFeature {
         return TracingFeature(
-            directory: temporaryDirectory,
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
-            performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp),
+            commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
-            mobileDevice: .mockAny(),
-            httpClient: .mockAny(),
-            tracesUploadURLProvider: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-                networkConnectionInfo: .mockWith(
-                    reachability: .no // so it doesn't meet the upload condition
-                )
-            ),
-            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
+            tracingUUIDGenerator: DefaultTracingUUIDGenerator()
         )
     }
 
-    /// Mocks feature instance which performs uploads to given `ServerMock` with performance optimized for fast delivery in unit tests.
-    static func mockWorkingFeatureWith(
-        server: ServerMock,
+    /// Mocks the feature instance which performs uploads to `URLSession`.
+    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
+    static func mockWith(
         directory: Directory,
-        configuration: Datadog.ValidConfiguration = .mockAny(),
-        performance: PerformancePreset = .combining(
-            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-            uploadPerformance: .veryQuick
-        ),
+        configuration: FeaturesConfiguration.Tracing = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
-        mobileDevice: MobileDevice = .mockWith(
-            currentBatteryStatus: {
-                // Mock full battery, so it doesn't rely on battery condition for the upload
-                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
-            }
-        ),
-        tracesUploadURLProvider: UploadURLProvider = .mockAny(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {
         return TracingFeature(
             directory: directory,
             configuration: configuration,
-            performance: performance,
+            commonDependencies: dependencies,
             loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-            mobileDevice: mobileDevice,
-            httpClient: HTTPClient(session: server.urlSession),
-            tracesUploadURLProvider: tracesUploadURLProvider,
-            dateProvider: dateProvider,
-            tracingUUIDGenerator: tracingUUIDGenerator,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            tracingUUIDGenerator: tracingUUIDGenerator
         )
+    }
+
+    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
+    static func mockByRecordingSpanMatchers(
+        directory: Directory,
+        configuration: FeaturesConfiguration.Tracing = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny(),
+        loggingFeature: LoggingFeature? = nil,
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+    ) -> TracingFeature {
+        // Get the full feature mock:
+        let fullFeature: TracingFeature = .mockWith(
+            directory: directory, dependencies: dependencies, loggingFeature: loggingFeature, tracingUUIDGenerator: tracingUUIDGenerator
+        )
+        let uploadWorker = DataUploadWorkerMock()
+        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
+        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        return TracingFeature(
+            storage: observedStorage,
+            upload: mockedUpload,
+            configuration: configuration,
+            commonDependencies: dependencies,
+            loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
+            tracingUUIDGenerator: fullFeature.tracingUUIDGenerator
+        )
+    }
+
+    // MARK: - Expecting Spans Data
+
+    static func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        guard let uploadWorker = TracingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingSpanMatchers()`")
+        }
+        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
+            .flatMap { batchData in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
     }
 }
 
@@ -171,14 +168,16 @@ extension Tracer {
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        globalTags: [String: Encodable]? = nil
+        globalTags: [String: Encodable]? = nil,
+        rumContextIntegration: TracingWithRUMContextIntegration? = nil
     ) -> Tracer {
         return Tracer(
             spanOutput: spanOutput,
             logOutput: logOutput,
             dateProvider: dateProvider,
             tracingUUIDGenerator: tracingUUIDGenerator,
-            globalTags: globalTags
+            globalTags: globalTags,
+            rumContextIntegration: rumContextIntegration
         )
     }
 }
