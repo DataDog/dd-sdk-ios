@@ -6,6 +6,24 @@
 
 import Foundation
 
+/// The `HTTPHeadersWriter` should be used to inject trace propagation headers to
+/// the network requests send to the backend instrumented with Datadog APM.
+///
+/// Usage:
+///
+///     var request = URLRequest(...)
+///
+///     let writer = HTTPHeadersWriter()
+///     let span = Global.sharedTracer.startSpan("network request")
+///     writer.inject(spanContext: span.context)
+///
+///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+///         request.setValue(value, forHTTPHeaderField: field)
+///     }
+///
+///     // call span.finish() when the request completes
+///
+///
 public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     private enum Constants: String, CaseIterable {
         case traceIDField = "x-datadog-trace-id"
@@ -16,10 +34,15 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
 
     public init() {}
 
-    /// The `tracePropagationHTTPHeaders` will be used by customers to add additional headers to the
-    /// `URLRequest` in order to propagate the trace to Datadog-OT-instrumented backend.
+    /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
+    /// to the backend instrumented with Datadog APM.
     ///
-    /// TODO: revisit in RUMM-386
+    /// Usage:
+    ///
+    ///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+    ///         request.setValue(value, forHTTPHeaderField: field)
+    ///     }
+    ///
     public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
 
     public func inject(spanContext: OTSpanContext) {
