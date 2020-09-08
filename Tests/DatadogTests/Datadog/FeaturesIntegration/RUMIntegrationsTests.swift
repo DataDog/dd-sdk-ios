@@ -86,7 +86,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
-        integration.addError(with: "error message")
+        integration.addError(with: "error message", stack: "Foo.swift:10", source: .logger)
 
         // then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
@@ -94,7 +94,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMError.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
             XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
+            XCTAssertEqual(rumModel.error.stack, "Foo.swift:10")
         }
     }
 }

@@ -156,11 +156,11 @@ extension RUMAddCurrentViewErrorCommand {
         time: Date = Date(),
         message: String = .mockAny(),
         source: RUMErrorSource = .source,
-        stack: (file: StaticString, line: UInt)? = (file: "Foo.swift", line: 10),
+        stack: String? = "Foo.swift:10",
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, message: message, source: source, stack: stack, attributes: attributes
+            time: time, message: message, stack: stack, source: source, attributes: attributes
         )
     }
 }

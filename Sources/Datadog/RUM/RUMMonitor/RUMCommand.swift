@@ -65,20 +65,15 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     init(
         time: Date,
         message: String,
+        stack: String?,
         source: RUMErrorSource,
-        stack: (file: StaticString, line: UInt)?,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time
         self.source = source
         self.attributes = attributes
         self.message = message
-
-        if let stack = stack, let fileName = "\(stack.file)".split(separator: "/").last {
-            self.stack = "\(fileName): \(stack.line)"
-        } else {
-            self.stack = nil
-        }
+        self.stack = stack
     }
 
     init(

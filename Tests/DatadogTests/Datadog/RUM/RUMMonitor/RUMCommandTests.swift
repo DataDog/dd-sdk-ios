@@ -8,22 +8,6 @@ import XCTest
 @testable import Datadog
 
 class RUMCommandTests: XCTestCase {
-    func testWhenRUMAddCurrentViewErrorCommand_isBuildWithMessage() {
-        #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
-        var command = RUMAddCurrentViewErrorCommand(time: .mockAny(), message: "foo", source: .source, stack: (file: #file, line: #line), attributes: [:])
-        #sourceLocation()
-
-        XCTAssertEqual(command.message, "foo")
-        XCTAssertEqual(command.stack, "Foo.swift: 100")
-
-        #sourceLocation(file: "", line: 100)
-        command = RUMAddCurrentViewErrorCommand(time: .mockAny(), message: "foo", source: .source, stack: (file: #file, line: #line), attributes: [:])
-        #sourceLocation()
-
-        XCTAssertEqual(command.message, "foo")
-        XCTAssertNil(command.stack)
-    }
-
     func testWhenRUMAddCurrentViewErrorCommand_isBuildWithErrorObject() {
         struct SwiftError: Error, CustomDebugStringConvertible {
             let debugDescription = "error description"
