@@ -506,6 +506,31 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute2") as String)
     }
 
+    func testWhenViewIsStarted_attributesCanBeAddedOrUpdatedButNotRemoved() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        monitor.addAttribute(forKey: "a1", value: "foo1")
+        monitor.addAttribute(forKey: "a2", value: "foo2")
+
+        monitor.startView(viewController: mockView)
+
+        monitor.addAttribute(forKey: "a1", value: "bar1") // update
+        monitor.removeAttribute(forKey: "a2") // remove
+        monitor.addAttribute(forKey: "a3", value: "foo3") // add
+
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
+        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMView.self)
+
+        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "a1"), "bar1", "The value should be updated")
+        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "a2"), "foo2", "The attribute should not be removed")
+        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "a3"), "foo3", "The attribute should be added")
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
