@@ -140,9 +140,12 @@ extension FeaturesConfiguration {
 }
 
 private func ifValid(environment: String) throws -> String {
-    let regex = #"^[a-zA-Z0-9_]+$"#
+    /// 1. cannot be more than 200 chars (including `env:` prefix)
+    /// 2. cannot end with `:`
+    /// 3. can contain letters, numbers and _:./-_ (other chars are converted to _ at backend)
+    let regex = #"^[a-zA-Z0-9_:./-]{0,195}[a-zA-Z0-9_./-]$"#
     if environment.range(of: regex, options: .regularExpression, range: nil, locale: nil) == nil {
-        throw ProgrammerError(description: "`environment` contains illegal characters (only alphanumerics and `_` are allowed)")
+        throw ProgrammerError(description: "`environment`: \(environment) contains illegal characters (only alphanumerics and `_` are allowed)")
     }
     return environment
 }

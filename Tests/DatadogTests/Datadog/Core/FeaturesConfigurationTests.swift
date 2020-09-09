@@ -86,18 +86,22 @@ class FeaturesConfigurationTests: XCTestCase {
             XCTAssertThrowsError(try FeaturesConfiguration(configuration: .mockWith(environment: environment), appContext: .mockAny())) { error in
                 XCTAssertEqual(
                     (error as? ProgrammerError)?.description,
-                    "🔥 Datadog SDK usage error: `environment` contains illegal characters (only alphanumerics and `_` are allowed)"
+                    "🔥 Datadog SDK usage error: `environment`: \(environment) contains illegal characters (only alphanumerics and `_` are allowed)"
                 )
             }
         }
 
         try verify(validEnvironmentName: "staging_1")
         try verify(validEnvironmentName: "production")
+        try verify(validEnvironmentName: "production:some")
+        try verify(validEnvironmentName: "pro/d-uct.ion_")
 
         verify(invalidEnvironmentName: "")
         verify(invalidEnvironmentName: "*^@!&#")
         verify(invalidEnvironmentName: "abc def")
         verify(invalidEnvironmentName: "*^@!&#")
+        verify(invalidEnvironmentName: "*^@!&#\nsome_env")
+        verify(invalidEnvironmentName: String(repeating: "a", count: 197))
     }
 
     func testPerformance() throws {
