@@ -60,29 +60,41 @@ class LoggerBuilderTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
-        let logger = Logger.builder.build()
+        let logger1 = Logger.builder.build()
+        XCTAssertNotNil(logger1.rumContextIntegration)
 
-        XCTAssertNotNil(logger.rumContextIntegration)
+        let logger2 = Logger.builder.bundleWithRUM(false).build()
+        XCTAssertNil(logger2.rumContextIntegration)
     }
 
     func testDefaultLoggerWithTracingEnabled() throws {
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
 
-        let logger = Logger.builder.build()
+        let logger1 = Logger.builder.build()
+        XCTAssertNotNil(logger1.activeSpanIntegration)
 
-        XCTAssertNotNil(logger.activeSpanIntegration)
+        let logger2 = Logger.builder.bundleWithTrace(false).build()
+        XCTAssertNil(logger2.activeSpanIntegration)
     }
 
     func testCustomizedLogger() throws {
+        RUMFeature.instance = .mockNoOp()
+        defer { RUMFeature.instance = nil }
+
+        TracingFeature.instance = .mockNoOp()
+        defer { TracingFeature.instance = nil }
+
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
             .set(loggerName: "custom-logger-name")
             .sendNetworkInfo(true)
             .bundleWithRUM(false)
+            .bundleWithTrace(false)
             .build()
 
         XCTAssertNil(logger.rumContextIntegration)
+        XCTAssertNil(logger.activeSpanIntegration)
 
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
