@@ -156,7 +156,7 @@ extension LogAttributes: Equatable {
 
     static func mockWith(
         userAttributes: [String: Encodable] = [:],
-        internalAttributes: [String: Encodable]? = nil
+        internalAttributes: [String: Encodable]? = [:]
     ) -> LogAttributes {
         return LogAttributes(
             userAttributes: userAttributes,
@@ -182,7 +182,7 @@ class LogOutputMock: LogOutput {
         var level: LogLevel
         var message: String
         var date: Date
-        var attributes = LogAttributes(userAttributes: [:], internalAttributes: nil)
+        var attributes = LogAttributes(userAttributes: [:], internalAttributes: [:])
         var tags: Set<String> = []
     }
 

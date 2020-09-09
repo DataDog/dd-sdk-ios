@@ -46,7 +46,7 @@ public class Tracer: OTTracer {
     internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
-    /// Integration with RUM Context. `nil` if disabled for this Tracer.
+    /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
 
     private let dateProvider: DateProvider
@@ -107,7 +107,7 @@ public class Tracer: OTTracer {
             dateProvider: tracingFeature.dateProvider,
             tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
             globalTags: tracerConfiguration.globalTags,
-            rumContextIntegration: tracerConfiguration.bundleWithRUM ? TracingWithRUMContextIntegration() : nil
+            rumContextIntegration: (RUMFeature.isEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil
         )
     }
 

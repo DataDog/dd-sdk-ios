@@ -40,7 +40,7 @@ class TracerConfigurationTests: XCTestCase {
             configuration: .init()
         ).dd
 
-        XCTAssertNotNil(tracer.rumContextIntegration)
+        XCTAssertNil(tracer.rumContextIntegration)
 
         guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
             XCTFail()
@@ -67,6 +67,15 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertNil(tracingLogBuilder.networkConnectionInfoProvider)
         XCTAssertNil(tracingLogBuilder.carrierInfoProvider)
+    }
+
+    func testDefaultTracerWithRUMEnabled() {
+        RUMFeature.instance = .mockNoOp()
+        defer { RUMFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init()).dd
+
+        XCTAssertNotNil(tracer.rumContextIntegration)
     }
 
     func testCustomizedTracer() {

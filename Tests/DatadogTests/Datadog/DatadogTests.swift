@@ -85,9 +85,9 @@ class DatadogTests: XCTestCase {
 
         try verify(configuration: defaultBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertTrue(TracingFeature.isEnabled)
+            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
@@ -95,9 +95,9 @@ class DatadogTests: XCTestCase {
         }
         try verify(configuration: rumBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNotNil(RUMFeature.instance, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertTrue(TracingFeature.isEnabled)
+            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
@@ -106,9 +106,9 @@ class DatadogTests: XCTestCase {
 
         try verify(configuration: defaultBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(LoggingFeature.isEnabled)
+            XCTAssertTrue(TracingFeature.isEnabled)
+            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
@@ -116,9 +116,9 @@ class DatadogTests: XCTestCase {
         }
         try verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNotNil(RUMFeature.instance, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(LoggingFeature.isEnabled)
+            XCTAssertTrue(TracingFeature.isEnabled)
+            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
@@ -127,48 +127,48 @@ class DatadogTests: XCTestCase {
 
         try verify(configuration: defaultBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNil(TracingFeature.instance)
-            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertFalse(TracingFeature.isEnabled)
+            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             // verify integrations:
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNil(TracingFeature.instance)
-            XCTAssertNotNil(RUMFeature.instance, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertFalse(TracingFeature.isEnabled)
+            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             // verify integrations:
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNil(RUMFeature.instance, "When using `defaultBuilder` RUM feature cannot be enabled")
+            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertTrue(TracingFeature.isEnabled)
+            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
-            XCTAssertNotNil(LoggingFeature.instance)
-            XCTAssertNotNil(TracingFeature.instance)
-            XCTAssertNil(RUMFeature.instance)
+            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertTrue(TracingFeature.isEnabled)
+            XCTAssertFalse(RUMFeature.isEnabled)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.set(tracedHosts: ["example.com"]).build()) {
-            XCTAssertNotNil(TracingFeature.instance)
+            XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertNotNil(TracingAutoInstrumentation.instance)
         }
         try verify(
             configuration: defaultBuilder.enableTracing(false).set(tracedHosts: ["example.com"]).build()
         ) {
-            XCTAssertNil(TracingFeature.instance)
+            XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertNil(TracingAutoInstrumentation.instance)
         }
     }

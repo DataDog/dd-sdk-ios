@@ -506,7 +506,7 @@ class LoggerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.level, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
-                .contains("No `RUMMonitor` is registered, so RUM integration with Logging will not work.")
+                .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
         )
 
         let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
@@ -611,7 +611,7 @@ class LoggerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.level, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
-                .contains("No `Tracer` is registered, so Tracing integration with Logging will not work.")
+                .contains("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
         )
 
         let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]

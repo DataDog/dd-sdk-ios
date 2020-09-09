@@ -38,7 +38,8 @@ class LoggerBuilderTests: XCTestCase {
     func testDefaultLogger() throws {
         let logger = Logger.builder.build()
 
-        XCTAssertNotNil(logger.rumContextIntegration)
+        XCTAssertNil(logger.rumContextIntegration)
+        XCTAssertNil(logger.activeSpanIntegration)
 
         guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
             XCTFail()
@@ -53,6 +54,24 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNil(logBuilder.carrierInfoProvider)
+    }
+
+    func testDefaultLoggerWithRUMEnabled() throws {
+        RUMFeature.instance = .mockNoOp()
+        defer { RUMFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+
+        XCTAssertNotNil(logger.rumContextIntegration)
+    }
+
+    func testDefaultLoggerWithTracingEnabled() throws {
+        TracingFeature.instance = .mockNoOp()
+        defer { TracingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+
+        XCTAssertNotNil(logger.activeSpanIntegration)
     }
 
     func testCustomizedLogger() throws {

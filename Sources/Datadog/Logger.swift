@@ -43,9 +43,9 @@ public class Logger {
     private var loggerTags: Set<String> = []
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
-    /// Integration with RUM Context. `nil` if disabled for this Logger.
+    /// Integration with RUM Context. `nil` if disabled for this Logger or if the RUM feature disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
-    /// Integration with Tracing. `nil` if disabled for this Logger.
+    /// Integration with Tracing. `nil` if disabled for this Logger or if the Tracing feature disabled.
     internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
 
     init(
@@ -366,8 +366,8 @@ public class Logger {
                 logOutput: resolveLogsOutput(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
-                rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil,
-                activeSpanIntegration: bundleWithTrace ? LoggingWithActiveSpanIntegration() : nil
+                rumContextIntegration: (RUMFeature.isEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
+                activeSpanIntegration: (TracingFeature.isEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
             )
         }
 
