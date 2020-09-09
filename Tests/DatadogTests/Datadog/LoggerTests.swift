@@ -553,6 +553,72 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    // MARK: - Integration With Active Span
+
+    func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockNoOp()
+        defer { TracingFeature.instance = nil }
+
+        // given
+        let logger = Logger.builder.build()
+        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        // when
+        let span = Global.sharedTracer.startSpan(operationName: "span").setActive()
+        logger.info("info message 1")
+        span.finish()
+        logger.info("info message 2")
+
+        // then
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID,
+            equals: "\(span.context.dd.traceID.rawValue)"
+        )
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID,
+            equals: "\(span.context.dd.spanID.rawValue)"
+        )
+        logMatchers[1].assertNoValue(forKey: LoggingWithActiveSpanIntegration.Attributes.traceID)
+        logMatchers[1].assertNoValue(forKey: LoggingWithActiveSpanIntegration.Attributes.spanID)
+    }
+
+    func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockNoOp()
+        defer { TracingFeature.instance = nil }
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        // given
+        let logger = Logger.builder.build()
+        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
+
+        // when
+        logger.info("info message")
+
+        // then
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        try XCTAssertTrue(
+            XCTUnwrap(output.recordedLog?.message)
+                .contains("No `Tracer` is registered, so Tracing integration with Logging will not work.")
+        )
+
+        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
+        logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID)
+        logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID)
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
