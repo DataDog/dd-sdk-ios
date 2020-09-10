@@ -52,7 +52,7 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
                 .builderUsing(
                     rumApplicationID: appConfig.rumAppID,
                     clientToken: appConfig.clientToken,
-                    environment: "shopist"
+                    environment: "shop.ist"
                 )
                 .set(serviceName: appConfig.serviceName)
                 // Currently, SDK doesn't auto-trace Alamofire requests
