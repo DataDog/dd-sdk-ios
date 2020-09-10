@@ -85,7 +85,9 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         : "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
                 )
             }
-            return RUMMonitor(rumFeature: rumFeature)
+            let monitor = RUMMonitor(rumFeature: rumFeature)
+            RUMAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
+            return monitor
         } catch {
             consolePrint("\(error)")
             return DDNoopRUMMonitor()

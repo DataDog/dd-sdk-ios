@@ -6,6 +6,6 @@
 
 import Foundation
 
-internal protocol RUMCommandSubscriber {
+internal protocol RUMCommandSubscriber: class {
     func process(command: RUMCommand)
 }

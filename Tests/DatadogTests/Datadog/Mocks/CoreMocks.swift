@@ -114,13 +114,15 @@ extension FeaturesConfiguration.RUM {
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
-        sessionSamplingRate: Float = 100.0
+        sessionSamplingRate: Float = 100.0,
+        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(
             common: common,
             uploadURLWithClientToken: uploadURLWithClientToken,
             applicationID: applicationID,
-            sessionSamplingRate: sessionSamplingRate
+            sessionSamplingRate: sessionSamplingRate,
+            autoInstrumentation: autoInstrumentation
         )
     }
 }
