@@ -6,12 +6,18 @@
 
 import Foundation
 
+internal protocol Delay {
+    func nextUploadDelay() -> TimeInterval
+    mutating func decrease()
+    mutating func increase()
+}
+
 /// Mutable interval used for periodic data uploads.
-internal struct DataUploadDelay {
+internal struct DataUploadDelay: Delay {
     private let defaultDelay: TimeInterval
     private let minDelay: TimeInterval
     private let maxDelay: TimeInterval
-    private let decreaseFactor: Double
+    private let changeRate: Double
 
     private var delay: TimeInterval
 
@@ -19,24 +25,19 @@ internal struct DataUploadDelay {
         self.defaultDelay = performance.defaultUploadDelay
         self.minDelay = performance.minUploadDelay
         self.maxDelay = performance.maxUploadDelay
-        self.decreaseFactor = performance.uploadDelayDecreaseFactor
+        self.changeRate = performance.uploadDelayChangeRate
         self.delay = performance.initialUploadDelay
     }
 
-    mutating func nextUploadDelay() -> TimeInterval {
-        defer {
-            if delay == maxDelay {
-                delay = defaultDelay
-            }
-        }
+    func nextUploadDelay() -> TimeInterval {
         return delay
     }
 
     mutating func decrease() {
-        delay = max(minDelay, delay * decreaseFactor)
+        delay = max(minDelay, delay * (1.0 - changeRate))
     }
 
-    mutating func increaseOnce() {
-        delay = maxDelay
+    mutating func increase() {
+        delay = min(delay * (1.0 + changeRate), maxDelay)
     }
 }

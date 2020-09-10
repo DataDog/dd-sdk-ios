@@ -27,14 +27,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let featureName: String
 
     /// Delay used to schedule consecutive uploads.
-    private var delay: DataUploadDelay
+    private var delay: Delay
 
     init(
         queue: DispatchQueue,
         fileReader: FileReaderType,
         dataUploader: DataUploader,
         uploadConditions: DataUploadConditions,
-        delay: DataUploadDelay,
+        delay: Delay,
         featureName: String
     ) {
         self.queue = queue
@@ -67,21 +67,23 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                 if shouldBeAccepted {
                     self.fileReader.markBatchAsRead(batch)
+                    self.delay.decrease()
+
                     developerLogger?.info("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                     userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                 } else {
+                    self.delay.increase()
+
                     developerLogger?.info("  → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                     userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                 }
-
-                self.delay.decrease()
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
                 let systemLabel = isSystemReady ? "✅" : "❌"
                 developerLogger?.info("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
                 userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
 
-                self.delay.increaseOnce()
+                self.delay.increase()
             }
 
             self.scheduleNextUpload(after: self.delay.nextUploadDelay())

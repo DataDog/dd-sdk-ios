@@ -13,11 +13,11 @@ class DataUploadDelayTests: XCTestCase {
         defaultUploadDelay: 5,
         minUploadDelay: 1,
         maxUploadDelay: 20,
-        uploadDelayDecreaseFactor: 0.9
+        uploadDelayChangeRate: 0.1
     )
 
     func testWhenNotModified_itReturnsInitialDelay() {
-        var delay = DataUploadDelay(performance: mockPerformance)
+        let delay = DataUploadDelay(performance: mockPerformance)
         XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.initialUploadDelay)
         XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.initialUploadDelay)
     }
@@ -26,13 +26,13 @@ class DataUploadDelayTests: XCTestCase {
         var delay = DataUploadDelay(performance: mockPerformance)
         var previousValue: TimeInterval = delay.nextUploadDelay()
 
-        while previousValue != mockPerformance.minUploadDelay {
+        while previousValue > mockPerformance.minUploadDelay {
             delay.decrease()
 
             let nextValue = delay.nextUploadDelay()
             XCTAssertEqual(
                 nextValue / previousValue,
-                mockPerformance.uploadDelayDecreaseFactor,
+                1.0 - mockPerformance.uploadDelayChangeRate,
                 accuracy: 0.1
             )
             XCTAssertLessThanOrEqual(nextValue, max(previousValue, mockPerformance.minUploadDelay))
@@ -41,13 +41,21 @@ class DataUploadDelayTests: XCTestCase {
         }
     }
 
-    func testWhenIncreasedOnce_itReturnsMaximumDelayOnceThenGoesBackToDefaultDelay() {
+    func testWhenIncreasing_itClampsToMaximumDelay() {
         var delay = DataUploadDelay(performance: mockPerformance)
-        delay.decrease()
-        delay.increaseOnce()
+        var previousValue: TimeInterval = delay.nextUploadDelay()
 
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.maxUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.defaultUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), mockPerformance.defaultUploadDelay)
+        while previousValue < mockPerformance.maxUploadDelay {
+            delay.increase()
+
+            let nextValue = delay.nextUploadDelay()
+            XCTAssertEqual(
+                nextValue / previousValue,
+                1.0 + mockPerformance.uploadDelayChangeRate,
+                accuracy: 0.1
+            )
+            XCTAssertGreaterThanOrEqual(nextValue, min(previousValue, mockPerformance.maxUploadDelay))
+            previousValue = nextValue
+        }
     }
 }

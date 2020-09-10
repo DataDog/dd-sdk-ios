@@ -11,6 +11,23 @@ class DataUploadWorkerTests: XCTestCase {
     private let fileReadWriteQueue = DispatchQueue(label: "dd-tests-read-write", target: .global(qos: .utility))
     private let uploaderQueue = DispatchQueue(label: "dd-tests-uploader", target: .global(qos: .utility))
 
+    lazy var dateProvider = RelativeDateProvider(advancingBySeconds: 1)
+    lazy var orchestrator = FilesOrchestrator(
+        directory: temporaryDirectory,
+        performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
+        dateProvider: dateProvider
+    )
+    lazy var writer = FileWriter(
+        dataFormat: .mockWith(prefix: "[", suffix: "]"),
+        orchestrator: orchestrator,
+        queue: fileReadWriteQueue
+    )
+    lazy var reader = FileReader(
+        dataFormat: .mockWith(prefix: "[", suffix: "]"),
+        orchestrator: orchestrator,
+        queue: fileReadWriteQueue
+    )
+
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
@@ -22,68 +39,187 @@ class DataUploadWorkerTests: XCTestCase {
     }
 
     func testItUploadsAllData() throws {
-        let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
-        let orchestrator = FilesOrchestrator(
-            directory: temporaryDirectory,
-            performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
-            dateProvider: dateProvider
-        )
-        let writer = FileWriter(
-            dataFormat: .mockWith(prefix: "[", suffix: "]"),
-            orchestrator: orchestrator,
-            queue: fileReadWriteQueue
-        )
-        let reader = FileReader(
-            dataFormat: .mockWith(prefix: "[", suffix: "]"),
-            orchestrator: orchestrator,
-            queue: fileReadWriteQueue
-        )
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
             urlProvider: .mockAny(),
             httpClient: HTTPClient(session: .serverMockURLSession),
             httpHeaders: .mockAny()
         )
-
         // Write 3 files
         writer.write(value: ["k1": "v1"])
         writer.write(value: ["k2": "v2"])
         writer.write(value: ["k3": "v3"])
-
         // Start logs uploader
-        let uploadWorker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: DataUploadConditions(
-                batteryStatus: BatteryStatusProviderMock.mockWith(
-                    status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
-                ),
-                networkConnectionInfo: NetworkConnectionInfoProviderMock(
-                    networkConnectionInfo: NetworkConnectionInfo(
-                        reachability: .yes, // always upload
-                        availableInterfaces: [.wifi],
-                        supportsIPv4: true,
-                        supportsIPv6: true,
-                        isExpensive: false,
-                        isConstrained: false
-                    )
-                )
-            ),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
+        try withExtendedLifetime(
+            DataUploadWorker(
+                queue: uploaderQueue,
+                fileReader: reader,
+                dataUploader: dataUploader,
+                uploadConditions: DataUploadConditions.alwaysUpload(),
+                delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+                featureName: .mockAny()
+            )
+        ) {
+            let recordedRequests = server.waitAndReturnRequests(count: 3)
+            XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
+            XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
+            XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
+
+            uploaderQueue.sync {} // wait until last "process upload" operation completes (to make sure "delete file" was requested)
+            fileReadWriteQueue.sync {} // wait until last scheduled "delete file" operation completed
+
+            XCTAssertEqual(try temporaryDirectory.files().count, 0)
+        }
+    }
+
+    // swiftlint:disable multiline_arguments_brackets
+    func test_whenThereIsNoBatch_thenIntervalIncreases() throws {
+        let expectation = XCTestExpectation(description: "high expectation")
+        let mockDelay = MockDelay { command in
+            if case .increase = command {
+                expectation.fulfill()
+            } else {
+                XCTFail("Wrong command is sent!")
+            }
+        }
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpHeaders: .mockAny()
         )
+        // Start logs uploader
+        withExtendedLifetime([
+            ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200))),
+            DataUploadWorker(
+                queue: uploaderQueue,
+                fileReader: reader,
+                dataUploader: dataUploader,
+                uploadConditions: DataUploadConditions.neverUpload(),
+                delay: mockDelay,
+                featureName: .mockAny()
+            )
+        ]) {
+            self.wait(for: [expectation], timeout: (mockDelay.nextUploadDelay() + 0.1) * 2.0)
+        }
+    }
 
-        let recordedRequests = server.waitAndReturnRequests(count: 3)
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
+    func test_whenBatchFails_thenIntervalIncreases() throws {
+        let expectation = XCTestExpectation(description: "high expectation")
+        let mockDelay = MockDelay { command in
+            if case .increase = command {
+                expectation.fulfill()
+            } else {
+                XCTFail("Wrong command is sent!")
+            }
+        }
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpHeaders: .mockAny()
+        )
+        // Write some content
+        writer.write(value: ["k1": "v1"])
+        // Start logs uploader
+        withExtendedLifetime([
+            ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500))),
+            DataUploadWorker(
+                queue: uploaderQueue,
+                fileReader: reader,
+                dataUploader: dataUploader,
+                uploadConditions: DataUploadConditions.alwaysUpload(),
+                delay: mockDelay,
+                featureName: .mockAny()
+            )
+        ]) {
+            self.wait(for: [expectation], timeout: mockDelay.nextUploadDelay() + 0.1)
+        }
+    }
 
-        uploaderQueue.sync {} // wait until last "process upload" operation completes (to make sure "delete file" was requested)
-        fileReadWriteQueue.sync {} // wait until last scheduled "delete file" operation completed
+    func test_whenBatchSucceeds_thenIntervalDecreases() throws {
+        let expectation = XCTestExpectation(description: "low expectation")
+        let mockDelay = MockDelay { command in
+            if case .decrease = command {
+                expectation.fulfill()
+            } else {
+                XCTFail("Wrong command is sent!")
+            }
+        }
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpHeaders: .mockAny()
+        )
+        // Write some content
+        writer.write(value: ["k1": "v1"])
+        // Start logs uploader
+        withExtendedLifetime([
+            ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200))),
+            DataUploadWorker(
+                queue: uploaderQueue,
+                fileReader: reader,
+                dataUploader: dataUploader,
+                uploadConditions: DataUploadConditions.alwaysUpload(),
+                delay: mockDelay,
+                featureName: .mockAny()
+            )
+        ]) {
+            self.wait(for: [expectation], timeout: mockDelay.nextUploadDelay() + 0.1)
+        }
+    }
+    // swiftlint:enable multiline_arguments_brackets
+}
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 0)
+struct MockDelay: Delay {
+    enum Command {
+        case increase, decrease
+    }
+    let callback: (Command) -> Void
 
-        _ = uploadWorker // keep the strong reference
+    func nextUploadDelay() -> TimeInterval {
+        return 0.0
+    }
+    func decrease() {
+        callback(.decrease)
+    }
+    func increase() {
+        callback(.increase)
+    }
+}
+
+private extension DataUploadConditions {
+    static func alwaysUpload() -> DataUploadConditions {
+        return DataUploadConditions(
+            batteryStatus: BatteryStatusProviderMock.mockWith(
+                status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
+            ),
+            networkConnectionInfo: NetworkConnectionInfoProviderMock(
+                networkConnectionInfo: NetworkConnectionInfo(
+                    reachability: .yes, // always upload
+                    availableInterfaces: [.wifi],
+                    supportsIPv4: true,
+                    supportsIPv6: true,
+                    isExpensive: false,
+                    isConstrained: false
+                )
+            )
+        )
+    }
+
+    static func neverUpload() -> DataUploadConditions {
+        return DataUploadConditions(
+            batteryStatus: BatteryStatusProviderMock.mockWith(
+                status: BatteryStatus(state: .unplugged, level: 0, isLowPowerModeEnabled: true) // never upload
+            ),
+            networkConnectionInfo: NetworkConnectionInfoProviderMock(
+                networkConnectionInfo: NetworkConnectionInfo(
+                    reachability: .no, // never upload
+                    availableInterfaces: [.cellular],
+                    supportsIPv4: true,
+                    supportsIPv6: false,
+                    isExpensive: true,
+                    isConstrained: true
+                )
+            )
+        )
     }
 }
