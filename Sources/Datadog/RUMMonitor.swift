@@ -49,7 +49,7 @@ public enum RUMErrorSource {
 ///
 /// `RUMMonitor` allows you to record User events that can be explored and analyzed in Datadog Dashboards.
 /// You can only have one active `RUMMonitor`, and should register/retrieve it from the `Global` object.
-public class RUMMonitor: DDRUMMonitor {
+public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
     /// Current RUM context provider for integrations with Logging and Tracing.
@@ -290,15 +290,9 @@ public class RUMMonitor: DDRUMMonitor {
         }
     }
 
-    // MARK: - Private
+    // MARK: - RUMCommandSubscriber
 
-    private func aggregate(_ localAttributes: [AttributeKey: AttributeValue]?) -> [AttributeKey: AttributeValue] {
-        var mergedAttributes = queue.sync { return self.rumAttributes }
-        mergedAttributes.merge(rumCommandAttributes: localAttributes)
-        return mergedAttributes
-    }
-
-    private func process(command: RUMCommand) {
+    func process(command: RUMCommand) {
         queue.async {
             _ = self.applicationScope.process(command: command)
 
@@ -306,5 +300,13 @@ public class RUMMonitor: DDRUMMonitor {
                 debugging.debug(applicationScope: self.applicationScope)
             }
         }
+    }
+
+    // MARK: - Private
+
+    private func aggregate(_ localAttributes: [AttributeKey: AttributeValue]?) -> [AttributeKey: AttributeValue] {
+        var mergedAttributes = queue.sync { return self.rumAttributes }
+        mergedAttributes.merge(rumCommandAttributes: localAttributes)
+        return mergedAttributes
     }
 }
