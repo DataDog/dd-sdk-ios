@@ -73,9 +73,11 @@ class TracerConfigurationTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance = nil }
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer1 = Tracer.initialize(configuration: .init()).dd
+        XCTAssertNotNil(tracer1.rumContextIntegration)
 
-        XCTAssertNotNil(tracer.rumContextIntegration)
+        let tracer2 = Tracer.initialize(configuration: .init(bundleWithRUM: false)).dd
+        XCTAssertNil(tracer2.rumContextIntegration)
     }
 
     func testCustomizedTracer() {
