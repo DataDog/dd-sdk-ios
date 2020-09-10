@@ -40,6 +40,9 @@ internal struct URLFilter: URLFiltering, Equatable {
     /// matches hosts and their subdomains: example.com -> example.com, api.example.com, sub.example.com, etc.
     private static func buildRegexString(from hosts: Set<String>) -> String {
         return hosts.map {
+            if $0 == "." {
+                return "."
+            }
             let escaped = NSRegularExpression.escapedPattern(for: $0)
             /// pattern = "^(.*\\.)*tracedHost1|^(.*\\.)*tracedHost2|..."
             return "^(.*\\.)*\(escaped)$"

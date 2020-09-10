@@ -55,4 +55,22 @@ class URLFilterTests: XCTestCase {
         let excludedSubdomainURLwithPath = URL(string: "http://api.example.com/some/path")!
         XCTAssertFalse(filter.allows(excludedSubdomainURLwithPath))
     }
+
+    func testWildcardInclusion() {
+        let included: Set<String> = ["."]
+        let excluded: Set<String> = ["http://api.example.com"]
+        let filter = URLFilter(includedHosts: included, excludedURLs: excluded)
+
+        let includedURL = URL(string: "http://example.com")!
+        XCTAssertTrue(filter.allows(includedURL))
+
+        let includedSubdomainURL = URL(string: "http://www.example.com")!
+        XCTAssertTrue(filter.allows(includedSubdomainURL))
+
+        let excludedSubdomainURL = URL(string: "http://api.example.com")!
+        XCTAssertFalse(filter.allows(excludedSubdomainURL))
+
+        let excludedSubdomainURLwithPath = URL(string: "http://api.example.com/some/path")!
+        XCTAssertFalse(filter.allows(excludedSubdomainURLwithPath))
+    }
 }

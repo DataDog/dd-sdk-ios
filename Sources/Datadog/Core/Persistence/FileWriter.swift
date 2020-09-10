@@ -19,6 +19,7 @@ internal final class FileWriter: FileWriterType {
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
     /// Queue used to synchronize files access (read / write) and perform decoding on background thread.
+    // Temporarily internal so tests can wait for the writer to finish before exiting
     internal let queue: DispatchQueue
 
     init(dataFormat: DataFormat, orchestrator: FilesOrchestrator, queue: DispatchQueue) {

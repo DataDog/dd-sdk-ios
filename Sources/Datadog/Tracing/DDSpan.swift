@@ -43,6 +43,13 @@ internal class DDSpan: OTSpan {
         set { ddTracer.queue.async { self.unsafeIsFinished = newValue } }
     }
 
+    /// Unsynchronized span type. Use `self.type` setter & getter.
+    private var unsafeType: String
+    private(set) var type: String {
+        get { ddTracer.queue.sync { unsafeType } }
+        set { ddTracer.queue.async { self.unsafeType = newValue } }
+    }
+
     private var activityReference: ActivityReference?
 
     init(
@@ -50,13 +57,15 @@ internal class DDSpan: OTSpan {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Encodable]
+        tags: [String: Encodable],
+        type: String
     ) {
         self.ddTracer = tracer
         self.ddContext = context
         self.startTime = startTime
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
+        self.unsafeType = type
         self.unsafeIsFinished = false
     }
 

@@ -123,7 +123,8 @@ extension DDSpan {
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: tags
+            tags: tags,
+            type: DDTags.defaultSpanType
         )
     }
 }

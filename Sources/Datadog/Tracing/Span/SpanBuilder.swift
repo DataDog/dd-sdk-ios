@@ -49,6 +49,7 @@ internal struct SpanBuilder {
             startTime: ddspan.startTime,
             duration: finishTime.timeIntervalSince(ddspan.startTime),
             isError: tagsReducer.extractedIsError ?? false,
+            type: ddspan.type,
             tracerVersion: sdkVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfoProvider?.current,

@@ -20,8 +20,11 @@ Pod::Spec.new do |s|
   
   s.source_files = ["Sources/Datadog/**/*.swift",
                     "Sources/_Datadog_Private/**/*.{h,m}",
+                    "Sources/_Datadog_TestRunner/**/*.{h,m,swift}",
                     "Datadog/TargetSupport/Datadog/Datadog.h"]
   s.public_header_files = "Datadog/TargetSupport/Datadog/Datadog.h"
   s.private_header_files = "Sources/_Datadog_Private/include/*.h"
   s.module_map = "Sources/Datadog/Datadog.modulemap"
+
+  s.weak_framework    = "XCTest"
 end

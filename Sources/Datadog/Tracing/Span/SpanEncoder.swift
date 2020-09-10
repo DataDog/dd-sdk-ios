@@ -40,7 +40,8 @@ internal struct Span: Encodable {
     let startTime: Date
     let duration: TimeInterval
     let isError: Bool
-
+    let type: String
+    
     // MARK: - Meta
 
     let tracerVersion: String
@@ -122,7 +123,7 @@ internal struct SpanEncoder {
         try container.encode(span.operationName, forKey: .operationName)
         try container.encode(span.serviceName, forKey: .serviceName)
         try container.encode(span.resource, forKey: .resource)
-        try container.encode("custom", forKey: .type)
+        try container.encode(span.type, forKey: .type)
 
         try container.encode(span.startTime.timeIntervalSince1970.toNanoseconds, forKey: .startTime)
         try container.encode(span.duration.toNanoseconds, forKey: .duration)

@@ -9,3 +9,7 @@ framework module _Datadog_Private {
   export *
   header "ObjcExceptionHandler.h"
 }
+
+framework module _Datadog_TestRunner {
+    export *
+}

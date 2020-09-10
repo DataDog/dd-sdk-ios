@@ -21,6 +21,9 @@ public struct DDTags {
     internal static let errorType    = "error.type"
     internal static let errorMessage = "error.msg"
     internal static let errorStack   = "error.stack"
+
+    /// Default span type for spans created without a sspecifying a type. In general all spans should use this type
+    internal static let defaultSpanType = "custom"
 }
 
 /// Because `Tracer` is a common name widely used across different projects, the `Datadog.Tracer` may conflict when
@@ -176,7 +179,7 @@ public class Tracer: OTTracer {
         )
     }
 
-    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+    internal func startSpan(spanContext: DDSpanContext, operationName: String, spanType: String = DDTags.defaultSpanType, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> DDSpan {
         var combinedTags = globalTags ?? [:]
         if let userTags = tags {
             combinedTags.merge(userTags) { _, last in last }
@@ -190,7 +193,8 @@ public class Tracer: OTTracer {
             context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.currentDate(),
-            tags: combinedTags
+            tags: combinedTags,
+            type: spanType
         )
         return span
     }

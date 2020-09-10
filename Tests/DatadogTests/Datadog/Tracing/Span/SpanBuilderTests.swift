@@ -15,7 +15,8 @@ class SpanBuilderTests: XCTestCase {
             context: .mockWith(traceID: 1, spanID: 2, parentSpanID: 1),
             operationName: "operation-name",
             startTime: .mockDecember15th2019At10AMUTC(),
-            tags: ["foo": "bar", "bizz": 123]
+            tags: ["foo": "bar", "bizz": 123],
+            type: DDTags.defaultSpanType
         )
         let span = builder.createSpan(from: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
