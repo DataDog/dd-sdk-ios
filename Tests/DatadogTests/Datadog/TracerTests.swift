@@ -674,7 +674,7 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.level, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
-                .contains("No `RUMMonitor` is registered, so RUM integration with Tracing will not work.")
+                .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
         )
 
         let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
