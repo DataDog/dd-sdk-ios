@@ -73,7 +73,7 @@ class DataUploadWorkerTests: XCTestCase {
     }
 
     // swiftlint:disable multiline_arguments_brackets
-    func test_whenThereIsNoBatch_thenIntervalIncreases() throws {
+    func testWhenThereIsNoBatch_thenIntervalIncreases() throws {
         let expectation = XCTestExpectation(description: "high expectation")
         let mockDelay = MockDelay { command in
             if case .increase = command {
@@ -99,11 +99,11 @@ class DataUploadWorkerTests: XCTestCase {
                 featureName: .mockAny()
             )
         ]) {
-            self.wait(for: [expectation], timeout: (mockDelay.nextUploadDelay() + 0.1) * 2.0)
+            self.wait(for: [expectation], timeout: (mockDelay.current + 0.1) * 1.5)
         }
     }
 
-    func test_whenBatchFails_thenIntervalIncreases() throws {
+    func testWhenBatchFails_thenIntervalIncreases() throws {
         let expectation = XCTestExpectation(description: "high expectation")
         let mockDelay = MockDelay { command in
             if case .increase = command {
@@ -131,11 +131,11 @@ class DataUploadWorkerTests: XCTestCase {
                 featureName: .mockAny()
             )
         ]) {
-            self.wait(for: [expectation], timeout: mockDelay.nextUploadDelay() + 0.1)
+            self.wait(for: [expectation], timeout: (mockDelay.current + 0.1) * 1.5)
         }
     }
 
-    func test_whenBatchSucceeds_thenIntervalDecreases() throws {
+    func testWhenBatchSucceeds_thenIntervalDecreases() throws {
         let expectation = XCTestExpectation(description: "low expectation")
         let mockDelay = MockDelay { command in
             if case .decrease = command {
@@ -163,7 +163,7 @@ class DataUploadWorkerTests: XCTestCase {
                 featureName: .mockAny()
             )
         ]) {
-            self.wait(for: [expectation], timeout: mockDelay.nextUploadDelay() + 0.1)
+            self.wait(for: [expectation], timeout: (mockDelay.current + 0.1) * 1.5)
         }
     }
     // swiftlint:enable multiline_arguments_brackets
@@ -175,9 +175,7 @@ struct MockDelay: Delay {
     }
     let callback: (Command) -> Void
 
-    func nextUploadDelay() -> TimeInterval {
-        return 0.0
-    }
+    var current: TimeInterval { 0.0 }
     func decrease() {
         callback(.decrease)
     }

@@ -807,7 +807,7 @@ class TracerTests: XCTestCase {
         )
     }
 
-    func test_whenSpanStateChangesFromDifferentThreads_itChangesSpanState() {
+    func testWhenSpanStateChangesFromDifferentThreads_itChangesSpanState() {
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
         let tracer = Tracer.initialize(configuration: .init())

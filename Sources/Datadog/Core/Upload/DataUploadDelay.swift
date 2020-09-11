@@ -7,7 +7,7 @@
 import Foundation
 
 internal protocol Delay {
-    func nextUploadDelay() -> TimeInterval
+    var current: TimeInterval { get }
     mutating func decrease()
     mutating func increase()
 }
@@ -29,9 +29,7 @@ internal struct DataUploadDelay: Delay {
         self.delay = performance.initialUploadDelay
     }
 
-    func nextUploadDelay() -> TimeInterval {
-        return delay
-    }
+    var current: TimeInterval { delay }
 
     mutating func decrease() {
         delay = max(minDelay, delay * (1.0 - changeRate))

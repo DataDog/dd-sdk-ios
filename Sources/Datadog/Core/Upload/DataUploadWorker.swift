@@ -44,7 +44,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.delay = delay
         self.featureName = featureName
 
-        scheduleNextUpload(after: self.delay.nextUploadDelay())
+        scheduleNextUpload(after: self.delay.current)
     }
 
     private func scheduleNextUpload(after delay: TimeInterval) {
@@ -86,7 +86,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.delay.increase()
             }
 
-            self.scheduleNextUpload(after: self.delay.nextUploadDelay())
+            self.scheduleNextUpload(after: self.delay.current)
         }
     }
 }
