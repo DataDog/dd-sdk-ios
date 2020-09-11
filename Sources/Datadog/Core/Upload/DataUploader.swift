@@ -108,6 +108,9 @@ internal enum DataUploadStatus: Equatable, Hashable {
     case success
     /// Corresponds to HTTP 3xx response status codes.
     case redirection
+    /// Corresponds to HTTP 403 response status codes,
+    /// which means client token is invalid
+    case clientTokenError
     /// Corresponds to HTTP 4xx response status codes.
     case clientError
     /// Corresponds to HTTP 5xx response status codes.
@@ -121,6 +124,7 @@ internal enum DataUploadStatus: Equatable, Hashable {
         switch httpResponse.statusCode {
         case 200...299: self = .success
         case 300...399: self = .redirection
+        case 403: self = .clientTokenError
         case 400...499: self = .clientError
         case 500...599: self = .serverError
         default:        self = .unknown

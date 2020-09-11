@@ -73,7 +73,7 @@ class LoggingFeatureTests: XCTestCase {
                         defaultUploadDelay: 1,
                         minUploadDelay: 1,
                         maxUploadDelay: 1,
-                        uploadDelayDecreaseFactor: 1
+                        uploadDelayChangeRate: 0
                     )
                 )
             )

@@ -45,9 +45,9 @@ internal protocol UploadPerformancePreset {
     var minUploadDelay: TimeInterval { get }
     /// Maximum interval of data upload (in seconds).
     var maxUploadDelay: TimeInterval { get }
-    /// If upload succeeds, current interval is multiplied by this factor.
-    /// Should be less or equal `1.0`.
-    var uploadDelayDecreaseFactor: Double { get }
+    /// If upload succeeds or fails, current interval is changed by this rate. Should be less or equal `1.0`.
+    /// E.g: if rate is `0.1` then `delay` can be increased or decreased by `delay * 0.1`.
+    var uploadDelayChangeRate: Double { get }
 }
 
 internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPerformancePreset {
@@ -67,7 +67,7 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let defaultUploadDelay: TimeInterval
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
-    let uploadDelayDecreaseFactor: Double
+    let uploadDelayChangeRate: Double
 
     // MARK: - Predefined presets
 
@@ -91,7 +91,7 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
         defaultUploadDelay: 5,
         minUploadDelay: 1,
         maxUploadDelay: 20,
-        uploadDelayDecreaseFactor: 0.9
+        uploadDelayChangeRate: 0.1
     )
 
     /// Performance preset optimized for instant data delivery.
@@ -111,7 +111,7 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
         defaultUploadDelay: 3,
         minUploadDelay: 1,
         maxUploadDelay: 5,
-        uploadDelayDecreaseFactor: 0.5 // reduce significantly for more uploads in short-lived app extensions
+        uploadDelayChangeRate: 0.5 // reduce significantly for more uploads in short-lived app extensions
     )
 
     static func best(for bundleType: BundleType) -> PerformancePreset {

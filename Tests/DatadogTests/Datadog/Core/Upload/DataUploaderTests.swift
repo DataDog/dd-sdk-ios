@@ -90,6 +90,19 @@ class DataUploaderTests: XCTestCase {
         server.waitFor(requestsCompletion: 1)
     }
 
+    func testWhenDataIsSentWith403Code_itReturnsDataUploadStatus_clientTokenError() {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 403)))
+        let uploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpHeaders: .mockAny()
+        )
+        let status = uploader.upload(data: .mockAny())
+
+        XCTAssertEqual(status, .clientTokenError)
+        server.waitFor(requestsCompletion: 1)
+    }
+
     func testWhenDataIsSentWith500Code_itReturnsDataUploadStatus_serverError() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
         let uploader = DataUploader(
