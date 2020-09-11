@@ -33,7 +33,7 @@ internal struct TracingWithRUMErrorsIntegration {
             with: rumErrorAttributes.message,
             stack: rumErrorAttributes.stack,
             source: .source,
-            attributes: nil
+            attributes: [:]
         )
     }
 
