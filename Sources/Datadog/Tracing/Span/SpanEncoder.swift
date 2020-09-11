@@ -41,7 +41,7 @@ internal struct Span: Encodable {
     let duration: TimeInterval
     let isError: Bool
     let type: String
-    
+
     // MARK: - Meta
 
     let tracerVersion: String
