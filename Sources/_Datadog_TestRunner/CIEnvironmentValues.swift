@@ -20,7 +20,7 @@ internal struct CIEnvironmentValues {
     var pipelineURL: String?
     var jobURL: String?
 
-    static let environment = ProcessInfo.processInfo.environment
+    static var environment = ProcessInfo.processInfo.environment
 
     init() {
         if CIEnvironmentValues.getEnvVariable("TRAVIS") != nil {
