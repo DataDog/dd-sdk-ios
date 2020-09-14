@@ -38,10 +38,18 @@ internal struct FeaturesConfiguration {
     }
 
     struct RUM {
+        struct AutoInstrumentation {
+            // TODO: RUMM-713 Add RUM Views insturmentation configuration
+            // TODO: RUMM-717 Add RUM Actions insturmentation configuration
+            // TODO: RUMM-718 Add RUM Resources insturmentation configuration
+        }
+
         let common: Common
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
+        /// RUM auto instrumentation configuration, `nil` if not enabled.
+        let autoInstrumentation: AutoInstrumentation?
     }
 
     /// Configuration common to all features.
@@ -111,6 +119,9 @@ extension FeaturesConfiguration {
         }
 
         if configuration.rumEnabled {
+            // TODO: RUMM-713 RUMM-717 RUMM-718 Enable RUM.AutoInstrumentation conditionally
+            let autoInstrumentation: RUM.AutoInstrumentation? = nil
+
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
                     common: common,
@@ -119,7 +130,8 @@ extension FeaturesConfiguration {
                         clientToken: configuration.clientToken
                     ),
                     applicationID: rumApplicationID,
-                    sessionSamplingRate: configuration.rumSessionsSamplingRate
+                    sessionSamplingRate: configuration.rumSessionsSamplingRate,
+                    autoInstrumentation: autoInstrumentation
                 )
             } else {
                 let error = ProgrammerError(

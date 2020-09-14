@@ -11,14 +11,14 @@ internal protocol RUMCommand {
     /// The time of command issue.
     var time: Date { get }
     /// Attributes associated with the command.
-    var attributes: [AttributeKey: AttributeValue] { get }
+    var attributes: [AttributeKey: AttributeValue] { set get }
 }
 
 // MARK: - RUM View related commands
 
 internal struct RUMStartViewCommand: RUMCommand {
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     /// The object (typically `UIViewController`) identifying the RUM View.
     let identity: AnyObject
@@ -45,7 +45,7 @@ internal struct RUMStartViewCommand: RUMCommand {
 
 internal struct RUMStopViewCommand: RUMCommand {
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     /// The object (typically `UIViewController`) identifying the RUM View.
     let identity: AnyObject
@@ -53,7 +53,7 @@ internal struct RUMStopViewCommand: RUMCommand {
 
 internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     /// The error message.
     let message: String
@@ -102,7 +102,7 @@ internal protocol RUMResourceCommand: RUMCommand {
 internal struct RUMStartResourceCommand: RUMResourceCommand {
     let resourceName: String
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     /// Resource url
     let url: String
@@ -113,7 +113,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
 internal struct RUMStopResourceCommand: RUMResourceCommand {
     let resourceName: String
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     /// A type of the Resource
     let kind: RUMResourceKind
@@ -126,7 +126,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let resourceName: String
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     /// The error message.
     let errorMessage: String
@@ -186,7 +186,7 @@ internal protocol RUMUserActionCommand: RUMCommand {
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
     let name: String
@@ -195,7 +195,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 /// Stops continuous User Action.
 internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
     let name: String?
@@ -204,7 +204,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let time: Date
-    let attributes: [AttributeKey: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
     let name: String

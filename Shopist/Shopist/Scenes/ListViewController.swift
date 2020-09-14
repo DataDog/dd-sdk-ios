@@ -27,7 +27,7 @@ internal class ListViewController: UICollectionViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        Global.rum.startView(viewController: self, attributes: (isMovingToParent ? nil : ["info": "Redisplay"]))
+        Global.rum.startView(viewController: self, attributes: (isMovingToParent ? [:] : ["info": "Redisplay"]))
         fetch(with: api)
     }
 
@@ -39,7 +39,7 @@ internal class ListViewController: UICollectionViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        Global.rum.stopView(viewController: self, attributes: (isMovingFromParent ? ["info": "Dismissal"] : nil))
+        Global.rum.stopView(viewController: self, attributes: (isMovingFromParent ? ["info": "Dismissal"] : [:]))
     }
 
     func fetch(with api: API) {
