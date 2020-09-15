@@ -19,12 +19,9 @@ class LoggingIntegrationTests: IntegrationTests {
 
         let app = ExampleApplication()
         app.launchWith(
-            mockLogsEndpointURL: loggingServerSession.recordingURL,
-            mockTracesEndpointURL: server.obtainUniqueRecordingSession().recordingURL,   // mock any
-            mockRUMEndpointURL: server.obtainUniqueRecordingSession().recordingURL,      // mock any
-            mockSourceEndpointURL: server.obtainUniqueRecordingSession().recordingURL    // mock any
+            testScenario: LoggingScenario.self,
+            logsEndpointURL: loggingServerSession.recordingURL
         )
-        app.tapSendLogsForUITests()
 
         // Return desired count or timeout
         let recordedRequests = try loggingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.logsDeliveryTime)

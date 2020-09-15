@@ -16,9 +16,9 @@ class TracingIntegrationTests: IntegrationTests {
     func testLaunchTheAppAndSendTraces() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
-        // Server session recording mock data requests send to `HTTPServerMock`.
-        // Used to inspect trace HTTP headers.
-        let dataSourceServerSession = server.obtainUniqueRecordingSession()
+        // Server session recording custom data requests send to `HTTPServerMock`.
+        // Used to assert if trace propagation headers are send to the server.
+        let customServerSession = server.obtainUniqueRecordingSession()
         // Server session recording spans send to `HTTPServerMock`.
         let tracingServerSession = server.obtainUniqueRecordingSession()
         // Server session recording logs send to `HTTPServerMock`.
@@ -26,12 +26,11 @@ class TracingIntegrationTests: IntegrationTests {
 
         let app = ExampleApplication()
         app.launchWith(
-            mockLogsEndpointURL: loggingServerSession.recordingURL,
-            mockTracesEndpointURL: tracingServerSession.recordingURL,
-            mockRUMEndpointURL: server.obtainUniqueRecordingSession().recordingURL, // mock any
-            mockSourceEndpointURL: dataSourceServerSession.recordingURL
+            testScenario: TracingScenario.self,
+            logsEndpointURL: loggingServerSession.recordingURL,
+            tracesEndpointURL: tracingServerSession.recordingURL,
+            customEndpointURL: customServerSession.recordingURL
         )
-        app.tapSendTracesForUITests()
 
         // Return desired count or timeout
         let recordedTracingRequests = try tracingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
@@ -49,22 +48,13 @@ class TracingIntegrationTests: IntegrationTests {
         let spanMatchers = try recordedTracingRequests
             .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
-        let autoTracedWithURL = spanMatchers[3]
-        let autoTracedWithRequest = spanMatchers[4]
-        let autoTracedWithError = spanMatchers[5]
-
-        let recordedNetworkRequests = try dataSourceServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
-        XCTAssert(recordedNetworkRequests.count == 1)
-        let traceID = try autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
-        XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-trace-id: \(traceID)"), "Trace: \(traceID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
-        let spanID = try autoTracedWithRequest.spanID().hexadecimalNumberToDecimal
-        XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("x-datadog-parent-id: \(spanID)"), "Span: \(spanID) Actual: \(recordedNetworkRequests.first!.httpHeaders)")
-        XCTAssert(recordedNetworkRequests.first!.httpHeaders.contains("creation-method: dataTaskWithRequest"))
-
         XCTAssertEqual(spanMatchers.count, 6)
         XCTAssertEqual(try spanMatchers[0].operationName(), "data downloading")
         XCTAssertEqual(try spanMatchers[1].operationName(), "data presentation")
-        XCTAssertEqual(try spanMatchers[2].operationName(), "view appearing")
+        XCTAssertEqual(try spanMatchers[2].operationName(), "view loading")
+        let autoTracedWithURL = spanMatchers[3]
+        let autoTracedWithRequest = spanMatchers[4]
+        let autoTracedWithError = spanMatchers[5]
 
         XCTAssertEqual(try autoTracedWithURL.operationName(), "urlsession.request")
         XCTAssertEqual(try autoTracedWithRequest.operationName(), "urlsession.request")
@@ -74,7 +64,7 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[1].traceID())
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[2].traceID())
 
-        // "data downloading" and "data presentation" are childs of "view appearing"
+        // "data downloading" and "data presentation" are childs of "view loading"
         XCTAssertEqual(try spanMatchers[0].parentSpanID(), try spanMatchers[2].spanID())
         XCTAssertEqual(try spanMatchers[1].parentSpanID(), try spanMatchers[2].spanID())
 
@@ -107,7 +97,7 @@ class TracingIntegrationTests: IntegrationTests {
         XCTAssertEqual(try spanMatchers[1].resource(), try spanMatchers[1].operationName())
         XCTAssertEqual(try spanMatchers[2].resource(), try spanMatchers[2].operationName())
 
-        let targetURL = dataSourceServerSession.recordingURL
+        let targetURL = customServerSession.recordingURL
         XCTAssert(try autoTracedWithURL.resource().contains(targetURL.host!))
         XCTAssertEqual(try autoTracedWithRequest.resource(), targetURL.absoluteString)
 
@@ -181,6 +171,23 @@ class TracingIntegrationTests: IntegrationTests {
         // Assert logs are linked to "data downloading" span
         logMatchers[0].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[0].traceID().hexadecimalNumberToDecimal)
         logMatchers[0].assertValue(forKey: "dd.span_id", equals: try spanMatchers[0].spanID().hexadecimalNumberToDecimal)
+
+        // Assert trace propagation to auto instrumented custom endpoint
+        let recordedCustomRequests = try customServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.dataDeliveryTime)
+        XCTAssert(recordedCustomRequests.count == 1)
+
+        let recordedCustomRequest = recordedCustomRequests[0]
+        let traceID = try autoTracedWithRequest.traceID().hexadecimalNumberToDecimal
+        XCTAssert(
+            recordedCustomRequest.httpHeaders.contains("x-datadog-trace-id: \(traceID)"),
+            "Trace: \(traceID) Actual: \(recordedCustomRequest.httpHeaders)"
+        )
+        let spanID = try autoTracedWithRequest.spanID().hexadecimalNumberToDecimal
+        XCTAssert(
+            recordedCustomRequest.httpHeaders.contains("x-datadog-parent-id: \(spanID)"),
+            "Span: \(spanID) Actual: \(recordedCustomRequest.httpHeaders)"
+        )
+        XCTAssert(recordedCustomRequest.httpHeaders.contains("creation-method: dataTaskWithRequest"))
     }
 }
 
