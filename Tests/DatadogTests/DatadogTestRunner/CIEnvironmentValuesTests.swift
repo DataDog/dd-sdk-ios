@@ -331,7 +331,7 @@ class CIEnvironmentValuesTests: XCTestCase {
         XCTAssertEqual(span.tags["git.branch"] as? String, "develop")
     }
 
-    func testDontAddsTagsToSpanIfNotCI() {
+    func testWhenNotRunningInCI_TagsAreNotAdded() {
         setEnvVariables()
 
         let span: DDSpan = .mockWith(operationName: "operation")

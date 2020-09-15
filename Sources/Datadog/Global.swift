@@ -7,7 +7,15 @@
 /// Namespace storing global Datadog components.
 public struct Global {
     /// Shared tracer instance to use throughout the app.
-    public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
+    public static var sharedTracer: OTTracer = DDNoopGlobals.tracer {
+        didSet {
+            #if canImport(_Datadog_TestRunner)
+            if DDTestRunner.instance != nil, !(oldValue is DDNoopTracer) {
+                    sharedTracer = oldValue
+            }
+            #endif
+        }
+    }
 
     /// Shared RUM monitor instance to use throughout the app.
     public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
