@@ -7,13 +7,13 @@
 import HTTPServerMock
 import XCTest
 
-class TracingIntegrationTests: IntegrationTests {
+class TracingScenarioTests: IntegrationTests {
     private struct Constants {
         /// Time needed for data to be uploaded to mock server.
         static let dataDeliveryTime: TimeInterval = 30
     }
 
-    func testLaunchTheAppAndSendTraces() throws {
+    func testTracingScenario() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
         // Server session recording custom data requests send to `HTTPServerMock`.

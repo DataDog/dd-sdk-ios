@@ -25,13 +25,13 @@ private class RUMFixture2Screen: XCUIApplication {
     }
 }
 
-class RUMIntegrationTests: IntegrationTests {
+class RUMManualInstrumentationScenarioTests: IntegrationTests {
     private struct Constants {
         /// Time needed for data to be uploaded to mock server.
         static let dataDeliveryTime: TimeInterval = 30
     }
 
-    func testLaunchTheAppNavigateThroughRUMFixtures() throws {
+    func testRUMManualInstrumentationScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
 

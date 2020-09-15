@@ -8,13 +8,13 @@ import HTTPServerMock
 import XCTest
 
 // swiftlint:disable trailing_closure
-class LoggingIntegrationTests: IntegrationTests {
+class LoggingScenarioTests: IntegrationTests {
     private struct Constants {
         /// Time needed for logs to be uploaded to mock server.
         static let logsDeliveryTime: TimeInterval = 30
     }
 
-    func testLaunchTheAppAndSendLogs() throws {
+    func testLoggingScenario() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
 
         let app = ExampleApplication()
