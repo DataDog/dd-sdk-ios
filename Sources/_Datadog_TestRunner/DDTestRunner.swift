@@ -38,7 +38,6 @@ internal class DDTestRunner: NSObject, XCTestObservation {
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: clientToken, environment: CIEnvironmentValues.getEnvVariable("DD_ENV") ?? "test")
                 .set(serviceName: CIEnvironmentValues.getEnvVariable("DD_SERVICE") ?? ProcessInfo.processInfo.processName)
-                .set(tracedHosts: ["."])
                 .build()
         )
 
