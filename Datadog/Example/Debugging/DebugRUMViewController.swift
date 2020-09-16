@@ -15,7 +15,7 @@ class DebugRUMViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        rumServiceNameTextField.text = appConfig.serviceName
+        rumServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
 

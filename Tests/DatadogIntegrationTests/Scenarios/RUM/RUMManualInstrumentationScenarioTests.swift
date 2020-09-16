@@ -7,27 +7,44 @@
 import HTTPServerMock
 import XCTest
 
-class RUMIntegrationTests: IntegrationTests {
+private class RUMFixture1Screen: XCUIApplication {
+    func tapDownloadResourceButton() {
+        buttons["Download Resource"].tap()
+    }
+
+    func tapPushNextScreen() -> RUMFixture2Screen {
+        _ = buttons["Push Next Screen"].waitForExistence(timeout: 2)
+        buttons["Push Next Screen"].tap()
+        return RUMFixture2Screen()
+    }
+}
+
+private class RUMFixture2Screen: XCUIApplication {
+    func tapPushNextScreen() {
+        buttons["Push Next Screen"].tap()
+    }
+}
+
+class RUMManualInstrumentationScenarioTests: IntegrationTests {
     private struct Constants {
         /// Time needed for data to be uploaded to mock server.
         static let dataDeliveryTime: TimeInterval = 30
     }
 
-    func testLaunchTheAppNavigateThroughRUMFixtures() throws {
+    func testRUMManualInstrumentationScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
 
         let app = ExampleApplication()
         app.launchWith(
-            mockLogsEndpointURL: server.obtainUniqueRecordingSession().recordingURL,     // mock any
-            mockTracesEndpointURL: server.obtainUniqueRecordingSession().recordingURL,   // mock any
-            mockRUMEndpointURL: rumServerSession.recordingURL,
-            mockSourceEndpointURL: server.obtainUniqueRecordingSession().recordingURL    // mock any 
+            testScenario: RUMManualInstrumentationScenario.self,
+            rumEndpointURL: rumServerSession.recordingURL
         )
-        let fixture1Screen = app.tapSendRUMEventsForUITests()
-        fixture1Screen.tapDownloadResourceButton()
-        let fixture2Screen = fixture1Screen.tapPushNextScreen()
-        fixture2Screen.tapPushNextScreen()
+
+        let screen1 = RUMFixture1Screen()
+        screen1.tapDownloadResourceButton()
+        let screen2 = screen1.tapPushNextScreen()
+        screen2.tapPushNextScreen()
 
         // Return desired count or timeout
         let recordedRUMRequests = try rumServerSession.pullRecordedPOSTRequests(

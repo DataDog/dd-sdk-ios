@@ -10,50 +10,25 @@ import XCTest
 class ExampleApplication: XCUIApplication {
     /// Launches the app by mocking feature endpoints.
     func launchWith(
-        mockLogsEndpointURL: URL,
-        mockTracesEndpointURL: URL,
-        mockRUMEndpointURL: URL,
-        mockSourceEndpointURL: URL
+        testScenario: TestScenario.Type,
+        logsEndpointURL: URL? = nil,
+        tracesEndpointURL: URL? = nil,
+        rumEndpointURL: URL? = nil,
+        customEndpointURL: URL? = nil
     ) {
-        launchArguments = ["IS_RUNNING_UI_TESTS"]
-        launchEnvironment = [
-            "DD_MOCK_LOGS_ENDPOINT_URL": mockLogsEndpointURL.absoluteString,
-            "DD_MOCK_TRACES_ENDPOINT_URL": mockTracesEndpointURL.absoluteString,
-            "DD_MOCK_RUM_ENDPOINT_URL": mockRUMEndpointURL.absoluteString,
-            "DD_MOCK_SOURCE_ENDPOINT_URL": mockSourceEndpointURL.absoluteString
-        ]
+        launchArguments = [Environment.Argument.isRunningUITests]
+
+        var variables: [String: String] = [:]
+        variables[Environment.Variable.testScenarioIdentifier] = testScenario.envIdentifier()
+
+        logsEndpointURL.flatMap { variables[Environment.Variable.logsEndpoint] = $0.absoluteString }
+        tracesEndpointURL.flatMap { variables[Environment.Variable.tracesEndpoint] = $0.absoluteString }
+        rumEndpointURL.flatMap { variables[Environment.Variable.rumEndpoint] = $0.absoluteString }
+        customEndpointURL.flatMap { variables[Environment.Variable.customEndpoint] = $0.absoluteString }
+
+        launchEnvironment = variables
+
         super.launch()
-    }
-
-    func tapSendLogsForUITests() {
-        tables.staticTexts["Send logs for UI Tests"].tap()
-    }
-
-    func tapSendTracesForUITests() {
-        tables.staticTexts["Send traces for UI Tests"].tap()
-    }
-
-    func tapSendRUMEventsForUITests() -> RUMFixture1Screen {
-        tables.staticTexts["Send RUM events for UI Tests"].tap()
-        return RUMFixture1Screen()
-    }
-}
-
-class RUMFixture1Screen: XCUIApplication {
-    func tapDownloadResourceButton() {
-        buttons["Download Resource"].tap()
-    }
-
-    func tapPushNextScreen() -> RUMFixture2Screen {
-        _ = buttons["Push Next Screen"].waitForExistence(timeout: 2)
-        buttons["Push Next Screen"].tap()
-        return RUMFixture2Screen()
-    }
-}
-
-class RUMFixture2Screen: XCUIApplication {
-    func tapPushNextScreen() {
-        buttons["Push Next Screen"].tap()
     }
 }
 

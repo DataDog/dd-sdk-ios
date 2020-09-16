@@ -23,7 +23,7 @@ class DebugTracingViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        serviceNameTextField.text = appConfig.serviceName
+        serviceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
     }
