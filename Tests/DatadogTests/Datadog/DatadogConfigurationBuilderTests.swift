@@ -34,6 +34,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.serviceName)
             XCTAssertEqual(configuration.tracedHosts, [])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
+            XCTAssertNil(configuration.rumUIKitViewsPredicate)
         }
     }
 
@@ -49,6 +50,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(rumEndpoint: .eu)
                 .set(tracedHosts: ["example.com"])
                 .set(rumSessionsSamplingRate: 42.5)
+                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
         }
 
         let defaultBuilder = Datadog.Configuration
@@ -74,6 +76,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.eu/v1/input/")
             XCTAssertEqual(configuration.tracedHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
+            XCTAssertNotNil(configuration.rumUIKitViewsPredicate)
         }
     }
 }

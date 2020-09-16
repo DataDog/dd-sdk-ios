@@ -81,6 +81,7 @@ class DatadogTests: XCTestCase {
 
         defer {
             TracingAutoInstrumentation.instance?.swizzler.unswizzle()
+            RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
         }
 
         try verify(configuration: defaultBuilder.build()) {
@@ -170,6 +171,17 @@ class DatadogTests: XCTestCase {
         ) {
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertNil(TracingAutoInstrumentation.instance)
+        }
+
+        try verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
+            XCTAssertTrue(RUMFeature.isEnabled)
+            XCTAssertNotNil(RUMAutoInstrumentation.instance?.views)
+        }
+        try verify(
+            configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()
+        ) {
+            XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertNil(RUMAutoInstrumentation.instance?.views)
         }
     }
 

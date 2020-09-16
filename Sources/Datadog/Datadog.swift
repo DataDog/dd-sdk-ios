@@ -155,7 +155,10 @@ public class Datadog {
                 commonDependencies: commonDependencies
             )
             if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
-                rumAutoInstrumentation = RUMAutoInstrumentation(with: autoInstrumentationConfiguration)
+                rumAutoInstrumentation = RUMAutoInstrumentation(
+                    configuration: autoInstrumentationConfiguration,
+                    dateProvider: dateProvider
+                )
             }
         }
 
@@ -164,9 +167,10 @@ public class Datadog {
         RUMFeature.instance = rum
 
         TracingAutoInstrumentation.instance = tracingAutoInstrumentation
-        TracingAutoInstrumentation.instance?.apply()
+        TracingAutoInstrumentation.instance?.enable()
 
         RUMAutoInstrumentation.instance = rumAutoInstrumentation
+        RUMAutoInstrumentation.instance?.enable()
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(

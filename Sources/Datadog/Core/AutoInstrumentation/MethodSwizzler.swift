@@ -30,13 +30,9 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         }
     }
 
-    private var implementationCache: [FoundMethod: IMP]
+    private var implementationCache: [FoundMethod: IMP] = [:]
     var swizzledMethods: [FoundMethod] {
         return Array(implementationCache.keys)
-    }
-
-    init() {
-        self.implementationCache = [:]
     }
 
     static func findMethod(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {

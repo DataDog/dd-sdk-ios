@@ -39,7 +39,7 @@ internal struct FeaturesConfiguration {
 
     struct RUM {
         struct AutoInstrumentation {
-            // TODO: RUMM-713 Add RUM Views insturmentation configuration
+            let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
             // TODO: RUMM-717 Add RUM Actions insturmentation configuration
             // TODO: RUMM-718 Add RUM Resources insturmentation configuration
         }
@@ -119,8 +119,13 @@ extension FeaturesConfiguration {
         }
 
         if configuration.rumEnabled {
-            // TODO: RUMM-713 RUMM-717 RUMM-718 Enable RUM.AutoInstrumentation conditionally
-            let autoInstrumentation: RUM.AutoInstrumentation? = nil
+            var autoInstrumentation: RUM.AutoInstrumentation?
+
+            if let rumUIKitViewsPredicate = configuration.rumUIKitViewsPredicate {
+                autoInstrumentation = RUM.AutoInstrumentation(
+                    uiKitRUMViewsPredicate: rumUIKitViewsPredicate
+                )
+            }
 
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
