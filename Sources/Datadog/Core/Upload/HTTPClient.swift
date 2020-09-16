@@ -37,7 +37,7 @@ internal final class HTTPClient {
 /// The code execution in `URLSessionTransport` should never reach its initialization.
 internal struct URLSessionTransportInconsistencyException: Error {}
 
-/// As `URLSession` returns 3-values-touple for request execution, this function applies consistency constraints and turns
+/// As `URLSession` returns 3-values-tuple for request execution, this function applies consistency constraints and turns
 /// it into only two possible states of `HTTPTransportResult`.
 private func httpClientResult(for urlSessionTaskCompletion: (Data?, URLResponse?, Error?)) -> Result<HTTPURLResponse, Error> {
     let (_, response, error) = urlSessionTaskCompletion

@@ -49,7 +49,7 @@ public enum RUMErrorSource {
 ///
 /// `RUMMonitor` allows you to record User events that can be explored and analyzed in Datadog Dashboards.
 /// You can only have one active `RUMMonitor`, and should register/retrieve it from the `Global` object.
-public class RUMMonitor: DDRUMMonitor {
+public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
     /// Current RUM context provider for integrations with Logging and Tracing.
@@ -85,7 +85,9 @@ public class RUMMonitor: DDRUMMonitor {
                         : "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
                 )
             }
-            return RUMMonitor(rumFeature: rumFeature)
+            let monitor = RUMMonitor(rumFeature: rumFeature)
+            RUMAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
+            return monitor
         } catch {
             consolePrint("\(error)")
             return DDNoopRUMMonitor()
@@ -131,28 +133,28 @@ public class RUMMonitor: DDRUMMonitor {
 
     // MARK: - Public DDRUMMonitor conformance
 
-    override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue]?) {
+    override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
                 identity: viewController,
                 path: path,
-                attributes: aggregate(attributes)
+                attributes: attributes
             )
         )
     }
 
-    override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]?) {
+    override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
+                attributes: attributes,
                 identity: viewController
             )
         )
     }
 
-    override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, file: StaticString?, line: UInt?) {
+    override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) {
         var stack: String? = nil
         if let file = file, let fileName = "\(file)".split(separator: "/").last, let line = line {
             stack = "\(fileName):\(line)"
@@ -160,47 +162,47 @@ public class RUMMonitor: DDRUMMonitor {
         addViewError(message: message, stack: stack, source: source, attributes: attributes)
     }
 
-    internal func addViewError(message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?) {
+    internal func addViewError(message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 message: message,
                 stack: stack,
                 source: source,
-                attributes: aggregate(attributes)
+                attributes: attributes
             )
         )
     }
 
-    override public func addViewError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?) {
+    override public func addViewError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 error: error,
                 source: source,
-                attributes: aggregate(attributes)
+                attributes: attributes
             )
         )
     }
 
-    override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]?) {
+    override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
+                attributes: attributes,
                 url: url.absoluteString,
                 httpMethod: httpMethod
             )
         )
     }
 
-    override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?) {
+    override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceCommand(
                 resourceName: resourceName,
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
+                attributes: attributes,
                 kind: kind,
                 httpStatusCode: httpStatusCode,
                 size: size
@@ -208,7 +210,7 @@ public class RUMMonitor: DDRUMMonitor {
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?) {
+    override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceName: resourceName,
@@ -216,12 +218,12 @@ public class RUMMonitor: DDRUMMonitor {
                 error: error,
                 source: source,
                 httpStatusCode: httpStatusCode,
-                attributes: aggregate(attributes)
+                attributes: attributes
             )
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]?) {
+    override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceName: resourceName,
@@ -229,38 +231,38 @@ public class RUMMonitor: DDRUMMonitor {
                 message: errorMessage,
                 source: source,
                 httpStatusCode: httpStatusCode,
-                attributes: aggregate(attributes)
+                attributes: attributes
             )
         )
     }
 
-    override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]?) {
+    override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
+                attributes: attributes,
                 actionType: type,
                 name: name
             )
         )
     }
 
-    override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue]?) {
+    override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
+                attributes: attributes,
                 actionType: type,
                 name: name
             )
         )
     }
 
-    override public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]?) {
+    override public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),
-                attributes: aggregate(attributes),
+                attributes: attributes,
                 actionType: type,
                 name: name
             )
@@ -290,16 +292,16 @@ public class RUMMonitor: DDRUMMonitor {
         }
     }
 
-    // MARK: - Private
+    // MARK: - RUMCommandSubscriber
 
-    private func aggregate(_ localAttributes: [AttributeKey: AttributeValue]?) -> [AttributeKey: AttributeValue] {
-        var mergedAttributes = queue.sync { return self.rumAttributes }
-        mergedAttributes.merge(rumCommandAttributes: localAttributes)
-        return mergedAttributes
-    }
-
-    private func process(command: RUMCommand) {
+    func process(command: RUMCommand) {
         queue.async {
+            var combinedUserAttributes = self.rumAttributes
+            combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
+
+            var command = command
+            command.attributes = combinedUserAttributes
+
             _ = self.applicationScope.process(command: command)
 
             if let debugging = self.debugging {

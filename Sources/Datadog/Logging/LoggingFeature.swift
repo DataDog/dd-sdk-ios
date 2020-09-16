@@ -17,6 +17,9 @@ internal final class LoggingFeature {
     /// Single, shared instance of `LoggingFeature`.
     internal static var instance: LoggingFeature?
 
+    /// Tells if the feature was enabled by the user in the SDK configuration.
+    static var isEnabled: Bool { instance != nil }
+
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.Logging

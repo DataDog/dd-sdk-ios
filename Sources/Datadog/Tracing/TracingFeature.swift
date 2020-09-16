@@ -17,6 +17,9 @@ internal final class TracingFeature {
     /// Single, shared instance of `TracingFeatureFeature`.
     internal static var instance: TracingFeature?
 
+    /// Tells if the feature was enabled by the user in the SDK configuration.
+    static var isEnabled: Bool { instance != nil }
+
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.Tracing

@@ -43,14 +43,17 @@ public class Logger {
     private var loggerTags: Set<String> = []
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
-    /// Integration with RUM Context. `nil` if disabled for this Logger.
+    /// Integration with RUM Context. `nil` if disabled for this Logger or if the RUM feature disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
+    /// Integration with Tracing. `nil` if disabled for this Logger or if the Tracing feature disabled.
+    internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
 
     init(
         logOutput: LogOutput,
         dateProvider: DateProvider,
         identifier: String,
-        rumContextIntegration: LoggingWithRUMContextIntegration?
+        rumContextIntegration: LoggingWithRUMContextIntegration?,
+        activeSpanIntegration: LoggingWithActiveSpanIntegration?
     ) {
         self.logOutput = logOutput
         self.dateProvider = dateProvider
@@ -59,6 +62,7 @@ public class Logger {
             target: .global(qos: .userInteractive)
         )
         self.rumContextIntegration = rumContextIntegration
+        self.activeSpanIntegration = activeSpanIntegration
     }
 
     // MARK: - Logging
@@ -206,11 +210,20 @@ public class Logger {
 
     private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
         let date = dateProvider.currentDate()
-        let combinedAttributes = queue.sync {
+        let combinedUserAttributes = queue.sync {
             return self.loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
                 return messageAttributeValue // use message attribute when the same key appears also in logger attributes
             }
         }
+
+        var combinedInternalAttributes: [String: Encodable] = [:]
+        if let rumContextAttributes = rumContextIntegration?.currentRUMContextAttributes {
+            combinedInternalAttributes.merge(rumContextAttributes) { $1 }
+        }
+        if let activeSpanAttributes = activeSpanIntegration?.activeSpanAttributes {
+            combinedInternalAttributes.merge(activeSpanAttributes) { $1 }
+        }
+
         let tags = queue.sync {
             return self.loggerTags
         }
@@ -220,8 +233,8 @@ public class Logger {
             message: message,
             date: date,
             attributes: LogAttributes(
-                userAttributes: combinedAttributes,
-                internalAttributes: rumContextIntegration?.currentRUMContextAttributes
+                userAttributes: combinedUserAttributes,
+                internalAttributes: combinedInternalAttributes
             ),
             tags: tags
         )
@@ -245,8 +258,9 @@ public class Logger {
     public class Builder {
         internal var serviceName: String?
         internal var loggerName: String?
-        internal var sendNetworkInfo: Bool = false
-        internal var bundleWithRUM: Bool = true
+        internal var sendNetworkInfo = false
+        internal var bundleWithRUM = true
+        internal var bundleWithTrace = true
         internal var useFileOutput = true
         internal var useConsoleLogFormat: ConsoleLogFormat?
 
@@ -279,6 +293,15 @@ public class Logger {
         /// - Parameter enabled: `true` by default
         public func bundleWithRUM(_ enabled: Bool) -> Builder {
             bundleWithRUM = enabled
+            return self
+        }
+
+        /// Enables the logs integration with active span API from Tracing.
+        /// If enabled all the logs will be bundled with the `Global.sharedTracer.activeSpan` trace and
+        /// it will be possible to see all the logs sent during that specific trace.
+        /// - Parameter enabled: `true` by default
+        public func bundleWithTrace(_ enabled: Bool) -> Builder {
+            bundleWithTrace = enabled
             return self
         }
 
@@ -324,7 +347,8 @@ public class Logger {
                     logOutput: NoOpLogOutput(),
                     dateProvider: SystemDateProvider(),
                     identifier: "no-op",
-                    rumContextIntegration: nil
+                    rumContextIntegration: nil,
+                    activeSpanIntegration: nil
                 )
             }
         }
@@ -342,7 +366,8 @@ public class Logger {
                 logOutput: resolveLogsOutput(for: loggingFeature),
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
-                rumContextIntegration: bundleWithRUM ? LoggingWithRUMContextIntegration() : nil
+                rumContextIntegration: (RUMFeature.isEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
+                activeSpanIntegration: (TracingFeature.isEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
             )
         }
 

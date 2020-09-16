@@ -17,6 +17,9 @@ internal final class RUMFeature {
     /// Single, shared instance of `RUMFeature`.
     internal static var instance: RUMFeature?
 
+    /// Tells if the feature was enabled by the user in the SDK configuration.
+    static var isEnabled: Bool { instance != nil }
+
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.RUM

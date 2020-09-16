@@ -114,13 +114,15 @@ extension FeaturesConfiguration.RUM {
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
-        sessionSamplingRate: Float = 100.0
+        sessionSamplingRate: Float = 100.0,
+        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(
             common: common,
             uploadURLWithClientToken: uploadURLWithClientToken,
             applicationID: applicationID,
-            sessionSamplingRate: sessionSamplingRate
+            sessionSamplingRate: sessionSamplingRate,
+            autoInstrumentation: autoInstrumentation
         )
     }
 }
@@ -192,14 +194,14 @@ struct UploadPerformanceMock: UploadPerformancePreset {
     let defaultUploadDelay: TimeInterval
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
-    let uploadDelayDecreaseFactor: Double
+    let uploadDelayChangeRate: Double
 
     static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
         defaultUploadDelay: .distantFuture,
         minUploadDelay: .distantFuture,
         maxUploadDelay: .distantFuture,
-        uploadDelayDecreaseFactor: 1
+        uploadDelayChangeRate: 0
     )
 
     static let veryQuick = UploadPerformanceMock(
@@ -207,7 +209,7 @@ struct UploadPerformanceMock: UploadPerformancePreset {
         defaultUploadDelay: 0.05,
         minUploadDelay: 0.05,
         maxUploadDelay: 0.05,
-        uploadDelayDecreaseFactor: 1
+        uploadDelayChangeRate: 0
     )
 }
 
@@ -225,7 +227,7 @@ extension PerformancePreset {
             defaultUploadDelay: upload.defaultUploadDelay,
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
-            uploadDelayDecreaseFactor: upload.uploadDelayDecreaseFactor
+            uploadDelayChangeRate: upload.uploadDelayChangeRate
         )
     }
 }

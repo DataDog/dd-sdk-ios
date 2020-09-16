@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <view key="tableFooterView" contentMode="scaleToFill" id="wle-IX-rUl">
-                            <rect key="frame" x="0.0" y="373" width="414" height="0.0"/>
+                            <rect key="frame" x="0.0" y="186.5" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         </view>
@@ -82,70 +82,6 @@
                                         </tableViewCellContentView>
                                         <connections>
                                             <segue destination="CBf-fg-exz" kind="show" id="5Im-MK-mpd"/>
-                                        </connections>
-                                    </tableViewCell>
-                                </cells>
-                            </tableViewSection>
-                            <tableViewSection headerTitle="UITest scenarios:" id="6Zm-Kj-Vxy">
-                                <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="cup-8g-amw" style="IBUITableViewCellStyleDefault" id="0R8-Cw-D1v">
-                                        <rect key="frame" x="0.0" y="214.5" width="414" height="43.5"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0R8-Cw-D1v" id="qW4-7f-cXH">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Send logs for UI Tests" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="cup-8g-amw">
-                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <segue destination="6cL-Sc-vbm" kind="show" id="65A-jA-yIE"/>
-                                        </connections>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="Mfa-d4-bXd" style="IBUITableViewCellStyleDefault" id="TY6-N9-9Dp">
-                                        <rect key="frame" x="0.0" y="258" width="414" height="43.5"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="TY6-N9-9Dp" id="1CW-VC-avL">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Send traces for UI Tests" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mfa-d4-bXd">
-                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <segue destination="dQd-PO-4F8" kind="show" id="A9W-uP-Mly"/>
-                                        </connections>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="l3V-Ox-kSa" style="IBUITableViewCellStyleDefault" id="fQz-Mr-2Bo">
-                                        <rect key="frame" x="0.0" y="301.5" width="414" height="43.5"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="fQz-Mr-2Bo" id="LHK-QM-RpV">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Send RUM events for UI Tests" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="l3V-Ox-kSa">
-                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <segue destination="aYv-rh-9k5" kind="show" id="GFk-KX-86C"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -394,7 +330,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1319" y="-273"/>
+            <point key="canvasLocation" x="-239" y="-245"/>
         </scene>
         <!--Debug Tracing View Controller-->
         <scene sceneID="qsy-Bu-n9m">
@@ -700,65 +636,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LiQ-0O-emZ" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-310" y="-273"/>
-        </scene>
-        <!--Send Logs Fixture View Controller-->
-        <scene sceneID="pAJ-JA-qyP">
-            <objects>
-                <viewController id="6cL-Sc-vbm" customClass="SendLogsFixtureViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="uJg-Zj-2p8">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending logs... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eN3-26-Att">
-                                <rect key="frame" x="146" y="437.5" width="122" height="21"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <constraints>
-                            <constraint firstItem="eN3-26-Att" firstAttribute="centerY" secondItem="uJg-Zj-2p8" secondAttribute="centerY" id="TYh-qt-WSq"/>
-                            <constraint firstItem="eN3-26-Att" firstAttribute="centerX" secondItem="uJg-Zj-2p8" secondAttribute="centerX" id="bAc-FS-DpA"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="9il-94-ccy"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="Obr-1g-kOD"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="8d2-uk-OiR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-1386" y="1233"/>
-        </scene>
-        <!--Send Traces Fixture View Controller-->
-        <scene sceneID="LEY-wo-4ju">
-            <objects>
-                <viewController id="dQd-PO-4F8" customClass="SendTracesFixtureViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="iEH-Jh-wcF">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending traces... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OQc-SX-UQJ">
-                                <rect key="frame" x="138" y="437.5" width="138" height="21"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <constraints>
-                            <constraint firstItem="OQc-SX-UQJ" firstAttribute="centerX" secondItem="iEH-Jh-wcF" secondAttribute="centerX" id="Mme-MH-jDz"/>
-                            <constraint firstItem="OQc-SX-UQJ" firstAttribute="centerY" secondItem="iEH-Jh-wcF" secondAttribute="centerY" id="tS3-bZ-ee7"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="5fD-Q8-BQ1"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="ap5-Ws-Q2y"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="6qc-vU-hqo" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-542" y="1233"/>
+            <point key="canvasLocation" x="-239" y="448"/>
         </scene>
         <!--DebugRUM View Controller-->
         <scene sceneID="JCG-Nr-eCn">
@@ -1220,169 +1098,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="z20-g6-vwL" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="675" y="-273"/>
-        </scene>
-        <!--SendRUM Fixture1 View Controller-->
-        <scene sceneID="c26-v4-HIp">
-            <objects>
-                <viewController id="aYv-rh-9k5" customClass="SendRUMFixture1ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="hqR-vc-dhH">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TAP-cq-oB8">
-                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RXN-TV-L2P">
-                                <rect key="frame" x="107" y="466.5" width="200" height="44"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="0pi-Zc-4qA"/>
-                                    <constraint firstAttribute="height" constant="44" id="nZF-2g-e7f"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <state key="normal" title="Download Resource">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <integer key="value" value="7"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="didTapDownloadResourceButton:" destination="aYv-rh-9k5" eventType="touchUpInside" id="1Jy-p6-hJJ"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ruj-73-qLY">
-                                <rect key="frame" x="107" y="518.5" width="200" height="44"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="44" id="Bmg-kT-Yxc"/>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="sSM-Io-P5M"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <state key="normal" title="Push Next Screen">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <integer key="value" value="7"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <segue destination="6GY-za-J8c" kind="show" id="izd-aP-tP1"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <constraints>
-                            <constraint firstItem="TAP-cq-oB8" firstAttribute="centerY" secondItem="hqR-vc-dhH" secondAttribute="centerY" id="CWP-u7-YDL"/>
-                            <constraint firstItem="ruj-73-qLY" firstAttribute="top" secondItem="RXN-TV-L2P" secondAttribute="bottom" constant="8" id="HbZ-zt-scQ"/>
-                            <constraint firstItem="RXN-TV-L2P" firstAttribute="top" secondItem="TAP-cq-oB8" secondAttribute="bottom" constant="8" id="Hfx-A2-jgX"/>
-                            <constraint firstItem="RXN-TV-L2P" firstAttribute="centerX" secondItem="hqR-vc-dhH" secondAttribute="centerX" id="J8n-CE-UAu"/>
-                            <constraint firstItem="ruj-73-qLY" firstAttribute="centerX" secondItem="hqR-vc-dhH" secondAttribute="centerX" id="xyn-52-QCf"/>
-                            <constraint firstItem="TAP-cq-oB8" firstAttribute="centerX" secondItem="hqR-vc-dhH" secondAttribute="centerX" id="z26-0p-djn"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="nQt-QF-hgQ"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="3Wo-iA-H76"/>
-                    <connections>
-                        <outlet property="pushNextScreenButton" destination="ruj-73-qLY" id="c7N-Ar-CIq"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Ugy-cJ-IEs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="258" y="1233"/>
-        </scene>
-        <!--SendRUM Fixture2 View Controller-->
-        <scene sceneID="7z8-r4-do8">
-            <objects>
-                <viewController id="6GY-za-J8c" customClass="SendRUMFixture2ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="ZJp-0b-4KB">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fDJ-Tx-6eZ">
-                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vWW-9m-bZQ">
-                                <rect key="frame" x="107" y="468.5" width="200" height="44"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="Lfu-z1-wSC"/>
-                                    <constraint firstAttribute="height" constant="44" id="zuJ-2f-nG1"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <state key="normal" title="Push Next Screen">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <integer key="value" value="7"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <segue destination="Ym4-Og-fR7" kind="show" id="k8q-aq-QgP"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <constraints>
-                            <constraint firstItem="vWW-9m-bZQ" firstAttribute="top" secondItem="fDJ-Tx-6eZ" secondAttribute="bottom" constant="10" id="DzN-Te-PyQ"/>
-                            <constraint firstItem="vWW-9m-bZQ" firstAttribute="centerX" secondItem="ZJp-0b-4KB" secondAttribute="centerX" id="PwK-RN-S5j"/>
-                            <constraint firstItem="fDJ-Tx-6eZ" firstAttribute="centerX" secondItem="ZJp-0b-4KB" secondAttribute="centerX" id="RVB-9S-x9C"/>
-                            <constraint firstItem="fDJ-Tx-6eZ" firstAttribute="centerY" secondItem="ZJp-0b-4KB" secondAttribute="centerY" id="dn5-gJ-4eQ"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="6Eg-KL-CZj"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="TcA-ty-WlM"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="a73-lN-gE3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1026" y="1233"/>
-        </scene>
-        <!--SendRUM Fixture3 View Controller-->
-        <scene sceneID="CtE-po-hG0">
-            <objects>
-                <viewController id="Ym4-Og-fR7" customClass="SendRUMFixture3ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Fof-gR-hNV">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h3E-Aj-64C">
-                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <constraints>
-                            <constraint firstItem="h3E-Aj-64C" firstAttribute="centerX" secondItem="Fof-gR-hNV" secondAttribute="centerX" id="3hE-0c-h39"/>
-                            <constraint firstItem="h3E-Aj-64C" firstAttribute="centerY" secondItem="Fof-gR-hNV" secondAttribute="centerY" id="L7U-sw-Jgx"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="v1Q-cn-gOs"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="xNt-tS-tjM"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="WdG-UD-APE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1788" y="1233"/>
+            <point key="canvasLocation" x="-239" y="1175"/>
         </scene>
     </scenes>
 </document>

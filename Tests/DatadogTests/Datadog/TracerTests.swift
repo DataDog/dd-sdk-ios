@@ -674,7 +674,7 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.level, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
-                .contains("No `RUMMonitor` is registered, so RUM integration with Tracing will not work.")
+                .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
         )
 
         let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
@@ -807,7 +807,7 @@ class TracerTests: XCTestCase {
         )
     }
 
-    func test_whenSpanStateChangesFromDifferentThreads_itChangesSpanState() {
+    func testWhenSpanStateChangesFromDifferentThreads_itChangesSpanState() {
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
         let tracer = Tracer.initialize(configuration: .init())

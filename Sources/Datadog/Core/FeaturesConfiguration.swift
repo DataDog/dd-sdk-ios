@@ -38,10 +38,18 @@ internal struct FeaturesConfiguration {
     }
 
     struct RUM {
+        struct AutoInstrumentation {
+            // TODO: RUMM-713 Add RUM Views insturmentation configuration
+            // TODO: RUMM-717 Add RUM Actions insturmentation configuration
+            // TODO: RUMM-718 Add RUM Resources insturmentation configuration
+        }
+
         let common: Common
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
+        /// RUM auto instrumentation configuration, `nil` if not enabled.
+        let autoInstrumentation: AutoInstrumentation?
     }
 
     /// Configuration common to all features.
@@ -111,6 +119,9 @@ extension FeaturesConfiguration {
         }
 
         if configuration.rumEnabled {
+            // TODO: RUMM-713 RUMM-717 RUMM-718 Enable RUM.AutoInstrumentation conditionally
+            let autoInstrumentation: RUM.AutoInstrumentation? = nil
+
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
                     common: common,
@@ -119,7 +130,8 @@ extension FeaturesConfiguration {
                         clientToken: configuration.clientToken
                     ),
                     applicationID: rumApplicationID,
-                    sessionSamplingRate: configuration.rumSessionsSamplingRate
+                    sessionSamplingRate: configuration.rumSessionsSamplingRate,
+                    autoInstrumentation: autoInstrumentation
                 )
             } else {
                 let error = ProgrammerError(
@@ -140,9 +152,12 @@ extension FeaturesConfiguration {
 }
 
 private func ifValid(environment: String) throws -> String {
-    let regex = #"^[a-zA-Z0-9_]+$"#
+    /// 1. cannot be more than 200 chars (including `env:` prefix)
+    /// 2. cannot end with `:`
+    /// 3. can contain letters, numbers and _:./-_ (other chars are converted to _ at backend)
+    let regex = #"^[a-zA-Z0-9_:./-]{0,195}[a-zA-Z0-9_./-]$"#
     if environment.range(of: regex, options: .regularExpression, range: nil, locale: nil) == nil {
-        throw ProgrammerError(description: "`environment` contains illegal characters (only alphanumerics and `_` are allowed)")
+        throw ProgrammerError(description: "`environment`: \(environment) contains illegal characters (only alphanumerics and `_` are allowed)")
     }
     return environment
 }

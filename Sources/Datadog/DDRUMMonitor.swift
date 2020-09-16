@@ -18,14 +18,14 @@ public class DDRUMMonitor {
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - path: the View path used for RUM Explorer. If not provided, the `UIViewController` class name will be used.
     ///   - attributes: custom attributes to attach to the View.
-    public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the View stops being presented to the user.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - attributes: custom attributes to attach to the View.
-    public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that an Error occurred in currently presented View.
@@ -38,7 +38,7 @@ public class DDRUMMonitor {
     public func addViewError(
         message: String,
         source: RUMErrorSource,
-        attributes: [AttributeKey: AttributeValue]? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:],
         file: StaticString? = #file,
         line: UInt? = #line
     ) {
@@ -52,7 +52,7 @@ public class DDRUMMonitor {
     public func addViewError(
         error: Error,
         source: RUMErrorSource,
-        attributes: [AttributeKey: AttributeValue]? = nil
+        attributes: [AttributeKey: AttributeValue] = [:]
     ) {
     }
 
@@ -62,7 +62,7 @@ public class DDRUMMonitor {
     ///   - url: the `URL` of the Resource.
     ///   - httpMethod: the HTTP method used to load the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded succesfully.
@@ -72,7 +72,7 @@ public class DDRUMMonitor {
     ///   - httpStatusCode: the HTTP response status code for this Resource.
     ///   - size: the size of the Resource (in bytes).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded with error.
@@ -83,7 +83,7 @@ public class DDRUMMonitor {
     ///   - source: the origin of the error.
     ///   - httpStatusCode: HTTP status code (optional).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded with error.
@@ -94,7 +94,7 @@ public class DDRUMMonitor {
     ///   - source: the origin of the error.
     ///   - httpStatusCode: HTTP status code (optional).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the User Action has started.
@@ -104,7 +104,7 @@ public class DDRUMMonitor {
     ///   - type: the User Action type
     ///   - name: the User Action name
     ///   - attributes: custom attributes to attach to the User Action.
-    public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the User Action has stopped.
@@ -113,7 +113,7 @@ public class DDRUMMonitor {
     ///   - type: the User Action type
     ///   - name: the User Action name. If `nil`, the `name` used in `startUserAction` will be effective.
     ///   - attributes: custom attributes to attach to the User Action.
-    public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Registers the occurence of an User Action.
@@ -122,7 +122,7 @@ public class DDRUMMonitor {
     ///   - type: the User Action type
     ///   - name: the User Action name
     ///   - attributes: custom attributes to attach to the User Action.
-    public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil) {
+    public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     // MARK: - Attributes

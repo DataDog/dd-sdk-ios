@@ -120,6 +120,7 @@ public class Datadog {
         var rum: RUMFeature?
 
         var tracingAutoInstrumentation: TracingAutoInstrumentation?
+        var rumAutoInstrumentation: RUMAutoInstrumentation?
 
         let commonDependencies = FeaturesCommonDependencies(
             performance: configuration.common.performance,
@@ -158,6 +159,9 @@ public class Datadog {
                 configuration: rumConfiguration,
                 commonDependencies: commonDependencies
             )
+            if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
+                rumAutoInstrumentation = RUMAutoInstrumentation(with: autoInstrumentationConfiguration)
+            }
         }
 
         LoggingFeature.instance = logging
@@ -166,6 +170,8 @@ public class Datadog {
 
         TracingAutoInstrumentation.instance = tracingAutoInstrumentation
         TracingAutoInstrumentation.instance?.apply()
+
+        RUMAutoInstrumentation.instance = rumAutoInstrumentation
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(
@@ -192,6 +198,7 @@ public class Datadog {
         TracingFeature.instance = nil
         RUMFeature.instance = nil
         TracingAutoInstrumentation.instance = nil
+        RUMAutoInstrumentation.instance = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil

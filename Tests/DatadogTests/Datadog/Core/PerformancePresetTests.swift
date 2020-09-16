@@ -47,14 +47,14 @@ class PerformancePresetTests: XCTestCase {
                 "Upload delay boundaries must be consistent."
             )
             XCTAssertLessThanOrEqual(
-                preset.uploadDelayDecreaseFactor,
+                preset.uploadDelayChangeRate,
                 1,
-                "Upload delay should not be increased towards infinity."
+                "Upload delay should not change by more than %100 at once."
             )
             XCTAssertGreaterThan(
-                preset.uploadDelayDecreaseFactor,
+                preset.uploadDelayChangeRate,
                 0,
-                "Upload delay must never result with 0."
+                "Upload delay must change at non-zero rate."
             )
         }
     }
