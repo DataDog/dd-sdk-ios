@@ -6,19 +6,34 @@
 
 import UIKit
 
-// TODO: RUMM-713 Add public API comment
+/// A description of the RUM View returned from the `UIKitRUMViewsPredicate`.
 public struct RUMViewFromPredicate {
     // TODO: RUMM-726 Rename to `RUMView` when this name is no longer taken by auto-generated model(s).
-    public var name: String
+
+    /// The RUM View path, appearing as `PATH` in RUM Explorer.
+    public var path: String
+
+    /// Additional attributes to associate with the RUM View.
     public var attributes: [AttributeKey: AttributeValue]
 
-    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
-        self.name = name
+    /// Initializes the RUM View description.
+    /// - Parameters:
+    ///   - path: the RUM View path, appearing as "PATH" in RUM Explorer.
+    ///   - attributes: additional attributes to associate with the RUM View.
+    public init(path: String, attributes: [AttributeKey: AttributeValue] = [:]) {
+        self.path = path
         self.attributes = attributes
     }
 }
 
-// TODO: RUMM-713 Add public API comment
+/// The predicate deciding if a given `UIViewController` marks the beginning or end of the RUM View.
+///
+/// When the app is running, the SDK will ask the implementation of `UIKitRUMViewsPredicate` if any noticed `UIViewController` should be considered
+/// as the RUM View. The predicate implementation should return RUM View parameters if the `UIViewController` should start/end
+/// the RUM View or `nil` otherwise.
 public protocol UIKitRUMViewsPredicate {
+    /// The predicate deciding if the RUM View should be started or ended for given instance of the `UIViewController`.
+    /// - Parameter viewController: an instance of the view controller noticed by the SDK.
+    /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
     func rumView(for viewController: UIViewController) -> RUMViewFromPredicate?
 }

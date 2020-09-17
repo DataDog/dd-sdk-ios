@@ -110,13 +110,13 @@ struct RUMNavigationControllerScenario: TestScenario {
         func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
             switch viewController.accessibilityLabel {
             case "Screen 1":
-                return .init(name: "Screen1")
+                return .init(path: "Screen1")
             case "Screen 2":
-                return .init(name: "Screen2")
+                return .init(path: "Screen2")
             case "Screen 3":
-                return .init(name: "Screen3")
+                return .init(path: "Screen3")
             case "Screen 4":
-                return .init(name: "Screen4")
+                return .init(path: "Screen4")
             default:
                 return nil
             }

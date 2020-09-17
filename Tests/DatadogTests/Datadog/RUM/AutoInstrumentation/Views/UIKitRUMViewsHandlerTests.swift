@@ -20,7 +20,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
     func testGivenAcceptingPredicate_whenViewWillAppear_itSendsRUMStartViewCommand() {
         // Given
-        predicate.result = .init(name: "Foo", attributes: ["foo": "bar"])
+        predicate.result = .init(path: "Foo", attributes: ["foo": "bar"])
 
         // When
         handler.notify_viewWillAppear(viewController: mockView, animated: .mockAny())
@@ -46,7 +46,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
     func testGivenAcceptingPredicate_whenViewWillDisappear_itSendsRUMStopViewCommand() {
         // Given
-        predicate.result = .init(name: "Foo", attributes: ["foo": "bar"])
+        predicate.result = .init(path: "Foo", attributes: ["foo": "bar"])
 
         // When
         handler.notify_viewWillDisappear(viewController: mockView, animated: .mockAny())
