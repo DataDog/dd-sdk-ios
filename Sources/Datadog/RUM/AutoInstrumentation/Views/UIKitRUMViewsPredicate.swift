@@ -10,7 +10,12 @@ import UIKit
 public struct RUMViewFromPredicate {
     // TODO: RUMM-726 Rename to `RUMView` when this name is no longer taken by auto-generated model(s).
     public var name: String
-    public var attributes: [AttributeKey: AttributeValue] = [:]
+    public var attributes: [AttributeKey: AttributeValue]
+
+    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
+        self.name = name
+        self.attributes = attributes
+    }
 }
 
 // TODO: RUMM-713 Add public API comment

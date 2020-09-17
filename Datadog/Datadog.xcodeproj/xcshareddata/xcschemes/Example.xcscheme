@@ -66,6 +66,11 @@
             value = "RUMManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "RUMNavigationControllerScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

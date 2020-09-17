@@ -251,6 +251,11 @@
 		61F3CDAD25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */; };
 		61F9CA712512450B000A5E61 /* RUMAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA702512450B000A5E61 /* RUMAutoInstrumentationTests.swift */; };
+		61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */; };
+		61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */; };
+		61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */; };
+		61F9CA9F2513978D000A5E61 /* RUMSessionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA982513977A000A5E61 /* RUMSessionMatcher.swift */; };
+		61F9CABA2513A7F5000A5E61 /* RUMSessionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA982513977A000A5E61 /* RUMSessionMatcher.swift */; };
 		61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
 		61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */; };
 		61FF281E24B8968D000B3D9B /* RUMEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */; };
@@ -581,6 +586,10 @@
 		61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationBuilderTests.swift; sourceTree = "<group>"; };
 		61F9CA702512450B000A5E61 /* RUMAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoInstrumentationTests.swift; sourceTree = "<group>"; };
+		61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMNavigationControllerScenario.storyboard; sourceTree = "<group>"; };
+		61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMNCSScreen3ViewController.swift; sourceTree = "<group>"; };
+		61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMNavigationControllerScenarioTests.swift; sourceTree = "<group>"; };
+		61F9CA982513977A000A5E61 /* RUMSessionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionMatcher.swift; sourceTree = "<group>"; };
 		61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureMocks.swift; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* LoggingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeatureTests.swift; sourceTree = "<group>"; };
 		61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventBuilder.swift; sourceTree = "<group>"; };
@@ -1075,6 +1084,7 @@
 				61133C432423990D00786299 /* LogMatcher.swift */,
 				61E45ED02451A8730061DAC7 /* SpanMatcher.swift */,
 				61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */,
+				61F9CA982513977A000A5E61 /* RUMSessionMatcher.swift */,
 			);
 			path = Matchers;
 			sourceTree = "<group>";
@@ -1190,6 +1200,7 @@
 			isa = PBXGroup;
 			children = (
 				61337037250F84FD00236D58 /* ManualInstrumentation */,
+				61F9CA7725125918000A5E61 /* NavigationController */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1662,6 +1673,7 @@
 			isa = PBXGroup;
 			children = (
 				61C2C20C24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift */,
+				61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1692,6 +1704,15 @@
 				61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		61F9CA7725125918000A5E61 /* NavigationController */ = {
+			isa = PBXGroup;
+			children = (
+				61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */,
+				61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */,
+			);
+			path = NavigationController;
 			sourceTree = "<group>";
 		};
 		61FF281F24B89807000B3D9B /* RUMEvent */ = {
@@ -1997,6 +2018,7 @@
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
 				61441C0C24616DE9003D8BB8 /* Main.storyboard in Resources */,
+				61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */,
 				61337035250F84BF00236D58 /* TracingScenario.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2204,6 +2226,7 @@
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
 				61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */,
 				617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */,
+				61F9CABA2513A7F5000A5E61 /* RUMSessionMatcher.swift in Sources */,
 				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
 				61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */,
 				615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */,
@@ -2308,6 +2331,7 @@
 			files = (
 				618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */,
 				61441C982461A649003D8BB8 /* DebugTracingViewController.swift in Sources */,
+				61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */,
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,
 				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
@@ -2336,6 +2360,8 @@
 				61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */,
 				61441C4B24618052003D8BB8 /* SpanMatcher.swift in Sources */,
 				61F3CD9A2510D8C500C816E5 /* Environment.swift in Sources */,
+				61F9CA9F2513978D000A5E61 /* RUMSessionMatcher.swift in Sources */,
+				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
 				61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */,
 				61F3CD9B2510D95A00C816E5 /* TestScenarios.swift in Sources */,
 				9E307C3224C8846D0039607E /* RUMDataModels.swift in Sources */,
@@ -2739,7 +2765,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG DD_COMPILED_FOR_INTEGRATION_TESTS";
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = Example;
 			};
@@ -2758,6 +2784,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_COMPILED_FOR_INTEGRATION_TESTS;
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = Example;
 			};
@@ -2776,6 +2803,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_COMPILED_FOR_INTEGRATION_TESTS;
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = Example;
 			};

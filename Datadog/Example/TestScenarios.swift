@@ -6,6 +6,7 @@
 
 import Foundation
 import Datadog
+import UIKit
 
 // MARK: - TestScenario interface
 
@@ -38,6 +39,8 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
         return TracingScenario()
     case RUMManualInstrumentationScenario.envIdentifier():
         return RUMManualInstrumentationScenario()
+    case RUMNavigationControllerScenario.envIdentifier():
+        return RUMNavigationControllerScenario()
     default:
         fatalError("Cannot find `TestScenario` for `envIdentifier`: \(envIdentifier)")
     }
@@ -96,4 +99,31 @@ struct TracingScenario: TestScenario {
 /// uses the RUM manual instrumentation API to send RUM events to the server.
 struct RUMManualInstrumentationScenario: TestScenario {
     static let storyboardName = "RUMManualInstrumentationScenario"
+}
+
+/// Scenario which starts a navigation controller and runs through 4 different view controllers by navigating
+/// back and forth.
+struct RUMNavigationControllerScenario: TestScenario {
+    static let storyboardName = "RUMNavigationControllerScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+            switch viewController.accessibilityLabel {
+            case "Screen 1":
+                return .init(name: "Screen1")
+            case "Screen 2":
+                return .init(name: "Screen2")
+            case "Screen 3":
+                return .init(name: "Screen3")
+            case "Screen 4":
+                return .init(name: "Screen4")
+            default:
+                return nil
+            }
+        }
+    }
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder.trackUIKitRUMViews(using: Predicate())
+    }
 }
