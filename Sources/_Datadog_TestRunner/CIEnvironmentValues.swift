@@ -7,18 +7,18 @@
 import Foundation
 
 internal struct CIEnvironmentValues {
-    var isCi: Bool
-    var provider: String?
-    var repository: String?
-    var commit: String?
-    var branch: String?
-    var tag: String?
-    var sourceRoot: String?
-    var workspacePath: String?
-    var pipelineId: String?
-    var pipelineNumber: String?
-    var pipelineURL: String?
-    var jobURL: String?
+    let isCi: Bool
+    let provider: String?
+    let repository: String?
+    let commit: String?
+    let branch: String?
+    let tag: String?
+    let sourceRoot: String?
+    let workspacePath: String?
+    let pipelineId: String?
+    let pipelineNumber: String?
+    let pipelineURL: String?
+    let jobURL: String?
 
     static var environment = ProcessInfo.processInfo.environment
 

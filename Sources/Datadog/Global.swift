@@ -11,7 +11,7 @@ public struct Global {
         didSet {
             #if canImport(_Datadog_TestRunner)
             if DDTestRunner.instance != nil, !(oldValue is DDNoopTracer) {
-                    sharedTracer = oldValue
+                sharedTracer = oldValue
             }
             #endif
         }

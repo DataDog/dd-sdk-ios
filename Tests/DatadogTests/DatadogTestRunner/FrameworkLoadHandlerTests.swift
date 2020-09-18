@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class FrameworkLoadHandlerTests: XCTestCase {
-    var testEnvironment = [String: String]()
+    private var testEnvironment = [String: String]()
 
     override func setUp() {
         FrameworkLoadHandler.environment = [String: String]()

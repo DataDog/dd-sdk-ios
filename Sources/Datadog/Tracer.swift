@@ -22,7 +22,7 @@ public struct DDTags {
     internal static let errorMessage = "error.msg"
     internal static let errorStack   = "error.stack"
 
-    /// Default span type for spans created without a sspecifying a type. In general all spans should use this type
+    /// Default span type for spans created without a specifying a type. In general all spans should use this type.
     internal static let defaultSpanType = "custom"
 }
 
