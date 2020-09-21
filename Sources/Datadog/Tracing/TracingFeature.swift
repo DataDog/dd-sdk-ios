@@ -8,7 +8,7 @@ import Foundation
 
 /// Obtains a subdirectory in `/Library/Caches` where span files are stored.
 internal func obtainTracingFeatureDirectory() throws -> Directory {
-    return try Directory(withSubdirectoryPath: "com.datadoghq.traces/v1")
+    return try Directory(withSubdirectoryPath: TracingFeature.dataDirectoryPath)
 }
 
 /// Creates and owns componetns enabling tracing feature.
@@ -43,6 +43,8 @@ internal final class TracingFeature {
     static let featureName = "tracing"
     /// NOTE: any change to data format requires updating the directory url to be unique
     static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
+
+    static let dataDirectoryPath = "com.datadoghq.traces/v1"
 
     /// Span files storage.
     let storage: FeatureStorage

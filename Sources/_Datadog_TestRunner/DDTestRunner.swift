@@ -10,6 +10,7 @@ import Foundation
 internal class DDTestRunner: NSObject, XCTestObservation {
     static var instance: DDTestRunner?
 
+    private let env = DDEnvironmentValues()
     private let testNameRegex = try? NSRegularExpression(pattern: "([\\w]+) ([\\w]+)", options: .caseInsensitive)
     private let supportsSkipping = NSClassFromString("XCTSkippedTestContext") != nil
     private var currentBundleName = ""
@@ -22,22 +23,15 @@ internal class DDTestRunner: NSObject, XCTestObservation {
     }
 
     func startTracer() {
-        var clientToken = ""
-        if let envToken = ProcessInfo.processInfo.environment["DATADOG_CLIENT_TOKEN"] {
-            clientToken = envToken.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        } else if let bundleToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String {
-            clientToken = bundleToken.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        }
-
-        if clientToken.isEmpty {
+        guard let clientToken = env.ddClientToken else {
             return
         }
 
         Datadog.initialize(
             appContext: .init(),
             configuration: Datadog.Configuration
-                .builderUsing(clientToken: clientToken, environment: CIEnvironmentValues.getEnvVariable("DD_ENV") ?? "test")
-                .set(serviceName: CIEnvironmentValues.getEnvVariable("DD_SERVICE") ?? ProcessInfo.processInfo.processName)
+                .builderUsing(clientToken: clientToken, environment: env.ddEnvironment ?? "test")
+                .set(serviceName: env.ddService ?? ProcessInfo.processInfo.processName)
                 .build()
         )
 
@@ -66,7 +60,7 @@ internal class DDTestRunner: NSObject, XCTestObservation {
         /// <--- here the file will be existing
 
         do {
-            let directory = try Directory(withSubdirectoryPath: "com.datadoghq.traces/v1")
+            let directory = try Directory(withSubdirectoryPath: TracingFeature.dataDirectoryPath)
             while try directory.files().count > 0 {
                 Thread.sleep(forTimeInterval: 0.5)
             }
@@ -96,15 +90,10 @@ internal class DDTestRunner: NSObject, XCTestObservation {
             DDTestingTags.testTraits: currentBundleName
         ]
 
-        activeTestSpan = tracer.startSpan(spanContext: tracer.createSpanContext(), operationName: "XCTest.test", spanType: DDTestingTags.typeTest, tags: tags)
-        activeTestSpan?.setActive()
-
-        guard let testSpan = activeTestSpan else {
-            return
-        }
-
-        let envValues = CIEnvironmentValues()
-        envValues.addTagsToSpan(span: testSpan)
+        let testSpan = tracer.startSpan(spanContext: tracer.createSpanContext(), operationName: "XCTest.test", spanType: DDTestingTags.typeTest, tags: tags)
+        testSpan.setActive()
+        env.addTagsToSpan(span: testSpan)
+        activeTestSpan = testSpan
     }
 
     func testCaseDidFinish(_ testCase: XCTestCase) {

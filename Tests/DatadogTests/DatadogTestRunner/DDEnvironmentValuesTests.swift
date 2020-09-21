@@ -7,15 +7,28 @@
 import XCTest
 @testable import Datadog
 
-class CIEnvironmentValuesTests: XCTestCase {
+class DDEnvironmentValuesTests: XCTestCase {
     var testEnvironment = [String: String]()
 
     override func setUp() {
-        CIEnvironmentValues.environment = [String: String]()
+        DDEnvironmentValues.environment = [String: String]()
     }
 
     func setEnvVariables() {
-        CIEnvironmentValues.environment = testEnvironment
+        DDEnvironmentValues.environment = testEnvironment
+    }
+
+    func testWhenDatadogEnvironmentAreSet_TheyAreStoredCorrectly() {
+        testEnvironment["DATADOG_CLIENT_TOKEN"] = "token5a101f16"
+        testEnvironment["DD_SERVICE"] = "testService"
+        testEnvironment["DD_ENV"] = "testEnv"
+
+        setEnvVariables()
+
+        let env = DDEnvironmentValues()
+        XCTAssertEqual(env.ddClientToken, "token5a101f16")
+        XCTAssertEqual(env.ddEnvironment, "testEnv")
+        XCTAssertEqual(env.ddService, "testService")
     }
 
     func testTravisEnvironment() {
@@ -32,18 +45,18 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "travis")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "http://travis.com/build")
-        XCTAssertEqual(ci.jobURL!, "http://travis.com/job")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "travis")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "http://travis.com/build")
+        XCTAssertEqual(env.jobURL!, "http://travis.com/job")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testCircleCIEnvironment() {
@@ -52,21 +65,21 @@ class CIEnvironmentValuesTests: XCTestCase {
         testEnvironment["CIRCLE_SHA1"] = "37e376448b0ac9b7f54404"
         testEnvironment["CIRCLE_WORKING_DIRECTORY"] = "/build"
         testEnvironment["CIRCLE_BUILD_NUM"] = "43"
-        testEnvironment["CIRCLE_BUILD_URL"] = "http://circleci.com/build"
+        testEnvironment["CIRCLE_BUILD_URL"] = "http://circleenv.com/build"
         testEnvironment["CIRCLE_BRANCH"] = "develop"
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "circleci")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineNumber!, "43")
-        XCTAssertEqual(ci.pipelineURL!, "http://circleci.com/build")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "circleci")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineNumber!, "43")
+        XCTAssertEqual(env.pipelineURL!, "http://circleenv.com/build")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testJenkinsEnvironment() {
@@ -82,18 +95,18 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "jenkins")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "45")
-        XCTAssertEqual(ci.pipelineURL!, "http://jenkins.com/build")
-        XCTAssertEqual(ci.jobURL!, "http://jenkins.com/job")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "jenkins")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "45")
+        XCTAssertEqual(env.pipelineURL!, "http://jenkins.com/build")
+        XCTAssertEqual(env.jobURL!, "http://jenkins.com/job")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testGitlabCIEnvironment() {
@@ -111,19 +124,19 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "gitlab")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "http://travis.com/build")
-        XCTAssertEqual(ci.jobURL!, "http://travis.com/job")
-        XCTAssertEqual(ci.branch!, "develop")
-        XCTAssertEqual(ci.tag!, "0.1.1")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "gitlab")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "http://travis.com/build")
+        XCTAssertEqual(env.jobURL!, "http://travis.com/job")
+        XCTAssertEqual(env.branch!, "develop")
+        XCTAssertEqual(env.tag!, "0.1.1")
     }
 
     func testAppVeyorEnvironment() {
@@ -138,17 +151,17 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "appveyor")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "https://ci.appveyor.com/project/projectSlug/builds/pipeline1")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "appveyor")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "https://ci.appveyor.com/project/projectSlug/builds/pipeline1")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testAzureEnvironment() {
@@ -164,17 +177,17 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "azurepipelines")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/test/repo")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "foundationCollection/teamProject/_build/results?buildId=pipeline1&_a=summary")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "azurepipelines")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/test/repo")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "foundationCollection/teamProject/_build/results?buildId=pipeline1&_a=summary")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testBitbucketEnvironment() {
@@ -186,15 +199,15 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "bitbucketpipelines")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "bitbucketpipelines")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
     }
 
     func testGithubEnvironment() {
@@ -208,17 +221,17 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "github")
-        XCTAssertEqual(ci.repository!, "http://github.com/project")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "http://github.com/project/commit/37e376448b0ac9b7f54404/checks")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "github")
+        XCTAssertEqual(env.repository!, "http://github.com/project")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "http://github.com/project/commit/37e376448b0ac9b7f54404/checks")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testTeamCityEnvironment() {
@@ -232,16 +245,16 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "teamcity")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "http://teamcity.com/viewLog.html?buildId=pipeline1")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "teamcity")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "http://teamcity.com/viewLog.html?buildId=pipeline1")
     }
 
     func testBuildkiteEnvironment() {
@@ -256,17 +269,17 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "buildkite")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "http://buildkite.com/build")
-        XCTAssertEqual(ci.branch!, "develop")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "buildkite")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "http://buildkite.com/build")
+        XCTAssertEqual(env.branch!, "develop")
     }
 
     func testBitriseEnvironment() {
@@ -284,19 +297,19 @@ class CIEnvironmentValuesTests: XCTestCase {
 
         setEnvVariables()
 
-        let ci = CIEnvironmentValues()
+        let env = DDEnvironmentValues()
 
-        XCTAssertTrue(ci.isCi)
-        XCTAssertEqual(ci.provider!, "bitrise")
-        XCTAssertEqual(ci.repository!, "/test/repo")
-        XCTAssertEqual(ci.commit!, "37e376448b0ac9b7f54404")
-        XCTAssertEqual(ci.sourceRoot!, "/build")
-        XCTAssertEqual(ci.pipelineId!, "pipeline1")
-        XCTAssertEqual(ci.pipelineNumber!, "4345")
-        XCTAssertEqual(ci.pipelineURL!, "https://app.bitrise.io/build")
-        XCTAssertEqual(ci.jobURL!, "https://app.bitrise.io/app")
-        XCTAssertEqual(ci.branch!, "develop")
-        XCTAssertEqual(ci.tag!, "0.0.1")
+        XCTAssertTrue(env.isCi)
+        XCTAssertEqual(env.provider!, "bitrise")
+        XCTAssertEqual(env.repository!, "/test/repo")
+        XCTAssertEqual(env.commit!, "37e376448b0ac9b7f54404")
+        XCTAssertEqual(env.sourceRoot!, "/build")
+        XCTAssertEqual(env.pipelineId!, "pipeline1")
+        XCTAssertEqual(env.pipelineNumber!, "4345")
+        XCTAssertEqual(env.pipelineURL!, "https://app.bitrise.io/build")
+        XCTAssertEqual(env.jobURL!, "https://app.bitrise.io/app")
+        XCTAssertEqual(env.branch!, "develop")
+        XCTAssertEqual(env.tag!, "0.0.1")
     }
 
     func testAddsTagsToSpan() {
@@ -315,8 +328,8 @@ class CIEnvironmentValuesTests: XCTestCase {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.tags.count, 0)
 
-        let ci = CIEnvironmentValues()
-        ci.addTagsToSpan(span: span)
+        let env = DDEnvironmentValues()
+        env.addTagsToSpan(span: span)
 
         XCTAssertEqual(span.tags.count, 10)
 
@@ -337,8 +350,8 @@ class CIEnvironmentValuesTests: XCTestCase {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.tags.count, 0)
 
-        let ci = CIEnvironmentValues()
-        ci.addTagsToSpan(span: span)
+        let env = DDEnvironmentValues()
+        env.addTagsToSpan(span: span)
 
         XCTAssertEqual(span.tags.count, 0)
     }

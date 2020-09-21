@@ -274,7 +274,7 @@
 		E11D9F7925091F5100AA854E /* XCTMeasurement.h in Headers */ = {isa = PBXBuildFile; fileRef = E11D9F7025091F5100AA854E /* XCTMeasurement.h */; };
 		E11D9F7A25091F5100AA854E /* ObjcLoadHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = E11D9F7125091F5100AA854E /* ObjcLoadHandler.h */; };
 		E11D9F7C25091F5100AA854E /* DDTestingTags.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D9F7325091F5100AA854E /* DDTestingTags.swift */; };
-		E11D9F7D25091F5100AA854E /* CIEnvironmentValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D9F7425091F5100AA854E /* CIEnvironmentValues.swift */; };
+		E11D9F7D25091F5100AA854E /* DDEnvironmentValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D9F7425091F5100AA854E /* DDEnvironmentValues.swift */; };
 		E11D9F7E25091F5100AA854E /* FrameworkLoadHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D9F7525091F5100AA854E /* FrameworkLoadHandler.swift */; };
 		E11D9F7F25091F5100AA854E /* ObjcLoadHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = E11D9F7725091F5100AA854E /* ObjcLoadHandler.m */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
@@ -282,7 +282,7 @@
 		E17CE22C2512611800BD2225 /* ExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17CE22B2512611800BD2225 /* ExampleTests.swift */; };
 		E17CE22D2512618C00BD2225 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		E1977EA4250A0C6300A784F2 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11D9F80250A082E00AA854E /* XCTest.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		E1978083250F533300A784F2 /* CIEnvironmentValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1978082250F533300A784F2 /* CIEnvironmentValuesTests.swift */; };
+		E1978083250F533300A784F2 /* DDEnvironmentValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1978082250F533300A784F2 /* DDEnvironmentValuesTests.swift */; };
 		E1978085250FB07500A784F2 /* FrameworkLoadHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1978084250FB07500A784F2 /* FrameworkLoadHandlerTests.swift */; };
 		E1D202EA24C065CF00D1AF3A /* ActiveSpansPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */; };
 		E1D203FD24C1885C00D1AF3A /* ActiveSpansPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */; };
@@ -620,7 +620,7 @@
 		E11D9F7025091F5100AA854E /* XCTMeasurement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XCTMeasurement.h; sourceTree = "<group>"; };
 		E11D9F7125091F5100AA854E /* ObjcLoadHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcLoadHandler.h; sourceTree = "<group>"; };
 		E11D9F7325091F5100AA854E /* DDTestingTags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDTestingTags.swift; sourceTree = "<group>"; };
-		E11D9F7425091F5100AA854E /* CIEnvironmentValues.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CIEnvironmentValues.swift; sourceTree = "<group>"; };
+		E11D9F7425091F5100AA854E /* DDEnvironmentValues.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDEnvironmentValues.swift; sourceTree = "<group>"; };
 		E11D9F7525091F5100AA854E /* FrameworkLoadHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameworkLoadHandler.swift; sourceTree = "<group>"; };
 		E11D9F7725091F5100AA854E /* ObjcLoadHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcLoadHandler.m; sourceTree = "<group>"; };
 		E11D9F80250A082E00AA854E /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -630,7 +630,7 @@
 		E1977EAB250A347E00A784F2 /* ExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1977EAD250A347E00A784F2 /* ExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleTests.swift; sourceTree = "<group>"; };
 		E1977EB7250A364400A784F2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E1978082250F533300A784F2 /* CIEnvironmentValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIEnvironmentValuesTests.swift; sourceTree = "<group>"; };
+		E1978082250F533300A784F2 /* DDEnvironmentValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDEnvironmentValuesTests.swift; sourceTree = "<group>"; };
 		E1978084250FB07500A784F2 /* FrameworkLoadHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkLoadHandlerTests.swift; sourceTree = "<group>"; };
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
 		E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPoolTests.swift; sourceTree = "<group>"; };
@@ -1787,7 +1787,7 @@
 			children = (
 				E11D9F6F25091F5100AA854E /* include */,
 				E11D9F7625091F5100AA854E /* objc */,
-				E11D9F7425091F5100AA854E /* CIEnvironmentValues.swift */,
+				E11D9F7425091F5100AA854E /* DDEnvironmentValues.swift */,
 				E11D9F7325091F5100AA854E /* DDTestingTags.swift */,
 				E11D9F6E25091F5100AA854E /* DDTestRunner.swift */,
 				E11D9F7525091F5100AA854E /* FrameworkLoadHandler.swift */,
@@ -1840,7 +1840,7 @@
 		E1978081250F52D800A784F2 /* DatadogTestRunner */ = {
 			isa = PBXGroup;
 			children = (
-				E1978082250F533300A784F2 /* CIEnvironmentValuesTests.swift */,
+				E1978082250F533300A784F2 /* DDEnvironmentValuesTests.swift */,
 				E1978084250FB07500A784F2 /* FrameworkLoadHandlerTests.swift */,
 			);
 			path = DatadogTestRunner;
@@ -2193,7 +2193,7 @@
 				61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */,
 				61133BCF2423979B00786299 /* FileWriter.swift in Sources */,
 				61E909F224A24DD3005EA2DE /* OTConstants.swift in Sources */,
-				E11D9F7D25091F5100AA854E /* CIEnvironmentValues.swift in Sources */,
+				E11D9F7D25091F5100AA854E /* DDEnvironmentValues.swift in Sources */,
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
 				61C5A8A724509FAA00DA608C /* SpanBuilder.swift in Sources */,
 				E11D9F7C25091F5100AA854E /* DDTestingTags.swift in Sources */,
@@ -2291,7 +2291,7 @@
 			files = (
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
 				61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */,
-				E1978083250F533300A784F2 /* CIEnvironmentValuesTests.swift in Sources */,
+				E1978083250F533300A784F2 /* DDEnvironmentValuesTests.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
 				61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */,
 				9E330A8E24ADE1250031408E /* NSURLSessionBridge.m in Sources */,
