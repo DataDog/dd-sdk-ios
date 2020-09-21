@@ -11,18 +11,19 @@ internal struct CIEnvironmentValues {
     let provider: String?
     let repository: String?
     let commit: String?
-    let branch: String?
-    let tag: String?
     let sourceRoot: String?
     let workspacePath: String?
     let pipelineId: String?
     let pipelineNumber: String?
     let pipelineURL: String?
     let jobURL: String?
+    let branch: String?
+    let tag: String?
 
     static var environment = ProcessInfo.processInfo.environment
 
     init() {
+        var branchEnv: String?
         if CIEnvironmentValues.getEnvVariable("TRAVIS") != nil {
             isCi = true
             provider = "travis"
@@ -33,10 +34,11 @@ internal struct CIEnvironmentValues {
             pipelineNumber = CIEnvironmentValues.getEnvVariable("TRAVIS_BUILD_NUMBER")
             pipelineURL = CIEnvironmentValues.getEnvVariable("TRAVIS_BUILD_WEB_URL")
             jobURL = CIEnvironmentValues.getEnvVariable("TRAVIS_JOB_WEB_URL")
-            branch = CIEnvironmentValues.getEnvVariable("TRAVIS_PULL_REQUEST_BRANCH")
-            if branch?.isEmpty ?? true {
-                branch = CIEnvironmentValues.getEnvVariable("TRAVIS_BRANCH")
+            branchEnv = CIEnvironmentValues.getEnvVariable("TRAVIS_PULL_REQUEST_BRANCH")
+            if branchEnv?.isEmpty ?? true {
+                branchEnv = CIEnvironmentValues.getEnvVariable("TRAVIS_BRANCH")
             }
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("CIRCLECI") != nil {
             isCi = true
             provider = "circleci"
@@ -46,7 +48,9 @@ internal struct CIEnvironmentValues {
             pipelineId = nil
             pipelineNumber = CIEnvironmentValues.getEnvVariable("CIRCLE_BUILD_NUM")
             pipelineURL = CIEnvironmentValues.getEnvVariable("CIRCLE_BUILD_URL")
-            branch = CIEnvironmentValues.getEnvVariable("CIRCLE_BRANCH")
+            jobURL = nil
+            branchEnv = CIEnvironmentValues.getEnvVariable("CIRCLE_BRANCH")
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("JENKINS_URL") != nil {
             isCi = true
             provider = "jenkins"
@@ -57,10 +61,11 @@ internal struct CIEnvironmentValues {
             pipelineNumber = CIEnvironmentValues.getEnvVariable("BUILD_NUMBER")
             pipelineURL = CIEnvironmentValues.getEnvVariable("BUILD_URL")
             jobURL = CIEnvironmentValues.getEnvVariable("JOB_URL")
-            branch = CIEnvironmentValues.getEnvVariable("GIT_BRANCH")
-            if let branchCopy = branch, branchCopy.hasPrefix("origin/") {
-                branch = String(branchCopy.dropFirst("origin/".count))
+            branchEnv = CIEnvironmentValues.getEnvVariable("GIT_BRANCH")
+            if let branchCopy = branchEnv, branchCopy.hasPrefix("origin/") {
+                branchEnv = String(branchCopy.dropFirst("origin/".count))
             }
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("GITLAB_CI") != nil {
             isCi = true
             provider = "gitlab"
@@ -71,9 +76,9 @@ internal struct CIEnvironmentValues {
             pipelineNumber = CIEnvironmentValues.getEnvVariable("CI_PIPELINE_IID")
             pipelineURL = CIEnvironmentValues.getEnvVariable("CI_PIPELINE_URL")
             jobURL = CIEnvironmentValues.getEnvVariable("CI_JOB_URL")
-            branch = CIEnvironmentValues.getEnvVariable("CI_COMMIT_BRANCH")
-            if branch?.isEmpty ?? true {
-                branch = CIEnvironmentValues.getEnvVariable("CI_COMMIT_REF_NAME")
+            branchEnv = CIEnvironmentValues.getEnvVariable("CI_COMMIT_BRANCH")
+            if branchEnv?.isEmpty ?? true {
+                branchEnv = CIEnvironmentValues.getEnvVariable("CI_COMMIT_REF_NAME")
             }
             tag = CIEnvironmentValues.getEnvVariable("CI_COMMIT_TAG")
         } else if CIEnvironmentValues.getEnvVariable("APPVEYOR") != nil {
@@ -86,10 +91,12 @@ internal struct CIEnvironmentValues {
             pipelineNumber = CIEnvironmentValues.getEnvVariable("APPVEYOR_BUILD_NUMBER")
             let projectSlug = CIEnvironmentValues.getEnvVariable("APPVEYOR_PROJECT_SLUG")
             pipelineURL = "https://ci.appveyor.com/project/\(projectSlug ?? "")/builds/\(pipelineId ?? "")"
-            branch = CIEnvironmentValues.getEnvVariable("APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
-            if branch?.isEmpty ?? true {
-                branch = CIEnvironmentValues.getEnvVariable("APPVEYOR_REPO_BRANCH")
+            jobURL = nil
+            branchEnv = CIEnvironmentValues.getEnvVariable("APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
+            if branchEnv?.isEmpty ?? true {
+                branchEnv = CIEnvironmentValues.getEnvVariable("APPVEYOR_REPO_BRANCH")
             }
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("TF_BUILD") != nil {
             isCi = true
             provider = "azurepipelines"
@@ -100,20 +107,23 @@ internal struct CIEnvironmentValues {
             let foundationCollectionUri = CIEnvironmentValues.getEnvVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI")
             let teamProject = CIEnvironmentValues.getEnvVariable("SYSTEM_TEAMPROJECT")
             pipelineURL = "\(foundationCollectionUri ?? "")/\(teamProject ?? "")/_build/results?buildId=\(pipelineId ?? "")&_a=summary"
+            jobURL = nil
             repository = CIEnvironmentValues.getEnvVariable("BUILD_REPOSITORY_URI")
 
-            commit = CIEnvironmentValues.getEnvVariable("SYSTEM_PULLREQUEST_SOURCECOMMITID")
-            if commit?.isEmpty ?? true {
-                commit = CIEnvironmentValues.getEnvVariable("BUILD_SOURCEVERSION")
+            var commitEnv = CIEnvironmentValues.getEnvVariable("SYSTEM_PULLREQUEST_SOURCECOMMITID")
+            if commitEnv?.isEmpty ?? true {
+                commitEnv = CIEnvironmentValues.getEnvVariable("BUILD_SOURCEVERSION")
             }
+            commit = commitEnv
 
-            branch = CIEnvironmentValues.getEnvVariable("SYSTEM_PULLREQUEST_SOURCEBRANCH")
-            if branch?.isEmpty ?? true {
-                branch = CIEnvironmentValues.getEnvVariable("BUILD_SOURCEBRANCHNAME")
+            branchEnv = CIEnvironmentValues.getEnvVariable("SYSTEM_PULLREQUEST_SOURCEBRANCH")
+            if branchEnv?.isEmpty ?? true {
+                branchEnv = CIEnvironmentValues.getEnvVariable("BUILD_SOURCEBRANCHNAME")
             }
-            if branch?.isEmpty ?? true {
-                branch = CIEnvironmentValues.getEnvVariable("BUILD_SOURCEBRANCH")
+            if branchEnv?.isEmpty ?? true {
+                branchEnv = CIEnvironmentValues.getEnvVariable("BUILD_SOURCEBRANCH")
             }
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("BITBUCKET_COMMIT") != nil {
             isCi = true
             provider = "bitbucketpipelines"
@@ -123,6 +133,8 @@ internal struct CIEnvironmentValues {
             pipelineId = CIEnvironmentValues.getEnvVariable("BITBUCKET_PIPELINE_UUID")
             pipelineNumber = CIEnvironmentValues.getEnvVariable("BITBUCKET_BUILD_NUMBER")
             pipelineURL = nil
+            jobURL = nil
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("GITHUB_SHA") != nil {
             isCi = true
             provider = "github"
@@ -132,7 +144,9 @@ internal struct CIEnvironmentValues {
             pipelineId = CIEnvironmentValues.getEnvVariable("GITHUB_RUN_ID")
             pipelineNumber = CIEnvironmentValues.getEnvVariable("GITHUB_RUN_NUMBER")
             pipelineURL = "\(repository ?? "")/commit/\(commit ?? "")/checks"
-            branch = CIEnvironmentValues.getEnvVariable("GITHUB_REF")
+            jobURL = nil
+            branchEnv = CIEnvironmentValues.getEnvVariable("GITHUB_REF")
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("TEAMCITY_VERSION") != nil {
             isCi = true
             provider = "teamcity"
@@ -147,6 +161,8 @@ internal struct CIEnvironmentValues {
             } else {
                 pipelineURL = nil
             }
+            jobURL = nil
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("BUILDKITE") != nil {
             isCi = true
             provider = "buildkite"
@@ -156,7 +172,9 @@ internal struct CIEnvironmentValues {
             pipelineId = CIEnvironmentValues.getEnvVariable("BUILDKITE_BUILD_ID")
             pipelineNumber = CIEnvironmentValues.getEnvVariable("BUILDKITE_BUILD_NUMBER")
             pipelineURL = CIEnvironmentValues.getEnvVariable("BUILDKITE_BUILD_URL")
-            branch = CIEnvironmentValues.getEnvVariable("BUILDKITE_BRANCH")
+            jobURL = nil
+            branchEnv = CIEnvironmentValues.getEnvVariable("BUILDKITE_BRANCH")
+            tag = nil
         } else if CIEnvironmentValues.getEnvVariable("BITRISE_BUILD_NUMBER") != nil {
             isCi = true
             provider = "bitrise"
@@ -167,23 +185,34 @@ internal struct CIEnvironmentValues {
             pipelineNumber = CIEnvironmentValues.getEnvVariable("BITRISE_BUILD_NUMBER")
             jobURL = CIEnvironmentValues.getEnvVariable("BITRISE_APP_URL")
             pipelineURL = CIEnvironmentValues.getEnvVariable("BITRISE_BUILD_URL")
-            branch = CIEnvironmentValues.getEnvVariable("BITRISEIO_GIT_BRANCH_DEST")
-            if branch?.isEmpty ?? true {
-                branch = CIEnvironmentValues.getEnvVariable("BITRISE_GIT_BRANCH")
+            branchEnv = CIEnvironmentValues.getEnvVariable("BITRISEIO_GIT_BRANCH_DEST")
+            if branchEnv?.isEmpty ?? true {
+                branchEnv = CIEnvironmentValues.getEnvVariable("BITRISE_GIT_BRANCH")
             }
             tag = CIEnvironmentValues.getEnvVariable("BITRISE_GIT_TAG")
         } else {
             isCi = false
+            provider = nil
+            repository = nil
+            commit = nil
+            sourceRoot = nil
+            pipelineId = nil
+            pipelineNumber = nil
+            pipelineURL = nil
+            jobURL = nil
+            branchEnv = nil
+            tag = nil
         }
 
         /// Remove /refs/heads/ from the branch when it appears. Some CI's add this info.
-        if let branchCopy = branch {
+        if let branchCopy = branchEnv {
             if branchCopy.hasPrefix("/refs/heads/") {
-                branch = String(branchCopy.dropFirst("/refs/heads/".count))
+                branchEnv = String(branchCopy.dropFirst("/refs/heads/".count))
             } else if branchCopy.hasPrefix("/refs/") {
-                branch = String(branchCopy.dropFirst("/refs/".count))
+                branchEnv = String(branchCopy.dropFirst("/refs/".count))
             }
         }
+        self.branch = branchEnv
 
         /// Currently workspacePath is the same than sourceRoot, it could change in the future
         workspacePath = sourceRoot

@@ -87,11 +87,9 @@ public class Datadog {
 
     private static func initializeOrThrow(configuration: FeaturesConfiguration) throws {
         guard Datadog.instance == nil else {
-            #if canImport(_Datadog_TestRunner)
             if DDTestRunner.instance != nil {
                 return
             }
-            #endif
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 

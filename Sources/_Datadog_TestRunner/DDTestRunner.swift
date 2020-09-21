@@ -10,9 +10,9 @@ import Foundation
 internal class DDTestRunner: NSObject, XCTestObservation {
     static var instance: DDTestRunner?
 
-    let testNameRegex = try? NSRegularExpression(pattern: "([\\w]+) ([\\w]+)", options: .caseInsensitive)
-    let supportsSkipping = NSClassFromString("XCTSkippedTestContext") != nil
-    var currentBundleName = ""
+    private let testNameRegex = try? NSRegularExpression(pattern: "([\\w]+) ([\\w]+)", options: .caseInsensitive)
+    private let supportsSkipping = NSClassFromString("XCTSkippedTestContext") != nil
+    private var currentBundleName = ""
     var activeTestSpan: DDSpan?
 
     override init() {
