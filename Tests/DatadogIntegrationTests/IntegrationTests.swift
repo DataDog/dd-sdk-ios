@@ -13,7 +13,10 @@ struct ServerConnectionError: Error {
 
 /// Base class providing mock server instrumentation.
 class IntegrationTests: XCTestCase {
+    /// Python server instance.
     private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    /// Timeout for requesting data from Python server.
+    let dataDeliveryTimeout: TimeInterval = 30
 
     override func setUpWithError() throws {
         try super.setUpWithError()
