@@ -35,7 +35,7 @@ internal class TracingAutoInstrumentation {
         }
     }
 
-    func apply() {
+    func enable() {
         swizzler.swizzle(using: interceptor)
     }
 }

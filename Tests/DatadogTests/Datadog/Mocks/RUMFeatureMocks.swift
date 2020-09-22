@@ -427,3 +427,39 @@ class RUMContextProviderMock: RUMContextProvider {
 
     var context: RUMContext
 }
+
+// MARK: - Auto Instrumentation Mocks
+
+class RUMCommandSubscriberMock: RUMCommandSubscriber {
+    var receivedCommand: RUMCommand?
+
+    func process(command: RUMCommand) {
+        receivedCommand = command
+    }
+}
+
+class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
+    var result: RUMViewFromPredicate?
+
+    func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        return result
+    }
+}
+
+class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
+    var onSubscribe: ((RUMCommandSubscriber) -> Void)?
+    var onViewWillAppear: ((UIViewController, Bool) -> Void)?
+    var onViewWillDisappear: ((UIViewController, Bool) -> Void)?
+
+    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
+        onSubscribe?(commandsSubscriber)
+    }
+
+    func notify_viewWillAppear(viewController: UIViewController, animated: Bool) {
+        onViewWillAppear?(viewController, animated)
+    }
+
+    func notify_viewWillDisappear(viewController: UIViewController, animated: Bool) {
+        onViewWillDisappear?(viewController, animated)
+    }
+}

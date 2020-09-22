@@ -34,8 +34,9 @@ internal class RUMEventMatcher {
         return try spansData.map { spanJSONData in try RUMEventMatcher.fromJSONObjectData(spanJSONData) }
     }
 
-    private let jsonMatcher: JSONDataMatcher
-    private let jsonData: Data
+    let jsonData: Data
+    let jsonMatcher: JSONDataMatcher
+
     private let jsonDataDecoder = JSONDecoder()
 
     private init(with jsonData: Data) throws {

@@ -100,6 +100,7 @@ extension Datadog {
         private(set) var serviceName: String?
         private(set) var tracedHosts: Set<String>
         private(set) var rumSessionsSamplingRate: Float
+        private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -149,11 +150,12 @@ extension Datadog {
                     rumEndpoint: .us,
                     serviceName: nil,
                     tracedHosts: [],
-                    rumSessionsSamplingRate: 100.0
+                    rumSessionsSamplingRate: 100.0,
+                    rumUIKitViewsPredicate: nil
                 )
             }
 
-            // MARK: - Features Configuration
+            // MARK: - Logging Configuration
 
             /// Enables or disables the logging feature.
             ///
@@ -173,6 +175,15 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the server endpoint to which logs are sent.
+            /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
+            public func set(logsEndpoint: LogsEndpoint) -> Builder {
+                configuration.logsEndpoint = logsEndpoint
+                return self
+            }
+
+            // MARK: - Tracing Configuration
+
             /// Enables or disables the tracing feature.
             ///
             /// This option is meant to opt-out from using Datadog Tracing entirely, no matter of your environment or build configuration. If you need to
@@ -188,22 +199,10 @@ extension Datadog {
                 return self
             }
 
-            /// Enables or disables the RUM feature.
-            ///
-            /// This option is meant to opt-out from using Datadog RUM entirely, no matter of your environment or build configuration. If you need to
-            /// disable RUM only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `Global.rum` to `RUMMonitor`,
-            /// and your app will be using the no-op monitor instance.
-            ///
-            /// If `enableRUM(false)` is set, the SDK won't instantiate underlying resources required for
-            /// running the RUM feature. This will give you additional performance optimization if you only use logging and/or tracing.
-            ///
-            /// **NOTE**: This setting only applies if you use `Datadog.Configuration.builderUsing(rumApplicationID:rumClientToken:environment:)`.
-            /// When using other constructors for obtaining the builder, RUM is disabled by default.
-            ///
-            /// - Parameter enabled: `true` by default when using `Datadog.Configuration.builderUsing(rumApplicationID:rumClientToken:environment:)`.
-            /// `false` otherwise.
-            public func enableRUM(_ enabled: Bool) -> Builder {
-                configuration.rumEnabled = enabled
+            /// Sets the server endpoint to which traces are sent.
+            /// - Parameter tracesEndpoint: server endpoint (default value is `TracesEndpoint.us` )
+            public func set(tracesEndpoint: TracesEndpoint) -> Builder {
+                configuration.tracesEndpoint = tracesEndpoint
                 return self
             }
 
@@ -227,28 +226,24 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the sampling rate for RUM Sessions.
+            // MARK: - RUM Configuration
+
+            /// Enables or disables the RUM feature.
             ///
-            /// - Parameter rumSessionsSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
-            /// means no RUM events will be sent, `100.0` means all sessions will be kept (default value is `100.0`).
-            public func set(rumSessionsSamplingRate: Float) -> Builder {
-                configuration.rumSessionsSamplingRate = rumSessionsSamplingRate
-                return self
-            }
-
-            // MARK: - Endpoints Configuration
-
-            /// Sets the server endpoint to which logs are sent.
-            /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
-            public func set(logsEndpoint: LogsEndpoint) -> Builder {
-                configuration.logsEndpoint = logsEndpoint
-                return self
-            }
-
-            /// Sets the server endpoint to which traces are sent.
-            /// - Parameter tracesEndpoint: server endpoint (default value is `TracesEndpoint.us` )
-            public func set(tracesEndpoint: TracesEndpoint) -> Builder {
-                configuration.tracesEndpoint = tracesEndpoint
+            /// This option is meant to opt-out from using Datadog RUM entirely, no matter of your environment or build configuration. If you need to
+            /// disable RUM only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `Global.rum` to `RUMMonitor`,
+            /// and your app will be using the no-op monitor instance.
+            ///
+            /// If `enableRUM(false)` is set, the SDK won't instantiate underlying resources required for
+            /// running the RUM feature. This will give you additional performance optimization if you only use logging and/or tracing.
+            ///
+            /// **NOTE**: This setting only applies if you use `Datadog.Configuration.builderUsing(rumApplicationID:rumClientToken:environment:)`.
+            /// When using other constructors for obtaining the builder, RUM is disabled by default.
+            ///
+            /// - Parameter enabled: `true` by default when using `Datadog.Configuration.builderUsing(rumApplicationID:rumClientToken:environment:)`.
+            /// `false` otherwise.
+            public func enableRUM(_ enabled: Bool) -> Builder {
+                configuration.rumEnabled = enabled
                 return self
             }
 
@@ -259,7 +254,33 @@ extension Datadog {
                 return self
             }
 
-            // MARK: - Other Settings
+            /// Sets the sampling rate for RUM Sessions.
+            ///
+            /// - Parameter rumSessionsSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// means no RUM events will be sent, `100.0` means all sessions will be kept (default value is `100.0`).
+            public func set(rumSessionsSamplingRate: Float) -> Builder {
+                configuration.rumSessionsSamplingRate = rumSessionsSamplingRate
+                return self
+            }
+
+            /// Sets the predicate for automatically tracking `UIViewControllers` as RUM Views.
+            ///
+            /// When the app is running, the SDK will ask provided `predicate` if any noticed `UIViewController` should be considered
+            /// as the RUM View. The `predicate` implementation should return RUM View parameters if the `UIViewController` is the key component
+            /// of the RUM View or `nil` otherwise.
+            ///
+            /// **NOTE:** Enabling this option will install swizzlings on `UIViewController's` lifecycle methods. Refer
+            /// to `UIViewControllerSwizzler.swift` for implementation details.
+            ///
+            /// By default, automatic tracking of `UIViewControllers` is disabled and no swizzlings are installed on the `UIViewController` class.
+            ///
+            /// - Parameter predicate: the predicate deciding if a given `UIViewController` marks the beginning or end of the RUM View.
+            public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate) -> Builder {
+                configuration.rumUIKitViewsPredicate = predicate
+                return self
+            }
+
+            // MARK: - Features Common Configuration
 
             /// Sets the default service name associated with data send to Datadog.
             /// NOTE: The `serviceName` can be also overwriten by each `Logger` instance.
