@@ -28,11 +28,6 @@ private extension ExampleApplication {
 }
 
 class RUMNavigationControllerScenarioTests: IntegrationTests {
-    private struct Constants {
-        /// Time needed for data to be uploaded to mock server.
-        static let dataDeliveryTime: TimeInterval = 30
-    }
-
     func testRUMNavigationControllerScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -52,10 +47,8 @@ class RUMNavigationControllerScenarioTests: IntegrationTests {
         app.swipeInteractiveBackGesture() // swipe back to "Screen1"
 
         // Get POST requests
-        let recordedRUMRequests = try rumServerSession.pullRecordedPOSTRequests(
-            count: 2,
-            timeout: Constants.dataDeliveryTime
-        )
+        let recordedRUMRequests = try rumServerSession
+            .pullRecordedPOSTRequests(count: 2, timeout: dataDeliveryTimeout)
 
         // Get RUM Events
         let rumEventsMatchers = try recordedRUMRequests

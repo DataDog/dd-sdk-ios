@@ -14,7 +14,7 @@ protocol TestScenario {
     /// The name of the storyboard containing this scenario.
     static var storyboardName: String { get }
 
-    /// Applies eventual SDK configuration for running this scenario.
+    /// Applies additional SDK configuration for running this scenario.
     /// Defaults to no-op.
     func configureSDK(builder: Datadog.Configuration.Builder)
 
@@ -35,8 +35,12 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
     switch envIdentifier {
     case LoggingScenario.envIdentifier():
         return LoggingScenario()
-    case TracingScenario.envIdentifier():
-        return TracingScenario()
+    case TracingManualInstrumentationScenario.envIdentifier():
+        return TracingManualInstrumentationScenario()
+    case TracingURLSessionScenario.envIdentifier():
+        return TracingURLSessionScenario()
+    case TracingNSURLSessionScenario.envIdentifier():
+        return TracingNSURLSessionScenario()
     case RUMManualInstrumentationScenario.envIdentifier():
         return RUMManualInstrumentationScenario()
     case RUMNavigationControllerScenario.envIdentifier():
@@ -46,27 +50,57 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
     }
 }
 
-// MARK: - Concrete test scenarios
+// MARK: - Logging Test Scenarios
 
 /// Scenario which starts a view controller that sends bunch of logs to the server.
 struct LoggingScenario: TestScenario {
     static let storyboardName = "LoggingScenario"
 }
 
-/// Scenario which starts a view controller that sends bunch of spans to the server. It uses
-/// the `span.log()` to send logs. It also tracks resources send to specified URLs
-/// by using tracing auto instrumentation feature.
-struct TracingScenario: TestScenario {
-    static let storyboardName = "TracingScenario"
+// MARK: - Tracing Test Scenarios
 
+/// Scenario which starts a view controller that sends bunch of spans using manual API of `Tracer`.
+/// It also uses the `span.log()` to send logs.
+struct TracingManualInstrumentationScenario: TestScenario {
+    static let storyboardName = "TracingManualInstrumentationScenario"
+}
+
+/// Scenario which uses Tracing auto instrumentation feature to track bunch of network requests
+/// sent with `URLSession` (Swift).
+class TracingURLSessionScenario: _TracingURLSessionBaseScenario, TestScenario {
+    static let storyboardName = "TracingURLSessionScenario"
+
+    override func configureSDK(builder: Datadog.Configuration.Builder) {
+        super.configureSDK(builder: builder)
+    }
+}
+
+/// Scenario which uses Tracing auto instrumentation feature to track bunch of network requests
+/// sent with `NSURLSession` (Objective-C).
+@objc
+class TracingNSURLSessionScenario: _TracingURLSessionBaseScenario, TestScenario {
+    static let storyboardName = "TracingNSURLSessionScenario"
+
+    override func configureSDK(builder: Datadog.Configuration.Builder) {
+        super.configureSDK(builder: builder)
+    }
+}
+
+/// Base scenario for both `URLSession` and `NSURLSession` scenarios.
+/// It makes both Swift and Objective-C tests share the same endpoints and SDK configuration.
+@objc
+class _TracingURLSessionBaseScenario: NSObject {
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
+    @objc
     let customGETResourceURL: URL
     /// The `URLRequest` to custom POST resource,  observed by Tracing auto instrumentation.
+    @objc
     let customPOSTRequest: URLRequest
     /// An unresolvable URL to fake resource DNS resolution error,  observed by Tracing auto instrumentation.
+    @objc
     let badResourceURL: URL
 
-    init() {
+    override init() {
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let customURL = Environment.customEndpointURL()!
             customGETResourceURL = URL(string: customURL.deletingLastPathComponent().absoluteString + "inspect")!
@@ -94,6 +128,8 @@ struct TracingScenario: TestScenario {
             .set(tracedHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!])
     }
 }
+
+// MARK: - RUM Test Scenarios
 
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
 /// uses the RUM manual instrumentation API to send RUM events to the server.

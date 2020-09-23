@@ -26,7 +26,7 @@ internal class SendTracesFixtureViewController: UIViewController {
         dataDownloadingSpan.setTag(key: DDTags.resource, value: "GET /image.png")
 
         // Simulate downloading data required by the screen.
-        downloadScreenData { [weak self] data in
+        downloadScreenData { data in
             // Simulate logging download progress
             dataDownloadingSpan.log(
                 fields: [
@@ -42,8 +42,6 @@ internal class SendTracesFixtureViewController: UIViewController {
             dataPresentationSpan.finish()
 
             viewLoadingSpan.finish()
-
-            self?.makeUnrelatedAPICall()
         }
     }
 
@@ -53,20 +51,5 @@ internal class SendTracesFixtureViewController: UIViewController {
             Thread.sleep(forTimeInterval: 0.3)
             DispatchQueue.main.async { completion(Data()) }
         }
-    }
-
-    /// Simulates making API requests unrelated to view loading (i.e. requests made due to the user interaction with the screen).
-    private func makeUnrelatedAPICall() {
-        guard let tracingScenario = appConfiguration.testScenario as? TracingScenario else {
-            fatalError("\(#file) requires the `TracingScenario` to be used.")
-        }
-
-        // Those requests will be automatically traced by the tracing auto instrumentation feature
-        URLSession.shared.dataTask(with: tracingScenario.customGETResourceURL) { _, _, _ in
-            URLSession.shared.dataTask(with: tracingScenario.customPOSTRequest) { _, _, _ in
-                URLSession.shared.dataTask(with: tracingScenario.badResourceURL) { _, _, _ in
-                }.resume()
-            }.resume()
-        }.resume()
     }
 }

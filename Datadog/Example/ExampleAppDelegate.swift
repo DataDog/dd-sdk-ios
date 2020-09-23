@@ -89,3 +89,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = storyboard.instantiateInitialViewController()!
     }
 }
+
+/// Bridges Swift objects to Objective-C.
+@objcMembers
+class SwiftGlobals: NSObject {
+    class func currentTestScenario() -> Any? { appConfiguration.testScenario }
+}

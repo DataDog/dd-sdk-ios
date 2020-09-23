@@ -9,11 +9,6 @@ import XCTest
 
 // swiftlint:disable trailing_closure
 class LoggingScenarioTests: IntegrationTests {
-    private struct Constants {
-        /// Time needed for logs to be uploaded to mock server.
-        static let logsDeliveryTime: TimeInterval = 30
-    }
-
     func testLoggingScenario() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
 
@@ -24,7 +19,8 @@ class LoggingScenarioTests: IntegrationTests {
         )
 
         // Return desired count or timeout
-        let recordedRequests = try loggingServerSession.pullRecordedPOSTRequests(count: 1, timeout: Constants.logsDeliveryTime)
+        let recordedRequests = try loggingServerSession
+            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
 
         recordedRequests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`
@@ -58,7 +54,7 @@ class LoggingScenarioTests: IntegrationTests {
         logMatchers[5].assertMessage(equals: "critical message")
 
         logMatchers.forEach { matcher in
-            matcher.assertDate(matches: { Date().timeIntervalSince($0) < Constants.logsDeliveryTime * 2 })
+            matcher.assertDate(matches: { Date().timeIntervalSince($0) < dataDeliveryTimeout * 2 })
             matcher.assertServiceName(equals: "ui-tests-service-name")
             matcher.assertLoggerName(equals: "logger-name")
             matcher.assertLoggerVersion(matches: { version in version.split(separator: ".").count == 3 })
