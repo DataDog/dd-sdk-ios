@@ -90,9 +90,9 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.build()) {
             // verify features:
@@ -100,9 +100,9 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.enableLogging(false).build()) {
@@ -111,9 +111,9 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
@@ -121,9 +121,9 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.enableTracing(false).build()) {
@@ -131,16 +131,16 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            // verify integrations:
             XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            // verify integrations:
             XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.enableRUM(true).build()) {
@@ -148,18 +148,20 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertNil(TracingAutoInstrumentation.instance)
+            XCTAssertNil(RUMAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.set(tracedHosts: ["example.com"]).build()) {
@@ -176,12 +178,27 @@ class DatadogTests: XCTestCase {
         try verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.views)
+            XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
         try verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
+            XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
+        }
+
+        try verify(configuration: rumBuilder.trackUIKitActions(true).build()) {
+            XCTAssertTrue(RUMFeature.isEnabled)
+            XCTAssertNil(RUMAutoInstrumentation.instance?.views)
+            XCTAssertNotNil(RUMAutoInstrumentation.instance?.userActions)
+        }
+        try verify(
+            configuration: rumBuilder.enableRUM(false).trackUIKitActions(true).build()
+        ) {
+            XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertNil(RUMAutoInstrumentation.instance?.views)
+            XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
     }
 

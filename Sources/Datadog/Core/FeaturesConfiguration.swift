@@ -40,7 +40,7 @@ internal struct FeaturesConfiguration {
     struct RUM {
         struct AutoInstrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
-            // TODO: RUMM-717 Add RUM Actions insturmentation configuration
+            let uiKitActionsTrackingEnabled: Bool
             // TODO: RUMM-718 Add RUM Resources insturmentation configuration
         }
 
@@ -121,9 +121,10 @@ extension FeaturesConfiguration {
         if configuration.rumEnabled {
             var autoInstrumentation: RUM.AutoInstrumentation?
 
-            if let rumUIKitViewsPredicate = configuration.rumUIKitViewsPredicate {
+            if configuration.rumUIKitViewsPredicate != nil || configuration.rumUIKitActionsTrackingEnabled {
                 autoInstrumentation = RUM.AutoInstrumentation(
-                    uiKitRUMViewsPredicate: rumUIKitViewsPredicate
+                    uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
+                    uiKitActionsTrackingEnabled: configuration.rumUIKitActionsTrackingEnabled
                 )
             }
 

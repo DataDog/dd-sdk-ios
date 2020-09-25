@@ -31,8 +31,25 @@ internal class RUMAutoInstrumentation {
         }
     }
 
+    /// RUM User Actions auto instrumentation.
+    class UserActions {
+        let swizzler: UIApplicationSwizzler
+        let handler: UIKitRUMUserActionsHandlerType
+
+        init(dateProvider: DateProvider) throws {
+            handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider)
+            swizzler = try UIApplicationSwizzler(handler: handler)
+        }
+
+        func enable() {
+            swizzler.swizzle()
+        }
+    }
+
+    /// RUM Views auto instrumentation, `nil` if not enabled.
     let views: Views?
-    // TODO: RUMM-717 Add UserActions instrumentation
+    /// RUM User Actions auto instrumentation, `nil` if not enabled.
+    let userActions: UserActions?
     // TODO: RUMM-718 Add Resources instrumentation
 
     // MARK: - Initialization
@@ -42,8 +59,15 @@ internal class RUMAutoInstrumentation {
         dateProvider: DateProvider
     ) {
         do {
-            views = try configuration.uiKitRUMViewsPredicate.flatMap { predicate in
-                try Views(uiKitRUMViewsPredicate: predicate, dateProvider: dateProvider)
+            if let uiKitRUMViewsPredicate = configuration.uiKitRUMViewsPredicate {
+                views = try Views(uiKitRUMViewsPredicate: uiKitRUMViewsPredicate, dateProvider: dateProvider)
+            } else {
+                views = nil
+            }
+            if configuration.uiKitActionsTrackingEnabled {
+                userActions = try UserActions(dateProvider: dateProvider)
+            } else {
+                userActions = nil
             }
         } catch {
             userLogger.warn("🔥 RUM automatic tracking can't be set up due to error: \(error)")
@@ -54,11 +78,12 @@ internal class RUMAutoInstrumentation {
 
     func enable() {
         views?.enable()
+        userActions?.enable()
     }
 
     func subscribe(commandSubscriber: RUMCommandSubscriber) {
         views?.handler.subscribe(commandsSubscriber: commandSubscriber)
-        // TODO: RUMM-717 Pass the weak reference to `commandSubscriber` to `UIKitRUMUserActionsHandler`
+        userActions?.handler.subscribe(commandsSubscriber: commandSubscriber)
         // TODO: RUMM-718 Pass the weak reference to `commandSubscriber` to `UIKitRUMResourceHandler`
     }
 }

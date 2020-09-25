@@ -101,6 +101,7 @@ extension Datadog {
         private(set) var tracedHosts: Set<String>
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
+        private(set) var rumUIKitActionsTrackingEnabled: Bool
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -151,7 +152,8 @@ extension Datadog {
                     serviceName: nil,
                     tracedHosts: [],
                     rumSessionsSamplingRate: 100.0,
-                    rumUIKitViewsPredicate: nil
+                    rumUIKitViewsPredicate: nil,
+                    rumUIKitActionsTrackingEnabled: false
                 )
             }
 
@@ -277,6 +279,25 @@ extension Datadog {
             /// - Parameter predicate: the predicate deciding if a given `UIViewController` marks the beginning or end of the RUM View.
             public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate) -> Builder {
                 configuration.rumUIKitViewsPredicate = predicate
+                return self
+            }
+
+            /// Enables or disables automatic tracking of `UITouch` events as RUM Actions.
+            ///
+            /// When enabled, the SDK will capture every `UIEvent` send to the application and use the in-build heuristic to recognize
+            /// key `UIViews` and `UIControls` that user interacts with. For every recognized element, the RUM Action is send automatically.
+            /// The action will be named by the class name of interacted element and will be extended with `accessibilityIdentifier` (if it's set) for more context.
+            ///
+            /// Any touch events on the keyboard are ignored for privacy.
+            ///
+            /// **NOTE:** Enabling this option will install swizzlings on `UIApplication.sendEvent(_:)` method. Refer
+            /// to `UIApplicationSwizzler.swift` for implementation details.
+            ///
+            /// By default, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
+            ///
+            /// - Parameter enabled: `false` by default
+            public func trackUIKitActions(_ enabled: Bool) -> Builder {
+                configuration.rumUIKitActionsTrackingEnabled = enabled
                 return self
             }
 

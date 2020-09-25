@@ -51,3 +51,38 @@ class UIDeviceMock: UIDevice {
     override var batteryState: UIDevice.BatteryState { _batteryState }
     override var batteryLevel: Float { _batteryLevel }
 }
+
+extension UIEvent {
+    static func mockWith(touches: Set<UITouch>?) -> UIEvent {
+        return UIEventMock(allTouches: touches)
+    }
+}
+
+private class UIEventMock: UIEvent {
+    private let _allTouches: Set<UITouch>?
+
+    fileprivate init(allTouches: Set<UITouch>?) {
+        _allTouches = allTouches
+    }
+
+    override var allTouches: Set<UITouch>? { _allTouches }
+}
+
+extension UITouch {
+    static func mockWith(phase: UITouch.Phase, view: UIView?) -> UITouch {
+        return UITouchMock(phase: phase, view: view)
+    }
+}
+
+private class UITouchMock: UITouch {
+    private let _phase: UITouch.Phase
+    private let _view: UIView?
+
+    fileprivate init(phase: UITouch.Phase, view: UIView?) {
+        _phase = phase
+        _view = view
+    }
+
+    override var phase: UITouch.Phase { _phase }
+    override var view: UIView? { _view }
+}
