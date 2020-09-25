@@ -59,7 +59,7 @@ class RUMNavigationControllerScenarioTests: IntegrationTests {
         XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
 
         let session = rumSessions[0]
-        XCTAssertEqual(session.viewVisits.count, 8, "The RUM Session should track 7 RUM Views")
+        XCTAssertEqual(session.viewVisits.count, 8, "The RUM Session should track 8 RUM Views")
         XCTAssertEqual(session.viewVisits[0].path, "Screen1")
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertEqual(session.viewVisits[1].path, "Screen2")
