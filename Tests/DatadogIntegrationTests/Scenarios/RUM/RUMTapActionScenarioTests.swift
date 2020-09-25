@@ -70,7 +70,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMTapActionScenarioTests: IntegrationTests {
+class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testRUMTapActionScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -104,6 +104,9 @@ class RUMTapActionScenarioTests: IntegrationTests {
         // Get RUM Events
         let rumEventsMatchers = try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+
+        // Assert common things
+        assertHTTPHeadersAndPath(in: recordedRUMRequests)
 
         // Get RUM Sessions
         let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventsMatchers)

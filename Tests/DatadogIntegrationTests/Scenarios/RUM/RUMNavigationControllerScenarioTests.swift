@@ -27,7 +27,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMNavigationControllerScenarioTests: IntegrationTests {
+class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testRUMNavigationControllerScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -53,6 +53,9 @@ class RUMNavigationControllerScenarioTests: IntegrationTests {
         // Get RUM Events
         let rumEventsMatchers = try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+
+        // Assert common things
+        assertHTTPHeadersAndPath(in: recordedRUMRequests)
 
         // Get RUM Sessions
         let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventsMatchers)
