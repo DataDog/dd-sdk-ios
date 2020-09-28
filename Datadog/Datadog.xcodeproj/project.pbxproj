@@ -152,6 +152,8 @@
 		615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8824A34FD700233986 /* DDTracerTests.swift */; };
 		615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8A24A3568900233986 /* OTSpan+objc.swift */; };
 		615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
+		615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615AAC06251E217B00C89EE9 /* RUMTapActionScenarioTests.swift */; };
+		615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615AAC28251E322D00C89EE9 /* RUMCommonAsserts.swift */; };
 		615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */; };
 		615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */; };
 		6167ACC0251A0B420012B4D0 /* TracingNSURLSessionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6167ACBF251A0B420012B4D0 /* TracingNSURLSessionViewController.m */; };
@@ -504,6 +506,8 @@
 		615A4A8824A34FD700233986 /* DDTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
 		615A4A8A24A3568900233986 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
+		615AAC06251E217B00C89EE9 /* RUMTapActionScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTapActionScenarioTests.swift; sourceTree = "<group>"; };
+		615AAC28251E322D00C89EE9 /* RUMCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommonAsserts.swift; sourceTree = "<group>"; };
 		615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASVariousUIControllsViewController.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandlerTests.swift; sourceTree = "<group>"; };
 		6167ACBD251A0B410012B4D0 /* Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Example-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -1768,8 +1772,10 @@
 		61F3CD9F2511070300C816E5 /* RUM */ = {
 			isa = PBXGroup;
 			children = (
+				615AAC28251E322D00C89EE9 /* RUMCommonAsserts.swift */,
 				61C2C20C24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift */,
 				61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */,
+				615AAC06251E217B00C89EE9 /* RUMTapActionScenarioTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -2476,7 +2482,9 @@
 				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
 				61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */,
 				61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */,
+				615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */,
 				61F3CD9B2510D95A00C816E5 /* TestScenarios.swift in Sources */,
+				615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */,
 				9E307C3224C8846D0039607E /* RUMDataModels.swift in Sources */,
 				61441C4A24618052003D8BB8 /* LogMatcher.swift in Sources */,
 			);
