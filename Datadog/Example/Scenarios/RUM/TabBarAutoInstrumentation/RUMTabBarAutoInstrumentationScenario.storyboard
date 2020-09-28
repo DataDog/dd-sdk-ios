@@ -4,7 +4,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
-        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -220,9 +219,7 @@
         <scene sceneID="xDp-XO-XIr">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="DjT-Ju-QuB" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Tab C" id="IDA-5W-y7X">
-                        <imageReference key="image" image="c.circle" catalog="system" symbolScale="medium"/>
-                    </tabBarItem>
+                    <tabBarItem key="tabBarItem" title="Tab C" id="IDA-5W-y7X"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="NM4-Yq-zKI">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -241,9 +238,7 @@
         <scene sceneID="CXZ-sr-HhC">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="BUY-f2-0ws" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Tab B" id="eGX-ON-tqO">
-                        <imageReference key="image" image="b.circle" catalog="system" symbolScale="medium"/>
-                    </tabBarItem>
+                    <tabBarItem key="tabBarItem" title="Tab B" id="eGX-ON-tqO"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="v4P-UG-AdT">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -262,9 +257,7 @@
         <scene sceneID="aTV-9H-uqM">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="DZ8-dL-yVR" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Tab A" id="4q8-Vc-UjF">
-                        <imageReference key="image" image="a.circle" catalog="system" symbolScale="medium"/>
-                    </tabBarItem>
+                    <tabBarItem key="tabBarItem" title="Tab A" id="4q8-Vc-UjF"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="5YA-al-jgy">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -325,9 +318,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="a.circle" catalog="system" width="128" height="121"/>
-        <image name="b.circle" catalog="system" width="128" height="121"/>
-        <image name="c.circle" catalog="system" width="128" height="121"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
