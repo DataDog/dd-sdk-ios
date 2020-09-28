@@ -88,7 +88,8 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapCollectionViewItem(atIndex: 14)
         app.tapShowVariousUIControls()
         app.tapTextField()
-        app.enterTextUsingKeyboard("foo")
+        // TODO: RUMM-740 Enable it back once we fix make the Software Keyboard work on CI
+        //app.enterTextUsingKeyboard("foo")
         app.dismissKeyboard()
         app.tapStepperPlusButton()
         app.moveSlider(to: 0.25)
