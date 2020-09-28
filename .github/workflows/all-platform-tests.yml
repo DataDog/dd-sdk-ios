@@ -47,4 +47,9 @@ jobs:
                -H "accept: application/json" \
                -H "Authorization: ${BITRISE_TOKEN}" \
                -H "Content-Type: application/json" \
-               -d "{ \"build_params\": { \"branch\": \"${CURRENT_BRANCH}\", \"workflow_id\": \"trigger_all_platform_tests\" }, \"hook_info\": { \"type\": \"bitrise\" }}"
+               -d "{ \"build_params\": { \"branch\": \"${CURRENT_BRANCH}\", \"workflow_id\": \"test-all-platforms-xcode11\" }, \"hook_info\": { \"type\": \"bitrise\" }}"
+          curl -X POST "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/builds" \
+               -H "accept: application/json" \
+               -H "Authorization: ${BITRISE_TOKEN}" \
+               -H "Content-Type: application/json" \
+               -d "{ \"build_params\": { \"branch\": \"${CURRENT_BRANCH}\", \"workflow_id\": \"test-all-platforms-xcode12\" }, \"hook_info\": { \"type\": \"bitrise\" }}"

@@ -151,13 +151,14 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         XCTAssertEqual(session.viewVisits[5].path, "UIControlsViewController")
         XCTAssertEqual(session.viewVisits[5].actionEvents.count, 7)
-        XCTAssertEqual(session.viewVisits[5].actionEvents[0].action.target?.name, "UITextField")
-        XCTAssertEqual(session.viewVisits[5].actionEvents[1].action.target?.name, "UIStepper")
-        XCTAssertEqual(session.viewVisits[5].actionEvents[2].action.target?.name, "UISlider")
-        XCTAssertEqual(session.viewVisits[5].actionEvents[3].action.target?.name, "UISegmentedControl")
-        XCTAssertEqual(session.viewVisits[5].actionEvents[4].action.target?.name, "_UIButtonBarButton(Search)")
-        XCTAssertEqual(session.viewVisits[5].actionEvents[5].action.target?.name, "_UIButtonBarButton(Share)")
-        XCTAssertEqual(session.viewVisits[5].actionEvents[6].action.target?.name, "_UIButtonBarButton") // back button
+        let targetNames = session.viewVisits[5].actionEvents.compactMap { $0.action.target?.name }
+        XCTAssertEqual(targetNames[0], "UITextField")
+        XCTAssertEqual(targetNames[1], "UIStepper")
+        XCTAssertEqual(targetNames[2], "UISlider")
+        XCTAssertEqual(targetNames[3], "UISegmentedControl")
+        XCTAssertEqual(targetNames[4], "_UIButtonBarButton(Search)")
+        XCTAssertEqual(targetNames[5], "_UIButtonBarButton(Share)")
+        XCTAssert(targetNames[6].contains("_UIButtonBarButton"), "Target name should be either _UIButtonBarButton (iOS 13) or _UIButtonBarButton(BackButton) (iOS 14)") // back button
 
         XCTAssertEqual(session.viewVisits[6].path, "MenuViewController")
         XCTAssertEqual(session.viewVisits[6].actionEvents.count, 0)
