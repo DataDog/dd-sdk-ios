@@ -154,6 +154,7 @@
 		615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
 		615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615AAC06251E217B00C89EE9 /* RUMTapActionScenarioTests.swift */; };
 		615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615AAC28251E322D00C89EE9 /* RUMCommonAsserts.swift */; };
+		615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 615AAC35251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard */; };
 		615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */; };
 		615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */; };
 		6167ACC0251A0B420012B4D0 /* TracingNSURLSessionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6167ACBF251A0B420012B4D0 /* TracingNSURLSessionViewController.m */; };
@@ -508,6 +509,7 @@
 		615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
 		615AAC06251E217B00C89EE9 /* RUMTapActionScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTapActionScenarioTests.swift; sourceTree = "<group>"; };
 		615AAC28251E322D00C89EE9 /* RUMCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommonAsserts.swift; sourceTree = "<group>"; };
+		615AAC35251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMTabBarAutoInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASVariousUIControllsViewController.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandlerTests.swift; sourceTree = "<group>"; };
 		6167ACBD251A0B410012B4D0 /* Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Example-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -1238,6 +1240,7 @@
 			children = (
 				61337037250F84FD00236D58 /* ManualInstrumentation */,
 				61F9CA7725125918000A5E61 /* NavigationControllerAutoInstrumentation */,
+				615AAC34251E34EF00C89EE9 /* TabBarAutoInstrumentation */,
 				6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */,
 			);
 			path = RUM;
@@ -1387,6 +1390,14 @@
 				6156CB9224DDAA34008CB2B2 /* RUMCurrentContextTests.swift */,
 			);
 			path = RUMContext;
+			sourceTree = "<group>";
+		};
+		615AAC34251E34EF00C89EE9 /* TabBarAutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				615AAC35251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard */,
+			);
+			path = TabBarAutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		6167ACF5251A203D0012B4D0 /* ManualInstrumentation */ = {
@@ -2124,6 +2135,7 @@
 				6167ACC7251A0BCE0012B4D0 /* TracingNSURLSessionScenario.storyboard in Resources */,
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
 				61441C0C24616DE9003D8BB8 /* Main.storyboard in Resources */,
+				615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */,
 				6167AD19251A27B80012B4D0 /* TracingURLSessionScenario.storyboard in Resources */,
 				61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */,
 				61337035250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard in Resources */,
