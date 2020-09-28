@@ -35,6 +35,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.tracedHosts, [])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
+            XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
         }
     }
 
@@ -51,6 +52,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(tracedHosts: ["example.com"])
                 .set(rumSessionsSamplingRate: 42.5)
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
+                .trackUIKitActions(true)
         }
 
         let defaultBuilder = Datadog.Configuration
@@ -77,6 +79,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.tracedHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumUIKitViewsPredicate)
+            XCTAssertTrue(configuration.rumUIKitActionsTrackingEnabled)
         }
     }
 }

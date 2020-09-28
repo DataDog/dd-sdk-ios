@@ -23,7 +23,9 @@ extension Datadog.Configuration {
         rumEndpoint: RUMEndpoint = .us,
         serviceName: String? = .mockAny(),
         tracedHosts: Set<String> = [],
-        rumSessionsSamplingRate: Float = 100.0
+        rumSessionsSamplingRate: Float = 100.0,
+        rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
+        rumUIKitActionsTrackingEnabled: Bool = false
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -37,7 +39,9 @@ extension Datadog.Configuration {
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             tracedHosts: tracedHosts,
-            rumSessionsSamplingRate: rumSessionsSamplingRate
+            rumSessionsSamplingRate: rumSessionsSamplingRate,
+            rumUIKitViewsPredicate: rumUIKitViewsPredicate,
+            rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled
         )
     }
 }

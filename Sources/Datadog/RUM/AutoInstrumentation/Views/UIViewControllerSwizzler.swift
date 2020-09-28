@@ -27,7 +27,7 @@ internal class UIViewControllerSwizzler {
         @convention(c) (UIViewController, Selector, Bool) -> Void,
         @convention(block) (UIViewController, Bool) -> Void
     > {
-        private static let selector = #selector(UIViewController.viewWillAppear)
+        private static let selector = #selector(UIViewController.viewWillAppear(_:))
         private let method: FoundMethod
         private let handler: UIKitRUMViewsHandlerType
 
@@ -52,7 +52,7 @@ internal class UIViewControllerSwizzler {
         @convention(c) (UIViewController, Selector, Bool) -> Void,
         @convention(block) (UIViewController, Bool) -> Void
     > {
-        private static let selector = #selector(UIViewController.viewWillDisappear)
+        private static let selector = #selector(UIViewController.viewWillDisappear(_:))
         private let method: FoundMethod
         private let handler: UIKitRUMViewsHandlerType
 

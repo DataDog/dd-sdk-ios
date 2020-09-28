@@ -45,6 +45,8 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
         return RUMManualInstrumentationScenario()
     case RUMNavigationControllerScenario.envIdentifier():
         return RUMNavigationControllerScenario()
+    case RUMTapActionScenario.envIdentifier():
+        return RUMTapActionScenario()
     default:
         fatalError("Cannot find `TestScenario` for `envIdentifier`: \(envIdentifier)")
     }
@@ -161,5 +163,32 @@ struct RUMNavigationControllerScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder.trackUIKitRUMViews(using: Predicate())
+    }
+}
+
+struct RUMTapActionScenario: TestScenario {
+    static var storyboardName: String = "RUMTapActionScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+            switch NSStringFromClass(type(of: viewController)) {
+            case "Example.RUMTASScreen1ViewController":
+                return .init(path: "MenuViewController")
+            case "Example.RUMTASTableViewController":
+                return .init(path: "TableViewController")
+            case "Example.RUMTASCollectionViewController":
+                return .init(path: "CollectionViewController")
+            case "Example.RUMTASVariousUIControllsViewController":
+                return .init(path: "UIControlsViewController")
+            default:
+                return nil
+            }
+        }
+    }
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+            .trackUIKitActions(true)
     }
 }

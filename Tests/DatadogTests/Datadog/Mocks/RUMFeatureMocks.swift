@@ -463,3 +463,16 @@ class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
         onViewWillDisappear?(viewController, animated)
     }
 }
+
+class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
+    var onSubscribe: ((RUMCommandSubscriber) -> Void)?
+    var onSendEvent: ((UIApplication, UIEvent) -> Void)?
+
+    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
+        onSubscribe?(commandsSubscriber)
+    }
+
+    func notify_sendEvent(application: UIApplication, event: UIEvent) {
+        onSendEvent?(application, event)
+    }
+}

@@ -98,6 +98,9 @@
 		61363D9D24D999F70084CD6F /* DDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9C24D999F70084CD6F /* DDError.swift */; };
 		61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */; };
 		61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */; };
+		6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */; };
+		6141015B251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */; };
+		61410167251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61410166251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift */; };
 		61411B1024EC15AC0012EAB2 /* Casting+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61411B0F24EC15AC0012EAB2 /* Casting+RUM.swift */; };
 		61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */; };
 		61441C0C24616DE9003D8BB8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0A24616DE9003D8BB8 /* Main.storyboard */; };
@@ -149,6 +152,8 @@
 		615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8824A34FD700233986 /* DDTracerTests.swift */; };
 		615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8A24A3568900233986 /* OTSpan+objc.swift */; };
 		615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
+		615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */; };
+		615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */; };
 		6167ACC0251A0B420012B4D0 /* TracingNSURLSessionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6167ACBF251A0B420012B4D0 /* TracingNSURLSessionViewController.m */; };
 		6167ACC7251A0BCE0012B4D0 /* TracingNSURLSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6167ACC6251A0BCE0012B4D0 /* TracingNSURLSessionScenario.storyboard */; };
 		6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167ACFC251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift */; };
@@ -171,6 +176,10 @@
 		618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDE24C75FD300589570 /* RUMScopeTests.swift */; };
 		618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */; };
 		618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */; };
+		6193DCA4251B5691009B8011 /* RUMTapActionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */; };
+		6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */; };
+		6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */; };
+		6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
 		61AD4E3824531500006E34EA /* DataFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3724531500006E34EA /* DataFormat.swift */; };
@@ -443,6 +452,9 @@
 		61363D9C24D999F70084CD6F /* DDError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDError.swift; sourceTree = "<group>"; };
 		61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDErrorTests.swift; sourceTree = "<group>"; };
 		61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingCommonAsserts.swift; sourceTree = "<group>"; };
+		6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationSwizzler.swift; sourceTree = "<group>"; };
+		6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandler.swift; sourceTree = "<group>"; };
+		61410166251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationSwizzlerTests.swift; sourceTree = "<group>"; };
 		61411B0F24EC15AC0012EAB2 /* Casting+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+RUM.swift"; sourceTree = "<group>"; };
 		61441C0224616DE9003D8BB8 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAppDelegate.swift; sourceTree = "<group>"; };
@@ -492,6 +504,8 @@
 		615A4A8824A34FD700233986 /* DDTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
 		615A4A8A24A3568900233986 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
+		615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASVariousUIControllsViewController.swift; sourceTree = "<group>"; };
+		615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandlerTests.swift; sourceTree = "<group>"; };
 		6167ACBD251A0B410012B4D0 /* Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Example-Bridging-Header.h"; sourceTree = "<group>"; };
 		6167ACBE251A0B420012B4D0 /* TracingNSURLSessionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TracingNSURLSessionViewController.h; sourceTree = "<group>"; };
 		6167ACBF251A0B420012B4D0 /* TracingNSURLSessionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TracingNSURLSessionViewController.m; sourceTree = "<group>"; };
@@ -516,6 +530,10 @@
 		618DCFDE24C75FD300589570 /* RUMScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScopeTests.swift; sourceTree = "<group>"; };
 		618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture2ViewController.swift; sourceTree = "<group>"; };
 		618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture3ViewController.swift; sourceTree = "<group>"; };
+		6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMTapActionScenario.storyboard; sourceTree = "<group>"; };
+		6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASScreen1ViewController.swift; sourceTree = "<group>"; };
+		6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASTableViewController.swift; sourceTree = "<group>"; };
+		6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASCollectionViewController.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
 		61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeatureMocks.swift; sourceTree = "<group>"; };
 		61AD4E3724531500006E34EA /* DataFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataFormat.swift; sourceTree = "<group>"; };
@@ -1215,7 +1233,8 @@
 			isa = PBXGroup;
 			children = (
 				61337037250F84FD00236D58 /* ManualInstrumentation */,
-				61F9CA7725125918000A5E61 /* NavigationController */,
+				61F9CA7725125918000A5E61 /* NavigationControllerAutoInstrumentation */,
+				6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1229,6 +1248,24 @@
 				618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */,
 			);
 			path = ManualInstrumentation;
+			sourceTree = "<group>";
+		};
+		6141014C251A577D00E3C2D9 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				61410166251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift */,
+				615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */,
+			);
+			path = Actions;
+			sourceTree = "<group>";
+		};
+		6141014D251A578D00E3C2D9 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */,
+				6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */,
+			);
+			path = Actions;
 			sourceTree = "<group>";
 		};
 		61411B0E24EC15940012EAB2 /* Utils */ = {
@@ -1382,6 +1419,7 @@
 				616CCE12250A1868009FED46 /* RUMCommandSubscriber.swift */,
 				616CCE15250A467E009FED46 /* RUMAutoInstrumentation.swift */,
 				61F3CDA1251118DD00C816E5 /* Views */,
+				6141014D251A578D00E3C2D9 /* Actions */,
 			);
 			path = AutoInstrumentation;
 			sourceTree = "<group>";
@@ -1467,6 +1505,18 @@
 				618DCFD624C7265300589570 /* RUMUUID.swift */,
 			);
 			path = UUIDs;
+			sourceTree = "<group>";
+		};
+		6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */,
+				6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */,
+				6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */,
+				6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */,
+				615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */,
+			);
+			path = TapActionAutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		61B22E5824F3E6A700DC26D2 /* Debugging */ = {
@@ -1737,8 +1787,9 @@
 		61F3CDA825121F8F00C816E5 /* AutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
-				61F3CDA925121FA100C816E5 /* Views */,
 				61F9CA702512450B000A5E61 /* RUMAutoInstrumentationTests.swift */,
+				61F3CDA925121FA100C816E5 /* Views */,
+				6141014C251A577D00E3C2D9 /* Actions */,
 			);
 			path = AutoInstrumentation;
 			sourceTree = "<group>";
@@ -1752,13 +1803,13 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		61F9CA7725125918000A5E61 /* NavigationController */ = {
+		61F9CA7725125918000A5E61 /* NavigationControllerAutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
 				61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */,
 				61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */,
 			);
-			path = NavigationController;
+			path = NavigationControllerAutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		61FF281F24B89807000B3D9B /* RUMEvent */ = {
@@ -2063,6 +2114,7 @@
 				61337032250F82AE00236D58 /* LoggingScenario.storyboard in Resources */,
 				61441C1124616DEC003D8BB8 /* LaunchScreen.storyboard in Resources */,
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
+				6193DCA4251B5691009B8011 /* RUMTapActionScenario.storyboard in Resources */,
 				6167ACC7251A0BCE0012B4D0 /* TracingNSURLSessionScenario.storyboard in Resources */,
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
 				61441C0C24616DE9003D8BB8 /* Main.storyboard in Resources */,
@@ -2163,6 +2215,7 @@
 				614B0A4F24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift in Sources */,
 				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
 				9ED583A32498C222004CFF2A /* TracingAutoInstrumentation.swift in Sources */,
+				6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */,
 				61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */,
 				61C2C20724C098FC00C0321C /* RUMSessionScope.swift in Sources */,
 				617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */,
@@ -2175,6 +2228,7 @@
 				618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */,
 				9EFD112C24B32D29003A1A2B /* URLFilter.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
+				6141015B251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift in Sources */,
 				616CCE16250A467E009FED46 /* RUMAutoInstrumentation.swift in Sources */,
 				616CCE13250A1868009FED46 /* RUMCommandSubscriber.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
@@ -2250,6 +2304,7 @@
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
 				61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
+				61410167251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift in Sources */,
 				61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */,
 				9E330A8E24ADE1250031408E /* NSURLSessionBridge.m in Sources */,
 				61C2C20924C0C75500C0321C /* RUMSessionScopeTests.swift in Sources */,
@@ -2281,6 +2336,7 @@
 				615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */,
 				615A4A8724A3452800233986 /* DDTracerConfigurationTests.swift in Sources */,
 				61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */,
+				615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */,
 				61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */,
 				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,
 				61B558CF2469561C001460D3 /* LoggerBuilderTests.swift in Sources */,
@@ -2389,10 +2445,14 @@
 				61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */,
 				61C2C20B24C1045300C0321C /* SendRUMFixture1ViewController.swift in Sources */,
 				61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */,
+				615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */,
 				61441C9D2461A796003D8BB8 /* AppConfiguration.swift in Sources */,
 				6167AD20251A27CC0012B4D0 /* TracingURLSessionViewController.swift in Sources */,
+				6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */,
 				61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */,
+				6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
+				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,
 				618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */,
 				61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */,
 				614CADD72510BAC000B93D2D /* Environment.swift in Sources */,

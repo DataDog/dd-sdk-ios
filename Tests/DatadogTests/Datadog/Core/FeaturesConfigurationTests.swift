@@ -116,7 +116,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(iOSAppExtensionConfiguration.common.performance, .instantDataDelivery)
     }
 
-    // MARK: - Feature Configurations
+    // MARK: - Logging Configuration Tests
 
     func testLoggingConfiguration() throws {
         XCTAssertNil(
@@ -142,6 +142,8 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    // MARK: - Tracing Configuration Tests
+
     func testTracingConfiguration() throws {
         XCTAssertNil(
             try FeaturesConfiguration(configuration: .mockWith(tracingEnabled: false), appContext: .mockAny()).tracing,
@@ -164,23 +166,43 @@ class FeaturesConfigurationTests: XCTestCase {
             try createConfiguration(clientToken: "abc", tracesEndpoint: .custom(url: "http://example.com/api")).tracing?.uploadURLWithClientToken,
             URL(string: "http://example.com/api/abc")!
         )
+    }
 
-        let custom = try FeaturesConfiguration(
-            configuration: .mockWith(tracingEnabled: true, tracedHosts: ["example.com", "foo.eu"]), appContext: .mockAny()
+    func testTracingAutoInstrumentationConfiguration() throws {
+        let hostsConfigured = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: true,
+                tracedHosts: ["example.com", "foo.eu"]
+            ),
+            appContext: .mockAny()
         )
         XCTAssertEqual(
-            custom.tracing?.autoInstrumentation?.tracedHosts,
+            hostsConfigured.tracing!.autoInstrumentation!.tracedHosts,
             ["example.com", "foo.eu"]
         )
         XCTAssertEqual(
-            custom.tracing?.autoInstrumentation?.excludedHosts,
+            hostsConfigured.tracing!.autoInstrumentation!.excludedHosts,
             [
                 Datadog.Configuration.LogsEndpoint.us.url,
                 Datadog.Configuration.TracesEndpoint.us.url,
                 Datadog.Configuration.RUMEndpoint.us.url
             ]
         )
+
+        let hostsNotConfigured = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: true,
+                tracedHosts: []
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(
+            hostsNotConfigured.tracing!.autoInstrumentation,
+            "When traced hosts are not configured, the auto instrumentation config shuld be `nil`"
+        )
     }
+
+    // MARK: - RUM Configuration Tests
 
     func testRUMConfiguration() throws {
         XCTAssertNil(
@@ -206,10 +228,51 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         let custom = try FeaturesConfiguration(
-            configuration: .mockWith(rumApplicationID: "rum-app-id", rumEnabled: true, rumSessionsSamplingRate: 45.2), appContext: .mockAny()
+            configuration: .mockWith(
+                rumApplicationID: "rum-app-id",
+                rumEnabled: true, rumSessionsSamplingRate: 45.2
+            ),
+            appContext: .mockAny()
         )
         XCTAssertEqual(custom.rum?.applicationID, "rum-app-id")
         XCTAssertEqual(custom.rum?.sessionSamplingRate, 45.2)
+    }
+
+    func testRUMAutoInstrumentationConfiguration() throws {
+        let viewsConfigured = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                rumUIKitViewsPredicate: UIKitRUMViewsPredicateMock(),
+                rumUIKitActionsTrackingEnabled: false
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertNotNil(viewsConfigured.rum!.autoInstrumentation!.uiKitRUMViewsPredicate)
+        XCTAssertFalse(viewsConfigured.rum!.autoInstrumentation!.uiKitActionsTrackingEnabled)
+
+        let actionsConfigured = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                rumUIKitViewsPredicate: nil,
+                rumUIKitActionsTrackingEnabled: true
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(actionsConfigured.rum!.autoInstrumentation!.uiKitRUMViewsPredicate)
+        XCTAssertTrue(actionsConfigured.rum!.autoInstrumentation!.uiKitActionsTrackingEnabled)
+
+        let viewsAndActionsNotConfigured = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                rumUIKitViewsPredicate: nil,
+                rumUIKitActionsTrackingEnabled: false
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(
+            viewsAndActionsNotConfigured.rum!.autoInstrumentation,
+            "When neither Views nor Actions are configured, the auto instrumentation config shuld be `nil`"
+        )
     }
 
     // MARK: - Invalid Configurations
