@@ -88,7 +88,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapCollectionViewItem(atIndex: 14)
         app.tapShowVariousUIControls()
         app.tapTextField()
-        // TODO: RUMM-740 Enable it back once we fix make the Software Keyboard work on CI
+        // TODO: RUMM-740 Enable it back once we fix the Software Keyboard work on CI
         //app.enterTextUsingKeyboard("foo")
         app.dismissKeyboard()
         app.tapStepperPlusButton()
@@ -96,11 +96,16 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapSegmentedControlSegment(label: "B")
         app.tapNavigationBarButton(named: "Search")
         app.tapNavigationBarButton(named: "Share")
+
+        // Wait with next action, so the last RUM Event fits another HTTP request. This is to
+        // make it execute the same locally and on CI, where different number of requests is sometimes send.
+        Thread.sleep(forTimeInterval: 2) // TODO: RUMM-742 Make the HTTP Server Mock not depend on the requests count
+
         app.tapNavigationBarButton(named: "Back")
 
         // Get POST requests
         let recordedRUMRequests = try rumServerSession
-            .pullRecordedPOSTRequests(count: 2, timeout: dataDeliveryTimeout)
+            .pullRecordedPOSTRequests(count: 3, timeout: dataDeliveryTimeout)
 
         // Get RUM Events
         let rumEventsMatchers = try recordedRUMRequests
