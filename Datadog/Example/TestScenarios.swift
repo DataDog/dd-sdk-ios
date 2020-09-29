@@ -45,6 +45,8 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
         return RUMManualInstrumentationScenario()
     case RUMNavigationControllerScenario.envIdentifier():
         return RUMNavigationControllerScenario()
+    case RUMTabBarAutoInstrumentationScenario.envIdentifier():
+        return RUMTabBarAutoInstrumentationScenario()
     case RUMTapActionScenario.envIdentifier():
         return RUMTapActionScenario()
     default:
@@ -140,7 +142,7 @@ struct RUMManualInstrumentationScenario: TestScenario {
 }
 
 /// Scenario which starts a navigation controller and runs through 4 different view controllers by navigating
-/// back and forth.
+/// back and forth. Tracks view controllers as RUM Views.
 struct RUMNavigationControllerScenario: TestScenario {
     static let storyboardName = "RUMNavigationControllerScenario"
 
@@ -162,10 +164,39 @@ struct RUMNavigationControllerScenario: TestScenario {
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder.trackUIKitRUMViews(using: Predicate())
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+            .enableLogging(false)
+            .enableTracing(false)
     }
 }
 
+/// Scenario which presents `UITabBarController`-based hierarchy and navigates through
+/// its view controllers. Tracks view controllers as RUM Views.
+struct RUMTabBarAutoInstrumentationScenario: TestScenario {
+    static var storyboardName: String = "RUMTabBarAutoInstrumentationScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+            if let viewName = viewController.accessibilityLabel {
+                return .init(path: viewName)
+            } else {
+                return nil
+            }
+        }
+    }
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+            .enableLogging(false)
+            .enableTracing(false)
+    }
+}
+
+/// Scenario which interacts with various interactive elements laid between different view controllers,
+/// including `UITableViewController` and `UICollectionViewController`. Tapped views
+/// and controls are tracked as RUM Actions.
 struct RUMTapActionScenario: TestScenario {
     static var storyboardName: String = "RUMTapActionScenario"
 
@@ -190,5 +221,7 @@ struct RUMTapActionScenario: TestScenario {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .trackUIKitActions(true)
+            .enableLogging(false)
+            .enableTracing(false)
     }
 }
