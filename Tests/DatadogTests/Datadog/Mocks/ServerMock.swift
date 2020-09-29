@@ -76,11 +76,11 @@ class ServerMock {
 
     fileprivate let mockedResponse: HTTPURLResponse?
     fileprivate let mockedData: Data?
-    fileprivate let mockedError: Error?
+    fileprivate let mockedError: NSError?
 
     enum Delivery {
         case success(response: HTTPURLResponse, data: Data = .mockAny())
-        case failure(error: Error)
+        case failure(error: NSError)
     }
 
     init(delivery: Delivery) {
