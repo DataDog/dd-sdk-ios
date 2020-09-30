@@ -40,6 +40,13 @@ private extension ExampleApplication {
     }
 
     func enterTextUsingKeyboard(_ text: String) {
+        // NOTE: RUMM-740 iOS 13 Swipe typing feature presents its onboarding
+        // That blocks the keyboard with a Continue button
+        // it must be tapped first to get the real keyboard
+        let swipeTypingContinueButton = buttons["Continue"]
+        if swipeTypingContinueButton.exists {
+            swipeTypingContinueButton.tap()
+        }
         text.forEach { letter in
             keys[String(letter)].tap()
         }
@@ -88,8 +95,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapCollectionViewItem(atIndex: 14)
         app.tapShowVariousUIControls()
         app.tapTextField()
-        // TODO: RUMM-740 Enable it back once we fix the Software Keyboard work on CI
-        //app.enterTextUsingKeyboard("foo")
+        app.enterTextUsingKeyboard("foo")
         app.dismissKeyboard()
         app.tapStepperPlusButton()
         app.moveSlider(to: 0.25)
