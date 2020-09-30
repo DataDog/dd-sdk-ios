@@ -28,7 +28,8 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testWhenRequestIsNotDelivered_itReturnsHTTPRequestDeliveryError() {
-        let server = ServerMock(delivery: .failure(error: ErrorMock("no internet connection")))
+        let mockError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "no internet connection"])
+        let server = ServerMock(delivery: .failure(error: mockError))
         let expectation = self.expectation(description: "receive response")
         let client = HTTPClient(session: .serverMockURLSession)
 
@@ -37,7 +38,7 @@ class HTTPClientTests: XCTestCase {
             case .success:
                 break
             case .failure(let error):
-                XCTAssertEqual((error as? ErrorMock)?.description, "no internet connection")
+                XCTAssertEqual((error as NSError).localizedDescription, "no internet connection")
                 expectation.fulfill()
             }
         }

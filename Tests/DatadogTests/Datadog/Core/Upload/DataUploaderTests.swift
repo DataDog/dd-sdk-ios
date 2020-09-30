@@ -117,7 +117,8 @@ class DataUploaderTests: XCTestCase {
     }
 
     func testWhenDataIsNotSentDueToNetworkError_itReturnsDataUploadStatus_networkError() {
-        let server = ServerMock(delivery: .failure(error: ErrorMock("network error")))
+        let mockError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "network error"])
+        let server = ServerMock(delivery: .failure(error: mockError))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
             httpClient: HTTPClient(session: .serverMockURLSession),
