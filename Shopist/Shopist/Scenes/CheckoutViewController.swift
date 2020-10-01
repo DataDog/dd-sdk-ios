@@ -20,7 +20,7 @@ private struct CellModel {
 
 internal final class CheckoutViewController: UITableViewController {
     private static var randomError: NSError? {
-        if UInt8.random(in: 1...20) == 1 {
+        if UInt8.random(in: 1...40) == 1 {
             return NSError(
                 domain: "GraphQL",
                 code: 11_235,

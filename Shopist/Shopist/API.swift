@@ -134,7 +134,7 @@ internal final class API {
         var tracedRequest = request
         headerWriter.tracePropagationHTTPHeaders.forEach { tracedRequest.setValue($1, forHTTPHeaderField: $0) }
 
-        let randomError = isFailable ? fakeError(onceIn: 50) : nil
+        let randomError = isFailable ? fakeError(onceIn: 75) : nil
 
         httpClient.request(tracedRequest).validate().response { result in
             let statusCode = result.response?.statusCode
