@@ -87,8 +87,13 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.set(tracesEndpoint: tracesEndpoint.sdkEndpoint)
     }
 
+    @available(*, deprecated, message: "This option is replaced by `track(firstPartyHosts:)`. Refer to the new API comment for important details.")
     public func set(tracedHosts: Set<String>) {
-        _ = sdkBuilder.set(tracedHosts: tracedHosts)
+        track(firstPartyHosts: tracedHosts)
+    }
+
+    public func track(firstPartyHosts: Set<String>) {
+        _ = sdkBuilder.track(firstPartyHosts: firstPartyHosts)
     }
 
     public func set(serviceName: String) {
