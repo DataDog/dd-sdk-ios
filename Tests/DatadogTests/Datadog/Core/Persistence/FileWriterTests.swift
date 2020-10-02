@@ -174,7 +174,7 @@ class FileWriterTests: XCTestCase {
         }
 
         struct Foo: Codable {
-            let foo = "bar"
+            var foo = "bar"
         }
 
         // Write 500 of `Foo`s and interrupt writes randomly

@@ -59,17 +59,17 @@ class DDSpanTests: XCTestCase {
         span.finish()
 
         let fixtures: [(() -> Void, String)] = [
-            ({ _ = span.setOperationName(.mockAny()) },
+            ({ span.setOperationName(.mockAny()) },
             "🔥 Calling `setOperationName(_:)` on a finished span (\"the span\") is not allowed."),
-            ({ _ = span.setTag(key: .mockAny(), value: 0) },
+            ({ span.setTag(key: .mockAny(), value: 0) },
             "🔥 Calling `setTag(key:value:)` on a finished span (\"the span\") is not allowed."),
-            ({ _ = span.setBaggageItem(key: .mockAny(), value: .mockAny()) },
+            ({ span.setBaggageItem(key: .mockAny(), value: .mockAny()) },
             "🔥 Calling `setBaggageItem(key:value:)` on a finished span (\"the span\") is not allowed."),
             ({ _ = span.baggageItem(withKey: .mockAny()) },
             "🔥 Calling `baggageItem(withKey:)` on a finished span (\"the span\") is not allowed."),
-            ({ _ = span.finish(at: .mockAny()) },
+            ({ span.finish(at: .mockAny()) },
             "🔥 Calling `finish(at:)` on a finished span (\"the span\") is not allowed."),
-            ({ _ = span.log(fields: [:], timestamp: .mockAny()) },
+            ({ span.log(fields: [:], timestamp: .mockAny()) },
             "🔥 Calling `log(fields:timestamp:)` on a finished span (\"the span\") is not allowed."),
         ]
 
