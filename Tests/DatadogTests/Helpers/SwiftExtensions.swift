@@ -63,6 +63,10 @@ extension String {
             fatalError("`\(self)` has no prefix of `\(prefix)`")
         }
     }
+
+    func randomcased() -> String {
+        return Bool.random() ? self.lowercased() : self.uppercased()
+    }
 }
 
 extension Data {

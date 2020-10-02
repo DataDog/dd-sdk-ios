@@ -14,6 +14,13 @@ public enum RUMHTTPMethod: String {
     case DELETE
     case HEAD
     case PATCH
+
+    /// Determines the `RUMHTTPMethod` based on a given `URLRequest`. Defaults to `.GET`.
+    /// - Parameter request: the `URLRequest` for the resource.
+    public init(request: URLRequest) {
+        let requestMethod = request.httpMethod ?? "GET"
+        self = RUMHTTPMethod(rawValue: requestMethod.uppercased()) ?? .GET
+    }
 }
 
 public enum RUMResourceKind {
@@ -27,6 +34,46 @@ public enum RUMResourceKind {
     case js
     case media
     case other
+
+    private static let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
+
+    /// Determines the `RUMResourceKind` based on a given `URLRequest` and `HTTPURLResponse`.
+    /// Defaults to `.other`.
+    ///
+    /// - Parameters:
+    ///   - request: the `URLRequest` for the resource.
+    ///   - response: the `HTTPURLResponse` of the resource.
+    public init(request: URLRequest, response: HTTPURLResponse) {
+        if let requestMethod = request.httpMethod?.uppercased(), RUMResourceKind.xhrHTTPMethods.contains(requestMethod) {
+            self = .xhr
+        } else {
+            self.init(response: response)
+        }
+    }
+
+    /// Determines the `RUMResourceKind` based on the MIME type of given `HTTPURLResponse`.
+    /// Defaults to `.other`.
+    ///
+    /// - Parameters:
+    ///   - response: the `HTTPURLResponse` of the resource.
+    public init(response: HTTPURLResponse) {
+        if let mimeType = response.mimeType {
+            let components = mimeType.split(separator: "/")
+            let type = components.first?.lowercased()
+            let subtype = components.last?.split(separator: ";").first?.lowercased()
+
+            switch (type, subtype) {
+            case ("image", _): self = .image
+            case ("video", _), ("audio", _): self = .media
+            case ("font", _): self = .font
+            case ("text", "css"): self = .css
+            case ("text", "javascript"): self = .js
+            default: self = .other
+            }
+        } else {
+            self = .other
+        }
+    }
 }
 
 public enum RUMUserActionType {

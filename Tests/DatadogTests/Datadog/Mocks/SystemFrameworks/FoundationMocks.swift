@@ -236,6 +236,15 @@ extension URLResponse {
     static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
+
+    static func mockWith(mimeType: String) -> HTTPURLResponse {
+        return HTTPURLResponse(
+            url: .mockAny(),
+            mimeType: mimeType,
+            expectedContentLength: -1,
+            textEncodingName: nil
+        )
+    }
 }
 
 extension URLRequest {
