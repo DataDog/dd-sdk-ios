@@ -750,7 +750,7 @@ class TracerTests: XCTestCase {
 
     // MARK: - Injecting span context into carrier
 
-    func testItInjectsSpanContextIntoHTTPHeadersWriter() {
+    func testItInjectsSpanContextWithHTTPHeadersWriter() {
         let tracer: Tracer = .mockAny()
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
@@ -764,6 +764,23 @@ class TracerTests: XCTestCase {
             "x-datadog-parent-id": "2",
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testItExtractsSpanContextWithHTTPHeadersReader() {
+        let tracer: Tracer = .mockAny()
+        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = HTTPHeadersWriter()
+        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
+
+        let httpHeadersReader = HTTPHeadersReader(
+            httpHeaderFields: httpHeadersWriter.tracePropagationHTTPHeaders
+        )
+        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
+
+        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
+        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
+        XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
     }
 
     // MARK: - Thread safety

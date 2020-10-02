@@ -32,7 +32,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
             XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.com/v1/input/")
             XCTAssertNil(configuration.serviceName)
-            XCTAssertEqual(configuration.tracedHosts, [])
+            XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
@@ -49,7 +49,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(logsEndpoint: .eu)
                 .set(tracesEndpoint: .eu)
                 .set(rumEndpoint: .eu)
-                .set(tracedHosts: ["example.com"])
+                .track(firstPartyHosts: ["example.com"])
                 .set(rumSessionsSamplingRate: 42.5)
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(true)
@@ -76,10 +76,24 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
             XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/")
             XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.eu/v1/input/")
-            XCTAssertEqual(configuration.tracedHosts, ["example.com"])
+            XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumUIKitViewsPredicate)
             XCTAssertTrue(configuration.rumUIKitActionsTrackingEnabled)
         }
     }
+
+    func testDeprecatedAPIs() {
+        let builder = Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
+        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracedHosts: ["example.com"])
+        let configuration = builder.build()
+
+        XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+    }
 }
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol ConfigurationBuilderDeprecatedAPIs {
+    func set(tracedHosts: Set<String>) -> Datadog.Configuration.Builder
+}
+extension Datadog.Configuration.Builder: ConfigurationBuilderDeprecatedAPIs {}

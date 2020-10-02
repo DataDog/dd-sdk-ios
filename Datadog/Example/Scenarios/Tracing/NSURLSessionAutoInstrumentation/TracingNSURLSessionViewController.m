@@ -6,6 +6,7 @@
 
 #import "Example-Swift.h"
 #import "TracingNSURLSessionViewController.h"
+@import DatadogObjc;
 
 @interface TracingNSURLSessionViewController()
 @property TracingNSURLSessionScenario *testScenario;
@@ -17,7 +18,9 @@
 -(void)awakeFromNib {
     [super awakeFromNib];
     self.testScenario = SwiftGlobals.currentTestScenario;
-    self.session = [NSURLSession sharedSession];
+    self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                 delegate:[DDNSURLSessionDelegate new]
+                                            delegateQueue:nil];
 
     assert(self.testScenario != nil);
 }
@@ -28,7 +31,7 @@
     [self callSuccessfullURLWithCompletionHandler: ^{
         [self callSuccessfullURLRequestWithCompletionHandler: ^{
             [self callBadURLWithCompletionHandler: ^{
-                [self useNotInstrumentedAPIs];
+                // TODO: RUMM-731 Make calls to non-completion handler APIs
             }];
         }];
     }];

@@ -129,7 +129,7 @@ class _TracingURLSessionBaseScenario: NSObject {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .set(tracedHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!])
+            .track(firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!])
     }
 }
 

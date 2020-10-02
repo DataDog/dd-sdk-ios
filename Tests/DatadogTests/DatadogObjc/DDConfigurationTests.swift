@@ -78,8 +78,8 @@ class DDConfigurationTests: XCTestCase {
         let swiftConfigurationServiceName = objcBuilder.build().sdkConfiguration
         XCTAssertEqual(swiftConfigurationServiceName.serviceName, "service-name")
 
-        objcBuilder.set(tracedHosts: ["example.com"])
+        objcBuilder.track(firstPartyHosts: ["example.com"])
         let swiftConfigurationTracedHosts = objcBuilder.build().sdkConfiguration
-        XCTAssertEqual(swiftConfigurationTracedHosts.tracedHosts, ["example.com"])
+        XCTAssertEqual(swiftConfigurationTracedHosts.firstPartyHosts, ["example.com"])
     }
 }

@@ -80,8 +80,8 @@ class DatadogTests: XCTestCase {
         }
 
         defer {
-            TracingAutoInstrumentation.instance?.swizzler.unswizzle()
             RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
+            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         }
 
         try verify(configuration: defaultBuilder.build()) {
@@ -89,8 +89,8 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -99,8 +99,8 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -110,8 +110,8 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -120,8 +120,8 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -131,16 +131,16 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
         try verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
 
         try verify(configuration: defaultBuilder.enableRUM(true).build()) {
@@ -148,8 +148,8 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -158,21 +158,10 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
             XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
-        }
-
-        try verify(configuration: defaultBuilder.set(tracedHosts: ["example.com"]).build()) {
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertNotNil(TracingAutoInstrumentation.instance)
-        }
-        try verify(
-            configuration: defaultBuilder.enableTracing(false).set(tracedHosts: ["example.com"]).build()
-        ) {
-            XCTAssertFalse(TracingFeature.isEnabled)
-            XCTAssertNil(TracingAutoInstrumentation.instance)
         }
 
         try verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
@@ -199,6 +188,13 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
+        }
+
+        try verify(configuration: defaultBuilder.track(firstPartyHosts: ["example.com"]).build()) {
+            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+        }
+        try verify(configuration: defaultBuilder.track(firstPartyHosts: []).build()) {
+            XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
     }
 

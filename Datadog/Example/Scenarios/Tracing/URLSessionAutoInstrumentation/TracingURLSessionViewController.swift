@@ -6,10 +6,15 @@
 
 import Foundation
 import UIKit
+import Datadog
 
 internal class TracingURLSessionViewController: UIViewController {
     private var testScenario: TracingURLSessionScenario!
-    private let session = URLSession.shared
+    private lazy var session = URLSession(
+        configuration: .default,
+        delegate: DDURLSessionDelegate(),
+        delegateQueue: nil
+    )
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -22,7 +27,7 @@ internal class TracingURLSessionViewController: UIViewController {
         callSuccessfullURL {
             self.callSuccessfullURLRequest {
                 self.callBadURL {
-                    self.useNotInstrumentedAPIs()
+                    // TODO: RUMM-731 Make calls to non-completion handler APIs
                 }
             }
         }
@@ -50,14 +55,5 @@ internal class TracingURLSessionViewController: UIViewController {
             completion()
         }
         task.resume()
-    }
-
-    /// Calls `URLSession` APIs which are currently not auto instrumented.
-    /// This is just a sanity check to make sure the `URLSession` swizzling works fine.
-    private func useNotInstrumentedAPIs() {
-        let badResourceRequest = URLRequest(url: testScenario.badResourceURL)
-        // Use APIs with no completion block:
-        session.dataTask(with: badResourceRequest).resume()
-        session.dataTask(with: testScenario.badResourceURL).resume()
     }
 }

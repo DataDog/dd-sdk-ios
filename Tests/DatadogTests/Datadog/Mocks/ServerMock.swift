@@ -58,15 +58,23 @@ private class ServerMockProtocol: URLProtocol {
     }
 }
 
-/// All unit tests should use this shared `URLSession` through `URLSession.serverMockURLSession`.
-private let sharedURLSession: URLSession = {
-    let configuration = URLSessionConfiguration.ephemeral
-    configuration.protocolClasses = [ServerMockProtocol.self]
-    return URLSession(configuration: configuration)
-}()
+private var sharedURLSession: URLSession?
 
 extension URLSession {
-    static var serverMockURLSession: URLSession { sharedURLSession }
+    /// Shared `URLSession` instrumented with `ServerMock`.
+    static var serverMockURLSession: URLSession {
+        if sharedURLSession == nil {
+            sharedURLSession = URLSession.createServerMockURLSession(delegate: nil)
+        }
+        return sharedURLSession!
+    }
+
+    /// Creates the `URLSession` instrumented with `ServerMock`.
+    static func createServerMockURLSession(delegate: URLSessionDelegate?) -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [ServerMockProtocol.self]
+        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    }
 }
 
 class ServerMock {

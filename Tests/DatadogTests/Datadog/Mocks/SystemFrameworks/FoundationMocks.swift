@@ -101,6 +101,16 @@ extension URL {
     static func mockWith(pathComponent: String) -> URL {
         return URL(string: "https://www.foo.com/")!.appendingPathComponent(pathComponent)
     }
+
+    static func mockRandom() -> URL {
+        return URL(string: "https://www.foo.com/")!
+            .appendingPathComponent(
+                .mockRandom(
+                    among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                    length: 32
+                )
+            )
+    }
 }
 
 extension String {
@@ -218,7 +228,11 @@ extension Bundle {
 
 // MARK: - HTTP
 
-extension HTTPURLResponse {
+extension URLResponse {
+    static func mockAny() -> HTTPURLResponse {
+        return .mockResponseWith(statusCode: 200)
+    }
+
     static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
@@ -227,6 +241,12 @@ extension HTTPURLResponse {
 extension URLRequest {
     static func mockAny() -> URLRequest {
         return URLRequest(url: .mockAny())
+    }
+
+    static func mockWith(httpMethod: String) -> URLRequest {
+        var request = URLRequest(url: .mockAny())
+        request.httpMethod = httpMethod
+        return request
     }
 }
 
@@ -240,4 +260,50 @@ class ProcessInfoMock: ProcessInfo {
     }
 
     override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+}
+
+// MARK: - URLSession
+
+extension URLSession {
+    static func mockAny() -> URLSession {
+        return .shared
+    }
+}
+
+extension URLSessionTask {
+    static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
+        return URLSessionTaskMock(request: request, response: response)
+    }
+}
+
+extension URLSessionTaskMetrics {
+    static func mockAny() -> URLSessionTaskMetrics {
+        return .mockWith(taskDuration: 1)
+    }
+
+    static func mockWith(taskDuration: TimeInterval) -> URLSessionTaskMetrics {
+        return URLSessionTaskMetricsMock(taskInterval: .init(start: Date(), duration: taskDuration))
+    }
+}
+
+private class URLSessionTaskMock: URLSessionTask {
+    private let _originalRequest: URLRequest
+    override var originalRequest: URLRequest? { _originalRequest }
+
+    private let _response: URLResponse
+    override var response: URLResponse? { _response }
+
+    init(request: URLRequest, response: HTTPURLResponse) {
+        self._originalRequest = request
+        self._response = response
+    }
+}
+
+private class URLSessionTaskMetricsMock: URLSessionTaskMetrics {
+    private let _taskInterval: DateInterval
+    override var taskInterval: DateInterval { _taskInterval }
+
+    init(taskInterval: DateInterval) {
+        self._taskInterval = taskInterval
+    }
 }

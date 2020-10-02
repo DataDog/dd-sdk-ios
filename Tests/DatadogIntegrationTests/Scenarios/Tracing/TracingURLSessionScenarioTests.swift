@@ -44,7 +44,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         let spanMatchers = try recordedTracingRequests
             .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
 
-        XCTAssertGreaterThanOrEqual(spanMatchers.count, 3)
+        XCTAssertEqual(spanMatchers.count, 3)
 
         // Assert common things
         assertHTTPHeadersAndPath(in: recordedTracingRequests)

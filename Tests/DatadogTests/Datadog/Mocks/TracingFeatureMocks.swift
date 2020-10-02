@@ -213,7 +213,10 @@ class SpanOutputMock: SpanOutput {
         let finishTime: Date
     }
 
-    var recorded: Recorded? = nil
+    var onSpanRecorded: ((Recorded?) -> Void)?
+    var recorded: Recorded? = nil {
+        didSet { onSpanRecorded?(recorded) }
+    }
 
     func write(ddspan: DDSpan, finishTime: Date) {
         recorded = Recorded(span: ddspan, finishTime: finishTime)

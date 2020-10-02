@@ -22,7 +22,7 @@ extension Datadog.Configuration {
         tracesEndpoint: TracesEndpoint = .us,
         rumEndpoint: RUMEndpoint = .us,
         serviceName: String? = .mockAny(),
-        tracedHosts: Set<String> = [],
+        firstPartyHosts: Set<String>? = nil,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false
@@ -38,7 +38,7 @@ extension Datadog.Configuration {
             tracesEndpoint: tracesEndpoint,
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
-            tracedHosts: tracedHosts,
+            firstPartyHosts: firstPartyHosts,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled
@@ -53,9 +53,16 @@ extension FeaturesConfiguration {
         common: Common = .mockAny(),
         logging: Logging? = .mockAny(),
         tracing: Tracing? = .mockAny(),
-        rum: RUM? = .mockAny()
+        rum: RUM? = .mockAny(),
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
     ) -> Self {
-        return .init(common: common, logging: logging, tracing: tracing, rum: rum)
+        return .init(
+            common: common,
+            logging: logging,
+            tracing: tracing,
+            rum: rum,
+            urlSessionAutoInstrumentation: urlSessionAutoInstrumentation
+        )
     }
 }
 
@@ -97,16 +104,11 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
-        autoInstrumentation: FeaturesConfiguration.Tracing.AutoInstrumentation = .init(
-            tracedHosts: [],
-            excludedHosts: []
-        )
+        uploadURLWithClientToken: URL = .mockAny()
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
-            autoInstrumentation: autoInstrumentation
+            uploadURLWithClientToken: uploadURLWithClientToken
         )
     }
 }
@@ -127,6 +129,20 @@ extension FeaturesConfiguration.RUM {
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
             autoInstrumentation: autoInstrumentation
+        )
+    }
+}
+
+extension FeaturesConfiguration.URLSessionAutoInstrumentation {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        userDefinedFirstPartyHosts: Set<String> = [],
+        sdkInternalHosts: Set<String> = []
+    ) -> Self {
+        return .init(
+            userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
+            sdkInternalHosts: sdkInternalHosts
         )
     }
 }
