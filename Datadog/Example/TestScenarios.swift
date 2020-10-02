@@ -97,12 +97,22 @@ class _TracingURLSessionBaseScenario: NSObject {
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
     @objc
     let customGETResourceURL: URL
+
     /// The `URLRequest` to custom POST resource,  observed by Tracing auto instrumentation.
     @objc
     let customPOSTRequest: URLRequest
+
     /// An unresolvable URL to fake resource DNS resolution error,  observed by Tracing auto instrumentation.
     @objc
     let badResourceURL: URL
+
+    /// The `URLRequest` to fake 3rd party resource. As it's 3rd party, it won't be observed by Tracing auto instrumentation.
+    @objc
+    let thirdPartyRequest: URLRequest
+
+    /// The `URL` to fake 3rd party resource. As it's 3rd party, it won't be observed by Tracing auto instrumentation.
+    @objc
+    let thirdPartyURL: URL
 
     override init() {
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
@@ -125,6 +135,8 @@ class _TracingURLSessionBaseScenario: NSObject {
             }()
             badResourceURL = URL(string: "https://foo.bar")!
         }
+        thirdPartyURL = URL(string: "https://www.bitrise.io")!
+        thirdPartyRequest = URLRequest(url: thirdPartyURL)
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {

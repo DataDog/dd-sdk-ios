@@ -24,16 +24,18 @@ internal class TracingURLSessionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        callSuccessfullURL {
-            self.callSuccessfullURLRequest {
-                self.callBadURL {
-                    // TODO: RUMM-731 Make calls to non-completion handler APIs
-                }
+        callSuccessfullFirstPartyURL {
+            self.callSuccessfullFirstPartyURLRequest {
+                self.callBadFirstPartyURL()
             }
         }
+
+        callThirdPartyURL()
+        callThirdPartyURLRequest()
     }
 
-    private func callSuccessfullURL(completion: @escaping () -> Void) {
+    private func callSuccessfullFirstPartyURL(completion: @escaping () -> Void) {
+        // This request is instrumented. It sends the `Span`.
         let task = session.dataTask(with: testScenario.customGETResourceURL) { _, _, error in
             assert(error == nil)
             completion()
@@ -41,7 +43,8 @@ internal class TracingURLSessionViewController: UIViewController {
         task.resume()
     }
 
-    private func callSuccessfullURLRequest(completion: @escaping () -> Void) {
+    private func callSuccessfullFirstPartyURLRequest(completion: @escaping () -> Void) {
+        // This request is instrumented. It sends the `Span`.
         let task = session.dataTask(with: testScenario.customPOSTRequest) { _, _, error in
             assert(error == nil)
             completion()
@@ -49,11 +52,21 @@ internal class TracingURLSessionViewController: UIViewController {
         task.resume()
     }
 
-    private func callBadURL(completion: @escaping () -> Void) {
-        let task = session.dataTask(with: testScenario.badResourceURL) { _, _, error in
-            assert(error != nil)
-            completion()
-        }
+    private func callBadFirstPartyURL() {
+        // This request is instrumented. It sends the `Span`.
+        let task = session.dataTask(with: testScenario.badResourceURL)
+        task.resume()
+    }
+
+    private func callThirdPartyURL() {
+        // This request is NOT instrumented. We test that it does not send the `Span`.
+        let task = session.dataTask(with: testScenario.thirdPartyURL)
+        task.resume()
+    }
+
+    private func callThirdPartyURLRequest() {
+        // This request is NOT instrumented. We test that it does not send the `Span`.
+        let task = session.dataTask(with: testScenario.thirdPartyRequest)
         task.resume()
     }
 }
