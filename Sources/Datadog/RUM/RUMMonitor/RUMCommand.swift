@@ -110,6 +110,15 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let httpMethod: RUMHTTPMethod
 }
 
+internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
+    let resourceName: String
+    let time: Date
+    var attributes: [AttributeKey: AttributeValue]
+
+    /// Resource metrics.
+    let metrics: ResourceMetrics
+}
+
 internal struct RUMStopResourceCommand: RUMResourceCommand {
     let resourceName: String
     let time: Date
@@ -120,7 +129,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     /// HTTP status code of loading the Ressource
     let httpStatusCode: Int?
     /// The size of loaded Resource
-    let size: UInt64?
+    let size: Int64?
 }
 
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {

@@ -16,8 +16,8 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
     // MARK: - URLSessionTracingHandlerType
 
     func sendSpan(for interception: TaskInterception, using tracer: Tracer) {
-        guard let taskMetrics = interception.metrics,
-              let taskCompletion = interception.completion else {
+        guard let resourceMetrics = interception.metrics,
+              let resourceCompletion = interception.completion else {
             return
         }
 
@@ -27,14 +27,14 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
             span = tracer.startSpan(
                 spanContext: spanContext,
                 operationName: "urlsession.request",
-                startTime: taskMetrics.taskStartTime
+                startTime: resourceMetrics.fetch.start
             )
         } else {
             // Span context may not be injected on some versions of iOS if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
             span = tracer.startSpan(
                 operationName: "urlsession.request",
-                startTime: taskMetrics.taskStartTime
+                startTime: resourceMetrics.fetch.start
             )
         }
 
@@ -44,7 +44,7 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
         span.setTag(key: OTTags.httpUrl, value: url)
         span.setTag(key: OTTags.httpMethod, value: method)
 
-        if let error = taskCompletion.error {
+        if let error = resourceCompletion.error {
             span.setTag(key: OTTags.error, value: true)
 
             let dderror = DDError(error: error)
@@ -53,7 +53,7 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
             span.setTag(key: DDTags.errorStack, value: dderror.details)
         }
 
-        if let httpResponseStatusCode = taskCompletion.httpResponse?.statusCode {
+        if let httpResponseStatusCode = resourceCompletion.httpResponse?.statusCode {
             span.setTag(key: OTTags.httpStatusCode, value: httpResponseStatusCode)
 
             if httpResponseStatusCode >= 400 && httpResponseStatusCode < 500 {
@@ -64,7 +64,7 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
             }
         }
 
-        span.finish(at: taskMetrics.taskEndTime)
+        span.finish(at: resourceMetrics.fetch.end)
     }
 
     // MARK: - SpanContext Extraction

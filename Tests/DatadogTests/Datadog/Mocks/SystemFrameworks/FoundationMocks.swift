@@ -141,6 +141,12 @@ extension Int {
     }
 }
 
+extension Int64 {
+    static func mockAny() -> Int64 {
+        return 0
+    }
+}
+
 extension UInt64 {
     static func mockAny() -> UInt64 {
         return 0

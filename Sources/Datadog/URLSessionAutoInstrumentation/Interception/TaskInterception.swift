@@ -7,28 +7,36 @@
 import Foundation
 
 internal class TaskInterception {
+    /// An identifier uniquely identifying the task interception across all `URLSessions`.
+    internal let identifier: UUID
+    /// The initial request send during this interception. It is, the request send from `URLSession`, not the one
+    /// given by the user (as the request could have been modified in `URLSessionSwizzler`).
     internal let request: URLRequest
-    private(set) var metrics: TaskMetrics?
-    private(set) var completion: TaskCompletion?
+    /// Task metrics collected during this interception.
+    private(set) var metrics: ResourceMetrics?
+    /// Task completion collected during this interception.
+    private(set) var completion: ResourceCompletion?
 
     init(request: URLRequest) {
+        self.identifier = UUID()
         self.request = request
     }
 
     func register(metrics: URLSessionTaskMetrics) {
-        self.metrics = TaskMetrics(metrics: metrics)
+        self.metrics = ResourceMetrics(metrics: metrics)
     }
 
     func register(response: URLResponse?, error: Error?) {
-        self.completion = TaskCompletion(response: response, error: error)
+        self.completion = ResourceCompletion(response: response, error: error)
     }
 
+    /// Tells if the interception is done (mean: both metrics and completion were collected).
     var isDone: Bool {
         metrics != nil && completion != nil
     }
 }
 
-internal struct TaskCompletion {
+internal struct ResourceCompletion {
     let httpResponse: HTTPURLResponse?
     let error: Error?
 
@@ -38,14 +46,48 @@ internal struct TaskCompletion {
     }
 }
 
-internal struct TaskMetrics {
-    let taskStartTime: Date
-    let taskEndTime: Date
+/// Encapsulates key metrics retrieved from `URLSessionTaskMetrics`.
+/// Reference: https://developer.apple.com/documentation/foundation/urlsessiontasktransactionmetrics
+internal struct ResourceMetrics {
+    /// Properties of the fetch phase for the resource:
+    /// - `start` -  the time when the task started fetching the resource from the server,
+    /// - `end` - the time immediately after the task received the last byte of the resource.
+    let fetch: (start: Date, end: Date)
 
-    // TODO: RUMM-718 Compute more metrics
+    /// Properties of the name lookup phase for the resource.
+    let dns: (start: Date, duration: TimeInterval)?
 
+    /// The size of data delivered to delegate or completion handler.
+    /// Unavailable prior to iOS 13.0.
+    let responseSize: Int64?
+}
+
+extension ResourceMetrics {
     init(metrics: URLSessionTaskMetrics) {
-        self.taskStartTime = metrics.taskInterval.start
-        self.taskEndTime = metrics.taskInterval.end
+        // Set default values
+        var fetch = (start: metrics.taskInterval.start, end: metrics.taskInterval.end)
+        var dns: (start: Date, duration: TimeInterval)? = nil
+        var responseSize: Int64? = nil
+
+        // Capture more precise values
+        if let lastTransactionMetrics = metrics.transactionMetrics.last {
+            // TODO: RUMM-719 When computing other timings, check if it's correct to only depend on the last `transactionMetrics`
+
+            if let fetchStart = lastTransactionMetrics.fetchStartDate,
+               let fetchEnd = lastTransactionMetrics.responseEndDate {
+                fetch = (start: fetchStart, end: fetchEnd)
+            }
+
+            if let dnsStart = lastTransactionMetrics.domainLookupStartDate,
+               let dnsEnd = lastTransactionMetrics.domainLookupEndDate {
+                dns = (start: dnsStart, duration: dnsEnd.timeIntervalSince(dnsStart))
+            }
+
+            if #available(iOS 13.0, *) {
+                responseSize = lastTransactionMetrics.countOfResponseBodyBytesAfterDecoding
+            }
+        }
+
+        self.init(fetch: fetch, dns: dns, responseSize: responseSize)
     }
 }

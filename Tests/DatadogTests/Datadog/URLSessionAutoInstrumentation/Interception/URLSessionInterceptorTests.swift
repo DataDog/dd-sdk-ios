@@ -120,8 +120,8 @@ class URLSessionInterceptorTests: XCTestCase {
         XCTAssertEqual(interception.request, firstPartyRequest)
         XCTAssertTrue(interception.completion?.httpResponse === firstPartyTaskResponse)
         XCTAssertEqual((interception.completion?.error as? ErrorMock)?.description, "1st party task error")
-        XCTAssertEqual(interception.metrics!.taskStartTime, firstPartyTaskMetrics.taskInterval.start)
-        XCTAssertEqual(interception.metrics!.taskEndTime, firstPartyTaskMetrics.taskInterval.end)
+        XCTAssertEqual(interception.metrics!.fetch.start, firstPartyTaskMetrics.taskInterval.start)
+        XCTAssertEqual(interception.metrics!.fetch.end, firstPartyTaskMetrics.taskInterval.end)
     }
 
     func testGivenTracerNotRegistered_whenInterceptingURLSessionTasks_itDoesNotSendsSpanForAnyRequest() throws {

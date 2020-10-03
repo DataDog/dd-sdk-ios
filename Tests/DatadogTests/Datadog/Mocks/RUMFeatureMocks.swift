@@ -190,7 +190,7 @@ extension RUMStopResourceCommand {
         attributes: [AttributeKey: AttributeValue] = [:],
         kind: RUMResourceKind = .mockAny(),
         httpStatusCode: Int? = .mockAny(),
-        size: UInt64? = .mockAny()
+        size: Int64? = .mockAny()
     ) -> RUMStopResourceCommand {
         return RUMStopResourceCommand(
             resourceName: resourceName, time: time, attributes: attributes, kind: kind, httpStatusCode: httpStatusCode, size: size

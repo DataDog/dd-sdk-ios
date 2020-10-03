@@ -72,7 +72,7 @@ public class DDRUMMonitor {
     ///   - httpStatusCode: the HTTP response status code for this Resource.
     ///   - size: the size of the Resource (in bytes).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded with error.
