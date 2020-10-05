@@ -10,7 +10,7 @@ jobs:
   trigger-all-platform-tests:
 
     # Only certain repository members can run it
-    if: github.actor == 'ncreated' || github.actor == 'buranmert' || github.actor == 'nachoBonafonte' || github.actor == 'svganesh'
+    if: github.actor == 'ncreated' || github.actor == 'buranmert' || github.actor == 'nachoBonafonte' || github.actor == 'svganeshh'
 
     runs-on: ubuntu-latest
     steps:
