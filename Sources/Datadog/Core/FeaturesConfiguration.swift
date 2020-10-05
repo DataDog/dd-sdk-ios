@@ -34,7 +34,6 @@ internal struct FeaturesConfiguration {
         struct AutoInstrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
             let uiKitActionsTrackingEnabled: Bool
-            // TODO: RUMM-718 Add RUM Resources insturmentation configuration
         }
 
         let common: Common

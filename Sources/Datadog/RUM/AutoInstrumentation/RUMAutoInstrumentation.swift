@@ -50,7 +50,6 @@ internal class RUMAutoInstrumentation {
     let views: Views?
     /// RUM User Actions auto instrumentation, `nil` if not enabled.
     let userActions: UserActions?
-    // TODO: RUMM-718 Add Resources instrumentation
 
     // MARK: - Initialization
 
@@ -70,8 +69,9 @@ internal class RUMAutoInstrumentation {
                 userActions = nil
             }
         } catch {
-            userLogger.warn("🔥 RUM automatic tracking can't be set up due to error: \(error)")
-            developerLogger?.warn("🔥 RUM automatic tracking can't be set up due to error: \(error)")
+            consolePrint(
+                "🔥 Datadog SDK error: RUM automatic tracking can't be set up due to error: \(error)"
+            )
             return nil
         }
     }
@@ -84,6 +84,5 @@ internal class RUMAutoInstrumentation {
     func subscribe(commandSubscriber: RUMCommandSubscriber) {
         views?.handler.subscribe(commandsSubscriber: commandSubscriber)
         userActions?.handler.subscribe(commandsSubscriber: commandSubscriber)
-        // TODO: RUMM-718 Pass the weak reference to `commandSubscriber` to `UIKitRUMResourceHandler`
     }
 }

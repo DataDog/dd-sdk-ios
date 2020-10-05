@@ -101,6 +101,7 @@
 		613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */; };
 		613F23E4252B062F006CD2D7 /* TaskInterceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */; };
 		613F23F1252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23F0252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift */; };
+		613F23FD252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23FC252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift */; };
 		61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */; };
 		6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */; };
 		6141015B251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */; };
@@ -475,6 +476,7 @@
 		613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTabBarControllerScenarioTests.swift; sourceTree = "<group>"; };
 		613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskInterceptionTests.swift; sourceTree = "<group>"; };
 		613F23F0252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandlerTests.swift; sourceTree = "<group>"; };
+		613F23FC252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionAutoInstrumentationTests.swift; sourceTree = "<group>"; };
 		61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingCommonAsserts.swift; sourceTree = "<group>"; };
 		6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationSwizzler.swift; sourceTree = "<group>"; };
 		6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandler.swift; sourceTree = "<group>"; };
@@ -1323,6 +1325,22 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		613F2404252B3791006CD2D7 /* Autoinstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				61B03876252724AB00518F3C /* URLSessionTracingHandlerTests.swift */,
+			);
+			path = Autoinstrumentation;
+			sourceTree = "<group>";
+		};
+		613F2405252B37B0006CD2D7 /* AutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				61B03810252656F500518F3C /* URLSessionTracingHandler.swift */,
+			);
+			path = AutoInstrumentation;
+			sourceTree = "<group>";
+		};
 		6141014C251A577D00E3C2D9 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
@@ -1605,7 +1623,6 @@
 				618E136C252384D90098C6B0 /* URLSessionAutoInstrumentation.swift */,
 				618E132B25233EC90098C6B0 /* URLSessionSwizzler.swift */,
 				618E1365252383D80098C6B0 /* DDURLSessionDelegate.swift */,
-				61B03810252656F500518F3C /* URLSessionTracingHandler.swift */,
 				61417DC42525CDAF00E2D55C /* Interception */,
 			);
 			path = URLSessionAutoInstrumentation;
@@ -1626,10 +1643,10 @@
 		61B03872252724AB00518F3C /* URLSessionAutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
-				61B03873252724AB00518F3C /* Interception */,
-				61B03876252724AB00518F3C /* URLSessionTracingHandlerTests.swift */,
-				61B03877252724AB00518F3C /* DDURLSessionDelegateTests.swift */,
+				613F23FC252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift */,
 				61B03878252724AB00518F3C /* URLSessionSwizzlerTests.swift */,
+				61B03877252724AB00518F3C /* DDURLSessionDelegateTests.swift */,
+				61B03873252724AB00518F3C /* Interception */,
 			);
 			path = URLSessionAutoInstrumentation;
 			sourceTree = "<group>";
@@ -1693,6 +1710,7 @@
 				61C5A87F24509A0C00DA608C /* SpanOutputs */,
 				61C5A88224509A0C00DA608C /* Propagation */,
 				617CEB372456BC2200AD4669 /* UUIDs */,
+				613F2405252B37B0006CD2D7 /* AutoInstrumentation */,
 				61C5A87A24509A0C00DA608C /* Utils */,
 			);
 			path = Tracing;
@@ -1736,6 +1754,7 @@
 				61E45BD02450F64100F2C652 /* Span */,
 				61E45BE3245196D500F2C652 /* SpanOutputs */,
 				617CEB3A2456BC8200AD4669 /* UUIDs */,
+				613F2404252B3791006CD2D7 /* Autoinstrumentation */,
 				61C5A89924509C1100DA608C /* Utils */,
 			);
 			path = Tracing;
@@ -2514,6 +2533,7 @@
 				61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */,
 				61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */,
 				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,
+				613F23FD252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift in Sources */,
 				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
 				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
