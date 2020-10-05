@@ -11,7 +11,7 @@ jobs:
 
     # Only certain repository members can run it
       # Testing GH actions
-    if: github.actor == 'ncreated' || github.actor == 'buranmert' || github.actor == 'nachoBonafonte'
+    if: github.actor == 'ncreated' || github.actor == 'buranmert' || github.actor == 'nachoBonafonte' || github.actor == 'svganesh'
 
     runs-on: ubuntu-latest
     steps:
