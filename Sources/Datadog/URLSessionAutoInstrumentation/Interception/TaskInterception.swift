@@ -23,7 +23,7 @@ internal class TaskInterception {
     }
 
     func register(metrics: URLSessionTaskMetrics) {
-        self.metrics = ResourceMetrics(metrics: metrics)
+        self.metrics = ResourceMetrics(taskMetrics: metrics)
     }
 
     func register(response: URLResponse?, error: Error?) {
@@ -58,19 +58,18 @@ internal struct ResourceMetrics {
     let dns: (start: Date, duration: TimeInterval)?
 
     /// The size of data delivered to delegate or completion handler.
-    /// Unavailable prior to iOS 13.0.
     let responseSize: Int64?
 }
 
 extension ResourceMetrics {
-    init(metrics: URLSessionTaskMetrics) {
+    init(taskMetrics: URLSessionTaskMetrics) {
         // Set default values
-        var fetch = (start: metrics.taskInterval.start, end: metrics.taskInterval.end)
+        var fetch = (start: taskMetrics.taskInterval.start, end: taskMetrics.taskInterval.end)
         var dns: (start: Date, duration: TimeInterval)? = nil
         var responseSize: Int64? = nil
 
         // Capture more precise values
-        if let lastTransactionMetrics = metrics.transactionMetrics.last {
+        if let lastTransactionMetrics = taskMetrics.transactionMetrics.last {
             // TODO: RUMM-719 When computing other timings, check if it's correct to only depend on the last `transactionMetrics`
 
             if let fetchStart = lastTransactionMetrics.fetchStartDate,

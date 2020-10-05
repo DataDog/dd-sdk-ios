@@ -99,6 +99,7 @@
 		61363D9D24D999F70084CD6F /* DDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9C24D999F70084CD6F /* DDError.swift */; };
 		61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */; };
 		613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */; };
+		613F23E4252B062F006CD2D7 /* TaskInterceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */; };
 		61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */; };
 		6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */; };
 		6141015B251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */; };
@@ -471,6 +472,7 @@
 		61363D9C24D999F70084CD6F /* DDError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDError.swift; sourceTree = "<group>"; };
 		61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDErrorTests.swift; sourceTree = "<group>"; };
 		613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTabBarControllerScenarioTests.swift; sourceTree = "<group>"; };
+		613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskInterceptionTests.swift; sourceTree = "<group>"; };
 		61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingCommonAsserts.swift; sourceTree = "<group>"; };
 		6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationSwizzler.swift; sourceTree = "<group>"; };
 		6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandler.swift; sourceTree = "<group>"; };
@@ -1627,6 +1629,7 @@
 			children = (
 				613F23E2252B05D7006CD2D7 /* URLFiltering */,
 				61B03874252724AB00518F3C /* URLSessionInterceptorTests.swift */,
+				613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */,
 			);
 			path = Interception;
 			sourceTree = "<group>";
@@ -2485,6 +2488,7 @@
 				61133C592423990D00786299 /* FilesOrchestratorTests.swift in Sources */,
 				61B558D42469CDD8001460D3 /* TracingUUIDGeneratorTests.swift in Sources */,
 				9E544A5124753DDE00E83072 /* MethodSwizzlerTests.swift in Sources */,
+				613F23E4252B062F006CD2D7 /* TaskInterceptionTests.swift in Sources */,
 				61FB2230244E1BE900902D19 /* LoggingFeatureTests.swift in Sources */,
 				61E5333124B75DFC003D6C4E /* RUMFeatureMocks.swift in Sources */,
 				61133C6D2423990D00786299 /* TestsDirectory.swift in Sources */,

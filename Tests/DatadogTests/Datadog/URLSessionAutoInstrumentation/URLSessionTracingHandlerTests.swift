@@ -23,7 +23,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         let interception = TaskInterception(request: requestWithSpanContext)
         interception.register(response: .mockAny(), error: nil)
-        interception.register(metrics: .mockWith(taskDuration: 1))
+        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 1)))
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -50,7 +50,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let request: URLRequest = .mockWith(httpMethod: "POST")
         let interception = TaskInterception(request: request)
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
-        interception.register(metrics: .mockWith(taskDuration: 2))
+        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 2)))
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -81,7 +81,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let interception = TaskInterception(request: request)
         interception.register(response: nil, error: error)
-        interception.register(metrics: .mockWith(taskDuration: 30))
+        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 30)))
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -117,7 +117,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let request: URLRequest = .mockWith(httpMethod: "GET")
         let interception = TaskInterception(request: request)
         interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
-        interception.register(metrics: .mockWith(taskDuration: 2))
+        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 2)))
 
         // When
         handler.sendSpan(for: interception, using: tracer)

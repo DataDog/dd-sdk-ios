@@ -86,17 +86,17 @@ class URLSessionInterceptorTests: XCTestCase {
 
         // When
         let firstPartyTaskResponse: HTTPURLResponse = .mockAny()
-        let firstPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskDuration: 1)
+        let firstPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskInterval: .init(start: Date(), duration: 1))
         let firstPartyTaskError = ErrorMock("1st party task error")
         let firstPartyTask: URLSessionTask = .mockWith(request: firstPartyRequest, response: firstPartyTaskResponse)
 
         let thirdPartyTaskResponse: HTTPURLResponse = .mockAny()
-        let thirdPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskDuration: 2)
+        let thirdPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskInterval: .init(start: Date(), duration: 2))
         let thirdPartyTaskError = ErrorMock("3rd party task error")
         let thirdPartyTask: URLSessionTask = .mockWith(request: thirdPartyRequest, response: thirdPartyTaskResponse)
 
         let internalTaskResponse: HTTPURLResponse = .mockAny()
-        let internalTaskMetrics: URLSessionTaskMetrics = .mockWith(taskDuration: 2)
+        let internalTaskMetrics: URLSessionTaskMetrics = .mockWith(taskInterval: .init(start: Date(), duration: 2))
         let internalTaskError = ErrorMock("internal task error")
         let internalTask: URLSessionTask = .mockWith(request: internalRequest, response: internalTaskResponse)
 
