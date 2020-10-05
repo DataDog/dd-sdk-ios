@@ -20,7 +20,7 @@ internal extension UIImageView {
         _ = Self.setupOnce
         Global.rum.startResourceLoading(resourceName: url.path, url: url, httpMethod: .GET)
         af.setImage(withURL: url) { result in
-            if let someError = (result.error ?? fakeError(onceIn: 20)) {
+            if let someError = (result.error ?? fakeError(onceIn: 40)) {
                 Global.rum.stopResourceLoadingWithError(
                     resourceName: url.path,
                     error: someError,

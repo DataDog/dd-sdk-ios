@@ -6,15 +6,19 @@
 
 import XCTest
 
-let targetSessionCount = 10
-
 class ShopistUITests: XCTestCase {
+    private func shouldContinueRunning(ifStartedAt startDate: Date) -> Bool {
+        let targetRunDuration: TimeInterval = 27.5 * 60.0
+        return Date().timeIntervalSince(startDate) < targetRunDuration
+    }
+
     func testRunFullCheckoutFlow() {
+        let startDate = Date()
         let app = ShopistApp()
-        for sessionIndex in 1...targetSessionCount {
+        while shouldContinueRunning(ifStartedAt: startDate) {
             let categories = app.launchToHomepage()
 
-            let targetItemCountInCart = Int.random(in: 1...5)
+            let targetItemCountInCart = Int.random(in: 1...2)
             var itemCount = 0
             while itemCount < targetItemCountInCart {
                 do {
@@ -23,8 +27,7 @@ class ShopistUITests: XCTestCase {
                     products.swipeRandomly()
 
                     let productDetails = try products.goToProductDetails()
-                    if !productDetails.removeFromCart() {
-                        productDetails.addToCart()
+                    if productDetails.addToCart() {
                         itemCount += 1
                     }
                     app.goBackToHomepage()
@@ -33,18 +36,14 @@ class ShopistUITests: XCTestCase {
                         let cart = try app.goToCart()
                         cart.checkout()
                         cart.proceed()
-
-                        itemCount -= Int.random(in: 0...1)
                     }
                 } catch {
                     app.goBackToHomepage()
                 }
             }
-
-            if sessionIndex == targetSessionCount {
-                Thread.sleep(forTimeInterval: 15.0)
-            }
             app.terminate()
         }
+        // Wait for uploading pending batches
+        Thread.sleep(forTimeInterval: 15.0)
     }
 }

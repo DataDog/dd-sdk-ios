@@ -52,8 +52,12 @@ class ProductsPage: XCUIApplication {
 }
 
 class ProductDetailsPage: XCUIApplication {
-    func addToCart() {
-        navBar.buttons["addToCart"].safeTap()
+    func addToCart() -> Bool {
+        if navBar.buttons["addToCart"].exists {
+            navBar.buttons["addToCart"].safeTap()
+            return true
+        }
+        return false
     }
 
     func removeFromCart() -> Bool {
