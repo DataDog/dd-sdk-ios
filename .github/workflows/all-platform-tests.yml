@@ -10,6 +10,7 @@ jobs:
   trigger-all-platform-tests:
 
     # Only certain repository members can run it
+      # Testing GH actions
     if: github.actor == 'ncreated' || github.actor == 'buranmert' || github.actor == 'nachoBonafonte'
 
     runs-on: ubuntu-latest
