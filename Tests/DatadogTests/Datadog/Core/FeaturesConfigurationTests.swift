@@ -253,7 +253,7 @@ class FeaturesConfigurationTests: XCTestCase {
             ["example.com", "foo.eu"]
         )
         XCTAssertEqual(
-            firstPartyHostsSet.urlSessionAutoInstrumentation?.sdkInternalHosts,
+            firstPartyHostsSet.urlSessionAutoInstrumentation?.sdkInternalURLs,
             [
                 Datadog.Configuration.LogsEndpoint.us.url,
                 Datadog.Configuration.TracesEndpoint.us.url,

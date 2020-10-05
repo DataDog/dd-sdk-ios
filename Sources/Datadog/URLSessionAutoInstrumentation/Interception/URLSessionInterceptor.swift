@@ -30,39 +30,45 @@ internal protocol URLSessionInterceptorType: class {
 }
 
 internal class URLSessionInterceptor: URLSessionInterceptorType {
-    private let firstPartyHostsFilter: URLFilter
-    private let queue: DispatchQueue
+    /// Filters first party `URLs` defined by the user.
+    private let firstPartyURLsFilter: FirstPartyURLsFilter
+    /// Filters internal `URLs` used by the SDK.
+    private let internalURLsFilter: InternalURLsFilter
 
-    private let tracingInterceptionHandler: URLSessionTracingHandlerType
+    private let tracingHandler: URLSessionTracingHandlerType
 
     // MARK: - Initialization
 
     convenience init(configuration: FeaturesConfiguration.URLSessionAutoInstrumentation) {
         self.init(
-            firstPartyHostsFilter: URLFilter(
-                includedHosts: configuration.userDefinedFirstPartyHosts,
-                excludedURLs: configuration.sdkInternalHosts
-            ),
+            configuration: configuration,
             tracingInterceptionHandler: URLSessionTracingHandler()
         )
     }
 
     init(
-        firstPartyHostsFilter: URLFilter,
+        configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         tracingInterceptionHandler: URLSessionTracingHandlerType
     ) {
-        self.firstPartyHostsFilter = firstPartyHostsFilter
-        self.tracingInterceptionHandler = tracingInterceptionHandler
+        self.firstPartyURLsFilter = FirstPartyURLsFilter(configuration: configuration)
+        self.internalURLsFilter = InternalURLsFilter(configuration: configuration)
+        self.tracingHandler = tracingInterceptionHandler
         self.queue = DispatchQueue(label: "com.datadoghq.URLSessionInterceptor", target: .global(qos: .utility))
     }
 
     // MARK: - URLSessionInterceptorType
 
+    /// An internal queue for synchronising the access to `interceptionByTask`.
+    private let queue: DispatchQueue
+    /// Maps `URLSessionTask` to its `TaskInterception` object.
     private var interceptionByTask: [URLSessionTask: TaskInterception] = [:]
 
     func modify(request: URLRequest) -> URLRequest {
+        guard !internalURLsFilter.isInternal(url: request.url) else {
+            return request
+        }
         if let tracer = Global.sharedTracer as? Tracer {
-            if firstPartyHostsFilter.allows(request.url) {
+            if firstPartyURLsFilter.isFirstParty(url: request.url) {
                 return injectSpanContext(into: request, using: tracer)
             }
         }
@@ -70,20 +76,26 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     func taskCreated(urlSession: URLSession, task: URLSessionTask) {
-        guard let request = task.originalRequest else {
+        guard let request = task.originalRequest,
+              !internalURLsFilter.isInternal(url: request.url) else {
             return
         }
 
         // TODO: RUMM-732 Modify this check. It's only temporary as in Tracing we intercept only some requests
         // while in RUM we will be intercepting all (excluding the SDK internal ones).
-        if firstPartyHostsFilter.allows(request.url) {
+        if firstPartyURLsFilter.isFirstParty(url: request.url) {
             queue.async {
-                self.interceptionByTask[task] = TaskInterception(request: request)
+                let interception = TaskInterception(request: request)
+                self.interceptionByTask[task] = interception
             }
         }
     }
 
     func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
+        guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
+            return
+        }
+
         queue.async {
             guard let interception = self.interceptionByTask[task] else {
                 return
@@ -98,6 +110,10 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?) {
+        guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
+            return
+        }
+
         queue.async {
             guard let interception = self.interceptionByTask[task] else {
                 return
@@ -116,12 +132,8 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
         interceptionByTask[task] = nil
 
-        // TODO: RUMM-732 Act accordingly to features enabled (Tracing, RUM or both)
-
         if let tracer = Global.sharedTracer as? Tracer {
-            tracingInterceptionHandler.sendSpan(for: interception, using: tracer)
-        } else {
-            // TODO: RUMM-732 Warn accordingly on missconfigurations
+            tracingHandler.sendSpan(for: interception, using: tracer)
         }
     }
 

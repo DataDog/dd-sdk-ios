@@ -138,11 +138,11 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
 
     static func mockWith(
         userDefinedFirstPartyHosts: Set<String> = [],
-        sdkInternalHosts: Set<String> = []
+        sdkInternalURLs: Set<String> = []
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
-            sdkInternalHosts: sdkInternalHosts
+            sdkInternalURLs: sdkInternalURLs
         )
     }
 }

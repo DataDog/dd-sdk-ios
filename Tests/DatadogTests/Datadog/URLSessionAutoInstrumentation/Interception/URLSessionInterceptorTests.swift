@@ -20,7 +20,10 @@ private class URLSessionTracingHandlerMock: URLSessionTracingHandlerType {
 class URLSessionInterceptorTests: XCTestCase {
     private let tracingHandler = URLSessionTracingHandlerMock()
     private lazy var interceptor = URLSessionInterceptor(
-        firstPartyHostsFilter: URLFilter(includedHosts: ["first-party.com"], excludedURLs: ["dd.internal.com"]),
+        configuration: .mockWith(
+            userDefinedFirstPartyHosts: ["first-party.com"],
+            sdkInternalURLs: ["https://dd.internal.com"]
+        ),
         tracingInterceptionHandler: tracingHandler
     )
     /// Mock request made to a first party URL.

@@ -48,8 +48,8 @@ internal struct FeaturesConfiguration {
     struct URLSessionAutoInstrumentation {
         /// First party hosts defined by the user.
         let userDefinedFirstPartyHosts: Set<String>
-        /// Hosts used internally by the SDK - should not be instrumented.
-        let sdkInternalHosts: Set<String>
+        /// URLs used internally by the SDK - they are not instrumented.
+        let sdkInternalURLs: Set<String>
     }
 
     /// Configuration common to all features.
@@ -142,7 +142,7 @@ extension FeaturesConfiguration {
         if let firstPartyHosts = configuration.firstPartyHosts, !firstPartyHosts.isEmpty {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 userDefinedFirstPartyHosts: firstPartyHosts,
-                sdkInternalHosts: [
+                sdkInternalURLs: [
                     configuration.logsEndpoint.url,
                     configuration.tracesEndpoint.url,
                     configuration.rumEndpoint.url
