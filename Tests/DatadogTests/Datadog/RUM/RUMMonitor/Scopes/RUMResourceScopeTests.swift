@@ -200,9 +200,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.resource.duration, metrics.fetch.end.timeIntervalSince(metrics.fetch.start).toInt64Nanoseconds)
         XCTAssertEqual(event.model.resource.size, metrics.responseSize!)
         XCTAssertNil(event.model.resource.redirect)
-        XCTAssertEqual(
-            event.model.resource.dns?.start, metrics.dns!.start.timeIntervalSince1970.toInt64Nanoseconds
-        )
+        XCTAssertEqual(event.model.resource.dns?.start, 1_000_000_000, "DNS should start 1s after resource has started")
         XCTAssertEqual(
             event.model.resource.dns?.duration, metrics.dns!.duration.toInt64Nanoseconds
         )
