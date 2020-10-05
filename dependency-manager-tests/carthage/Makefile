@@ -5,6 +5,9 @@ else
 endif
 
 PWD := $(shell pwd)
+# TODO: RUMM-760 Remove this workaround once Carthage fixes their Xcode 12 issue
+# https://github.com/Carthage/Carthage/issues/3019
+export XCODE_XCCONFIG_FILE := $(PWD)/tmp.xcconfig
 
 test:
 		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_BRANCH}'..."
