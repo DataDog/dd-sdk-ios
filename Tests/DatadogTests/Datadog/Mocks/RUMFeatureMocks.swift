@@ -432,9 +432,11 @@ class RUMContextProviderMock: RUMContextProvider {
 
 class RUMCommandSubscriberMock: RUMCommandSubscriber {
     var receivedCommand: RUMCommand?
+    var onCommandReceived: ((RUMCommand) -> Void)?
 
     func process(command: RUMCommand) {
         receivedCommand = command
+        onCommandReceived?(command)
     }
 }
 
