@@ -161,7 +161,8 @@ public class Datadog {
 
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                configuration: urlSessionAutoInstrumentationConfiguration
+                configuration: urlSessionAutoInstrumentationConfiguration,
+                dateProvider: dateProvider
             )
         }
 

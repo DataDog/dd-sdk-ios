@@ -50,6 +50,11 @@ internal struct FeaturesConfiguration {
         let userDefinedFirstPartyHosts: Set<String>
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>
+
+        /// If the Tracing instrumentation should be enabled.
+        let instrumentTracing: Bool
+        /// If the RUM instrumentation should be enabled.
+        let instrumentRUM: Bool
     }
 
     /// Configuration common to all features.
@@ -140,14 +145,25 @@ extension FeaturesConfiguration {
         }
 
         if let firstPartyHosts = configuration.firstPartyHosts, !firstPartyHosts.isEmpty {
-            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                userDefinedFirstPartyHosts: firstPartyHosts,
-                sdkInternalURLs: [
-                    configuration.logsEndpoint.url,
-                    configuration.tracesEndpoint.url,
-                    configuration.rumEndpoint.url
-                ]
-            )
+            if configuration.tracingEnabled || configuration.rumEnabled {
+                urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
+                    userDefinedFirstPartyHosts: firstPartyHosts,
+                    sdkInternalURLs: [
+                        configuration.logsEndpoint.url,
+                        configuration.tracesEndpoint.url,
+                        configuration.rumEndpoint.url
+                    ],
+                    instrumentTracing: configuration.tracingEnabled,
+                    instrumentRUM: configuration.rumEnabled
+                )
+            } else {
+                let error = ProgrammerError(
+                    description: """
+                    To use `.track(firstPartyHosts:)` either RUM or Tracing should be enabled.
+                    """
+                )
+                consolePrint("\(error)")
+            }
         }
 
         self.common = common
