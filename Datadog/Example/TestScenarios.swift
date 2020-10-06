@@ -117,14 +117,14 @@ class _TracingURLSessionBaseScenario: NSObject {
     override init() {
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let serverMockConfiguration = Environment.serverMockConfiguration()!
-            let customURL = serverMockConfiguration.instrumentedEndpoints[0]
-            customGETResourceURL = URL(string: customURL.deletingLastPathComponent().absoluteString + "inspect")!
+            customGETResourceURL = serverMockConfiguration.instrumentedEndpoints[0]
             customPOSTRequest = {
-                var request = URLRequest(url: customURL)
+                var request = URLRequest(url: serverMockConfiguration.instrumentedEndpoints[1])
                 request.httpMethod = "POST"
                 request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
                 return request
             }()
+            badResourceURL = serverMockConfiguration.instrumentedEndpoints[2]
         } else {
             customGETResourceURL = URL(string: "https://status.datadoghq.com")!
             customPOSTRequest = {
@@ -133,8 +133,8 @@ class _TracingURLSessionBaseScenario: NSObject {
                 request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
                 return request
             }()
+            badResourceURL = URL(string: "https://foo.bar")!
         }
-        badResourceURL = URL(string: "https://foo.bar")!
         thirdPartyURL = URL(string: "https://www.bitrise.io")!
         thirdPartyRequest = URLRequest(url: thirdPartyURL)
     }

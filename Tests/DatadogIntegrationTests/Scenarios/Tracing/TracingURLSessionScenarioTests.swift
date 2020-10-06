@@ -27,12 +27,25 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         // Server session recording spans send to `HTTPServerMock`.
         let tracingServerSession = server.obtainUniqueRecordingSession()
 
+        // URL used for requesting custom GET resource in tested application.
+        let customGETResourceURL = URL(
+            string: customServerSession.recordingURL.deletingLastPathComponent().absoluteString + "inspect"
+        )!
+        // URL used for requesting custom POST resource in tested application.
+        let customPOSTResourceURL = customServerSession.recordingURL
+        // URL used for requesting custom resource which leads to "Bad URL" error.
+        let customBadResourceURL = URL(string: "https://foo.bar")!
+
         let app = ExampleApplication()
         app.launchWith(
             testScenario: scenario,
             serverConfiguration: HTTPServerMockConfiguration(
                 tracesEndpoint: tracingServerSession.recordingURL,
-                instrumentedEndpoints: [customServerSession.recordingURL]
+                instrumentedEndpoints: [
+                    customGETResourceURL,
+                    customPOSTResourceURL,
+                    customBadResourceURL
+                ]
             )
         )
 
@@ -53,9 +66,15 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         try assertCommonMetadata(in: spanMatchers)
         try assertThat(spans: spanMatchers, startAfter: testBeginTimeInNanoseconds, andFinishBefore: testEndTimeInNanoseconds)
 
-        let taskWithURL = spanMatchers[0]
-        let taskWithRequest = spanMatchers[1]
-        let taskWithBadURL = spanMatchers[2]
+        let taskWithURL = try XCTUnwrap(
+            spanMatchers.first { span in try span.resource() == customGETResourceURL.absoluteString }
+        )
+        let taskWithRequest = try XCTUnwrap(
+            spanMatchers.first { span in try span.resource() == customPOSTResourceURL.absoluteString }
+        )
+        let taskWithBadURL = try XCTUnwrap(
+            spanMatchers.first { span in try span.resource() == customBadResourceURL.absoluteString }
+        )
 
         XCTAssertEqual(try taskWithURL.operationName(), "urlsession.request")
         XCTAssertEqual(try taskWithRequest.operationName(), "urlsession.request")
