@@ -114,6 +114,10 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         XCTAssertEqual(try taskWithRequest.isError(), 0)
         XCTAssertEqual(try taskWithBadURL.isError(), 1)
 
+        XCTAssertGreaterThan(try taskWithURL.duration(), 0)
+        XCTAssertGreaterThan(try taskWithRequest.duration(), 0)
+        XCTAssertGreaterThan(try taskWithBadURL.duration(), 0)
+
         // Assert tracing HTTP headers propagated to `firstPartyPOSTResourceURL`
         let firstPartyRequests = try customFirstPartyServerSession
             .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)

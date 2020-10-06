@@ -49,6 +49,8 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
         return RUMTabBarAutoInstrumentationScenario()
     case RUMTapActionScenario.envIdentifier():
         return RUMTapActionScenario()
+    case RUMResourcesScenario.envIdentifier():
+        return RUMResourcesScenario()
     default:
         fatalError("Cannot find `TestScenario` for `envIdentifier`: \(envIdentifier)")
     }
@@ -92,11 +94,11 @@ class TracingNSURLSessionScenario: URLSessionBaseScenario, TestScenario {
     }
 }
 
-/// Base scenario for both `URLSession` and `NSURLSession` scenarios.  It makes
+/// Base scenario for `URLSession` and `NSURLSession` instrumentation.  It makes
 /// both Swift and Objective-C tests share the same endpoints and SDK configuration.
 ///
 /// This scenario presents two view controllers. First sends requests for first party resources, the second
-/// calls third party ones.
+/// calls third party endpoints.
 @objc
 class URLSessionBaseScenario: NSObject {
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
@@ -130,7 +132,11 @@ class URLSessionBaseScenario: NSObject {
             }()
             badResourceURL = serverMockConfiguration.instrumentedEndpoints[2]
             thirdPartyURL = serverMockConfiguration.instrumentedEndpoints[3]
-            thirdPartyRequest = URLRequest(url: serverMockConfiguration.instrumentedEndpoints[4])
+            thirdPartyRequest = {
+                var request = URLRequest(url: serverMockConfiguration.instrumentedEndpoints[4])
+                request.httpMethod = "POST"
+                return request
+            }()
         } else {
             customGETResourceURL = URL(string: "https://status.datadoghq.com")!
             customPOSTRequest = {
@@ -141,7 +147,11 @@ class URLSessionBaseScenario: NSObject {
             }()
             badResourceURL = URL(string: "https://foo.bar")!
             thirdPartyURL = URL(string: "https://www.bitrise.io")!
-            thirdPartyRequest = URLRequest(url: URL(string: "https://www.bitrise.io/about")!)
+            thirdPartyRequest = {
+                var request = URLRequest(url: URL(string: "https://www.bitrise.io/about")!)
+                request.httpMethod = "POST"
+                return request
+            }()
         }
     }
 
@@ -241,5 +251,29 @@ struct RUMTapActionScenario: TestScenario {
             .trackUIKitActions(true)
             .enableLogging(false)
             .enableTracing(false)
+    }
+}
+
+/// Scenario which uses RUM and Tracing auto instrumentation features to track bunch of network requests
+/// sent with `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
+class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
+    static let storyboardName = "URLSessionScenario"
+    static func envIdentifier() -> String { "RUMResourcesScenario" }
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+            if let viewName = viewController.accessibilityLabel {
+                return .init(path: viewName)
+            } else {
+                return nil
+            }
+        }
+    }
+
+    override func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+
+        super.configureSDK(builder: builder) // applies the `track(firstPartyHosts:)`
     }
 }

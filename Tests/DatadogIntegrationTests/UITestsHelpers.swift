@@ -57,3 +57,9 @@ extension Array where Element == RUMEventMatcher {
         return bestMatcherEntry?.key ?? "unkonwn / unimplemented"
     }
 }
+
+extension String {
+    func matches(regex: String) -> Bool {
+        range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
+    }
+}

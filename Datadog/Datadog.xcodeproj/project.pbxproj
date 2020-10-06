@@ -168,6 +168,7 @@
 		6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6164AE88252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift */; };
 		6164AF06252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF05252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m */; };
 		6164AF0E252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF0D252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m */; };
+		6164AF2E252C9C51000D78C4 /* RUMResourcesScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF2D252C9C51000D78C4 /* RUMResourcesScenarioTests.swift */; };
 		6167ACC7251A0BCE0012B4D0 /* NSURLSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6167ACC6251A0BCE0012B4D0 /* NSURLSessionScenario.storyboard */; };
 		6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167ACFC251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift */; };
 		6167AD19251A27B80012B4D0 /* URLSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6167AD18251A27B80012B4D0 /* URLSessionScenario.storyboard */; };
@@ -546,6 +547,7 @@
 		6164AF05252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcSendFirstPartyRequestsViewController.m; sourceTree = "<group>"; };
 		6164AF0C252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcSendThirdPartyRequestsViewController.h; sourceTree = "<group>"; };
 		6164AF0D252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcSendThirdPartyRequestsViewController.m; sourceTree = "<group>"; };
+		6164AF2D252C9C51000D78C4 /* RUMResourcesScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourcesScenarioTests.swift; sourceTree = "<group>"; };
 		6167ACBD251A0B410012B4D0 /* Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Example-Bridging-Header.h"; sourceTree = "<group>"; };
 		6167ACC6251A0BCE0012B4D0 /* NSURLSessionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = NSURLSessionScenario.storyboard; sourceTree = "<group>"; };
 		6167ACFC251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionScenarioTests.swift; sourceTree = "<group>"; };
@@ -1932,6 +1934,7 @@
 				61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */,
 				613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */,
 				615AAC06251E217B00C89EE9 /* RUMTapActionScenarioTests.swift */,
+				6164AF2D252C9C51000D78C4 /* RUMResourcesScenarioTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -2659,6 +2662,7 @@
 				61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */,
 				615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */,
 				61F3CD9B2510D95A00C816E5 /* TestScenarios.swift in Sources */,
+				6164AF2E252C9C51000D78C4 /* RUMResourcesScenarioTests.swift in Sources */,
 				615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */,
 				9E307C3224C8846D0039607E /* RUMDataModels.swift in Sources */,
 				61441C4A24618052003D8BB8 /* LogMatcher.swift in Sources */,
