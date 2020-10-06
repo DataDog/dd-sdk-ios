@@ -148,7 +148,7 @@ internal final class API {
                     resourceName: resourceName,
                     kind: .fetch,
                     httpStatusCode: statusCode,
-                    size: UInt64(someData.count)
+                    size: Int64(someData.count)
                 )
                 let decodingSpan = tracer.startSpan(operationName: "decoding response data")
                 decodingSpan.setTag(key: "data_size_in_bytes", value: someData.count)
@@ -202,7 +202,7 @@ internal final class API {
                 resourceName: resourceName,
                 kind: .font,
                 httpStatusCode: 200,
-                size: UInt64.random(in: 128...256) * 1_000
+                size: Int64.random(in: 128...256) * 1_000
             )
         }
     }
@@ -222,7 +222,7 @@ internal final class API {
                 resourceName: resourceName,
                 kind: .xhr,
                 httpStatusCode: 200,
-                size: UInt64.random(in: 1_024...4_096)
+                size: Int64.random(in: 1_024...4_096)
             )
         }
     }
