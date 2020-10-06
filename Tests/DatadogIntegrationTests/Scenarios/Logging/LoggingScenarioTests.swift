@@ -15,7 +15,9 @@ class LoggingScenarioTests: IntegrationTests {
         let app = ExampleApplication()
         app.launchWith(
             testScenario: LoggingScenario.self,
-            logsEndpointURL: loggingServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                logsEndpoint: loggingServerSession.recordingURL
+            )
         )
 
         // Return desired count or timeout

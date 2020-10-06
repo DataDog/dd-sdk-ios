@@ -85,7 +85,9 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         let app = ExampleApplication()
         app.launchWith(
             testScenario: RUMTapActionScenario.self,
-            rumEndpointURL: rumServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
         )
 
         app.tapNoOpButton()

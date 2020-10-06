@@ -29,7 +29,9 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         let app = ExampleApplication()
         app.launchWith(
             testScenario: RUMTabBarAutoInstrumentationScenario.self,
-            rumEndpointURL: rumServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
         ) // start on "Screen A"
 
         app.tapTapBarButton(named: "Tab B") // go to "Screen B1"

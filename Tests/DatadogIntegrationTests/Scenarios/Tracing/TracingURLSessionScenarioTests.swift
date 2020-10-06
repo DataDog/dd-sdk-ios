@@ -30,8 +30,10 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         let app = ExampleApplication()
         app.launchWith(
             testScenario: scenario,
-            tracesEndpointURL: tracingServerSession.recordingURL,
-            customEndpointURL: customServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                tracesEndpoint: tracingServerSession.recordingURL,
+                instrumentedEndpoints: [customServerSession.recordingURL]
+            )
         )
 
         // Return desired count or timeout
