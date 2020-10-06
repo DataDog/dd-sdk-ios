@@ -8,7 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TracingNSURLSessionViewController : UIViewController
+@interface ObjcSendFirstPartyRequestsViewController : UIViewController
 
 @end
 

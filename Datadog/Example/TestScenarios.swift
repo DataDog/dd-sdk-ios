@@ -69,31 +69,36 @@ struct TracingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "TracingManualInstrumentationScenario"
 }
 
-/// Scenario which uses Tracing auto instrumentation feature to track bunch of network requests
-/// sent with `URLSession` (Swift).
-class TracingURLSessionScenario: _TracingURLSessionBaseScenario, TestScenario {
-    static let storyboardName = "TracingURLSessionScenario"
+/// Scenario which uses Tracing auto instrumentation feature to track bunch of first party network requests
+/// sent with `URLSession` (Swift) from the first VC and ignores other third party requests send from second VC.
+class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
+    static let storyboardName = "URLSessionScenario"
+    static func envIdentifier() -> String { "TracingURLSessionScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         super.configureSDK(builder: builder)
     }
 }
 
-/// Scenario which uses Tracing auto instrumentation feature to track bunch of network requests
-/// sent with `NSURLSession` (Objective-C).
+/// Scenario which uses Tracing auto instrumentation feature to track bunch of first party network requests
+/// sent with `NSURLSession` (Objective-C) from the first VC and ignores other third party requests send from second VC.
 @objc
-class TracingNSURLSessionScenario: _TracingURLSessionBaseScenario, TestScenario {
-    static let storyboardName = "TracingNSURLSessionScenario"
+class TracingNSURLSessionScenario: URLSessionBaseScenario, TestScenario {
+    static let storyboardName = "NSURLSessionScenario"
+    static func envIdentifier() -> String { "TracingNSURLSessionScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         super.configureSDK(builder: builder)
     }
 }
 
-/// Base scenario for both `URLSession` and `NSURLSession` scenarios.
-/// It makes both Swift and Objective-C tests share the same endpoints and SDK configuration.
+/// Base scenario for both `URLSession` and `NSURLSession` scenarios.  It makes
+/// both Swift and Objective-C tests share the same endpoints and SDK configuration.
+///
+/// This scenario presents two view controllers. First sends requests for first party resources, the second
+/// calls third party ones.
 @objc
-class _TracingURLSessionBaseScenario: NSObject {
+class URLSessionBaseScenario: NSObject {
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
     @objc
     let customGETResourceURL: URL
@@ -121,10 +126,11 @@ class _TracingURLSessionBaseScenario: NSObject {
             customPOSTRequest = {
                 var request = URLRequest(url: serverMockConfiguration.instrumentedEndpoints[1])
                 request.httpMethod = "POST"
-                request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
                 return request
             }()
             badResourceURL = serverMockConfiguration.instrumentedEndpoints[2]
+            thirdPartyURL = serverMockConfiguration.instrumentedEndpoints[3]
+            thirdPartyRequest = URLRequest(url: serverMockConfiguration.instrumentedEndpoints[4])
         } else {
             customGETResourceURL = URL(string: "https://status.datadoghq.com")!
             customPOSTRequest = {
@@ -134,9 +140,9 @@ class _TracingURLSessionBaseScenario: NSObject {
                 return request
             }()
             badResourceURL = URL(string: "https://foo.bar")!
+            thirdPartyURL = URL(string: "https://www.bitrise.io")!
+            thirdPartyRequest = URLRequest(url: URL(string: "https://www.bitrise.io/about")!)
         }
-        thirdPartyURL = URL(string: "https://www.bitrise.io")!
-        thirdPartyRequest = URLRequest(url: thirdPartyURL)
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
