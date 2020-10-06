@@ -121,8 +121,6 @@ internal class URLSessionSwizzler {
                 return { [weak self] session, url, completionHandler -> URLSessionDataTask in
                     var taskReference: URLSessionDataTask?
 
-                    assert(completionHandler != nil)
-
                     let newCompletionHandler: CompletionHandler = { data, response, error in
                         if let task = taskReference { // sanity check, should always succeed
                             self?.interceptor.taskCompleted(urlSession: session, task: task, error: error)

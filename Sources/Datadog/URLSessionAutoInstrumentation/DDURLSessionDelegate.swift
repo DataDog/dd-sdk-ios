@@ -28,12 +28,12 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
         self.interceptor = interceptor
     }
 
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+    open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         interceptor?
             .taskMetricsCollected(urlSession: session, task: task, metrics: metrics)
     }
 
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
 
         interceptor?

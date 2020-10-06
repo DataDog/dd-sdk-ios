@@ -665,9 +665,7 @@
 		61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventMatcher.swift; sourceTree = "<group>"; };
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		9E26E6B824C87693000B3270 /* RUMDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMDataModels.swift; sourceTree = "<group>"; };
-		9E330A8B24ADE1250031408E /* DatadogTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DatadogTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
-		9E50B2E324B49DDF00A2CB95 /* URLFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLFilterTests.swift; sourceTree = "<group>"; };
 		9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
 		9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzlerTests.swift; sourceTree = "<group>"; };
 		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
@@ -744,7 +742,6 @@
 				61441C0324616DE9003D8BB8 /* Example */,
 				61133B83242393DE00786299 /* Products */,
 				61133C6F2423993200786299 /* Frameworks */,
-				61B0382D252722CC00518F3C /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -774,7 +771,6 @@
 			isa = PBXGroup;
 			children = (
 				61133B92242393DE00786299 /* Info.plist */,
-				9E330A8B24ADE1250031408E /* DatadogTests-Bridging-Header.h */,
 			);
 			path = DatadogTests;
 			sourceTree = "<group>";
@@ -1573,14 +1569,6 @@
 				615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */,
 			);
 			path = TapActionAutoInstrumentation;
-			sourceTree = "<group>";
-		};
-		61B0382D252722CC00518F3C /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				9E50B2E324B49DDF00A2CB95 /* URLFilterTests.swift */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		61B03872252724AB00518F3C /* URLSessionAutoInstrumentation */ = {
@@ -2832,7 +2820,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2856,7 +2843,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
@@ -3207,7 +3193,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
