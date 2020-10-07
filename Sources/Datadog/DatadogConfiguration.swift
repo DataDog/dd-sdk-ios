@@ -250,7 +250,7 @@ extension Datadog {
             /// **NOTE 1:** Setting `firstPartyHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
             /// for implementation details.
             ///
-            /// **NOTE 2:** Setting `firstPartyHosts`, but not using `DDURLSessionDelegate` will lead to inconsistent tracing of network requests.
+            /// **NOTE 2:** The `firstPartyHosts` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
             /// - Parameter firstPartyHosts: not set by default
             public func track(firstPartyHosts: Set<String>) -> Builder {
