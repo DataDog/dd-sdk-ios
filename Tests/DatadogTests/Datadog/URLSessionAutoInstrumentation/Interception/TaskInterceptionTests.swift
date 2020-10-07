@@ -21,7 +21,7 @@ class TaskInterceptionTests: XCTestCase {
         let interception = TaskInterception(request: .mockAny())
 
         // When
-        interception.register(response: .mockAny(), error: nil)
+        interception.register(completion: .mockAny())
         XCTAssertFalse(interception.isDone)
         interception.register(metrics: .mockAny())
 
@@ -34,6 +34,10 @@ class ResourceMetricsTests: XCTestCase {
     // MARK: - `fetch` metric
 
     func testGivenTaskMetricsWithTransactions_whenComputingResourceFetchMetric_itUsesLastTransactionValues() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+
         // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
             transactionMetrics: [
@@ -55,6 +59,10 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testGivenTaskMetricsWithNoTransactions_whenComputingResourceFetchMetric_itDefaultsToTaskValues() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+
         // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
             taskInterval: .init(
@@ -75,6 +83,10 @@ class ResourceMetricsTests: XCTestCase {
     // MARK: - `dns` metric
 
     func testGivenTaskMetricsWithTransactions_whenComputingResourceDNSMetric_itUsesLastTransactionValues() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+
         // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
             transactionMetrics: [
@@ -96,6 +108,10 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testGivenTaskMetricsWithNoTransactions_whenComputingResourceDNSMetric_itNotAvailable() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+
         // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
             transactionMetrics: []
@@ -111,6 +127,10 @@ class ResourceMetricsTests: XCTestCase {
     // MARK: - `responseSize` metric
 
     func testGivenTaskMetricsWithTransactions_whenComputingResourceResponseSizeMetric_itUsesLastTransactionValues() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+
         // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
             transactionMetrics: [
@@ -126,14 +146,14 @@ class ResourceMetricsTests: XCTestCase {
         let resourceResponseSize = ResourceMetrics(taskMetrics: taskMetrics).responseSize
 
         // Then
-        if #available(iOS 13.0, *) {
-            XCTAssertEqual(resourceResponseSize, 1_024)
-        } else {
-            XCTAssertNil(resourceResponseSize)
-        }
+        XCTAssertEqual(resourceResponseSize, 1_024)
     }
 
     func testGivenTaskMetricsWithNoTransactions_whenComputingResourceResponseSizeMetric_itNotAvailable() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+
         // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
             transactionMetrics: []

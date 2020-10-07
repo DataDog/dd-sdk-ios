@@ -53,10 +53,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         let taskInterception = TaskInterception(request: .mockAny())
-        let taskMetrics: URLSessionTaskMetrics = .mockAny()
-        let taskResponse: HTTPURLResponse = .mockAny()
-        taskInterception.register(metrics: taskMetrics)
-        taskInterception.register(response: taskResponse, error: nil)
+        let resourceMetrics: ResourceMetrics = .mockAny()
+        let resourceCompletion: ResourceCompletion = .mockWith(response: .mockResponseWith(statusCode: 200), error: nil)
+        taskInterception.register(metrics: resourceMetrics)
+        taskInterception.register(completion: resourceCompletion)
 
         // When
         handler.notify_taskInterceptionCompleted(interception: taskInterception)
@@ -74,8 +74,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.resourceName, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
-        XCTAssertEqual(resourceStopCommand.kind, RUMResourceKind(request: taskInterception.request, response: taskResponse))
-        XCTAssertEqual(resourceStopCommand.httpStatusCode, taskResponse.statusCode)
+        XCTAssertEqual(resourceStopCommand.kind, RUMResourceKind(request: taskInterception.request, response: resourceCompletion.httpResponse!))
+        XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
         XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
     }
 
@@ -90,10 +90,11 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         let taskInterception = TaskInterception(request: .mockAny())
-        let taskMetrics: URLSessionTaskMetrics = .mockAny()
         let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
-        taskInterception.register(metrics: taskMetrics)
-        taskInterception.register(response: nil, error: taskError)
+        let resourceMetrics: ResourceMetrics = .mockAny()
+        let resourceCompletion: ResourceCompletion = .mockWith(response: nil, error: taskError)
+        taskInterception.register(metrics: resourceMetrics)
+        taskInterception.register(completion: resourceCompletion)
 
         // When
         handler.notify_taskInterceptionCompleted(interception: taskInterception)

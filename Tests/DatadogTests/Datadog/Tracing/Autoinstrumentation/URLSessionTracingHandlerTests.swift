@@ -22,8 +22,12 @@ class URLSessionTracingHandlerTests: XCTestCase {
         requestWithSpanContext.addValue("200", forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField)
 
         let interception = TaskInterception(request: requestWithSpanContext)
-        interception.register(response: .mockAny(), error: nil)
-        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 1)))
+        interception.register(completion: .mockAny())
+        interception.register(
+            metrics: .mockWith(
+                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
+            )
+        )
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -36,10 +40,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.context.dd.traceID.rawValue, 100)
         XCTAssertEqual(span.context.dd.spanID.rawValue, 200)
         XCTAssertEqual(span.operationName, "urlsession.request")
-        if #available(iOS 13.0, *) {
-            // TODO: RUMM-732 The `URLSessionTaskMetrics` mock is unreliable prior to iOS 13, find different way of asserting the Span duration.
-            XCTAssertEqual(spanDuration, 1)
-        }
+        XCTAssertEqual(spanDuration, 1)
     }
 
     func testGivenInterceptionWithNoError_whenSendingSpan_itEncodesRequestInfoInSpan() throws {
@@ -49,8 +50,12 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Given
         let request: URLRequest = .mockWith(httpMethod: "POST")
         let interception = TaskInterception(request: request)
-        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
-        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 2)))
+        interception.register(completion: .mockWith(response: .mockResponseWith(statusCode: 200), error: nil))
+        interception.register(
+            metrics: .mockWith(
+                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+            )
+        )
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -61,10 +66,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let span = try XCTUnwrap(spanOutput.recorded?.span)
         let spanDuration = spanOutput.recorded?.finishTime.timeIntervalSince(span.startTime)
         XCTAssertEqual(span.operationName, "urlsession.request")
-        if #available(iOS 13.0, *) {
-            // TODO: RUMM-732 The `URLSessionTaskMetrics` mock is unreliable prior to iOS 13, find different way of asserting the Span duration.
-            XCTAssertEqual(spanDuration, 2)
-        }
+        XCTAssertEqual(spanDuration, 2)
         XCTAssertEqual(span.tags[DDTags.resource] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpUrl] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod] as? String, "POST")
@@ -80,8 +82,12 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let request: URLRequest = .mockWith(httpMethod: "GET")
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let interception = TaskInterception(request: request)
-        interception.register(response: nil, error: error)
-        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 30)))
+        interception.register(completion: .mockWith(response: nil, error: error))
+        interception.register(
+            metrics: .mockWith(
+                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 30))
+            )
+        )
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -92,10 +98,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let span = try XCTUnwrap(spanOutput.recorded?.span)
         let spanDuration = spanOutput.recorded?.finishTime.timeIntervalSince(span.startTime)
         XCTAssertEqual(span.operationName, "urlsession.request")
-        if #available(iOS 13.0, *) {
-            // TODO: RUMM-732 The `URLSessionTaskMetrics` mock is unreliable prior to iOS 13, find different way of asserting the Span duration.
-            XCTAssertEqual(spanDuration, 30)
-        }
+        XCTAssertEqual(spanDuration, 30)
         XCTAssertEqual(span.tags[DDTags.resource] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpUrl] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod] as? String, "GET")
@@ -116,8 +119,12 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Given
         let request: URLRequest = .mockWith(httpMethod: "GET")
         let interception = TaskInterception(request: request)
-        interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
-        interception.register(metrics: .mockWith(taskInterval: .init(start: Date(), duration: 2)))
+        interception.register(completion: .mockWith(response: .mockResponseWith(statusCode: 404), error: nil))
+        interception.register(
+            metrics: .mockWith(
+                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+            )
+        )
 
         // When
         handler.sendSpan(for: interception, using: tracer)
@@ -128,10 +135,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let span = try XCTUnwrap(spanOutput.recorded?.span)
         let spanDuration = spanOutput.recorded?.finishTime.timeIntervalSince(span.startTime)
         XCTAssertEqual(span.operationName, "urlsession.request")
-        if #available(iOS 13.0, *) {
-            // TODO: RUMM-732 The `URLSessionTaskMetrics` mock is unreliable prior to iOS 13, find different way of asserting the Span duration.
-            XCTAssertEqual(spanDuration, 2)
-        }
+        XCTAssertEqual(spanDuration, 2)
         XCTAssertEqual(span.tags[DDTags.resource] as? String, "404")
         XCTAssertEqual(span.tags[OTTags.httpUrl] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod] as? String, "GET")

@@ -293,9 +293,10 @@ extension URLSessionTask {
 
 extension URLSessionTaskMetrics {
     static func mockAny() -> URLSessionTaskMetrics {
-        return .mockWith()
+        return URLSessionTaskMetrics()
     }
 
+    @available(iOS 13, *)
     static func mockWith(
         taskInterval: DateInterval = .init(start: Date(), duration: 1),
         transactionMetrics: [URLSessionTaskTransactionMetrics] = []
@@ -309,9 +310,10 @@ extension URLSessionTaskMetrics {
 
 extension URLSessionTaskTransactionMetrics {
     static func mockAny() -> URLSessionTaskTransactionMetrics {
-        return mockWith()
+        return URLSessionTaskTransactionMetrics()
     }
 
+    @available(iOS 13, *)
     static func mockWith(
         fetchStartDate: Date? = nil,
         responseEndDate: Date? = nil,
@@ -342,6 +344,7 @@ private class URLSessionTaskMock: URLSessionTask {
     }
 }
 
+@available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskMetrics` prior to iOS 13.0
 private class URLSessionTaskMetricsMock: URLSessionTaskMetrics {
     private let _taskInterval: DateInterval
     override var taskInterval: DateInterval { _taskInterval }
@@ -355,6 +358,7 @@ private class URLSessionTaskMetricsMock: URLSessionTaskMetrics {
     }
 }
 
+@available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskTransactionMetrics` prior to iOS 13.0
 private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMetrics {
     private let _fetchStartDate: Date?
     override var fetchStartDate: Date? { _fetchStartDate }

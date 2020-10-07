@@ -108,7 +108,9 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
                 return
             }
 
-            interception.register(metrics: metrics)
+            interception.register(
+                metrics: ResourceMetrics(taskMetrics: metrics)
+            )
 
             if interception.isDone {
                 self.finishInterception(task: task, interception: interception)
@@ -126,7 +128,9 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
                 return
             }
 
-            interception.register(response: task.response, error: error)
+            interception.register(
+                completion: ResourceCompletion(response: task.response, error: error)
+            )
 
             if interception.isDone {
                 self.finishInterception(task: task, interception: interception)

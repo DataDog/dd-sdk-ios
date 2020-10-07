@@ -22,12 +22,12 @@ internal class TaskInterception {
         self.request = request
     }
 
-    func register(metrics: URLSessionTaskMetrics) {
-        self.metrics = ResourceMetrics(taskMetrics: metrics)
+    func register(metrics: ResourceMetrics) {
+        self.metrics = metrics
     }
 
-    func register(response: URLResponse?, error: Error?) {
-        self.completion = ResourceCompletion(response: response, error: error)
+    func register(completion: ResourceCompletion) {
+        self.completion = completion
     }
 
     /// Tells if the interception is done (mean: both metrics and completion were collected).

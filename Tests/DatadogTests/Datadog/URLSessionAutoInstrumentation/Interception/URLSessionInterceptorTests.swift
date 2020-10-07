@@ -150,7 +150,10 @@ class URLSessionInterceptorTests: XCTestCase {
     func testGivenTracerRegistered_whenInterceptingURLSessionTasks_itSendsSpanAndRUMResource() throws {
         let interceptor = self.interceptor
         let spanSentExpectation = expectation(description: "Send span for first party request")
-        tracingHandler.didSendSpanForInterception = { _ in spanSentExpectation.fulfill() }
+        tracingHandler.didSendSpanForInterception = { interception in
+            XCTAssertTrue(interception.isDone)
+            spanSentExpectation.fulfill()
+        }
         let rumResourceStartedExpectation = expectation(description: "Start RUM Resource for first and third party requests")
         rumResourceStartedExpectation.expectedFulfillmentCount = 2
         rumResourcesHandler.didStartRUMResourceForInterception = { _ in
@@ -158,7 +161,8 @@ class URLSessionInterceptorTests: XCTestCase {
         }
         let rumResourceStoppedExpectation = expectation(description: "Stop RUM Resource for first and third party requests")
         rumResourceStoppedExpectation.expectedFulfillmentCount = 2
-        rumResourcesHandler.didStopRUMResourceForInterception = { _ in
+        rumResourcesHandler.didStopRUMResourceForInterception = { interception in
+            XCTAssertTrue(interception.isDone)
             rumResourceStoppedExpectation.fulfill()
         }
 
@@ -167,20 +171,9 @@ class URLSessionInterceptorTests: XCTestCase {
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
-        let firstPartyTaskResponse: HTTPURLResponse = .mockAny()
-        let firstPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskInterval: .init(start: Date(), duration: 1))
-        let firstPartyTaskError = ErrorMock("1st party task error")
-        let firstPartyTask: URLSessionTask = .mockWith(request: firstPartyRequest, response: firstPartyTaskResponse)
-
-        let thirdPartyTaskResponse: HTTPURLResponse = .mockAny()
-        let thirdPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskInterval: .init(start: Date(), duration: 2))
-        let thirdPartyTaskError = ErrorMock("3rd party task error")
-        let thirdPartyTask: URLSessionTask = .mockWith(request: thirdPartyRequest, response: thirdPartyTaskResponse)
-
-        let internalTaskResponse: HTTPURLResponse = .mockAny()
-        let internalTaskMetrics: URLSessionTaskMetrics = .mockWith(taskInterval: .init(start: Date(), duration: 2))
-        let internalTaskError = ErrorMock("internal task error")
-        let internalTask: URLSessionTask = .mockWith(request: internalRequest, response: internalTaskResponse)
+        let firstPartyTask: URLSessionTask = .mockWith(request: firstPartyRequest, response: .mockAny())
+        let thirdPartyTask: URLSessionTask = .mockWith(request: thirdPartyRequest, response: .mockAny())
+        let internalTask: URLSessionTask = .mockWith(request: internalRequest, response: .mockAny())
 
         // swiftlint:disable opening_brace
         callConcurrently(
@@ -189,12 +182,12 @@ class URLSessionInterceptorTests: XCTestCase {
             { interceptor.taskCreated(urlSession: .mockAny(), task: internalTask) }
         )
         callConcurrently(
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: firstPartyTask, error: firstPartyTaskError) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: thirdPartyTask, error: thirdPartyTaskError) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: internalTask, error: internalTaskError) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: firstPartyTask, metrics: firstPartyTaskMetrics) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: thirdPartyTask, metrics: thirdPartyTaskMetrics) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: internalTask, metrics: internalTaskMetrics) }
+            { interceptor.taskCompleted(urlSession: .mockAny(), task: firstPartyTask, error: nil) },
+            { interceptor.taskCompleted(urlSession: .mockAny(), task: thirdPartyTask, error: nil) },
+            { interceptor.taskCompleted(urlSession: .mockAny(), task: internalTask, error: nil) },
+            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: firstPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: thirdPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: internalTask, metrics: .mockAny()) }
         )
         // swiftlint:enable opening_brace
 
@@ -203,10 +196,6 @@ class URLSessionInterceptorTests: XCTestCase {
 
         let tracingInterception = try XCTUnwrap(tracingHandler.interceptionToSendSpan)
         XCTAssertEqual(tracingInterception.request, firstPartyRequest)
-        XCTAssertTrue(tracingInterception.completion?.httpResponse === firstPartyTaskResponse)
-        XCTAssertEqual((tracingInterception.completion?.error as? ErrorMock)?.description, "1st party task error")
-        XCTAssertEqual(tracingInterception.metrics!.fetch.start, firstPartyTaskMetrics.taskInterval.start)
-        XCTAssertEqual(tracingInterception.metrics!.fetch.end, firstPartyTaskMetrics.taskInterval.end)
 
         let rumStartResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
         XCTAssertEqual(rumStartResourceInterceptions.count, 2)
