@@ -49,7 +49,7 @@ internal class URLSessionSwizzler {
     /// Swizzles the `URLSession.dataTask(with:completionHandler:)` for `URLRequest`.
     class DataTaskWithURLRequestAndCompletion: MethodSwizzler<
         @convention(c) (URLSession, Selector, URLRequest, CompletionHandler?) -> URLSessionDataTask,
-        @convention(block) (URLSession, URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
+        @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask
     > {
         private static let selector = #selector(
             URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
@@ -104,7 +104,7 @@ internal class URLSessionSwizzler {
     /// Swizzles the `URLSession.dataTask(with:completionHandler:)` for `URL`.
     class DataTaskWithURLAndCompletion: MethodSwizzler<
         @convention(c) (URLSession, Selector, URL, CompletionHandler?) -> URLSessionDataTask,
-        @convention(block) (URLSession, URL, @escaping CompletionHandler) -> URLSessionDataTask
+        @convention(block) (URLSession, URL, CompletionHandler?) -> URLSessionDataTask
     > {
         private static let selector = #selector(
             URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URL, @escaping CompletionHandler) -> URLSessionDataTask
