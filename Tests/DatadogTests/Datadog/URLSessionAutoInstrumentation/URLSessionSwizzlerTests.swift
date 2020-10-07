@@ -33,7 +33,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
     // MARK: - Interception Flow
 
-    func testWhenUsingTaskWithURLRequestAndCompletion_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
+    func testGivenURLSession_whenUsingTaskWithURLRequestAndCompletion_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
         let requestModified = expectation(description: "Modify request")
         let notifyTaskCreated = expectation(description: "Notify task creation")
         let notifyTaskCompleted = expectation(description: "Notify task completion")
@@ -45,8 +45,11 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
         interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
 
+        // Given
+        let session = URLSession.serverMockURLSession
+
         // When
-        let task = URLSession.serverMockURLSession.dataTask(with: URLRequest(url: .mockRandom())) { _, _, _ in
+        let task = session.dataTask(with: URLRequest(url: .mockRandom())) { _, _, _ in
             completionHandlerCalled.fulfill()
         }
         task.resume()
@@ -58,7 +61,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified")
     }
 
-    func testWhenUsingTaskWithURLAndCompletion_itNotifiesTaskCreationAndCompletionAndModifiesTheRequestOnlyPriorToIOS13() throws {
+    func testGivenURLSession_whenUsingTaskWithURLAndCompletion_itNotifiesTaskCreationAndCompletionAndModifiesTheRequestOnlyPriorToIOS13() throws {
         let requestModified = expectation(description: "Modify request")
         if #available(iOS 13.0, *) {
             requestModified.isInverted = true
@@ -73,8 +76,11 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
         interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
 
+        // Given
+        let session = URLSession.serverMockURLSession
+
         // When
-        let task = URLSession.serverMockURLSession.dataTask(with: URL.mockRandom()) { _, _, _ in
+        let task = session.dataTask(with: URL.mockRandom()) { _, _, _ in
             completionHandlerCalled.fulfill()
         }
         task.resume()
@@ -90,7 +96,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         }
     }
 
-    func testWhenUsingTaskWithURLRequest_itNotifiesCreationAndModifiesTheRequest() throws {
+    func testGivenURLSession_whenUsingTaskWithURLRequest_itNotifiesCreationAndModifiesTheRequest() throws {
         let requestModified = expectation(description: "Modify request")
         let notifyTaskCreated = expectation(description: "Notify task creation")
         let doNotNotifyTaskCompleted = expectation(description: "Do not notify task completion")
@@ -102,8 +108,11 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
         interceptor.onTaskCompleted = { _, _, _ in doNotNotifyTaskCompleted.fulfill() }
 
+        // Given
+        let session = URLSession.serverMockURLSession
+
         // When
-        let task = URLSession.serverMockURLSession.dataTask(with: URLRequest(url: .mockAny()))
+        let task = session.dataTask(with: URLRequest(url: .mockAny()))
         task.resume()
 
         // Then
@@ -113,7 +122,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified.")
     }
 
-    func testWhenUsingTaskWithURL_itNotifiesCreationAndDoesNotModifiyTheRequest() throws {
+    func testGivenURLSession_whenUsingTaskWithURL_itNotifiesCreationAndDoesNotModifiyTheRequest() throws {
         let requestNotModified = expectation(description: "Do not modify request")
         requestNotModified.isInverted = true
         let notifyTaskCreated = expectation(description: "Notify task creation")
@@ -126,8 +135,11 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
         interceptor.onTaskCompleted = { _, _, _ in doNotNotifyTaskCompleted.fulfill() }
 
+        // Given
+        let session = URLSession.serverMockURLSession
+
         // When
-        let task = URLSession.serverMockURLSession.dataTask(with: URL.mockRandom())
+        let task = session.dataTask(with: URL.mockRandom())
         task.resume()
 
         // Then
@@ -135,6 +147,33 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         XCTAssertNotEqual(requestSent, interceptor.modifiedRequest, "The request should not be modified.")
+    }
+
+    func testGivenNSURLSession_whenNillifyingCompletionHandler_itNotifiesCreationAndNoCompletion() throws {
+        let notifyTaskCreated = expectation(description: "Notify 2 tasks creation")
+        notifyTaskCreated.expectedFulfillmentCount = 2
+        let doNotNotifyTaskCompleted = expectation(description: "Do not notify any task completion")
+        doNotNotifyTaskCompleted.isInverted = true
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        interceptor.modifiedRequest = URLRequest(url: .mockRandom())
+        interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCompleted = { _, _, _ in doNotNotifyTaskCompleted.fulfill() }
+
+        // Given
+        let nsSession = NSURLSessionBridge(URLSession.serverMockURLSession)!
+
+        // When
+        let task1 = nsSession.dataTask(with: URL.mockRandom(), completionHandler: nil)!
+        task1.resume()
+
+        let task2 = nsSession.dataTask(with: URLRequest.mockAny(), completionHandler: nil)!
+        task2.resume()
+
+        // Then
+        wait(for: [notifyTaskCreated, doNotNotifyTaskCompleted], timeout: 0.5, enforceOrder: true)
+
+        _ = server.waitAndReturnRequests(count: 2)
     }
 
     // MARK: - Interception Values
