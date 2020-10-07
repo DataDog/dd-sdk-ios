@@ -168,40 +168,6 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
-    func testTracingAutoInstrumentationConfiguration() throws {
-        let hostsConfigured = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                tracedHosts: ["example.com", "foo.eu"]
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(
-            hostsConfigured.tracing!.autoInstrumentation!.tracedHosts,
-            ["example.com", "foo.eu"]
-        )
-        XCTAssertEqual(
-            hostsConfigured.tracing!.autoInstrumentation!.excludedHosts,
-            [
-                Datadog.Configuration.LogsEndpoint.us.url,
-                Datadog.Configuration.TracesEndpoint.us.url,
-                Datadog.Configuration.RUMEndpoint.us.url
-            ]
-        )
-
-        let hostsNotConfigured = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                tracedHosts: []
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertNil(
-            hostsNotConfigured.tracing!.autoInstrumentation,
-            "When traced hosts are not configured, the auto instrumentation config shuld be `nil`"
-        )
-    }
-
     // MARK: - RUM Configuration Tests
 
     func testRUMConfiguration() throws {
@@ -272,6 +238,45 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertNil(
             viewsAndActionsNotConfigured.rum!.autoInstrumentation,
             "When neither Views nor Actions are configured, the auto instrumentation config shuld be `nil`"
+        )
+    }
+
+    // MARK: - URLSession Auto Instrumentation Configuration Tests
+
+    func testURLSessionAutoInstrumentationConfiguration() throws {
+        let firstPartyHostsSet = try FeaturesConfiguration(
+            configuration: .mockWith(firstPartyHosts: ["example.com", "foo.eu"]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(
+            firstPartyHostsSet.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts,
+            ["example.com", "foo.eu"]
+        )
+        XCTAssertEqual(
+            firstPartyHostsSet.urlSessionAutoInstrumentation?.sdkInternalHosts,
+            [
+                Datadog.Configuration.LogsEndpoint.us.url,
+                Datadog.Configuration.TracesEndpoint.us.url,
+                Datadog.Configuration.RUMEndpoint.us.url
+            ]
+        )
+
+        let firstPartyHostsNotSet = try FeaturesConfiguration(
+            configuration: .mockWith(firstPartyHosts: nil),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(
+            firstPartyHostsNotSet.urlSessionAutoInstrumentation,
+            "When `firstPartyHosts` are not set, the URLSession auto instrumentation config shuld be `nil`"
+        )
+
+        let firstPartyHostsSetEmpty = try FeaturesConfiguration(
+            configuration: .mockWith(firstPartyHosts: []),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(
+            firstPartyHostsSetEmpty.urlSessionAutoInstrumentation,
+            "When `firstPartyHosts` are set empty, the URLSession auto instrumentation config shuld be `nil`"
         )
     }
 

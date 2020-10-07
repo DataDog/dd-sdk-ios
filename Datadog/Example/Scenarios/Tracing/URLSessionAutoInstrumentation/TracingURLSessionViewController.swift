@@ -6,10 +6,15 @@
 
 import Foundation
 import UIKit
+import Datadog
 
 internal class TracingURLSessionViewController: UIViewController {
     private var testScenario: TracingURLSessionScenario!
-    private let session = URLSession.shared
+    private lazy var session = URLSession(
+        configuration: .default,
+        delegate: DDURLSessionDelegate(),
+        delegateQueue: nil
+    )
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -19,16 +24,18 @@ internal class TracingURLSessionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        callSuccessfullURL {
-            self.callSuccessfullURLRequest {
-                self.callBadURL {
-                    self.useNotInstrumentedAPIs()
-                }
+        callSuccessfullFirstPartyURL {
+            self.callSuccessfullFirstPartyURLRequest {
+                self.callBadFirstPartyURL()
             }
         }
+
+        callThirdPartyURL()
+        callThirdPartyURLRequest()
     }
 
-    private func callSuccessfullURL(completion: @escaping () -> Void) {
+    private func callSuccessfullFirstPartyURL(completion: @escaping () -> Void) {
+        // This request is instrumented. It sends the `Span`.
         let task = session.dataTask(with: testScenario.customGETResourceURL) { _, _, error in
             assert(error == nil)
             completion()
@@ -36,7 +43,8 @@ internal class TracingURLSessionViewController: UIViewController {
         task.resume()
     }
 
-    private func callSuccessfullURLRequest(completion: @escaping () -> Void) {
+    private func callSuccessfullFirstPartyURLRequest(completion: @escaping () -> Void) {
+        // This request is instrumented. It sends the `Span`.
         let task = session.dataTask(with: testScenario.customPOSTRequest) { _, _, error in
             assert(error == nil)
             completion()
@@ -44,20 +52,21 @@ internal class TracingURLSessionViewController: UIViewController {
         task.resume()
     }
 
-    private func callBadURL(completion: @escaping () -> Void) {
-        let task = session.dataTask(with: testScenario.badResourceURL) { _, _, error in
-            assert(error != nil)
-            completion()
-        }
+    private func callBadFirstPartyURL() {
+        // This request is instrumented. It sends the `Span`.
+        let task = session.dataTask(with: testScenario.badResourceURL)
         task.resume()
     }
 
-    /// Calls `URLSession` APIs which are currently not auto instrumented.
-    /// This is just a sanity check to make sure the `URLSession` swizzling works fine.
-    private func useNotInstrumentedAPIs() {
-        let badResourceRequest = URLRequest(url: testScenario.badResourceURL)
-        // Use APIs with no completion block:
-        session.dataTask(with: badResourceRequest).resume()
-        session.dataTask(with: testScenario.badResourceURL).resume()
+    private func callThirdPartyURL() {
+        // This request is NOT instrumented. We test that it does not send the `Span`.
+        let task = session.dataTask(with: testScenario.thirdPartyURL)
+        task.resume()
+    }
+
+    private func callThirdPartyURLRequest() {
+        // This request is NOT instrumented. We test that it does not send the `Span`.
+        let task = session.dataTask(with: testScenario.thirdPartyRequest)
+        task.resume()
     }
 }

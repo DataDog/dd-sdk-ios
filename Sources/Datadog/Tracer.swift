@@ -157,8 +157,12 @@ public class Tracer: OTTracer {
     }
 
     public func extract(reader: OTFormatReader) -> OTSpanContext? {
-        // TODO: RUMM-385 - we don't need to support it now
-        return nil
+        // TODO: RUMM-385 - make `HTTPHeadersReader` available in public API
+        guard let reader = reader as? HTTPHeadersReader else {
+            return nil
+        }
+        reader.use(baggageItemQueue: queue)
+        return reader.extract()
     }
 
     public var activeSpan: OTSpan? {

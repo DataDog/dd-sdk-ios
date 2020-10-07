@@ -25,13 +25,6 @@ import Foundation
 ///
 ///
 public class HTTPHeadersWriter: OTHTTPHeadersWriter {
-    private enum Constants: String, CaseIterable {
-        case traceIDField = "x-datadog-trace-id"
-        case parentSpanIDField = "x-datadog-parent-id"
-        // TODO: RUMM-338 support `x-datadog-sampling-priority`. `dd-trace-ot` reference:
-        // https://github.com/DataDog/dd-trace-java/blob/4ba0ca0f9da748d4018310d026b1a72b607947f1/dd-trace-ot/src/main/java/datadog/opentracing/propagation/DatadogHttpCodec.java#L23
-    }
-
     public init() {}
 
     /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
@@ -51,16 +44,8 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
         }
 
         tracePropagationHTTPHeaders = [
-            Constants.traceIDField.rawValue: String(spanContext.traceID.rawValue),
-            Constants.parentSpanIDField.rawValue: String(spanContext.spanID.rawValue)
+            TracingHTTPHeaders.traceIDField: String(spanContext.traceID.rawValue),
+            TracingHTTPHeaders.parentSpanIDField: String(spanContext.spanID.rawValue)
         ]
-    }
-
-    internal static func canInject(to request: URLRequest) -> Bool {
-        let containsHeaders: Bool
-        containsHeaders = Constants.allCases.contains { headerKey -> Bool in
-            return request.value(forHTTPHeaderField: headerKey.rawValue) != nil
-        }
-        return !containsHeaders
     }
 }

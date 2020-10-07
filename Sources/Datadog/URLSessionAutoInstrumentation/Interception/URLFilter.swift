@@ -6,11 +6,7 @@
 
 import Foundation
 
-internal protocol URLFiltering {
-    func allows(_ url: URL?) -> Bool
-}
-
-internal struct URLFilter: URLFiltering, Equatable {
+internal struct URLFilter: Equatable {
     private let excludedURLs: Set<String>
     private let inclusionRegex: String
 

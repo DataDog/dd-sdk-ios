@@ -4,4 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#import "NSURLSessionBridge.h"
+import Foundation
+import Datadog
+
+@objc
+public class DDNSURLSessionDelegate: DDURLSessionDelegate {}

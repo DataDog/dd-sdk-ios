@@ -98,7 +98,7 @@ extension Datadog {
         private(set) var tracesEndpoint: TracesEndpoint
         private(set) var rumEndpoint: RUMEndpoint
         private(set) var serviceName: String?
-        private(set) var tracedHosts: Set<String>
+        private(set) var firstPartyHosts: Set<String>?
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitActionsTrackingEnabled: Bool
@@ -150,7 +150,7 @@ extension Datadog {
                     tracesEndpoint: .us,
                     rumEndpoint: .us,
                     serviceName: nil,
-                    tracedHosts: [],
+                    firstPartyHosts: nil,
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
                     rumUIKitActionsTrackingEnabled: false
@@ -210,21 +210,51 @@ extension Datadog {
 
             /// Sets the hosts to be automatically traced.
             ///
-            /// Every request made to a traced host and its subdomains will create its Span with related information; _such as url, method, status code, error (if any)_.
+            /// This option **must be used together with** `DDURLSessionDelegate` **set as your** `URLSession` **delegate object**.
+            ///
+            /// Every request made to a traced host and its subdomains will create its `Span` with related information; _such as url, HTTP method, HTTP status code, error (if any)_.
             /// Example, if `tracedHosts` is `["example.com"]`, then every network request such as the ones below will be automatically traced and generate a span:
             /// * https://example.com/any/path
             /// * https://api.example.com/any/path
             ///
-            /// If your backend is also being traced with Datadog agents, you can see the full trace (e.g.: client → server → database) in your dashboard with our distributed tracing feature.
+            /// If your backend is traced with Datadog agent, you will see the full trace (e.g.: client → server → database) in your dashboard with our Distributed Tracing feature.
             /// A few HTTP headers are injected to auto-traced network requests so that you can see your spans in your backend as well.
             ///
-            /// If `tracedHosts` is empty, automatic tracing is disabled.
+            /// Until `tracedHosts` is set, automatic tracing is disabled.
             ///
-            /// **NOTE:** Non-empty `tracedHost`s will lead to modifying implementation of some `URLSession` methods, in case your app relies on `URLSession` internals please refer to `URLSessionSwizzler.swift` file for details
+            /// **NOTE 1:** Setting `tracedHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
+            /// for implementation details.
             ///
-            /// - Parameter tracedHosts: empty by default
+            /// **NOTE 2:** Setting `tracedHosts`, but not using `DDURLSessionDelegate` will lead to inconsistent tracing of network requests.
+            ///
+            /// - Parameter tracedHosts: not set by default
+            @available(*, deprecated, message: "This option is replaced by `track(firstPartyHosts:)`. Refer to the new API comment for important details.")
             public func set(tracedHosts: Set<String>) -> Builder {
-                configuration.tracedHosts = tracedHosts
+                return track(firstPartyHosts: tracedHosts)
+            }
+
+            /// Sets the first party hosts to be automatically traced.
+            ///
+            /// This option **must be used together with** `DDURLSessionDelegate` **set as your** `URLSession` **delegate object**.
+            ///
+            /// Every request made to a specified hosts and its subdomains will create the tracing `Span` with related information; _such as url, HTTP method, HTTP status code, error (if any)_.
+            /// Example, if `tracedHosts` is `["example.com"]`, then every network request such as the ones below will be automatically traced and generate a span:
+            /// * https://example.com/any/path
+            /// * https://api.example.com/any/path
+            ///
+            /// If your backend is traced with Datadog agent, you will see the full trace (e.g.: client → server → database) in your dashboard with our Distributed Tracing feature.
+            /// A few HTTP headers are injected to auto-traced network requests so that you can see your spans in your backend as well.
+            ///
+            /// Until `firstPartyHosts` is set, automatic tracing is disabled.
+            ///
+            /// **NOTE 1:** Setting `firstPartyHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
+            /// for implementation details.
+            ///
+            /// **NOTE 2:** The `firstPartyHosts` instrumentation will NOT work without using `DDURLSessionDelegate`.
+            ///
+            /// - Parameter firstPartyHosts: not set by default
+            public func track(firstPartyHosts: Set<String>) -> Builder {
+                configuration.firstPartyHosts = firstPartyHosts
                 return self
             }
 

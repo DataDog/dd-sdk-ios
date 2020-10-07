@@ -114,7 +114,7 @@ public class Datadog {
         var tracing: TracingFeature?
         var rum: RUMFeature?
 
-        var tracingAutoInstrumentation: TracingAutoInstrumentation?
+        var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumAutoInstrumentation: RUMAutoInstrumentation?
 
         let commonDependencies = FeaturesCommonDependencies(
@@ -143,9 +143,6 @@ public class Datadog {
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
                 tracingUUIDGenerator: DefaultTracingUUIDGenerator()
             )
-            if let autoInstrumentationConfiguration = tracingConfiguration.autoInstrumentation {
-                tracingAutoInstrumentation = TracingAutoInstrumentation(with: autoInstrumentationConfiguration)
-            }
         }
 
         if let rumConfiguration = configuration.rum {
@@ -162,15 +159,21 @@ public class Datadog {
             }
         }
 
+        if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
+            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
+                configuration: urlSessionAutoInstrumentationConfiguration
+            )
+        }
+
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
 
-        TracingAutoInstrumentation.instance = tracingAutoInstrumentation
-        TracingAutoInstrumentation.instance?.enable()
-
         RUMAutoInstrumentation.instance = rumAutoInstrumentation
         RUMAutoInstrumentation.instance?.enable()
+
+        URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
+        URLSessionAutoInstrumentation.instance?.enable()
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(
@@ -196,8 +199,9 @@ public class Datadog {
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
         RUMFeature.instance = nil
-        TracingAutoInstrumentation.instance = nil
+
         RUMAutoInstrumentation.instance = nil
+        URLSessionAutoInstrumentation.instance = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil

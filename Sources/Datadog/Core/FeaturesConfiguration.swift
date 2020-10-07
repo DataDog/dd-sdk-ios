@@ -26,15 +26,8 @@ internal struct FeaturesConfiguration {
     }
 
     struct Tracing {
-        struct AutoInstrumentation {
-            let tracedHosts: Set<String>
-            let excludedHosts: Set<String>
-        }
-
         let common: Common
         let uploadURLWithClientToken: URL
-        /// Tracing auto instrumentation configuration, `nil` if not enabled.
-        let autoInstrumentation: AutoInstrumentation?
     }
 
     struct RUM {
@@ -52,6 +45,13 @@ internal struct FeaturesConfiguration {
         let autoInstrumentation: AutoInstrumentation?
     }
 
+    struct URLSessionAutoInstrumentation {
+        /// First party hosts defined by the user.
+        let userDefinedFirstPartyHosts: Set<String>
+        /// Hosts used internally by the SDK - should not be instrumented.
+        let sdkInternalHosts: Set<String>
+    }
+
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
@@ -60,6 +60,8 @@ internal struct FeaturesConfiguration {
     let tracing: Tracing?
     /// RUM feature configuration or `nil` if the feature is disabled.
     let rum: RUM?
+    /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
+    let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
 }
 
 extension FeaturesConfiguration {
@@ -74,6 +76,7 @@ extension FeaturesConfiguration {
         var logging: Logging?
         var tracing: Tracing?
         var rum: RUM?
+        var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
 
         let common = Common(
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
@@ -95,26 +98,12 @@ extension FeaturesConfiguration {
         }
 
         if configuration.tracingEnabled {
-            var autoInstrumentation: Tracing.AutoInstrumentation?
-
-            if !configuration.tracedHosts.isEmpty {
-                autoInstrumentation = Tracing.AutoInstrumentation(
-                    tracedHosts: configuration.tracedHosts,
-                    excludedHosts: [
-                        configuration.logsEndpoint.url,
-                        configuration.tracesEndpoint.url,
-                        configuration.rumEndpoint.url
-                    ]
-                )
-            }
-
             tracing = Tracing(
                 common: common,
                 uploadURLWithClientToken: try ifValid(
                     endpointURLString: configuration.tracesEndpoint.url,
                     clientToken: configuration.clientToken
-                ),
-                autoInstrumentation: autoInstrumentation
+                )
             )
         }
 
@@ -150,10 +139,22 @@ extension FeaturesConfiguration {
             }
         }
 
+        if let firstPartyHosts = configuration.firstPartyHosts, !firstPartyHosts.isEmpty {
+            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
+                userDefinedFirstPartyHosts: firstPartyHosts,
+                sdkInternalHosts: [
+                    configuration.logsEndpoint.url,
+                    configuration.tracesEndpoint.url,
+                    configuration.rumEndpoint.url
+                ]
+            )
+        }
+
         self.common = common
         self.logging = logging
         self.tracing = tracing
         self.rum = rum
+        self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
     }
 }
 

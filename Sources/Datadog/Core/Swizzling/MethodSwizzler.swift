@@ -55,24 +55,17 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         }
     }
 
-    @discardableResult
     func swizzle(
         _ foundMethod: FoundMethod,
-        onlyIfNonSwizzled: Bool = false,
         impProvider: (TypedIMP) -> TypedBlockIMP
-    ) -> Bool {
+    ) {
         sync {
-            if onlyIfNonSwizzled &&
-                implementationCache[foundMethod] != nil {
-                return false
-            }
             let currentIMP = method_getImplementation(foundMethod.method)
             let current_typedIMP = unsafeBitCast(currentIMP, to: TypedIMP.self)
             let newImpBlock: TypedBlockIMP = impProvider(current_typedIMP)
             let newImp: IMP = imp_implementationWithBlock(newImpBlock)
 
             set(newIMP: newImp, for: foundMethod)
-            return true
         }
     }
 

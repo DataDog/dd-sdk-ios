@@ -14,13 +14,13 @@ class DDDatadogTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
-        XCTAssertNil(TracingAutoInstrumentation.instance)
+        XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
-        XCTAssertNil(TracingAutoInstrumentation.instance)
+        XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
     }
 
@@ -28,7 +28,7 @@ class DDDatadogTests: XCTestCase {
 
     func testItFowardsInitializationToSwift() throws {
         let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
-        configBuilder.set(tracedHosts: ["example.com"])
+        configBuilder.track(firstPartyHosts: ["example.com"])
 
         DDDatadog.initialize(
             appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
@@ -38,9 +38,9 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNotNil(Datadog.instance)
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.applicationName, "app-name")
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.environment, "tests")
-        XCTAssertNotNil(TracingAutoInstrumentation.instance)
+        XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
 
-        TracingAutoInstrumentation.instance?.swizzler.unswizzle()
+        URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         try Datadog.deinitializeOrThrow()
     }
 
