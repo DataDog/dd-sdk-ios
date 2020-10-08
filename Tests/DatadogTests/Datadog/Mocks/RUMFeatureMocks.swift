@@ -190,7 +190,7 @@ extension RUMStopResourceCommand {
         attributes: [AttributeKey: AttributeValue] = [:],
         kind: RUMResourceKind = .mockAny(),
         httpStatusCode: Int? = .mockAny(),
-        size: UInt64? = .mockAny()
+        size: Int64? = .mockAny()
     ) -> RUMStopResourceCommand {
         return RUMStopResourceCommand(
             resourceName: resourceName, time: time, attributes: attributes, kind: kind, httpStatusCode: httpStatusCode, size: size
@@ -432,9 +432,11 @@ class RUMContextProviderMock: RUMContextProvider {
 
 class RUMCommandSubscriberMock: RUMCommandSubscriber {
     var receivedCommand: RUMCommand?
+    var onCommandReceived: ((RUMCommand) -> Void)?
 
     func process(command: RUMCommand) {
         receivedCommand = command
+        onCommandReceived?(command)
     }
 }
 

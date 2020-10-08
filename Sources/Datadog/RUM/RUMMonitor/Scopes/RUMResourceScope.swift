@@ -24,6 +24,10 @@ internal class RUMResourceScope: RUMScope {
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMHTTPMethod
 
+    /// The Resource metrics, if received. When sending RUM Resource event, `resourceMetrics` values
+    /// take precedence over other values collected for this Resource.
+    private var resourceMetrics: ResourceMetrics?
+
     init(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
@@ -52,6 +56,8 @@ internal class RUMResourceScope: RUMScope {
         case let command as RUMStopResourceWithErrorCommand where command.resourceName == resourceName:
             sendErrorEvent(on: command)
             return false
+        case let command as RUMAddResourceMetricsCommand where command.resourceName == resourceName:
+            resourceMetrics = command.metrics
         default:
             break
         }
@@ -63,8 +69,23 @@ internal class RUMResourceScope: RUMScope {
     private func sendResourceEvent(on command: RUMStopResourceCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
+        let resourceStartTime: Date
+        let resourceDuration: TimeInterval
+        let size: Int64?
+
+        /// Metrics values take precedence over other values.
+        if let metrics = resourceMetrics {
+            resourceStartTime = metrics.fetch.start
+            resourceDuration = metrics.fetch.end.timeIntervalSince(metrics.fetch.start)
+            size = metrics.responseSize ?? command.size
+        } else {
+            resourceStartTime = resourceLoadingStartTime
+            resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
+            size = command.size
+        }
+
         let eventData = RUMResource(
-            date: resourceLoadingStartTime.timeIntervalSince1970.toInt64Milliseconds,
+            date: resourceStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
@@ -80,10 +101,15 @@ internal class RUMResourceScope: RUMScope {
                 method: resourceHTTPMethod.toRUMDataFormat,
                 url: resourceURL,
                 statusCode: command.httpStatusCode?.toInt64,
-                duration: command.time.timeIntervalSince(resourceLoadingStartTime).toInt64Nanoseconds,
-                size: command.size?.toInt64 ?? 0,
+                duration: resourceDuration.toInt64Nanoseconds,
+                size: size ?? 0,
                 redirect: nil,
-                dns: nil,
+                dns: resourceMetrics?.dns.flatMap { dns in
+                    RUMDNS(
+                        duration: dns.duration.toInt64Nanoseconds,
+                        start: dns.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                    )
+                },
                 connect: nil,
                 ssl: nil,
                 firstByte: nil,

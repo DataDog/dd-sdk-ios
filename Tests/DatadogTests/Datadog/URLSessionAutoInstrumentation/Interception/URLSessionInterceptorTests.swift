@@ -17,11 +17,36 @@ private class URLSessionTracingHandlerMock: URLSessionTracingHandlerType {
     }
 }
 
+private class URLSessionRUMResourcesHandlerMock: URLSessionRUMResourcesHandlerType {
+    var didStartRUMResourceForInterception: ((TaskInterception) -> Void)?
+    var interceptionsForStartingRUMResource: [TaskInterception] = []
+
+    func notify_taskInterceptionStarted(interception: TaskInterception) {
+        interceptionsForStartingRUMResource.append(interception)
+        didStartRUMResourceForInterception?(interception)
+    }
+
+    var didStopRUMResourceForInterception: ((TaskInterception) -> Void)?
+    var interceptionsForStoppingRUMResource: [TaskInterception] = []
+
+    func notify_taskInterceptionCompleted(interception: TaskInterception) {
+        interceptionsForStoppingRUMResource.append(interception)
+        didStopRUMResourceForInterception?(interception)
+    }
+
+    func subscribe(commandsSubscriber: RUMCommandSubscriber) {}
+}
+
 class URLSessionInterceptorTests: XCTestCase {
     private let tracingHandler = URLSessionTracingHandlerMock()
+    private let rumResourcesHandler = URLSessionRUMResourcesHandlerMock()
     private lazy var interceptor = URLSessionInterceptor(
-        firstPartyHostsFilter: URLFilter(includedHosts: ["first-party.com"], excludedURLs: ["dd.internal.com"]),
-        tracingInterceptionHandler: tracingHandler
+        configuration: .mockWith(
+            userDefinedFirstPartyHosts: ["first-party.com"],
+            sdkInternalURLs: ["https://dd.internal.com"]
+        ),
+        tracingHandler: tracingHandler,
+        rumResourceHandler: rumResourcesHandler
     )
     /// Mock request made to a first party URL.
     private let firstPartyRequest = URLRequest(url: URL(string: "https://api.first-party.com/v1/endpoint")!)
@@ -29,6 +54,56 @@ class URLSessionInterceptorTests: XCTestCase {
     private let thirdPartyRequest = URLRequest(url: URL(string: "https://api.third-party.com/v1/endpoint")!)
     /// Mock request made internally by the SDK (used to test that SDK internal calls to Intake servers are not intercepted).
     private let internalRequest = URLRequest(url: URL(string: "https://dd.internal.com/v1/endpoint")!)
+
+    // MARK: - Initialization
+
+    func testGivenOnlyTracingInstrumentationEnabled_whenInitializing_itRegistersTracingHandler() {
+        // Given
+        let instrumentTracing = true
+        let instrumentRUM = false
+
+        // When
+        let interceptor = URLSessionInterceptor(
+            configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
+            dateProvider: SystemDateProvider()
+        )
+
+        // Then
+        XCTAssertNotNil(interceptor.tracingHandler)
+        XCTAssertNil(interceptor.rumResourceHandler)
+    }
+
+    func testGivenOnlyRUMInstrumentationEnabled_whenInitializing_itRegistersRUMHandler() {
+        // Given
+        let instrumentTracing = false
+        let instrumentRUM = true
+
+        // When
+        let interceptor = URLSessionInterceptor(
+            configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
+            dateProvider: SystemDateProvider()
+        )
+
+        // Then
+        XCTAssertNil(interceptor.tracingHandler)
+        XCTAssertNotNil(interceptor.rumResourceHandler)
+    }
+
+    func testGivenBothTracingAndRUMInstrumentationEnabled_whenInitializing_itRegistersTracingHandlerAndRUMHandler() {
+        // Given
+        let instrumentTracing = true
+        let instrumentRUM = true
+
+        // When
+        let interceptor = URLSessionInterceptor(
+            configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
+            dateProvider: SystemDateProvider()
+        )
+
+        // Then
+        XCTAssertNotNil(interceptor.tracingHandler)
+        XCTAssertNotNil(interceptor.rumResourceHandler)
+    }
 
     // MARK: - URLRequest Interception
 
@@ -72,30 +147,33 @@ class URLSessionInterceptorTests: XCTestCase {
 
     // MARK: - URLSessionTask Interception
 
-    func testGivenTracerRegistered_whenInterceptingURLSessionTasks_itSendsSpanOnlyForFirstPartyRequests() throws {
+    func testGivenTracerRegistered_whenInterceptingURLSessionTasks_itSendsSpanAndRUMResource() throws {
         let interceptor = self.interceptor
         let spanSentExpectation = expectation(description: "Send span for first party request")
-        tracingHandler.didSendSpanForInterception = { _ in spanSentExpectation.fulfill() }
+        tracingHandler.didSendSpanForInterception = { interception in
+            XCTAssertTrue(interception.isDone)
+            spanSentExpectation.fulfill()
+        }
+        let rumResourceStartedExpectation = expectation(description: "Start RUM Resource for first and third party requests")
+        rumResourceStartedExpectation.expectedFulfillmentCount = 2
+        rumResourcesHandler.didStartRUMResourceForInterception = { _ in
+            rumResourceStartedExpectation.fulfill()
+        }
+        let rumResourceStoppedExpectation = expectation(description: "Stop RUM Resource for first and third party requests")
+        rumResourceStoppedExpectation.expectedFulfillmentCount = 2
+        rumResourcesHandler.didStopRUMResourceForInterception = { interception in
+            XCTAssertTrue(interception.isDone)
+            rumResourceStoppedExpectation.fulfill()
+        }
 
         // Given
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
-        let firstPartyTaskResponse: HTTPURLResponse = .mockAny()
-        let firstPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskDuration: 1)
-        let firstPartyTaskError = ErrorMock("1st party task error")
-        let firstPartyTask: URLSessionTask = .mockWith(request: firstPartyRequest, response: firstPartyTaskResponse)
-
-        let thirdPartyTaskResponse: HTTPURLResponse = .mockAny()
-        let thirdPartyTaskMetrics: URLSessionTaskMetrics = .mockWith(taskDuration: 2)
-        let thirdPartyTaskError = ErrorMock("3rd party task error")
-        let thirdPartyTask: URLSessionTask = .mockWith(request: thirdPartyRequest, response: thirdPartyTaskResponse)
-
-        let internalTaskResponse: HTTPURLResponse = .mockAny()
-        let internalTaskMetrics: URLSessionTaskMetrics = .mockWith(taskDuration: 2)
-        let internalTaskError = ErrorMock("internal task error")
-        let internalTask: URLSessionTask = .mockWith(request: internalRequest, response: internalTaskResponse)
+        let firstPartyTask: URLSessionTask = .mockWith(request: firstPartyRequest, response: .mockAny())
+        let thirdPartyTask: URLSessionTask = .mockWith(request: thirdPartyRequest, response: .mockAny())
+        let internalTask: URLSessionTask = .mockWith(request: internalRequest, response: .mockAny())
 
         // swiftlint:disable opening_brace
         callConcurrently(
@@ -104,31 +182,43 @@ class URLSessionInterceptorTests: XCTestCase {
             { interceptor.taskCreated(urlSession: .mockAny(), task: internalTask) }
         )
         callConcurrently(
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: firstPartyTask, error: firstPartyTaskError) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: thirdPartyTask, error: thirdPartyTaskError) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: internalTask, error: internalTaskError) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: firstPartyTask, metrics: firstPartyTaskMetrics) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: thirdPartyTask, metrics: thirdPartyTaskMetrics) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: internalTask, metrics: internalTaskMetrics) }
+            { interceptor.taskCompleted(urlSession: .mockAny(), task: firstPartyTask, error: nil) },
+            { interceptor.taskCompleted(urlSession: .mockAny(), task: thirdPartyTask, error: nil) },
+            { interceptor.taskCompleted(urlSession: .mockAny(), task: internalTask, error: nil) },
+            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: firstPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: thirdPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: internalTask, metrics: .mockAny()) }
         )
         // swiftlint:enable opening_brace
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let interception = try XCTUnwrap(tracingHandler.interceptionToSendSpan)
-        XCTAssertEqual(interception.request, firstPartyRequest)
-        XCTAssertTrue(interception.completion?.httpResponse === firstPartyTaskResponse)
-        XCTAssertEqual((interception.completion?.error as? ErrorMock)?.description, "1st party task error")
-        XCTAssertEqual(interception.metrics!.taskStartTime, firstPartyTaskMetrics.taskInterval.start)
-        XCTAssertEqual(interception.metrics!.taskEndTime, firstPartyTaskMetrics.taskInterval.end)
+        let tracingInterception = try XCTUnwrap(tracingHandler.interceptionToSendSpan)
+        XCTAssertEqual(tracingInterception.request, firstPartyRequest)
+
+        let rumStartResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
+        XCTAssertEqual(rumStartResourceInterceptions.count, 2)
+        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == firstPartyRequest })
+        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == thirdPartyRequest })
+
+        let rumStopResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
+        XCTAssertEqual(rumStopResourceInterceptions.count, 2)
+        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == firstPartyRequest })
+        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == thirdPartyRequest })
     }
 
-    func testGivenTracerNotRegistered_whenInterceptingURLSessionTasks_itDoesNotSendsSpanForAnyRequest() throws {
+    func testGivenTracerNotRegistered_whenInterceptingURLSessionTasks_itSendsOnlyRUMResources() throws {
         let interceptor = self.interceptor
         let spanNotSentExpectation = expectation(description: "Do not send span")
         spanNotSentExpectation.isInverted = true
         tracingHandler.didSendSpanForInterception = { _ in spanNotSentExpectation.fulfill() }
+        let rumResourceStartedExpectation = expectation(description: "Start RUM Resource for first and third party requests")
+        rumResourceStartedExpectation.expectedFulfillmentCount = 2
+        rumResourcesHandler.didStartRUMResourceForInterception = { _ in rumResourceStartedExpectation.fulfill() }
+        let rumResourceStoppedExpectation = expectation(description: "Stop RUM Resource for first and third party requests")
+        rumResourceStoppedExpectation.expectedFulfillmentCount = 2
+        rumResourcesHandler.didStopRUMResourceForInterception = { _ in rumResourceStoppedExpectation.fulfill() }
 
         // Given
         XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
@@ -158,6 +248,16 @@ class URLSessionInterceptorTests: XCTestCase {
         waitForExpectations(timeout: 0.25, handler: nil)
 
         XCTAssertNil(tracingHandler.interceptionToSendSpan)
+
+        let rumStartResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
+        XCTAssertEqual(rumStartResourceInterceptions.count, 2)
+        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == firstPartyRequest })
+        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == thirdPartyRequest })
+
+        let rumStopResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
+        XCTAssertEqual(rumStopResourceInterceptions.count, 2)
+        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == firstPartyRequest })
+        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == thirdPartyRequest })
     }
 
     // MARK: - Thread Safety

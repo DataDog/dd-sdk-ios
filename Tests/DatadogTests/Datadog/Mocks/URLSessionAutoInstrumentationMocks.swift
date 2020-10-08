@@ -39,3 +39,30 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
         taskMetrics.append((session: urlSession, task: task, metrics: metrics))
     }
 }
+
+extension ResourceCompletion {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        response: URLResponse? = .mockAny(),
+        error: Error? = nil
+    ) -> Self {
+        return ResourceCompletion(response: response, error: error)
+    }
+}
+
+extension ResourceMetrics {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        fetch: (start: Date, end: Date) = (start: Date(), end: Date(timeIntervalSinceNow: 1)),
+        dns: (start: Date, duration: TimeInterval)? = nil,
+        responseSize: Int64? = nil
+    ) -> Self {
+        return .init(fetch: fetch, dns: dns, responseSize: responseSize)
+    }
+}

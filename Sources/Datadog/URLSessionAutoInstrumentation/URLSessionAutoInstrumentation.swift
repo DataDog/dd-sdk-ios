@@ -11,22 +11,28 @@ internal class URLSessionAutoInstrumentation {
     static var instance: URLSessionAutoInstrumentation?
 
     let swizzler: URLSessionSwizzler
-    let interceptor: URLSessionInterceptorType
+    let interceptor: URLSessionInterceptor
 
     init?(
-        configuration: FeaturesConfiguration.URLSessionAutoInstrumentation
+        configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
+        dateProvider: DateProvider
     ) {
         do {
-            self.interceptor = URLSessionInterceptor(configuration: configuration)
+            self.interceptor = URLSessionInterceptor(configuration: configuration, dateProvider: dateProvider)
             self.swizzler = try URLSessionSwizzler(interceptor: interceptor)
         } catch {
-            userLogger.warn("🔥 automatic tracking of `URLSession` requests can't be set up due to error: \(error)")
-            developerLogger?.warn("🔥 automatic tracking of `URLSession` requests can't be set up due to error: \(error)")
+            consolePrint(
+                "🔥 Datadog SDK error: automatic tracking of `URLSession` requests can't be set up due to error: \(error)"
+            )
             return nil
         }
     }
 
     func enable() {
         swizzler.swizzle()
+    }
+
+    func subscribe(commandSubscriber: RUMCommandSubscriber) {
+        interceptor.rumResourceHandler?.subscribe(commandsSubscriber: commandSubscriber)
     }
 }

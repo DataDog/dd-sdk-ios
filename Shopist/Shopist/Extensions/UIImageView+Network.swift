@@ -32,7 +32,7 @@ internal extension UIImageView {
                     resourceName: url.path,
                     kind: .image,
                     httpStatusCode: result.response?.statusCode ?? 200,
-                    size: UInt64(result.data?.count ?? 0)
+                    size: Int64(result.data?.count ?? 0)
                 )
             }
         }

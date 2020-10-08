@@ -682,3 +682,118 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 }
+
+class RUMHTTPMethodTests: XCTestCase {
+    func testItCanBeInitializedFromURLRequest() {
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "get".randomcased())), .GET
+        )
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "post".randomcased())), .POST
+        )
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "put".randomcased())), .PUT
+        )
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "delete".randomcased())), .DELETE
+        )
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "head".randomcased())), .HEAD
+        )
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "patch".randomcased())), .PATCH
+        )
+    }
+
+    func testWhenInitializingFromURLRequest_itDefaultsToGET() {
+        XCTAssertEqual(
+            RUMHTTPMethod(request: .mockWith(httpMethod: "unknown_method")), .GET
+        )
+    }
+}
+
+class RUMResourceKindTests: XCTestCase {
+    private let fixtures: [(mime: String, kind: RUMResourceKind)] = [
+        (mime: "image/png", kind: .image),
+        (mime: "video/mpeg", kind: .media),
+        (mime: "audio/ogg", kind: .media),
+        (mime: "font/otf", kind: .font),
+        (mime: "text/css", kind: .css),
+        (mime: "text/css; charset=UTF-8", kind: .css),
+        (mime: "text/javascript", kind: .js),
+        (mime: "text/javascript; charset=UTF-8", kind: .js),
+    ]
+
+    func testItCanBeInitializedFromHTTPURLResponse() {
+        fixtures.forEach { mime, expectedKind in
+            XCTAssertEqual(
+                RUMResourceKind(response: .mockWith(mimeType: mime.randomcased())),
+                expectedKind
+            )
+        }
+    }
+
+    func testItCanBeInitializedFromURLRequestAndHTTPURLResponse() {
+        let fixtures: [(mime: String, kind: RUMResourceKind)] = [
+            (mime: "image/png", kind: .image),
+            (mime: "video/mpeg", kind: .media),
+            (mime: "audio/ogg", kind: .media),
+            (mime: "font/otf", kind: .font),
+            (mime: "text/css", kind: .css),
+            (mime: "text/css; charset=UTF-8", kind: .css),
+            (mime: "text/javascript", kind: .js),
+            (mime: "text/javascript; charset=UTF-8", kind: .js),
+        ]
+
+        let fixture = fixtures.randomElement()!
+
+        XCTAssertEqual(
+            RUMResourceKind(
+                request: .mockWith(httpMethod: "POST".randomcased()),
+                response: .mockWith(mimeType: fixture.mime.randomcased())
+            ),
+            .xhr
+        )
+        XCTAssertEqual(
+            RUMResourceKind(
+                request: .mockWith(httpMethod: "PUT".randomcased()),
+                response: .mockWith(mimeType: fixture.mime.randomcased())
+            ),
+            .xhr
+        )
+        XCTAssertEqual(
+            RUMResourceKind(
+                request: .mockWith(httpMethod: "DELETE".randomcased()),
+                response: .mockWith(mimeType: fixture.mime.randomcased())
+            ),
+            .xhr
+        )
+        XCTAssertEqual(
+            RUMResourceKind(
+                request: .mockWith(httpMethod: "GET".randomcased()),
+                response: .mockWith(mimeType: fixture.mime.randomcased())
+            ),
+            fixture.kind
+        )
+        XCTAssertEqual(
+            RUMResourceKind(
+                request: .mockWith(httpMethod: "HEAD".randomcased()),
+                response: .mockWith(mimeType: fixture.mime.randomcased())
+            ),
+            fixture.kind
+        )
+        XCTAssertEqual(
+            RUMResourceKind(
+                request: .mockWith(httpMethod: "PATCH".randomcased()),
+                response: .mockWith(mimeType: fixture.mime.randomcased())
+            ),
+            fixture.kind
+        )
+    }
+
+    func testWhenInitializingFromHTTPURLResponse_itDefaultsToOther() {
+        XCTAssertEqual(
+            RUMResourceKind(response: .mockWith(mimeType: "unknown/type")), .other
+        )
+    }
+}

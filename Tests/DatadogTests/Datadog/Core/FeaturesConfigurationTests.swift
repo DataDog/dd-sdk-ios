@@ -244,38 +244,80 @@ class FeaturesConfigurationTests: XCTestCase {
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
-        let firstPartyHostsSet = try FeaturesConfiguration(
-            configuration: .mockWith(firstPartyHosts: ["example.com", "foo.eu"]),
+        let firstPartyHosts: Set<String> = ["example.com", "foo.eu"]
+        let sdkInternalURLs: Set<String> =             [
+            Datadog.Configuration.LogsEndpoint.us.url,
+            Datadog.Configuration.TracesEndpoint.us.url,
+            Datadog.Configuration.RUMEndpoint.us.url
+        ]
+
+        // When `firstPartyHosts` are provided and both Tracing and RUM are enabled
+        var configuration = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: true,
+                rumEnabled: true,
+                firstPartyHosts: firstPartyHosts
+            ),
             appContext: .mockAny()
         )
-        XCTAssertEqual(
-            firstPartyHostsSet.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts,
-            ["example.com", "foo.eu"]
-        )
-        XCTAssertEqual(
-            firstPartyHostsSet.urlSessionAutoInstrumentation?.sdkInternalHosts,
-            [
-                Datadog.Configuration.LogsEndpoint.us.url,
-                Datadog.Configuration.TracesEndpoint.us.url,
-                Datadog.Configuration.RUMEndpoint.us.url
-            ]
-        )
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, sdkInternalURLs)
+        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
+        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
 
-        let firstPartyHostsNotSet = try FeaturesConfiguration(
-            configuration: .mockWith(firstPartyHosts: nil),
+        // When `firstPartyHosts` are set and only Tracing is enabled
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: true,
+                rumEnabled: false,
+                firstPartyHosts: firstPartyHosts
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, sdkInternalURLs)
+        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
+        XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+
+        // When `firstPartyHosts` are set and only Tracing is enabled
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: false,
+                rumEnabled: true,
+                firstPartyHosts: firstPartyHosts
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, sdkInternalURLs)
+        XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
+        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+
+        // When `firstPartyHosts` are not set
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: true,
+                rumEnabled: true,
+                firstPartyHosts: nil
+            ),
             appContext: .mockAny()
         )
         XCTAssertNil(
-            firstPartyHostsNotSet.urlSessionAutoInstrumentation,
+            configuration.urlSessionAutoInstrumentation,
             "When `firstPartyHosts` are not set, the URLSession auto instrumentation config shuld be `nil`"
         )
 
-        let firstPartyHostsSetEmpty = try FeaturesConfiguration(
-            configuration: .mockWith(firstPartyHosts: []),
+        // When `firstPartyHosts` are set empty
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: true,
+                rumEnabled: true,
+                firstPartyHosts: []
+            ),
             appContext: .mockAny()
         )
         XCTAssertNil(
-            firstPartyHostsSetEmpty.urlSessionAutoInstrumentation,
+            configuration.urlSessionAutoInstrumentation,
             "When `firstPartyHosts` are set empty, the URLSession auto instrumentation config shuld be `nil`"
         )
     }
@@ -312,6 +354,37 @@ class FeaturesConfigurationTests: XCTestCase {
             """
             🔥 Datadog SDK usage error: In order to use the RUM feature, `Datadog.Configuration` must be constructed using:
             `.builderUsing(rumApplicationID:rumClientToken:environment:)`
+            """
+        )
+    }
+
+    func testGivenFirstPartyHostsDefined_whenRUMAndTracingAreDisabled_itDoesNotInstrumentURLSessionAndPrintsConsoleWarning() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // Given
+        let firstPartyHosts: Set<String> = ["first-party.com"]
+
+        // When
+        let tracingEnabled = false
+        let rumEnabled = false
+
+        // Then
+        let configuration = try FeaturesConfiguration(
+            configuration: .mockWith(tracingEnabled: tracingEnabled, rumEnabled: rumEnabled, firstPartyHosts: firstPartyHosts),
+            appContext: .mockAny()
+        )
+
+        XCTAssertNil(
+            configuration.urlSessionAutoInstrumentation,
+            "`URLSession` should not be auto instrumented."
+        )
+
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: To use `.track(firstPartyHosts:)` either RUM or Tracing should be enabled.
             """
         )
     }

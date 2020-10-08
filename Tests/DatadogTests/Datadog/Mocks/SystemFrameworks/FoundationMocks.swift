@@ -141,6 +141,12 @@ extension Int {
     }
 }
 
+extension Int64 {
+    static func mockAny() -> Int64 {
+        return 0
+    }
+}
+
 extension UInt64 {
     static func mockAny() -> UInt64 {
         return 0
@@ -236,6 +242,15 @@ extension URLResponse {
     static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
+
+    static func mockWith(mimeType: String) -> HTTPURLResponse {
+        return HTTPURLResponse(
+            url: .mockAny(),
+            mimeType: mimeType,
+            expectedContentLength: -1,
+            textEncodingName: nil
+        )
+    }
 }
 
 extension URLRequest {
@@ -278,11 +293,41 @@ extension URLSessionTask {
 
 extension URLSessionTaskMetrics {
     static func mockAny() -> URLSessionTaskMetrics {
-        return .mockWith(taskDuration: 1)
+        return URLSessionTaskMetrics()
     }
 
-    static func mockWith(taskDuration: TimeInterval) -> URLSessionTaskMetrics {
-        return URLSessionTaskMetricsMock(taskInterval: .init(start: Date(), duration: taskDuration))
+    @available(iOS 13, *)
+    static func mockWith(
+        taskInterval: DateInterval = .init(start: Date(), duration: 1),
+        transactionMetrics: [URLSessionTaskTransactionMetrics] = []
+    ) -> URLSessionTaskMetrics {
+        return URLSessionTaskMetricsMock(
+            taskInterval: taskInterval,
+            transactionMetrics: transactionMetrics
+        )
+    }
+}
+
+extension URLSessionTaskTransactionMetrics {
+    static func mockAny() -> URLSessionTaskTransactionMetrics {
+        return URLSessionTaskTransactionMetrics()
+    }
+
+    @available(iOS 13, *)
+    static func mockWith(
+        fetchStartDate: Date? = nil,
+        responseEndDate: Date? = nil,
+        domainLookupStartDate: Date? = nil,
+        domainLookupEndDate: Date? = nil,
+        countOfResponseBodyBytesAfterDecoding: Int64 = 0
+    ) -> URLSessionTaskTransactionMetrics {
+        return URLSessionTaskTransactionMetricsMock(
+            fetchStartDate: fetchStartDate,
+            responseEndDate: responseEndDate,
+            domainLookupStartDate: domainLookupStartDate,
+            domainLookupEndDate: domainLookupEndDate,
+            countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding
+        )
     }
 }
 
@@ -299,11 +344,48 @@ private class URLSessionTaskMock: URLSessionTask {
     }
 }
 
+@available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskMetrics` prior to iOS 13.0
 private class URLSessionTaskMetricsMock: URLSessionTaskMetrics {
     private let _taskInterval: DateInterval
     override var taskInterval: DateInterval { _taskInterval }
 
-    init(taskInterval: DateInterval) {
+    private let _transactionMetrics: [URLSessionTaskTransactionMetrics]
+    override var transactionMetrics: [URLSessionTaskTransactionMetrics] { _transactionMetrics }
+
+    init(taskInterval: DateInterval, transactionMetrics: [URLSessionTaskTransactionMetrics]) {
         self._taskInterval = taskInterval
+        self._transactionMetrics = transactionMetrics
+    }
+}
+
+@available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskTransactionMetrics` prior to iOS 13.0
+private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMetrics {
+    private let _fetchStartDate: Date?
+    override var fetchStartDate: Date? { _fetchStartDate }
+
+    private let _responseEndDate: Date?
+    override var responseEndDate: Date? { _responseEndDate }
+
+    private let _domainLookupStartDate: Date?
+    override var domainLookupStartDate: Date? { _domainLookupStartDate }
+
+    private let _domainLookupEndDate: Date?
+    override var domainLookupEndDate: Date? { _domainLookupEndDate }
+
+    private let _countOfResponseBodyBytesAfterDecoding: Int64
+    override var countOfResponseBodyBytesAfterDecoding: Int64 { _countOfResponseBodyBytesAfterDecoding }
+
+    init(
+        fetchStartDate: Date?,
+        responseEndDate: Date?,
+        domainLookupStartDate: Date?,
+        domainLookupEndDate: Date?,
+        countOfResponseBodyBytesAfterDecoding: Int64
+    ) {
+        self._fetchStartDate = fetchStartDate
+        self._responseEndDate = responseEndDate
+        self._domainLookupStartDate = domainLookupStartDate
+        self._domainLookupEndDate = domainLookupEndDate
+        self._countOfResponseBodyBytesAfterDecoding = countOfResponseBodyBytesAfterDecoding
     }
 }
