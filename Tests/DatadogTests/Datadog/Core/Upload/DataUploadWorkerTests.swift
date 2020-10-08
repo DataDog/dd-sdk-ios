@@ -131,7 +131,7 @@ class DataUploadWorkerTests: XCTestCase {
                 featureName: .mockAny()
             )
         ]) {
-            self.wait(for: [expectation], timeout: (mockDelay.current + 0.1) * 1.5)
+            self.wait(for: [expectation], timeout: 1.5)
         }
     }
 
@@ -163,7 +163,7 @@ class DataUploadWorkerTests: XCTestCase {
                 featureName: .mockAny()
             )
         ]) {
-            self.wait(for: [expectation], timeout: (mockDelay.current + 0.1) * 1.5)
+            self.wait(for: [expectation], timeout: 1.5)
         }
     }
     // swiftlint:enable multiline_arguments_brackets
@@ -177,7 +177,8 @@ struct MockDelay: Delay {
     // NOTE: RUMM-737 private only doesn't compile due to "private initializer is inaccessible", probably a bug in Swift
     private(set) var didReceiveCommand = false
 
-    var current: TimeInterval { 0.0 }
+    let current: TimeInterval = 0
+
     mutating func decrease() {
         if didReceiveCommand {
             return
