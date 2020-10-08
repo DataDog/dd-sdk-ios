@@ -21,7 +21,7 @@ workflows:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
     steps:
-    - script@1.1.6:
+    - script:
         title: Do `make dependencies`.
         inputs:
         - content: |-
@@ -54,7 +54,7 @@ workflows:
         - linting_path: "$BITRISE_SOURCE_DIR"
         - lint_config_file: "$BITRISE_SOURCE_DIR/tools/lint/tests.swiftlint.yml"
         - reporter: emoji
-    - script@1.1.6:
+    - script:
         title: Check license headers
         is_always_run: true
         inputs:
@@ -62,7 +62,7 @@ workflows:
             #!/usr/bin/env bash
             set -e
             ./tools/license/check-license.sh
-    - script@1.1.6:
+    - script:
         title: Verify RUM data models
         is_always_run: true
         inputs:
@@ -77,7 +77,7 @@ workflows:
         Runs benchmarks for SDK on iOS Simulator.
         Runs unit tests for HTTPServerMock package on macOS.
     steps:
-    - xcode-test@2.4.5:
+    - xcode-test:
         title: Run unit tests for Datadog - iOS Simulator
         inputs:
         - scheme: Datadog
@@ -96,7 +96,7 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
-    - script@1.1.6:
+    - script:
         title: Generate HTTPServerMock.xcodeproj
         inputs:
         - content: |-
@@ -130,7 +130,7 @@ workflows:
         Uses supported dependency managers to fetch, install and link the SDK
         to test projects.
     steps:
-    - script@1.1.6:
+    - script:
         title: Test SPM compatibility
         inputs:
         - content: |-
@@ -145,7 +145,7 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
-    - script@1.1.6:
+    - script:
         title: Test Carthage compatibility
         inputs:
         - content: |-
@@ -160,7 +160,7 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tests.html"
-    - script@1.1.6:
+    - script:
         title: Test Cocoapods compatibility
         inputs:
         - content: |-
