@@ -66,7 +66,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             )
 
             // Then
-            let command = commandSubscriber.receivedCommand as? RUMAddUserActionCommand
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expectedRUMActionName)
             XCTAssertEqual(command?.actionType, .tap)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
@@ -102,7 +102,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             )
 
             // Then
-            let command = commandSubscriber.receivedCommand as? RUMAddUserActionCommand
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expectedRUMActionName)
             XCTAssertEqual(command?.actionType, .tap)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
@@ -124,7 +124,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(commandSubscriber.receivedCommand)
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
     func testGivenAnyViewPresentedInKeyboardWindow_whenTouchEnds_itGetsIgnoredForPrivacyReason() {
@@ -140,7 +140,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(commandSubscriber.receivedCommand)
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
     func testGivenAnyUIControlNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason() {
@@ -154,7 +154,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(commandSubscriber.receivedCommand)
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
     func testItIgnoresSingleTouchEventWithPhaseOtherThanEnded() {
@@ -176,7 +176,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             )
 
             // Then
-            XCTAssertNil(commandSubscriber.receivedCommand)
+            XCTAssertNil(commandSubscriber.lastReceivedCommand)
         }
     }
 
@@ -196,7 +196,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(commandSubscriber.receivedCommand)
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
     func testItIgnoresEventsWithNoTouch() {
@@ -207,7 +207,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(commandSubscriber.receivedCommand)
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 }
 

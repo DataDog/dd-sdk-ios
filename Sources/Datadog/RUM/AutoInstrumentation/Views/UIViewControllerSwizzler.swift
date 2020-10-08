@@ -7,27 +7,27 @@
 import UIKit
 
 internal class UIViewControllerSwizzler {
-    let viewWillAppear: ViewWillAppear
-    let viewWillDisappear: ViewWillDisappear
+    let viewDidAppear: ViewDidAppear
+    let viewDidDisappear: ViewDidDisappear
 
     init(handler: UIKitRUMViewsHandlerType) throws {
-        self.viewWillAppear = try ViewWillAppear(handler: handler)
-        self.viewWillDisappear = try ViewWillDisappear(handler: handler)
+        self.viewDidAppear = try ViewDidAppear(handler: handler)
+        self.viewDidDisappear = try ViewDidDisappear(handler: handler)
     }
 
     func swizzle() {
-        viewWillAppear.swizzle()
-        viewWillDisappear.swizzle()
+        viewDidAppear.swizzle()
+        viewDidDisappear.swizzle()
     }
 
     // MARK: - Swizzlings
 
-    /// Swizzles the `UIViewController.viewWillAppear()`
-    class ViewWillAppear: MethodSwizzler <
+    /// Swizzles the `UIViewController.viewDidAppear()`
+    class ViewDidAppear: MethodSwizzler <
         @convention(c) (UIViewController, Selector, Bool) -> Void,
         @convention(block) (UIViewController, Bool) -> Void
     > {
-        private static let selector = #selector(UIViewController.viewWillAppear(_:))
+        private static let selector = #selector(UIViewController.viewDidAppear(_:))
         private let method: FoundMethod
         private let handler: UIKitRUMViewsHandlerType
 
@@ -40,19 +40,19 @@ internal class UIViewControllerSwizzler {
             typealias Signature = @convention(block) (UIViewController, Bool) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] vc, animated  in
-                    handler?.notify_viewWillAppear(viewController: vc, animated: animated)
-                    return previousImplementation(vc, Self.selector, animated)
+                    handler?.notify_viewDidAppear(viewController: vc, animated: animated)
+                    previousImplementation(vc, Self.selector, animated)
                 }
             }
         }
     }
 
-    /// Swizzles the `UIViewController.viewWillDisappear()`
-    class ViewWillDisappear: MethodSwizzler <
+    /// Swizzles the `UIViewController.viewDidDisappear()`
+    class ViewDidDisappear: MethodSwizzler <
         @convention(c) (UIViewController, Selector, Bool) -> Void,
         @convention(block) (UIViewController, Bool) -> Void
     > {
-        private static let selector = #selector(UIViewController.viewWillDisappear(_:))
+        private static let selector = #selector(UIViewController.viewDidDisappear(_:))
         private let method: FoundMethod
         private let handler: UIKitRUMViewsHandlerType
 
@@ -65,8 +65,8 @@ internal class UIViewControllerSwizzler {
             typealias Signature = @convention(block) (UIViewController, Bool) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] vc, animated  in
-                    handler?.notify_viewWillDisappear(viewController: vc, animated: animated)
-                    return previousImplementation(vc, Self.selector, animated)
+                    handler?.notify_viewDidDisappear(viewController: vc, animated: animated)
+                    previousImplementation(vc, Self.selector, animated)
                 }
             }
         }
