@@ -54,7 +54,10 @@ private class ServerMockProtocol: URLProtocol {
     }
 
     override func stopLoading() {
-        precondition(ServerMock.activeInstance != nil, "Request was stopped while no `ServerMock` instance is active.")
+        if ServerMock.activeInstance != nil {
+            // This may happen when testing requests which deliver completion on the `URLSessionDelegate`.
+            print("⚠️ Request was stopped while no `ServerMock` instance is active.")
+        }
     }
 }
 
