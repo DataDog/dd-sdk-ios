@@ -8,23 +8,16 @@ import XCTest
 
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
-    /// Launches the app by mocking feature endpoints.
+    /// Launches the app by providing mock server configuration.
     func launchWith(
         testScenario: TestScenario.Type,
-        logsEndpointURL: URL? = nil,
-        tracesEndpointURL: URL? = nil,
-        rumEndpointURL: URL? = nil,
-        customEndpointURL: URL? = nil
+        serverConfiguration: HTTPServerMockConfiguration
     ) {
         launchArguments = [Environment.Argument.isRunningUITests]
 
         var variables: [String: String] = [:]
         variables[Environment.Variable.testScenarioIdentifier] = testScenario.envIdentifier()
-
-        logsEndpointURL.flatMap { variables[Environment.Variable.logsEndpoint] = $0.absoluteString }
-        tracesEndpointURL.flatMap { variables[Environment.Variable.tracesEndpoint] = $0.absoluteString }
-        rumEndpointURL.flatMap { variables[Environment.Variable.rumEndpoint] = $0.absoluteString }
-        customEndpointURL.flatMap { variables[Environment.Variable.customEndpoint] = $0.absoluteString }
+        variables[Environment.Variable.serverMockConfiguration] = serverConfiguration.toEnvironmentValue
 
         launchEnvironment = variables
 
@@ -62,5 +55,11 @@ extension Array where Element == RUMEventMatcher {
             .first { _, matcherPredicate in matcherPredicate(matcher) }
 
         return bestMatcherEntry?.key ?? "unkonwn / unimplemented"
+    }
+}
+
+extension String {
+    func matches(regex: String) -> Bool {
+        range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
     }
 }

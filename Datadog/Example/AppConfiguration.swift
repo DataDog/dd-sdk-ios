@@ -63,23 +63,25 @@ struct UITestsAppConfiguration: AppConfiguration {
             )
             .set(serviceName: "ui-tests-service-name")
 
+        let serverMockConfiguration = Environment.serverMockConfiguration()
+
         // If `HTTPServerMock` endpoint is set for Logging, enable the feature and send data to mock server
-        if let logsEndpoint = Environment.logsEndpoint() {
-            _ = configuration.set(logsEndpoint: .custom(url: logsEndpoint))
+        if let logsEndpoint = serverMockConfiguration?.logsEndpoint {
+            _ = configuration.set(logsEndpoint: .custom(url: logsEndpoint.absoluteString))
         } else {
             _ = configuration.enableLogging(false)
         }
 
         // If `HTTPServerMock` endpoint is set for Tracing, enable the feature and send data to mock server
-        if let tracesEndpoint = Environment.tracesEndpoint() {
-            _ = configuration.set(tracesEndpoint: .custom(url: tracesEndpoint))
+        if let tracesEndpoint = serverMockConfiguration?.tracesEndpoint {
+            _ = configuration.set(tracesEndpoint: .custom(url: tracesEndpoint.absoluteString))
         } else {
             _ = configuration.enableTracing(false)
         }
 
         // If `HTTPServerMock` endpoint is set for RUM, enable the feature and send data to mock server
-        if let rumEndpoint = Environment.rumEndpoint() {
-            _ = configuration.set(rumEndpoint: .custom(url: rumEndpoint))
+        if let rumEndpoint = serverMockConfiguration?.rumEndpoint {
+            _ = configuration.set(rumEndpoint: .custom(url: rumEndpoint.absoluteString))
         } else {
             _ = configuration.enableRUM(false)
         }

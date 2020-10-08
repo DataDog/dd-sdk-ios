@@ -6,14 +6,38 @@
 
 import Foundation
 
+/// Encapsulates Python server configuration passed through ENV variable from  UITest runner to the app process.
+struct HTTPServerMockConfiguration: Codable {
+    /// Python server URL to record Logging requests.
+    var logsEndpoint: URL? = nil
+    /// Python server URL to record Tracing requests.
+    var tracesEndpoint: URL? = nil
+    /// Python server URL to record RUM requests.
+    var rumEndpoint: URL? = nil
+
+    /// Python server URLs to record custom requests, e.g. custom data requests
+    /// to assert trace headers propagation.
+    var instrumentedEndpoints: [URL] = []
+
+    /// Encodes this struct to base-64 encoded string so it can be passed in ENV variable.
+    var toEnvironmentValue: String {
+        let encoder = JSONEncoder()
+        let data = try! encoder.encode(self)
+        return data.base64EncodedString()
+    }
+
+    /// Decodes this struct from base-64 encoded string so it can be read from ENV variable.
+    fileprivate static func from(environmentValue: String) -> HTTPServerMockConfiguration {
+        let decoder = JSONDecoder()
+        let data = Data(base64Encoded: environmentValue)!
+        return try! decoder.decode(HTTPServerMockConfiguration.self, from: data)
+    }
+}
+
 internal struct Environment {
     struct Variable {
-        static let logsEndpoint     = "DD_MOCK_LOGS_ENDPOINT_URL"
-        static let tracesEndpoint   = "DD_MOCK_TRACES_ENDPOINT_URL"
-        static let rumEndpoint      = "DD_MOCK_RUM_ENDPOINT_URL"
-        static let customEndpoint   = "DD_CUSTOM_ENDPOINT_URL"
-
         static let testScenarioIdentifier = "DD_TEST_SCENARIO_IDENTIFIER"
+        static let serverMockConfiguration = "DD_TEST_SERVER_MOCK_CONFIGURATION"
     }
     struct Argument {
         static let isRunningUnitTests   = "IS_RUNNING_UNIT_TESTS"
@@ -44,21 +68,9 @@ internal struct Environment {
         return createTestScenario(for: envIdentifier)
     }
 
-    static func logsEndpoint() -> String? {
-        return ProcessInfo.processInfo.environment[Variable.logsEndpoint]
-    }
-
-    static func tracesEndpoint() -> String? {
-        return ProcessInfo.processInfo.environment[Variable.tracesEndpoint]
-    }
-
-    static func rumEndpoint() -> String? {
-        return ProcessInfo.processInfo.environment[Variable.rumEndpoint]
-    }
-
-    static func customEndpointURL() -> URL? {
-        if let customEndpoint = ProcessInfo.processInfo.environment[Variable.customEndpoint] {
-            return URL(string: customEndpoint)!
+    static func serverMockConfiguration() -> HTTPServerMockConfiguration? {
+        if let environmentValue = ProcessInfo.processInfo.environment[Variable.serverMockConfiguration] {
+            return HTTPServerMockConfiguration.from(environmentValue: environmentValue)
         }
         return nil
     }

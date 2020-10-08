@@ -33,7 +33,9 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let app = ExampleApplication()
         app.launchWith(
             testScenario: RUMManualInstrumentationScenario.self,
-            rumEndpointURL: rumServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
         )
 
         let screen1 = RUMFixture1Screen()

@@ -33,13 +33,13 @@ extension TracingCommonAsserts {
     ) {
         requests.forEach { request in
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?batch_time=1589969230153`
-            let pathRegexp = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#
-            XCTAssertNotNil(
-                request.path.range(of: pathRegexp, options: .regularExpression, range: nil, locale: nil),
+            let pathRegex = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#
+            XCTAssertTrue(
+                request.path.matches(regex: pathRegex),
                 """
-                Request path doesn't match the expected regexp.
+                Request path doesn't match the expected regex.
                 ✉️ path: \(request.path)
-                🧪 expected regexp:  \(pathRegexp)
+                🧪 expected regex:  \(pathRegex)
                 """,
                 file: file,
                 line: line

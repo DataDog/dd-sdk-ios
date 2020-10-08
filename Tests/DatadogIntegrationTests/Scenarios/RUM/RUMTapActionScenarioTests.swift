@@ -85,7 +85,9 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         let app = ExampleApplication()
         app.launchWith(
             testScenario: RUMTapActionScenario.self,
-            rumEndpointURL: rumServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
         )
 
         app.tapNoOpButton()
@@ -125,7 +127,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
 
         let session = rumSessions[0]
-        XCTAssertEqual(session.viewVisits.count, 7, "The RUM Session should track 8 RUM Views")
+        XCTAssertEqual(session.viewVisits.count, 7, "The RUM Session should track 7 RUM Views")
 
         XCTAssertEqual(session.viewVisits[0].path, "MenuViewController")
         XCTAssertEqual(session.viewVisits[0].actionEvents.count, 3)

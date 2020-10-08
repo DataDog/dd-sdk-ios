@@ -35,7 +35,9 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         let app = ExampleApplication()
         app.launchWith(
             testScenario: RUMNavigationControllerScenario.self,
-            rumEndpointURL: rumServerSession.recordingURL
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
         ) // start on "Screen1"
 
         app.tapPushNextScreenButton() // go to "Screen2"
