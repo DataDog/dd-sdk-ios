@@ -93,6 +93,11 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "RUMModalViewsAutoInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
             value = "RUMResourcesScenario"
             isEnabled = "NO">
          </EnvironmentVariable>

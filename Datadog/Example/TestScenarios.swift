@@ -49,6 +49,8 @@ func createTestScenario(for envIdentifier: String) -> TestScenario {
         return RUMTabBarAutoInstrumentationScenario()
     case RUMTapActionScenario.envIdentifier():
         return RUMTapActionScenario()
+    case RUMModalViewsAutoInstrumentationScenario.envIdentifier():
+        return RUMModalViewsAutoInstrumentationScenario()
     case RUMResourcesScenario.envIdentifier():
         return RUMResourcesScenario()
     default:
@@ -203,6 +205,29 @@ struct RUMNavigationControllerScenario: TestScenario {
 /// its view controllers. Tracks view controllers as RUM Views.
 struct RUMTabBarAutoInstrumentationScenario: TestScenario {
     static var storyboardName: String = "RUMTabBarAutoInstrumentationScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+            if let viewName = viewController.accessibilityLabel {
+                return .init(path: viewName)
+            } else {
+                return nil
+            }
+        }
+    }
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+            .enableLogging(false)
+            .enableTracing(false)
+    }
+}
+
+/// Scenario based on `UINavigationController` hierarchy, which presents different VCs modally.
+/// Tracks view controllers as RUM Views.
+struct RUMModalViewsAutoInstrumentationScenario: TestScenario {
+    static var storyboardName: String = "RUMModalViewsAutoInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
         func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
