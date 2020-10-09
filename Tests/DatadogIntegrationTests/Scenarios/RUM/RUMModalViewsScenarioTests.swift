@@ -31,15 +31,19 @@ class RUMModalViewsScenarioTests: IntegrationTests {
         app.launchWith(
             testScenario: RUMModalViewsAutoInstrumentationScenario.self,
             serverConfiguration: HTTPServerMockConfiguration()
-        ) // start on "Screen1"
+        ) // start on "Screen"
 
-        app.tapButton(titled: "Present modally using segue") // go to modal "Screen2"
-        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen1"
-        app.tapButton(titled: "Present modally from code") // go to modal "Screen2"
-        app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen1"
-        app.tapButton(titled: "Present modally using segue") // go to modal "Screen2"
-        app.swipeToPullModalDown() // interactive dismiss to "Screen1"
-        app.tapButton(titled: "Present modally from code") // go to modal "Screen2"
-        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Screen2"
+        app.tapButton(titled: "Present modally from code") // go to modal "Modal"
+        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .fullScreen") // go to modal "Modal"
+        app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
+        app.swipeToPullModalDown() // interactive dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
+        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
+        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
     }
 }
