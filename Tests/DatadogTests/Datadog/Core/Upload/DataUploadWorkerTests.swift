@@ -173,9 +173,9 @@ struct MockDelay: Delay {
     enum Command {
         case increase, decrease
     }
-    let callback: (Command) -> Void
     // NOTE: RUMM-737 private only doesn't compile due to "private initializer is inaccessible", probably a bug in Swift
     private(set) var didReceiveCommand = false
+    let callback: (Command) -> Void
 
     let current: TimeInterval = 0
 
