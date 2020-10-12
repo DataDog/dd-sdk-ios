@@ -52,7 +52,6 @@ This SDK lives in our customer’s applications, and is run on end users devices
 - Use benchmark tools to measure the performance of the library
 - All parts of the libraries must be thoroughly tested
 
-
 ## Workflow
 
 - All code must be tested and reviewed;
