@@ -38,6 +38,7 @@ internal protocol CarrierInfoProviderType {
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
+        #if !targetEnvironment(macCatalyst)
         case CTRadioAccessTechnologyGPRS: self = .GPRS
         case CTRadioAccessTechnologyEdge: self = .Edge
         case CTRadioAccessTechnologyWCDMA: self = .WCDMA
@@ -49,12 +50,16 @@ extension CarrierInfo.RadioAccessTechnology {
         case CTRadioAccessTechnologyCDMAEVDORevB: self = .CDMAEVDORevB
         case CTRadioAccessTechnologyeHRPD: self = .eHRPD
         case CTRadioAccessTechnologyLTE: self = .LTE
+        #endif
         default: self = .unknown
         }
     }
 }
 
 internal class CarrierInfoProvider: CarrierInfoProviderType {
+    #if targetEnvironment(macCatalyst)
+    let current: CarrierInfo? = nil
+    #else
     private let networkInfo: CTTelephonyNetworkInfo
 
     init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
@@ -88,4 +93,5 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
             radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
         )
     }
+    #endif
 }

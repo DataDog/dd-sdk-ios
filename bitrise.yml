@@ -137,16 +137,24 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-spm ci=true
+    - xcodebuild:
+        title: Build SPMProject for tests - Catalyst
+        inputs:
+        - scheme: SPMProject
+        - destination: platform=macOS,variant=Mac Catalyst
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-catalyst-sanity-check.html"
     - xcode-test:
         title: Run SPMProject tests
         inputs:
         - scheme: SPMProject
+        - simulator_device: iPhone 11
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
     - script:
-        title: Test Carthage compatibility
+        title: Test Carthage compatibility (Carthage doesn't support Catalyst!)
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -156,6 +164,7 @@ workflows:
         title: Run CTProject tests
         inputs:
         - scheme: CTProject
+        - simulator_device: iPhone 11
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
@@ -167,10 +176,18 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-cocoapods ci=true
+    - xcodebuild:
+        title: Build CPProject for tests - Catalyst
+        inputs:
+        - scheme: CPProject
+        - destination: platform=macOS,variant=Mac Catalyst
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-catalyst-sanity-check.html"
     - xcode-test:
         title: Run CPProject tests
         inputs:
         - scheme: CPProject
+        - simulator_device: iPhone 11
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"

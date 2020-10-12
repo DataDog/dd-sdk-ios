@@ -51,6 +51,10 @@ public class Datadog {
             try initializeOrThrow(
                 configuration: try FeaturesConfiguration(configuration: configuration, appContext: appContext)
             )
+            // TODO: RUMM-511 remove this warning
+            #if targetEnvironment(macCatalyst)
+            userLogger.warn("⚠️ Catalyst is not officially supported by Datadog SDK: use at your own risk!")
+            #endif
         } catch {
             consolePrint("\(error)")
         }
