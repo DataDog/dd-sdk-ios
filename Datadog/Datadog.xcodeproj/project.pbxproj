@@ -85,6 +85,7 @@
 		61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */; };
 		61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */; };
 		611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */; };
+		611B413D2535FA7F000F8939 /* RUMM742Workaround.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611B413C2535FA7F000F8939 /* RUMM742Workaround.swift */; };
 		61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
 		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
 		612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612983CC2449E62E00D4424B /* LoggingFeature.swift */; };
@@ -469,6 +470,7 @@
 		61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMVSModalViewController.swift; sourceTree = "<group>"; };
 		61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMModalViewsScenarioTests.swift; sourceTree = "<group>"; };
 		611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionDelegate+objc.swift"; sourceTree = "<group>"; };
+		611B413C2535FA7F000F8939 /* RUMM742Workaround.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMM742Workaround.swift; sourceTree = "<group>"; };
 		61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapter.swift; sourceTree = "<group>"; };
 		61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapterTests.swift; sourceTree = "<group>"; };
 		612983CC2449E62E00D4424B /* LoggingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeature.swift; sourceTree = "<group>"; };
@@ -1429,6 +1431,7 @@
 				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
 				61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */,
 				61F3CD9C251106EB00C816E5 /* Scenarios */,
+				611B413C2535FA7F000F8939 /* RUMM742Workaround.swift */,
 			);
 			name = DatadogIntegrationTests;
 			path = ../Tests/DatadogIntegrationTests;
@@ -2707,6 +2710,7 @@
 				61F9CA9F2513978D000A5E61 /* RUMSessionMatcher.swift in Sources */,
 				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
 				61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */,
+				611B413D2535FA7F000F8939 /* RUMM742Workaround.swift in Sources */,
 				61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */,
 				615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */,
 				61F3CD9B2510D95A00C816E5 /* TestScenarios.swift in Sources */,
