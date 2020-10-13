@@ -48,9 +48,9 @@ This SDK lives in our customer’s applications, and is run on end users devices
 
 ## Trust
 
-- Use sensible static analysis tools
-- Use benchmark tools to measure the performance of the library
-- All parts of the libraries must be thoroughly tested
+- Use sensible static analysis tools;
+- Use benchmark tools to measure the performance of the library;
+- All parts of the libraries must be thoroughly tested;
 
 ## Workflow
 
