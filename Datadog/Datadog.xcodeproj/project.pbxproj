@@ -177,6 +177,7 @@
 		6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167ACFC251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift */; };
 		6167AD19251A27B80012B4D0 /* URLSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6167AD18251A27B80012B4D0 /* URLSessionScenario.storyboard */; };
 		6167AD20251A27CC0012B4D0 /* SendFirstPartyRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167AD1F251A27CC0012B4D0 /* SendFirstPartyRequestsViewController.swift */; };
+		616A9CD22535D38200DB83CF /* UIKitHierarchyInspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616A9CD12535D38200DB83CF /* UIKitHierarchyInspectorTests.swift */; };
 		616CCE13250A1868009FED46 /* RUMCommandSubscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616CCE12250A1868009FED46 /* RUMCommandSubscriber.swift */; };
 		616CCE16250A467E009FED46 /* RUMAutoInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616CCE15250A467E009FED46 /* RUMAutoInstrumentation.swift */; };
 		61786F7724FCDE05009E6BAB /* RUMDebuggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */; };
@@ -562,6 +563,7 @@
 		6167ACFC251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionScenarioTests.swift; sourceTree = "<group>"; };
 		6167AD18251A27B80012B4D0 /* URLSessionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = URLSessionScenario.storyboard; sourceTree = "<group>"; };
 		6167AD1F251A27CC0012B4D0 /* SendFirstPartyRequestsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFirstPartyRequestsViewController.swift; sourceTree = "<group>"; };
+		616A9CD12535D38200DB83CF /* UIKitHierarchyInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitHierarchyInspectorTests.swift; sourceTree = "<group>"; };
 		616CCE12250A1868009FED46 /* RUMCommandSubscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommandSubscriber.swift; sourceTree = "<group>"; };
 		616CCE15250A467E009FED46 /* RUMAutoInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoInstrumentation.swift; sourceTree = "<group>"; };
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
@@ -1569,6 +1571,14 @@
 			path = URLSessionAutoInstrumentation;
 			sourceTree = "<group>";
 		};
+		616A9CD02535D36A00DB83CF /* UIKitHierarchyInspection */ = {
+			isa = PBXGroup;
+			children = (
+				616A9CD12535D38200DB83CF /* UIKitHierarchyInspectorTests.swift */,
+			);
+			path = UIKitHierarchyInspection;
+			sourceTree = "<group>";
+		};
 		616CCE11250A181C009FED46 /* AutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -1994,6 +2004,7 @@
 		61F3CDA925121FA100C816E5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				616A9CD02535D36A00DB83CF /* UIKitHierarchyInspection */,
 				61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */,
 				61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */,
 			);
@@ -2618,6 +2629,7 @@
 				61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */,
 				61FF282124B8981D000B3D9B /* RUMEventBuilderTests.swift in Sources */,
 				61345613244756E300E7DA6B /* PerformancePresetTests.swift in Sources */,
+				616A9CD22535D38200DB83CF /* UIKitHierarchyInspectorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
