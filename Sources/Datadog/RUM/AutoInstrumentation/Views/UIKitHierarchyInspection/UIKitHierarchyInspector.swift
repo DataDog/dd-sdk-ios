@@ -18,7 +18,8 @@ internal struct UIKitHierarchyInspector: UIKitHierarchyInspectorType {
 
     init(
         rootViewControllerProvider: @escaping () -> UIViewController? = {
-            UIApplication.shared.keyWindow?.rootViewController
+            let keyWindow = UIApplication.shared.windows.first { $0.isKeyWindow }
+            return keyWindow?.rootViewController
         }
     ) {
         self.rootViewControllerProvider = rootViewControllerProvider
@@ -27,15 +28,11 @@ internal struct UIKitHierarchyInspector: UIKitHierarchyInspectorType {
     // MARK: - UIKitHierarchyInspectorType
 
     func topViewController() -> UIViewController? {
-        guard let rootVC = rootViewControllerProvider() else {
-            return nil
+        if let rootVC = rootViewControllerProvider(),
+           let highestPresentedVC = findHighestPresentedViewControllerInHierarchy(of: rootVC) {
+            return findTopViewControllerInHierarchy(of: highestPresentedVC)
         }
-
-        guard let highestPresentedVC = findHighestPresentedViewControllerInHierarchy(of: rootVC) else {
-            return nil
-        }
-
-        return findTopViewControllerInHierarchy(of: highestPresentedVC)
+        return nil
     }
 
     // MARK: - Private

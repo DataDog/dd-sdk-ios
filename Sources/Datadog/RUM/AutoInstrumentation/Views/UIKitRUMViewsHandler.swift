@@ -44,11 +44,8 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     }
 
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
-        guard let topViewController = inspector.topViewController() else {
-            return
-        }
-
-        if let rumView = predicate.rumView(for: topViewController) {
+        if let topViewController = inspector.topViewController(),
+           let rumView = predicate.rumView(for: topViewController) {
             startIfNotStarted(rumView: rumView, for: topViewController)
         }
     }
@@ -58,7 +55,7 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     private weak var lastStartedViewController: UIViewController?
 
     private func startIfNotStarted(rumView: RUMViewFromPredicate, for viewController: UIViewController) {
-        guard viewController !== lastStartedViewController else {
+        if viewController === lastStartedViewController {
             return
         }
 
