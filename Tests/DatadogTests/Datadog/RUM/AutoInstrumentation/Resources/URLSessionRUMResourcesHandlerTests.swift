@@ -34,7 +34,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let resourceStartCommand = try XCTUnwrap(commandSubscriber.receivedCommand as? RUMStartResourceCommand)
+        let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
         XCTAssertEqual(resourceStartCommand.resourceName, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStartCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStartCommand.attributes.count, 0)

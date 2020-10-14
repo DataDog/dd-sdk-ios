@@ -368,7 +368,7 @@ extension RUMSessionScope {
 
 private let mockWindow = UIWindow(frame: .zero)
 
-func createMockView() -> UIViewController {
+func createMockViewInWindow() -> UIViewController {
     let viewController = UIViewController()
     mockWindow.rootViewController = viewController
     mockWindow.makeKeyAndVisible()
@@ -394,7 +394,7 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
 }
 
 /// Holds the `mockView` object so it can be weakily referenced by `RUMViewScope` mocks.
-let mockView: UIViewController = createMockView()
+let mockView: UIViewController = createMockViewInWindow()
 
 extension RUMViewScope {
     static func mockAny() -> RUMViewScope {
@@ -431,38 +431,40 @@ class RUMContextProviderMock: RUMContextProvider {
 // MARK: - Auto Instrumentation Mocks
 
 class RUMCommandSubscriberMock: RUMCommandSubscriber {
-    var receivedCommand: RUMCommand?
     var onCommandReceived: ((RUMCommand) -> Void)?
+    var receivedCommands: [RUMCommand] = []
+    var lastReceivedCommand: RUMCommand? { receivedCommands.last }
 
     func process(command: RUMCommand) {
-        receivedCommand = command
+        receivedCommands.append(command)
         onCommandReceived?(command)
     }
 }
 
 class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
+    var resultByViewController: [UIViewController: RUMViewFromPredicate] = [:]
     var result: RUMViewFromPredicate?
 
     func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
-        return result
+        return resultByViewController[viewController] ?? result
     }
 }
 
 class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
     var onSubscribe: ((RUMCommandSubscriber) -> Void)?
-    var onViewWillAppear: ((UIViewController, Bool) -> Void)?
-    var onViewWillDisappear: ((UIViewController, Bool) -> Void)?
+    var notifyViewDidAppear: ((UIViewController, Bool) -> Void)?
+    var notifyViewDidDisappear: ((UIViewController, Bool) -> Void)?
 
     func subscribe(commandsSubscriber: RUMCommandSubscriber) {
         onSubscribe?(commandsSubscriber)
     }
 
-    func notify_viewWillAppear(viewController: UIViewController, animated: Bool) {
-        onViewWillAppear?(viewController, animated)
+    func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
+        notifyViewDidAppear?(viewController, animated)
     }
 
-    func notify_viewWillDisappear(viewController: UIViewController, animated: Bool) {
-        onViewWillDisappear?(viewController, animated)
+    func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
+        notifyViewDidDisappear?(viewController, animated)
     }
 }
 

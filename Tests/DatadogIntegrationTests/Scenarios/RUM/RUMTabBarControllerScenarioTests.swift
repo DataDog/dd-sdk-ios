@@ -21,7 +21,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts, RUMM742Workaround {
     func testRUMTabBarScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -44,8 +44,9 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapTapBarButton(named: "Tab C") // go to "Screen C1"
 
         // Get POST requests
-        let recordedRUMRequests = try rumServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        let recordedRUMRequests = try pullRecordedRUMRequests(from: rumServerSession) { session in
+            session.viewVisits.count >= 9 // TODO: RUMM-742 Replace this workaround with a nicer way.
+        }
 
         // Get RUM Events
         let rumEventsMatchers = try recordedRUMRequests

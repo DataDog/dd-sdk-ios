@@ -7,10 +7,25 @@
 import XCTest
 @testable import Datadog
 
+private class ViewControllerMock: UIViewController {
+    var viewDidAppearExpectation: XCTestExpectation?
+    var viewDidDisappearExpectation: XCTestExpectation?
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewDidAppearExpectation?.fulfill()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewDidDisappearExpectation?.fulfill()
+    }
+}
+
 extension UIViewControllerSwizzler {
     func unswizzle() {
-        viewWillAppear.unswizzle()
-        viewWillDisappear.unswizzle()
+        viewDidAppear.unswizzle()
+        viewDidDisappear.unswizzle()
     }
 }
 
@@ -28,35 +43,45 @@ class UIViewControllerSwizzlerTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWhenViewWillAppearIsCalled_itNotifiesTheHandler() {
-        let expectation = self.expectation(description: "Notify handler")
-        let viewController = createMockView()
+    func testWhenViewDidAppearIsCalled_itNotifiesTheHandlerBeforeTheUserMethodExecutes() {
+        let callOriginalMethodExpectation = expectation(description: "Call original method")
+        let notifyHandlerExpectation = expectation(description: "Notify handler")
+
+        let viewController = ViewControllerMock()
+        viewController.viewDidAppearExpectation = callOriginalMethodExpectation
         let animated = Bool.random()
 
-        handler.onViewWillAppear = { receivedViewController, receivedAnimated in
+        handler.notifyViewDidAppear = { receivedViewController, receivedAnimated in
             XCTAssertTrue(receivedViewController === viewController)
             XCTAssertEqual(receivedAnimated, animated)
-            expectation.fulfill()
+            notifyHandlerExpectation.fulfill()
         }
 
-        viewController.viewWillAppear(animated)
+        // When
+        viewController.viewDidAppear(animated)
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then
+        wait(for: [notifyHandlerExpectation, callOriginalMethodExpectation], timeout: 0.5, enforceOrder: true)
     }
 
-    func testWhenViewWillDisappearIsCalled_itNotifiesTheHandler() {
-        let expectation = self.expectation(description: "Notify handler")
-        let viewController = createMockView()
+    func testWhenViewWillDisappearIsCalled_itNotifiesTheHandlerBeforeTheMethodExecutes() {
+        let callOriginalMethodExpectation = expectation(description: "Call original method")
+        let notifyHandlerExpectation = expectation(description: "Notify handler")
+
+        let viewController = ViewControllerMock()
+        viewController.viewDidDisappearExpectation = callOriginalMethodExpectation
         let animated = Bool.random()
 
-        handler.onViewWillDisappear = { receivedViewController, receivedAnimated in
+        handler.notifyViewDidDisappear = { receivedViewController, receivedAnimated in
             XCTAssertTrue(receivedViewController === viewController)
             XCTAssertEqual(receivedAnimated, animated)
-            expectation.fulfill()
+            notifyHandlerExpectation.fulfill()
         }
 
-        viewController.viewWillDisappear(animated)
+        // When
+        viewController.viewDidDisappear(animated)
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then
+        wait(for: [notifyHandlerExpectation, callOriginalMethodExpectation], timeout: 0.5, enforceOrder: true)
     }
 }

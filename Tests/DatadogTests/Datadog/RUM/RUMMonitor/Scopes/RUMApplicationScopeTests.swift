@@ -34,7 +34,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100)
         var currentTime = Date()
 
-        let view = createMockView()
+        let view = createMockViewInWindow()
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
         let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let firstsSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)

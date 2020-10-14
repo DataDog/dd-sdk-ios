@@ -34,32 +34,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="PXa-aF-cTn">
-                                <rect key="frame" x="8" y="96" width="398" height="96"/>
+                                <rect key="frame" x="8" y="96" width="398" height="148"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LYP-xe-cXi">
-                                        <rect key="frame" x="0.0" y="0.0" width="398" height="44"/>
-                                        <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="AgU-OF-4eN"/>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="Sfb-Qf-VBn"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                        <state key="normal" title="Present modally using segue">
-                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        </state>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                <integer key="value" value="7"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                        <connections>
-                                            <segue destination="7X1-5F-bV7" kind="presentation" id="tt3-9E-4sn"/>
-                                        </connections>
-                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nVV-wE-8aD">
-                                        <rect key="frame" x="0.0" y="52" width="398" height="44"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="398" height="44"/>
                                         <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="5Ne-6r-buf"/>
@@ -81,6 +59,50 @@
                                             <action selector="didTapPresentModallyFromCode:" destination="EcB-yF-k5k" eventType="touchUpInside" id="1X6-sb-Idl"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LYP-xe-cXi">
+                                        <rect key="frame" x="0.0" y="52" width="398" height="44"/>
+                                        <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="AgU-OF-4eN"/>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="Sfb-Qf-VBn"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <state key="normal" title="Present modally - .fullScreen">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="7"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <segue destination="7X1-5F-bV7" kind="presentation" modalPresentationStyle="fullScreen" id="tt3-9E-4sn"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yf8-KK-id5">
+                                        <rect key="frame" x="0.0" y="104" width="398" height="44"/>
+                                        <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="JaL-50-yKF"/>
+                                            <constraint firstAttribute="height" constant="44" id="XNE-hY-8Vd"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <state key="normal" title="Present modally - .pageSheet">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="7"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <segue destination="7X1-5F-bV7" kind="presentation" modalPresentationStyle="pageSheet" id="sad-nE-IfX"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -94,7 +116,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="VKG-U3-He7"/>
                     <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="string" keyPath="accessibilityLabel" value="Screen1"/>
+                        <userDefinedRuntimeAttribute type="string" keyPath="accessibilityLabel" value="Screen"/>
                     </userDefinedRuntimeAttributes>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tmI-bf-Hla" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -170,7 +192,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="nGy-Yh-Ivr"/>
                     <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="string" keyPath="accessibilityLabel" value="Screen2"/>
+                        <userDefinedRuntimeAttribute type="string" keyPath="accessibilityLabel" value="Modal"/>
                     </userDefinedRuntimeAttributes>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yhs-EO-mhP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -178,6 +200,9 @@
             <point key="canvasLocation" x="1649" y="569"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="sad-nE-IfX"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

@@ -69,11 +69,11 @@ class RUMCurrentContextTests: XCTestCase {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100)
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
-        let firstView = createMockView()
+        let firstView = createMockViewInWindow()
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: firstView))
         let firstContext = provider.context
 
-        let secondView = createMockView()
+        let secondView = createMockViewInWindow()
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: secondView))
         let secondContext = provider.context
 
@@ -96,7 +96,7 @@ class RUMCurrentContextTests: XCTestCase {
         let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100)
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
-        let view = createMockView()
+        let view = createMockViewInWindow()
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
         let firstContext = provider.context
 

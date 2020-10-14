@@ -25,21 +25,59 @@ private extension ExampleApplication {
     }
 }
 
-class RUMModalViewsScenarioTests: IntegrationTests {
+class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts, RUMM742Workaround {
     func testRUMModalViewsScenario() throws {
+        // Server session recording RUM events send to `HTTPServerMock`.
+        let rumServerSession = server.obtainUniqueRecordingSession()
+
         let app = ExampleApplication()
         app.launchWith(
             testScenario: RUMModalViewsAutoInstrumentationScenario.self,
-            serverConfiguration: HTTPServerMockConfiguration()
-        ) // start on "Screen1"
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
+        ) // start on "Screen"
 
-        app.tapButton(titled: "Present modally using segue") // go to modal "Screen2"
-        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen1"
-        app.tapButton(titled: "Present modally from code") // go to modal "Screen2"
-        app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen1"
-        app.tapButton(titled: "Present modally using segue") // go to modal "Screen2"
-        app.swipeToPullModalDown() // interactive dismiss to "Screen1"
-        app.tapButton(titled: "Present modally from code") // go to modal "Screen2"
-        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Screen2"
+        app.tapButton(titled: "Present modally from code") // go to modal "Modal"
+        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .fullScreen") // go to modal "Modal"
+        app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
+        app.swipeToPullModalDown() // interactive dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
+        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
+        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
+
+        // Get POST requests
+        let recordedRUMRequests = try pullRecordedRUMRequests(from: rumServerSession) { session in
+            session.viewVisits.count >= 9 // TODO: RUMM-742 Replace this workaround with a nicer way.
+        }
+
+        // Get RUM Events
+        let rumEventsMatchers = try recordedRUMRequests
+            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+
+        // Assert common things
+        assertHTTPHeadersAndPath(in: recordedRUMRequests)
+
+        // Get RUM Sessions
+        let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventsMatchers)
+        XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
+
+        let session = rumSessions[0]
+        XCTAssertEqual(session.viewVisits.count, 9, "The RUM Session should track 9 RUM Views")
+        XCTAssertEqual(session.viewVisits[0].path, "Screen")
+        XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
+        XCTAssertEqual(session.viewVisits[1].path, "Modal")
+        XCTAssertEqual(session.viewVisits[2].path, "Screen")
+        XCTAssertEqual(session.viewVisits[3].path, "Modal")
+        XCTAssertEqual(session.viewVisits[4].path, "Screen")
+        XCTAssertEqual(session.viewVisits[5].path, "Modal")
+        XCTAssertEqual(session.viewVisits[6].path, "Screen")
+        XCTAssertEqual(session.viewVisits[7].path, "Modal")
+        XCTAssertEqual(session.viewVisits[8].path, "Screen")
     }
 }

@@ -8,17 +8,25 @@ import UIKit
 
 internal protocol UIKitRUMViewsHandlerType: class {
     func subscribe(commandsSubscriber: RUMCommandSubscriber)
-    func notify_viewWillAppear(viewController: UIViewController, animated: Bool)
-    func notify_viewWillDisappear(viewController: UIViewController, animated: Bool)
+    /// Gets called on `super.viewDidAppear()`.
+    func notify_viewDidAppear(viewController: UIViewController, animated: Bool)
+    /// Gets called on `super.viewDidDisappear()`.
+    func notify_viewDidDisappear(viewController: UIViewController, animated: Bool)
 }
 
 internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     private let predicate: UIKitRUMViewsPredicate
     private let dateProvider: DateProvider
+    private let inspector: UIKitHierarchyInspectorType
 
-    init(predicate: UIKitRUMViewsPredicate, dateProvider: DateProvider) {
+    init(
+        predicate: UIKitRUMViewsPredicate,
+        dateProvider: DateProvider,
+        inspector: UIKitHierarchyInspectorType = UIKitHierarchyInspector()
+    ) {
         self.predicate = predicate
         self.dateProvider = dateProvider
+        self.inspector = inspector
     }
 
     // MARK: - UIKitRUMViewsHandlerType
@@ -29,28 +37,47 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
         self.subscriber = commandsSubscriber
     }
 
-    func notify_viewWillAppear(viewController: UIViewController, animated: Bool) {
+    func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         if let rumView = predicate.rumView(for: viewController) {
-            subscriber?.process(
-                command: RUMStartViewCommand(
-                    time: dateProvider.currentDate(),
-                    identity: viewController,
-                    path: rumView.path,
-                    attributes: rumView.attributes
-                )
-            )
+            startIfNotStarted(rumView: rumView, for: viewController)
         }
     }
 
-    func notify_viewWillDisappear(viewController: UIViewController, animated: Bool) {
-        if let rumView = predicate.rumView(for: viewController) {
+    func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
+        if let topViewController = inspector.topViewController(),
+           let rumView = predicate.rumView(for: topViewController) {
+            startIfNotStarted(rumView: rumView, for: topViewController)
+        }
+    }
+
+    // MARK: - Private
+
+    private weak var lastStartedViewController: UIViewController?
+
+    private func startIfNotStarted(rumView: RUMViewFromPredicate, for viewController: UIViewController) {
+        if viewController === lastStartedViewController {
+            return
+        }
+
+        if let lastStartedViewController = lastStartedViewController {
             subscriber?.process(
                 command: RUMStopViewCommand(
                     time: dateProvider.currentDate(),
                     attributes: rumView.attributes,
-                    identity: viewController
+                    identity: lastStartedViewController
                 )
             )
         }
+
+        subscriber?.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.currentDate(),
+                identity: viewController,
+                path: rumView.path,
+                attributes: rumView.attributes
+            )
+        )
+
+        lastStartedViewController = viewController
     }
 }
