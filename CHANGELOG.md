@@ -66,7 +66,6 @@
 
 * [BUGFIX] Fix "out of memory" crash. See [#64][] (Thanks [@lmramirez][])
 
-
 # 1.0.0 / 03-31-2020
 
 ### Changes
