@@ -190,7 +190,7 @@ override func viewDidDisappear(_ animated: Bool) {
   Global.rum.stopView(viewController: self)
 }
 ```
-For more details and available options, refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
 ### RUM Resources
 
@@ -219,7 +219,7 @@ Global.rum.stopResourceLoading(
 
 **Note**: The `String` used for `resourceName` in both calls must be unique for the resource you are calling. This is necessary for the SDK to match a resource's start with its completion. 
 
-For more details and available options, refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
 ### RUM Actions
 
@@ -246,7 +246,7 @@ Example:
 
 **Note**: when using `.startUserAction(type:name:)` and `.stopUserAction(type:)`. This is necessary for the SDK to match a resource's start with its completion. 
 
-For more details and available options, refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
 ### RUM Errors
 
@@ -258,10 +258,10 @@ Example:
 ```swift
 // anywhere in your code:
 
-rumMonitor.addViewError(message: "error message.", source: .source)
+Global.rum.addViewError(message: "error message.", source: .source)
 ```
 
-For more details and available options, refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
 [1]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
 [2]: https://github.com/DataDog/dd-sdk-ios
