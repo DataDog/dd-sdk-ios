@@ -47,6 +47,10 @@ public class Datadog {
     ///   - appContext: context passing information about the app.
     ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
     public static func initialize(appContext: AppContext, configuration: Configuration) {
+        // TODO: RUMM-511 remove this warning
+        #if targetEnvironment(macCatalyst)
+        consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
+        #endif
         do {
             try initializeOrThrow(
                 configuration: try FeaturesConfiguration(configuration: configuration, appContext: appContext)
