@@ -11,11 +11,8 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
     private let interceptor: URLSessionInterceptorType?
 
     @objc
-    override public convenience init() {
-        self.init(interceptor: URLSessionAutoInstrumentation.instance?.interceptor)
-    }
-
-    internal init(interceptor: URLSessionInterceptorType?) {
+    override public init() {
+        self.interceptor = URLSessionAutoInstrumentation.instance?.interceptor
         if interceptor == nil {
             let error = ProgrammerError(
                 description: """
@@ -25,7 +22,19 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
             )
             consolePrint("\(error)")
         }
+    }
+
+    internal init(interceptor: URLSessionInterceptorType?) {
         self.interceptor = interceptor
+        if interceptor == nil {
+            let error = ProgrammerError(
+                description: """
+                To use `DDURLSessionDelegate` you must specify first party hosts in `Datadog.Configuration` -
+                use `track(firstPartyHosts:)` to define which requests should be tracked.
+                """
+            )
+            consolePrint("\(error)")
+        }
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
