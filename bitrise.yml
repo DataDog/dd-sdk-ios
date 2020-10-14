@@ -154,7 +154,8 @@ workflows:
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
     - script:
-        title: Test Carthage compatibility (Carthage doesn't support Catalyst!)
+        # Carthage doesn't support Catalyst, so we don't test CTProject for `variant=Mac Catalyst`
+        title: Test Carthage compatibility
         inputs:
         - content: |-
             #!/usr/bin/env bash
