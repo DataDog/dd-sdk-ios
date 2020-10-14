@@ -67,6 +67,13 @@ internal struct Payment: Encodable {
     }
 }
 
+internal final class ShopistSessionDelegate: DDURLSessionDelegate, EventMonitor {
+    override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        let anError = error ?? fakeError(onceIn: 50)
+        super.urlSession(session, task: task, didCompleteWithError: anError)
+    }
+}
+
 internal final class API {
     // swiftlint:disable force_cast
     static let baseHost = Bundle.main.object(forInfoDictionaryKey: "ShopistBaseURL") as! String
@@ -75,7 +82,11 @@ internal final class API {
     private static let apiURL = "https://api." + baseHost
 
     typealias Completion<T: Decodable> = (Result<T, Error>) -> Void
-    private let httpClient = Alamofire.Session(configuration: .default)
+    let httpClient = Alamofire.Session(
+        configuration: .default,
+        startRequestsImmediately: false,
+        eventMonitors: [ShopistSessionDelegate()]
+    )
     private let jsonEncoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -114,58 +125,29 @@ internal final class API {
         request.httpBody = try! jsonEncoder.encode(payment)
         // swiftlint:enable force_try
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         make(request: request, isFailable: true, completion: completion)
     }
 
     private func make<T: Decodable>(request: URLRequest, isFailable: Bool, completion: @escaping Completion<T>) {
-        // swiftlint:disable force_unwrapping
-        let url = request.url!
-        let resourceName = url.pathComponents.joined()
-        let httpMethod = RUMHTTPMethod(rawValue: request.httpMethod!)!
-        // swiftlint:enable force_unwrapping
-        Global.rum.startResourceLoading(resourceName: resourceName, url: url, httpMethod: httpMethod)
-
-        let tracer = Global.sharedTracer
-        let span = tracer.startRootSpan(operationName: request.url?.path ?? "network request")
-        span.setActive()
-        let headerWriter = HTTPHeadersWriter()
-        headerWriter.inject(spanContext: span.context)
-        var tracedRequest = request
-        headerWriter.tracePropagationHTTPHeaders.forEach { tracedRequest.setValue($1, forHTTPHeaderField: $0) }
-
-        let randomError = isFailable ? fakeError(onceIn: 75) : nil
-
-        httpClient.request(tracedRequest).validate().response { result in
-            let statusCode = result.response?.statusCode
-            span.setTag(key: OTTags.httpStatusCode, value: statusCode)
-            if let someError = (result.error ?? randomError) {
-                span.handleError(someError)
-                Global.rum.stopResourceLoadingWithError(resourceName: resourceName, error: someError, source: .network, httpStatusCode: statusCode)
-                completion(.failure(someError))
-            } else if let someData = result.data {
-                Global.rum.stopResourceLoading(
-                    resourceName: resourceName,
-                    kind: .fetch,
-                    httpStatusCode: statusCode,
-                    size: Int64(someData.count)
-                )
-                let decodingSpan = tracer.startSpan(operationName: "decoding response data")
-                decodingSpan.setTag(key: "data_size_in_bytes", value: someData.count)
-                let completionResult: Result<T, Error>
-                do {
-                    Thread.sleep(for: .short)
-                    let decoded = try self.jsonDecoder.decode(T.self, from: someData)
-                    completionResult = .success(decoded)
-                } catch {
-                    decodingSpan.handleError(error)
-                    completionResult = .failure(error)
+        httpClient
+            .request(request)
+            .validate()
+            .response { result in
+                if let someError = result.error {
+                    completion(.failure(someError))
+                } else if let someData = result.data {
+                    let completionResult: Result<T, Error>
+                    do {
+                        Thread.sleep(for: .short)
+                        let decoded = try self.jsonDecoder.decode(T.self, from: someData)
+                        completionResult = .success(decoded)
+                    } catch {
+                        completionResult = .failure(error)
+                    }
+                    completion(completionResult)
                 }
-                decodingSpan.finish()
-                completion(completionResult)
             }
-            span.finish()
-        }
+            .resume()
     }
 
     func fakeFetchShippingAndTax() {
@@ -225,22 +207,6 @@ internal final class API {
                 size: Int64.random(in: 1_024...4_096)
             )
         }
-    }
-}
-
-private extension OTSpan {
-    func handleError(_ error: Error) {
-        let nsError = error as NSError
-        let errorStack = String(describing: error)
-        let errorMessage = nsError.localizedDescription
-        let errorKind = "\(nsError.domain) - \(nsError.code)"
-        let logs: [String: Encodable] = [
-            OTLogFields.event: "error",
-            OTLogFields.errorKind: errorKind,
-            OTLogFields.message: errorMessage,
-            OTLogFields.stack: errorStack,
-        ]
-        self.log(fields: logs)
     }
 }
 

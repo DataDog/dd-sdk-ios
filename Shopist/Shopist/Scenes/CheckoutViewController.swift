@@ -44,7 +44,6 @@ internal final class CheckoutViewController: UITableViewController {
         }
     }
     private static let cellIdentifier = "cell"
-    private let api = API()
     private var hasOngoingComputation = false
     private var viewDidAppearDate: Date?
     private var totalAmount: Float = 0.0
@@ -67,7 +66,6 @@ internal final class CheckoutViewController: UITableViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        Global.rum.startView(viewController: self)
         if !hasOngoingComputation {
             hasOngoingComputation = true
             cart.generateBreakdown {
@@ -84,11 +82,6 @@ internal final class CheckoutViewController: UITableViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewDidAppearDate = Date()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        Global.rum.stopView(viewController: self)
     }
 
     func setupModels(from cartBreakdown: Cart.Breakdown) {
@@ -120,10 +113,6 @@ internal final class CheckoutViewController: UITableViewController {
 
     @objc
     private func dismissPage() {
-        if let someVC = presentingViewController {
-            let topVC = (someVC as? UINavigationController)?.topViewController
-            Global.rum.startView(viewController: topVC ?? someVC)
-        }
         presentingViewController?.dismiss(animated: true)
     }
 
@@ -134,7 +123,6 @@ internal final class CheckoutViewController: UITableViewController {
             let timeToTapPayButton = Date().timeIntervalSince(someDate)
             logger.info(String(format: "Pay is tapped in %.2f seconds", timeToTapPayButton))
         }
-        Global.rum.registerUserAction(type: .tap, name: "Pay")
         if let randomError = Self.randomError {
             self.handleError(randomError)
             return

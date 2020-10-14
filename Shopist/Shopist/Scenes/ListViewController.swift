@@ -9,7 +9,6 @@ import Datadog
 
 internal class ListViewController: UICollectionViewController {
     private static let cellIdentifier = "cell"
-    private let api = API()
 
     convenience init() {
         self.init(collectionViewLayout: UICollectionViewFlowLayout())
@@ -27,7 +26,6 @@ internal class ListViewController: UICollectionViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        Global.rum.startView(viewController: self, attributes: (isMovingToParent ? [:] : ["info": "Redisplay"]))
         fetch(with: api)
     }
 

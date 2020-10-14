@@ -12,7 +12,7 @@ internal final class HomeViewController: ListViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Categories"
+        title = "Categories"
     }
 
     override func fetch(with api: API) {
@@ -39,7 +39,6 @@ internal final class HomeViewController: ListViewController {
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedCategory = categories[indexPath.row]
-        Global.rum.registerUserAction(type: .tap, name: selectedCategory.title)
         let detailVC = CatalogViewController(with: selectedCategory)
         show(detailVC, sender: self)
     }

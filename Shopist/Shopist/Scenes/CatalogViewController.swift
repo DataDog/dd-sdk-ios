@@ -21,7 +21,7 @@ internal final class CatalogViewController: ListViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = category.title
+        title = category.title
     }
 
     override func fetch(with api: API) {
@@ -52,7 +52,6 @@ internal final class CatalogViewController: ListViewController {
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedProduct = items[indexPath.row]
-        Global.rum.registerUserAction(type: .tap, name: selectedProduct.name)
         let detailVC = ProductViewController(product: selectedProduct)
         show(detailVC, sender: self)
     }
