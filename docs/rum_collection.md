@@ -10,7 +10,6 @@ Send [Real User Monitoring data][rum] to Datadog from your iOS applications with
 
 ## Setup
 
-
 1. Declare the library as a dependency depending on your package manager (check our [Releases page][releases] for the latest beta version):
 
     {{< tabs >}}
@@ -226,9 +225,11 @@ For more details and available options, please refer to the code documentation c
 
 To manually register RUM action, use either:
 * `.registerUserAction(type:name:)`
+
 or:
 * `.startUserAction(type:name:)`
 * and `.stopUserAction(type:)`
+
 on `Global.rum`. The first method can be used for sending actions which have no time (e.g. `.tap`), while the other two should be used for actions which define start and stop time (e.g. `.scroll`).
 
 Example:
@@ -268,4 +269,3 @@ For more details and available options, please refer to the code documentation c
 [client-token]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [api-keys]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [rum-getting-started]: https://docs.datadoghq.com/real_user_monitoring/installation/?tab=us
-
