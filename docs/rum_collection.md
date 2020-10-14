@@ -2,7 +2,7 @@
 
 <div class="alert alert-info">The iOS RUM collection is in beta. If you have any questions, contact the <a href="https://docs.datadoghq.com/help/" target="_blank">support team</a>.</div>
 
-Send [Real User Monitoring data][rum] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side RUM SDK][dd-sdk-ios] and leverage the following features:
+Send [Real User Monitoring data][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side RUM SDK][2] and leverage the following features:
 
 * Get a holistic view of your app’s performance and demographics.
 * Understand which resources are the slowest.
@@ -10,42 +10,42 @@ Send [Real User Monitoring data][rum] to Datadog from your iOS applications with
 
 ## Setup
 
-1. Declare the library as a dependency, depending on your package manager. See Datadog's [Releases page][releases] for the latest beta version.
+1. Declare the library as a dependency, depending on your package manager. See Datadog's [Releases page][3] for the latest beta version.
 
     {{< tabs >}}
     {{% tab "CocoaPods" %}}
 
-You can use [CocoaPods][cocoapods] to install `dd-sdk-ios`:
+You can use [CocoaPods][4] to install `dd-sdk-ios`:
 ```
 pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => '1.4.0-beta1'
 ```
 
-[cocoapods]: https://cocoapods.org/
+[4]: https://cocoapods.org/
 
     {{% /tab %}}
     {{% tab "Swift Package Manager (SPM)" %}}
 
-To integrate the SDK using Apple's [Swift Package Manager][spm], add the following as a dependency to your `Package.swift`:
+To integrate the SDK using Apple's [Swift Package Manager][5], add the following as a dependency to your `Package.swift`:
 ```swift
 .package(url: "https://github.com/DataDog/dd-sdk-ios.git", .exact("1.4.0-beta1"))
 ```
 
-[spm]: https://swift.org/package-manager/
+[5]: https://swift.org/package-manager/
 
     {{% /tab %}}
     {{% tab "Carthage" %}}
 
-You can use [Carthage][carthage] to install `dd-sdk-ios`:
+You can use [Carthage][6] to install `dd-sdk-ios`:
 ```
 github "DataDog/dd-sdk-ios" "1.4.0-beta1"
 ```
 
-[carthage]: https://github.com/Carthage/Carthage
+[6]: https://github.com/Carthage/Carthage
 
     {{% /tab %}}
     {{< /tabs >}}
 
-2. Initialize the library with your application context and your [Datadog client token][client-token]. For security reasons, you must use a client token: you cannot use [Datadog API keys][api-keys] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][client-token]. You also need to provide an Application ID (see the [RUM Getting Started page][rum-getting-started]).
+2. Initialize the library with your application context and your [Datadog client token][7]. For security reasons, you must use a client token: you cannot use [Datadog API keys][9] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][7]. You also need to provide an Application ID (see the [RUM Getting Started page][8]).
 
     {{< tabs >}}
     {{% tab "US" %}}
@@ -263,9 +263,9 @@ rumMonitor.addViewError(message: "error message.", source: .source)
 
 For more details and available options, refer to the code documentation comments.
 
-[rum]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
-[dd-sdk-ios]: https://github.com/DataDog/dd-sdk-ios
-[releases]: https://github.com/DataDog/dd-sdk-ios/releases
-[client-token]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
-[api-keys]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
-[rum-getting-started]: https://docs.datadoghq.com/real_user_monitoring/installation/?tab=us
+[1]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
+[2]: https://github.com/DataDog/dd-sdk-ios
+[3]: https://github.com/DataDog/dd-sdk-ios/releases
+[7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
+[8]: https://docs.datadoghq.com/real_user_monitoring/installation/?tab=us
+[9]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
