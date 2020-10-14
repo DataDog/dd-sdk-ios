@@ -112,7 +112,7 @@ Datadog.Configuration
    .build()
 ```
 
-The `predicate` must be a class or struct conforming to our `UIKitRUMViewsPredicate` protocol:
+`predicate` must be a type that conforms to `UIKitRUMViewsPredicate` protocol:
 ```swift
 public protocol UIKitRUMViewsPredicate {
     func rumView(for viewController: UIViewController) -> RUMViewFromPredicate?
@@ -141,7 +141,7 @@ let session = URLSession(
 )
 ```
 
-This will make the SDK track requests sent from this instance of the `URLSession`. Requests which URLs match the `firstPartyHosts` will be additionally marked as "first party" in the RUM Explorer.
+This will make the SDK track requests sent from this instance of the `URLSession`. Requests whose URLs match the `firstPartyHosts` will be additionally marked as "first party" in the RUM Explorer.
 
 ### RUM Actions
 
@@ -223,14 +223,14 @@ For more details and available options, please refer to the code documentation c
 
 ### RUM Actions
 
-To manually register RUM action, use either:
+To manually register instantaneous RUM actions (e.g: `.tap`), use:
 * `.registerUserAction(type:name:)`
 
-or:
+or for continuous RUM actions (e.g: `.scroll`), use:
 * `.startUserAction(type:name:)`
 * and `.stopUserAction(type:)`
 
-on `Global.rum`. The first method can be used for sending actions which have no time (e.g. `.tap`), while the other two should be used for actions which define start and stop time (e.g. `.scroll`).
+on `Global.rum`.
 
 Example:
 ```swift
