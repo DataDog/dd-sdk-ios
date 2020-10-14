@@ -94,13 +94,18 @@ Datadog.initialize(
     Global.rum = RUMMonitor.initialize()
     ```
 
-From here, you have two choices. You can either use our auto instrumentation to let the SDK track RUM Views, Resources, Actions and Errors automatically or you can instrument your app manually to send this data. It is also possible to mix both methods.
+The RUM SDK offers two instrumentation methods:
+
+- Auto-instrumentation (recommended) - the SDK tracks views, resources, actions and errors automatically.
+- Manual instrumentation - you instrument your code to send RUM events.
+
+**Note**: It is possible to mix both methods.
 
 ## Auto Instrumentation
 
 ### RUM Views
 
-To enable RUM Views tracking, use the `.trackUIKitRUMViews(using:)` option when configuring the SDK:
+To enable RUM views tracking, use the `.trackUIKitRUMViews(using:)` option when configuring the SDK:
 ```swift
 Datadog.Configuration
    .builderUsing(...)
@@ -115,13 +120,13 @@ public protocol UIKitRUMViewsPredicate {
 }
 ```
 
-Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM View or not (return `nil` in such case). The returned value of `RUMViewFromPredicate` should specify at least the `path` for created RUM View. Refer to code documentation comments for more details.
+Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM view or not (return `nil` in such case). The returned value of `RUMViewFromPredicate` should specify at least the `path` for created RUM view. Refer to code documentation comments for more details.
 
 **Note**: the SDK will call `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
 
 ### RUM Resources
 
-To enable RUM Resources tracking, use the `.track(firstPartyHosts:)` option when configuring the SDK:
+To enable RUM resources tracking, use the `.track(firstPartyHosts:)` option when configuring the SDK:
 ```swift
 Datadog.Configuration
    .builderUsing(...)
@@ -141,7 +146,7 @@ This will make the SDK track requests sent from this instance of the `URLSession
 
 ### RUM Actions
 
-To enable RUM Actions tracking, use the `.trackUIKitActions(_:)` option when configuring the SDK:
+To enable RUM actions tracking, use the `.trackUIKitActions(_:)` option when configuring the SDK:
 ```
 Datadog.Configuration
    .builderUsing(...)
@@ -168,7 +173,9 @@ span.setTag(key: OTTags.error, value: true)
 
 ### RUM Views
 
-To manually start and stop the RUM View use the `.startView(viewController:)` and `.stopView(viewController:)` methods available on `Global.rum`.
+Use the following methods on `Global.rum` to manually collect RUM resources:
+- `.startView(viewController:)`
+- `.stopView(viewController:)`
 
 Example:
 ```swift
@@ -211,13 +218,13 @@ Global.rum.stopResourceLoading(
 )
 ```
 
-Please note: the `String` used for `resourceName` in both calls must be unique for the resource you are calling, so the SDK can match resource start with its completion. 
+**Note**: the `String` used for `resourceName` in both calls must be unique for the resource you are calling, so the SDK can match resource start with its completion. 
 
 For more details and available options, please refer to the code documentation comments.
 
 ### RUM Actions
 
-To manually register RUM Action, use either:
+To manually register RUM action, use either:
 * `.registerUserAction(type:name:)`
 or:
 * `.startUserAction(type:name:)`
@@ -242,7 +249,9 @@ For more details and available options, please refer to the code documentation c
 
 ### RUM Errors
 
-To manually register RUM Error, use `addViewError(message:source:)` or `addViewError(error:source:)` methods on `Global.rum`.
+Use the following methods on `Global.rum` to manually collect RUM errors:
+- `.addViewError(message:source:)`
+- `.addViewError(error:source:)`
 
 Example:
 ```swift
@@ -259,3 +268,4 @@ For more details and available options, please refer to the code documentation c
 [client-token]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [api-keys]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [rum-getting-started]: https://docs.datadoghq.com/real_user_monitoring/installation/?tab=us
+
