@@ -1,16 +1,16 @@
 # iOS RUM Collection
 
-<div class="alert alert-info">The iOS RUM collection is in beta. If you have any questions, contact our <a href="https://docs.datadoghq.com/help/" target="_blank">support team</a>.</div>
+<div class="alert alert-info">The iOS RUM collection is in beta. If you have any questions, contact the <a href="https://docs.datadoghq.com/help/" target="_blank">support team</a>.</div>
 
 Send [Real User Monitoring data][rum] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side RUM SDK][dd-sdk-ios] and leverage the following features:
 
-* get a global idea about your app’s performance and demographics;
-* understand which resources are the slowest;
-* analyze errors by OS and device type.
+* Get a holistic view of your app’s performance and demographics.
+* Understand which resources are the slowest.
+* Analyze errors by OS and device type.
 
 ## Setup
 
-1. Declare the library as a dependency depending on your package manager (check our [Releases page][releases] for the latest beta version):
+1. Declare the library as a dependency, depending on your package manager. See Datadog's [Releases page][releases] for the latest beta version.
 
     {{< tabs >}}
     {{% tab "CocoaPods" %}}
@@ -25,7 +25,7 @@ pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => '
     {{% /tab %}}
     {{% tab "Swift Package Manager (SPM)" %}}
 
-To integrate using Apple's [Swift Package Manager][spm], add the following as a dependency to your `Package.swift`:
+To integrate the SDK using Apple's [Swift Package Manager][spm], add the following as a dependency to your `Package.swift`:
 ```swift
 .package(url: "https://github.com/DataDog/dd-sdk-ios.git", .exact("1.4.0-beta1"))
 ```
@@ -45,7 +45,7 @@ github "DataDog/dd-sdk-ios" "1.4.0-beta1"
     {{% /tab %}}
     {{< /tabs >}}
 
-2. Initialize the library with your application context and your [Datadog client token][client-token]. For security reasons, you must use a client token: you cannot use [Datadog API keys][api-keys] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][client-token]. You also need to provide an Application ID (see our [RUM Getting Started page][rum-getting-started]).
+2. Initialize the library with your application context and your [Datadog client token][client-token]. For security reasons, you must use a client token: you cannot use [Datadog API keys][api-keys] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][client-token]. You also need to provide an Application ID (see the [RUM Getting Started page][rum-getting-started]).
 
     {{< tabs >}}
     {{% tab "US" %}}
@@ -95,12 +95,12 @@ Datadog.initialize(
 
 The RUM SDK offers two instrumentation methods:
 
-- Auto-instrumentation (recommended) - the SDK tracks views, resources, actions and errors automatically.
+- Auto-instrumentation (recommended) - the SDK tracks views, resources, actions, and errors automatically.
 - Manual instrumentation - you instrument your code to send RUM events.
 
 **Note**: It is possible to mix both methods.
 
-## Auto Instrumentation
+## Auto-instrumentation
 
 ### RUM Views
 
@@ -119,9 +119,9 @@ public protocol UIKitRUMViewsPredicate {
 }
 ```
 
-Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM view or not (return `nil` in such case). The returned value of `RUMViewFromPredicate` should specify at least the `path` for created RUM view. Refer to code documentation comments for more details.
+Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM view or not (and return `nil` in this case). The returned value of `RUMViewFromPredicate` should specify at least the `path` for created the RUM view. Refer to code documentation comments for more details.
 
-**Note**: the SDK will call `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
+**Note**: The SDK calls `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
 
 ### RUM Resources
 
@@ -132,7 +132,7 @@ Datadog.Configuration
    .track(firstPartyHosts: ["your.domain.com"])
    .build()
 ```
-Also, assign our `DDURLSessionDelegate()` as a `delegate` of the `URLSession` you want to monitor, e.g.:
+Also, assign `DDURLSessionDelegate()` as a `delegate` of the `URLSession` you want to monitor, for example:
 ```swift
 let session = URLSession(
     configuration: .default,
@@ -153,17 +153,17 @@ Datadog.Configuration
    .build()
 ```
 
-This will make the SDK track all significant taps occurring in the app. For privacy reasons, all interactions with the on-screen keyboard are ignored.
+This makes the SDK track all significant taps occurring in the app. For privacy reasons, all interactions with the on-screen keyboard are ignored.
 
 ### RUM Errors
 
-All "error" and "critical" logs will be reported as RUM errors and linked to the current RUM view:
+All "error" and "critical" logs are be reported as RUM errors and linked to the current RUM view:
 ```swift
 logger.error("message")
 logger.critical("message")
 ```
 
-Similarly, all ended APM spans marked as error will be reported as RUM errors:
+Similarly, all ended APM spans marked as error are be reported as RUM errors:
 ```swift
 span.setTag(key: OTTags.error, value: true)
 ```
@@ -190,7 +190,7 @@ override func viewDidDisappear(_ animated: Bool) {
   Global.rum.stopView(viewController: self)
 }
 ```
-For more details and available options, please refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments.
 
 ### RUM Resources
 
@@ -217,9 +217,9 @@ Global.rum.stopResourceLoading(
 )
 ```
 
-**Note**: the `String` used for `resourceName` in both calls must be unique for the resource you are calling, so the SDK can match resource start with its completion. 
+**Note**: The `String` used for `resourceName` in both calls must be unique for the resource you are calling. This is necessary for the SDK to match a resource's start with its completion. 
 
-For more details and available options, please refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments.
 
 ### RUM Actions
 
@@ -244,9 +244,9 @@ Example:
 }
 ```
 
-**Note**: when using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same, so the SDK can match the action start with completion.
+**Note**: when using `.startUserAction(type:name:)` and `.stopUserAction(type:)`. This is necessary for the SDK to match a resource's start with its completion. 
 
-For more details and available options, please refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments.
 
 ### RUM Errors
 
@@ -261,7 +261,7 @@ Example:
 rumMonitor.addViewError(message: "error message.", source: .source)
 ```
 
-For more details and available options, please refer to the code documentation comments.
+For more details and available options, refer to the code documentation comments.
 
 [rum]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
 [dd-sdk-ios]: https://github.com/DataDog/dd-sdk-ios
