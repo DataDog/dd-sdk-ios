@@ -2,7 +2,7 @@
 
 <div class="alert alert-info">The iOS RUM collection is in beta. If you have any questions, contact our <a href="https://docs.datadoghq.com/help/" target="_blank">support team</a>.</div>
 
-Send [Real User Monitoring data][rum] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side RUM library][dd-sdk-ios] and leverage the following features:
+Send [Real User Monitoring data][rum] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side RUM SDK][dd-sdk-ios] and leverage the following features:
 
 * get a global idea about your app’s performance and demographics;
 * understand which resources are the slowest;
@@ -11,7 +11,7 @@ Send [Real User Monitoring data][rum] to Datadog from your iOS applications with
 ## Setup
 
 
-1. Declare the library as a dependency depending on your package manager (check our [Releases page][releases] for the recent beta version):
+1. Declare the library as a dependency depending on your package manager (check our [Releases page][releases] for the latest beta version):
 
     {{< tabs >}}
     {{% tab "CocoaPods" %}}
@@ -117,7 +117,7 @@ public protocol UIKitRUMViewsPredicate {
 
 Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM View or not (return `nil` in such case). The returned value of `RUMViewFromPredicate` should specify at least the `path` for created RUM View. Refer to code documentation comments for more details.
 
-Please note: the SDK will call `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
+**Note**: the SDK will call `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
 
 ### RUM Resources
 
@@ -137,7 +137,7 @@ let session = URLSession(
 )
 ```
 
-This will make the SDK track requests sent from this instance of the `URLSession`. Requests which URLs match the `firstPartyHosts` will be additionally marked as "first party" in RUM Explorer.
+This will make the SDK track requests sent from this instance of the `URLSession`. Requests which URLs match the `firstPartyHosts` will be additionally marked as "first party" in the RUM Explorer.
 
 ### RUM Actions
 
@@ -149,17 +149,17 @@ Datadog.Configuration
    .build()
 ```
 
-This will make the SDK track all significant taps occuring in the app. For privacy reason, all interactions with the on on-screen keyboard are ignored.
+This will make the SDK track all significant taps occurring in the app. For privacy reasons, all interactions with the on-screen keyboard are ignored.
 
 ### RUM Errors
 
-By default, when RUM feature is enabled, all "error" and "critical" logs will be reported as the RUM Errors occuring on the current RUM View:
+All "error" and "critical" logs will be reported as RUM errors and linked to the current RUM view:
 ```swift
 logger.error("message")
 logger.critical("message")
 ```
 
-Similarly, all finished APM spans marked as error will be reported as the RUM Error occuring on the current RUM View:
+Similarly, all ended APM spans marked as error will be reported as RUM errors:
 ```swift
 span.setTag(key: OTTags.error, value: true)
 ```
@@ -188,7 +188,7 @@ For more details and available options, please refer to the code documentation c
 
 ### RUM Resources
 
-To manually start and complete the RUM Resource use following methods on `Global.rum`:
+Use the following methods on `Global.rum` to manually collect RUM resources:
 * `.startResourceLoading(resourceName:url:httpMethod:)`
 * `.stopResourceLoading(resourceName:kind:)`
 * `.stopResourceLoadingWithError(resourceName:error:source:)`
@@ -236,7 +236,7 @@ Example:
 }
 ```
 
-Please note: when using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same, so the SDK can match the action start with completion.
+**Note**: when using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same, so the SDK can match the action start with completion.
 
 For more details and available options, please refer to the code documentation comments.
 
