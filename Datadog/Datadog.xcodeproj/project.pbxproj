@@ -74,6 +74,9 @@
 		21CA29122538278E002F3E14 /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EA24A24DD3005EA2DE /* OTReference.swift */; };
 		21CA29132538278E002F3E14 /* OTConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EB24A24DD3005EA2DE /* OTConstants.swift */; };
 		21CA29142538278E002F3E14 /* OTSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */; };
+		21CA2915253828FD002F3E14 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		21CA291625382937002F3E14 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21CA2917253829B3002F3E14 /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		61133B8C242393DE00786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		61133B93242393DE00786299 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		61133BCA2423979B00786299 /* EncodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* EncodableValue.swift */; };
@@ -1405,6 +1408,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21CA2915253828FD002F3E14 /* Datadog.h in Headers */,
+				21CA291625382937002F3E14 /* ObjcExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1969,6 +1974,7 @@
 				21CA28FA2538278E002F3E14 /* DDNoOps.swift in Sources */,
 				21CA29042538278E002F3E14 /* TracingUUIDGenerator.swift in Sources */,
 				21CA28DB2538278E002F3E14 /* URLSessionSwizzler.swift in Sources */,
+				21CA2917253829B3002F3E14 /* ObjcExceptionHandler.m in Sources */,
 				21CA28D52538278E002F3E14 /* TracerConfiguration.swift in Sources */,
 				21CA28E22538278E002F3E14 /* MobileDevice.swift in Sources */,
 				21CA28F92538278E002F3E14 /* TracingFeature.swift in Sources */,

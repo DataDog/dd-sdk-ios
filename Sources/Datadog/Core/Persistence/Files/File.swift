@@ -63,7 +63,7 @@ internal struct File: WritableFile, ReadableFile {
          ```
          This is fixed in iOS 14/Xcode 12
         */
-        if #available(iOS 13.4, *) {
+        if #available(iOS 13.4, OSX 10.15, *) {
             defer { try? fileHandle.close() }
             try fileHandle.seekToEnd()
             try fileHandle.write(contentsOf: data)
@@ -107,7 +107,7 @@ internal struct File: WritableFile, ReadableFile {
          ```
         This is fixed in iOS 14/Xcode 12
         */
-        if #available(iOS 13.4, *) {
+        if #available(iOS 13.4, OSX 10.15, *) {
             defer { try? fileHandle.close() }
             return try fileHandle.readToEnd() ?? Data()
         } else {

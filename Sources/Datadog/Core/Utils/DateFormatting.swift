@@ -10,6 +10,7 @@ internal protocol DateFormatterType {
     func string(from date: Date) -> String
 }
 
+@available(OSX 10.12, *)
 extension ISO8601DateFormatter: DateFormatterType {}
 extension DateFormatter: DateFormatterType {}
 
