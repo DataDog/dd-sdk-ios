@@ -8,14 +8,11 @@ import Foundation
 
 @objc
 open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
-    private let interceptor: URLSessionInterceptorType?
+    var interceptor: URLSessionInterceptorType?
 
     @objc
-    override public convenience init() {
-        self.init(interceptor: URLSessionAutoInstrumentation.instance?.interceptor)
-    }
-
-    internal init(interceptor: URLSessionInterceptorType?) {
+    override public init() {
+        interceptor = URLSessionAutoInstrumentation.instance?.interceptor
         if interceptor == nil {
             let error = ProgrammerError(
                 description: """
@@ -25,7 +22,6 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
             )
             consolePrint("\(error)")
         }
-        self.interceptor = interceptor
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
