@@ -45,7 +45,7 @@ github "DataDog/dd-sdk-ios" "1.4.0-beta1"
     {{% /tab %}}
     {{< /tabs >}}
 
-2. Initialize the library with your application context and your [Datadog client token][7]. For security reasons, you must use a client token: you cannot use [Datadog API keys][9] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][7]. You also need to provide an Application ID (see the [RUM Getting Started page][8]).
+2. Initialize the library with your application context and your [Datadog client token][7]. For security reasons, you must use a client token: you cannot use [Datadog API keys][9] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][7]. You also need to provide an Application ID (create a Javascript RUM application as explained in the [RUM Getting Started page][8]).
 
     {{< tabs >}}
     {{% tab "US" %}}
@@ -267,5 +267,5 @@ For more details and available options, refer to the code documentation comments
 [2]: https://github.com/DataDog/dd-sdk-ios
 [3]: https://github.com/DataDog/dd-sdk-ios/releases
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
-[8]: https://docs.datadoghq.com/real_user_monitoring/installation/?tab=us
+[8]: https://docs.datadoghq.com/real_user_monitoring/browser/#setup
 [9]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
