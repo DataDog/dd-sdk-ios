@@ -1,17 +1,17 @@
 public typealias AttributeKey = String
 public typealias AttributeValue = Encodable
 public class DDRUMMonitor
- public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]? = nil)
- public func addViewError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue]? = nil,file: StaticString? = #file,line: UInt? = #line)
- public func addViewError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue]? = nil)
- public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]? = nil)
- public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]? = nil)
- public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil)
- public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue] = [:])
+ public func addViewError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
+ public func addViewError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:])
+ public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue] = [:])
+ public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:])
  public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
  public func removeAttribute(forKey key: AttributeKey)
 public class Datadog
@@ -41,13 +41,16 @@ public class Datadog
   public static func builderUsing(clientToken: String, environment: String) -> Builder
   public class Builder
    public func enableLogging(_ enabled: Bool) -> Builder
-   public func enableTracing(_ enabled: Bool) -> Builder
-   public func enableRUM(_ enabled: Bool) -> Builder
-   public func set(tracedHosts: Set<String>) -> Builder
-   public func set(rumSessionsSamplingRate: Float) -> Builder
    public func set(logsEndpoint: LogsEndpoint) -> Builder
+   public func enableTracing(_ enabled: Bool) -> Builder
    public func set(tracesEndpoint: TracesEndpoint) -> Builder
+   public func set(tracedHosts: Set<String>) -> Builder
+   public func track(firstPartyHosts: Set<String>) -> Builder
+   public func enableRUM(_ enabled: Bool) -> Builder
    public func set(rumEndpoint: RUMEndpoint) -> Builder
+   public func set(rumSessionsSamplingRate: Float) -> Builder
+   public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate) -> Builder
+   public func trackUIKitActions(_ enabled: Bool) -> Builder
    public func set(serviceName: String) -> Builder
    public func build() -> Configuration
 public struct Global
@@ -80,6 +83,7 @@ public class Logger
   public func set(loggerName: String) -> Builder
   public func sendNetworkInfo(_ enabled: Bool) -> Builder
   public func bundleWithRUM(_ enabled: Bool) -> Builder
+  public func bundleWithTrace(_ enabled: Bool) -> Builder
   public func sendLogsToDatadog(_ enabled: Bool) -> Builder
   public enum ConsoleLogFormat
    case short
@@ -154,6 +158,12 @@ public protocol OTTracer
 public extension OTTracer
  func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
  func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+public struct RUMViewFromPredicate
+ public var path: String
+ public var attributes: [AttributeKey: AttributeValue]
+ public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
+public protocol UIKitRUMViewsPredicate
+ func rumView(for viewController: UIViewController) -> RUMViewFromPredicate?
 public enum RUMHTTPMethod: String
  case GET
  case POST
@@ -161,6 +171,7 @@ public enum RUMHTTPMethod: String
  case DELETE
  case HEAD
  case PATCH
+ public init(request: URLRequest)
 public enum RUMResourceKind
  case image
  case xhr
@@ -172,6 +183,8 @@ public enum RUMResourceKind
  case js
  case media
  case other
+ public init(request: URLRequest, response: HTTPURLResponse)
+ public init(response: HTTPURLResponse)
 public enum RUMUserActionType
  case tap
  case scroll
@@ -184,19 +197,19 @@ public enum RUMErrorSource
  case agent
  case logger
  case webview
-public class RUMMonitor: DDRUMMonitor
+public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
- override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue]?)
- override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]?)
- override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?, file: StaticString?, line: UInt?)
- override public func addViewError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]?)
- override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]?)
- override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: UInt64?, attributes: [AttributeKey: AttributeValue]?)
- override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]?)
- override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]?)
- override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]?)
- override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue]?)
- override public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]?)
+ override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue])
+ override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue])
+ override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?)
+ override public func addViewError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue])
+ override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue])
+ override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+ override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+ override public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
  override public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
  override public func removeAttribute(forKey key: AttributeKey)
 public struct DDTags
@@ -219,3 +232,4 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
  public func inject(spanContext: OTSpanContext)
+ override public convenience init()

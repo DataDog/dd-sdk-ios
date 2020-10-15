@@ -1,3 +1,4 @@
+public class DDNSURLSessionDelegate: DDURLSessionDelegate
 public class DDAppContext: NSObject
  public init(mainBundle: Bundle)
  override public init()
@@ -25,6 +26,7 @@ public class DDConfigurationBuilder: NSObject
  public func set(logsEndpoint: DDLogsEndpoint)
  public func set(tracesEndpoint: DDTracesEndpoint)
  public func set(tracedHosts: Set<String>)
+ public func track(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
  public func build() -> DDConfiguration
 public enum DDSDKVerbosityLevel: Int
