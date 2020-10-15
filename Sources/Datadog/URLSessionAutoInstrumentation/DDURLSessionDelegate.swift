@@ -8,24 +8,11 @@ import Foundation
 
 @objc
 open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
-    private let interceptor: URLSessionInterceptorType?
+    var interceptor: URLSessionInterceptorType?
 
     @objc
     override public init() {
-        self.interceptor = URLSessionAutoInstrumentation.instance?.interceptor
-        if interceptor == nil {
-            let error = ProgrammerError(
-                description: """
-                To use `DDURLSessionDelegate` you must specify first party hosts in `Datadog.Configuration` -
-                use `track(firstPartyHosts:)` to define which requests should be tracked.
-                """
-            )
-            consolePrint("\(error)")
-        }
-    }
-
-    internal init(interceptor: URLSessionInterceptorType?) {
-        self.interceptor = interceptor
+        interceptor = URLSessionAutoInstrumentation.instance?.interceptor
         if interceptor == nil {
             let error = ProgrammerError(
                 description: """

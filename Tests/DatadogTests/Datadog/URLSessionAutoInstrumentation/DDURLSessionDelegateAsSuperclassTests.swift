@@ -8,9 +8,9 @@ import XCTest
 import Datadog
 
 internal final class SubDDURLSessionDelegate: DDURLSessionDelegate {
-    let someProp: String
+    let property: String
     override init() {
-        someProp = "someProp"
+        property = "someProp"
         super.init()
     }
     override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {

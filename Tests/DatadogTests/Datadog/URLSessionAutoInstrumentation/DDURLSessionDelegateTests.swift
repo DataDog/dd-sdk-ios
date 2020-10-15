@@ -9,7 +9,11 @@ import XCTest
 
 class DDURLSessionDelegateTests: XCTestCase {
     private let interceptor = URLSessionInterceptorMock()
-    private lazy var delegate = DDURLSessionDelegate(interceptor: interceptor)
+    private lazy var delegate: DDURLSessionDelegate = {
+        let delegate = DDURLSessionDelegate()
+        delegate.interceptor = interceptor
+        return delegate
+    }()
 
     // MARK: - Interception Flow
 
@@ -148,19 +152,14 @@ class DDURLSessionDelegateTests: XCTestCase {
 
     // MARK: - Usage errors
 
-    func testGivenFirstPartyHostsNotSet_whenInitializingDDURLSessionDelegate_itPrintsError() throws {
+    func testGivenAutoInstrumentationInstanceIsNil_whenInitializingDDURLSessionDelegate_itPrintsError() {
         let printFunction = PrintFunctionMock()
+        let previousConsolePrint = consolePrint
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = previousConsolePrint }
 
         // given
-        Datadog.initialize(
-            appContext: .mockAny(),
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc.def", environment: "tests")
-                .build()
-        )
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
+        URLSessionAutoInstrumentation.instance = nil
 
         // when
         _ = DDURLSessionDelegate()
@@ -173,7 +172,23 @@ class DDURLSessionDelegateTests: XCTestCase {
             use `track(firstPartyHosts:)` to define which requests should be tracked.
             """
         )
+    }
 
-        try Datadog.deinitializeOrThrow()
+    func testWhenDDURLSessionDelegateInits_itPicksCorrectInterceptor() {
+        // given
+        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
+            configuration: .mockAny(),
+            dateProvider: SystemDateProvider()
+        )
+        defer { URLSessionAutoInstrumentation.instance = nil }
+
+        // when
+        let testDelegate = DDURLSessionDelegate()
+
+        // then
+        XCTAssert(
+            testDelegate.interceptor === URLSessionAutoInstrumentation.instance?.interceptor,
+            "\(String(describing: testDelegate.interceptor)) must be identical to \(String(describing: URLSessionAutoInstrumentation.instance?.interceptor))"
+        )
     }
 }
