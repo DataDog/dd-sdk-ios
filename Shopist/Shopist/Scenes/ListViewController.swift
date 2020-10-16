@@ -24,13 +24,9 @@ internal class ListViewController: UICollectionViewController {
         addDefaultNavBarButtons()
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        fetch(with: api)
-    }
-
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        fetch(with: api)
         let zeroPoint = CGPoint(x: 0, y: -collectionView.safeAreaInsets.top)
         collectionView.setContentOffset(zeroPoint, animated: false)
     }

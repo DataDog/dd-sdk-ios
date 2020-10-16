@@ -64,8 +64,10 @@ internal final class CheckoutViewController: UITableViewController {
         navigationItem.leftBarButtonItem = dismissButton
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewDidAppearDate = Date()
+
         if !hasOngoingComputation {
             hasOngoingComputation = true
             cart.generateBreakdown {
@@ -77,11 +79,6 @@ internal final class CheckoutViewController: UITableViewController {
 
         api.fakeUpdateInfoCall()
         api.fakeFetchFontCall()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        viewDidAppearDate = Date()
     }
 
     func setupModels(from cartBreakdown: Cart.Breakdown) {
