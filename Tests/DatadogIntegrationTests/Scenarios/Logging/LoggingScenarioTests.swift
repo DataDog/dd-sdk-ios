@@ -8,7 +8,7 @@ import HTTPServerMock
 import XCTest
 
 // swiftlint:disable trailing_closure
-class LoggingScenarioTests: IntegrationTests {
+class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
     func testLoggingScenario() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
 
@@ -20,22 +20,14 @@ class LoggingScenarioTests: IntegrationTests {
             )
         )
 
-        // Return desired count or timeout
-        let recordedRequests = try loggingServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
-
-        recordedRequests.forEach { request in
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`
-            let pathRegexp = #"^(.*)(/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)$"#
-            XCTAssertNotNil(request.path.range(of: pathRegexp, options: .regularExpression, range: nil, locale: nil))
-            XCTAssertTrue(request.httpHeaders.contains("Content-Type: application/json"))
+        // Get expected number of `LogMatchers`
+        let recordedRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try LogMatcher.from(requests: requests).count == 6
         }
+        let logMatchers = try LogMatcher.from(requests: recordedRequests)
 
-        // Assert logs
-        let logMatchers = try recordedRequests
-            .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
-
-        XCTAssertEqual(logMatchers.count, 6)
+        // Assert common things
+        assertLogging(requests: recordedRequests)
 
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[0].assertMessage(equals: "debug message")

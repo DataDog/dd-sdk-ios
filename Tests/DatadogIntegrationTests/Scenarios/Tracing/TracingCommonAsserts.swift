@@ -9,8 +9,7 @@ import HTTPServerMock
 
 /// A set of common assertions for all Tracing tests.
 protocol TracingCommonAsserts {
-    /// Asserts that Tracing requests are sent using expected path and HTTP headers.
-    func assertHTTPHeadersAndPath(in requests: [ServerSession.POSTRequestDetails], file: StaticString, line: UInt)
+    func assertTracing(requests: [HTTPServerMock.Request], file: StaticString, line: UInt)
 
     /// Asserts that given Spans are started after and finished before given dates.
     func assertThat(
@@ -26,12 +25,14 @@ protocol TracingCommonAsserts {
 }
 
 extension TracingCommonAsserts {
-    func assertHTTPHeadersAndPath(
-        in requests: [ServerSession.POSTRequestDetails],
+    func assertTracing(
+        requests: [HTTPServerMock.Request],
         file: StaticString = #file,
         line: UInt = #line
     ) {
         requests.forEach { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?batch_time=1589969230153`
             let pathRegex = #"^(.*)(/ui-tests-client-token\?batch_time=)([0-9]+)$"#
             XCTAssertTrue(
@@ -127,5 +128,12 @@ extension String {
     /// This helper converts hexadecimal string to decimal string for comparison.
     var hexadecimalNumberToDecimal: String {
         return "\(UInt64(self, radix: 16)!)"
+    }
+}
+
+extension SpanMatcher {
+    class func from(requests: [HTTPServerMock.Request]) throws -> [SpanMatcher] {
+        return try requests
+            .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
     }
 }

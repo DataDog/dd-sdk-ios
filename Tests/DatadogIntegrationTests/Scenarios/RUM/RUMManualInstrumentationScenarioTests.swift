@@ -43,114 +43,52 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let screen2 = screen1.tapPushNextScreen()
         screen2.tapPushNextScreen()
 
-        // Return desired count or timeout
-        let recordedRUMRequests = try rumServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 3
+        }
 
-        // Assert RUM events
-        let rumEventsMatchers = try recordedRUMRequests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+        assertRUM(requests: recordedRUMRequests)
 
-        // Assert common things
-        assertHTTPHeadersAndPath(in: recordedRUMRequests)
+        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
 
-        // Assert Fixture 1 VC ⬇️
-
-        // ----> `application_start` Action due to initial startView()
-        let applicationStartAction: RUMAction = try rumEventsMatchers[0].model()
-        XCTAssertEqual(applicationStartAction.action.type, .applicationStart)
-
-        // ----> View update on startView()
-        let view1UpdateA: RUMView = try rumEventsMatchers[1].model()
-        XCTAssertEqual(view1UpdateA.dd.documentVersion, 1)
-        XCTAssertEqual(view1UpdateA.view.action.count, 1)
-        XCTAssertEqual(view1UpdateA.view.resource.count, 0)
-
-        // --------> Resource event on stopResourceLoading()
-        let resourceLoaded: RUMResource = try rumEventsMatchers[2].model()
-        XCTAssertEqual(resourceLoaded.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(resourceLoaded.resource.url, "https://foo.com/resource/1")
-        XCTAssertEqual(resourceLoaded.resource.statusCode, 200)
-        XCTAssertEqual(resourceLoaded.resource.type, .image)
-        XCTAssertGreaterThan(resourceLoaded.resource.duration, 100_000_000 - 1) // ~0.1s
-        XCTAssertLessThan(resourceLoaded.resource.duration, 100_000_000 * 3) // less than 0.3s
-
-        // ----> View update after stopResourceLoading()
-        let view1UpdateB: RUMView = try rumEventsMatchers[3].model()
-        XCTAssertEqual(view1UpdateB.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(view1UpdateB.dd.documentVersion, 2)
-        XCTAssertEqual(view1UpdateB.view.action.count, 1)
-        XCTAssertEqual(view1UpdateB.view.resource.count, 1)
-        XCTAssertEqual(view1UpdateB.view.error.count, 0)
-
-        // --------> Error event on stopResourceLoadingWithError()
-        let resourceError: RUMError = try rumEventsMatchers[4].model()
-        XCTAssertEqual(resourceError.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(resourceError.error.message, "NSURLErrorDomain - -1011")
+        let view1 = session.viewVisits[0]
+        XCTAssertEqual(view1.path, "SendRUMFixture1ViewController")
+        XCTAssertEqual(view1.viewEvents.count, 4, "First view should receive 4 updates")
+        XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
+        XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
+        XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)
+        XCTAssertEqual(view1.actionEvents[0].action.type, .applicationStart)
+        XCTAssertEqual(view1.actionEvents[1].action.type, .tap)
+        XCTAssertEqual(view1.actionEvents[1].action.resource?.count, 1, "Action should track one succesfull Resource")
+        XCTAssertEqual(view1.actionEvents[1].action.error?.count, 1, "Action should track second Resource failure as Error")
+        XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
+        XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
+        XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration, 100_000_000 - 1) // ~0.1s
+        XCTAssertLessThan(view1.resourceEvents[0].resource.duration, 100_000_000 * 3) // less than 0.3s
+        XCTAssertEqual(view1.errorEvents[0].error.message, "NSURLErrorDomain - -1011")
         XCTAssertEqual(
-            resourceError.error.stack,
+            view1.errorEvents[0].error.stack,
             #"Error Domain=NSURLErrorDomain Code=-1011 "Bad response." UserInfo={NSLocalizedDescription=Bad response.}"#
         )
-        XCTAssertEqual(resourceError.error.source, .network)
-        XCTAssertEqual(resourceError.error.resource?.url, "https://foo.com/resource/2")
-        XCTAssertEqual(resourceError.error.resource?.method, .methodGET)
-        XCTAssertEqual(resourceError.error.resource?.statusCode, 400)
+        XCTAssertEqual(view1.errorEvents[0].error.source, .network)
+        XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
+        XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .methodGET)
+        XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
 
-        // ----> View update after stopResourceLoadingWithError()
-        let view1UpdateC: RUMView = try rumEventsMatchers[5].model()
-        XCTAssertEqual(view1UpdateC.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(view1UpdateC.dd.documentVersion, 3)
-        XCTAssertEqual(view1UpdateC.view.action.count, 1)
-        XCTAssertEqual(view1UpdateC.view.resource.count, 1)
-        XCTAssertEqual(view1UpdateC.view.error.count, 1)
+        let view2 = session.viewVisits[1]
+        XCTAssertEqual(view2.path, "SendRUMFixture2ViewController")
+        XCTAssertEqual(view2.viewEvents.last?.view.action.count, 0)
+        XCTAssertEqual(view2.viewEvents.last?.view.resource.count, 0)
+        XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
+        XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
+        XCTAssertEqual(view2.errorEvents[0].error.source, .source)
 
-        // --------> Action event after tapping "Download Resource" (postponed until Resource finished loading)
-        let downloadResourceTap: RUMAction = try rumEventsMatchers[6].model()
-        XCTAssertEqual(downloadResourceTap.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(downloadResourceTap.action.type, .tap)
-        XCTAssertEqual(downloadResourceTap.action.resource?.count, 1, "User Action should track first succesfull Resource")
-        XCTAssertEqual(downloadResourceTap.action.error?.count, 1, "User Action should track second Resource failure as Error")
-
-        // ----> View update on stopView()
-        let view1UpdateD: RUMView = try rumEventsMatchers[7].model()
-        XCTAssertEqual(view1UpdateD.view.id, view1UpdateA.view.id)
-        XCTAssertEqual(view1UpdateD.dd.documentVersion, 4)
-        XCTAssertEqual(view1UpdateD.view.action.count, 2)
-        XCTAssertEqual(view1UpdateD.view.resource.count, 1)
-        XCTAssertEqual(view1UpdateD.view.error.count, 1)
-
-        // Assert Fixture 2 VC ⬇️
-
-        // ----> View update on startView()
-        let view2UpdateA: RUMView = try rumEventsMatchers[8].model()
-        XCTAssertEqual(view2UpdateA.dd.documentVersion, 1)
-        XCTAssertEqual(view2UpdateA.view.action.count, 0)
-        XCTAssertEqual(view2UpdateA.view.error.count, 0)
-
-        // --------> Error event after starting View 2
-        let view2Error: RUMError = try rumEventsMatchers[9].model()
-        XCTAssertEqual(view2Error.error.message, "Simulated view error")
-        XCTAssertEqual(view2Error.error.source, .source)
-
-        // ----> View update after Error
-        let view2UpdateB: RUMView = try rumEventsMatchers[10].model()
-        XCTAssertEqual(view2UpdateB.dd.documentVersion, 2)
-        XCTAssertEqual(view2UpdateB.view.action.count, 0)
-        XCTAssertEqual(view2UpdateB.view.error.count, 1)
-
-        // ----> View update on stopView()
-        let view2UpdateC: RUMView = try rumEventsMatchers[11].model()
-        XCTAssertEqual(view2UpdateC.dd.documentVersion, 3)
-        XCTAssertEqual(view2UpdateC.view.action.count, 0)
-        XCTAssertEqual(view2UpdateC.view.error.count, 1)
-
-        // Assert Fixture 3 VC ⬇️
-
-        // ----> View update on startView()
-        let view3UpdateA: RUMView = try rumEventsMatchers[12].model()
-        XCTAssertEqual(view3UpdateA.dd.documentVersion, 1)
-        XCTAssertEqual(view3UpdateA.view.action.count, 0)
-
-        XCTAssertEqual(rumEventsMatchers.count, 13)
+        let view3 = session.viewVisits[2]
+        XCTAssertEqual(view3.path, "SendRUMFixture3ViewController")
+        XCTAssertEqual(view3.viewEvents.last?.view.action.count, 0)
+        XCTAssertEqual(view3.viewEvents.last?.view.resource.count, 0)
+        XCTAssertEqual(view3.viewEvents.last?.view.error.count, 0)
     }
 }

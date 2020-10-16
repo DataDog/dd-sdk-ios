@@ -13,7 +13,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingCommonAsserts {
     func testRUMResourcesScenario() throws {
         // Server session recording first party requests send to `HTTPServerMock`.
         // Used to assert that trace propagation headers are send for first party requests.
@@ -57,22 +57,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapSend3rdPartyRequests()
 
         // Get Tracing requests
-        let tracingRequests = try tracingServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        let tracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try SpanMatcher.from(requests: requests).count == 3
+        }
 
-        // Get RUM requests
-        let rumRequests = try rumServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        assertTracing(requests: tracingRequests)
 
-        assertHTTPHeadersAndPath(in: rumRequests)
-
-        // Get `Spans`
-        let spanMatchers = try tracingRequests
-            .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-
-        // Get RUM Events
-        let rumEventMatchers = try rumRequests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+        let spanMatchers = try SpanMatcher.from(requests: tracingRequests)
 
         try XCTAssertTrue(
             spanMatchers.contains { span in try span.resource() == firstPartyGETResourceURL.absoluteString },
@@ -95,12 +86,14 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "`Span` should NOT bet send for `thirdPartyPOSTResourceURL`"
         )
 
-        // Get RUM Sessions
-        let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
-        XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
+        // Get RUM Sessions with expected number of View visits and Resources
+        let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 2
+        }
 
-        let session = rumSessions[0]
-        XCTAssertEqual(session.viewVisits.count, 2, "The RUM Session should track 2 RUM Views")
+        assertRUM(requests: rumRequests)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.from(requests: rumRequests))
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
         XCTAssertEqual(session.viewVisits[0].path, "SendFirstPartyRequestsVC")

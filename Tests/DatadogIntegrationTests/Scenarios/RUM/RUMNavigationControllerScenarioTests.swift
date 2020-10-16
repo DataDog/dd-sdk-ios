@@ -48,23 +48,14 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapPushNextScreenButton() // go to "Screen2"
         app.swipeInteractiveBackGesture() // swipe back to "Screen1"
 
-        // Get POST requests
-        let recordedRUMRequests = try rumServerSession
-            .pullRecordedPOSTRequests(count: 2, timeout: dataDeliveryTimeout)
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 8
+        }
 
-        // Get RUM Events
-        let rumEventsMatchers = try recordedRUMRequests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+        assertRUM(requests: recordedRUMRequests)
 
-        // Assert common things
-        assertHTTPHeadersAndPath(in: recordedRUMRequests)
-
-        // Get RUM Sessions
-        let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventsMatchers)
-        XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
-
-        let session = rumSessions[0]
-        XCTAssertEqual(session.viewVisits.count, 8, "The RUM Session should track 8 RUM Views")
+        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
         XCTAssertEqual(session.viewVisits[0].path, "Screen1")
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertEqual(session.viewVisits[1].path, "Screen2")

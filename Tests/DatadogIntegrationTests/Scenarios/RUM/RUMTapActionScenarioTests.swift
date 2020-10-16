@@ -104,30 +104,16 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapSegmentedControlSegment(label: "B")
         app.tapNavigationBarButton(named: "Search")
         app.tapNavigationBarButton(named: "Share")
-
-        // Wait with next action, so the last RUM Event fits another HTTP request. This is to
-        // make it execute the same locally and on CI, where different number of requests is sometimes send.
-        Thread.sleep(forTimeInterval: 2) // TODO: RUMM-742 Make the HTTP Server Mock not depend on the requests count
-
         app.tapNavigationBarButton(named: "Back")
 
-        // Get POST requests
-        let recordedRUMRequests = try rumServerSession
-            .pullRecordedPOSTRequests(count: 3, timeout: dataDeliveryTimeout)
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 7
+        }
 
-        // Get RUM Events
-        let rumEventsMatchers = try recordedRUMRequests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+        assertRUM(requests: recordedRUMRequests)
 
-        // Assert common things
-        assertHTTPHeadersAndPath(in: recordedRUMRequests)
-
-        // Get RUM Sessions
-        let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventsMatchers)
-        XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
-
-        let session = rumSessions[0]
-        XCTAssertEqual(session.viewVisits.count, 7, "The RUM Session should track 7 RUM Views")
+        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
 
         XCTAssertEqual(session.viewVisits[0].path, "MenuViewController")
         XCTAssertEqual(session.viewVisits[0].actionEvents.count, 3)

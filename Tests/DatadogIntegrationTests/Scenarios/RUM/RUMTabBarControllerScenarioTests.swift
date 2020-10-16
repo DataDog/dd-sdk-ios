@@ -21,7 +21,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts, RUMM742Workaround {
+class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testRUMTabBarScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -43,24 +43,14 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts, RUMM
         app.tapTapBarButton(named: "Tab C") // go to "Screen C2"
         app.tapTapBarButton(named: "Tab C") // go to "Screen C1"
 
-        // Get POST requests
-        let recordedRUMRequests = try pullRecordedRUMRequests(from: rumServerSession) { session in
-            session.viewVisits.count >= 9 // TODO: RUMM-742 Replace this workaround with a nicer way.
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 9
         }
 
-        // Get RUM Events
-        let rumEventsMatchers = try recordedRUMRequests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+        assertRUM(requests: recordedRUMRequests)
 
-        // Assert common things
-        assertHTTPHeadersAndPath(in: recordedRUMRequests)
-
-        // Get RUM Sessions
-        let rumSessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventsMatchers)
-        XCTAssertEqual(rumSessions.count, 1, "All events should be tracked within one RUM Session.")
-
-        let session = rumSessions[0]
-        XCTAssertEqual(session.viewVisits.count, 9, "The RUM Session should track 9 RUM Views")
+        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
         XCTAssertEqual(session.viewVisits[0].path, "Screen A")
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertEqual(session.viewVisits[1].path, "Screen B1")
