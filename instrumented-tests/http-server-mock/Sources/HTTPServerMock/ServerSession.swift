@@ -49,8 +49,9 @@ public class ServerSession {
             }
     }
 
-    /// Actively fetches 'POST` requests recorded by the server until a desired count is found, or timeouts returning current recorded requests
-    public func pullRecordedPOSTRequests(count: Int, timeout: TimeInterval) throws -> [POSTRequestDetails] {
+    /// Actively fetches details of given number of `POST` requests recorded by the server during this session.
+    /// Throws an exception if given `timeout` is exceeded.
+    public func pullRecordedPOSTRequests(timeout: TimeInterval, expectedRequestsCount: Int) throws -> [POSTRequestDetails] {
         var currentRequests = [ServerMock.RequestInfo]()
 
         let timeoutTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global())
@@ -65,10 +66,10 @@ public class ServerSession {
                 .getRecordedPOSTRequestsInfo()
                 .filter { requestInfo in requestInfo.path.contains(sessionIdentifier) }
             Thread.sleep(forTimeInterval: 0.2)
-        } while !timeoutTimer.isCancelled && currentRequests.count < count
+        } while !timeoutTimer.isCancelled && currentRequests.count < expectedRequestsCount
 
         if timeoutTimer.isCancelled {
-            throw Exception(description: "Exceeded \(timeout)s timeout by receiving only \(currentRequests.count) requests, where \(count) were expected.")
+            throw Exception(description: "Exceeded \(timeout)s timeout by receiving only \(currentRequests.count) requests, where \(expectedRequestsCount) were expected.")
         } else {
             timeoutTimer.cancel()
         }

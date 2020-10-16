@@ -25,7 +25,7 @@ final class HTTPServerMockTests: XCTestCase {
     }
     #endif
 
-    func testItReturnsHTTPBodyOfRecordedPOSTRequests() throws {
+    func testItReturnsRecordedPOSTRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
@@ -53,7 +53,7 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
 
-    func testItReturnspullRecordedPOSTRequests() throws {
+    func testItPullsRecordedPOSTRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
@@ -77,7 +77,10 @@ final class HTTPServerMockTests: XCTestCase {
             )
         }
         let timeoutTime: TimeInterval = 2
-        let recordedRequests = try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)
+        let recordedRequests = try session.pullRecordedPOSTRequests(
+            timeout: timeoutTime,
+            expectedRequestsCount: 2
+        )
         XCTAssertLessThan(Date(), initialTime.addingTimeInterval(timeoutTime))
         XCTAssertEqual(recordedRequests.count, 2)
         XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
@@ -96,25 +99,12 @@ final class HTTPServerMockTests: XCTestCase {
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            Thread.sleep(forTimeInterval: 2)
-            sendPOSTRequestAsynchronouslyTo(
-                url: session.recordingURL.appendingPathComponent("/resource/1"),
-                body: "1st request body".data(using: .utf8)!
-            )
-            Thread.sleep(forTimeInterval: 2)
-            sendPOSTRequestAsynchronouslyTo(
-                url: session.recordingURL.appendingPathComponent("/resource/2"),
-                body: "2nd request body".data(using: .utf8)!
+        XCTAssertThrowsError(try session.pullRecordedPOSTRequests(timeout: 1, expectedRequestsCount: 3)) { error in
+            XCTAssertEqual(
+                (error as? ServerSession.Exception)?.description,
+                "Exceeded 1.0s timeout by receiving only 0 requests, where 3 were expected."
             )
         }
-
-        let timeoutTime: TimeInterval = 2
-        var thrownError: Error?
-        XCTAssertThrowsError(try session.pullRecordedPOSTRequests(count: 2, timeout: timeoutTime)) {
-            thrownError = $0
-        }
-        XCTAssertTrue(thrownError is ServerSession.Exception, "Unexpected error type: \(type(of: thrownError))")
     }
 }
 
