@@ -8,20 +8,6 @@ import Foundation
 
 /// Server session object to capture only requests send to `session.recordingURL`.
 public class ServerSession {
-    /// Details of a recorded request.
-    public struct POSTRequestDetails {
-        /// Original path of the request, i.e. `/something/1` for `POST /something/1`.
-        public let path: String
-        /// Original http headers of this request.
-        public let httpHeaders: [String]
-        /// Original body of this request.
-        public let httpBody: Data
-    }
-
-    internal struct Exception: Error, CustomStringConvertible {
-        let description: String
-    }
-
     private let server: ServerMock
     private let sessionIdentifier: String
 
@@ -35,25 +21,16 @@ public class ServerSession {
         self.recordingURL = server.baseURL.appendingPathComponent(sessionIdentifier)
     }
 
-    /// Fetches details of all `POST` requests recorded by the server during this session.
-    public func getRecordedPOSTRequests() throws -> [POSTRequestDetails] {
+    /// Returns all requests recorded by the server in this session.
+    public func getRecordedRequests() throws -> [Request] {
         return try server
-            .getRecordedPOSTRequestsInfo() // get all recorded requests info
-            .filter { requestInfo in requestInfo.path.contains(sessionIdentifier) } // narrow it to this session
-            .map { requestInfo in
-                return POSTRequestDetails(
-                    path: requestInfo.path,
-                    httpHeaders: try server.getRecordedRequestHeaders(requestInfo),
-                    httpBody: try server.getRecordedRequestBody(requestInfo)
-                )
-            }
+            .getRecordedRequests() // get all recorded requests info
+            .filter { request in request.path.contains(sessionIdentifier) } // narrow it to this session
     }
 
-    /// Actively fetches details of given number of `POST` requests recorded by the server during this session.
+    /// Actively fetches requests recorded by the server in this session until given `condition` evaluated to `true`.
     /// Throws an exception if given `timeout` is exceeded.
-    public func pullRecordedPOSTRequests(timeout: TimeInterval, expectedRequestsCount: Int) throws -> [POSTRequestDetails] {
-        var currentRequests = [ServerMock.RequestInfo]()
-
+    public func pullRecordedRequests(timeout: TimeInterval, until condition: ([Request]) throws -> Bool) throws -> [Request] {
         let timeoutTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global())
         timeoutTimer.setEventHandler { timeoutTimer.cancel() }
         timeoutTimer.schedule(deadline: .now() + timeout, leeway: .nanoseconds(0))
@@ -61,25 +38,21 @@ public class ServerSession {
             timeoutTimer.activate()
         }
 
+        var pulledRequests: [Request] = []
+        var conditionMet = false
         repeat {
-            currentRequests = try server
-                .getRecordedPOSTRequestsInfo()
-                .filter { requestInfo in requestInfo.path.contains(sessionIdentifier) }
+            pulledRequests = try getRecordedRequests()
+            conditionMet = try condition(pulledRequests)
             Thread.sleep(forTimeInterval: 0.2)
-        } while !timeoutTimer.isCancelled && currentRequests.count < expectedRequestsCount
+        } while !timeoutTimer.isCancelled && !conditionMet
 
         if timeoutTimer.isCancelled {
-            throw Exception(description: "Exceeded \(timeout)s timeout by receiving only \(currentRequests.count) requests, where \(expectedRequestsCount) were expected.")
+            throw Exception(
+                description: "Exceeded \(timeout)s timeout with pulling \(pulledRequests.count) requests and not meeting the `condition()`."
+            )
         } else {
             timeoutTimer.cancel()
-        }
-
-        return try currentRequests.map { requestInfo in
-            return POSTRequestDetails(
-                path: requestInfo.path,
-                httpHeaders: try server.getRecordedRequestHeaders(requestInfo),
-                httpBody: try server.getRecordedRequestBody(requestInfo)
-            )
+            return pulledRequests
         }
     }
 }

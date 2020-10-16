@@ -25,7 +25,7 @@ final class HTTPServerMockTests: XCTestCase {
     }
     #endif
 
-    func testItReturnsRecordedPOSTRequests() throws {
+    func testItReturnsRecordedRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
@@ -44,7 +44,7 @@ final class HTTPServerMockTests: XCTestCase {
             body: "2nd request body".data(using: .utf8)!
         )
 
-        let recordedRequests = try session.getRecordedPOSTRequests()
+        let recordedRequests = try session.getRecordedRequests()
 
         XCTAssertEqual(recordedRequests.count, 2)
         XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
@@ -53,7 +53,7 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
 
-    func testItPullsRecordedPOSTRequests() throws {
+    func testItPullsRecordedRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
@@ -77,10 +77,9 @@ final class HTTPServerMockTests: XCTestCase {
             )
         }
         let timeoutTime: TimeInterval = 2
-        let recordedRequests = try session.pullRecordedPOSTRequests(
-            timeout: timeoutTime,
-            expectedRequestsCount: 2
-        )
+        let recordedRequests = try session.pullRecordedRequests(timeout: timeoutTime) { requests in
+            requests.count == 2
+        }
         XCTAssertLessThan(Date(), initialTime.addingTimeInterval(timeoutTime))
         XCTAssertEqual(recordedRequests.count, 2)
         XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
@@ -89,7 +88,7 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
 
-    func testWhenPullingRecordedPOSTRequestExceedsTimeout_itThrownsAnError() throws {
+    func testWhenPullingRecordedRequestExceedsTimeout_itThrownsAnError() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
@@ -99,10 +98,12 @@ final class HTTPServerMockTests: XCTestCase {
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
 
-        XCTAssertThrowsError(try session.pullRecordedPOSTRequests(timeout: 1, expectedRequestsCount: 3)) { error in
+        XCTAssertThrowsError(
+            try session.pullRecordedRequests(timeout: 1) { $0.count == 1 }
+        ) { error in
             XCTAssertEqual(
-                (error as? ServerSession.Exception)?.description,
-                "Exceeded 1.0s timeout by receiving only 0 requests, where 3 were expected."
+                (error as? Exception)?.description,
+                "Exceeded 1.0s timeout with pulling 0 requests and not meeting the `condition()`."
             )
         }
     }

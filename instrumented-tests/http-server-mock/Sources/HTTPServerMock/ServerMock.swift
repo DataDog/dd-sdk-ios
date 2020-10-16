@@ -6,8 +6,45 @@
 
 import Foundation
 
+internal struct Exception: Error, CustomStringConvertible {
+    let description: String
+}
+
+/// Intermediate representation of the request - as it was received from the Python server.
+fileprivate struct IntermediateRequest: Codable {
+    /// Request method.
+    let method: String
+    /// Request path.
+    let path: String
+    /// Request headers encoded as base64 string.
+    let headers: String
+    /// Request body encoded as base64 string.
+    let body: String
+}
+
+fileprivate extension Request {
+    // MARK: - Initialization
+
+    /// Constructs `Request` from `IntermediateRequest` received from Python server.
+    init(intermediateRequest: IntermediateRequest) throws {
+        guard let headersData = Data(base64Encoded: intermediateRequest.headers),
+              let headersString = String(data: headersData, encoding: .utf8),
+              let bodyData = Data(base64Encoded: intermediateRequest.body) else {
+            throw Exception(description: "Failed to decode data retrieved from Python server.")
+        }
+
+        self.path = intermediateRequest.path
+        self.httpMethod = intermediateRequest.method
+        self.httpHeaders = headersString
+            .split(separator: "\r\n")
+            .map { String($0) }
+        self.httpBody = bodyData
+    }
+}
+
 public class ServerMock {
     internal let baseURL: URL
+    private let jsonDecoder = JSONDecoder()
 
     // MARK: - Public
 
@@ -22,44 +59,14 @@ public class ServerMock {
 
     // MARK: - Endpoints
 
-    /// Info about single request recorded by the server.
-    internal struct RequestInfo: Codable {
-        /// Original path of the request, i.e. `/something/1` for `POST /something/1`.
-        let path: String
-        /// HTTP method of this request.
-        let httpMethod: String
-        /// Follow-up path to fetch HTTP headers associated with this request.
-        let httpHeadersInspectionPath: String
-        /// Follow-up path to fetch HTTP body associated with this request.
-        let httpBodyInspectionPath: String
-
-        enum CodingKeys: String, CodingKey {
-            case path = "request_path"
-            case httpMethod = "request_method"
-            case httpHeadersInspectionPath = "headers_inspection_path"
-            case httpBodyInspectionPath = "body_inspection_path"
-        }
-    }
-
-    /// Fetches info about all `POST` requests recorded by the server.
-    internal func getRecordedPOSTRequestsInfo() throws -> [RequestInfo] {
+    /// Fetches all requests recorded by the server.
+    internal func getRecordedRequests() throws -> [Request] {
         let inspectionEndpointURL = baseURL.appendingPathComponent("/inspect")
         let inspectionData = try Data(contentsOf: inspectionEndpointURL)
-        return try JSONDecoder()
-            .decode([RequestInfo].self, from: inspectionData)
-            .filter { $0.httpMethod == "POST" }
-    }
+        let intermediateRequests = try jsonDecoder
+            .decode([IntermediateRequest].self, from: inspectionData)
 
-    /// Fetches HTTP body of particular request recorded by the server.
-    internal func getRecordedRequestBody(_ requestInfo: RequestInfo) throws -> Data {
-        let bodyURL = baseURL.appendingPathComponent(requestInfo.httpBodyInspectionPath)
-        return try Data(contentsOf: bodyURL)
-    }
-
-    /// Fetches HTTP headers of particular request recorded by the server.
-    internal func getRecordedRequestHeaders(_ requestInfo: RequestInfo) throws -> [String] {
-        let headersURL = baseURL.appendingPathComponent(requestInfo.httpHeadersInspectionPath)
-        let headersString = try String(data: Data(contentsOf: headersURL), encoding: .utf8)
-        return headersString?.split(separator: "\r\n").map { String($0) } ?? []
+        return try intermediateRequests
+            .map { try Request(intermediateRequest: $0) }
     }
 }
