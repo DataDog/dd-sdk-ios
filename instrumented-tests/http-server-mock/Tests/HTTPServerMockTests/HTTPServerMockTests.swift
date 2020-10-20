@@ -88,7 +88,7 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
     }
 
-    func testWhenPullingRecordedRequestExceedsTimeout_itThrownsAnError() throws {
+    func testWhenPullingRecordedRequestExceedsTimeout_itThrowsAnError() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProces = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")

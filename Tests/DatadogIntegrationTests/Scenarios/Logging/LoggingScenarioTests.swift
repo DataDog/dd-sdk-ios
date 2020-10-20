@@ -22,7 +22,7 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
 
         // Get expected number of `LogMatchers`
         let recordedRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try LogMatcher.from(requests: requests).count == 6
+            try LogMatcher.from(requests: requests).count >= 6
         }
         let logMatchers = try LogMatcher.from(requests: recordedRequests)
 

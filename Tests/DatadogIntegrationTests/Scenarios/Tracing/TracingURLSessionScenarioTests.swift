@@ -66,7 +66,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
 
         // Get expected number of `SpanMatchers`
         let recordedTracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try SpanMatcher.from(requests: requests).count == 3
+            try SpanMatcher.from(requests: requests).count >= 3
         }
         let spanMatchers = try SpanMatcher.from(requests: recordedTracingRequests)
 
@@ -115,7 +115,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
 
         // Assert tracing HTTP headers propagated to `firstPartyPOSTResourceURL`
         let firstPartyRequests = try customFirstPartyServerSession
-            .pullRecordedRequests(timeout: dataDeliveryTimeout) { $0.count == 1 }
+            .pullRecordedRequests(timeout: dataDeliveryTimeout) { $0.count >= 1 }
 
         XCTAssertEqual(firstPartyRequests.count, 1)
 

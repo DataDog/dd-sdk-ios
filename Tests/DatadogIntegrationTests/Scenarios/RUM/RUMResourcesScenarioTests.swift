@@ -58,7 +58,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
 
         // Get Tracing requests
         let tracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try SpanMatcher.from(requests: requests).count == 3
+            try SpanMatcher.from(requests: requests).count >= 3
         }
 
         assertTracing(requests: tracingRequests)

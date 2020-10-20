@@ -44,7 +44,7 @@ public class ServerSession {
             pulledRequests = try getRecordedRequests()
             conditionMet = try condition(pulledRequests)
             Thread.sleep(forTimeInterval: 0.2)
-        } while !timeoutTimer.isCancelled && !conditionMet
+        } while !(timeoutTimer.isCancelled || conditionMet)
 
         if timeoutTimer.isCancelled {
             throw Exception(
