@@ -128,6 +128,14 @@ class URLSessionInterceptorTests: XCTestCase {
         XCTAssertNotEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should be modified.")
         XCTAssertEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
         XCTAssertEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
+
+        XCTAssertEqual(
+            interceptedFirstPartyRequest
+                .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
+                .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField),
+            firstPartyRequest,
+            "The only modification of the original requests should be the addition of 2 tracing headers."
+        )
     }
 
     func testGivenTracerNotRegistered_whenInterceptingRequests_itDoesNotInjectSpanContextToAnyRequest() throws {
@@ -170,10 +178,14 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
+        let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
+        let interceptedThirdPartyRequest = interceptor.modify(request: thirdPartyRequest)
+        let interceptedInternalRequest = interceptor.modify(request: internalRequest)
+
         // When
-        let firstPartyTask: URLSessionTask = .mockWith(request: firstPartyRequest, response: .mockAny())
-        let thirdPartyTask: URLSessionTask = .mockWith(request: thirdPartyRequest, response: .mockAny())
-        let internalTask: URLSessionTask = .mockWith(request: internalRequest, response: .mockAny())
+        let firstPartyTask: URLSessionTask = .mockWith(request: interceptedFirstPartyRequest, response: .mockAny())
+        let thirdPartyTask: URLSessionTask = .mockWith(request: interceptedThirdPartyRequest, response: .mockAny())
+        let internalTask: URLSessionTask = .mockWith(request: interceptedInternalRequest, response: .mockAny())
 
         // swiftlint:disable opening_brace
         callConcurrently(
@@ -194,18 +206,38 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
+        // We can't compare entire `URLRequests` in following assertions
+        // due to https://openradar.appspot.com/radar?id=4988276943355904
+
         let tracingInterception = try XCTUnwrap(tracingHandler.interceptionToSendSpan)
-        XCTAssertEqual(tracingInterception.request, firstPartyRequest)
+        XCTAssertEqual(
+            tracingInterception.request.url,
+            firstPartyRequest.url,
+            "Span should be send for 1st party request."
+        )
+        XCTAssertNotNil(tracingInterception.spanContext, "Tracing information should be set for 1st party request.")
 
         let rumStartResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
         XCTAssertEqual(rumStartResourceInterceptions.count, 2)
-        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == firstPartyRequest })
-        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == thirdPartyRequest })
+        XCTAssertTrue(
+            rumStartResourceInterceptions.contains { $0.request.url == firstPartyRequest.url && $0.spanContext != nil },
+            "RUM Resource should be started and tracing information should be set for 1st party request."
+        )
+        XCTAssertTrue(
+            rumStartResourceInterceptions.contains { $0.request.url == thirdPartyRequest.url && $0.spanContext == nil },
+            "RUM Resource should be started but tracing information should NOT be set for 3rd party request."
+        )
 
         let rumStopResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
         XCTAssertEqual(rumStopResourceInterceptions.count, 2)
-        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == firstPartyRequest })
-        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == thirdPartyRequest })
+        XCTAssertTrue(
+            rumStopResourceInterceptions.contains { $0.request.url == firstPartyRequest.url && $0.spanContext != nil },
+            "RUM Resource should be stopped and tracing information should be set for 1st party request."
+        )
+        XCTAssertTrue(
+            rumStopResourceInterceptions.contains { $0.request.url == thirdPartyRequest.url && $0.spanContext == nil },
+            "RUM Resource should be stopped but tracing information should NOT be set for 3rd party request."
+        )
     }
 
     func testGivenTracerNotRegistered_whenInterceptingURLSessionTasks_itSendsOnlyRUMResources() throws {
@@ -247,17 +279,32 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.25, handler: nil)
 
+        // We can't compare entire `URLRequests` in following assertions
+        // due to https://openradar.appspot.com/radar?id=4988276943355904
+
         XCTAssertNil(tracingHandler.interceptionToSendSpan)
 
         let rumStartResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
         XCTAssertEqual(rumStartResourceInterceptions.count, 2)
-        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == firstPartyRequest })
-        XCTAssertTrue(rumStartResourceInterceptions.contains { $0.request == thirdPartyRequest })
+        XCTAssertTrue(
+            rumStartResourceInterceptions.contains { $0.request == firstPartyRequest && $0.spanContext == nil },
+            "1st party RUM Resource should be started but tracing information should NOT be set."
+        )
+        XCTAssertTrue(
+            rumStartResourceInterceptions.contains { $0.request == thirdPartyRequest && $0.spanContext == nil },
+            "3rd party RUM Resource should be started but tracing information should NOT be set."
+        )
 
         let rumStopResourceInterceptions = rumResourcesHandler.interceptionsForStartingRUMResource
         XCTAssertEqual(rumStopResourceInterceptions.count, 2)
-        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == firstPartyRequest })
-        XCTAssertTrue(rumStopResourceInterceptions.contains { $0.request == thirdPartyRequest })
+        XCTAssertTrue(
+            rumStopResourceInterceptions.contains { $0.request == firstPartyRequest && $0.spanContext == nil },
+            "1st party RUM Resource should be stopped but tracing information should NOT be set."
+        )
+        XCTAssertTrue(
+            rumStopResourceInterceptions.contains { $0.request == thirdPartyRequest && $0.spanContext == nil },
+            "3rd party RUM Resource should be stopped but tracing information should NOT be set."
+        )
     }
 
     // MARK: - Thread Safety

@@ -16,6 +16,9 @@ internal class TaskInterception {
     private(set) var metrics: ResourceMetrics?
     /// Task completion collected during this interception.
     private(set) var completion: ResourceCompletion?
+    /// Trace information propagated with the task. Not available when Tracing is disabled
+    /// or when the task was created through `URLSession.dataTask(with:url)` on some iOS13+.
+    private(set) var spanContext: DDSpanContext?
 
     init(request: URLRequest) {
         self.identifier = UUID()
@@ -28,6 +31,10 @@ internal class TaskInterception {
 
     func register(completion: ResourceCompletion) {
         self.completion = completion
+    }
+
+    func register(spanContext: DDSpanContext) {
+        self.spanContext = spanContext
     }
 
     /// Tells if the interception is done (mean: both metrics and completion were collected).
