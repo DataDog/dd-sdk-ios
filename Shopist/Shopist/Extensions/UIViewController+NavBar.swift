@@ -26,13 +26,11 @@ extension UIViewController {
 
     @objc
     private func goBack() {
-        Global.rum.registerUserAction(type: .tap, name: "Back")
         navigationController?.popViewController(animated: true)
     }
 
     @objc
     private func goToCart() {
-        Global.rum.registerUserAction(type: .tap, name: "Go to cart")
         let cartVC = CheckoutViewController()
         let containerVC = UINavigationController(rootViewController: cartVC)
         present(containerVC, animated: true, completion: nil)

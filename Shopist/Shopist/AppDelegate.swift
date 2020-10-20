@@ -9,6 +9,7 @@ import Datadog
 
 internal fileprivate(set) var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 internal let appConfig = AppConfig(serviceName: "io.shopist.ios")
+internal let api = API()
 
 private struct User {
     let id: String = UUID().uuidString
@@ -42,6 +43,22 @@ private struct User {
     }
 }
 
+internal struct ShopistPredicate: UIKitRUMViewsPredicate {
+    func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        if viewController is HomeViewController ||
+            viewController is CatalogViewController ||
+            viewController is ProductViewController ||
+            viewController is CheckoutViewController {
+            let attributes = viewController.isMovingToParent ? ["info": "Redisplay"] : [:]
+            return RUMViewFromPredicate(
+                path: "\(type(of: viewController))",
+                attributes: attributes
+            )
+        }
+        return nil
+    }
+}
+
 @UIApplicationMain
 internal class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -55,8 +72,9 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
                     environment: "shop.ist"
                 )
                 .set(serviceName: appConfig.serviceName)
-                // Currently, SDK doesn't auto-trace Alamofire requests
-                // .set(tracedHosts: [API.baseHost])
+                .track(firstPartyHosts: [API.baseHost])
+                .trackUIKitActions(true)
+                .trackUIKitRUMViews(using: ShopistPredicate())
                 .build()
         )
 

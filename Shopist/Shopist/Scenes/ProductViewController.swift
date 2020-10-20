@@ -32,15 +32,9 @@ internal class ProductViewController: UIViewController {
         setupBarButtons()
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        Global.rum.startView(viewController: self)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         imageView.setImage(with: product.cover)
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        Global.rum.stopView(viewController: self)
     }
 
     override func viewWillLayoutSubviews() {
@@ -87,7 +81,6 @@ internal class ProductViewController: UIViewController {
     private func addToCart() {
         cart.products.append(product)
         Global.rum.addAttribute(forKey: "hasPurchased", value: false)
-        Global.rum.registerUserAction(type: .tap, name: "Add \(product.name) to cart")
         setupBarButtons()
     }
 
@@ -95,7 +88,6 @@ internal class ProductViewController: UIViewController {
     private func removeFromCart() {
         if let indexToRemove = cart.products.firstIndex(of: product) {
             cart.products.remove(at: indexToRemove)
-            Global.rum.registerUserAction(type: .tap, name: "Remove \(product.name) from cart")
         }
         setupBarButtons()
     }
