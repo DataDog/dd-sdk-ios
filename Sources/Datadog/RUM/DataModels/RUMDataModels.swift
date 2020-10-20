@@ -20,6 +20,8 @@ internal struct RUMAction: RUMDataModel {
     let date: Int64
     /// Application properties
     let application: RUMApplication
+    /// The service name for this application
+    let service: String?
     /// Session properties
     let session: RUMSession
     /// View properties
@@ -38,6 +40,7 @@ internal struct RUMAction: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case date = "date"
         case application = "application"
+        case service = "service"
         case session = "session"
         case view = "view"
         case usr = "usr"
@@ -295,6 +298,8 @@ internal struct RUMError: RUMDataModel {
     let date: Int64
     /// Application properties
     let application: RUMApplication
+    /// The service name for this application
+    let service: String?
     /// Session properties
     let session: RUMSession
     /// View properties
@@ -315,6 +320,7 @@ internal struct RUMError: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case date = "date"
         case application = "application"
+        case service = "service"
         case session = "session"
         case view = "view"
         case usr = "usr"
@@ -410,6 +416,8 @@ internal struct RUMLongTask: RUMDataModel {
     let date: Int64
     /// Application properties
     let application: RUMApplication
+    /// The service name for this application
+    let service: String?
     /// Session properties
     let session: RUMSession
     /// View properties
@@ -430,6 +438,7 @@ internal struct RUMLongTask: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case date = "date"
         case application = "application"
+        case service = "service"
         case session = "session"
         case view = "view"
         case usr = "usr"
@@ -475,6 +484,8 @@ internal struct RUMResource: RUMDataModel {
     let date: Int64
     /// Application properties
     let application: RUMApplication
+    /// The service name for this application
+    let service: String?
     /// Session properties
     let session: RUMSession
     /// View properties
@@ -484,7 +495,7 @@ internal struct RUMResource: RUMDataModel {
     /// Device connectivity properties
     let connectivity: RUMConnectivity?
     /// Internal properties
-    let dd: RUMActionDD
+    let dd: RUMResourceDD
     /// RUM event type
     let type = "resource"
     /// Resource properties
@@ -495,6 +506,7 @@ internal struct RUMResource: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case date = "date"
         case application = "application"
+        case service = "service"
         case session = "session"
         case view = "view"
         case usr = "usr"
@@ -518,10 +530,30 @@ internal struct RUMResourceAction: Codable {
     }
 }
 
+// MARK: - RUMResourceDD
+
+/// Internal properties
+internal struct RUMResourceDD: Codable {
+    /// Version of the RUM event format
+    let formatVersion = 2
+    /// span identifier in decimal format
+    let spanID: String?
+    /// trace identifier in decimal format
+    let traceID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case formatVersion = "format_version"
+        case spanID = "span_id"
+        case traceID = "trace_id"
+    }
+}
+
 // MARK: - RUMResourceResource
 
 /// Resource properties
 internal struct RUMResourceResource: Codable {
+    /// UUID of the resource
+    let id: String?
     /// Resource type
     let type: RUMResourceType
     /// HTTP method of the resource
@@ -548,6 +580,7 @@ internal struct RUMResourceResource: Codable {
     let download: RUMDownload?
 
     enum CodingKeys: String, CodingKey {
+        case id = "id"
         case type = "type"
         case method = "method"
         case url = "url"
@@ -677,6 +710,8 @@ internal struct RUMView: RUMDataModel {
     let date: Int64
     /// Application properties
     let application: RUMApplication
+    /// The service name for this application
+    let service: String?
     /// Session properties
     let session: RUMSession
     /// View properties
@@ -693,6 +728,7 @@ internal struct RUMView: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case date = "date"
         case application = "application"
+        case service = "service"
         case session = "session"
         case view = "view"
         case usr = "usr"
@@ -819,6 +855,8 @@ internal enum RUMLoadingType: String, Codable {
     case fragmentRedisplay = "fragment_redisplay"
     case initialLoad = "initial_load"
     case routeChange = "route_change"
+    case viewControllerDisplay = "view_controller_display"
+    case viewControllerRedisplay = "view_controller_redisplay"
 }
 
 // MARK: - RUMViewLongTask
@@ -844,4 +882,4 @@ internal struct RUMViewResource: Codable {
         case count = "count"
     }
 }
-// b6eb2bf04511aa22db9b73ba0d195ee9c365bee7
+// c84571fec8cbb47cf0fb30b0f476a0d4d09d7262
