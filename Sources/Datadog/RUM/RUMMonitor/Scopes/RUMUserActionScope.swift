@@ -113,6 +113,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         let eventData = RUMAction(
             date: actionStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
+            service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,

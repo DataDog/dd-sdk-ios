@@ -211,6 +211,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let eventData = RUMAction(
             date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
+            service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: viewUUID.toRUMDataFormat,
@@ -243,6 +244,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let eventData = RUMView(
             date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
+            service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: viewUUID.toRUMDataFormat,
@@ -277,6 +279,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let eventData = RUMError(
             date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
+            service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
