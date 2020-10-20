@@ -41,7 +41,13 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
                 time: dateProvider.currentDate(),
                 attributes: [:],
                 url: url,
-                httpMethod: RUMHTTPMethod(request: interception.request)
+                httpMethod: RUMHTTPMethod(request: interception.request),
+                spanContext: interception.spanContext.map { spanContext in
+                    .init(
+                        traceID: spanContext.traceID.rawValue,
+                        spanID: spanContext.spanID.rawValue
+                    )
+                }
             )
         )
     }

@@ -30,6 +30,9 @@ internal class RUMResourceScope: RUMScope {
     /// take precedence over other values collected for this Resource.
     private var resourceMetrics: ResourceMetrics?
 
+    /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
+    private let spanContext: RUMSpanContext?
+
     init(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
@@ -37,7 +40,8 @@ internal class RUMResourceScope: RUMScope {
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         url: String,
-        httpMethod: RUMHTTPMethod
+        httpMethod: RUMHTTPMethod,
+        spanContext: RUMSpanContext?
     ) {
         self.context = context
         self.dependencies = dependencies
@@ -47,6 +51,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
         self.resourceHTTPMethod = httpMethod
+        self.spanContext = spanContext
     }
 
     // MARK: - RUMScope
@@ -100,8 +105,8 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(
-                spanID: nil,
-                traceID: nil
+                spanID: spanContext.flatMap { String($0.spanID) },
+                traceID: spanContext.flatMap { String($0.traceID) }
             ),
             resource: .init(
                 id: resourceUUID.toRUMDataFormat,

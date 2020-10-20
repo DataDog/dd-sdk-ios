@@ -19,7 +19,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         return handler
     }()
 
-    func testGivenTaskInterception_whenInterceptionStarts_itStartsRUMResource() throws {
+    func testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
         let receiveCommand = expectation(description: "Receive RUM command")
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
@@ -27,6 +27,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         var request = URLRequest(url: .mockRandom())
         request.httpMethod = ["GET", "POST", "PUT", "DELETE"].randomElement()!
         let taskInterception = TaskInterception(request: request)
+        XCTAssertNil(taskInterception.spanContext)
 
         // When
         handler.notify_taskInterceptionStarted(interception: taskInterception)
@@ -40,6 +41,27 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStartCommand.attributes.count, 0)
         XCTAssertEqual(resourceStartCommand.url, taskInterception.request.url?.absoluteString)
         XCTAssertEqual(resourceStartCommand.httpMethod, RUMHTTPMethod(request: request))
+        XCTAssertNil(resourceStartCommand.spanContext)
+    }
+
+    func testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
+        let receiveCommand = expectation(description: "Receive RUM command")
+        commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
+
+        // Given
+        let taskInterception = TaskInterception(request: .mockAny())
+        taskInterception.register(spanContext: .mockWith(traceID: 1, spanID: 2))
+        XCTAssertNotNil(taskInterception.spanContext)
+
+        // When
+        handler.notify_taskInterceptionStarted(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
+        XCTAssertEqual(resourceStartCommand.spanContext?.traceID, 1)
+        XCTAssertEqual(resourceStartCommand.spanContext?.spanID, 2)
     }
 
     func testGivenTaskInterceptionWithMetricsAndCompletion_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {

@@ -53,6 +53,24 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
     }
 
+    func testWhenScopeIsCreated_itReceivesRandomUUID() {
+        func createScope() -> RUMViewScope {
+            RUMViewScope(
+                parent: parent,
+                dependencies: .mockAny(),
+                identity: mockView,
+                uri: "UIViewController",
+                attributes: [:],
+                startTime: .mockAny()
+            )
+        }
+
+        let scope1 = createScope()
+        let scope2 = createScope()
+
+        XCTAssertNotEqual(scope1.viewUUID, scope2.viewUUID)
+    }
+
     func testWhenInitialViewIsStarted_itSendsApplicationStartAction() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(

@@ -99,6 +99,13 @@ internal protocol RUMResourceCommand: RUMCommand {
     var resourceName: String { get }
 }
 
+/// Tracing information propagated by Tracing to the underlying `URLRequest`. It is passed to the RUM backend
+/// in order to create the APM span. The actual `Span` is not send by the SDK.
+internal struct RUMSpanContext {
+    let traceID: UInt64
+    let spanID: UInt64
+}
+
 internal struct RUMStartResourceCommand: RUMResourceCommand {
     let resourceName: String
     let time: Date
@@ -108,6 +115,8 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let url: String
     /// HTTP method used to load the Resource
     let httpMethod: RUMHTTPMethod
+    /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
+    let spanContext: RUMSpanContext?
 }
 
 internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {

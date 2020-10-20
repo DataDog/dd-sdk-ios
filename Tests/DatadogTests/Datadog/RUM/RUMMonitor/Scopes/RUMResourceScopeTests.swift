@@ -26,7 +26,8 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: .mockAny(),
             url: .mockAny(),
-            httpMethod: .mockAny()
+            httpMethod: .mockAny(),
+            spanContext: nil
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, context.rumApplicationID)
@@ -34,6 +35,26 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(context.activeViewID))
         XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(context.activeViewURI))
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(context.activeUserActionID))
+    }
+
+    func testWhenScopeIsCreated_itReceivesRandomUUID() {
+        func createScope() -> RUMResourceScope {
+            RUMResourceScope(
+                context: context,
+                dependencies: .mockAny(),
+                resourceName: .mockAny(),
+                attributes: [:],
+                startTime: .mockAny(),
+                url: .mockAny(),
+                httpMethod: .mockAny(),
+                spanContext: nil
+            )
+        }
+
+        let scope1 = createScope()
+        let scope2 = createScope()
+
+        XCTAssertNotEqual(scope1.resourceUUID, scope2.resourceUUID)
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -47,7 +68,8 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST
+            httpMethod: .POST,
+            spanContext: .init(traceID: 100, spanID: 200)
         )
 
         currentTime.addTimeInterval(2)
@@ -74,6 +96,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertValidRumUUID(event.model.resource.id)
+        XCTAssertEqual(event.model.resource.id, scope.resourceUUID.toRUMDataFormat)
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.method, .post)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
@@ -88,6 +112,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.model.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.dd.traceID, "100")
+        XCTAssertEqual(event.model.dd.spanID, "200")
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -101,7 +127,8 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST
+            httpMethod: .POST,
+            spanContext: nil
         )
 
         currentTime.addTimeInterval(2)
@@ -149,7 +176,8 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST
+            httpMethod: .POST,
+            spanContext: nil
         )
 
         currentTime.addTimeInterval(2)
@@ -193,6 +221,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertValidRumUUID(event.model.resource.id)
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.method, .post)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
@@ -210,5 +239,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.model.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertNil(event.model.dd.traceID)
+        XCTAssertNil(event.model.dd.spanID)
     }
 }

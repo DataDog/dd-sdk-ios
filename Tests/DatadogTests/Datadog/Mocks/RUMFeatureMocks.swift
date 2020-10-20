@@ -173,10 +173,16 @@ extension RUMStartResourceCommand {
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
-        httpMethod: RUMHTTPMethod = .mockAny()
+        httpMethod: RUMHTTPMethod = .mockAny(),
+        spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
-            resourceName: resourceName, time: time, attributes: attributes, url: url, httpMethod: httpMethod
+            resourceName: resourceName,
+            time: time,
+            attributes: attributes,
+            url: url,
+            httpMethod: httpMethod,
+            spanContext: spanContext
         )
     }
 }
