@@ -13,6 +13,7 @@ import json
 import os
 import sys
 import time
+import base64
 
 # If `--prefer-localhost` argument is set, the server will listen on http://127.0.0.1:8000.
 # By default it tries to discover private IP address on local network and uses localhost as fallback.
@@ -26,14 +27,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
     - Generic endpoint for recording any POST request.
 
     GET /inspect
-    - Endpoint listing history of recorded generic requests. It provides <request-id> information
-    for each request to access its details, e.g. HTTP body with `GET /inspect/<request-id>/body`.
-
-    GET /inspect/<request-id>/body
-    - Endpoint returning HTTP body of specific generic request.
-
-    GET /inspect/<request-id>/headers
-    - Endpoint returning HTTP headers of specific generic request.
+    - Endpoint listing the history of recorded generic requests.
     """
 
     def do_POST(self):
@@ -50,8 +44,6 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         """
         self.__route([
             (r"/inspect$", self.__GET_inspect),
-            (r"/inspect/([0-9]+)/body$", self.__GET_inspect_request_body),
-            (r"/inspect/([0-9]+)/headers$", self.__GET_inspect_request_headers)
         ])
 
     def __POST_any(self, parameters):
@@ -77,33 +69,12 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         inspection_info = []
         for request in history.all_requests():
             inspection_info.append({
-                "request_method": request.http_method,
-                "request_path": request.path,
-                "body_inspection_path": "/inspect/{request_id}/body".format( request_id = request.id ),
-                "headers_inspection_path": "/inspect/{request_id}/headers".format( request_id = request.id )
+                "method": request.http_method,
+                "path": request.path,
+                "body": base64.b64encode(request.http_body), # use Base64 to not corrupt the JSON
+                "headers": base64.b64encode(str(request.http_headers)) # use Base64 to not corrupt the JSON
             })
         return json.dumps(inspection_info)
-
-    def __GET_inspect_request_body(self, parameters):
-        """
-        GET /inspect/<request-id>/body
-
-        Returns http body of a generic requests with given id.
-        """
-        global history
-        request_id = parameters[0]
-        return history.request(request_id).http_body
-
-
-    def __GET_inspect_request_headers(self, parameters):
-        """
-        GET /inspect/<request-id>/headers
-
-        Returns http headers of a generic requests with given id.
-        """
-        global history
-        request_id = parameters[0]
-        return history.request(request_id).http_headers
 
     def __route(self, routes):
         try:

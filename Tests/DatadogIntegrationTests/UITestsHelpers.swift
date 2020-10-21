@@ -63,3 +63,7 @@ extension String {
         range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
     }
 }
+
+struct Exception: Error, CustomStringConvertible {
+    let description: String
+}

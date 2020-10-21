@@ -7,13 +7,13 @@
 import XCTest
 import HTTPServerMock
 
-/// A set of common assertions for all RUM tests.
-protocol RUMCommonAsserts {
-    func assertRUM(requests: [HTTPServerMock.Request], file: StaticString, line: UInt)
+/// A set of common assertions for all Logging tests.
+protocol LoggingCommonAsserts {
+    func assertLogging(requests: [HTTPServerMock.Request], file: StaticString, line: UInt)
 }
 
-extension RUMCommonAsserts {
-    func assertRUM(
+extension LoggingCommonAsserts {
+    func assertLogging(
         requests: [HTTPServerMock.Request],
         file: StaticString = #file,
         line: UInt = #line
@@ -21,8 +21,8 @@ extension RUMCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1576404000000&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration`
-            let pathRegex = #"^(.*)(\/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)(&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)([0-9].[0-9].[0-9]([-a-z0-9])*)(,env:integration)$"#
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`
+            let pathRegex = #"^(.*)(/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
                 """
@@ -33,7 +33,7 @@ extension RUMCommonAsserts {
                 file: file,
                 line: line
             )
-            let expectedHeader = "Content-Type: text/plain;charset=UTF-8"
+            let expectedHeader = "Content-Type: application/json"
             XCTAssertTrue(
                 request.httpHeaders.contains(expectedHeader),
                 """
@@ -48,16 +48,9 @@ extension RUMCommonAsserts {
     }
 }
 
-extension RUMSessionMatcher {
-    class func from(requests: [HTTPServerMock.Request]) throws -> RUMSessionMatcher? {
-        let eventMatchers = try requests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-        let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers)
-
-        if sessionMatchers.count > 1 {
-            throw Exception(description: "There is more than one RUM Session among recorded requests.")
-        }
-
-        return sessionMatchers.first
+extension LogMatcher {
+    class func from(requests: [HTTPServerMock.Request]) throws -> [LogMatcher] {
+        return try requests
+            .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
     }
 }

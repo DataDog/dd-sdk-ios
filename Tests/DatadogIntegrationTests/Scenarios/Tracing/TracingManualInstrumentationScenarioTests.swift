@@ -7,7 +7,7 @@
 import HTTPServerMock
 import XCTest
 
-class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommonAsserts {
+class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommonAsserts, LoggingCommonAsserts {
     func testTracingManualInstrumentationScenario() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
@@ -25,20 +25,15 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
             )
         )
 
-        // Return desired count or timeout
-        let recordedTracingRequests = try tracingServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        // Get expected number of `SpanMatchers`
+        let recordedTracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try SpanMatcher.from(requests: requests).count == 3
+        }
+        let spanMatchers = try SpanMatcher.from(requests: recordedTracingRequests)
+
+        assertTracing(requests: recordedTracingRequests)
 
         let testEndTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
-
-        // Assert spans
-        let spanMatchers = try recordedTracingRequests
-            .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-
-        XCTAssertEqual(spanMatchers.count, 3)
-
-        // Assert common things
-        assertHTTPHeadersAndPath(in: recordedTracingRequests)
         try assertCommonMetadata(in: spanMatchers)
         try assertThat(spans: spanMatchers, startAfter: testBeginTimeInNanoseconds, andFinishBefore: testEndTimeInNanoseconds)
 
@@ -78,14 +73,13 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
         XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.class"), "SendTracesFixtureViewController")
 
         // Assert logs requests
-        let recordedLoggingRequests = try loggingServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        let recordedLoggingRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try LogMatcher.from(requests: requests).count == 1
+        }
 
-        // Assert logs
-        let logMatchers = try recordedLoggingRequests
-            .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
+        assertLogging(requests: recordedLoggingRequests)
 
-        XCTAssertEqual(logMatchers.count, 1)
+        let logMatchers = try LogMatcher.from(requests: recordedLoggingRequests)
 
         logMatchers[0].assertStatus(equals: "info")
         logMatchers[0].assertMessage(equals: "download progress")

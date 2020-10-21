@@ -64,18 +64,15 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         )
         app.tapSend3rdPartyRequests()
 
-        // Get Tracing requests
-        let recordedTracingRequests = try tracingServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+        // Get expected number of `SpanMatchers`
+        let recordedTracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try SpanMatcher.from(requests: requests).count >= 3
+        }
+        let spanMatchers = try SpanMatcher.from(requests: recordedTracingRequests)
+
+        assertTracing(requests: recordedTracingRequests)
 
         let testEndTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
-
-        // Get `Spans`
-        let spanMatchers = try recordedTracingRequests
-            .flatMap { request in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-
-        // Assert common things
-        assertHTTPHeadersAndPath(in: recordedTracingRequests)
         try assertCommonMetadata(in: spanMatchers)
         try assertThat(spans: spanMatchers, startAfter: testBeginTimeInNanoseconds, andFinishBefore: testEndTimeInNanoseconds)
 
@@ -100,8 +97,6 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
             "`Span` should NOT bet send for `thirdPartyPOSTResourceURL`"
         )
 
-        XCTAssertEqual(spanMatchers.count, 3, "There should be only 3 `Spans` send")
-
         XCTAssertEqual(try taskWithURL.operationName(), "urlsession.request")
         XCTAssertEqual(try taskWithRequest.operationName(), "urlsession.request")
         XCTAssertEqual(try taskWithBadURL.operationName(), "urlsession.request")
@@ -120,7 +115,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
 
         // Assert tracing HTTP headers propagated to `firstPartyPOSTResourceURL`
         let firstPartyRequests = try customFirstPartyServerSession
-            .pullRecordedPOSTRequests(count: 1, timeout: dataDeliveryTimeout)
+            .pullRecordedRequests(timeout: dataDeliveryTimeout) { $0.count >= 1 }
 
         XCTAssertEqual(firstPartyRequests.count, 1)
 

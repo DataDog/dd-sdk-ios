@@ -2,7 +2,7 @@
 
 > Swift interface to interact with Python server. Handy toolset to run intergation tests on physical iOS device and host the HTTP server process on separate machine in the same local network. 
 
-This package provides Swift interface to interact with HTTP mock server written in Python. This server records all `POST` requests and exposes `GET /inspect` endpoint to inspect them. The `ServerSession` is a convenient Swift interface to verify requests received by the server. 
+This package provides Swift interface for interacting with HTTP mock server written in Python. This server records all received requests and exposes `GET /inspect` endpoint to retrieve them back.
 
 ## Usage
 
@@ -29,15 +29,15 @@ guard let serverProcess = serverProcessRunner.waitUntilServerIsReachable() else 
 let server = ServerMock(serverProcess: serverProcess)
 let session = server.obtainUniqueRecordingSession()
 
-# now, from client's code send some POST request(s) to `session.recordingURL`
+# now, from client's code send some request(s) to `session.recordingURL`
 # e.g. `POST http://127.0.0.1:8000/resource/1` with "hello world" HTTP body
 
-let recordedRequests = try session.getRecordedPOSTRequests()
+let recordedRequests = try session.getRecordedRequests()
 XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
 XCTAssertEqual(recordedRequests[0].httpBody, "hello world".data(using: .utf8)!)
 ```
 
-By obtaining separate `ServerSession` with `server.obtainUniqueRecordingSession()` for each test, there is no need to restart the server each time to reset its state. 
+By obtaining separate `ServerSession` with `server.obtainUniqueRecordingSession()` for each test, there is no need to restart the server each time to reset its state.
 
 ## License
 
