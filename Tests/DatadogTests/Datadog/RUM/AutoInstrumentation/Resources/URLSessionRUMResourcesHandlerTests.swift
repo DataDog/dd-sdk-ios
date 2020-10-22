@@ -60,8 +60,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
-        XCTAssertEqual(resourceStartCommand.spanContext?.traceID, 1)
-        XCTAssertEqual(resourceStartCommand.spanContext?.spanID, 2)
+        XCTAssertEqual(resourceStartCommand.spanContext?.traceID, "1")
+        XCTAssertEqual(resourceStartCommand.spanContext?.spanID, "2")
     }
 
     func testGivenTaskInterceptionWithMetricsAndCompletion_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {

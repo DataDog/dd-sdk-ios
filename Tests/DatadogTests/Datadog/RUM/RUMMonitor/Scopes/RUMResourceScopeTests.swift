@@ -69,7 +69,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .POST,
-            spanContext: .init(traceID: 100, spanID: 200)
+            spanContext: .init(traceID: "100", spanID: "200")
         )
 
         currentTime.addTimeInterval(2)

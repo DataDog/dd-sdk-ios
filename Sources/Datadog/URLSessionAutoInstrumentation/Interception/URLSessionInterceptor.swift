@@ -172,7 +172,10 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     private func extractSpanContext(from request: URLRequest, using tracer: Tracer) -> DDSpanContext? {
-        let reader = HTTPHeadersReader(httpHeaderFields: request.allHTTPHeaderFields ?? [:])
+        guard let headers = request.allHTTPHeaderFields else {
+            return nil
+        }
+        let reader = HTTPHeadersReader(httpHeaderFields: headers)
         return tracer.extract(reader: reader) as? DDSpanContext
     }
 }

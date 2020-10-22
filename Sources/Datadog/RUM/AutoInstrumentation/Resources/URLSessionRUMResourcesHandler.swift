@@ -42,10 +42,10 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
                 attributes: [:],
                 url: url,
                 httpMethod: RUMHTTPMethod(request: interception.request),
-                spanContext: interception.spanContext.map { spanContext in
+                spanContext: interception.spanContext.flatMap { spanContext in
                     .init(
-                        traceID: spanContext.traceID.rawValue,
-                        spanID: spanContext.spanID.rawValue
+                        traceID: String(spanContext.traceID.rawValue),
+                        spanID: String(spanContext.spanID.rawValue)
                     )
                 }
             )

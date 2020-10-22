@@ -105,8 +105,8 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             connectivity: dependencies.connectivityInfoProvider.current,
             dd: .init(
-                spanID: spanContext.flatMap { String($0.spanID) },
-                traceID: spanContext.flatMap { String($0.traceID) }
+                spanID: spanContext?.spanID,
+                traceID: spanContext?.traceID
             ),
             resource: .init(
                 id: resourceUUID.toRUMDataFormat,
