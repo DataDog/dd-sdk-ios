@@ -248,6 +248,39 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
     }
 
+    func testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID() throws {
+        func createScope(uri: String) -> RUMViewScope {
+            RUMViewScope(
+                parent: parent,
+                dependencies: dependencies,
+                identity: mockView,
+                uri: uri,
+                attributes: [:],
+                startTime: .mockAny()
+            )
+        }
+
+        // Given
+        let scope1 = createScope(uri: "View1")
+        let scope2 = createScope(uri: "View2")
+
+        // When
+        [scope1, scope2].forEach { scope in
+            _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+            _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        }
+
+        // Then
+        let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMView>.self)
+        let view1Events = viewEvents.filter { $0.model.view.url == "View1" }
+        let view2Events = viewEvents.filter { $0.model.view.url == "View2" }
+        XCTAssertEqual(view1Events.count, 2)
+        XCTAssertEqual(view2Events.count, 2)
+        XCTAssertEqual(view1Events[0].model.view.id, view1Events[1].model.view.id)
+        XCTAssertEqual(view2Events[0].model.view.id, view2Events[1].model.view.id)
+        XCTAssertNotEqual(view1Events[0].model.view.id, view2Events[0].model.view.id)
+    }
+
     // MARK: - Resources Tracking
 
     func testItManagesResourceScopesLifecycle() throws {

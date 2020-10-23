@@ -56,7 +56,23 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
 
         app.tapSend3rdPartyRequests()
 
-        // Get Tracing requests
+        // Get custom 1st party request sent to the server
+        let firstPartyPOSTRequest = try XCTUnwrap(
+            customFirstPartyServerSession
+                .pullRecordedRequests(timeout: dataDeliveryTimeout) { $0.count == 1 }
+                .first
+        )
+
+        let firstPartyPOSTRequestTraceID = try XCTUnwrap(
+            getTraceID(from: firstPartyPOSTRequest),
+            "Tracing information should be propagated to `firstPartyPOSTResourceURL`."
+        )
+        let firstPartyPOSTRequestSpanID = try XCTUnwrap(
+            getSpanID(from: firstPartyPOSTRequest),
+            "Tracing information should be propagated to `firstPartyPOSTResourceURL`."
+        )
+
+        // Get Tracing Spans
         let tracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
             try SpanMatcher.from(requests: requests).count >= 3
         }
@@ -86,6 +102,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
             "`Span` should NOT bet send for `thirdPartyPOSTResourceURL`"
         )
 
+        let firstPartyPOSTRequestSpan = try XCTUnwrap(
+            spanMatchers.first { try $0.resource() == firstPartyPOSTResourceURL.absoluteString }
+        )
+        XCTAssertEqual(try firstPartyPOSTRequestSpan.traceID().hexadecimalNumberToDecimal, firstPartyPOSTRequestTraceID)
+        XCTAssertEqual(try firstPartyPOSTRequestSpan.spanID().hexadecimalNumberToDecimal, firstPartyPOSTRequestSpanID)
+
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
             try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 2
@@ -106,6 +128,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         )
         XCTAssertEqual(firstPartyResource1.resource.method, .methodGET)
         XCTAssertGreaterThan(firstPartyResource1.resource.duration, 0)
+        XCTAssertNil(firstPartyResource1.dd.traceID, "`firstPartyGETResourceURL` should not be traced")
+        XCTAssertNil(firstPartyResource1.dd.spanID, "`firstPartyGETResourceURL` should not be traced")
 
         let firstPartyResource2 = try XCTUnwrap(
             session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyPOSTResourceURL.absoluteString },
@@ -113,6 +137,16 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         )
         XCTAssertEqual(firstPartyResource2.resource.method, .post)
         XCTAssertGreaterThan(firstPartyResource2.resource.duration, 0)
+        XCTAssertEqual(
+            firstPartyResource2.dd.traceID,
+            firstPartyPOSTRequestTraceID,
+            "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
+        )
+        XCTAssertEqual(
+            firstPartyResource2.dd.spanID,
+            firstPartyPOSTRequestSpanID,
+            "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
+        )
 
         let firstPartyResourceError1 = try XCTUnwrap(
             session.viewVisits[0].errorEvents.first { $0.error.resource?.url == firstPartyBadResourceURL.absoluteString },
@@ -140,6 +174,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         )
         XCTAssertEqual(thirdPartyResource1.resource.method, .methodGET)
         XCTAssertGreaterThan(thirdPartyResource1.resource.duration, 0)
+        XCTAssertNil(thirdPartyResource1.dd.traceID, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource1.dd.spanID, "3rd party RUM Resources should not be traced")
 
         let thirdPartyResource2 = try XCTUnwrap(
             session.viewVisits[1].resourceEvents.first { $0.resource.url == thirdPartyPOSTResourceURL.absoluteString },
@@ -147,10 +183,26 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         )
         XCTAssertEqual(thirdPartyResource2.resource.method, .post)
         XCTAssertGreaterThan(thirdPartyResource2.resource.duration, 0)
+        XCTAssertNil(thirdPartyResource2.dd.traceID, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource2.dd.spanID, "3rd party RUM Resources should not be traced")
 
         XCTAssertTrue(
             thirdPartyResource1.resource.dns != nil || thirdPartyResource2.resource.dns != nil,
             "At leas one of the third party resources should lead to DNS resolution phase"
         )
+    }
+
+    private func getTraceID(from request: Request) -> String? {
+        let prefix = "x-datadog-trace-id: "
+        var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
+        header?.removeFirst(prefix.count)
+        return header
+    }
+
+    private func getSpanID(from request: Request) -> String? {
+        let prefix = "x-datadog-parent-id: "
+        var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
+        header?.removeFirst(prefix.count)
+        return header
     }
 }

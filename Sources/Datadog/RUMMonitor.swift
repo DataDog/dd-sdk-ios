@@ -240,7 +240,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 url: url.absoluteString,
-                httpMethod: httpMethod
+                httpMethod: httpMethod,
+                spanContext: nil
             )
         )
     }

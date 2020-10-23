@@ -17,16 +17,15 @@ class URLSessionTracingHandlerTests: XCTestCase {
         spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
 
         // Given
-        var requestWithSpanContext = URLRequest(url: .mockAny())
-        requestWithSpanContext.addValue("100", forHTTPHeaderField: TracingHTTPHeaders.traceIDField)
-        requestWithSpanContext.addValue("200", forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField)
-
-        let interception = TaskInterception(request: requestWithSpanContext)
+        let interception = TaskInterception(request: .mockAny())
         interception.register(completion: .mockAny())
         interception.register(
             metrics: .mockWith(
                 fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
             )
+        )
+        interception.register(
+            spanContext: .mockWith(traceID: 100, spanID: 200, parentSpanID: nil)
         )
 
         // When

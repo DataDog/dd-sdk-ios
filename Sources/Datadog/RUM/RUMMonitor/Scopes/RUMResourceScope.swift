@@ -12,10 +12,12 @@ internal class RUMResourceScope: RUMScope {
     let context: RUMContext
     private let dependencies: RUMScopeDependencies
 
+    /// This Resource's UUID.
+    private let resourceUUID: RUMUUID
     /// The name used to identify this Resource.
-    internal let resourceName: String
+    private let resourceName: String
     /// Resource attributes.
-    private(set) var attributes: [AttributeKey: AttributeValue]
+    private var attributes: [AttributeKey: AttributeValue]
 
     /// The Resource url.
     private var resourceURL: String
@@ -28,6 +30,9 @@ internal class RUMResourceScope: RUMScope {
     /// take precedence over other values collected for this Resource.
     private var resourceMetrics: ResourceMetrics?
 
+    /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
+    private let spanContext: RUMSpanContext?
+
     init(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
@@ -35,15 +40,18 @@ internal class RUMResourceScope: RUMScope {
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         url: String,
-        httpMethod: RUMHTTPMethod
+        httpMethod: RUMHTTPMethod,
+        spanContext: RUMSpanContext?
     ) {
         self.context = context
         self.dependencies = dependencies
+        self.resourceUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.resourceName = resourceName
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
         self.resourceHTTPMethod = httpMethod
+        self.spanContext = spanContext
     }
 
     // MARK: - RUMScope
@@ -87,6 +95,7 @@ internal class RUMResourceScope: RUMScope {
         let eventData = RUMResource(
             date: resourceStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
+            service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
@@ -95,8 +104,12 @@ internal class RUMResourceScope: RUMScope {
             ),
             usr: dependencies.userInfoProvider.current,
             connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
+            dd: .init(
+                spanID: spanContext?.spanID,
+                traceID: spanContext?.traceID
+            ),
             resource: .init(
+                id: resourceUUID.toRUMDataFormat,
                 type: command.kind.toRUMDataFormat,
                 method: resourceHTTPMethod.toRUMDataFormat,
                 url: resourceURL,
@@ -130,6 +143,7 @@ internal class RUMResourceScope: RUMScope {
         let eventData = RUMError(
             date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
+            service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,

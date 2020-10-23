@@ -94,6 +94,11 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
             let interception = TaskInterception(request: request)
             self.interceptionByTask[task] = interception
 
+            if let tracer = Global.sharedTracer as? Tracer,
+               let spanContext = self.extractSpanContext(from: request, using: tracer) {
+                interception.register(spanContext: spanContext)
+            }
+
             self.rumResourceHandler?.notify_taskInterceptionStarted(interception: interception)
         }
     }
@@ -151,7 +156,7 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         self.rumResourceHandler?.notify_taskInterceptionCompleted(interception: interception)
     }
 
-    // MARK: - SpanContext Injection
+    // MARK: - SpanContext Injection & Extraction
 
     private func injectSpanContext(into request: URLRequest, using tracer: Tracer) -> URLRequest {
         let writer = HTTPHeadersWriter()
@@ -164,5 +169,13 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
             newRequest.setValue(value, forHTTPHeaderField: field)
         }
         return newRequest
+    }
+
+    private func extractSpanContext(from request: URLRequest, using tracer: Tracer) -> DDSpanContext? {
+        guard let headers = request.allHTTPHeaderFields else {
+            return nil
+        }
+        let reader = HTTPHeadersReader(httpHeaderFields: headers)
+        return tracer.extract(reader: reader) as? DDSpanContext
     }
 }

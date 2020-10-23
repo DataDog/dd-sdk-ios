@@ -23,14 +23,14 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
 
         let span: OTSpan
 
-        if let spanContext = extractSpanContext(from: interception.request, using: tracer) {
+        if let spanContext = interception.spanContext {
             span = tracer.startSpan(
                 spanContext: spanContext,
                 operationName: "urlsession.request",
                 startTime: resourceMetrics.fetch.start
             )
         } else {
-            // Span context may not be injected on some versions of iOS if `URLSession.dataTask(...)` for `URL`
+            // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
             span = tracer.startSpan(
                 operationName: "urlsession.request",
@@ -65,12 +65,5 @@ internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
         }
 
         span.finish(at: resourceMetrics.fetch.end)
-    }
-
-    // MARK: - SpanContext Extraction
-
-    private func extractSpanContext(from request: URLRequest, using tracer: Tracer) -> DDSpanContext? {
-        let reader = HTTPHeadersReader(httpHeaderFields: request.allHTTPHeaderFields ?? [:])
-        return tracer.extract(reader: reader) as? DDSpanContext
     }
 }
