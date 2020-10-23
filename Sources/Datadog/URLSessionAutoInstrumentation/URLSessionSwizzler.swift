@@ -17,12 +17,10 @@ internal class URLSessionSwizzler {
     /// `URLSession.dataTask(with:)` (for `URL`) swizzling. Only applied on iOS 13 and above.
     let dataTaskWithURL: DataTaskWithURL?
 
-    private let interceptor: URLSessionInterceptorType
-
-    init(interceptor: URLSessionInterceptorType) throws {
+    init() throws {
         if #available(iOS 13.0, *) {
-            self.dataTaskWithURLAndCompletion = try DataTaskWithURLAndCompletion(interceptor: interceptor)
-            self.dataTaskWithURL = try DataTaskWithURL(interceptor: interceptor)
+            self.dataTaskWithURLAndCompletion = try DataTaskWithURLAndCompletion()
+            self.dataTaskWithURL = try DataTaskWithURL()
         } else {
             // Prior to iOS 13.0 we do not apply following swizzlings, as those methods call
             // the `URLSession.dataTask(with:completionHandler:)` internally which is managed
@@ -30,9 +28,8 @@ internal class URLSessionSwizzler {
             self.dataTaskWithURLAndCompletion = nil
             self.dataTaskWithURL = nil
         }
-        self.dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion(interceptor: interceptor)
-        self.dataTaskWithURLRequest = try DataTaskWithURLRequest(interceptor: interceptor)
-        self.interceptor = interceptor
+        self.dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion()
+        self.dataTaskWithURLRequest = try DataTaskWithURLRequest()
     }
 
     func swizzle() {
@@ -56,31 +53,31 @@ internal class URLSessionSwizzler {
         )
 
         private let method: FoundMethod
-        private let interceptor: URLSessionInterceptorType
 
-        init(interceptor: URLSessionInterceptorType) throws {
+        override init() throws {
             self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            self.interceptor = interceptor
-            super.init()
+            try super.init()
         }
 
         func swizzle() {
             typealias Signature = @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak self] session, urlRequest, completionHandler -> URLSessionDataTask in
+                return { session, urlRequest, completionHandler -> URLSessionDataTask in
+                    guard let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor else {
+                        return previousImplementation(session, Self.selector, urlRequest, completionHandler)
+                    }
                     let task: URLSessionDataTask
-
                     if completionHandler != nil {
                         var taskReference: URLSessionDataTask?
-
                         let newCompletionHandler: CompletionHandler = { data, response, error in
                             if let task = taskReference { // sanity check, should always succeed
-                                self?.interceptor.taskCompleted(urlSession: session, task: task, error: error)
+                                let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor
+                                interceptor?.taskCompleted(urlSession: session, task: task, error: error)
                             }
                             completionHandler?(data, response, error)
                         }
 
-                        let newRequest = self?.interceptor.modify(request: urlRequest) ?? urlRequest
+                        let newRequest = interceptor.modify(request: urlRequest)
 
                         task = previousImplementation(session, Self.selector, newRequest, newCompletionHandler)
                         taskReference = task
@@ -92,9 +89,7 @@ internal class URLSessionSwizzler {
                         //   `nil` as the `completionHandler` (it produces a warning, but compiles).
                         task = previousImplementation(session, Self.selector, urlRequest, completionHandler)
                     }
-
-                    self?.interceptor.taskCreated(urlSession: session, task: task)
-
+                    interceptor.taskCreated(urlSession: session, task: task)
                     return task
                 }
             }
@@ -111,30 +106,28 @@ internal class URLSessionSwizzler {
         )
 
         private let method: FoundMethod
-        private let interceptor: URLSessionInterceptorType
 
-        init(interceptor: URLSessionInterceptorType) throws {
+        override init() throws {
             self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            self.interceptor = interceptor
-            super.init()
+            try super.init()
         }
 
         func swizzle() {
             typealias Signature = @convention(block) (URLSession, URL, CompletionHandler?) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak self] session, url, completionHandler -> URLSessionDataTask in
+                return { session, url, completionHandler -> URLSessionDataTask in
+                    guard let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor else {
+                        return previousImplementation(session, Self.selector, url, completionHandler)
+                    }
                     let task: URLSessionDataTask
-
                     if completionHandler != nil {
                         var taskReference: URLSessionDataTask?
-
                         let newCompletionHandler: CompletionHandler = { data, response, error in
                             if let task = taskReference { // sanity check, should always succeed
-                                self?.interceptor.taskCompleted(urlSession: session, task: task, error: error)
+                                interceptor.taskCompleted(urlSession: session, task: task, error: error)
                             }
                             completionHandler?(data, response, error)
                         }
-
                         task = previousImplementation(session, Self.selector, url, newCompletionHandler)
                         taskReference = task
                     } else {
@@ -143,9 +136,7 @@ internal class URLSessionSwizzler {
                         //   `nil` as the `completionHandler` (it produces a warning, but compiles).
                         task = previousImplementation(session, Self.selector, url, completionHandler)
                     }
-
-                    self?.interceptor.taskCreated(urlSession: session, task: task)
-
+                    interceptor.taskCreated(urlSession: session, task: task)
                     return task
                 }
             }
@@ -162,25 +153,26 @@ internal class URLSessionSwizzler {
         )
 
         private let method: FoundMethod
-        private let interceptor: URLSessionInterceptorType
 
-        init(interceptor: URLSessionInterceptorType) throws {
+        override init() throws {
             self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            self.interceptor = interceptor
-            super.init()
+            try super.init()
         }
 
         func swizzle() {
             typealias Signature = @convention(block) (URLSession, URLRequest) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak self] session, urlRequest -> URLSessionDataTask in
-                    let newRequest = self?.interceptor.modify(request: urlRequest) ?? urlRequest
+                return { session, urlRequest -> URLSessionDataTask in
+                    guard let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor else {
+                        return previousImplementation(session, Self.selector, urlRequest)
+                    }
+                    let newRequest = interceptor.modify(request: urlRequest)
                     let task = previousImplementation(session, Self.selector, newRequest)
                     if #available(iOS 13.0, *) {
                         // Prior to iOS 13.0, `dataTask(with:)` (for `URLRequest`) calls the
                         // the `dataTask(with:completionHandler:)` (for `URLRequest`) internally,
                         // so the task creation will be notified from `dataTaskWithURLRequestAndCompletion` swizzling.
-                        self?.interceptor.taskCreated(urlSession: session, task: task)
+                        interceptor.taskCreated(urlSession: session, task: task)
                     }
                     return task
                 }
@@ -198,20 +190,21 @@ internal class URLSessionSwizzler {
         )
 
         private let method: FoundMethod
-        private let interceptor: URLSessionInterceptorType
 
-        init(interceptor: URLSessionInterceptorType) throws {
+        override init() throws {
             self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            self.interceptor = interceptor
-            super.init()
+            try super.init()
         }
 
         func swizzle() {
             typealias Signature = @convention(block) (URLSession, URL) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak self] session, url -> URLSessionDataTask in
+                return { session, url -> URLSessionDataTask in
+                    guard let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor else {
+                        return previousImplementation(session, Self.selector, url)
+                    }
                     let task = previousImplementation(session, Self.selector, url)
-                    self?.interceptor.taskCreated(urlSession: session, task: task)
+                    interceptor.taskCreated(urlSession: session, task: task)
                     return task
                 }
             }

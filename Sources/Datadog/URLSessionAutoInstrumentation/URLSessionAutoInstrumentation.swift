@@ -19,7 +19,7 @@ internal class URLSessionAutoInstrumentation {
     ) {
         do {
             self.interceptor = URLSessionInterceptor(configuration: configuration, dateProvider: dateProvider)
-            self.swizzler = try URLSessionSwizzler(interceptor: interceptor)
+            self.swizzler = try URLSessionSwizzler()
         } catch {
             consolePrint(
                 "🔥 Datadog SDK error: automatic tracking of `URLSession` requests can't be set up due to error: \(error)"

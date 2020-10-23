@@ -36,7 +36,7 @@ class MethodSwizzlerTests: XCTestCase {
     private let newIMPReturnString: TypedBlockIMPReturnString = { _ in String.mockAny() }
 
     private typealias Swizzler = MethodSwizzler<TypedIMPReturnString, TypedBlockIMPReturnString>
-    private let swizzler = Swizzler()
+    private let swizzler = try! Swizzler()
 
     override func tearDown() {
         super.tearDown()
