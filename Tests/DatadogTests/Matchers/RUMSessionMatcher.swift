@@ -93,6 +93,9 @@ internal class RUMSessionMatcher {
         let errorEvents: [RUMError] = try (eventsMatchersByType["error"] ?? [])
             .map { matcher in try matcher.model() }
 
+        // Validate each group of events individually
+        try validate(rumResourceEvents: resourceEvents)
+
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
         let visits = uniqueViewIDs.map { viewID in ViewVisit(viewID: viewID) }
@@ -156,5 +159,15 @@ internal class RUMSessionMatcher {
         }
 
         self.viewVisits = visitsEventOrderedByTime
+    }
+}
+
+private func validate(rumResourceEvents: [RUMResource]) throws {
+    // Each `RUMResource` should have unique ID
+    let ids = Set(rumResourceEvents.map { $0.resource.id })
+    if ids.count != rumResourceEvents.count {
+        throw RUMSessionConsistencyException(
+            description: "`resource.id` should be unique - found at least two RUMResource events with the same `resource.id`."
+        )
     }
 }

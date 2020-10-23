@@ -13,7 +13,7 @@ internal class RUMResourceScope: RUMScope {
     private let dependencies: RUMScopeDependencies
 
     /// This Resource's UUID.
-    let resourceUUID: RUMUUID
+    private let resourceUUID: RUMUUID
     /// The name used to identify this Resource.
     private let resourceName: String
     /// Resource attributes.

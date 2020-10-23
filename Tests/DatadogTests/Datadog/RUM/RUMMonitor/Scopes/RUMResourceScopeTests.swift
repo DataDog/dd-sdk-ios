@@ -37,26 +37,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(context.activeUserActionID))
     }
 
-    func testWhenScopeIsCreated_itReceivesRandomUUID() {
-        func createScope() -> RUMResourceScope {
-            RUMResourceScope(
-                context: context,
-                dependencies: .mockAny(),
-                resourceName: .mockAny(),
-                attributes: [:],
-                startTime: .mockAny(),
-                url: .mockAny(),
-                httpMethod: .mockAny(),
-                spanContext: nil
-            )
-        }
-
-        let scope1 = createScope()
-        let scope2 = createScope()
-
-        XCTAssertNotEqual(scope1.resourceUUID, scope2.resourceUUID)
-    }
-
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
@@ -97,7 +77,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertValidRumUUID(event.model.resource.id)
-        XCTAssertEqual(event.model.resource.id, scope.resourceUUID.toRUMDataFormat)
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.method, .post)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
@@ -241,5 +220,36 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
         XCTAssertNil(event.model.dd.traceID)
         XCTAssertNil(event.model.dd.spanID)
+    }
+
+    func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
+        let resourceName: String = .mockAny()
+        func createScope(url: String) -> RUMResourceScope {
+            RUMResourceScope(
+                context: context,
+                dependencies: dependencies,
+                resourceName: resourceName,
+                attributes: [:],
+                startTime: .mockAny(),
+                url: url,
+                httpMethod: .mockAny(),
+                spanContext: nil
+            )
+        }
+
+        let scope1 = createScope(url: "/r/1")
+        let scope2 = createScope(url: "/r/2")
+
+        // When
+        _ = scope1.process(command: RUMStopResourceCommand.mockWith(resourceName: resourceName))
+        _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceName: resourceName))
+
+        // Then
+        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMResource>.self)
+        let resource1Events = resourceEvents.filter { $0.model.resource.url == "/r/1" }
+        let resource2Events = resourceEvents.filter { $0.model.resource.url == "/r/2" }
+        XCTAssertEqual(resource1Events.count, 1)
+        XCTAssertEqual(resource2Events.count, 1)
+        XCTAssertNotEqual(resource1Events[0].model.resource.id, resource2Events[0].model.resource.id)
     }
 }
