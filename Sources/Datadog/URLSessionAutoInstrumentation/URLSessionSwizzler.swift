@@ -19,8 +19,8 @@ internal class URLSessionSwizzler {
 
     init() throws {
         if #available(iOS 13.0, *) {
-            self.dataTaskWithURLAndCompletion = try DataTaskWithURLAndCompletion()
-            self.dataTaskWithURL = try DataTaskWithURL()
+            self.dataTaskWithURLAndCompletion = try DataTaskWithURLAndCompletion.build()
+            self.dataTaskWithURL = try DataTaskWithURL.build()
         } else {
             // Prior to iOS 13.0 we do not apply following swizzlings, as those methods call
             // the `URLSession.dataTask(with:completionHandler:)` internally which is managed
@@ -28,8 +28,8 @@ internal class URLSessionSwizzler {
             self.dataTaskWithURLAndCompletion = nil
             self.dataTaskWithURL = nil
         }
-        self.dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion()
-        self.dataTaskWithURLRequest = try DataTaskWithURLRequest()
+        self.dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion.build()
+        self.dataTaskWithURLRequest = try DataTaskWithURLRequest.build()
     }
 
     func swizzle() {
@@ -54,9 +54,16 @@ internal class URLSessionSwizzler {
 
         private let method: FoundMethod
 
-        override init() throws {
-            self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            try super.init()
+        static func build() throws -> DataTaskWithURLRequestAndCompletion {
+            return try DataTaskWithURLRequestAndCompletion(
+                selector: self.selector,
+                klass: URLSession.self
+            )
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try Self.findMethod(with: selector, in: klass)
+            super.init()
         }
 
         func swizzle() {
@@ -71,8 +78,7 @@ internal class URLSessionSwizzler {
                         var taskReference: URLSessionDataTask?
                         let newCompletionHandler: CompletionHandler = { data, response, error in
                             if let task = taskReference { // sanity check, should always succeed
-                                let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor
-                                interceptor?.taskCompleted(urlSession: session, task: task, error: error)
+                                interceptor.taskCompleted(urlSession: session, task: task, error: error)
                             }
                             completionHandler?(data, response, error)
                         }
@@ -107,9 +113,16 @@ internal class URLSessionSwizzler {
 
         private let method: FoundMethod
 
-        override init() throws {
-            self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            try super.init()
+        static func build() throws -> DataTaskWithURLAndCompletion {
+            return try DataTaskWithURLAndCompletion(
+                selector: self.selector,
+                klass: URLSession.self
+            )
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try Self.findMethod(with: selector, in: klass)
+            super.init()
         }
 
         func swizzle() {
@@ -154,9 +167,16 @@ internal class URLSessionSwizzler {
 
         private let method: FoundMethod
 
-        override init() throws {
-            self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            try super.init()
+        static func build() throws -> DataTaskWithURLRequest {
+            return try DataTaskWithURLRequest(
+                selector: self.selector,
+                klass: URLSession.self
+            )
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try Self.findMethod(with: selector, in: klass)
+            super.init()
         }
 
         func swizzle() {
@@ -191,9 +211,16 @@ internal class URLSessionSwizzler {
 
         private let method: FoundMethod
 
-        override init() throws {
-            self.method = try Self.findMethod(with: Self.selector, in: URLSession.self)
-            try super.init()
+        static func build() throws -> DataTaskWithURL {
+            return try DataTaskWithURL(
+                selector: self.selector,
+                klass: URLSession.self
+            )
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try Self.findMethod(with: selector, in: klass)
+            super.init()
         }
 
         func swizzle() {
