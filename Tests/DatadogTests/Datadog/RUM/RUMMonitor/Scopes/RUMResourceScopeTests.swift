@@ -168,8 +168,34 @@ class RUMResourceScopeTests: XCTestCase {
             time: currentTime,
             attributes: [:],
             metrics: .mockWith(
-                fetch: (start: resourceFetchStart, end: resourceFetchStart.addingTimeInterval(10)),
-                dns: (start: resourceFetchStart.addingTimeInterval(1), duration: 2),
+                fetch: .init(
+                    start: resourceFetchStart,
+                    end: resourceFetchStart.addingTimeInterval(10)
+                ),
+                redirection: .init(
+                    start: resourceFetchStart.addingTimeInterval(1),
+                    end: resourceFetchStart.addingTimeInterval(2)
+                ),
+                dns: .init(
+                    start: resourceFetchStart.addingTimeInterval(3),
+                    end: resourceFetchStart.addingTimeInterval(4)
+                ),
+                connect: .init(
+                    start: resourceFetchStart.addingTimeInterval(5),
+                    end: resourceFetchStart.addingTimeInterval(7)
+                ),
+                ssl: .init(
+                    start: resourceFetchStart.addingTimeInterval(6),
+                    end: resourceFetchStart.addingTimeInterval(7)
+                ),
+                firstByte: .init(
+                    start: resourceFetchStart.addingTimeInterval(8),
+                    end: resourceFetchStart.addingTimeInterval(9)
+                ),
+                download: .init(
+                    start: resourceFetchStart.addingTimeInterval(9),
+                    end: resourceFetchStart.addingTimeInterval(10)
+                ),
                 responseSize: 2_048
             )
         )
@@ -205,17 +231,20 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.resource.method, .post)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(event.model.resource.statusCode, 200)
-        XCTAssertEqual(event.model.resource.duration, metrics.fetch.end.timeIntervalSince(metrics.fetch.start).toInt64Nanoseconds)
-        XCTAssertEqual(event.model.resource.size, metrics.responseSize!)
-        XCTAssertNil(event.model.resource.redirect)
-        XCTAssertEqual(event.model.resource.dns?.start, 1_000_000_000, "DNS should start 1s after resource has started")
-        XCTAssertEqual(
-            event.model.resource.dns?.duration, metrics.dns!.duration.toInt64Nanoseconds
-        )
-        XCTAssertNil(event.model.resource.connect)
-        XCTAssertNil(event.model.resource.ssl)
-        XCTAssertNil(event.model.resource.firstByte)
-        XCTAssertNil(event.model.resource.download)
+        XCTAssertEqual(event.model.resource.duration, 10_000_000_000)
+        XCTAssertEqual(event.model.resource.size, 2_048)
+        XCTAssertEqual(event.model.resource.redirect?.start, 1_000_000_000)
+        XCTAssertEqual(event.model.resource.redirect?.duration, 1_000_000_000)
+        XCTAssertEqual(event.model.resource.dns?.start, 3_000_000_000)
+        XCTAssertEqual(event.model.resource.dns?.duration, 1_000_000_000)
+        XCTAssertEqual(event.model.resource.connect?.start, 5_000_000_000)
+        XCTAssertEqual(event.model.resource.connect?.duration, 2_000_000_000)
+        XCTAssertEqual(event.model.resource.ssl?.start, 6_000_000_000)
+        XCTAssertEqual(event.model.resource.ssl?.duration, 1_000_000_000)
+        XCTAssertEqual(event.model.resource.firstByte?.start, 8_000_000_000)
+        XCTAssertEqual(event.model.resource.firstByte?.duration, 1_000_000_000)
+        XCTAssertEqual(event.model.resource.download?.start, 9_000_000_000)
+        XCTAssertEqual(event.model.resource.download?.duration, 1_000_000_000)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
         XCTAssertNil(event.model.dd.traceID)

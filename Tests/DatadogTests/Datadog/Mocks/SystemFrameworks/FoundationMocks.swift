@@ -313,19 +313,71 @@ extension URLSessionTaskTransactionMetrics {
         return URLSessionTaskTransactionMetrics()
     }
 
+    /// Mocks `URLSessionTaskTransactionMetrics` by spreading out detailed values between `start` and `end`.
+    @available(iOS 13, *)
+    static func mockBySpreadingDetailsBetween(
+        start: Date,
+        end: Date,
+        resourceFetchType: URLSessionTaskMetrics.ResourceFetchType = .networkLoad
+    ) -> URLSessionTaskTransactionMetrics {
+        let spread = end.timeIntervalSince(start)
+
+        let fetchStartDate = start
+        let domainLookupStartDate = start.addingTimeInterval(spread * 0.05) // 5%
+        let domainLookupEndDate = start.addingTimeInterval(spread * 0.15) // 15%
+        let connectStartDate = start.addingTimeInterval(spread * 0.15) // 15%
+        let secureConnectionStartDate = start.addingTimeInterval(spread * 0.20) // 20%
+        let secureConnectionEndDate = start.addingTimeInterval(spread * 0.35) // 35%
+        let connectEndDate = secureConnectionEndDate
+        let requestStartDate = start.addingTimeInterval(spread * 0.40) // 40%
+        let responseStartDate = start.addingTimeInterval(spread * 0.50) // 50%
+        let responseEndDate = end
+
+        let countOfResponseBodyBytesAfterDecoding: Int64 = .random(in: 512..<1_024)
+
+        return URLSessionTaskTransactionMetricsMock(
+            resourceFetchType: resourceFetchType,
+            fetchStartDate: fetchStartDate,
+            domainLookupStartDate: domainLookupStartDate,
+            domainLookupEndDate: domainLookupEndDate,
+            connectStartDate: connectStartDate,
+            connectEndDate: connectEndDate,
+            secureConnectionStartDate: secureConnectionStartDate,
+            secureConnectionEndDate: secureConnectionEndDate,
+            requestStartDate: requestStartDate,
+            responseStartDate: responseStartDate,
+            responseEndDate: responseEndDate,
+            countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding
+        )
+    }
+
     @available(iOS 13, *)
     static func mockWith(
+        resourceFetchType: URLSessionTaskMetrics.ResourceFetchType = .networkLoad,
         fetchStartDate: Date? = nil,
-        responseEndDate: Date? = nil,
         domainLookupStartDate: Date? = nil,
         domainLookupEndDate: Date? = nil,
+        connectStartDate: Date? = nil,
+        connectEndDate: Date? = nil,
+        secureConnectionStartDate: Date? = nil,
+        secureConnectionEndDate: Date? = nil,
+        requestStartDate: Date? = nil,
+        responseStartDate: Date? = nil,
+        responseEndDate: Date? = nil,
         countOfResponseBodyBytesAfterDecoding: Int64 = 0
     ) -> URLSessionTaskTransactionMetrics {
         return URLSessionTaskTransactionMetricsMock(
+            resourceFetchType: resourceFetchType,
             fetchStartDate: fetchStartDate,
-            responseEndDate: responseEndDate,
             domainLookupStartDate: domainLookupStartDate,
             domainLookupEndDate: domainLookupEndDate,
+            connectStartDate: connectStartDate,
+            connectEndDate: connectEndDate,
+            secureConnectionStartDate: secureConnectionStartDate,
+            secureConnectionEndDate: secureConnectionEndDate,
+            requestStartDate: requestStartDate,
+            responseStartDate: responseStartDate,
+            responseEndDate: responseEndDate,
             countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding
         )
     }
@@ -360,11 +412,11 @@ private class URLSessionTaskMetricsMock: URLSessionTaskMetrics {
 
 @available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskTransactionMetrics` prior to iOS 13.0
 private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMetrics {
+    private let _resourceFetchType: URLSessionTaskMetrics.ResourceFetchType
+    override var resourceFetchType: URLSessionTaskMetrics.ResourceFetchType { _resourceFetchType }
+
     private let _fetchStartDate: Date?
     override var fetchStartDate: Date? { _fetchStartDate }
-
-    private let _responseEndDate: Date?
-    override var responseEndDate: Date? { _responseEndDate }
 
     private let _domainLookupStartDate: Date?
     override var domainLookupStartDate: Date? { _domainLookupStartDate }
@@ -372,20 +424,55 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
     private let _domainLookupEndDate: Date?
     override var domainLookupEndDate: Date? { _domainLookupEndDate }
 
+    private let _connectStartDate: Date?
+    override var connectStartDate: Date? { _connectStartDate }
+
+    private let _connectEndDate: Date?
+    override var connectEndDate: Date? { _connectEndDate }
+
+    private let _secureConnectionStartDate: Date?
+    override var secureConnectionStartDate: Date? { _secureConnectionStartDate }
+
+    private let _secureConnectionEndDate: Date?
+    override var secureConnectionEndDate: Date? { _secureConnectionEndDate }
+
+    private let _requestStartDate: Date?
+    override var requestStartDate: Date? { _requestStartDate }
+
+    private let _responseStartDate: Date?
+    override var responseStartDate: Date? { _responseStartDate }
+
+    private let _responseEndDate: Date?
+    override var responseEndDate: Date? { _responseEndDate }
+
     private let _countOfResponseBodyBytesAfterDecoding: Int64
     override var countOfResponseBodyBytesAfterDecoding: Int64 { _countOfResponseBodyBytesAfterDecoding }
 
     init(
+        resourceFetchType: URLSessionTaskMetrics.ResourceFetchType,
         fetchStartDate: Date?,
-        responseEndDate: Date?,
         domainLookupStartDate: Date?,
         domainLookupEndDate: Date?,
+        connectStartDate: Date?,
+        connectEndDate: Date?,
+        secureConnectionStartDate: Date?,
+        secureConnectionEndDate: Date?,
+        requestStartDate: Date?,
+        responseStartDate: Date?,
+        responseEndDate: Date?,
         countOfResponseBodyBytesAfterDecoding: Int64
     ) {
+        self._resourceFetchType = resourceFetchType
         self._fetchStartDate = fetchStartDate
-        self._responseEndDate = responseEndDate
         self._domainLookupStartDate = domainLookupStartDate
         self._domainLookupEndDate = domainLookupEndDate
+        self._connectStartDate = connectStartDate
+        self._connectEndDate = connectEndDate
+        self._secureConnectionStartDate = secureConnectionStartDate
+        self._secureConnectionEndDate = secureConnectionEndDate
+        self._requestStartDate = requestStartDate
+        self._responseStartDate = responseStartDate
+        self._responseEndDate = responseEndDate
         self._countOfResponseBodyBytesAfterDecoding = countOfResponseBodyBytesAfterDecoding
     }
 }

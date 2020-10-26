@@ -59,10 +59,24 @@ extension ResourceMetrics {
     }
 
     static func mockWith(
-        fetch: (start: Date, end: Date) = (start: Date(), end: Date(timeIntervalSinceNow: 1)),
-        dns: (start: Date, duration: TimeInterval)? = nil,
+        fetch: DateInterval = .init(start: Date(), end: Date(timeIntervalSinceNow: 1)),
+        redirection: DateInterval? = nil,
+        dns: DateInterval? = nil,
+        connect: DateInterval? = nil,
+        ssl: DateInterval? = nil,
+        firstByte: DateInterval? = nil,
+        download: DateInterval? = nil,
         responseSize: Int64? = nil
     ) -> Self {
-        return .init(fetch: fetch, dns: dns, responseSize: responseSize)
+        return .init(
+            fetch: fetch,
+            redirection: redirection,
+            dns: dns,
+            connect: connect,
+            ssl: ssl,
+            firstByte: firstByte,
+            download: download,
+            responseSize: responseSize
+        )
     }
 }

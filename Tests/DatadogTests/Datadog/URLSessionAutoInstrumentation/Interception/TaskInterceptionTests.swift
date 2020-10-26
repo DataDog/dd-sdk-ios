@@ -31,138 +31,164 @@ class TaskInterceptionTests: XCTestCase {
 }
 
 class ResourceMetricsTests: XCTestCase {
-    // MARK: - `fetch` metric
-
-    func testGivenTaskMetricsWithTransactions_whenComputingResourceFetchMetric_itUsesLastTransactionValues() {
-        guard #available(iOS 13, *) else {
-            return
-        }
-
-        // Given
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            transactionMetrics: [
-                .mockAny(),
-                .mockAny(),
-                .mockWith(
-                    fetchStartDate: .mockDecember15th2019At10AMUTC(),
-                    responseEndDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
-                )
-            ]
-        )
-
-        // When
-        let resourceFetch = ResourceMetrics(taskMetrics: taskMetrics).fetch
-
-        // Then
-        XCTAssertEqual(resourceFetch.start, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(resourceFetch.end, .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+    func testCalculatingMetricDuration() {
+        let date = Date()
+        let metric = ResourceMetrics.DateInterval(start: date, end: date.addingTimeInterval(2))
+        XCTAssertEqual(metric.duration, 2)
     }
 
-    func testGivenTaskMetricsWithNoTransactions_whenComputingResourceFetchMetric_itDefaultsToTaskValues() {
+    func testWhenTaskMakesSingleFetchFromNetwork_thenAllMetricsExceptRedirectionAreCollected() {
         guard #available(iOS 13, *) else {
             return
         }
 
-        // Given
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            taskInterval: .init(
-                start: .mockDecember15th2019At10AMUTC(),
-                end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
-            ),
-            transactionMetrics: []
+        let taskInterval = DateInterval(
+            start: .mockDecember15th2019At10AMUTC(),
+            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+        )
+        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start,
+            end: taskInterval.end,
+            resourceFetchType: .networkLoad
         )
 
         // When
-        let resourceFetch = ResourceMetrics(taskMetrics: taskMetrics).fetch
+        let taskMetrics: URLSessionTaskMetrics = .mockWith(
+            taskInterval: taskInterval,
+            transactionMetrics: [taskTransaction]
+        )
 
         // Then
-        XCTAssertEqual(resourceFetch.start, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(resourceFetch.end, .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+        XCTAssertEqual(resourceMetrics.fetch.start, taskInterval.start)
+        XCTAssertEqual(resourceMetrics.fetch.end, taskInterval.end)
+        XCTAssertNil(resourceMetrics.redirection, "Single-transaction task should not have redirection phase.")
+        XCTAssertEqual(resourceMetrics.dns?.start, taskTransaction.domainLookupStartDate!)
+        XCTAssertEqual(resourceMetrics.dns?.end, taskTransaction.domainLookupEndDate!)
+        XCTAssertEqual(resourceMetrics.connect?.start, taskTransaction.connectStartDate!)
+        XCTAssertEqual(resourceMetrics.connect?.end, taskTransaction.connectEndDate!)
+        XCTAssertEqual(resourceMetrics.ssl?.start, taskTransaction.secureConnectionStartDate!)
+        XCTAssertEqual(resourceMetrics.ssl?.end, taskTransaction.secureConnectionEndDate!)
+        XCTAssertEqual(resourceMetrics.firstByte?.start, taskTransaction.requestStartDate!)
+        XCTAssertEqual(resourceMetrics.firstByte?.end, taskTransaction.responseStartDate!)
+        XCTAssertEqual(resourceMetrics.download?.start, taskTransaction.responseStartDate!)
+        XCTAssertEqual(resourceMetrics.download?.end, taskTransaction.responseEndDate!)
+        XCTAssertEqual(resourceMetrics.responseSize, taskTransaction.countOfResponseBodyBytesAfterDecoding)
     }
 
-    // MARK: - `dns` metric
-
-    func testGivenTaskMetricsWithTransactions_whenComputingResourceDNSMetric_itUsesLastTransactionValues() {
+    func testWhenTaskMakesMultipleFetchesFromNetwork_thenAllMetricsAreCollected() {
         guard #available(iOS 13, *) else {
             return
         }
 
-        // Given
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            transactionMetrics: [
-                .mockAny(),
-                .mockAny(),
-                .mockWith(
-                    domainLookupStartDate: .mockDecember15th2019At10AMUTC(),
-                    domainLookupEndDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
-                )
-            ]
+        let taskInterval = DateInterval(
+            start: .mockDecember15th2019At10AMUTC(),
+            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10)
+        )
+        // Transaction 1 spreads from 0% to 30% of the overal task duration.
+        let transaction1: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start,
+            end: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.30),
+            resourceFetchType: .networkLoad
+        )
+        // Transaction 2 spreads from 35% to 60% of the overal task duration.
+        let transaction2: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.35),
+            end: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.60),
+            resourceFetchType: .networkLoad
+        )
+        // Transaction 3 spreads from 65% to 100% of the overal task duration.
+        let transaction3: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.65),
+            end: taskInterval.start.addingTimeInterval(taskInterval.duration),
+            resourceFetchType: .networkLoad
         )
 
         // When
-        let resourceDNS = ResourceMetrics(taskMetrics: taskMetrics).dns
+        let taskMetrics: URLSessionTaskMetrics = .mockWith(
+            taskInterval: taskInterval,
+            transactionMetrics: [transaction1, transaction2, transaction3]
+        )
 
         // Then
-        XCTAssertEqual(resourceDNS?.start, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(resourceDNS?.duration, 2)
+        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+        XCTAssertEqual(resourceMetrics.fetch.start, taskInterval.start)
+        XCTAssertEqual(resourceMetrics.fetch.end, taskInterval.end)
+        XCTAssertEqual(
+            resourceMetrics.redirection?.start,
+            transaction1.fetchStartDate!,
+            "Redirection should start with from 1st transaction"
+        )
+        XCTAssertEqual(
+            resourceMetrics.redirection?.end,
+            transaction2.responseEndDate!,
+            "Redirection should end with from 2nd transaction"
+        )
+        XCTAssertEqual(resourceMetrics.dns?.start, transaction3.domainLookupStartDate!)
+        XCTAssertEqual(resourceMetrics.dns?.end, transaction3.domainLookupEndDate!)
+        XCTAssertEqual(resourceMetrics.connect?.start, transaction3.connectStartDate!)
+        XCTAssertEqual(resourceMetrics.connect?.end, transaction3.connectEndDate!)
+        XCTAssertEqual(resourceMetrics.ssl?.start, transaction3.secureConnectionStartDate!)
+        XCTAssertEqual(resourceMetrics.ssl?.end, transaction3.secureConnectionEndDate!)
+        XCTAssertEqual(resourceMetrics.firstByte?.start, transaction3.requestStartDate!)
+        XCTAssertEqual(resourceMetrics.firstByte?.end, transaction3.responseStartDate!)
+        XCTAssertEqual(resourceMetrics.download?.start, transaction3.responseStartDate!)
+        XCTAssertEqual(resourceMetrics.download?.end, transaction3.responseEndDate!)
+        XCTAssertEqual(resourceMetrics.responseSize, transaction3.countOfResponseBodyBytesAfterDecoding)
     }
 
-    func testGivenTaskMetricsWithNoTransactions_whenComputingResourceDNSMetric_itNotAvailable() {
+    func testWhenTaskMakesFetchFromLocalCache_thenOnlyFetchMetricIsCollected() {
         guard #available(iOS 13, *) else {
             return
         }
 
-        // Given
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            transactionMetrics: []
+        let taskInterval = DateInterval(
+            start: .mockDecember15th2019At10AMUTC(),
+            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+        )
+        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start,
+            end: taskInterval.end,
+            resourceFetchType: .localCache
         )
 
         // When
-        let resourceDNS = ResourceMetrics(taskMetrics: taskMetrics).dns
-
-        // Then
-        XCTAssertNil(resourceDNS)
-    }
-
-    // MARK: - `responseSize` metric
-
-    func testGivenTaskMetricsWithTransactions_whenComputingResourceResponseSizeMetric_itUsesLastTransactionValues() {
-        guard #available(iOS 13, *) else {
-            return
-        }
-
-        // Given
         let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            transactionMetrics: [
-                .mockAny(),
-                .mockAny(),
-                .mockWith(
-                    countOfResponseBodyBytesAfterDecoding: 1_024
-                )
-            ]
+            taskInterval: taskInterval,
+            transactionMetrics: [taskTransaction]
         )
 
-        // When
-        let resourceResponseSize = ResourceMetrics(taskMetrics: taskMetrics).responseSize
-
         // Then
-        XCTAssertEqual(resourceResponseSize, 1_024)
-    }
-
-    func testGivenTaskMetricsWithNoTransactions_whenComputingResourceResponseSizeMetric_itNotAvailable() {
-        guard #available(iOS 13, *) else {
-            return
-        }
-
-        // Given
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            transactionMetrics: []
+        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+        XCTAssertEqual(resourceMetrics.fetch.start, taskInterval.start)
+        XCTAssertEqual(resourceMetrics.fetch.end, taskInterval.end)
+        XCTAssertNil(
+            resourceMetrics.redirection,
+            "`redirection` should not be tracked for cache transactions."
         )
-
-        // When
-        let resourceResponseSize = ResourceMetrics(taskMetrics: taskMetrics).responseSize
-
-        // Then
-        XCTAssertNil(resourceResponseSize)
+        XCTAssertNil(
+            resourceMetrics.dns,
+            "`dns` should not be tracked for cache transactions."
+        )
+        XCTAssertNil(
+            resourceMetrics.connect,
+            "`connect` should not be tracked for cache transactions."
+        )
+        XCTAssertNil(
+            resourceMetrics.ssl,
+            "`ssl` should not be tracked for cache transactions."
+        )
+        XCTAssertNil(
+            resourceMetrics.firstByte,
+            "`firstByte` should not be tracked for cache transactions."
+        )
+        XCTAssertNil(
+            resourceMetrics.download,
+            "`download` should not be tracked for cache transactions."
+        )
+        XCTAssertNil(
+            resourceMetrics.responseSize,
+            "`responseSize` should not be tracked for cache transactions."
+        )
     }
 }
