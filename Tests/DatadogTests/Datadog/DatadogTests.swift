@@ -76,6 +76,9 @@ class DatadogTests: XCTestCase {
         func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) throws {
             Datadog.initialize(appContext: .mockAny(), configuration: configuration)
             verificationBlock()
+
+            RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
+            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
             try Datadog.deinitializeOrThrow()
         }
 

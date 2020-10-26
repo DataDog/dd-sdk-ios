@@ -27,7 +27,10 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
             configuration: .mockAny(),
             dateProvider: SystemDateProvider()
         )
-        defer { URLSessionAutoInstrumentation.instance = nil }
+        defer {
+            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+            URLSessionAutoInstrumentation.instance = nil
+        }
 
         // When
         Global.rum = RUMMonitor.initialize()
