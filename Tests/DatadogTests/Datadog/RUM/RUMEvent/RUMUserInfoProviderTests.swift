@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-extension RUMUSR: EquatableInTests {}
+extension RUMDataUSR: EquatableInTests {}
 
 class RUMUserInfoProviderTests: XCTestCase {
     private let userInfoProvider = UserInfoProvider()
@@ -20,12 +20,12 @@ class RUMUserInfoProviderTests: XCTestCase {
 
     func testWhenUserInfoIsAvailable_itReturnsRUMUserInfo() {
         userInfoProvider.value = UserInfo(id: "abc-123", name: nil, email: nil)
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUSR(id: "abc-123", name: nil, email: nil))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: nil, email: nil))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil)
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUSR(id: "abc-123", name: "Foo", email: nil))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: nil))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com")
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUSR(id: "abc-123", name: "Foo", email: "foo@bar.com"))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com"))
     }
 }

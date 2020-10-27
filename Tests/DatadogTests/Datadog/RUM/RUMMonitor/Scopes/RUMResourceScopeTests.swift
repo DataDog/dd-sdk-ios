@@ -69,7 +69,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResource>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self).first)
         XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
@@ -127,7 +127,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMError>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataError>.self).first)
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
@@ -193,7 +193,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let metrics = metricsCommand.metrics
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResource>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self).first)
         XCTAssertEqual(event.model.date, metrics.fetch.start.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
@@ -245,7 +245,7 @@ class RUMResourceScopeTests: XCTestCase {
         _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceName: resourceName))
 
         // Then
-        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMResource>.self)
+        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self)
         let resource1Events = resourceEvents.filter { $0.model.resource.url == "/r/1" }
         let resource2Events = resourceEvents.filter { $0.model.resource.url == "/r/2" }
         XCTAssertEqual(resource1Events.count, 1)

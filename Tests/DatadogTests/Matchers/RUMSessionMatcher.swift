@@ -51,16 +51,16 @@ internal class RUMSessionMatcher {
         fileprivate(set) var path: String = ""
 
         /// `RUMView` events tracked during this visit.
-        fileprivate(set) var viewEvents: [RUMView] = []
+        fileprivate(set) var viewEvents: [RUMDataView] = []
 
         /// `RUMAction` events tracked during this visit.
-        fileprivate(set) var actionEvents: [RUMAction] = []
+        fileprivate(set) var actionEvents: [RUMDataAction] = []
 
         /// `RUMResource` events tracked during this visit.
-        fileprivate(set) var resourceEvents: [RUMResource] = []
+        fileprivate(set) var resourceEvents: [RUMDataResource] = []
 
         /// `RUMError` events tracked during this visit.
-        fileprivate(set) var errorEvents: [RUMError] = []
+        fileprivate(set) var errorEvents: [RUMDataError] = []
     }
 
     /// An array of view visits tracked during this RUM Session.
@@ -81,16 +81,16 @@ internal class RUMSessionMatcher {
 
         // Get RUM Events by kind:
 
-        let viewEvents: [RUMView] = try (eventsMatchersByType["view"] ?? [])
+        let viewEvents: [RUMDataView] = try (eventsMatchersByType["view"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let actionEvents: [RUMAction] = try (eventsMatchersByType["action"] ?? [])
+        let actionEvents: [RUMDataAction] = try (eventsMatchersByType["action"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let resourceEvents: [RUMResource] = try (eventsMatchersByType["resource"] ?? [])
+        let resourceEvents: [RUMDataResource] = try (eventsMatchersByType["resource"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let errorEvents: [RUMError] = try (eventsMatchersByType["error"] ?? [])
+        let errorEvents: [RUMDataError] = try (eventsMatchersByType["error"] ?? [])
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually
@@ -162,7 +162,7 @@ internal class RUMSessionMatcher {
     }
 }
 
-private func validate(rumResourceEvents: [RUMResource]) throws {
+private func validate(rumResourceEvents: [RUMDataResource]) throws {
     // Each `RUMResource` should have unique ID
     let ids = Set(rumResourceEvents.map { $0.resource.id })
     if ids.count != rumResourceEvents.count {

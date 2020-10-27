@@ -79,10 +79,10 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func waitAndReturnRUMErrorSent() throws -> RUMError {
+    private func waitAndReturnRUMErrorSent() throws -> RUMDataError {
         // [RUMView, RUMAction, RUMError] events sent:
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
-        let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMError.self) })
+        let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMDataError.self) })
         return try rumErrorMatcher.model()
     }
 }
