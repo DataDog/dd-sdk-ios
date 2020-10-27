@@ -25,18 +25,18 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
     }
 
     func taskCreated(urlSession: URLSession, task: URLSessionTask) {
-        onTaskCreated?(urlSession, task)
         tasksCreated.append((session: urlSession, task: task))
+        onTaskCreated?(urlSession, task)
     }
 
     func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?) {
-        onTaskCompleted?(urlSession, task, error)
         tasksCompleted.append((session: urlSession, task: task, error: error))
+        onTaskCompleted?(urlSession, task, error)
     }
 
     func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
-        onTaskMetricsCollected?(urlSession, task, metrics)
         taskMetrics.append((session: urlSession, task: task, metrics: metrics))
+        onTaskMetricsCollected?(urlSession, task, metrics)
     }
 }
 
