@@ -188,7 +188,23 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
 
         XCTAssertTrue(
             thirdPartyResource1.resource.dns != nil || thirdPartyResource2.resource.dns != nil,
-            "At leas one of the third party resources should lead to DNS resolution phase"
+            "At least one 3rd party resource should track DNS resolution phase"
+        )
+        XCTAssertTrue(
+            thirdPartyResource1.resource.connect != nil || thirdPartyResource2.resource.connect != nil,
+            "At least one 3rd party resource should track connect phase"
+        )
+        XCTAssertTrue(
+            thirdPartyResource1.resource.ssl != nil || thirdPartyResource2.resource.ssl != nil,
+            "At least one 3rd party resource should track secure connect phase"
+        )
+        XCTAssertTrue(
+            thirdPartyResource1.resource.firstByte != nil && thirdPartyResource2.resource.firstByte != nil,
+            "Both 3rd party resources should track TTFB phase"
+        )
+        XCTAssertTrue(
+            thirdPartyResource1.resource.download != nil && thirdPartyResource2.resource.download != nil,
+            "Both 3rd party resources should track download phase"
         )
     }
 
