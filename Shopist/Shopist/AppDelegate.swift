@@ -44,13 +44,13 @@ private struct User {
 }
 
 internal struct ShopistPredicate: UIKitRUMViewsPredicate {
-    func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+    func rumView(for viewController: UIViewController) -> RUMView? {
         if viewController is HomeViewController ||
             viewController is CatalogViewController ||
             viewController is ProductViewController ||
             viewController is CheckoutViewController {
             let attributes = viewController.isMovingToParent ? ["info": "Redisplay"] : [:]
-            return RUMViewFromPredicate(
+            return RUMView(
                 path: "\(type(of: viewController))",
                 attributes: attributes
             )

@@ -7,7 +7,7 @@
 import UIKit
 
 /// A description of the RUM View returned from the `UIKitRUMViewsPredicate`.
-public struct RUMViewFromPredicate {
+public struct RUMView {
     // TODO: RUMM-726 Rename to `RUMView` when this name is no longer taken by auto-generated model(s).
 
     /// The RUM View path, appearing as `PATH` in RUM Explorer.
@@ -35,5 +35,5 @@ public protocol UIKitRUMViewsPredicate {
     /// The predicate deciding if the RUM View should be started or ended for given instance of the `UIViewController`.
     /// - Parameter viewController: an instance of the view controller noticed by the SDK.
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
-    func rumView(for viewController: UIViewController) -> RUMViewFromPredicate?
+    func rumView(for viewController: UIViewController) -> RUMView?
 }
