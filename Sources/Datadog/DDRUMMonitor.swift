@@ -37,7 +37,7 @@ public class DDRUMMonitor {
     ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
     public func addError(
         message: String,
-        source: RUMErrorSource = .source,
+        source: RUMErrorSource = .custom,
         attributes: [AttributeKey: AttributeValue] = [:],
         file: StaticString? = #file,
         line: UInt? = #line
@@ -51,7 +51,7 @@ public class DDRUMMonitor {
     ///   - attributes: custom attributes to attach to the Error.
     public func addError(
         error: Error,
-        source: RUMErrorSource = .source,
+        source: RUMErrorSource = .custom,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
     }

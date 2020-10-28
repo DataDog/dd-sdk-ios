@@ -38,7 +38,7 @@ internal struct RUMContextIntegration {
 /// Creates RUM Errors with given message.
 internal struct RUMErrorsIntegration {
     /// Adds RUM Error with given message and stack to current RUM View.
-    func addError(with message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue] = [:]) {
+    func addError(with message: String, stack: String?, source: RUMDataSource, attributes: [AttributeKey: AttributeValue] = [:]) {
         rumMonitor?.addError(message: message, stack: stack, source: source, attributes: attributes)
     }
 }

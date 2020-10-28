@@ -84,11 +84,9 @@ public enum RUMUserActionType {
 }
 
 public enum RUMErrorSource {
+    case custom
     case source
-    case console
     case network
-    case agent
-    case logger
     case webview
 }
 
@@ -207,10 +205,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         if let file = file, let fileName = "\(file)".split(separator: "/").last, let line = line {
             stack = "\(fileName):\(line)"
         }
-        addError(message: message, stack: stack, source: source, attributes: attributes)
+        addError(message: message, stack: stack, source: source.toRUMDataFormat, attributes: attributes)
     }
 
-    internal func addError(message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
+    internal func addError(message: String, stack: String?, source: RUMDataSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
@@ -227,7 +225,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 error: error,
-                source: source,
+                source: source.toRUMDataFormat,
                 attributes: attributes
             )
         )

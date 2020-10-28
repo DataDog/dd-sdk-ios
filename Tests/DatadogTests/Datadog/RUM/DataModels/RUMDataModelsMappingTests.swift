@@ -67,11 +67,9 @@ class RUMDataModelsMappingTests: XCTestCase {
     }
 
     func testRUMErrorSource() {
+        verify(value: RUMErrorSource.custom, matches: .custom)
         verify(value: RUMErrorSource.source, matches: .source)
-        verify(value: RUMErrorSource.console, matches: .console)
         verify(value: RUMErrorSource.network, matches: .network)
-        verify(value: RUMErrorSource.agent, matches: .agent)
-        verify(value: RUMErrorSource.logger, matches: .logger)
         verify(value: RUMErrorSource.webview, matches: .webview)
     }
 

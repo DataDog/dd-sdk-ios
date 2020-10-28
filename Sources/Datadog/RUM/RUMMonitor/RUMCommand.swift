@@ -58,7 +58,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     /// The error message.
     let message: String
     /// The origin of this error.
-    let source: RUMErrorSource
+    let source: RUMDataSource
     /// Error stacktrace.
     let stack: String?
 
@@ -66,7 +66,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         time: Date,
         message: String,
         stack: String?,
-        source: RUMErrorSource,
+        source: RUMDataSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time
@@ -79,7 +79,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     init(
         time: Date,
         error: Error,
-        source: RUMErrorSource,
+        source: RUMDataSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time

@@ -258,7 +258,7 @@ Example:
 ```swift
 // anywhere in your code:
 
-Global.rum.addError(message: "error message.", source: .source)
+Global.rum.addError(message: "error message.", source: .custom)
 ```
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.

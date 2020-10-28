@@ -546,8 +546,8 @@ class RUMMonitorTests: XCTestCase {
             switch modulo {
             case 0: monitor.startView(viewController: view)
             case 1: monitor.stopView(viewController: view)
-            case 2: monitor.addError(error: ErrorMock(), source: .agent)
-            case 3: monitor.addError(message: .mockAny(), source: .agent)
+            case 2: monitor.addError(error: ErrorMock(), source: .custom)
+            case 3: monitor.addError(message: .mockAny(), source: .custom)
             case 4: monitor.startResourceLoading(resourceKey: .mockAny(), url: .mockAny(), httpMethod: .mockAny())
             case 5: monitor.stopResourceLoading(resourceKey: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
             case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock(), httpStatusCode: .mockAny())

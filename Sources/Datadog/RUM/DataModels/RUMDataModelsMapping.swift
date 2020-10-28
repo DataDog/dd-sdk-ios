@@ -53,11 +53,9 @@ internal extension RUMResourceKind {
 internal extension RUMErrorSource {
     var toRUMDataFormat: RUMDataSource {
         switch self {
+        case .custom: return .custom
         case .source: return .source
-        case .console: return .console
         case .network: return .network
-        case .agent: return .agent
-        case .logger: return .logger
         case .webview: return .webview
         }
     }

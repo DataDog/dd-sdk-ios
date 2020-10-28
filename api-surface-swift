@@ -3,12 +3,12 @@ public typealias AttributeValue = Encodable
 public class DDRUMMonitor
  public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue] = [:])
  public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue] = [:])
- public func addError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
- public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue] = [:])
- public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:])
+ public func addError(message: String,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
+ public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:])
  public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:])
  public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue] = [:])
  public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:])
@@ -191,11 +191,9 @@ public enum RUMUserActionType
  case swipe
  case custom
 public enum RUMErrorSource
+ case custom
  case source
- case console
  case network
- case agent
- case logger
  case webview
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
@@ -203,10 +201,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue])
  override public func addError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?)
  override public func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue])
- override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue])
+ override public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue])
  override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
  override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
  override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
