@@ -210,6 +210,9 @@ class URLSessionSwizzlerTests: XCTestCase {
     func testGivenSuccessfulTask_whenUsingSwizzledAPIs_itPassessAllValuesToTheInterceptor() {
         let completionHandlersCalled = expectation(description: "Call completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
+        let notifyTaskCompleted = expectation(description: "Notify task completion")
+        notifyTaskCompleted.expectedFulfillmentCount = 4
+        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let expectedResponse: HTTPURLResponse = .mockResponseWith(statusCode: 200)
