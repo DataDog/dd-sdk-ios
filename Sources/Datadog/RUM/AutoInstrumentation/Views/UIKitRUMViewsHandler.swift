@@ -54,7 +54,7 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
 
     private weak var lastStartedViewController: UIViewController?
 
-    private func startIfNotStarted(rumView: RUMViewFromPredicate, for viewController: UIViewController) {
+    private func startIfNotStarted(rumView: RUMView, for viewController: UIViewController) {
         if viewController === lastStartedViewController {
             return
         }

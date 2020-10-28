@@ -13,13 +13,13 @@ internal struct RUMConnectivityInfoProvider {
     /// Shared mobile carrier info provider.
     let carrierInfoProvider: CarrierInfoProviderType
 
-    var current: RUMConnectivity? {
+    var current: RUMDataConnectivity? {
         guard let networkInfo = networkConnectionInfoProvider.current else {
             return nil
         }
         let carrierInfo = carrierInfoProvider.current
 
-        return RUMConnectivity(
+        return RUMDataConnectivity(
             status: connectivityStatus(for: networkInfo),
             interfaces: connectivityInterfaces(for: networkInfo),
             cellular: carrierInfo.flatMap { connectivityCellularInfo(for: $0) }
@@ -28,7 +28,7 @@ internal struct RUMConnectivityInfoProvider {
 
     // MARK: - Private
 
-    private func connectivityStatus(for networkInfo: NetworkConnectionInfo) -> RUMStatus {
+    private func connectivityStatus(for networkInfo: NetworkConnectionInfo) -> RUMDataStatus {
         switch networkInfo.reachability {
         case .yes:   return .connected
         case .maybe: return .maybe
@@ -36,7 +36,7 @@ internal struct RUMConnectivityInfoProvider {
         }
     }
 
-    private func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMInterface] {
+    private func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMDataInterface] {
         guard let availableInterfaces = networkInfo.availableInterfaces, !availableInterfaces.isEmpty else {
             return [.none]
         }
@@ -51,7 +51,7 @@ internal struct RUMConnectivityInfoProvider {
         }
     }
 
-    private func connectivityCellularInfo(for carrierInfo: CarrierInfo) -> RUMCellular {
+    private func connectivityCellularInfo(for carrierInfo: CarrierInfo) -> RUMDataCellular {
         return .init(
             technology: carrierInfo.radioAccessTechnology.rawValue,
             carrierName: carrierInfo.carrierName

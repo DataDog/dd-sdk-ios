@@ -31,11 +31,11 @@ extension Array where Element == RUMEventMatcher {
     ///
     /// Example output:
     ///
-    ///     [0] - RUMEventMatcher<RUMAction>
-    ///     [1] - RUMEventMatcher<RUMView>
-    ///     [2] - RUMEventMatcher<RUMResource>
-    ///     [3] - RUMEventMatcher<RUMView>
-    ///     [4] - RUMEventMatcher<RUMAction>
+    ///     [0] - RUMEventMatcher<RUMDataAction>
+    ///     [1] - RUMEventMatcher<RUMDataView>
+    ///     [2] - RUMEventMatcher<RUMDataResource>
+    ///     [3] - RUMEventMatcher<RUMDataView>
+    ///     [4] - RUMEventMatcher<RUMDataAction>
     ///
     func inspect() {
         enumerated().forEach { index, matcher in
@@ -45,10 +45,10 @@ extension Array where Element == RUMEventMatcher {
 
     private func getTypeOf(matcher: RUMEventMatcher) -> String {
         let allPossibleMatchers: [String: (RUMEventMatcher) -> Bool] = [
-            "RUMEventMatcher<RUMView>": { matcher in matcher.model(isTypeOf: RUMView.self) },
-            "RUMEventMatcher<RUMAction>": { matcher in matcher.model(isTypeOf: RUMAction.self) },
-            "RUMEventMatcher<RUMResource>": { matcher in matcher.model(isTypeOf: RUMResource.self) },
-            "RUMEventMatcher<RUMError>": { matcher in matcher.model(isTypeOf: RUMError.self) }
+            "RUMEventMatcher<RUMDataView>": { matcher in matcher.model(isTypeOf: RUMDataView.self) },
+            "RUMEventMatcher<RUMDataAction>": { matcher in matcher.model(isTypeOf: RUMDataAction.self) },
+            "RUMEventMatcher<RUMDataResource>": { matcher in matcher.model(isTypeOf: RUMDataResource.self) },
+            "RUMEventMatcher<RUMDataError>": { matcher in matcher.model(isTypeOf: RUMDataError.self) }
         ]
 
         let bestMatcherEntry = allPossibleMatchers

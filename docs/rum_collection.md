@@ -115,11 +115,11 @@ Datadog.Configuration
 `predicate` must be a type that conforms to `UIKitRUMViewsPredicate` protocol:
 ```swift
 public protocol UIKitRUMViewsPredicate {
-    func rumView(for viewController: UIViewController) -> RUMViewFromPredicate?
+    func rumView(for viewController: UIViewController) -> RUMView?
 }
 ```
 
-Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM view or not (and return `nil` in this case). The returned value of `RUMViewFromPredicate` should specify at least the `path` for created the RUM view. Refer to code documentation comments for more details.
+Inside the `rumView(for:)` implementation, your app should decide if a given `UIViewController` instance should start the RUM view or not (and return `nil` in this case). The returned value of `RUMView` should specify at least the `path` for created the RUM view. Refer to code documentation comments for more details.
 
 **Note**: The SDK calls `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
 

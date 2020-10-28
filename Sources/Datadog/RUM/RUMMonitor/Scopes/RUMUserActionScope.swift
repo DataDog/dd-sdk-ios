@@ -110,7 +110,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
 
-        let eventData = RUMAction(
+        let eventData = RUMDataAction(
             date: actionStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
@@ -127,7 +127,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 type: actionType.toRUMDataFormat,
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
-                target: RUMTarget(name: name),
+                target: RUMDataTarget(name: name),
                 error: .init(count: errorsCount.toInt64),
                 crash: nil,
                 longTask: nil,

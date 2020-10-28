@@ -177,7 +177,7 @@ struct RUMNavigationControllerScenario: TestScenario {
     static let storyboardName = "RUMNavigationControllerScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
-        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        func rumView(for viewController: UIViewController) -> RUMView? {
             switch viewController.accessibilityLabel {
             case "Screen 1":
                 return .init(path: "Screen1")
@@ -207,7 +207,7 @@ struct RUMTabBarAutoInstrumentationScenario: TestScenario {
     static var storyboardName: String = "RUMTabBarAutoInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
-        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
                 return .init(path: viewName)
             } else {
@@ -230,7 +230,7 @@ struct RUMModalViewsAutoInstrumentationScenario: TestScenario {
     static var storyboardName: String = "RUMModalViewsAutoInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
-        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
                 return .init(path: viewName)
             } else {
@@ -254,7 +254,7 @@ struct RUMTapActionScenario: TestScenario {
     static var storyboardName: String = "RUMTapActionScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
-        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        func rumView(for viewController: UIViewController) -> RUMView? {
             switch NSStringFromClass(type(of: viewController)) {
             case "Example.RUMTASScreen1ViewController":
                 return .init(path: "MenuViewController")
@@ -286,7 +286,7 @@ class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
     static func envIdentifier() -> String { "RUMResourcesScenario" }
 
     private class Predicate: UIKitRUMViewsPredicate {
-        func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+        func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
                 return .init(path: viewName)
             } else {

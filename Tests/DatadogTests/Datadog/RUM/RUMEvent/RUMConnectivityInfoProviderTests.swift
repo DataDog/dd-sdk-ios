@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-extension RUMConnectivity: EquatableInTests {}
+extension RUMDataConnectivity: EquatableInTests {}
 
 class RUMConnectivityInfoProviderTests: XCTestCase {
     private let networkInfoProvider = NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockAny())
@@ -21,7 +21,7 @@ class RUMConnectivityInfoProviderTests: XCTestCase {
         func verifyConnectivity(
             networkInfo: NetworkConnectionInfo,
             carrierInfo: CarrierInfo,
-            verification: (RUMConnectivity) -> Void
+            verification: (RUMDataConnectivity) -> Void
         ) throws {
             networkInfoProvider.set(current: networkInfo)
             carrierInfoProvider.set(current: carrierInfo)

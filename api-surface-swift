@@ -158,12 +158,12 @@ public protocol OTTracer
 public extension OTTracer
  func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
  func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-public struct RUMViewFromPredicate
+public struct RUMView
  public var path: String
  public var attributes: [AttributeKey: AttributeValue]
  public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
 public protocol UIKitRUMViewsPredicate
- func rumView(for viewController: UIViewController) -> RUMViewFromPredicate?
+ func rumView(for viewController: UIViewController) -> RUMView?
 public enum RUMHTTPMethod: String
  case GET
  case POST
@@ -232,4 +232,4 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
  public func inject(spanContext: OTSpanContext)
- override public convenience init()
+ override public init()

@@ -448,10 +448,10 @@ class RUMCommandSubscriberMock: RUMCommandSubscriber {
 }
 
 class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
-    var resultByViewController: [UIViewController: RUMViewFromPredicate] = [:]
-    var result: RUMViewFromPredicate?
+    var resultByViewController: [UIViewController: RUMView] = [:]
+    var result: RUMView?
 
-    func rumView(for viewController: UIViewController) -> RUMViewFromPredicate? {
+    func rumView(for viewController: UIViewController) -> RUMView? {
         return resultByViewController[viewController] ?? result
     }
 }

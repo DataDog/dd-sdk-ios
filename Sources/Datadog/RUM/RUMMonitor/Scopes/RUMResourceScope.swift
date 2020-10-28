@@ -92,7 +92,7 @@ internal class RUMResourceScope: RUMScope {
             size = command.size
         }
 
-        let eventData = RUMResource(
+        let eventData = RUMDataResource(
             date: resourceStartTime.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
@@ -118,7 +118,7 @@ internal class RUMResourceScope: RUMScope {
                 size: size ?? 0,
                 redirect: nil,
                 dns: resourceMetrics?.dns.flatMap { dns in
-                    RUMDNS(
+                    RUMDataDNS(
                         duration: dns.duration.toInt64Nanoseconds,
                         start: dns.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
@@ -140,7 +140,7 @@ internal class RUMResourceScope: RUMScope {
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMError(
+        let eventData = RUMDataError(
             date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,

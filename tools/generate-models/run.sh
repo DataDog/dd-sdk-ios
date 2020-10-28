@@ -48,7 +48,7 @@ cd ..
 if [[ ! -a $(npm bin)/quicktype ]]; then
     npm install DataDog/quicktype
 fi
-$(npm bin)/quicktype --lang swift --src-lang schema -o "$OUTPUT_FILE".bak --type-prefix RUM --src rum-events-format/schemas
+$(npm bin)/quicktype --lang swift --src-lang schema -o "$OUTPUT_FILE".bak --type-prefix RUMData --src rum-events-format/schemas
 echo "// $SHA" >> "$OUTPUT_FILE".bak
 
 LICENSE_HEADER="/*
