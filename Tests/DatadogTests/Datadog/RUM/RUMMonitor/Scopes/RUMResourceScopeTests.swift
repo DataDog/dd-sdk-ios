@@ -22,7 +22,7 @@ class RUMResourceScopeTests: XCTestCase {
         let scope = RUMResourceScope(
             context: context,
             dependencies: .mockAny(),
-            resourceName: .mockAny(),
+            resourceKey: .mockAny(),
             attributes: [:],
             startTime: .mockAny(),
             url: .mockAny(),
@@ -44,7 +44,7 @@ class RUMResourceScopeTests: XCTestCase {
         let scope = RUMResourceScope(
             context: context,
             dependencies: dependencies,
-            resourceName: "/resource/1",
+            resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -58,7 +58,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand(
-                    resourceName: "/resource/1",
+                    resourceKey: "/resource/1",
                     time: currentTime,
                     attributes: ["foo": "bar"],
                     kind: .image,
@@ -102,7 +102,7 @@ class RUMResourceScopeTests: XCTestCase {
         let scope = RUMResourceScope(
             context: context,
             dependencies: dependencies,
-            resourceName: "/resource/1",
+            resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -116,7 +116,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceWithErrorCommand(
-                    resourceName: "/resource/1",
+                    resourceKey: "/resource/1",
                     time: currentTime,
                     error: ErrorMock("network issue explanation"),
                     source: .network,
@@ -151,7 +151,7 @@ class RUMResourceScopeTests: XCTestCase {
         let scope = RUMResourceScope(
             context: context,
             dependencies: dependencies,
-            resourceName: "/resource/1",
+            resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -164,7 +164,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         let resourceFetchStart = Date()
         let metricsCommand = RUMAddResourceMetricsCommand(
-            resourceName: "/resource/1",
+            resourceKey: "/resource/1",
             time: currentTime,
             attributes: [:],
             metrics: .mockWith(
@@ -207,7 +207,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand(
-                    resourceName: "/resource/1",
+                    resourceKey: "/resource/1",
                     time: currentTime,
                     attributes: ["foo": "bar"],
                     kind: .image,
@@ -252,12 +252,12 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
-        let resourceName: String = .mockAny()
+        let resourceKey: String = .mockAny()
         func createScope(url: String) -> RUMResourceScope {
             RUMResourceScope(
                 context: context,
                 dependencies: dependencies,
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 attributes: [:],
                 startTime: .mockAny(),
                 url: url,
@@ -270,8 +270,8 @@ class RUMResourceScopeTests: XCTestCase {
         let scope2 = createScope(url: "/r/2")
 
         // When
-        _ = scope1.process(command: RUMStopResourceCommand.mockWith(resourceName: resourceName))
-        _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceName: resourceName))
+        _ = scope1.process(command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey))
+        _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey))
 
         // Then
         let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self)

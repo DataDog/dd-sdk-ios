@@ -9,7 +9,7 @@ import Foundation
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
-    /// Active Resource scopes, keyed by the Resource name.
+    /// Active Resource scopes, keyed by .resourceKey.
     private(set) var resourceScopes: [String: RUMResourceScope] = [:]
     /// Active User Action scope. There can be only one active user action at a time.
     private(set) var userActionScope: RUMUserActionScope?
@@ -140,8 +140,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to Resource scopes
         let beforeResourcesCount = resourceScopes.count
         if let resourceCommand = command as? RUMResourceCommand {
-            resourceScopes[resourceCommand.resourceName] = manage(
-                childScope: resourceScopes[resourceCommand.resourceName],
+            resourceScopes[resourceCommand.resourceKey] = manage(
+                childScope: resourceScopes[resourceCommand.resourceKey],
                 byPropagatingCommand: resourceCommand
             )
         }
@@ -170,10 +170,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - RUMCommands Processing
 
     private func startResource(on command: RUMStartResourceCommand) {
-        resourceScopes[command.resourceName] = RUMResourceScope(
+        resourceScopes[command.resourceKey] = RUMResourceScope(
             context: context,
             dependencies: dependencies,
-            resourceName: command.resourceName,
+            resourceKey: command.resourceKey,
             attributes: command.attributes,
             startTime: command.time,
             url: command.url,

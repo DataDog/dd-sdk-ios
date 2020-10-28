@@ -36,7 +36,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
-        XCTAssertEqual(resourceStartCommand.resourceName, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceStartCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStartCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStartCommand.attributes.count, 0)
         XCTAssertEqual(resourceStartCommand.url, taskInterception.request.url?.absoluteString)
@@ -87,13 +87,13 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let resourceMetricsCommand = try XCTUnwrap(commandsReceived[0] as? RUMAddResourceMetricsCommand)
-        XCTAssertEqual(resourceMetricsCommand.resourceName, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceMetricsCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceMetricsCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceMetricsCommand.attributes.count, 0)
         XCTAssertEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
 
         let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceCommand)
-        XCTAssertEqual(resourceStopCommand.resourceName, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
         XCTAssertEqual(resourceStopCommand.kind, RUMResourceKind(request: taskInterception.request, response: resourceCompletion.httpResponse!))
@@ -125,13 +125,13 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let resourceMetricsCommand = try XCTUnwrap(commandsReceived[0] as? RUMAddResourceMetricsCommand)
-        XCTAssertEqual(resourceMetricsCommand.resourceName, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceMetricsCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceMetricsCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceMetricsCommand.attributes.count, 0)
         XCTAssertEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
 
         let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceWithErrorCommand)
-        XCTAssertEqual(resourceStopCommand.resourceName, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
         XCTAssertEqual(resourceStopCommand.errorMessage, DDError(error: taskError).title)

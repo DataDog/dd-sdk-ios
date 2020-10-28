@@ -13,7 +13,7 @@ internal class SendRUMFixture2ViewController: UIViewController {
         rumMonitor.startView(viewController: self)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            rumMonitor.addViewError(message: "Simulated view error", source: .source)
+            rumMonitor.addError(message: "Simulated view error", source: .source)
         }
     }
 

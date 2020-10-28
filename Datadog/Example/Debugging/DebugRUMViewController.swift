@@ -66,7 +66,7 @@ class DebugRUMViewController: UIViewController {
         let viewController = createUIViewControllerSubclassInstance(named: actionViewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.registerUserAction(type: self.actionType, name: (sender as! UIButton).currentTitle!)
+            rumMonitor.addUserAction(type: self.actionType, name: (sender as! UIButton).currentTitle!)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             rumMonitor.stopView(viewController: viewController)
@@ -101,13 +101,13 @@ class DebugRUMViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             let url = URL(string: "https://foo.com" + self.resourceURL)!
             rumMonitor.startResourceLoading(
-                resourceName: "/resource/1",
+                resourceKey: "/resource/1",
                 url: url,
                 httpMethod: .GET
             )
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 rumMonitor.stopResourceLoading(
-                    resourceName: "/resource/1",
+                    resourceKey: "/resource/1",
                     kind: .image,
                     httpStatusCode: 200
                 )
@@ -139,7 +139,7 @@ class DebugRUMViewController: UIViewController {
         let viewController = createUIViewControllerSubclassInstance(named: errorViewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.addViewError(message: self.errorMessage, source: .source)
+            rumMonitor.addError(message: self.errorMessage, source: .source)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             rumMonitor.stopView(viewController: viewController)

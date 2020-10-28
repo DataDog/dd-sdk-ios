@@ -169,7 +169,7 @@ extension RUMStartResourceCommand {
     static func mockAny() -> RUMStartResourceCommand { mockWith() }
 
     static func mockWith(
-        resourceName: String = .mockAny(),
+        resourceKey: String = .mockAny(),
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
@@ -177,7 +177,7 @@ extension RUMStartResourceCommand {
         spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
-            resourceName: resourceName,
+            resourceKey: resourceKey,
             time: time,
             attributes: attributes,
             url: url,
@@ -191,7 +191,7 @@ extension RUMStopResourceCommand {
     static func mockAny() -> RUMStopResourceCommand { mockWith() }
 
     static func mockWith(
-        resourceName: String = .mockAny(),
+        resourceKey: String = .mockAny(),
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         kind: RUMResourceKind = .mockAny(),
@@ -199,14 +199,14 @@ extension RUMStopResourceCommand {
         size: Int64? = .mockAny()
     ) -> RUMStopResourceCommand {
         return RUMStopResourceCommand(
-            resourceName: resourceName, time: time, attributes: attributes, kind: kind, httpStatusCode: httpStatusCode, size: size
+            resourceKey: resourceKey, time: time, attributes: attributes, kind: kind, httpStatusCode: httpStatusCode, size: size
         )
     }
 }
 
 extension RUMStopResourceWithErrorCommand {
     static func mockWithErrorObject(
-        resourceName: String = .mockAny(),
+        resourceKey: String = .mockAny(),
         time: Date = Date(),
         error: Error = ErrorMock(),
         source: RUMErrorSource = .source,
@@ -214,12 +214,12 @@ extension RUMStopResourceWithErrorCommand {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
-            resourceName: resourceName, time: time, error: error, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+            resourceKey: resourceKey, time: time, error: error, source: source, httpStatusCode: httpStatusCode, attributes: attributes
         )
     }
 
     static func mockWithErrorMessage(
-        resourceName: String = .mockAny(),
+        resourceKey: String = .mockAny(),
         time: Date = Date(),
         message: String = .mockAny(),
         source: RUMErrorSource = .source,
@@ -227,7 +227,7 @@ extension RUMStopResourceWithErrorCommand {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
-            resourceName: resourceName, time: time, message: message, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+            resourceKey: resourceKey, time: time, message: message, source: source, httpStatusCode: httpStatusCode, attributes: attributes
         )
     }
 }

@@ -35,9 +35,9 @@ public class DDRUMMonitor {
     ///   - attributes: custom attributes to attach to the Error
     ///   - file: the file in which the Error occurred (the default is the file name in which this method was called).
     ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
-    public func addViewError(
+    public func addError(
         message: String,
-        source: RUMErrorSource,
+        source: RUMErrorSource = .source,
         attributes: [AttributeKey: AttributeValue] = [:],
         file: StaticString? = #file,
         line: UInt? = #line
@@ -49,52 +49,50 @@ public class DDRUMMonitor {
     ///   - error: the `Error` object. It will be used to build the Error description.
     ///   - source: the origin of the error.
     ///   - attributes: custom attributes to attach to the Error.
-    public func addViewError(
+    public func addError(
         error: Error,
-        source: RUMErrorSource,
+        source: RUMErrorSource = .source,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
     }
 
     /// Notifies that the Resource starts being loaded.
     /// - Parameters:
-    ///   - resourceName: the name representing the Resource - must be unique among all Resources being currently loaded.
+    ///   - resourceKey: the key representing the Resource - must be unique among all Resources being currently loaded.
     ///   - url: the `URL` of the Resource.
     ///   - httpMethod: the HTTP method used to load the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
-    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - kind: the type of the Resource.
     ///   - httpStatusCode: the HTTP response status code for this Resource.
     ///   - size: the size of the Resource (in bytes).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded with error.
     /// This should be used when `Error` object is received on Resource failure.
     /// - Parameters:
-    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - error: the `Error` object received when loading the Resource.
-    ///   - source: the origin of the error.
     ///   - httpStatusCode: HTTP status code (optional).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the Resource stops being loaded with error.
     /// If `Error` object available on Resource failure `stopResourceLoadingWithError(..., error:, ...)` should be used instead.
     /// - Parameters:
-    ///   - resourceName: the name representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - errorMessage: the message explaining Resource failure.
-    ///   - source: the origin of the error.
     ///   - httpStatusCode: HTTP status code (optional).
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     /// Notifies that the User Action has started.
@@ -122,7 +120,7 @@ public class DDRUMMonitor {
     ///   - type: the User Action type
     ///   - name: the User Action name
     ///   - attributes: custom attributes to attach to the User Action.
-    public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
     }
 
     // MARK: - Attributes

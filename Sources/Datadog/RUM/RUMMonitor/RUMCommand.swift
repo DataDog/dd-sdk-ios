@@ -95,8 +95,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 // MARK: - RUM Resource related commands
 
 internal protocol RUMResourceCommand: RUMCommand {
-    /// The name identifying the RUM Resource.
-    var resourceName: String { get }
+    /// The key identifying the RUM Resource.
+    var resourceKey: String { get }
 }
 
 /// Tracing information propagated by Tracing to the underlying `URLRequest`. It is passed to the RUM backend
@@ -107,7 +107,7 @@ internal struct RUMSpanContext {
 }
 
 internal struct RUMStartResourceCommand: RUMResourceCommand {
-    let resourceName: String
+    let resourceKey: String
     let time: Date
     var attributes: [AttributeKey: AttributeValue]
 
@@ -120,7 +120,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
 }
 
 internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
-    let resourceName: String
+    let resourceKey: String
     let time: Date
     var attributes: [AttributeKey: AttributeValue]
 
@@ -129,7 +129,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
 }
 
 internal struct RUMStopResourceCommand: RUMResourceCommand {
-    let resourceName: String
+    let resourceKey: String
     let time: Date
     var attributes: [AttributeKey: AttributeValue]
 
@@ -142,7 +142,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
 }
 
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
-    let resourceName: String
+    let resourceKey: String
     let time: Date
     var attributes: [AttributeKey: AttributeValue]
 
@@ -156,14 +156,14 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let httpStatusCode: Int?
 
     init(
-        resourceName: String,
+        resourceKey: String,
         time: Date,
         message: String,
         source: RUMErrorSource,
         httpStatusCode: Int?,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        self.resourceName = resourceName
+        self.resourceKey = resourceKey
         self.time = time
         self.errorMessage = message
         self.errorSource = source
@@ -174,14 +174,14 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     }
 
     init(
-        resourceName: String,
+        resourceKey: String,
         time: Date,
         error: Error,
         source: RUMErrorSource,
         httpStatusCode: Int?,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        self.resourceName = resourceName
+        self.resourceKey = resourceKey
         self.time = time
         self.errorSource = source
         self.attributes = attributes

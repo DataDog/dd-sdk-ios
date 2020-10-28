@@ -15,7 +15,7 @@ internal class RUMResourceScope: RUMScope {
     /// This Resource's UUID.
     private let resourceUUID: RUMUUID
     /// The name used to identify this Resource.
-    private let resourceName: String
+    private let resourceKey: String
     /// Resource attributes.
     private var attributes: [AttributeKey: AttributeValue]
 
@@ -36,7 +36,7 @@ internal class RUMResourceScope: RUMScope {
     init(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
-        resourceName: String,
+        resourceKey: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         url: String,
@@ -46,7 +46,7 @@ internal class RUMResourceScope: RUMScope {
         self.context = context
         self.dependencies = dependencies
         self.resourceUUID = dependencies.rumUUIDGenerator.generateUnique()
-        self.resourceName = resourceName
+        self.resourceKey = resourceKey
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
@@ -58,13 +58,13 @@ internal class RUMResourceScope: RUMScope {
 
     func process(command: RUMCommand) -> Bool {
         switch command {
-        case let command as RUMStopResourceCommand where command.resourceName == resourceName:
+        case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
             sendResourceEvent(on: command)
             return false
-        case let command as RUMStopResourceWithErrorCommand where command.resourceName == resourceName:
+        case let command as RUMStopResourceWithErrorCommand where command.resourceKey == resourceKey:
             sendErrorEvent(on: command)
             return false
-        case let command as RUMAddResourceMetricsCommand where command.resourceName == resourceName:
+        case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
             resourceMetrics = command.metrics
         default:
             break

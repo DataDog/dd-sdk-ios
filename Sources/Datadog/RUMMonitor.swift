@@ -202,15 +202,15 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func addViewError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) {
+    override public func addError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) {
         var stack: String? = nil
         if let file = file, let fileName = "\(file)".split(separator: "/").last, let line = line {
             stack = "\(fileName):\(line)"
         }
-        addViewError(message: message, stack: stack, source: source, attributes: attributes)
+        addError(message: message, stack: stack, source: source, attributes: attributes)
     }
 
-    internal func addViewError(message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
+    internal func addError(message: String, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
@@ -222,7 +222,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func addViewError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
+    override public func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
@@ -233,10 +233,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func startResourceLoading(resourceName: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]) {
+    override public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 url: url.absoluteString,
@@ -246,10 +246,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func stopResourceLoading(resourceName: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceCommand(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 kind: kind,
@@ -259,26 +259,26 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceName: String, error: Error, source: RUMErrorSource, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 error: error,
-                source: source,
+                source: .network,
                 httpStatusCode: httpStatusCode,
                 attributes: attributes
             )
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceName: String, errorMessage: String, source: RUMErrorSource, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
-                source: source,
+                source: .network,
                 httpStatusCode: httpStatusCode,
                 attributes: attributes
             )
@@ -307,7 +307,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func registerUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+    override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.currentDate(),

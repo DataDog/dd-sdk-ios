@@ -195,36 +195,36 @@ For more details and available options, refer to the code documentation comments
 ### RUM Resources
 
 Use the following methods on `Global.rum` to manually collect RUM resources:
-* `.startResourceLoading(resourceName:url:httpMethod:)`
-* `.stopResourceLoading(resourceName:kind:)`
-* `.stopResourceLoadingWithError(resourceName:error:source:)`
-* `.stopResourceLoadingWithError(resourceName:errorMessage:source:)`
+* `.startResourceLoading(resourceKey:url:httpMethod:)`
+* `.stopResourceLoading(resourceKey:kind:)`
+* `.stopResourceLoadingWithError(resourceKey:error:)`
+* `.stopResourceLoadingWithError(resourceKey:errorMessage:)`
 
 Example:
 ```swift
 // in your network client:
 
 Global.rum.startResourceLoading(
-    resourceName: "resource-name",
+    resourceKey: "resource-key",
     url: requestURL,
     httpMethod: .GET
 )
 
 Global.rum.stopResourceLoading(
-    resourceName: "resource-name",
+    resourceKey: "resource-key",
     kind: .image,
     httpStatusCode: 200
 )
 ```
 
-**Note**: The `String` used for `resourceName` in both calls must be unique for the resource you are calling. This is necessary for the SDK to match a resource's start with its completion. 
+**Note**: The `String` used for `resourceKey` in both calls must be unique for the resource you are calling. This is necessary for the SDK to match a resource's start with its completion. 
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
 ### RUM Actions
 
 To manually register instantaneous RUM actions (e.g: `.tap`), use:
-* `.registerUserAction(type:name:)`
+* `.addUserAction(type:name:)`
 
 or for continuous RUM actions (e.g: `.scroll`), use:
 * `.startUserAction(type:name:)`
@@ -237,7 +237,7 @@ Example:
 // in your `UIViewController`:
 
 @IBAction func didTapDownloadResourceButton(_ sender: Any) {
-    Global.rum.registerUserAction(
+    Global.rum.addUserAction(
         type: .tap,
         name: (sender as? UIButton).currentTitle ?? "",
     )
@@ -251,14 +251,14 @@ For more details and available options, refer to the code documentation comments
 ### RUM Errors
 
 Use the following methods on `Global.rum` to manually collect RUM errors:
-- `.addViewError(message:source:)`
-- `.addViewError(error:source:)`
+- `.addError(message:source:)`
+- `.addError(error:source:)`
 
 Example:
 ```swift
 // anywhere in your code:
 
-Global.rum.addViewError(message: "error message.", source: .source)
+Global.rum.addError(message: "error message.", source: .source)
 ```
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.

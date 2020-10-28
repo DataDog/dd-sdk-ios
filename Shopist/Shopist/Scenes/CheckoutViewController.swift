@@ -94,7 +94,7 @@ internal final class CheckoutViewController: UITableViewController {
         models = newModels
 
         if cartBreakdown.products.isEmpty {
-            Global.rum.addViewError(message: "Cart is empty -> Pay button is hidden", source: .source)
+            Global.rum.addError(message: "Cart is empty -> Pay button is hidden", source: .source)
         } else {
             addPayButton()
         }
@@ -135,7 +135,7 @@ internal final class CheckoutViewController: UITableViewController {
     }
 
     private func handleSuccess() {
-        Global.rum.registerUserAction(type: .custom, name: "Purchase", attributes: ["purchaseAmount": totalAmount])
+        Global.rum.addUserAction(type: .custom, name: "Purchase", attributes: ["purchaseAmount": totalAmount])
         let alert = UIAlertController(title: "Success", message: nil, preferredStyle: .alert)
         let action = UIAlertAction(title: "OK", style: .default) { action in
             cart.products.removeAll()
@@ -148,7 +148,7 @@ internal final class CheckoutViewController: UITableViewController {
     }
 
     private func handleError(_ error: Error) {
-        Global.rum.registerUserAction(type: .custom, name: "Purchase failed")
+        Global.rum.addUserAction(type: .custom, name: "Purchase failed")
         let nsError = error as NSError
         let title = "Error"
         let message = nsError.localizedDescription

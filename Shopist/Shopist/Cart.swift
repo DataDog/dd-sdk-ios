@@ -44,7 +44,7 @@ internal final class Cart {
             shipping = Cart.shippingPerItem * Float(products.count)
             taxAndShippingSpan.setTag(key: "cart.tax", value: tax)
             taxAndShippingSpan.setTag(key: "cart.shipping", value: shipping)
-            Global.rum.addViewError(message: "Tax&shipping cost cannot be calculated, default cost is used", source: .source, attributes: ["tax": tax, "shipping": shipping])
+            Global.rum.addError(message: "Tax&shipping cost cannot be calculated, default cost is used", source: .source, attributes: ["tax": tax, "shipping": shipping])
             Thread.sleep(for: .long)
             taxAndShippingSpan.finish()
 
