@@ -21,7 +21,10 @@ class URLSessionTracingHandlerTests: XCTestCase {
         interception.register(completion: .mockAny())
         interception.register(
             metrics: .mockWith(
-                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
             )
         )
         interception.register(
@@ -52,7 +55,10 @@ class URLSessionTracingHandlerTests: XCTestCase {
         interception.register(completion: .mockWith(response: .mockResponseWith(statusCode: 200), error: nil))
         interception.register(
             metrics: .mockWith(
-                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
+                )
             )
         )
 
@@ -84,7 +90,10 @@ class URLSessionTracingHandlerTests: XCTestCase {
         interception.register(completion: .mockWith(response: nil, error: error))
         interception.register(
             metrics: .mockWith(
-                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 30))
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 30)
+                )
             )
         )
 
@@ -121,7 +130,10 @@ class URLSessionTracingHandlerTests: XCTestCase {
         interception.register(completion: .mockWith(response: .mockResponseWith(statusCode: 404), error: nil))
         interception.register(
             metrics: .mockWith(
-                fetch: (start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
+                )
             )
         )
 
