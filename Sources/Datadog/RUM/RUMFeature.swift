@@ -30,6 +30,7 @@ internal final class RUMFeature {
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
+    let launchTimeProvider: LaunchTimeProviderType
 
     // MARK: - Components
 
@@ -120,6 +121,7 @@ internal final class RUMFeature {
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
+        self.launchTimeProvider = commonDependencies.launchTimeProvider
 
         // Initialize stacks
         self.storage = storage

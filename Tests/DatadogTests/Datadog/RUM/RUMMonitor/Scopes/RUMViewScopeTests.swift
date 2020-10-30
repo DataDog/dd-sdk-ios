@@ -57,7 +57,10 @@ class RUMViewScopeTests: XCTestCase {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             parent: parent,
-            dependencies: dependencies,
+            dependencies: .mockWith(
+                launchTimeProvider: LaunchTimeProviderMock(launchTime: 2), // 2 seconds
+                eventOutput: output
+            ),
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
@@ -79,6 +82,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.url, "UIViewController")
         XCTAssertValidRumUUID(event.model.action.id)
         XCTAssertEqual(event.model.action.type, .applicationStart)
+        XCTAssertEqual(event.model.action.loadingTime, 2_000_000_000) // 2e+9 ns
     }
 
     func testWhenInitialViewIsStarted_itSendsViewUpdateEvent() throws {

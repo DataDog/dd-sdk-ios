@@ -7,5 +7,9 @@ framework module Datadog {
 
 framework module _Datadog_Private {
   export *
+
+  // All headers listed below must be also added to the "Headers" Build Phase in Datadog target.
+
+  header "ObjcAppLaunchHandler.h"
   header "ObjcExceptionHandler.h"
 }

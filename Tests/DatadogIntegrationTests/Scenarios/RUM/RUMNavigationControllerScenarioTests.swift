@@ -58,6 +58,7 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
         XCTAssertEqual(session.viewVisits[0].path, "Screen1")
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(session.viewVisits[0].actionEvents[0].action.loadingTime!, 0)
         XCTAssertEqual(session.viewVisits[1].path, "Screen2")
         XCTAssertEqual(session.viewVisits[2].path, "Screen3")
         XCTAssertEqual(session.viewVisits[3].path, "Screen4")

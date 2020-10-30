@@ -316,6 +316,7 @@ extension RUMScopeDependencies {
 
     static func mockWith(
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
         connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
@@ -326,6 +327,7 @@ extension RUMScopeDependencies {
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
+            launchTimeProvider: launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
