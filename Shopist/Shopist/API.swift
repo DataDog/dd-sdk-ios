@@ -154,17 +154,16 @@ internal final class API {
         let shippingURL = URL(string: "\(Self.apiURL)/shipping_tax.json")! // swiftlint:disable:this force_unwrapping
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
-            let resourceName = shippingURL.pathComponents.joined()
+            let resourceKey = shippingURL.pathComponents.joined()
             Global.rum.startResourceLoading(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 url: shippingURL,
                 httpMethod: .GET
             )
             Thread.sleep(for: .short)
             Global.rum.stopResourceLoadingWithError(
-                resourceName: resourceName,
-                errorMessage: "Shipping and taxes cannot be fetched from server",
-                source: .network
+                resourceKey: resourceKey,
+                errorMessage: "Shipping and taxes cannot be fetched from server"
             )
         }
     }
@@ -173,15 +172,15 @@ internal final class API {
         let fontURL = URL(string: "\(Self.apiURL)/fonts/crimsontext_regular.ttf")! // swiftlint:disable:this force_unwrapping
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
-            let resourceName = fontURL.pathComponents.joined()
+            let resourceKey = fontURL.pathComponents.joined()
             Global.rum.startResourceLoading(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 url: fontURL,
                 httpMethod: .GET
             )
             Thread.sleep(for: .long)
             Global.rum.stopResourceLoading(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 kind: .font,
                 httpStatusCode: 200,
                 size: Int64.random(in: 128...256) * 1_000
@@ -193,15 +192,15 @@ internal final class API {
         let updateInfoURL = URL(string: "\(Self.apiURL)/update_info")! // swiftlint:disable:this force_unwrapping force_unwrapping
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
-            let resourceName = updateInfoURL.pathComponents.joined()
+            let resourceKey = updateInfoURL.pathComponents.joined()
             Global.rum.startResourceLoading(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 url: updateInfoURL,
                 httpMethod: .POST
             )
             Thread.sleep(for: .medium)
             Global.rum.stopResourceLoading(
-                resourceName: resourceName,
+                resourceKey: resourceKey,
                 kind: .xhr,
                 httpStatusCode: 200,
                 size: Int64.random(in: 1_024...4_096)

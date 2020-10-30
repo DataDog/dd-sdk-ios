@@ -29,45 +29,44 @@ internal class SendRUMFixture1ViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: Any) {
-        let simulatedResourceName1 = "/resource/1"
+        let simulatedresourceKey1 = "/resource/1"
         let simulatedResourceURL1 = URL(string: "https://foo.com/resource/1")!
-        let simulatedResourceName2 = "/resource/2"
+        let simulatedresourceKey2 = "/resource/2"
         let simulatedResourceURL2 = URL(string: "https://foo.com/resource/2")!
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
-        rumMonitor.registerUserAction(
+        rumMonitor.addUserAction(
             type: .tap,
             name: (sender as! UIButton).currentTitle!,
             attributes: ["button.description": String(describing: sender)]
         )
 
         rumMonitor.startResourceLoading(
-            resourceName: simulatedResourceName1,
+            resourceKey: simulatedresourceKey1,
             url: simulatedResourceURL1,
             httpMethod: .GET
         )
 
         rumMonitor.startResourceLoading(
-            resourceName: simulatedResourceName2,
+            resourceKey: simulatedresourceKey2,
             url: simulatedResourceURL2,
             httpMethod: .GET
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
             rumMonitor.stopResourceLoading(
-                resourceName: simulatedResourceName1,
+                resourceKey: simulatedresourceKey1,
                 kind: .image,
                 httpStatusCode: 200
             )
 
             rumMonitor.stopResourceLoadingWithError(
-                resourceName: simulatedResourceName2,
+                resourceKey: simulatedresourceKey2,
                 error: NSError(
                     domain: NSURLErrorDomain,
                     code: NSURLErrorBadServerResponse,
                     userInfo: [NSLocalizedDescriptionKey: "Bad response."]
                 ),
-                source: .network,
                 httpStatusCode: 400
             )
 

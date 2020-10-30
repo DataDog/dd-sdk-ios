@@ -14,7 +14,7 @@ private protocol RUMDataFormatConvertible {
 
 extension RUMHTTPMethod: RUMDataFormatConvertible {}
 extension RUMResourceKind: RUMDataFormatConvertible {}
-extension RUMErrorSource: RUMDataFormatConvertible {}
+extension RUMInternalErrorSource: RUMDataFormatConvertible {}
 extension RUMUserActionType: RUMDataFormatConvertible {}
 
 class RUMDataModelsMappingTests: XCTestCase {
@@ -66,13 +66,22 @@ class RUMDataModelsMappingTests: XCTestCase {
         verify(value: RUMResourceKind.other, matches: .other)
     }
 
-    func testRUMErrorSource() {
-        verify(value: RUMErrorSource.source, matches: .source)
-        verify(value: RUMErrorSource.console, matches: .console)
-        verify(value: RUMErrorSource.network, matches: .network)
-        verify(value: RUMErrorSource.agent, matches: .agent)
-        verify(value: RUMErrorSource.logger, matches: .logger)
-        verify(value: RUMErrorSource.webview, matches: .webview)
+    func testRUMInternalErrorSource() {
+        func verifyInternalSource(_ internalSource: RUMInternalErrorSource) {
+            let rumSource = internalSource.toRUMDataFormat
+            switch internalSource {
+            case .custom: XCTAssertEqual(rumSource, .custom)
+            case .source: XCTAssertEqual(rumSource, .source)
+            case .network: XCTAssertEqual(rumSource, .network)
+            case .webview: XCTAssertEqual(rumSource, .webview)
+            case .logger: XCTAssertEqual(rumSource, .logger)
+            }
+        }
+        verifyInternalSource(.custom)
+        verifyInternalSource(.source)
+        verifyInternalSource(.network)
+        verifyInternalSource(.webview)
+        verifyInternalSource(.logger)
     }
 
     func testRUMUserActionType() {
@@ -90,5 +99,24 @@ class RUMDataModelsMappingTests: XCTestCase {
         line: UInt = #line
     ) where Value.DTOValue == DTOValue {
         XCTAssertEqual(value.toRUMDataFormat, dtoValue, line: line)
+    }
+}
+
+class RUMInternalDataModelsMappingTests: XCTestCase {
+    func testRUMErrorSourceToRUMInternalErrorSource() {
+        func verifyErrorSource(_ errorSource: RUMErrorSource) {
+            let internalSource = RUMInternalErrorSource(errorSource)
+            switch errorSource { // if there is an unhandled case, won't compile
+            case .custom: XCTAssertEqual(internalSource, .custom)
+            case .network: XCTAssertEqual(internalSource, .network)
+            case .source: XCTAssertEqual(internalSource, .source)
+            case .webview: XCTAssertEqual(internalSource, .webview)
+            }
+        }
+        // verify all known cases
+        verifyErrorSource(.custom)
+        verifyErrorSource(.network)
+        verifyErrorSource(.source)
+        verifyErrorSource(.webview)
     }
 }

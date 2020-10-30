@@ -139,13 +139,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2", time: currentTime)
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentTime)
             )
         )
 
@@ -153,13 +153,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceName: "/resource/2", time: currentTime)
+                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "/resource/2", time: currentTime)
             )
         )
 
@@ -278,13 +278,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2", time: currentTime)
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentTime)
             )
         )
 
@@ -292,14 +292,14 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1", time: currentTime)
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
             ),
             "Discrete User Action should not yet complete as it still has 1 pending Resource"
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceName: "/resource/2", time: currentTime)
+                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "/resource/2", time: currentTime)
             ),
             "Discrete User Action should not yet complete as it haven't reached the time out duration"
         )

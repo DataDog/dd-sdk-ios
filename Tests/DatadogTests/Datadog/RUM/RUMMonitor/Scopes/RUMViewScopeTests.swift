@@ -299,25 +299,25 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.resourceScopes.count, 0)
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1")
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2")
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2")
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 2)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1")
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceName: "/resource/2")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")
             )
         )
         XCTAssertEqual(scope.resourceScopes.count, 0)
@@ -345,10 +345,10 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         )
         XCTAssertTrue(
-            scope.process(command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1"))
+            scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1"))
         )
         XCTAssertTrue(
-            scope.process(command: RUMStartResourceCommand.mockWith(resourceName: "/resource/2"))
+            scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2"))
         )
 
         // when
@@ -359,11 +359,11 @@ class RUMViewScopeTests: XCTestCase {
 
         // then
         XCTAssertTrue(
-            scope.process(command: RUMStopResourceCommand.mockWith(resourceName: "/resource/1")),
+            scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")),
             "The View should be kept alive as all its Resources havent yet finished loading"
         )
         XCTAssertFalse(
-            scope.process(command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceName: "/resource/2")),
+            scope.process(command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")),
             "The View should stop as all its Resources finished loading"
         )
 
@@ -516,13 +516,13 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceName: "/resource/1")
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceName: "/resource/1")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "/resource/1")
             )
         )
 

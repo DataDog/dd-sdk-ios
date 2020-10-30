@@ -37,7 +37,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
 
         subscriber?.process(
             command: RUMStartResourceCommand(
-                resourceName: interception.identifier.uuidString,
+                resourceKey: interception.identifier.uuidString,
                 time: dateProvider.currentDate(),
                 attributes: [:],
                 url: url,
@@ -56,7 +56,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
         if let resourceMetrics = interception.metrics {
             subscriber?.process(
                 command: RUMAddResourceMetricsCommand(
-                    resourceName: interception.identifier.uuidString,
+                    resourceKey: interception.identifier.uuidString,
                     time: dateProvider.currentDate(),
                     attributes: [:],
                     metrics: resourceMetrics
@@ -67,7 +67,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
         if let httpResponse = interception.completion?.httpResponse {
             subscriber?.process(
                 command: RUMStopResourceCommand(
-                    resourceName: interception.identifier.uuidString,
+                    resourceKey: interception.identifier.uuidString,
                     time: dateProvider.currentDate(),
                     attributes: [:],
                     kind: RUMResourceKind(
@@ -83,7 +83,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
         if let error = interception.completion?.error {
             subscriber?.process(
                 command: RUMStopResourceWithErrorCommand(
-                    resourceName: interception.identifier.uuidString,
+                    resourceKey: interception.identifier.uuidString,
                     time: dateProvider.currentDate(),
                     error: error,
                     source: .network,
