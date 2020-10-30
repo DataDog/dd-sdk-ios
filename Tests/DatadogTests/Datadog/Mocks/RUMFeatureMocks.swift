@@ -144,7 +144,7 @@ extension RUMAddCurrentViewErrorCommand {
     static func mockWithErrorObject(
         time: Date = Date(),
         error: Error = ErrorMock(),
-        source: RUMDataSource = .source,
+        source: RUMInternalErrorSource = .source,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
@@ -155,7 +155,7 @@ extension RUMAddCurrentViewErrorCommand {
     static func mockWithErrorMessage(
         time: Date = Date(),
         message: String = .mockAny(),
-        source: RUMDataSource = .source,
+        source: RUMInternalErrorSource = .source,
         stack: String? = "Foo.swift:10",
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
@@ -209,7 +209,7 @@ extension RUMStopResourceWithErrorCommand {
         resourceKey: String = .mockAny(),
         time: Date = Date(),
         error: Error = ErrorMock(),
-        source: RUMErrorSource = .source,
+        source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
@@ -222,7 +222,7 @@ extension RUMStopResourceWithErrorCommand {
         resourceKey: String = .mockAny(),
         time: Date = Date(),
         message: String = .mockAny(),
-        source: RUMErrorSource = .source,
+        source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {

@@ -50,13 +50,14 @@ internal extension RUMResourceKind {
     }
 }
 
-internal extension RUMErrorSource {
+internal extension RUMInternalErrorSource {
     var toRUMDataFormat: RUMDataSource {
         switch self {
         case .custom: return .custom
         case .source: return .source
         case .network: return .network
         case .webview: return .webview
+        case .logger: return .logger
         }
     }
 }

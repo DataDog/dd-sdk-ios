@@ -58,7 +58,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     /// The error message.
     let message: String
     /// The origin of this error.
-    let source: RUMDataSource
+    let source: RUMInternalErrorSource
     /// Error stacktrace.
     let stack: String?
 
@@ -66,7 +66,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         time: Date,
         message: String,
         stack: String?,
-        source: RUMDataSource,
+        source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time
@@ -79,7 +79,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     init(
         time: Date,
         error: Error,
-        source: RUMDataSource,
+        source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time
@@ -149,7 +149,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     /// The error message.
     let errorMessage: String
     /// The origin of the error (network, webview, ...)
-    let errorSource: RUMErrorSource
+    let errorSource: RUMInternalErrorSource
     /// Error stacktrace.
     let stack: String?
     /// HTTP status code of the Ressource error.
@@ -159,7 +159,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         resourceKey: String,
         time: Date,
         message: String,
-        source: RUMErrorSource,
+        source: RUMInternalErrorSource,
         httpStatusCode: Int?,
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -177,7 +177,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         resourceKey: String,
         time: Date,
         error: Error,
-        source: RUMErrorSource,
+        source: RUMInternalErrorSource,
         httpStatusCode: Int?,
         attributes: [AttributeKey: AttributeValue]
     ) {

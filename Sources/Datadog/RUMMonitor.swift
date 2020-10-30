@@ -90,6 +90,23 @@ public enum RUMErrorSource {
     case webview
 }
 
+internal enum RUMInternalErrorSource {
+    case custom
+    case source
+    case network
+    case webview
+    case logger
+
+    init(_ errorSource: RUMErrorSource) {
+        switch errorSource {
+        case .custom: self = .custom
+        case .source: self = .source
+        case .network: self = .network
+        case .webview: self = .webview
+        }
+    }
+}
+
 /// A class enabling Datadog RUM features.
 ///
 /// `RUMMonitor` allows you to record User events that can be explored and analyzed in Datadog Dashboards.
@@ -205,10 +222,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         if let file = file, let fileName = "\(file)".split(separator: "/").last, let line = line {
             stack = "\(fileName):\(line)"
         }
-        addError(message: message, stack: stack, source: source.toRUMDataFormat, attributes: attributes)
+        addError(message: message, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
     }
 
-    internal func addError(message: String, stack: String?, source: RUMDataSource, attributes: [AttributeKey: AttributeValue]) {
+    internal func addError(message: String, stack: String?, source: RUMInternalErrorSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
@@ -225,7 +242,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 error: error,
-                source: source.toRUMDataFormat,
+                source: RUMInternalErrorSource(source),
                 attributes: attributes
             )
         )

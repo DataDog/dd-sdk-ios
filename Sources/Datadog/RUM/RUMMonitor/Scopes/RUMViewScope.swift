@@ -292,7 +292,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(),
             error: .init(
                 message: command.message,
-                source: command.source,
+                source: command.source.toRUMDataFormat,
                 stack: command.stack,
                 isCrash: nil,
                 resource: nil

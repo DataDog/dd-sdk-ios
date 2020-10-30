@@ -251,14 +251,14 @@ For more details and available options, refer to the code documentation comments
 ### RUM Errors
 
 Use the following methods on `Global.rum` to manually collect RUM errors:
-- `.addError(message:source:)`
-- `.addError(error:source:)`
+- `.addError(message:)`
+- `.addError(error:)`
 
 Example:
 ```swift
 // anywhere in your code:
 
-Global.rum.addError(message: "error message.", source: .custom)
+Global.rum.addError(message: "error message.")
 ```
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
