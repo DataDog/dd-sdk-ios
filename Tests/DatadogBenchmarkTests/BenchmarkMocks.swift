@@ -15,7 +15,8 @@ extension FeaturesCommonDependencies {
             dateProvider: SystemDateProvider(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider()
+            carrierInfoProvider: CarrierInfoProvider(),
+            launchTimeProvider: LaunchTimeProvider()
         )
     }
 }
