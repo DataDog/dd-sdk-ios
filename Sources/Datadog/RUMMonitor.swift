@@ -249,14 +249,18 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]) {
+    override public func startResourceLoading(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 attributes: attributes,
-                url: url.absoluteString,
-                httpMethod: httpMethod,
+                url: request.url?.absoluteString ?? "unknown_url",
+                httpMethod: RUMHTTPMethod(request: request),
                 spanContext: nil
             )
         )

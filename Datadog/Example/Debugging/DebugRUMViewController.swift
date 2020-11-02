@@ -99,11 +99,10 @@ class DebugRUMViewController: UIViewController {
         let viewController = createUIViewControllerSubclassInstance(named: resourceViewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            let url = URL(string: "https://foo.com" + self.resourceURL)!
+            let request = URLRequest(url: URL(string: "https://foo.com" + self.resourceURL)!)
             rumMonitor.startResourceLoading(
                 resourceKey: "/resource/1",
-                url: url,
-                httpMethod: .GET
+                request: request
             )
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 rumMonitor.stopResourceLoading(

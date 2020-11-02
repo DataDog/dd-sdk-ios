@@ -59,11 +59,13 @@ public class DDRUMMonitor {
     /// Notifies that the Resource starts being loaded.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must be unique among all Resources being currently loaded.
-    ///   - url: the `URL` of the Resource.
-    ///   - httpMethod: the HTTP method used to load the Resource.
+    ///   - request: the `URLRequest` for the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:]) {
-    }
+    public func startResourceLoading(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
 
     /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
