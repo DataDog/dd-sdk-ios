@@ -7,18 +7,6 @@
 import Foundation
 import Datadog
 
-internal func fakeError(onceIn upperRandomBound: UInt8) -> Error? {
-    assert(upperRandomBound != 0, "fakeError can be generated with non-zero positive numbers")
-    if UInt8.random(in: 0..<upperRandomBound) == 0 {
-        return NSError(
-            domain: "Network",
-            code: 999,
-            userInfo: [NSLocalizedDescriptionKey: "Request denied"]
-        )
-    }
-    return nil
-}
-
 internal struct Category: Decodable {
     let id: String
     let title: String
@@ -73,12 +61,12 @@ internal final class ShopistSessionDelegate: DDURLSessionDelegate {
     }
 }
 
-internal final class API {
+internal final class API: APIFakeRequests {
     // swiftlint:disable force_cast
     static let baseHost = Bundle.main.object(forInfoDictionaryKey: "ShopistBaseURL") as! String
     // swiftlint:enable force_cast
-    private static let baseURL = "https://" + baseHost
-    private static let apiURL = "https://api." + baseHost
+    internal static let baseURL = "https://" + baseHost
+    internal static let apiURL = "https://api." + baseHost
 
     typealias Completion<T: Decodable> = (Result<T, Error>) -> Void
     let httpClient: URLSession = {
@@ -147,64 +135,6 @@ internal final class API {
             }
         }
         task.resume()
-    }
-
-    func fakeFetchShippingAndTax() {
-        let shippingURL = URL(string: "\(Self.apiURL)/shipping_tax.json")! // swiftlint:disable:this force_unwrapping
-        DispatchQueue.global(qos: .utility).async {
-            Thread.sleep(for: .short)
-            let resourceKey = shippingURL.pathComponents.joined()
-            Global.rum.startResourceLoading(
-                resourceKey: resourceKey,
-                url: shippingURL,
-                httpMethod: .GET
-            )
-            Thread.sleep(for: .short)
-            Global.rum.stopResourceLoadingWithError(
-                resourceKey: resourceKey,
-                errorMessage: "Shipping and taxes cannot be fetched from server"
-            )
-        }
-    }
-
-    func fakeFetchFontCall() {
-        let fontURL = URL(string: "\(Self.apiURL)/fonts/crimsontext_regular.ttf")! // swiftlint:disable:this force_unwrapping
-        DispatchQueue.global(qos: .utility).async {
-            Thread.sleep(for: .short)
-            let resourceKey = fontURL.pathComponents.joined()
-            Global.rum.startResourceLoading(
-                resourceKey: resourceKey,
-                url: fontURL,
-                httpMethod: .GET
-            )
-            Thread.sleep(for: .long)
-            Global.rum.stopResourceLoading(
-                resourceKey: resourceKey,
-                kind: .font,
-                httpStatusCode: 200,
-                size: Int64.random(in: 128...256) * 1_000
-            )
-        }
-    }
-
-    func fakeUpdateInfoCall() {
-        let updateInfoURL = URL(string: "\(Self.apiURL)/update_info")! // swiftlint:disable:this force_unwrapping force_unwrapping
-        DispatchQueue.global(qos: .utility).async {
-            Thread.sleep(for: .short)
-            let resourceKey = updateInfoURL.pathComponents.joined()
-            Global.rum.startResourceLoading(
-                resourceKey: resourceKey,
-                url: updateInfoURL,
-                httpMethod: .POST
-            )
-            Thread.sleep(for: .medium)
-            Global.rum.stopResourceLoading(
-                resourceKey: resourceKey,
-                kind: .xhr,
-                httpStatusCode: 200,
-                size: Int64.random(in: 1_024...4_096)
-            )
-        }
     }
 }
 

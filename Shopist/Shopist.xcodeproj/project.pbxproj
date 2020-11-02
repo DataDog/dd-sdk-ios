@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		616135912550739F003D711A /* API+Fakes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616135902550739F003D711A /* API+Fakes.swift */; };
 		9E5D2D6324ED6E590000C2A3 /* ShopistUITestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5D2D6224ED6E590000C2A3 /* ShopistUITestHelpers.swift */; };
 		9E5F903824DAF838004A0673 /* Cart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F903724DAF838004A0673 /* Cart.swift */; };
 		9E5F903F24DAF85E004A0673 /* TableViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F903E24DAF85E004A0673 /* TableViewCells.swift */; };
@@ -107,6 +108,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		616135902550739F003D711A /* API+Fakes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "API+Fakes.swift"; sourceTree = "<group>"; };
 		9E5D2D6224ED6E590000C2A3 /* ShopistUITestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITestHelpers.swift; sourceTree = "<group>"; };
 		9E5F903724DAF838004A0673 /* Cart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cart.swift; sourceTree = "<group>"; };
 		9E5F903E24DAF85E004A0673 /* TableViewCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCells.swift; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 				9E92D45024D463A5005980A9 /* Views */,
 				9E92D45124D463B1005980A9 /* Extensions */,
 				9E84A04F24D31F15007A91A2 /* API.swift */,
+				616135902550739F003D711A /* API+Fakes.swift */,
 				9E5F903724DAF838004A0673 /* Cart.swift */,
 			);
 			path = Shopist;
@@ -457,6 +460,7 @@
 				9E6ABAD7244F43BD003AE249 /* AppDelegate.swift in Sources */,
 				9E5F903824DAF838004A0673 /* Cart.swift in Sources */,
 				9E6ABAD3244F43BD003AE249 /* AppConfig.swift in Sources */,
+				616135912550739F003D711A /* API+Fakes.swift in Sources */,
 				9E5F903F24DAF85E004A0673 /* TableViewCells.swift in Sources */,
 				9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */,
 				9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */,
