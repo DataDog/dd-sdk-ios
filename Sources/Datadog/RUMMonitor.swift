@@ -299,27 +299,37 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoadingWithError(
+        resourceKey: String,
+        error: Error,
+        response: URLResponse? = nil,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 error: error,
                 source: .network,
-                httpStatusCode: httpStatusCode,
+                httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes
             )
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoadingWithError(
+        resourceKey: String,
+        errorMessage: String,
+        response: URLResponse? = nil,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
                 source: .network,
-                httpStatusCode: httpStatusCode,
+                httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes
             )
         )

@@ -29,9 +29,9 @@ internal class SendRUMFixture1ViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: Any) {
-        let simulatedresourceKey1 = "/resource/1"
+        let simulatedResourceKey1 = "/resource/1"
         let simulatedResourceRequest1 = URLRequest(url: URL(string: "https://foo.com/resource/1")!)
-        let simulatedresourceKey2 = "/resource/2"
+        let simulatedResourceKey2 = "/resource/2"
         let simulatedResourceRequest2 = URLRequest(url: URL(string: "https://foo.com/resource/2")!)
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
@@ -42,18 +42,18 @@ internal class SendRUMFixture1ViewController: UIViewController {
         )
 
         rumMonitor.startResourceLoading(
-            resourceKey: simulatedresourceKey1,
+            resourceKey: simulatedResourceKey1,
             request: simulatedResourceRequest1
         )
 
         rumMonitor.startResourceLoading(
-            resourceKey: simulatedresourceKey2,
+            resourceKey: simulatedResourceKey2,
             request: simulatedResourceRequest2
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
             rumMonitor.stopResourceLoading(
-                resourceKey: simulatedresourceKey1,
+                resourceKey: simulatedResourceKey1,
                 response: HTTPURLResponse(
                     url: simulatedResourceRequest1.url!,
                     statusCode: 200,
@@ -63,13 +63,18 @@ internal class SendRUMFixture1ViewController: UIViewController {
             )
 
             rumMonitor.stopResourceLoadingWithError(
-                resourceKey: simulatedresourceKey2,
+                resourceKey: simulatedResourceKey2,
                 error: NSError(
                     domain: NSURLErrorDomain,
                     code: NSURLErrorBadServerResponse,
                     userInfo: [NSLocalizedDescriptionKey: "Bad response."]
                 ),
-                httpStatusCode: 400
+                response: HTTPURLResponse(
+                    url: simulatedResourceRequest2.url!,
+                    statusCode: 400,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
             )
 
             // Reveal the "Push Next Screen" button so UITest can continue

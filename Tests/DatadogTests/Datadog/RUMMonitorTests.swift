@@ -553,7 +553,7 @@ class RUMMonitorTests: XCTestCase {
             case 3: monitor.addError(message: .mockAny(), source: .custom)
             case 4: monitor.startResourceLoading(resourceKey: .mockAny(), request: .mockAny())
             case 5: monitor.stopResourceLoading(resourceKey: .mockAny(), response: .mockAny())
-            case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock(), httpStatusCode: .mockAny())
+            case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock())
             case 7: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), errorMessage: .mockAny())
             case 8: monitor.startUserAction(type: .scroll, name: .mockRandom())
             case 9: monitor.stopUserAction(type: .scroll)
