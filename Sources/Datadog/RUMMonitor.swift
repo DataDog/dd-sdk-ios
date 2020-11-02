@@ -7,7 +7,7 @@
 import UIKit
 import Foundation
 
-public enum RUMHTTPMethod: String {
+internal enum RUMHTTPMethod: String {
     case GET
     case POST
     case PUT
@@ -17,13 +17,13 @@ public enum RUMHTTPMethod: String {
 
     /// Determines the `RUMHTTPMethod` based on a given `URLRequest`. Defaults to `.GET`.
     /// - Parameter request: the `URLRequest` for the resource.
-    public init(request: URLRequest) {
+    init(request: URLRequest) {
         let requestMethod = request.httpMethod ?? "GET"
         self = RUMHTTPMethod(rawValue: requestMethod.uppercased()) ?? .GET
     }
 }
 
-public enum RUMResourceKind {
+internal enum RUMResourceKind {
     case image
     case xhr
     case beacon
@@ -43,7 +43,7 @@ public enum RUMResourceKind {
     /// - Parameters:
     ///   - request: the `URLRequest` for the resource.
     ///   - response: the `HTTPURLResponse` of the resource.
-    public init(request: URLRequest, response: HTTPURLResponse) {
+    init(request: URLRequest, response: HTTPURLResponse) {
         if let requestMethod = request.httpMethod?.uppercased(), RUMResourceKind.xhrHTTPMethods.contains(requestMethod) {
             self = .xhr
         } else {
@@ -56,7 +56,7 @@ public enum RUMResourceKind {
     ///
     /// - Parameters:
     ///   - response: the `HTTPURLResponse` of the resource.
-    public init(response: HTTPURLResponse) {
+    init(response: HTTPURLResponse) {
         if let mimeType = response.mimeType {
             let components = mimeType.split(separator: "/")
             let type = components.first?.lowercased()
