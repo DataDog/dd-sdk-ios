@@ -41,17 +41,27 @@ class LaunchTimeProviderTests: XCTestCase {
     }
 
     func testThreadSafety() {
-        let notificationCenter = self.notificationCenter
-        let provider = LaunchTimeProvider(notificationCenter: notificationCenter)
+        let notificationCentersAndProviders: [
+            (notificationCenter: NotificationCenter, provider: LaunchTimeProvider)
+        ] = (0..<10)
+            .map { _ in
+                let notificationCenter = NotificationCenter()
+                return (
+                    notificationCenter: notificationCenter,
+                    provider: LaunchTimeProvider(notificationCenter: notificationCenter)
+                )
+            }
 
         // swiftlint:disable opening_brace
-        callConcurrently(
-            closures: [
-                { notificationCenter.post(Notification(name: UIApplication.didBecomeActiveNotification)) },
-                { _ = provider.launchTime }
-            ],
-            iterations: 10
-        )
+        notificationCentersAndProviders.forEach { notificationCenter, provider in
+            callConcurrently(
+                closures: [
+                    { _ = provider.launchTime },
+                    { notificationCenter.post(Notification(name: UIApplication.didBecomeActiveNotification)) }
+                ],
+                iterations: 1
+            )
+        }
         // swiftlint:enable opening_brace
     }
 }
