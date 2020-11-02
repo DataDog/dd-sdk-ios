@@ -266,14 +266,34 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoading(
+        resourceKey: String,
+        response: URLResponse,
+        request: URLRequest? = nil,
+        size: Int64? = nil,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        let resourceKind: RUMResourceKind
+        var statusCode: Int?
+
+        if let response = response as? HTTPURLResponse {
+            if let request = request {
+                resourceKind = RUMResourceKind(request: request, response: response)
+            } else {
+                resourceKind = RUMResourceKind(response: response)
+            }
+            statusCode = response.statusCode
+        } else {
+            resourceKind = .other
+        }
+
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 attributes: attributes,
-                kind: kind,
-                httpStatusCode: httpStatusCode,
+                kind: resourceKind,
+                httpStatusCode: statusCode,
                 size: size
             )
         )

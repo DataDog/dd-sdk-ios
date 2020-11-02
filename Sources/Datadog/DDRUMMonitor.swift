@@ -70,12 +70,17 @@ public class DDRUMMonitor {
     /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
-    ///   - kind: the type of the Resource.
-    ///   - httpStatusCode: the HTTP response status code for this Resource.
-    ///   - size: the size of the Resource (in bytes).
+    ///   - response: the `URLResepone` received for the Resource.
+    ///   - request: an optional`URLRequest` send for this Resource. If provided, the SDK will infer more precise information for this RUM Resource.
+    ///   - size: an optional size of the data received for the Resource (in bytes). If not provided, the SDK will try to infer it from the "Content-Length" header of the `response`.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
-    }
+    public func stopResourceLoading(
+        resourceKey: String,
+        response: URLResponse,
+        request: URLRequest? = nil,
+        size: Int64? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
 
     /// Notifies that the Resource stops being loaded with error.
     /// This should be used when `Error` object is received on Resource failure.

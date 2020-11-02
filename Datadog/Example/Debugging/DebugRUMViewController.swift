@@ -107,8 +107,12 @@ class DebugRUMViewController: UIViewController {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 rumMonitor.stopResourceLoading(
                     resourceKey: "/resource/1",
-                    kind: .image,
-                    httpStatusCode: 200
+                    response: HTTPURLResponse(
+                        url: request.url!,
+                        statusCode: 200,
+                        httpVersion: nil,
+                        headerFields: ["Content-Type": "image/png"]
+                    )!
                 )
             }
         }

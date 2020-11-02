@@ -54,8 +54,12 @@ internal class SendRUMFixture1ViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
             rumMonitor.stopResourceLoading(
                 resourceKey: simulatedresourceKey1,
-                kind: .image,
-                httpStatusCode: 200
+                response: HTTPURLResponse(
+                    url: simulatedResourceRequest1.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "image/png"]
+                )!
             )
 
             rumMonitor.stopResourceLoadingWithError(
