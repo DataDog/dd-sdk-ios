@@ -14,9 +14,11 @@ internal protocol LaunchTimeProviderType {
     var launchTime: TimeInterval? { get }
 }
 
-internal struct LaunchTimeProvider: LaunchTimeProviderType {
+internal class LaunchTimeProvider: LaunchTimeProviderType {
     var launchTime: TimeInterval? {
+        objc_sync_enter(self)
         let time = ObjcAppLaunchHandler.launchTime()
+        objc_sync_exit(self)
         return time > 0 ? time : nil
     }
 }

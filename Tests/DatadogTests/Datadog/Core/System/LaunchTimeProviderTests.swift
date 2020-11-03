@@ -30,7 +30,7 @@ class LaunchTimeProviderTests: XCTestCase {
 
         // swiftlint:disable opening_brace
         callConcurrently(
-            closures: [{ _ = provider.launchTime },],
+            closures: [{ _ = provider.launchTime }],
             iterations: 100
         )
         // swiftlint:enable opening_brace
