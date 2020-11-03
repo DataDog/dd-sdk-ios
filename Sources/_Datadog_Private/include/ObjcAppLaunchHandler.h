@@ -8,6 +8,6 @@
 
 @interface ObjcAppLaunchHandler : NSObject
 
-+ (NSTimeInterval)measureTimeToNow;
++ (NSTimeInterval)launchTime;
 
 @end

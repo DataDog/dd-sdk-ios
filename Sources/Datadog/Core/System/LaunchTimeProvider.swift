@@ -14,35 +14,9 @@ internal protocol LaunchTimeProviderType {
     var launchTime: TimeInterval? { get }
 }
 
-internal class LaunchTimeProvider: LaunchTimeProviderType {
-    private let notificationCenter: NotificationCenter
-    private let queue = DispatchQueue(
-        label: "com.datadoghq.launch-time-provider", qos: .userInteractive
-    )
-
-    // MARK: - Initialization
-
-    init(notificationCenter: NotificationCenter = .default) {
-        self.notificationCenter = notificationCenter
-        notificationCenter.addObserver(
-            self, selector: #selector(stopLaunchTimer), name: UIApplication.didBecomeActiveNotification, object: nil
-        )
-    }
-
-    // MARK: - Measurement
-
-    @objc
-    private func stopLaunchTimer() {
-        let launchTime = ObjcAppLaunchHandler.measureTimeToNow()
-        notificationCenter.removeObserver(self)
-        queue.async { self.unsafeLaunchTime = launchTime }
-    }
-
-    // MARK: - LaunchTimeProviderType
-
-    private var unsafeLaunchTime: TimeInterval?
-
+internal struct LaunchTimeProvider: LaunchTimeProviderType {
     var launchTime: TimeInterval? {
-        queue.sync { unsafeLaunchTime }
+        let time = ObjcAppLaunchHandler.launchTime()
+        return time > 0 ? time : nil
     }
 }

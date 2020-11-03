@@ -8,25 +8,9 @@ import XCTest
 @testable import Datadog
 
 class LaunchTimeProviderTests: XCTestCase {
-    private let notificationCenter = NotificationCenter()
-
-    func testGivenAppBeingStarted_whenDidBecomeActiveNotificationIsSent_itProvidesLaunchTime() throws {
-        // Given
-        let provider = LaunchTimeProvider(notificationCenter: notificationCenter)
-        XCTAssertNil(provider.launchTime, "No `.launchTime` should be provided until notification is sent")
-
-        // When
-        notificationCenter.post(Notification(name: UIApplication.didBecomeActiveNotification))
-
-        // Then
-        let launchTime = try XCTUnwrap(provider.launchTime)
-        XCTAssertGreaterThan(launchTime, 0)
-    }
-
     func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() {
         // Given
-        let provider = LaunchTimeProvider(notificationCenter: notificationCenter)
-        notificationCenter.post(Notification(name: UIApplication.didBecomeActiveNotification))
+        let provider = LaunchTimeProvider()
 
         // When
         var values: [TimeInterval] = []
@@ -38,30 +22,17 @@ class LaunchTimeProviderTests: XCTestCase {
         // Then
         let uniqueValues = Set(values)
         XCTAssertEqual(uniqueValues.count, 1, "All collected `launchTime` values should be the same.")
+        XCTAssertGreaterThan(values[0], TimeInterval(0))
     }
 
     func testThreadSafety() {
-        let notificationCentersAndProviders: [
-            (notificationCenter: NotificationCenter, provider: LaunchTimeProvider)
-        ] = (0..<10)
-            .map { _ in
-                let notificationCenter = NotificationCenter()
-                return (
-                    notificationCenter: notificationCenter,
-                    provider: LaunchTimeProvider(notificationCenter: notificationCenter)
-                )
-            }
+        let provider = LaunchTimeProvider()
 
         // swiftlint:disable opening_brace
-        notificationCentersAndProviders.forEach { notificationCenter, provider in
-            callConcurrently(
-                closures: [
-                    { _ = provider.launchTime },
-                    { notificationCenter.post(Notification(name: UIApplication.didBecomeActiveNotification)) }
-                ],
-                iterations: 1
-            )
-        }
+        callConcurrently(
+            closures: [{ _ = provider.launchTime },],
+            iterations: 100
+        )
         // swiftlint:enable opening_brace
     }
 }
