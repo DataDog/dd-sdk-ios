@@ -139,7 +139,8 @@ class LoggerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         Datadog.instance = Datadog(
-            userInfoProvider: UserInfoProvider()
+            userInfoProvider: UserInfoProvider(),
+            launchTimeProvider: LaunchTimeProviderMock()
         )
         defer { Datadog.instance = nil }
 

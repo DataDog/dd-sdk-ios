@@ -118,6 +118,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(session.viewVisits[0].path, "MenuViewController")
         XCTAssertEqual(session.viewVisits[0].actionEvents.count, 3)
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(session.viewVisits[0].actionEvents[0].action.loadingTime!, 0)
         XCTAssertEqual(session.viewVisits[0].actionEvents[1].action.target?.name, "UIButton")
         XCTAssertEqual(session.viewVisits[0].actionEvents[2].action.target?.name, "UIButton(Show UITableView)")
 

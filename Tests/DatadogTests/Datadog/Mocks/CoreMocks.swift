@@ -288,7 +288,8 @@ extension FeaturesCommonDependencies {
                 isConstrained: false // so it always meets the upload condition
             )
         ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
             performance: performance,
@@ -297,7 +298,8 @@ extension FeaturesCommonDependencies {
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            launchTimeProvider: launchTimeProvider
         )
     }
 }
@@ -368,6 +370,10 @@ class RelativeDateProvider: DateProvider {
             self.date = self.date.addingTimeInterval(seconds)
         }
     }
+}
+
+struct LaunchTimeProviderMock: LaunchTimeProviderType {
+    var launchTime: TimeInterval? = nil
 }
 
 extension UserInfo {

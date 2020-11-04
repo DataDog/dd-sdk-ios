@@ -9,6 +9,7 @@ import Foundation
 /// Injection container for common dependencies used by all `RUMScopes`.
 internal struct RUMScopeDependencies {
     let userInfoProvider: RUMUserInfoProvider
+    let launchTimeProvider: LaunchTimeProviderType
     let connectivityInfoProvider: RUMConnectivityInfoProvider
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput

@@ -88,6 +88,7 @@ public class Datadog {
     internal static var instance: Datadog?
 
     internal let userInfoProvider: UserInfoProvider
+    internal let launchTimeProvider: LaunchTimeProviderType
 
     private static func initializeOrThrow(configuration: FeaturesConfiguration) throws {
         guard Datadog.instance == nil else {
@@ -98,6 +99,7 @@ public class Datadog {
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
+        let launchTimeProvider = LaunchTimeProvider()
 
         // First, initialize internal loggers:
 
@@ -128,7 +130,8 @@ public class Datadog {
             dateProvider: dateProvider,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            launchTimeProvider: launchTimeProvider
         )
 
         if let loggingConfiguration = configuration.logging {
@@ -182,12 +185,17 @@ public class Datadog {
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            launchTimeProvider: launchTimeProvider
         )
     }
 
-    internal init(userInfoProvider: UserInfoProvider) {
+    internal init(
+        userInfoProvider: UserInfoProvider,
+        launchTimeProvider: LaunchTimeProviderType
+    ) {
         self.userInfoProvider = userInfoProvider
+        self.launchTimeProvider = launchTimeProvider
     }
 
     /// Internal feature made only for tests purpose.

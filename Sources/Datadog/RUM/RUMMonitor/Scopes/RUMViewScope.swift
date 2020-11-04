@@ -225,7 +225,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 type: .applicationStart,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: nil,
+                loadingTime: dependencies.launchTimeProvider.launchTime?.toInt64Nanoseconds,
                 target: nil,
                 error: nil,
                 crash: nil,
