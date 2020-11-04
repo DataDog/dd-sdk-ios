@@ -44,6 +44,7 @@ class ShopistUITests: XCTestCase {
             app.terminate()
         }
         // Wait for uploading pending batches
+        app.launchToHomepage()
         Thread.sleep(forTimeInterval: 15.0)
     }
 }

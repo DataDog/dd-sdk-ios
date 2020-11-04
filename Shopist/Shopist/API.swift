@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import Alamofire
 import Datadog
 
 internal func fakeError(onceIn upperRandomBound: UInt8) -> Error? {
@@ -67,7 +66,7 @@ internal struct Payment: Encodable {
     }
 }
 
-internal final class ShopistSessionDelegate: DDURLSessionDelegate, EventMonitor {
+internal final class ShopistSessionDelegate: DDURLSessionDelegate {
     override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         let anError = error ?? fakeError(onceIn: 50)
         super.urlSession(session, task: task, didCompleteWithError: anError)
@@ -82,11 +81,15 @@ internal final class API {
     private static let apiURL = "https://api." + baseHost
 
     typealias Completion<T: Decodable> = (Result<T, Error>) -> Void
-    let httpClient = Alamofire.Session(
-        configuration: .default,
-        startRequestsImmediately: false,
-        eventMonitors: [ShopistSessionDelegate()]
-    )
+    let httpClient: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.urlCache = nil
+        return URLSession(
+            configuration: config,
+            delegate: ShopistSessionDelegate(),
+            delegateQueue: nil
+        )
+    }()
     private let jsonEncoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -120,34 +123,30 @@ internal final class API {
         if let someCode = discountCode {
             url.append("?coupon_code=\(someCode)")
         }
-        // swiftlint:disable force_try
-        var request = try! URLRequest(url: url, method: .post)
-        request.httpBody = try! jsonEncoder.encode(payment)
-        // swiftlint:enable force_try
+        var request = URLRequest(url)
+        request.httpMethod = "POST"
+        request.httpBody = try! jsonEncoder.encode(payment) // swiftlint:disable:this force_try
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         make(request: request, isFailable: true, completion: completion)
     }
 
     private func make<T: Decodable>(request: URLRequest, isFailable: Bool, completion: @escaping Completion<T>) {
-        httpClient
-            .request(request)
-            .validate()
-            .response { result in
-                if let someError = result.error {
-                    completion(.failure(someError))
-                } else if let someData = result.data {
-                    let completionResult: Result<T, Error>
-                    do {
-                        Thread.sleep(for: .short)
-                        let decoded = try self.jsonDecoder.decode(T.self, from: someData)
-                        completionResult = .success(decoded)
-                    } catch {
-                        completionResult = .failure(error)
-                    }
-                    completion(completionResult)
+        let task = httpClient.dataTask(with: request) { data, response, error in
+            if let someError = error {
+                completion(.failure(someError))
+            } else if let someData = data {
+                let completionResult: Result<T, Error>
+                do {
+                    Thread.sleep(for: .short)
+                    let decoded = try self.jsonDecoder.decode(T.self, from: someData)
+                    completionResult = .success(decoded)
+                } catch {
+                    completionResult = .failure(error)
                 }
+                completion(completionResult)
             }
-            .resume()
+        }
+        task.resume()
     }
 
     func fakeFetchShippingAndTax() {
