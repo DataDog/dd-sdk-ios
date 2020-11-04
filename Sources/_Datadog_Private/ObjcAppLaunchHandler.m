@@ -22,21 +22,26 @@
     self = [super init];
     if (self) {
         NSDate *time = [NSDate new];
+        self.frameworkLoadTime = time;
+        self.timeToApplicationBecomeActive = -1;
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleDidBecomeActiveNotification)
                                                      name:UIApplicationDidBecomeActiveNotification
                                                    object:nil
          ];
-        self.frameworkLoadTime = time;
-        self.timeToApplicationBecomeActive = 0;
     }
     return self;
 }
 
 - (void)handleDidBecomeActiveNotification {
+    if (self.timeToApplicationBecomeActive > -1) { // sanity check & extra safety
+        return;
+    }
+
     NSDate *time = [NSDate new];
+    NSTimeInterval duration = [time timeIntervalSinceDate:self.frameworkLoadTime];
+    self.timeToApplicationBecomeActive = duration;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.timeToApplicationBecomeActive = [time timeIntervalSinceDate:self.frameworkLoadTime];
 }
 
 @end
