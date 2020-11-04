@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -20,7 +20,6 @@
 		9E84A04124D2C90B007A91A2 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E84A03624D2C8EE007A91A2 /* Datadog.framework */; };
 		9E84A04224D2C90B007A91A2 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E84A03624D2C8EE007A91A2 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E84A04824D2F54F007A91A2 /* CatalogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04724D2F54F007A91A2 /* CatalogViewController.swift */; };
-		9E84A04B24D3146D007A91A2 /* AlamofireImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9E84A04A24D3146D007A91A2 /* AlamofireImage */; };
 		9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04D24D31EE9007A91A2 /* UIView+Autolayout.swift */; };
 		9E84A05024D31F15007A91A2 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A04F24D31F15007A91A2 /* API.swift */; };
 		9E84A05224D32199007A91A2 /* CollectionViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E84A05124D32199007A91A2 /* CollectionViewCells.swift */; };
@@ -145,7 +144,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E84A04124D2C90B007A91A2 /* Datadog.framework in Frameworks */,
-				9E84A04B24D3146D007A91A2 /* AlamofireImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,7 +289,6 @@
 			);
 			name = Shopist;
 			packageProductDependencies = (
-				9E84A04A24D3146D007A91A2 /* AlamofireImage */,
 			);
 			productName = Shopist;
 			productReference = 9EE2A9EE244F38DE00A2C252 /* Shopist.app */;
@@ -345,7 +342,6 @@
 			);
 			mainGroup = 9EE2A9E5244F38DE00A2C252;
 			packageReferences = (
-				9E84A04924D3146D007A91A2 /* XCRemoteSwiftPackageReference "AlamofireImage" */,
 			);
 			productRefGroup = 9EE2A9EF244F38DE00A2C252 /* Products */;
 			projectDirPath = "";
@@ -724,25 +720,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		9E84A04924D3146D007A91A2 /* XCRemoteSwiftPackageReference "AlamofireImage" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Alamofire/AlamofireImage.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.1.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		9E84A04A24D3146D007A91A2 /* AlamofireImage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9E84A04924D3146D007A91A2 /* XCRemoteSwiftPackageReference "AlamofireImage" */;
-			productName = AlamofireImage;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9EE2A9E6244F38DE00A2C252 /* Project object */;
 }

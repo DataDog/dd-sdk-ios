@@ -6,21 +6,30 @@
 
 import UIKit
 import Datadog
-import AlamofireImage
 
 internal extension UIImageView {
-    private static let setupOnce: () = {
-        let config = URLSessionConfiguration.ephemeral
-        config.urlCache = nil
-        let imageDownloader = ImageDownloader(
-            session: api.httpClient,
-            imageCache: nil
-        )
-        UIImageView.af.sharedImageDownloader = imageDownloader
-    }()
+    private static var imageTaskKey: UInt8 = 0
+    private var imageTask: URLSessionDataTask? {
+        get {
+            return objc_getAssociatedObject(self, &Self.imageTaskKey) as? URLSessionDataTask
+        }
+        set {
+            objc_setAssociatedObject(self, &Self.imageTaskKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
 
     func setImage(with url: URL) {
-        _ = Self.setupOnce
-        af.setImage(withURL: url)
+        imageTask?.cancel()
+        let task = api.httpClient.dataTask(with: url) { [weak self] data, response, error in
+            self?.imageTask = nil
+            if let someData = data {
+                let image = UIImage(data: someData)
+                DispatchQueue.main.async {
+                    self?.image = image
+                }
+            }
+        }
+        task.resume()
+        imageTask = task
     }
 }

@@ -13,6 +13,7 @@ struct NavigationError: LocalizedError {
 }
 
 class ShopistApp: XCUIApplication {
+    @discardableResult
     func launchToHomepage() -> CategoriesPage {
         self.launch()
         return CategoriesPage()
