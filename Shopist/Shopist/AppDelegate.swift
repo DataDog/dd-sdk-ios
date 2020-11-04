@@ -38,8 +38,12 @@ private struct User {
         User(name: "Beyonce Knowles")
     ]
 
+    private static let userDefaultsUserIndexKey = "shopist.currentUser.index"
     static func any() -> Self {
-        return users.randomElement()! // swiftlint:disable:this force_unwrapping
+        let index = UserDefaults.standard.integer(forKey: userDefaultsUserIndexKey)
+        let user = users[index % users.count]
+        UserDefaults.standard.set(index + 1, forKey: userDefaultsUserIndexKey)
+        return user
     }
 }
 
