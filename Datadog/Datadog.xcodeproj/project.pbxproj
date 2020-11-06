@@ -491,6 +491,8 @@
 		61345612244756E300E7DA6B /* PerformancePresetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformancePresetTests.swift; sourceTree = "<group>"; };
 		61363D9C24D999F70084CD6F /* DDError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDError.swift; sourceTree = "<group>"; };
 		61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDErrorTests.swift; sourceTree = "<group>"; };
+		61378BA72555329E00F28837 /* DatadogTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogTests.xcconfig; sourceTree = "<group>"; };
+		61378BB22555337900F28837 /* DatadogSDKTesting.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogSDKTesting.local.xcconfig; sourceTree = "<group>"; };
 		6137E648252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMModalViewsAutoInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTabBarControllerScenarioTests.swift; sourceTree = "<group>"; };
 		613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskInterceptionTests.swift; sourceTree = "<group>"; };
@@ -817,6 +819,7 @@
 		61133B8F242393DE00786299 /* DatadogTests */ = {
 			isa = PBXGroup;
 			children = (
+				61378BA72555329E00F28837 /* DatadogTests.xcconfig */,
 				61133B92242393DE00786299 /* Info.plist */,
 				61A763D9252DB2B3005A23F2 /* DatadogTests-Bridging-Header.h */,
 			);
@@ -1506,6 +1509,7 @@
 				6152C84224BE2165006A1679 /* MockServerAddress.local.xcconfig */,
 				615519252461BCE7002A85CF /* Datadog.xcconfig */,
 				615519262461BCE7002A85CF /* Datadog.local.xcconfig */,
+				61378BB22555337900F28837 /* DatadogSDKTesting.local.xcconfig */,
 			);
 			name = xcconfigs;
 			path = ../../xcconfigs;
@@ -2981,7 +2985,7 @@
 		};
 		61133B9A242393DE00786299 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -3005,7 +3009,7 @@
 		};
 		61133B9B242393DE00786299 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -3356,7 +3360,7 @@
 		};
 		9E2FB28524476765001C9B7B /* Integration */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 615519252461BCE7002A85CF /* Datadog.xcconfig */;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;

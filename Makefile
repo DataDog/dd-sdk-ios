@@ -6,8 +6,31 @@ tools:
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@echo "OK 👌"
 
+# The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
+DD_SDK_SWIFT_TESTING_VERSION = 0.2.0
+
+define DD_SDK_TESTING_XCCONFIG_CI
+FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/\n
+LD_RUNPATH_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/\n
+OTHER_LDFLAGS=$$(inherited) -framework DatadogSDKTesting\n
+DD_TEST_RUNNER=1\n
+DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
+DD_SDK_SWIFT_TESTING_CLIENT_TOKEN=${DD_SDK_SWIFT_TESTING_CLIENT_TOKEN}\n
+DD_SDK_SWIFT_TESTING_ENV=ci\n
+endef
+export DD_SDK_TESTING_XCCONFIG_CI
+
 dependencies:
-		@echo "⚙️  No dependencies required, skipping..."
+		@echo "⚙️  Installing dependencies..."
+ifeq (${ci}, true)
+		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
+endif
+		@brew install gh
+		@rm -rf instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip
+		@rm -rf instrumented-tests/DatadogSDKTesting.framework
+		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.framework-iphonesimulator.zip"
+		@unzip instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip -d instrumented-tests
+		@[ -e "instrumented-tests/DatadogSDKTesting.framework" ] && echo "DatadogSDKTesting.framework - OK" || { echo "DatadogSDKTesting.framework - missing"; exit 1; }
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
