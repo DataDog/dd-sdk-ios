@@ -45,6 +45,38 @@ class DDLoggerTests: XCTestCase {
         logMatchers[5].assertStatus(equals: "critical")
     }
 
+    func testSendingNSError() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        defer { LoggingFeature.instance = nil }
+
+        let objcLogger = DDLogger.builder().build()
+
+        let error = NSError(domain: "UnitTest", code: 11_235, userInfo: [NSLocalizedDescriptionKey: "UnitTest error"])
+
+        objcLogger.debug("message", error: error, attributes: [:])
+        objcLogger.info("message", error: error, attributes: [:])
+        objcLogger.notice("message", error: error, attributes: [:])
+        objcLogger.warn("message", error: error, attributes: [:])
+        objcLogger.error("message", error: error, attributes: [:])
+        objcLogger.critical("message", error: error, attributes: [:])
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
+        for matcher in logMatchers {
+            matcher.assertValue(
+                forKeyPath: "error.stack",
+                equals: "Error Domain=UnitTest Code=11235 \"UnitTest error\" UserInfo={NSLocalizedDescription=UnitTest error}"
+            )
+            matcher.assertValue(
+                forKeyPath: "error.message",
+                equals: "UnitTest error"
+            )
+            matcher.assertValue(
+                forKeyPath: "error.kind",
+                equals: "UnitTest - 11235"
+            )
+        }
+    }
+
     func testSendingMessageAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }

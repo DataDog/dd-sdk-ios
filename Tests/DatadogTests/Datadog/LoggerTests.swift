@@ -135,6 +135,33 @@ class LoggerTests: XCTestCase {
         logMatchers[5].assertStatus(equals: "critical")
     }
 
+    // MARK: - Logging an error
+
+    func testLoggingError() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        defer { LoggingFeature.instance = nil }
+
+        struct TestError: Error {
+            var description = "Test description"
+        }
+        let error = TestError()
+
+        let logger = Logger.builder.build()
+        logger.debug("message", error: error)
+        logger.info("message", error: error)
+        logger.notice("message", error: error)
+        logger.warn("message", error: error)
+        logger.error("message", error: error)
+        logger.critical("message", error: error)
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
+        for matcher in logMatchers {
+            matcher.assertValue(forKeyPath: "error.stack", equals: "TestError(description: \"Test description\")")
+            matcher.assertValue(forKeyPath: "error.message", equals: "TestError(description: \"Test description\")")
+            matcher.assertValue(forKeyPath: "error.kind", equals: "TestError")
+        }
+    }
+
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {

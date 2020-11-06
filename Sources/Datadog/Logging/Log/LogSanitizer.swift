@@ -12,8 +12,7 @@ internal struct LogSanitizer {
         /// Attribute names reserved for Datadog.
         /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
-            "host", "message", "status", "service", "source", "error.message", "error.stack", "ddtags",
-            OTLogFields.errorKind,
+            "host", "message", "status", "service", "source", "ddtags",
             LoggingForTracingAdapter.TracingAttributes.traceID,
             LoggingForTracingAdapter.TracingAttributes.spanID,
             RUMContextIntegration.Attributes.applicationID,
