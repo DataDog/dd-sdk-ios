@@ -37,17 +37,16 @@ internal enum RUMResourceKind {
 
     private static let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
 
-    /// Determines the `RUMResourceKind` based on a given `URLRequest` and `HTTPURLResponse`.
-    /// Defaults to `.other`.
+    /// Determines the `RUMResourceKind` based on a given `URLRequest`.
+    /// Returns `nil` if the kind cannot be determined with only `URLRequest` and `HTTPURLRespones` is needed.
     ///
     /// - Parameters:
     ///   - request: the `URLRequest` for the resource.
-    ///   - response: the `HTTPURLResponse` of the resource.
-    init(request: URLRequest, response: HTTPURLResponse) {
+    init?(request: URLRequest) {
         if let requestMethod = request.httpMethod?.uppercased(), RUMResourceKind.xhrHTTPMethods.contains(requestMethod) {
             self = .xhr
         } else {
-            self.init(response: response)
+            return nil
         }
     }
 
@@ -261,6 +260,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMHTTPMethod(request: request),
+                kind: RUMResourceKind(request: request),
                 spanContext: nil
             )
         )
@@ -269,7 +269,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
-        request: URLRequest? = nil,
         size: Int64? = nil,
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -277,11 +276,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         var statusCode: Int?
 
         if let response = response as? HTTPURLResponse {
-            if let request = request {
-                resourceKind = RUMResourceKind(request: request, response: response)
-            } else {
-                resourceKind = RUMResourceKind(response: response)
-            }
+            resourceKind = RUMResourceKind(response: response)
             statusCode = response.statusCode
         } else {
             resourceKind = .other

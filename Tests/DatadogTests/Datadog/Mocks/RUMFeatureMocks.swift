@@ -174,6 +174,7 @@ extension RUMStartResourceCommand {
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
         httpMethod: RUMHTTPMethod = .mockAny(),
+        kind: RUMResourceKind = .mockAny(),
         spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
@@ -182,6 +183,7 @@ extension RUMStartResourceCommand {
             attributes: attributes,
             url: url,
             httpMethod: httpMethod,
+            kind: kind,
             spanContext: spanContext
         )
     }

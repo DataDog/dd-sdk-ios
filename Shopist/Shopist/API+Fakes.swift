@@ -35,7 +35,7 @@ extension APIFakeRequests {
             let resourceKey = shippingURL.pathComponents.joined()
             Global.rum.startResourceLoading(
                 resourceKey: resourceKey,
-                request: try! URLRequest(url: shippingURL, method: .get)
+                request: URLRequest(url: shippingURL, method: "GET")
             )
             Thread.sleep(for: .short)
             Global.rum.stopResourceLoadingWithError(
@@ -52,7 +52,7 @@ extension APIFakeRequests {
             let resourceKey = fontURL.pathComponents.joined()
             Global.rum.startResourceLoading(
                 resourceKey: resourceKey,
-                request: try! URLRequest(url: fontURL, method: .get)
+                request: URLRequest(url: fontURL, method: "GET")
             )
             Thread.sleep(for: .long)
             Global.rum.stopResourceLoading(
@@ -73,7 +73,7 @@ extension APIFakeRequests {
         DispatchQueue.global(qos: .utility).async {
             Thread.sleep(for: .short)
             let resourceKey = updateInfoURL.pathComponents.joined()
-            let request = try! URLRequest(url: updateInfoURL, method: .post)
+            let request = URLRequest(url: updateInfoURL, method: "POST")
             Global.rum.startResourceLoading(
                 resourceKey: resourceKey,
                 request: request
@@ -87,10 +87,17 @@ extension APIFakeRequests {
                     httpVersion: nil,
                     headerFields: nil
                 )!,
-                request: request,
                 size: Int64.random(in: 1_024...4_096)
             )
         }
     }
 }
 // swiftlint:enable force_unwrapping force_try
+
+private extension URLRequest {
+    init(url: URL, method: String) {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        self = request
+    }
+}

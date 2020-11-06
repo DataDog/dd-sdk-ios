@@ -71,13 +71,11 @@ public class DDRUMMonitor {
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - response: the `URLResepone` received for the Resource.
-    ///   - request: an optional`URLRequest` send for this Resource. If provided, the SDK will infer more precise information for this RUM Resource.
     ///   - size: an optional size of the data received for the Resource (in bytes). If not provided, the SDK will try to infer it from the "Content-Length" header of the `response`.
     ///   - attributes: custom attributes to attach to the Resource.
     public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
-        request: URLRequest? = nil,
         size: Int64? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}

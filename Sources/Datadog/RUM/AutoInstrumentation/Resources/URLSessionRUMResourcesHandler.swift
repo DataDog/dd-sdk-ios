@@ -42,6 +42,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
                 attributes: [:],
                 url: url,
                 httpMethod: RUMHTTPMethod(request: interception.request),
+                kind: RUMResourceKind(request: interception.request),
                 spanContext: interception.spanContext.flatMap { spanContext in
                     .init(
                         traceID: String(spanContext.traceID.rawValue),
@@ -70,10 +71,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
                     resourceKey: interception.identifier.uuidString,
                     time: dateProvider.currentDate(),
                     attributes: [:],
-                    kind: RUMResourceKind(
-                        request: interception.request,
-                        response: httpResponse
-                    ),
+                    kind: RUMResourceKind(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
                     size: interception.metrics?.responseSize
                 )
