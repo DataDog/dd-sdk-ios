@@ -109,6 +109,27 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
     }
 
+    func testStartingView_thenLoadingResourceWithURL() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        let url: URL = .mockRandom()
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", url: url)
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.url, url.absoluteString)
+        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+    }
+
     func testStartingView_thenTappingButton() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,

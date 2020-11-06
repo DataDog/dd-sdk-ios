@@ -266,6 +266,24 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func startResourceLoading(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        process(
+            command: RUMStartResourceCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                url: url.absoluteString,
+                httpMethod: .GET,
+                kind: nil,
+                spanContext: nil
+            )
+        )
+    }
+
     override public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
