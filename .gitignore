@@ -3,5 +3,7 @@
 /.build
 /.swiftpm
 xcuserdata/
+instrumented-tests/DatadogSDKTesting.framework
+instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip
 
 *.local.xcconfig
