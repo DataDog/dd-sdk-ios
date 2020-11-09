@@ -8,8 +8,6 @@ import UIKit
 
 /// A description of the RUM View returned from the `UIKitRUMViewsPredicate`.
 public struct RUMView {
-    // TODO: RUMM-726 Rename to `RUMView` when this name is no longer taken by auto-generated model(s).
-
     /// The RUM View path, appearing as `PATH` in RUM Explorer.
     public var path: String
 
@@ -26,7 +24,7 @@ public struct RUMView {
     }
 }
 
-/// The predicate deciding if a given `UIViewController` marks the beginning or end of the RUM View.
+/// The predicate deciding if a given `UIViewController` indicates the RUM View.
 ///
 /// When the app is running, the SDK will ask the implementation of `UIKitRUMViewsPredicate` if any noticed `UIViewController` should be considered
 /// as the RUM View. The predicate implementation should return RUM View parameters if the `UIViewController` should start/end
