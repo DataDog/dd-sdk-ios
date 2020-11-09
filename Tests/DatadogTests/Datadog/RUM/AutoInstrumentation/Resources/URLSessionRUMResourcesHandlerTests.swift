@@ -134,7 +134,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
-        XCTAssertEqual(resourceStopCommand.errorMessage, DDError(error: taskError).title)
+        XCTAssertEqual(resourceStopCommand.errorMessage, "domain - 123 - network error")
         XCTAssertEqual(resourceStopCommand.errorSource, .network)
         XCTAssertEqual(resourceStopCommand.stack, DDError(error: taskError).details)
         XCTAssertNil(resourceStopCommand.httpStatusCode)

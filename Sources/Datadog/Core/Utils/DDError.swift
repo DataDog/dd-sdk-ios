@@ -13,7 +13,8 @@ internal struct DDError {
     let details: String
 
     init(error: Error) {
-        if isNSErrorOrItsSubclass(error) {
+        let mirror = Mirror(reflecting: error)
+        if isNSErrorOrItsSubclass(mirror) {
             let nsError = error as NSError
             self.title = "\(nsError.domain) - \(nsError.code)"
             if nsError.userInfo[NSLocalizedDescriptionKey] != nil {
@@ -26,14 +27,15 @@ internal struct DDError {
             let swiftError = error
             self.title = "\(type(of: swiftError))"
             self.message = "\(swiftError)"
-            self.details = "\(swiftError)"
+            self.details = mirror.children
+                .map { "\($0 ?? "Label"): \($1)" }
+                .joined(separator: ",")
         }
     }
 }
 
-private func isNSErrorOrItsSubclass(_ error: Error) -> Bool {
-    var mirror: Mirror? = Mirror(reflecting: error)
-
+private func isNSErrorOrItsSubclass(_ errorMirror: Mirror) -> Bool {
+    var mirror: Mirror? = errorMirror
     while mirror != nil {
         if mirror?.subjectType == NSError.self {
             return true

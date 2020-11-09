@@ -87,8 +87,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.attributes = attributes
 
         let dderror = DDError(error: error)
-        self.message = dderror.title
-        self.stack = dderror.details
+        self.message = "\(dderror.title) - \(dderror.message)"
+        self.stack = dderror.details.isEmpty ? nil : dderror.details
     }
 }
 
@@ -188,7 +188,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.httpStatusCode = httpStatusCode
 
         let dderror = DDError(error: error)
-        self.errorMessage = dderror.title
+        self.errorMessage = "\(dderror.title) - \(dderror.message)"
         // The stack will give the networking error (`NSError`) description in most cases:
         self.stack = dderror.details
     }

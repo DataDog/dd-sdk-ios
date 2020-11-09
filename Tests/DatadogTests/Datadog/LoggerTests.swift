@@ -157,8 +157,8 @@ class LoggerTests: XCTestCase {
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         for matcher in logMatchers {
-            matcher.assertValue(forKeyPath: "error.stack", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.message", equals: "custom message")
+            matcher.assertValue(forKeyPath: "error.stack", equals: "description: Test description")
             matcher.assertValue(forKeyPath: "error.kind", equals: "TestError")
         }
     }

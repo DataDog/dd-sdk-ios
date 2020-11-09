@@ -18,7 +18,7 @@ class DDErrorTests: XCTestCase {
 
         XCTAssertEqual(dderror.title, "SwiftError")
         XCTAssertEqual(dderror.message, #"SwiftError(description: "error description")"#)
-        XCTAssertEqual(dderror.details, #"SwiftError(description: "error description")"#)
+        XCTAssertEqual(dderror.details, #"description: error description"#)
     }
 
     func testFormattingStringConvertibleSwiftError() {
@@ -31,7 +31,21 @@ class DDErrorTests: XCTestCase {
 
         XCTAssertEqual(dderror.title, "SwiftError")
         XCTAssertEqual(dderror.message, "error description")
-        XCTAssertEqual(dderror.details, "error description")
+        XCTAssertEqual(dderror.details, "debugDescription: error description")
+    }
+
+    // NOTE: RUMM-817 When nested in method,
+    // ddError.title contains "unknown context at $110014ea8"
+    class SwiftErrorClass: Error {
+        let someProperty = "some value"
+    }
+    func testFormattingErrorClass() {
+        let error = SwiftErrorClass()
+        let dderror = DDError(error: error)
+
+        XCTAssertEqual(dderror.title, "SwiftErrorClass")
+        XCTAssertEqual(dderror.message, "DatadogTests.DDErrorTests.SwiftErrorClass")
+        XCTAssertEqual(dderror.details, "someProperty: some value")
     }
 
     func testFormattingNSError() {
