@@ -178,6 +178,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             url: command.url,
             httpMethod: command.httpMethod,
+            resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext
         )
     }

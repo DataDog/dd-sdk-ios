@@ -59,41 +59,65 @@ public class DDRUMMonitor {
     /// Notifies that the Resource starts being loaded.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must be unique among all Resources being currently loaded.
-    ///   - url: the `URL` of the Resource.
-    ///   - httpMethod: the HTTP method used to load the Resource.
+    ///   - request: the `URLRequest` for the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue] = [:]) {
-    }
+    public func startResourceLoading(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
+    /// Notifies that the Resource starts being loaded using GET request to given `url`.
+    /// - Parameters:
+    ///   - resourceKey: the key representing the Resource - must be unique among all Resources being currently loaded.
+    ///   - url: the `URL` for the Resource.
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func startResourceLoading(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
 
     /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
-    ///   - kind: the type of the Resource.
-    ///   - httpStatusCode: the HTTP response status code for this Resource.
-    ///   - size: the size of the Resource (in bytes).
+    ///   - response: the `URLResepone` received for the Resource.
+    ///   - size: an optional size of the data received for the Resource (in bytes). If not provided, the SDK will try to infer it from the "Content-Length" header of the `response`.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
-    }
+    public func stopResourceLoading(
+        resourceKey: String,
+        response: URLResponse,
+        size: Int64? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
 
     /// Notifies that the Resource stops being loaded with error.
     /// This should be used when `Error` object is received on Resource failure.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - error: the `Error` object received when loading the Resource.
-    ///   - httpStatusCode: HTTP status code (optional).
+    ///   - response: an optional `URLResepone` received for the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue] = [:]) {
-    }
+    public func stopResourceLoadingWithError(
+        resourceKey: String,
+        error: Error,
+        response: URLResponse? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
 
     /// Notifies that the Resource stops being loaded with error.
     /// If `Error` object available on Resource failure `stopResourceLoadingWithError(..., error:, ...)` should be used instead.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - errorMessage: the message explaining Resource failure.
-    ///   - httpStatusCode: HTTP status code (optional).
+    ///   - response: an optional `URLResepone` received for the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
-    public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue] = [:]) {
-    }
+    public func stopResourceLoadingWithError(
+        resourceKey: String,
+        errorMessage: String,
+        response: URLResponse? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
 
     /// Notifies that the User Action has started.
     /// This is used to track long running user actions (e.g. "scroll").

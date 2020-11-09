@@ -59,7 +59,7 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_thenLoadingResource() throws {
+    func testStartingView_thenLoadingImageResourceWithRequest() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
@@ -67,8 +67,8 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/1", kind: .image, httpStatusCode: 200)
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -87,6 +87,47 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
         }
+    }
+
+    func testStartingView_thenLoadingXHRResourceWithRequest() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
+        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+    }
+
+    func testStartingView_thenLoadingResourceWithURL() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        let url: URL = .mockRandom()
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", url: url)
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.url, url.absoluteString)
+        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
     }
 
     func testStartingView_thenTappingButton() throws {
@@ -134,10 +175,10 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny(), httpMethod: .GET)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", kind: .image, httpStatusCode: 200)
-        monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockAny(), httpMethod: .GET)
-        monitor.stopResourceLoading(resourceKey: "/resource/2", kind: .image, httpStatusCode: 202)
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200))
+        monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockWith(httpMethod: "POST"))
+        monitor.stopResourceLoading(resourceKey: "/resource/2", response: .mockWith(statusCode: 202))
         monitor.stopUserAction(type: .scroll)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
@@ -154,6 +195,7 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[2].model(ofType: RUMDataResource.self) { rumModel in
             userActionID = rumModel.action?.id
             XCTAssertEqual(rumModel.resource.statusCode, 200)
+            XCTAssertEqual(rumModel.resource.method, .methodGET)
         }
         XCTAssertNotNil(userActionID, "Resource should be associated with the User Action that issued its loading")
         try rumEventMatchers[3].model(ofType: RUMDataView.self) { rumModel in
@@ -163,6 +205,7 @@ class RUMMonitorTests: XCTestCase {
         }
         try rumEventMatchers[4].model(ofType: RUMDataResource.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 202)
+            XCTAssertEqual(rumModel.resource.method, .post)
         }
         try rumEventMatchers[5].model(ofType: RUMDataView.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
@@ -250,8 +293,8 @@ class RUMMonitorTests: XCTestCase {
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         monitor.startView(viewController: view2)
         monitor.addUserAction(type: .tap, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny(), httpMethod: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopView(viewController: view1)
         monitor.stopView(viewController: view2)
 
@@ -293,18 +336,19 @@ class RUMMonitorTests: XCTestCase {
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: URLRequest(url: .mockWith(pathComponent: "/resource/1")))
+        monitor.startResourceLoading(resourceKey: "/resource/2", request: URLRequest(url: .mockWith(pathComponent: "/resource/2")))
+
         monitor.stopView(viewController: view1)
 
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         monitor.startView(viewController: view2)
-        monitor.startResourceLoading(resourceKey: "/resource/3", url: .mockWith(pathComponent: "/resource/3"), httpMethod: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/4", url: .mockWith(pathComponent: "/resource/4"), httpMethod: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/3", request: URLRequest(url: .mockWith(pathComponent: "/resource/3")))
+        monitor.startResourceLoading(resourceKey: "/resource/4", request: URLRequest(url: .mockWith(pathComponent: "/resource/4")))
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/3", kind: .mockAny(), httpStatusCode: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/4", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/3", response: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/4", response: .mockAny())
         monitor.stopView(viewController: view2)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 13)
@@ -392,10 +436,10 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockAny())
         monitor.stopUserAction(type: .scroll)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor.stopView(viewController: mockView)
@@ -436,10 +480,10 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockWith(pathComponent: "/resource/1"), httpMethod: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockWith(pathComponent: "/resource/2"), httpMethod: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockAny())
         monitor.stopUserAction(type: .scroll)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", kind: .mockAny(), httpStatusCode: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor.stopView(viewController: mockView)
@@ -548,9 +592,9 @@ class RUMMonitorTests: XCTestCase {
             case 1: monitor.stopView(viewController: view)
             case 2: monitor.addError(error: ErrorMock(), source: .custom)
             case 3: monitor.addError(message: .mockAny(), source: .custom)
-            case 4: monitor.startResourceLoading(resourceKey: .mockAny(), url: .mockAny(), httpMethod: .mockAny())
-            case 5: monitor.stopResourceLoading(resourceKey: .mockAny(), kind: .mockAny(), httpStatusCode: .mockAny())
-            case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock(), httpStatusCode: .mockAny())
+            case 4: monitor.startResourceLoading(resourceKey: .mockAny(), request: .mockAny())
+            case 5: monitor.stopResourceLoading(resourceKey: .mockAny(), response: .mockAny())
+            case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock())
             case 7: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), errorMessage: .mockAny())
             case 8: monitor.startUserAction(type: .scroll, name: .mockRandom())
             case 9: monitor.stopUserAction(type: .scroll)
@@ -713,27 +757,7 @@ class RUMHTTPMethodTests: XCTestCase {
 }
 
 class RUMResourceKindTests: XCTestCase {
-    private let fixtures: [(mime: String, kind: RUMResourceKind)] = [
-        (mime: "image/png", kind: .image),
-        (mime: "video/mpeg", kind: .media),
-        (mime: "audio/ogg", kind: .media),
-        (mime: "font/otf", kind: .font),
-        (mime: "text/css", kind: .css),
-        (mime: "text/css; charset=UTF-8", kind: .css),
-        (mime: "text/javascript", kind: .js),
-        (mime: "text/javascript; charset=UTF-8", kind: .js),
-    ]
-
-    func testItCanBeInitializedFromHTTPURLResponse() {
-        fixtures.forEach { mime, expectedKind in
-            XCTAssertEqual(
-                RUMResourceKind(response: .mockWith(mimeType: mime.randomcased())),
-                expectedKind
-            )
-        }
-    }
-
-    func testItCanBeInitializedFromURLRequestAndHTTPURLResponse() {
+    func testWhenInitializedWithResponse_itReturnsKindBasedOnMIMEType() {
         let fixtures: [(mime: String, kind: RUMResourceKind)] = [
             (mime: "image/png", kind: .image),
             (mime: "video/mpeg", kind: .media),
@@ -745,49 +769,35 @@ class RUMResourceKindTests: XCTestCase {
             (mime: "text/javascript; charset=UTF-8", kind: .js),
         ]
 
-        let fixture = fixtures.randomElement()!
+        fixtures.forEach { mime, expectedKind in
+            XCTAssertEqual(
+                RUMResourceKind(response: .mockWith(mimeType: mime.randomcased())),
+                expectedKind
+            )
+        }
+    }
 
+    func testWhenInitializedWithPOSTorPUTorDELETErequest_itReturnsXHR() {
         XCTAssertEqual(
-            RUMResourceKind(
-                request: .mockWith(httpMethod: "POST".randomcased()),
-                response: .mockWith(mimeType: fixture.mime.randomcased())
-            ),
-            .xhr
+            RUMResourceKind(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
         )
         XCTAssertEqual(
-            RUMResourceKind(
-                request: .mockWith(httpMethod: "PUT".randomcased()),
-                response: .mockWith(mimeType: fixture.mime.randomcased())
-            ),
-            .xhr
+            RUMResourceKind(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
         )
         XCTAssertEqual(
-            RUMResourceKind(
-                request: .mockWith(httpMethod: "DELETE".randomcased()),
-                response: .mockWith(mimeType: fixture.mime.randomcased())
-            ),
-            .xhr
+            RUMResourceKind(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
         )
-        XCTAssertEqual(
-            RUMResourceKind(
-                request: .mockWith(httpMethod: "GET".randomcased()),
-                response: .mockWith(mimeType: fixture.mime.randomcased())
-            ),
-            fixture.kind
+    }
+
+    func testWhenInitializedWithGETorHEADorPATCHrequest_itReturnsNil() {
+        XCTAssertNil(
+            RUMResourceKind(request: .mockWith(httpMethod: "GET".randomcased()))
         )
-        XCTAssertEqual(
-            RUMResourceKind(
-                request: .mockWith(httpMethod: "HEAD".randomcased()),
-                response: .mockWith(mimeType: fixture.mime.randomcased())
-            ),
-            fixture.kind
+        XCTAssertNil(
+            RUMResourceKind(request: .mockWith(httpMethod: "HEAD".randomcased()))
         )
-        XCTAssertEqual(
-            RUMResourceKind(
-                request: .mockWith(httpMethod: "PATCH".randomcased()),
-                response: .mockWith(mimeType: fixture.mime.randomcased())
-            ),
-            fixture.kind
+        XCTAssertNil(
+            RUMResourceKind(request: .mockWith(httpMethod: "PATCH".randomcased()))
         )
     }
 

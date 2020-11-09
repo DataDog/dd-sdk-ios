@@ -25,6 +25,9 @@ internal class RUMResourceScope: RUMScope {
     private var resourceLoadingStartTime: Date
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMHTTPMethod
+    /// The Resource kind captured when starting the `URLRequest`.
+    /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
+    private var resourceKindBasedOnRequest: RUMResourceKind?
 
     /// The Resource metrics, if received. When sending RUM Resource event, `resourceMetrics` values
     /// take precedence over other values collected for this Resource.
@@ -41,6 +44,7 @@ internal class RUMResourceScope: RUMScope {
         startTime: Date,
         url: String,
         httpMethod: RUMHTTPMethod,
+        resourceKindBasedOnRequest: RUMResourceKind?,
         spanContext: RUMSpanContext?
     ) {
         self.context = context
@@ -51,6 +55,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
         self.resourceHTTPMethod = httpMethod
+        self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
     }
 
@@ -110,7 +115,7 @@ internal class RUMResourceScope: RUMScope {
             ),
             resource: .init(
                 id: resourceUUID.toRUMDataFormat,
-                type: command.kind.toRUMDataFormat,
+                type: (resourceKindBasedOnRequest ?? command.kind).toRUMDataFormat,
                 method: resourceHTTPMethod.toRUMDataFormat,
                 url: resourceURL,
                 statusCode: command.httpStatusCode?.toInt64,

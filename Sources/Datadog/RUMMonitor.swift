@@ -7,7 +7,7 @@
 import UIKit
 import Foundation
 
-public enum RUMHTTPMethod: String {
+internal enum RUMHTTPMethod: String {
     case GET
     case POST
     case PUT
@@ -17,13 +17,13 @@ public enum RUMHTTPMethod: String {
 
     /// Determines the `RUMHTTPMethod` based on a given `URLRequest`. Defaults to `.GET`.
     /// - Parameter request: the `URLRequest` for the resource.
-    public init(request: URLRequest) {
+    init(request: URLRequest) {
         let requestMethod = request.httpMethod ?? "GET"
         self = RUMHTTPMethod(rawValue: requestMethod.uppercased()) ?? .GET
     }
 }
 
-public enum RUMResourceKind {
+internal enum RUMResourceKind {
     case image
     case xhr
     case beacon
@@ -37,17 +37,16 @@ public enum RUMResourceKind {
 
     private static let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
 
-    /// Determines the `RUMResourceKind` based on a given `URLRequest` and `HTTPURLResponse`.
-    /// Defaults to `.other`.
+    /// Determines the `RUMResourceKind` based on a given `URLRequest`.
+    /// Returns `nil` if the kind cannot be determined with only `URLRequest` and `HTTPURLRespones` is needed.
     ///
     /// - Parameters:
     ///   - request: the `URLRequest` for the resource.
-    ///   - response: the `HTTPURLResponse` of the resource.
-    public init(request: URLRequest, response: HTTPURLResponse) {
+    init?(request: URLRequest) {
         if let requestMethod = request.httpMethod?.uppercased(), RUMResourceKind.xhrHTTPMethods.contains(requestMethod) {
             self = .xhr
         } else {
-            self.init(response: response)
+            return nil
         }
     }
 
@@ -56,7 +55,7 @@ public enum RUMResourceKind {
     ///
     /// - Parameters:
     ///   - response: the `HTTPURLResponse` of the resource.
-    public init(response: HTTPURLResponse) {
+    init(response: HTTPURLResponse) {
         if let mimeType = response.mimeType {
             let components = mimeType.split(separator: "/")
             let type = components.first?.lowercased()
@@ -249,53 +248,101 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    override public func startResourceLoading(resourceKey: String, url: URL, httpMethod: RUMHTTPMethod, attributes: [AttributeKey: AttributeValue]) {
+    override public func startResourceLoading(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        process(
+            command: RUMStartResourceCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                url: request.url?.absoluteString ?? "unknown_url",
+                httpMethod: RUMHTTPMethod(request: request),
+                kind: RUMResourceKind(request: request),
+                spanContext: nil
+            )
+        )
+    }
+
+    override public func startResourceLoading(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 url: url.absoluteString,
-                httpMethod: httpMethod,
+                httpMethod: .GET,
+                kind: nil,
                 spanContext: nil
             )
         )
     }
 
-    override public func stopResourceLoading(resourceKey: String, kind: RUMResourceKind, httpStatusCode: Int?, size: Int64?, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoading(
+        resourceKey: String,
+        response: URLResponse,
+        size: Int64? = nil,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        let resourceKind: RUMResourceKind
+        var statusCode: Int?
+
+        if let response = response as? HTTPURLResponse {
+            resourceKind = RUMResourceKind(response: response)
+            statusCode = response.statusCode
+        } else {
+            resourceKind = .other
+        }
+
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 attributes: attributes,
-                kind: kind,
-                httpStatusCode: httpStatusCode,
+                kind: resourceKind,
+                httpStatusCode: statusCode,
                 size: size
             )
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceKey: String, error: Error, httpStatusCode: Int?, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoadingWithError(
+        resourceKey: String,
+        error: Error,
+        response: URLResponse? = nil,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 error: error,
                 source: .network,
-                httpStatusCode: httpStatusCode,
+                httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes
             )
         )
     }
 
-    override public func stopResourceLoadingWithError(resourceKey: String, errorMessage: String, httpStatusCode: Int? = nil, attributes: [AttributeKey: AttributeValue]) {
+    override public func stopResourceLoadingWithError(
+        resourceKey: String,
+        errorMessage: String,
+        response: URLResponse? = nil,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
                 source: .network,
-                httpStatusCode: httpStatusCode,
+                httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes
             )
         )

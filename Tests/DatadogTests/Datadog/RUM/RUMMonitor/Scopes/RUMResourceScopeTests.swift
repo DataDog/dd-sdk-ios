@@ -27,6 +27,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: .mockAny(),
             url: .mockAny(),
             httpMethod: .mockAny(),
+            resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
 
@@ -49,6 +50,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .POST,
+            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
 
@@ -107,6 +109,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .POST,
+            resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
 
@@ -156,6 +159,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .POST,
+            resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
 
@@ -262,6 +266,7 @@ class RUMResourceScopeTests: XCTestCase {
                 startTime: .mockAny(),
                 url: url,
                 httpMethod: .mockAny(),
+                resourceKindBasedOnRequest: nil,
                 spanContext: nil
             )
         }
@@ -280,5 +285,38 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(resource1Events.count, 1)
         XCTAssertEqual(resource2Events.count, 1)
         XCTAssertNotEqual(resource1Events[0].model.resource.id, resource2Events[0].model.resource.id)
+    }
+
+    func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
+        let kinds: [RUMResourceKind] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
+        let kindBasedOnRequest = kinds.randomElement()!
+        let kindBasedOnResponse = kinds.randomElement()!
+
+        // Given
+        let scope = RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: Date(),
+            url: .mockAny(),
+            httpMethod: .POST,
+            resourceKindBasedOnRequest: kindBasedOnRequest,
+            spanContext: nil
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(
+                    resourceKey: "/resource/1",
+                    kind: kindBasedOnResponse
+                )
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self).first)
+        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest.toRUMDataFormat)
     }
 }

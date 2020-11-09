@@ -195,8 +195,8 @@ For more details and available options, refer to the code documentation comments
 ### RUM Resources
 
 Use the following methods on `Global.rum` to manually collect RUM resources:
-* `.startResourceLoading(resourceKey:url:httpMethod:)`
-* `.stopResourceLoading(resourceKey:kind:)`
+* `.startResourceLoading(resourceKey:request:)`
+* `.stopResourceLoading(resourceKey:response:)`
 * `.stopResourceLoadingWithError(resourceKey:error:)`
 * `.stopResourceLoadingWithError(resourceKey:errorMessage:)`
 
@@ -205,15 +205,13 @@ Example:
 // in your network client:
 
 Global.rum.startResourceLoading(
-    resourceKey: "resource-key",
-    url: requestURL,
-    httpMethod: .GET
+    resourceKey: "resource-key", 
+    request: request
 )
 
 Global.rum.stopResourceLoading(
     resourceKey: "resource-key",
-    kind: .image,
-    httpStatusCode: 200
+    response: response
 )
 ```
 

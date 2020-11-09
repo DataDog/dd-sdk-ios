@@ -115,6 +115,8 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let url: String
     /// HTTP method used to load the Resource
     let httpMethod: RUMHTTPMethod
+    /// A type of the Resource if it's possible to determine on start (when the response MIME is not yet known).
+    let kind: RUMResourceKind?
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     let spanContext: RUMSpanContext?
 }
