@@ -20,11 +20,12 @@ class LogSanitizerTests: XCTestCase {
                     "status": mockValue(),
                     "service": mockValue(),
                     "source": mockValue(),
-                    "error.message": mockValue(),
-                    "error.stack": mockValue(),
                     "ddtags": mockValue(),
 
                     // valid attributes:
+                    "error.kind": mockValue(),
+                    "error.message": mockValue(),
+                    "error.stack": mockValue(),
                     "attribute1": mockValue(),
                     "attribute2": mockValue(),
                     "date": mockValue(),
@@ -34,7 +35,7 @@ class LogSanitizerTests: XCTestCase {
 
         let sanitized = LogSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes.userAttributes.count, 3)
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 6)
         XCTAssertNotNil(sanitized.attributes.userAttributes["attribute1"])
         XCTAssertNotNil(sanitized.attributes.userAttributes["attribute2"])
         XCTAssertNotNil(sanitized.attributes.userAttributes["date"])

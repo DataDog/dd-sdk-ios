@@ -17,6 +17,12 @@ public enum LogLevel: Int, Codable {
     case critical
 }
 
+internal enum ErrorAttributes {
+    static let kind = "error.kind"
+    static let message = "error.message"
+    static let stack = "error.stack"
+}
+
 /// Because `Logger` is a common name widely used across different projects, the `Datadog.Logger` may conflict when
 /// using `Logger.builder`. In such case, following `DDLogger` typealias can be used to avoid compiler ambiguity.
 ///
@@ -70,55 +76,61 @@ public class Logger {
     /// Sends a DEBUG log message.
     /// - Parameters:
     ///   - message: the message to be logged
+    ///   - error: `Error` instance to be logged with its properties
     ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func debug(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .debug, message: message, messageAttributes: attributes)
+    public func debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .debug, message: message, error: error, messageAttributes: attributes)
     }
 
     /// Sends an INFO log message.
     /// - Parameters:
     ///   - message: the message to be logged
+    ///   - error: `Error` instance to be logged with its properties
     ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func info(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .info, message: message, messageAttributes: attributes)
+    public func info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .info, message: message, error: error, messageAttributes: attributes)
     }
 
     /// Sends a NOTICE log message.
     /// - Parameters:
     ///   - message: the message to be logged
+    ///   - error: `Error` instance to be logged with its properties
     ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func notice(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .notice, message: message, messageAttributes: attributes)
+    public func notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .notice, message: message, error: error, messageAttributes: attributes)
     }
 
     /// Sends a WARN log message.
     /// - Parameters:
     ///   - message: the message to be logged
+    ///   - error: `Error` instance to be logged with its properties
     ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func warn(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .warn, message: message, messageAttributes: attributes)
+    public func warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .warn, message: message, error: error, messageAttributes: attributes)
     }
 
     /// Sends an ERROR log message.
     /// - Parameters:
     ///   - message: the message to be logged
+    ///   - error: `Error` instance to be logged with its properties
     ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func error(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .error, message: message, messageAttributes: attributes)
+    public func error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .error, message: message, error: error, messageAttributes: attributes)
     }
 
     /// Sends a CRITICAL log message.
     /// - Parameters:
     ///   - message: the message to be logged
+    ///   - error: `Error` instance to be logged with its properties
     ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func critical(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .critical, message: message, messageAttributes: attributes)
+    public func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .critical, message: message, error: error, messageAttributes: attributes)
     }
 
     // MARK: - Attributes
@@ -208,11 +220,24 @@ public class Logger {
 
     // MARK: - Private
 
-    private func log(level: LogLevel, message: String, messageAttributes: [String: Encodable]?) {
+    private func log(level: LogLevel, message: String, error: Error?, messageAttributes: [String: Encodable]?) {
         let date = dateProvider.currentDate()
-        let combinedUserAttributes = queue.sync {
-            return self.loggerAttributes.merging(messageAttributes ?? [:]) { _, messageAttributeValue in
-                return messageAttributeValue // use message attribute when the same key appears also in logger attributes
+
+        var combinedUserAttributes = messageAttributes ?? [:]
+        if let someError = error {
+            let ddError = DDError(error: someError)
+            let errorAttributes = [
+                ErrorAttributes.kind: ddError.title,
+                ErrorAttributes.message: ddError.message,
+                ErrorAttributes.stack: ddError.details
+            ]
+            combinedUserAttributes.merge(errorAttributes) { userAttribute, _ in
+                return userAttribute
+            }
+        }
+        combinedUserAttributes = queue.sync {
+            return self.loggerAttributes.merging(combinedUserAttributes) { _, userAttributeValue in
+                return userAttributeValue // use message attribute when the same key appears also in logger attributes
             }
         }
 

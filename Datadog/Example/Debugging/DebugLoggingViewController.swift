@@ -14,6 +14,19 @@ class DebugLoggingViewController: UIViewController {
     @IBOutlet weak var send10xButton: UIButton!
     @IBOutlet weak var consoleTextView: UITextView!
 
+    struct StructError: Error {
+        let property: String
+    }
+    enum EnumError: Error {
+        case caseWithProperty(property: String)
+    }
+    class ClassError: Error {
+        let property: String
+        init(_ prop: String) {
+            property = prop
+        }
+    }
+
     enum LogLevelSegment: Int {
         case debug = 0, info, notice, warn, error, critical
     }
@@ -32,13 +45,18 @@ class DebugLoggingViewController: UIViewController {
     @IBAction func didTapSendSingleLog(_ sender: Any) {
         sendOnceButton.disableFor(seconds: 0.5)
 
+        let structError = StructError(property: "some value")
+        let enumError = EnumError.caseWithProperty(property: "some value")
+        let classError = ClassError("some value")
+        let nsError = NSError(domain: "ExampleApp", code: 999, userInfo: [NSLocalizedDescriptionKey: "some value"])
+
         switch LogLevelSegment(rawValue: logLevelSegmentedControl.selectedSegmentIndex) {
-        case .debug:    logger.debug(message)
-        case .info:     logger.info(message)
-        case .notice:   logger.notice(message)
-        case .warn:     logger.warn(message)
-        case .error:    logger.error(message)
-        case .critical: logger.critical(message)
+        case .debug:    logger.debug(message, error: structError)
+        case .info:     logger.info(message, error: enumError)
+        case .notice:   logger.notice(message, error: classError)
+        case .warn:     logger.warn(message, error: nsError)
+        case .error:    logger.error(message, error: structError)
+        case .critical: logger.critical(message, error: enumError)
         default:        assertionFailure("Unsupported `.selectedSegmentIndex` value: \(logLevelSegmentedControl.selectedSegmentIndex)")
         }
     }

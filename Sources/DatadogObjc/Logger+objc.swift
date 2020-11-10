@@ -36,12 +36,20 @@ public class DDLogger: NSObject {
         sdkLogger.debug(message, attributes: castAttributesToSwift(attributes))
     }
 
+    public func debug(_ message: String, error: NSError, attributes: [String: Any]) {
+        sdkLogger.debug(message, error: error, attributes: castAttributesToSwift(attributes))
+    }
+
     public func info(_ message: String) {
         sdkLogger.info(message)
     }
 
     public func info(_ message: String, attributes: [String: Any]) {
         sdkLogger.info(message, attributes: castAttributesToSwift(attributes))
+    }
+
+    public func info(_ message: String, error: NSError, attributes: [String: Any]) {
+        sdkLogger.info(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
     public func notice(_ message: String) {
@@ -52,12 +60,20 @@ public class DDLogger: NSObject {
         sdkLogger.notice(message, attributes: castAttributesToSwift(attributes))
     }
 
+    public func notice(_ message: String, error: NSError, attributes: [String: Any]) {
+        sdkLogger.notice(message, error: error, attributes: castAttributesToSwift(attributes))
+    }
+
     public func warn(_ message: String) {
         sdkLogger.warn(message)
     }
 
     public func warn(_ message: String, attributes: [String: Any]) {
         sdkLogger.warn(message, attributes: castAttributesToSwift(attributes))
+    }
+
+    public func warn(_ message: String, error: NSError, attributes: [String: Any]) {
+        sdkLogger.warn(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
     public func error(_ message: String) {
@@ -68,12 +84,20 @@ public class DDLogger: NSObject {
         sdkLogger.error(message, attributes: castAttributesToSwift(attributes))
     }
 
+    public func error(_ message: String, error: NSError, attributes: [String: Any]) {
+        sdkLogger.error(message, error: error, attributes: castAttributesToSwift(attributes))
+    }
+
     public func critical(_ message: String) {
         sdkLogger.critical(message)
     }
 
     public func critical(_ message: String, attributes: [String: Any]) {
         sdkLogger.critical(message, attributes: castAttributesToSwift(attributes))
+    }
+
+    public func critical(_ message: String, error: NSError, attributes: [String: Any]) {
+        sdkLogger.critical(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
     public func addAttribute(forKey key: String, value: Any) {
