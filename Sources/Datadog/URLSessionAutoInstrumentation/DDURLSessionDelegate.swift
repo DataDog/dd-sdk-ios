@@ -9,7 +9,7 @@ import Foundation
 /// The `URLSession` delegate object which enables network requests instrumentation. **It must be
 /// used together with** `Datadog.Configuration.track(firstPartyHosts:)`.
 ///
-/// Each `URLRequest` send to the `URLSession` instrumented with this delegate will be intercepted by the SDK.
+/// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
 open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
     var interceptor: URLSessionInterceptorType?
