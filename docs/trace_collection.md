@@ -151,20 +151,26 @@ Datadog.initialize(
     ```
     This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. Once the request is done, within a completion handler, call `span.finish()`. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
 
-    * To have the SDK automatically trace all network requests made to given hosts, specify `tracedHosts` array during Datadog initialization:
+    * To have the SDK automatically trace all network requests made to given hosts, specify the `firstPartyHosts` array during Datadog initialization and use the `DDURLSessionDelegate` as a delegate of the `URLSession` instance that you want to monitor:
 
     ```swift
     Datadog.initialize(
         appContext: .init(),
         configuration: Datadog.Configuration
             .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
-            .set(tracedHosts: ["example.com", "api.yourdomain.com"])
+            .track(firstPartyHosts: ["example.com", "api.yourdomain.com"])
             .build()
     )
-    ```
-    This will trace all requests made to `example.com` and `api.yourdomain.com` (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
 
-    **Note**: Auto instrumentation supports only requests made with `URLSession.dataTask(request:completionHandler:)` and `URLSession.dataTask(url:completionHandler:)`. It uses `URLSession` swizzling. This swizzling is fully opt-in: if you do not specify `tracedHosts`, no swizzling is applied.
+    let session = URLSession(
+        configuration: .default,
+        delegate: DDURLSessionDelegate(),
+        delegateQueue: nil
+    )
+    ```
+    This will trace all requests made with this `session` to `example.com` and `api.yourdomain.com` hosts (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
+
+    **Note**: Tracing auto instrumentation uses `URLSession` swizzling, but it is opt-in: if you do not specify `firstPartyHosts`, no swizzling is applied.
 
 
 ## Batch collection

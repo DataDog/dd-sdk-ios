@@ -208,44 +208,32 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the hosts to be automatically traced.
-            ///
-            /// This option **must be used together with** `DDURLSessionDelegate` **set as your** `URLSession` **delegate object**.
-            ///
-            /// Every request made to a traced host and its subdomains will create its `Span` with related information; _such as url, HTTP method, HTTP status code, error (if any)_.
-            /// Example, if `tracedHosts` is `["example.com"]`, then every network request such as the ones below will be automatically traced and generate a span:
-            /// * https://example.com/any/path
-            /// * https://api.example.com/any/path
-            ///
-            /// If your backend is traced with Datadog agent, you will see the full trace (e.g.: client → server → database) in your dashboard with our Distributed Tracing feature.
-            /// A few HTTP headers are injected to auto-traced network requests so that you can see your spans in your backend as well.
-            ///
-            /// Until `tracedHosts` is set, automatic tracing is disabled.
-            ///
-            /// **NOTE 1:** Setting `tracedHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
-            /// for implementation details.
-            ///
-            /// **NOTE 2:** Setting `tracedHosts`, but not using `DDURLSessionDelegate` will lead to inconsistent tracing of network requests.
-            ///
-            /// - Parameter tracedHosts: not set by default
+            /// Configures network requests monitoring for Tracing and RUM features. **Must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
             @available(*, deprecated, message: "This option is replaced by `track(firstPartyHosts:)`. Refer to the new API comment for important details.")
             public func set(tracedHosts: Set<String>) -> Builder {
                 return track(firstPartyHosts: tracedHosts)
             }
 
-            /// Sets the first party hosts to be automatically traced.
+            /// Configures network requests monitoring for Tracing and RUM features. **It must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
             ///
-            /// This option **must be used together with** `DDURLSessionDelegate` **set as your** `URLSession` **delegate object**.
+            /// If set, the SDK will intercept all network requests made by `URLSession` instances which use `DDURLSessionDelegate`.
             ///
-            /// Every request made to a specified hosts and its subdomains will create the tracing `Span` with related information; _such as url, HTTP method, HTTP status code, error (if any)_.
-            /// Example, if `tracedHosts` is `["example.com"]`, then every network request such as the ones below will be automatically traced and generate a span:
-            /// * https://example.com/any/path
-            /// * https://api.example.com/any/path
+            /// Each request will be classified as 1st- or 3rd-party based on the host comparison, i.e.:
+            /// * if `firstPartyHosts` is `["example.com"]`:
+            ///     - 1st-party URL examples: https://example.com/, https://api.example.com/v2/users
+            ///     - 3rd-party URL examples: https://foo.com/
+            /// * if `firstPartyHosts` is `["api.example.com"]`:
+            ///     - 1st-party URL examples: https://api.example.com/, https://api.example.com/v2/users
+            ///     - 3rd-party URL examples: https://example.com/, https://foo.com/
             ///
-            /// If your backend is traced with Datadog agent, you will see the full trace (e.g.: client → server → database) in your dashboard with our Distributed Tracing feature.
-            /// A few HTTP headers are injected to auto-traced network requests so that you can see your spans in your backend as well.
+            /// If RUM feature is enabled, the SDK will send RUM Resources for all intercepted requests.
             ///
-            /// Until `firstPartyHosts` is set, automatic tracing is disabled.
+            /// If Tracing feature is enabled, the SDK will send tracing Span for each 1st-party request. It will also add extra HTTP headers to further propagate the trace - it means that
+            /// if your backend is instrumented with Datadog agent you will see the full trace (e.g.: client → server → database) in your dashboard, thanks to Datadog Distributed Tracing.
+            ///
+            /// If both RUM and Tracing features are enabled, the SDK will be sending RUM Resources for 1st- and 3rd-party requests and tracing Spans for 1st-parties.
+            ///
+            /// Until `firstPartyHosts` is set, network requests monitoring is disabled.
             ///
             /// **NOTE 1:** Setting `firstPartyHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
             /// for implementation details.
@@ -263,8 +251,8 @@ extension Datadog {
             /// Enables or disables the RUM feature.
             ///
             /// This option is meant to opt-out from using Datadog RUM entirely, no matter of your environment or build configuration. If you need to
-            /// disable RUM only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `Global.rum` to `RUMMonitor`,
-            /// and your app will be using the no-op monitor instance.
+            /// disable RUM only for certain scenarios (e.g. in `DEBUG` build configuration), you may prefer to not register `RUMMonitor` on `Global.rum`
+            /// and let your app use the no-op monitor instance.
             ///
             /// If `enableRUM(false)` is set, the SDK won't instantiate underlying resources required for
             /// running the RUM feature. This will give you additional performance optimization if you only use logging and/or tracing.
@@ -298,8 +286,8 @@ extension Datadog {
             /// Sets the predicate for automatically tracking `UIViewControllers` as RUM Views.
             ///
             /// When the app is running, the SDK will ask provided `predicate` if any noticed `UIViewController` should be considered
-            /// as the RUM View. The `predicate` implementation should return RUM View parameters if the `UIViewController` is the key component
-            /// of the RUM View or `nil` otherwise.
+            /// as the RUM View. The `predicate` implementation should return RUM View parameters if the `UIViewController` indicates
+            /// the RUM View or `nil` otherwise.
             ///
             /// **NOTE:** Enabling this option will install swizzlings on `UIViewController's` lifecycle methods. Refer
             /// to `UIViewControllerSwizzler.swift` for implementation details.
@@ -314,11 +302,10 @@ extension Datadog {
 
             /// Enables or disables automatic tracking of `UITouch` events as RUM Actions.
             ///
-            /// When enabled, the SDK will capture every `UIEvent` send to the application and use the in-build heuristic to recognize
-            /// key `UIViews` and `UIControls` that user interacts with. For every recognized element, the RUM Action is send automatically.
-            /// The action will be named by the class name of interacted element and will be extended with `accessibilityIdentifier` (if it's set) for more context.
+            /// When enabled, the SDK will track `UIEvents` send to the application and capture `UIViews` and `UIControls` that user interacted with.
+            /// It will send RUM Action for each recognized element. Any touch events on the keyboard are ignored for privacy.
             ///
-            /// Any touch events on the keyboard are ignored for privacy.
+            /// The RUM Action will be named by the name of the interacted element's class and will be extended with `accessibilityIdentifier` (if set) for more context.
             ///
             /// **NOTE:** Enabling this option will install swizzlings on `UIApplication.sendEvent(_:)` method. Refer
             /// to `UIApplicationSwizzler.swift` for implementation details.
