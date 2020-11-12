@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		616135912550739F003D711A /* API+Fakes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616135902550739F003D711A /* API+Fakes.swift */; };
+		9E2DA5AE255AF64C00D22946 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2DA5AD255AF64C00D22946 /* User.swift */; };
 		9E5D2D6324ED6E590000C2A3 /* ShopistUITestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5D2D6224ED6E590000C2A3 /* ShopistUITestHelpers.swift */; };
 		9E5F903824DAF838004A0673 /* Cart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F903724DAF838004A0673 /* Cart.swift */; };
 		9E5F903F24DAF85E004A0673 /* TableViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F903E24DAF85E004A0673 /* TableViewCells.swift */; };
@@ -109,6 +110,7 @@
 
 /* Begin PBXFileReference section */
 		616135902550739F003D711A /* API+Fakes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "API+Fakes.swift"; sourceTree = "<group>"; };
+		9E2DA5AD255AF64C00D22946 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		9E5D2D6224ED6E590000C2A3 /* ShopistUITestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopistUITestHelpers.swift; sourceTree = "<group>"; };
 		9E5F903724DAF838004A0673 /* Cart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cart.swift; sourceTree = "<group>"; };
 		9E5F903E24DAF85E004A0673 /* TableViewCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCells.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 				9E92D45224D4651F005980A9 /* Shopist.xcconfig */,
 				9EE1E1C324D81AB700A7A613 /* Shopist.local.xcconfig */,
 				9E6ABAD1244F43BD003AE249 /* AppDelegate.swift */,
+				9E2DA5AD255AF64C00D22946 /* User.swift */,
 				9E6ABACC244F43BC003AE249 /* AppConfig.swift */,
 				9E6ABAD2244F43BD003AE249 /* SceneDelegate.swift */,
 				9E84A04C24D31EB9007A91A2 /* Scenes */,
@@ -463,6 +466,7 @@
 				616135912550739F003D711A /* API+Fakes.swift in Sources */,
 				9E5F903F24DAF85E004A0673 /* TableViewCells.swift in Sources */,
 				9E84A04E24D31EE9007A91A2 /* UIView+Autolayout.swift in Sources */,
+				9E2DA5AE255AF64C00D22946 /* User.swift in Sources */,
 				9E92D44F24D4635C005980A9 /* ListViewController.swift in Sources */,
 				9E90F7C024D9D405000A479D /* UIViewController+NavBar.swift in Sources */,
 				9E71356224EEA17300DF7813 /* Thread+Sleep.swift in Sources */,

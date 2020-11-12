@@ -11,42 +11,6 @@ internal fileprivate(set) var logger: Logger! // swiftlint:disable:this implicit
 internal let appConfig = AppConfig(serviceName: "io.shopist.ios")
 internal let api = API()
 
-private struct User {
-    let id: String = UUID().uuidString
-    let name: String
-    var email: String {
-        return name.lowercased()
-            .replacingOccurrences(of: " ", with: "@")
-            .appending(".com")
-    }
-
-    static let users: [User] = [
-        User(name: "John Doe"),
-        User(name: "Jane Doe"),
-        User(name: "Pat Doe"),
-        User(name: "Sam Doe"),
-        User(name: "Maynard Keenan"),
-        User(name: "Adam Jones"),
-        User(name: "Justin Chancellor"),
-        User(name: "Danny Carey"),
-        User(name: "Karina Round"),
-        User(name: "Martin Lopez"),
-        User(name: "Anneke Giersbergen"),
-        User(name: "Billie Eilish"),
-        User(name: "Cardi B"),
-        User(name: "Nicki Minaj"),
-        User(name: "Beyonce Knowles")
-    ]
-
-    private static let userDefaultsUserIndexKey = "shopist.currentUser.index"
-    static func any() -> Self {
-        let index = UserDefaults.standard.integer(forKey: userDefaultsUserIndexKey)
-        let user = users[index % users.count]
-        UserDefaults.standard.set(index + 1, forKey: userDefaultsUserIndexKey)
-        return user
-    }
-}
-
 internal struct ShopistPredicate: UIKitRUMViewsPredicate {
     func rumView(for viewController: UIViewController) -> RUMView? {
         if viewController is HomeViewController ||
@@ -99,6 +63,7 @@ internal class AppDelegate: UIResponder, UIApplicationDelegate {
         // NOTE: usr.handle is used for historical reasons, it's deprecated in favor of usr.email
         Global.rum.addAttribute(forKey: "usr.handle", value: user.email)
         Global.rum.addAttribute(forKey: "hasPurchased", value: false)
+        Global.rum.addAttribute(forKey: "network.override.client.ip", value: user.ipAddress)
 
         // Set highest verbosity level to see internal actions made in SDK
         Datadog.verbosityLevel = .debug
