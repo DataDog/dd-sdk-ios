@@ -321,6 +321,21 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func addResourceMetrics(
+        resourceKey: String,
+        metrics: URLSessionTaskMetrics,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        process(
+            command: RUMAddResourceMetricsCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                metrics: ResourceMetrics(taskMetrics: metrics)
+            )
+        )
+    }
+
     override public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
