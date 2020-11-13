@@ -1,18 +1,19 @@
 public typealias AttributeKey = String
 public typealias AttributeValue = Encodable
 public class DDRUMMonitor
- public func startView(viewController: UIViewController, path: String? = nil, attributes: [AttributeKey: AttributeValue] = [:])
- public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue] = [:])
+ public func startView(viewController: UIViewController,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
  public func addError(message: String,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
  public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
+ public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:])
- public func stopUserAction(type: RUMUserActionType, name: String? = nil, attributes: [AttributeKey: AttributeValue] = [:])
- public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue] = [:])
+ public func startUserAction(type: RUMUserActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopUserAction(type: RUMUserActionType,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func addUserAction(type: RUMUserActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
  public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
  public func removeAttribute(forKey key: AttributeKey)
 public class Datadog
@@ -66,12 +67,12 @@ public enum LogLevel: Int, Codable
  case critical
 public typealias DDLogger = Logger
 public class Logger
- public func debug(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
- public func info(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
- public func notice(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
- public func warn(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
- public func error(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
- public func critical(_ message: String, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+ public func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
  public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
  public func removeAttribute(forKey key: AttributeKey)
  public func addTag(withKey key: String, value: String)
@@ -171,21 +172,22 @@ public enum RUMUserActionType
  case swipe
  case custom
 public enum RUMErrorSource
- case custom
  case source
  case network
  case webview
+ case custom
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
- override public func startView(viewController: UIViewController, path: String?, attributes: [AttributeKey: AttributeValue])
- override public func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue])
- override public func addError(message: String, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?)
- override public func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue])
+ override public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue])
+ override public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+ override public func addError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+ override public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
  override public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
- override public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
- override public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64? = nil,attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue])
+ override public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue])
+ override public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
  override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
  override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
  override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
