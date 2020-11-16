@@ -81,6 +81,17 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Adds temporal metrics to given Resource. This method must be called before the Resource is stopped.
+    /// - Parameters:
+    ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - metrics: the `URLSessionTaskMetrics` retrieved for this Resource
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func addResourceMetrics(
+        resourceKey: String,
+        metrics: URLSessionTaskMetrics,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
     /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.

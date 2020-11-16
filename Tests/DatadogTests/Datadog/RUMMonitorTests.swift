@@ -89,7 +89,11 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_thenLoadingXHRResourceWithRequest() throws {
+    func testStartingView_thenLoadingXHRResourceWithRequestWithMetrics() throws {
+        guard #available(iOS 13, *) else {
+            return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
+        }
+
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         defer { RUMFeature.instance = nil }
 
@@ -98,6 +102,18 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
+        monitor.addResourceMetrics(
+            resourceKey: "/resource/1",
+            metrics: .mockWith(
+                taskInterval: DateInterval(start: .mockDecember15th2019At10AMUTC(), duration: 4),
+                transactionMetrics: [
+                    .mockWith(
+                        domainLookupStartDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                        domainLookupEndDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 3)
+                    )
+                ]
+            )
+        )
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
@@ -107,6 +123,9 @@ class RUMMonitorTests: XCTestCase {
         let resourceEvent = session.viewVisits[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+        XCTAssertEqual(resourceEvent.resource.duration, 4_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.dns!.start, 1_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.dns!.duration, 2_000_000_000)
     }
 
     func testStartingView_thenLoadingResourceWithURL() throws {
