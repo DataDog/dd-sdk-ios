@@ -549,8 +549,8 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "SecondViewController" }
 
         XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute1") as String)
-        XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute2") as String)
         XCTAssertEqual(try secondViewEvent.attribute(forKeyPath: "context.attribute1") as String, "changed value 1")
+        XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "context.attribute2") as String)
     }
 
     func testWhenViewIsStarted_attributesCanBeAddedOrUpdatedButNotRemoved() throws {
