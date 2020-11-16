@@ -559,14 +559,17 @@ class RUMMonitorTests: XCTestCase {
         let firstViewEvent = try rumEventMatchers
             .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "FirstViewController" }
 
-        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "attribute1") as String, "changed value 1")
-        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "attribute2") as String, "value 2")
+        XCTAssertNil(try? firstViewEvent.attribute(forKeyPath: "attribute1") as String)
+        XCTAssertNil(try? firstViewEvent.attribute(forKeyPath: "attribute2") as String)
+        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "context.attribute1") as String, "changed value 1")
+        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "context.attribute2") as String, "value 2")
 
         let secondViewEvent = try rumEventMatchers
             .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "SecondViewController" }
 
-        XCTAssertEqual(try secondViewEvent.attribute(forKeyPath: "attribute1") as String, "changed value 1")
-        XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute2") as String)
+        XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute1") as String)
+        XCTAssertEqual(try secondViewEvent.attribute(forKeyPath: "context.attribute1") as String, "changed value 1")
+        XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "context.attribute2") as String)
     }
 
     func testWhenViewIsStarted_attributesCanBeAddedOrUpdatedButNotRemoved() throws {
@@ -589,9 +592,12 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
 
-        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "a1"), "bar1", "The value should be updated")
-        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "a2"), "foo2", "The attribute should not be removed")
-        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "a3"), "foo3", "The attribute should be added")
+        XCTAssertNil(try? lastViewUpdate.attribute(forKeyPath: "a1") as String)
+        XCTAssertNil(try? lastViewUpdate.attribute(forKeyPath: "a2") as String)
+        XCTAssertNil(try? lastViewUpdate.attribute(forKeyPath: "a3") as String)
+        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a1"), "bar1", "The value should be updated")
+        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a2"), "foo2", "The attribute should not be removed")
+        try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a3"), "foo3", "The attribute should be added")
     }
 
     // MARK: - Thread safety
@@ -731,10 +737,10 @@ class RUMMonitorTests: XCTestCase {
 
     private var expectedAttributes = [String: String]()
     private func setGlobalAttributes(of monitor: DDRUMMonitor) {
-        expectedAttributes = [String.mockRandom(): String.mockRandom()]
-        expectedAttributes.forEach {
-            monitor.addAttribute(forKey: $0, value: $1)
-        }
+        let key = String.mockRandom()
+        let value = String.mockRandom()
+        monitor.addAttribute(forKey: key, value: value)
+        expectedAttributes = ["context.\(key)": value]
     }
 
     private func verifyGlobalAttributes(in matchers: [RUMEventMatcher]) {

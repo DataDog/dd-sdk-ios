@@ -28,13 +28,13 @@ internal struct RUMEventEncoder {
         init?(stringValue: String) { self.stringValue = stringValue }
         init?(intValue: Int) { return nil }
         init(_ string: String) { self.stringValue = string }
-}
+    }
 
     func encode<DM: RUMDataModel>(_ event: RUMEvent<DM>, to encoder: Encoder) throws {
         // Encode attributes
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try event.attributes.forEach { attributeName, attributeValue in
-            try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey(attributeName))
+            try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))
         }
 
         // Encode `RUMDataModel`

@@ -66,7 +66,7 @@ class RUMEventFileOutputTests: XCTestCase {
             jsonString: """
             {
                 "attribute": "foo",
-                "custom.attribute": "value"
+                "context.custom.attribute": "value"
             }
             """
         )
