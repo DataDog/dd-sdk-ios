@@ -1352,6 +1352,34 @@
 			path = ModalViewsAutoInstrumentation;
 			sourceTree = "<group>";
 		};
+		613BE07A25643C040015216C /* DataCollection */ = {
+			isa = PBXGroup;
+			children = (
+				61441C782461A204003D8BB8 /* LoggingBenchmarkTests.swift */,
+				E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */,
+				613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */,
+			);
+			path = DataCollection;
+			sourceTree = "<group>";
+		};
+		613BE07B25643C080015216C /* DataUpload */ = {
+			isa = PBXGroup;
+			children = (
+				6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */,
+			);
+			path = DataUpload;
+			sourceTree = "<group>";
+		};
+		613BE07C25643C100015216C /* DataStorage */ = {
+			isa = PBXGroup;
+			children = (
+				61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
+				E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */,
+				613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */,
+			);
+			path = DataStorage;
+			sourceTree = "<group>";
+		};
 		613F23DC252B05BD006CD2D7 /* URLFiltering */ = {
 			isa = PBXGroup;
 			children = (
@@ -1472,13 +1500,9 @@
 			children = (
 				613BE04925640FF80015216C /* BenchmarkTests.swift */,
 				61D6FF7D24E53D3B00D0E375 /* BenchmarkMocks.swift */,
-				6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */,
-				61441C782461A204003D8BB8 /* LoggingBenchmarkTests.swift */,
-				61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
-				E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */,
-				E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */,
-				613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */,
-				613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */,
+				613BE07A25643C040015216C /* DataCollection */,
+				613BE07B25643C080015216C /* DataUpload */,
+				613BE07C25643C100015216C /* DataStorage */,
 			);
 			name = DatadogBenchmarkTests;
 			path = ../Tests/DatadogBenchmarkTests;
