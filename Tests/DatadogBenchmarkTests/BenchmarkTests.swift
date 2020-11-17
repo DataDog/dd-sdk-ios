@@ -15,32 +15,30 @@ struct ServerConnectionError: Error {
 /// Base class providing mock server instrumentation and SDK initialization.
 class BenchmarkTests: XCTestCase {
     /// Python server instance.
-    private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    var server: ServerMock { BenchmarkTests.connectedServer! }
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        server = try connectToServer()
+    override class func setUp() {
+        super.setUp()
+        do {
+            try connectToServerIfNotConnected()
+        } catch let error {
+            fatalError("Failed to connect to Python server: \(error)")
+        }
         initializeSDKIfNotInitialized()
-    }
-
-    override func tearDownWithError() throws {
-        server = nil
-
-        try super.tearDownWithError()
     }
 
     // MARK: - SDK Initialization
 
     private static var isSDKInitialized = false
 
-    private func initializeSDKIfNotInitialized() {
+    private static func initializeSDKIfNotInitialized() {
         if BenchmarkTests.isSDKInitialized {
             return
         }
 
         BenchmarkTests.isSDKInitialized = true
 
-        let anyURL = server.obtainUniqueRecordingSession().recordingURL
+        let anyURL = connectedServer!.obtainUniqueRecordingSession().recordingURL
 
         Datadog.initialize(
             appContext: .init(),
@@ -58,7 +56,13 @@ class BenchmarkTests: XCTestCase {
 
     // MARK: - `HTTPServerMock` connection
 
-    private func connectToServer() throws -> ServerMock {
+    private static var connectedServer: ServerMock?
+
+    private static func connectToServerIfNotConnected() throws {
+        if BenchmarkTests.connectedServer != nil {
+            return
+        }
+
         let testsBundle = Bundle(for: BenchmarkTests.self)
         guard let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String else {
             throw ServerConnectionError(description: "Cannot obtain `MockServerAddress` from `Info.plist`")
@@ -70,12 +74,13 @@ class BenchmarkTests: XCTestCase {
 
         let serverProcessRunner = ServerProcessRunner(serverURL: serverURL)
         guard let serverProcess = serverProcessRunner.waitUntilServerIsReachable() else {
-            throw ServerConnectionError(description: "Cannot connect to server. Is server running properly on \(serverURL.absoluteString)?")
+            throw ServerConnectionError(
+                description: "The server seems to be not running properly on \(serverURL.absoluteString)"
+            )
         }
 
         print("🌍 Connected to mock server on \(serverURL.absoluteString)")
 
-        let connectedServer = ServerMock(serverProcess: serverProcess)
-        return connectedServer
+        BenchmarkTests.connectedServer = ServerMock(serverProcess: serverProcess)
     }
 }
