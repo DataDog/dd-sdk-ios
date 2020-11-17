@@ -155,4 +155,36 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
+
+    // MARK: - Interacting with predicate
+
+    func testGivenHierarchyWithSomeTopView_whenTransitioningFromThisViewToAnother_thenPredicateIsCalledOnlyOnce() {
+        class Predicate: UIKitRUMViewsPredicate {
+            var numberOfCalls = 0
+
+            func rumView(for viewController: UIViewController) -> RUMView? {
+                numberOfCalls += 1
+                return nil
+            }
+        }
+        let predicate = Predicate()
+        let handler = UIKitRUMViewsHandler(
+            predicate: predicate,
+            dateProvider: dateProvider,
+            inspector: uiKitHierarchyInspector
+        )
+
+        // Given
+        let someView = createMockViewInWindow()
+        uiKitHierarchyInspector.mockTopViewController = someView
+
+        // When
+        let anotherView = createMockViewInWindow()
+        uiKitHierarchyInspector.mockTopViewController = anotherView // 1st: `anotherView` is installed on top of the hierarchy
+        handler.notify_viewDidDisappear(viewController: someView, animated: .mockAny()) // 2nd: `someView` receives "did disappear"
+        handler.notify_viewDidAppear(viewController: anotherView, animated: .mockAny()) // 3rd: `anotherView` receives "did appear"
+
+        // Then
+        XCTAssertEqual(predicate.numberOfCalls, 1)
+    }
 }
