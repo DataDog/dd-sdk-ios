@@ -285,19 +285,9 @@ class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
     static func envIdentifier() -> String { "RUMResourcesScenario" }
 
-    private class Predicate: UIKitRUMViewsPredicate {
-        func rumView(for viewController: UIViewController) -> RUMView? {
-            if let viewName = viewController.accessibilityLabel {
-                return .init(path: viewName)
-            } else {
-                return nil
-            }
-        }
-    }
-
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: Predicate())
+            .trackUIKitRUMViews(using: DefaultUIKitRUMViewsPredicate())
 
         super.configureSDK(builder: builder) // applies the `track(firstPartyHosts:)`
     }

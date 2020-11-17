@@ -59,9 +59,6 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Qm7-yo-KBb"/>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="string" keyPath="accessibilityLabel" value="SendFirstPartyRequestsVC"/>
-                    </userDefinedRuntimeAttributes>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Oen-FV-lkc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -91,9 +88,6 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="l9O-6V-fPH"/>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="string" keyPath="accessibilityLabel" value="SendThirdPartyRequestsVC"/>
-                    </userDefinedRuntimeAttributes>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mxG-kz-TZ0" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

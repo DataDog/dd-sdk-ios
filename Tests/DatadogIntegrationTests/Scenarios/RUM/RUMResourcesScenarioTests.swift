@@ -116,9 +116,10 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         assertRUM(requests: rumRequests)
 
         let session = try XCTUnwrap(try RUMSessionMatcher.from(requests: rumRequests))
+        XCTAssertEqual(session.viewVisits.count, 2)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
-        XCTAssertEqual(session.viewVisits[0].path, "SendFirstPartyRequestsVC")
+        XCTAssertEqual(session.viewVisits[0].path, "Example.SendFirstPartyRequestsViewController")
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 2, "1st screen should track 2 RUM Resources")
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 2, "1st screen should track 2 RUM Errors")
 
@@ -164,7 +165,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         )
 
         // Asserts in `SendThirdPartyRequestsVC` RUM View
-        XCTAssertEqual(session.viewVisits[1].path, "SendThirdPartyRequestsVC")
+        XCTAssertEqual(session.viewVisits[1].path, "Example.SendThirdPartyRequestsViewController")
         XCTAssertEqual(session.viewVisits[1].resourceEvents.count, 2, "2nd screen should track 2 RUM Resources")
         XCTAssertEqual(session.viewVisits[1].errorEvents.count, 0, "2nd screen should track no RUM Errors")
 

@@ -166,6 +166,9 @@ public struct RUMView
  public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
 public protocol UIKitRUMViewsPredicate
  func rumView(for viewController: UIViewController) -> RUMView?
+public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
+ public init ()
+ public func rumView(for viewController: UIViewController) -> RUMView?
 public enum RUMUserActionType
  case tap
  case scroll

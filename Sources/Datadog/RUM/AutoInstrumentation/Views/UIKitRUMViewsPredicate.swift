@@ -35,3 +35,16 @@ public protocol UIKitRUMViewsPredicate {
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
     func rumView(for viewController: UIViewController) -> RUMView?
 }
+
+/// Default implementation of `UIKitRUMViewsPredicate`.
+/// It names  RUM Views by the names of their `UIViewController` subclasses.
+public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
+    public init () {}
+
+    public func rumView(for viewController: UIViewController) -> RUMView? {
+        let className = NSStringFromClass(type(of: viewController))
+        let isCustomClass = className.contains(".") // custom class contains module prefix
+
+        return isCustomClass ? RUMView(path: className) : nil
+    }
+}
