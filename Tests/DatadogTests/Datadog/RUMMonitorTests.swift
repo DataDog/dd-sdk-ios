@@ -760,21 +760,36 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.level, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
-            "RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work."
+            """
+            RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any network request is send.
+            """
         )
 
         viewsHandler.notify_viewDidAppear(viewController: mockView, animated: .mockAny())
         XCTAssertEqual(output.recordedLog?.level, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
-            "RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work."
+            """
+            RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any `UIViewController` is presented.
+            """
         )
 
-        userActionsHandler.notify_sendEvent(application: .shared, event: .mockAny())
+        let mockWindow = UIWindow(frame: .zero)
+        let mockUIControl = UIControl()
+        mockWindow.addSubview(mockUIControl)
+        userActionsHandler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(touches: [.mockWith(phase: .ended, view: mockUIControl)])
+        )
         XCTAssertEqual(output.recordedLog?.level, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
-            "RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work."
+            """
+            RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
+            """
         )
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()

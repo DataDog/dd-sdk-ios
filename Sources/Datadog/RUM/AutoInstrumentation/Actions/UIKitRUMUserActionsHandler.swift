@@ -38,7 +38,12 @@ internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
         }
 
         if subscriber == nil {
-            userLogger.warn("RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.")
+            userLogger.warn(
+                """
+                RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+                Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
+                """
+            )
         }
 
         subscriber?.process(
