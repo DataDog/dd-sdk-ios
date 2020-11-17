@@ -54,6 +54,10 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
     }
 
     func notify_taskInterceptionCompleted(interception: TaskInterception) {
+        if subscriber == nil {
+            userLogger.warn("RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.")
+        }
+
         if let resourceMetrics = interception.metrics {
             subscriber?.process(
                 command: RUMAddResourceMetricsCommand(

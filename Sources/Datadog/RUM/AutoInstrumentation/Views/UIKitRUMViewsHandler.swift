@@ -72,6 +72,10 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
             return
         }
 
+        if subscriber == nil {
+            userLogger.warn("RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.")
+        }
+
         if let lastStartedViewController = lastStartedViewController {
             subscriber?.process(
                 command: RUMStopViewCommand(

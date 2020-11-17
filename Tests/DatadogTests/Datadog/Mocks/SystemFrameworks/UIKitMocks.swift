@@ -53,6 +53,10 @@ class UIDeviceMock: UIDevice {
 }
 
 extension UIEvent {
+    static func mockAny() -> UIEvent {
+        return .mockWith(touches: [.mockAny()])
+    }
+
     static func mockWith(touches: Set<UITouch>?) -> UIEvent {
         return UIEventMock(allTouches: touches)
     }
@@ -69,6 +73,10 @@ private class UIEventMock: UIEvent {
 }
 
 extension UITouch {
+    static func mockAny() -> UITouch {
+        return mockWith(phase: .ended, view: UIView())
+    }
+
     static func mockWith(phase: UITouch.Phase, view: UIView?) -> UITouch {
         return UITouchMock(phase: phase, view: view)
     }
