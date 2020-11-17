@@ -20,8 +20,9 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
         if interceptor == nil {
             let error = ProgrammerError(
                 description: """
-                To use `DDURLSessionDelegate` you must specify first party hosts in `Datadog.Configuration` -
-                use `track(firstPartyHosts:)` to define which requests should be tracked.
+                `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
+                first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+                to enable network requests tracking.
                 """
             )
             consolePrint("\(error)")

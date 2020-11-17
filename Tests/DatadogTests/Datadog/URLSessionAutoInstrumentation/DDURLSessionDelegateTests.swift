@@ -168,8 +168,9 @@ class DDURLSessionDelegateTests: XCTestCase {
         XCTAssertEqual(
             printFunction.printedMessage,
             """
-            🔥 Datadog SDK usage error: To use `DDURLSessionDelegate` you must specify first party hosts in `Datadog.Configuration` -
-            use `track(firstPartyHosts:)` to define which requests should be tracked.
+            🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
+            first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+            to enable network requests tracking.
             """
         )
     }
