@@ -76,10 +76,10 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         guard !internalURLsFilter.isInternal(url: request.url) else {
             return request
         }
-        if let tracer = Global.sharedTracer as? Tracer {
-            if firstPartyURLsFilter.isFirstParty(url: request.url) {
-                return injectSpanContext(into: request, using: tracer)
-            }
+        if tracingHandler != nil, firstPartyURLsFilter.isFirstParty(url: request.url) {
+            // If the tracing handler is enabled, we inject tracing context to the request.
+            // This context is later used by either tracing or RUM handler when creating the Span or RUM Resource.
+            return injectSpanContext(into: request)
         }
         return request
     }
@@ -94,8 +94,7 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
             let interception = TaskInterception(request: request)
             self.interceptionByTask[task] = interception
 
-            if let tracer = Global.sharedTracer as? Tracer,
-               let spanContext = self.extractSpanContext(from: request, using: tracer) {
+            if let spanContext = self.extractSpanContext(from: request) {
                 interception.register(spanContext: spanContext)
             }
 
@@ -148,17 +147,26 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
         interceptionByTask[task] = nil
 
-        if let tracer = Global.sharedTracer as? Tracer,
-           firstPartyURLsFilter.isFirstParty(url: interception.request.url) {
-            tracingHandler?.sendSpan(for: interception, using: tracer)
+        if let rumResourceHandler = rumResourceHandler {
+            // If the RUM feature is enabled we only send RUM Resource.
+            // Tracing Span is not send, no matter of the Tracing feature state. The Span will be generated
+            // by Datadog backend if the tracing information is encoded in RUM Resource.
+            rumResourceHandler.notify_taskInterceptionCompleted(interception: interception)
+        } else if let tracingHandler = tracingHandler {
+            if firstPartyURLsFilter.isFirstParty(url: interception.request.url) {
+                // If the RUM feature is disabled we send the tracing Span only for 1st party hosts.
+                tracingHandler.sendSpan(for: interception)
+            }
         }
-
-        self.rumResourceHandler?.notify_taskInterceptionCompleted(interception: interception)
     }
 
     // MARK: - SpanContext Injection & Extraction
 
-    private func injectSpanContext(into request: URLRequest, using tracer: Tracer) -> URLRequest {
+    private func injectSpanContext(into request: URLRequest) -> URLRequest {
+        guard let tracer = Global.sharedTracer as? Tracer else {
+            return request
+        }
+
         let writer = HTTPHeadersWriter()
         let spanContext = tracer.createSpanContext()
 
@@ -168,13 +176,24 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         writer.tracePropagationHTTPHeaders.forEach { field, value in
             newRequest.setValue(value, forHTTPHeaderField: field)
         }
+
+        if rumResourceHandler != nil {
+            // If the RUM resource handler is enabled, additional `x-datadog-origin: rum` header is injected to the
+            // user request, so that user's backend instrumentation can further process it and count on RUM quota.
+            newRequest.setValue(TracingHTTPHeaders.rumOriginValue, forHTTPHeaderField: TracingHTTPHeaders.originField)
+        }
+
         return newRequest
     }
 
-    private func extractSpanContext(from request: URLRequest, using tracer: Tracer) -> DDSpanContext? {
+    private func extractSpanContext(from request: URLRequest) -> DDSpanContext? {
+        guard let tracer = Global.sharedTracer as? Tracer else {
+            return nil
+        }
         guard let headers = request.allHTTPHeaderFields else {
             return nil
         }
+
         let reader = HTTPHeadersReader(httpHeaderFields: headers)
         return tracer.extract(reader: reader) as? DDSpanContext
     }
