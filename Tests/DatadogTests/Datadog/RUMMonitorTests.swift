@@ -733,6 +733,72 @@ class RUMMonitorTests: XCTestCase {
         try Datadog.deinitializeOrThrow()
     }
 
+    func testGivenRUMAutoInstrumentationEnabled_whenRUMMonitorIsNotRegistered_itPrintsWarningsOnEachEvent() throws {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration
+                .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
+                .track(firstPartyHosts: [.mockAny()])
+                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(path: .mockAny())))
+                .trackUIKitActions(true)
+                .build()
+        )
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        // Given
+        let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.rumResourceHandler)
+        let viewsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.views?.handler)
+        let userActionsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.userActions?.handler)
+
+        // When
+        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
+
+        // Then
+        resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny()))
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(
+            output.recordedLog?.message,
+            """
+            RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any network request is send.
+            """
+        )
+
+        viewsHandler.notify_viewDidAppear(viewController: mockView, animated: .mockAny())
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(
+            output.recordedLog?.message,
+            """
+            RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any `UIViewController` is presented.
+            """
+        )
+
+        let mockWindow = UIWindow(frame: .zero)
+        let mockUIControl = UIControl()
+        mockWindow.addSubview(mockUIControl)
+        userActionsHandler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(touches: [.mockWith(phase: .ended, view: mockUIControl)])
+        )
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(
+            output.recordedLog?.message,
+            """
+            RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
+            """
+        )
+
+        URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+        RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
+        RUMAutoInstrumentation.instance?.userActions?.swizzler.unswizzle()
+
+        try Datadog.deinitializeOrThrow()
+    }
+
     // MARK: - Private helpers
 
     private var expectedAttributes = [String: String]()

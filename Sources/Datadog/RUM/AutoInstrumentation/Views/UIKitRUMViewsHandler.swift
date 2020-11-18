@@ -38,25 +38,47 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     }
 
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
-        if let rumView = predicate.rumView(for: viewController) {
+        if let rumView = rumView(for: viewController) {
             startIfNotStarted(rumView: rumView, for: viewController)
         }
     }
 
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
         if let topViewController = inspector.topViewController(),
-           let rumView = predicate.rumView(for: topViewController) {
+           let rumView = rumView(for: topViewController) {
             startIfNotStarted(rumView: rumView, for: topViewController)
         }
     }
 
     // MARK: - Private
 
+    /// The `UIViewController` recently asked in `UIKitRUMViewsPredicate`.
+    private weak var recentlyAskedViewController: UIViewController?
+
+    private func rumView(for viewController: UIViewController) -> RUMView? {
+        if viewController === recentlyAskedViewController {
+            return nil
+        }
+
+        recentlyAskedViewController = viewController
+        return predicate.rumView(for: viewController)
+    }
+
+    /// The `UIViewController` indicating the active `RUMView`.
     private weak var lastStartedViewController: UIViewController?
 
     private func startIfNotStarted(rumView: RUMView, for viewController: UIViewController) {
         if viewController === lastStartedViewController {
             return
+        }
+
+        if subscriber == nil {
+            userLogger.warn(
+                """
+                RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
+                Make sure `Global.rum = RUMMonitor.initialize()` is called before any `UIViewController` is presented.
+                """
+            )
         }
 
         if let lastStartedViewController = lastStartedViewController {

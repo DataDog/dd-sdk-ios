@@ -110,6 +110,8 @@ Datadog.Configuration
    .builderUsing(...)
    .trackUIKitRUMViews(using: predicate)
    .build()
+
+Global.rum = RUMMonitor.initialize()
 ```
 
 `predicate` must be a type that conforms to `UIKitRUMViewsPredicate` protocol:
@@ -131,6 +133,8 @@ Datadog.Configuration
    .builderUsing(...)
    .track(firstPartyHosts: ["your.domain.com"])
    .build()
+
+Global.rum = RUMMonitor.initialize()
 ```
 Also, assign `DDURLSessionDelegate()` as a `delegate` of the `URLSession` you want to monitor, for example:
 ```swift
@@ -151,6 +155,8 @@ Datadog.Configuration
    .builderUsing(...)
    .trackUIKitActions(true)
    .build()
+
+Global.rum = RUMMonitor.initialize()
 ```
 
 This makes the SDK track all significant taps occurring in the app. For privacy reasons, all interactions with the on-screen keyboard are ignored.

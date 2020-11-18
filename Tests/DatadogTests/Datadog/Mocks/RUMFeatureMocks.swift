@@ -455,6 +455,10 @@ class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
     var resultByViewController: [UIViewController: RUMView] = [:]
     var result: RUMView?
 
+    init(result: RUMView? = nil) {
+        self.result = result
+    }
+
     func rumView(for viewController: UIViewController) -> RUMView? {
         return resultByViewController[viewController] ?? result
     }
