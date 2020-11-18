@@ -6,16 +6,7 @@
 
 import Foundation
 
-/// An interface for sending Tracing `Spans` for given `URLSession` task interception.
-internal protocol URLSessionRUMResourcesHandlerType {
-    func subscribe(commandsSubscriber: RUMCommandSubscriber)
-    /// Notifies the `URLSessionTask` interception start.
-    func notify_taskInterceptionStarted(interception: TaskInterception)
-    /// Notifies the `URLSessionTask` interception completion.
-    func notify_taskInterceptionCompleted(interception: TaskInterception)
-}
-
-internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType {
+internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
     private let dateProvider: DateProvider
 
     // MARK: - Initialization
@@ -24,13 +15,15 @@ internal class URLSessionRUMResourcesHandler: URLSessionRUMResourcesHandlerType 
         self.dateProvider = dateProvider
     }
 
-    // MARK: - URLSessionRUMResourcesHandlerType
+    // MARK: - Internal
 
     weak var subscriber: RUMCommandSubscriber?
 
     func subscribe(commandsSubscriber: RUMCommandSubscriber) {
         self.subscriber = commandsSubscriber
     }
+
+    // MARK: - URLSessionInterceptionHandler
 
     func notify_taskInterceptionStarted(interception: TaskInterception) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"

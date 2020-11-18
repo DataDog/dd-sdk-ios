@@ -10,15 +10,17 @@ import XCTest
 class TaskInterceptionTests: XCTestCase {
     func testWhenInterceptionIsCreated_itHasUniqueIdentifier() {
         // When
-        let interception1 = TaskInterception(request: .mockAny())
-        let interception2 = TaskInterception(request: .mockAny())
+        let interception1 = TaskInterception(request: .mockAny(), isFirstParty: true)
+        let interception2 = TaskInterception(request: .mockAny(), isFirstParty: false)
 
         // Then
         XCTAssertNotEqual(interception1.identifier, interception2.identifier)
+        XCTAssertTrue(interception1.isFirstPartyRequets)
+        XCTAssertFalse(interception2.isFirstPartyRequets)
     }
 
     func testWhenInterceptionReceivesBothMetricsAndCompletion_itIsConsideredDone() {
-        let interception = TaskInterception(request: .mockAny())
+        let interception = TaskInterception(request: .mockAny(), isFirstParty: .mockAny())
 
         // When
         interception.register(completion: .mockAny())

@@ -26,7 +26,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         var request = URLRequest(url: .mockRandom())
         request.httpMethod = ["GET", "POST", "PUT", "DELETE"].randomElement()!
-        let taskInterception = TaskInterception(request: request)
+        let taskInterception = TaskInterception(request: request, isFirstParty: .random())
         XCTAssertNil(taskInterception.spanContext)
 
         // When
@@ -49,7 +49,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
         // Given
-        let taskInterception = TaskInterception(request: .mockAny())
+        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: .random())
         taskInterception.register(spanContext: .mockWith(traceID: 1, spanID: 2))
         XCTAssertNotNil(taskInterception.spanContext)
 
@@ -74,7 +74,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = TaskInterception(request: .mockAny())
+        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: .random())
         let resourceMetrics: ResourceMetrics = .mockAny()
         let resourceCompletion: ResourceCompletion = .mockWith(response: .mockResponseWith(statusCode: 200), error: nil)
         taskInterception.register(metrics: resourceMetrics)
@@ -111,7 +111,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = TaskInterception(request: .mockAny())
+        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: .random())
         let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let resourceMetrics: ResourceMetrics = .mockAny()
         let resourceCompletion: ResourceCompletion = .mockWith(response: nil, error: taskError)

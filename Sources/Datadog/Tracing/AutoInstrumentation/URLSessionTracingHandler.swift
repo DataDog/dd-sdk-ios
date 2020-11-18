@@ -6,16 +6,20 @@
 
 import Foundation
 
-/// An interface for sending Tracing `Spans` for given `URLSession` task interception.
-internal protocol URLSessionTracingHandlerType {
-    /// Sends `Span` for given `TaskInterception`.
-    func sendSpan(for interception: TaskInterception, using tracer: Tracer)
-}
+internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
+    // MARK: - URLSessionInterceptionHandler
 
-internal class URLSessionTracingHandler: URLSessionTracingHandlerType {
-    // MARK: - URLSessionTracingHandlerType
+    func notify_taskInterceptionStarted(interception: TaskInterception) {
+        /* no-op */
+    }
 
-    func sendSpan(for interception: TaskInterception, using tracer: Tracer) {
+    func notify_taskInterceptionCompleted(interception: TaskInterception) {
+        if !interception.isFirstPartyRequets {
+            return // `Span` should be only send for 1st party requests
+        }
+        guard let tracer = Global.sharedTracer as? Tracer else {
+            return // TODO: RUMM-696 Print the warning
+        }
         guard let resourceMetrics = interception.metrics,
               let resourceCompletion = interception.completion else {
             return
