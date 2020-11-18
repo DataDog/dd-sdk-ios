@@ -103,6 +103,10 @@
 		61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */; };
 		6137E649252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6137E648252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard */; };
 		613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */; };
+		613BE0432563FB9E0015216C /* RUMBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */; };
+		613BE04A25640FF80015216C /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE04925640FF80015216C /* BenchmarkTests.swift */; };
+		613BE06225642F790015216C /* RUMStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */; };
+		613BE073256431960015216C /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
 		613F23E4252B062F006CD2D7 /* TaskInterceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */; };
 		613F23F1252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23F0252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift */; };
 		613F23FD252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613F23FC252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift */; };
@@ -495,6 +499,9 @@
 		61378BB22555337900F28837 /* DatadogSDKTesting.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogSDKTesting.local.xcconfig; sourceTree = "<group>"; };
 		6137E648252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMModalViewsAutoInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTabBarControllerScenarioTests.swift; sourceTree = "<group>"; };
+		613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMBenchmarkTests.swift; sourceTree = "<group>"; };
+		613BE04925640FF80015216C /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
+		613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskInterceptionTests.swift; sourceTree = "<group>"; };
 		613F23F0252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandlerTests.swift; sourceTree = "<group>"; };
 		613F23FC252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionAutoInstrumentationTests.swift; sourceTree = "<group>"; };
@@ -1345,6 +1352,34 @@
 			path = ModalViewsAutoInstrumentation;
 			sourceTree = "<group>";
 		};
+		613BE07A25643C040015216C /* DataCollection */ = {
+			isa = PBXGroup;
+			children = (
+				61441C782461A204003D8BB8 /* LoggingBenchmarkTests.swift */,
+				E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */,
+				613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */,
+			);
+			path = DataCollection;
+			sourceTree = "<group>";
+		};
+		613BE07B25643C080015216C /* DataUpload */ = {
+			isa = PBXGroup;
+			children = (
+				6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */,
+			);
+			path = DataUpload;
+			sourceTree = "<group>";
+		};
+		613BE07C25643C100015216C /* DataStorage */ = {
+			isa = PBXGroup;
+			children = (
+				61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
+				E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */,
+				613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */,
+			);
+			path = DataStorage;
+			sourceTree = "<group>";
+		};
 		613F23DC252B05BD006CD2D7 /* URLFiltering */ = {
 			isa = PBXGroup;
 			children = (
@@ -1463,12 +1498,11 @@
 		61441C772461A204003D8BB8 /* DatadogBenchmarkTests */ = {
 			isa = PBXGroup;
 			children = (
+				613BE04925640FF80015216C /* BenchmarkTests.swift */,
 				61D6FF7D24E53D3B00D0E375 /* BenchmarkMocks.swift */,
-				6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */,
-				61441C782461A204003D8BB8 /* LoggingBenchmarkTests.swift */,
-				61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
-				E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */,
-				E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */,
+				613BE07A25643C040015216C /* DataCollection */,
+				613BE07B25643C080015216C /* DataUpload */,
+				613BE07C25643C100015216C /* DataStorage */,
 			);
 			name = DatadogBenchmarkTests;
 			path = ../Tests/DatadogBenchmarkTests;
@@ -2750,11 +2784,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				61441C7A2461A204003D8BB8 /* LoggingBenchmarkTests.swift in Sources */,
+				613BE073256431960015216C /* FoundationMocks.swift in Sources */,
 				61441C7B2461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift in Sources */,
 				6152C84024BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift in Sources */,
 				E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */,
+				613BE0432563FB9E0015216C /* RUMBenchmarkTests.swift in Sources */,
 				E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */,
+				613BE04A25640FF80015216C /* BenchmarkTests.swift in Sources */,
 				61441C7C2461A244003D8BB8 /* TestsDirectory.swift in Sources */,
+				613BE06225642F790015216C /* RUMStorageBenchmarkTests.swift in Sources */,
 				61D6FF7E24E53D3B00D0E375 /* BenchmarkMocks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

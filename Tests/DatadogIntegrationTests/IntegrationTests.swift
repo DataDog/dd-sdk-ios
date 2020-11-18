@@ -31,7 +31,7 @@ class IntegrationTests: XCTestCase {
 
     // MARK: - `HTTPServerMock` connection
 
-    func connectToServer() throws -> ServerMock {
+    private func connectToServer() throws -> ServerMock {
         let testsBundle = Bundle(for: IntegrationTests.self)
         guard let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String else {
             throw ServerConnectionError(description: "Cannot obtain `MockServerAddress` from `Info.plist`")

@@ -93,6 +93,18 @@ extension Date {
     }
 }
 
+extension TimeZone {
+    static var UTC: TimeZone { TimeZone(abbreviation: "UTC")! }
+    static var EET: TimeZone { TimeZone(abbreviation: "EET")! }
+    static func mockAny() -> TimeZone { .EET }
+}
+
+extension Calendar {
+    static var gregorian: Calendar {
+        return Calendar(identifier: .gregorian)
+    }
+}
+
 extension URL {
     static func mockAny() -> URL {
         return URL(string: "https://www.datadoghq.com")!
