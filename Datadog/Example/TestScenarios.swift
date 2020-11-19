@@ -80,6 +80,9 @@ class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
     static func envIdentifier() -> String { "TracingURLSessionScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .enableRUM(false)
+
         super.configureSDK(builder: builder)
     }
 }
@@ -92,6 +95,9 @@ class TracingNSURLSessionScenario: URLSessionBaseScenario, TestScenario {
     static func envIdentifier() -> String { "TracingNSURLSessionScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .enableRUM(false)
+
         super.configureSDK(builder: builder)
     }
 }

@@ -13,7 +13,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingCommonAsserts {
+class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testRUMResourcesScenario() throws {
         // Server session recording first party requests send to `HTTPServerMock`.
         // Used to assert that trace propagation headers are send for first party requests.
@@ -24,13 +24,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
 
-        // Requesting this first party by the app should create the `Span` and RUM Resource.
+        // Requesting this first party by the app should create the RUM Resource.
         let firstPartyGETResourceURL = URL(
             string: customFirstPartyServerSession.recordingURL.deletingLastPathComponent().absoluteString + "inspect"
         )!
-        // Requesting this first party by the app should create the `Span` and RUM Resource.
+        // Requesting this first party by the app should create the RUM Resource and inject tracing headers into the request.
         let firstPartyPOSTResourceURL = customFirstPartyServerSession.recordingURL
-        // Requesting this first party by the app should create the `Span` with error and RUM Error.
+        // Requesting this first party by the app should create the RUM Error.
         let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
 
         // Requesting this third party by the app should create the RUM Resource.
@@ -71,42 +71,11 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
             getSpanID(from: firstPartyPOSTRequest),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`."
         )
-
-        // Get Tracing Spans
-        let tracingRequests = try tracingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try SpanMatcher.from(requests: requests).count >= 3
-        }
-
-        assertTracing(requests: tracingRequests)
-
-        let spanMatchers = try SpanMatcher.from(requests: tracingRequests)
-
-        try XCTAssertTrue(
-            spanMatchers.contains { span in try span.resource() == firstPartyGETResourceURL.absoluteString },
-            "`Span` should be send for `firstPartyGETResourceURL`"
+        XCTAssertEqual(
+            getDatadogOrigin(from: firstPartyPOSTRequest),
+            "rum",
+            "Additional `x-datadog-origin: rum` header should be propagated to `firstPartyPOSTResourceURL`"
         )
-        try XCTAssertTrue(
-            spanMatchers.contains { span in try span.resource() == firstPartyPOSTResourceURL.absoluteString },
-            "`Span` should be send for `firstPartyPOSTResourceURL`"
-        )
-        try XCTAssertTrue(
-            spanMatchers.contains { span in try span.resource() == firstPartyBadResourceURL.absoluteString },
-            "`Span` should be send for `firstPartyBadResourceURL`"
-        )
-        try XCTAssertFalse(
-            spanMatchers.contains { span in try span.resource() == thirdPartyGETResourceURL.absoluteString },
-            "`Span` should NOT bet send for `thirdPartyGETResourceURL`"
-        )
-        try XCTAssertFalse(
-            spanMatchers.contains { span in try span.resource() == thirdPartyPOSTResourceURL.absoluteString },
-            "`Span` should NOT bet send for `thirdPartyPOSTResourceURL`"
-        )
-
-        let firstPartyPOSTRequestSpan = try XCTUnwrap(
-            spanMatchers.first { try $0.resource() == firstPartyPOSTResourceURL.absoluteString }
-        )
-        XCTAssertEqual(try firstPartyPOSTRequestSpan.traceID().hexadecimalNumberToDecimal, firstPartyPOSTRequestTraceID)
-        XCTAssertEqual(try firstPartyPOSTRequestSpan.spanID().hexadecimalNumberToDecimal, firstPartyPOSTRequestSpanID)
 
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
@@ -121,7 +90,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
         // Asserts in `SendFirstPartyRequestsVC` RUM View
         XCTAssertEqual(session.viewVisits[0].path, "Example.SendFirstPartyRequestsViewController")
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 2, "1st screen should track 2 RUM Resources")
-        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 2, "1st screen should track 2 RUM Errors")
+        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1, "1st screen should track 1 RUM Errors")
 
         let firstPartyResource1 = try XCTUnwrap(
             session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyGETResourceURL.absoluteString },
@@ -154,15 +123,6 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
             "RUM Error should be send for `firstPartyBadResourceURL`"
         )
         XCTAssertEqual(firstPartyResourceError1.error.resource?.method, .methodGET)
-
-        XCTAssertTrue(
-            session.viewVisits[0].errorEvents.contains { event in
-                event.error.message.matches(
-                    regex: #"^Span error \(urlsession.request\): (.*)| A server with the specified hostname could not be found.$"#
-                )
-            },
-            "RUM Error should be send for `firstPartyBadResourceURL` request's Span error"
-        )
 
         // Asserts in `SendThirdPartyRequestsVC` RUM View
         XCTAssertEqual(session.viewVisits[1].path, "Example.SendThirdPartyRequestsViewController")
@@ -207,6 +167,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
             thirdPartyResource1.resource.download != nil && thirdPartyResource2.resource.download != nil,
             "Both 3rd party resources should track download phase"
         )
+
+        // Ensure there were no tracing `Spans` send
+        _ = try tracingServerSession.pullRecordedRequests(timeout: 1) { requests in
+            XCTAssertEqual(requests.count, 0, "There should be no tracing `Spans` send")
+            return true
+        }
     }
 
     private func getTraceID(from request: Request) -> String? {
@@ -218,6 +184,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, TracingComm
 
     private func getSpanID(from request: Request) -> String? {
         let prefix = "x-datadog-parent-id: "
+        var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
+        header?.removeFirst(prefix.count)
+        return header
+    }
+
+    private func getDatadogOrigin(from request: Request) -> String? {
+        let prefix = "x-datadog-origin: "
         var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
         header?.removeFirst(prefix.count)
         return header
