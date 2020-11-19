@@ -1,6 +1,0 @@
-#include "Datadog.xcconfig"
-
-RUM_APPLICATION_ID= // use your own RUM Application ID obtained on datadoghq.com
-DATADOG_CLIENT_TOKEN= // use your own Client Token, generated for RUM_APPLICATION_ID
-SHOPIST_BASE_URL=some.url // use Shopist endpoint without protocol
-#include? "Shopist.local.xcconfig"
