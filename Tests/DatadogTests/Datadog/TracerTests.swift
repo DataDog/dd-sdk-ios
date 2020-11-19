@@ -946,5 +946,39 @@ class TracerTests: XCTestCase {
 
         try Datadog.deinitializeOrThrow()
     }
+
+    func testGivenOnlyTracingAutoInstrumentationEnabled_whenTracerIsNotRegistered_itPrintsWarningsOnEachFirstPartyRequest() throws {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            configuration: Datadog.Configuration
+                .builderUsing(clientToken: .mockAny(), environment: .mockAny())
+                .track(firstPartyHosts: [.mockAny()])
+                .build()
+        )
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        // Given
+        let tracingHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
+
+        // When
+        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
+
+        // Then
+        tracingHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: true))
+        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(
+            output.recordedLog?.message,
+            """
+            `URLSession` request was completed, but no `Tracer` is registered on `Global.sharedTracer`. Tracing auto instrumentation will not work.
+            Make sure `Global.sharedTracer = Tracer.initialize()` is called before any network request is send.
+            """
+        )
+
+        URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+
+        try Datadog.deinitializeOrThrow()
+    }
 }
 // swiftlint:enable multiline_arguments_brackets
