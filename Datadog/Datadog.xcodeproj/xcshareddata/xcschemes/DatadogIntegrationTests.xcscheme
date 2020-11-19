@@ -100,10 +100,15 @@
          <EnvironmentVariable
             key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_DISABLE_HEADERS_INJECTION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_RECORD_PAYLOAD"
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
