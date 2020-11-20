@@ -7,7 +7,7 @@ tools:
 		@echo "OK 👌"
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.2.0
+DD_SDK_SWIFT_TESTING_VERSION = 0.3.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/\n
