@@ -13,6 +13,7 @@ internal struct RUMEvent<DM: RUMDataModel>: Encodable {
 
     /// Custom attributes set by the user
     let attributes: [String: Encodable]
+    let userInfoAttributes: [String: Encodable]
 
     func encode(to encoder: Encoder) throws {
         try RUMEventEncoder().encode(self, to: encoder)
@@ -35,6 +36,9 @@ internal struct RUMEventEncoder {
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try event.attributes.forEach { attributeName, attributeValue in
             try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))
+        }
+        try event.userInfoAttributes.forEach { attributeName, attributeValue in
+            try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.usr.\(attributeName)"))
         }
 
         // Encode `RUMDataModel`

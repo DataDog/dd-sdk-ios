@@ -198,5 +198,8 @@ internal struct SpanEncoder {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
+        try span.userInfo.extraInfo.forEach {
+            try container.encode(EncodableValue($1), forKey: DynamicCodingKey("meta.usr.\($0)"))
+        }
     }
 }

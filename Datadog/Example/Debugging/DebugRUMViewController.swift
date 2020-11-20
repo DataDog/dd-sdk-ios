@@ -156,8 +156,12 @@ class DebugRUMViewController: UIViewController {
 
 /// Creates an instance of `UIViewController` subclass with a given name.
 private func createUIViewControllerSubclassInstance(named viewControllerClassName: String) -> UIViewController {
-    let theClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
-    objc_registerClassPair(theClass)
+    let theClass: AnyClass = NSClassFromString(viewControllerClassName) ?? {
+        let cls: AnyClass
+        cls = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
+        objc_registerClassPair(cls)
+        return cls
+    }()
     return theClass.alloc() as! UIViewController
 }
 

@@ -445,7 +445,12 @@ class RUMMonitorTests: XCTestCase {
             directory: temporaryDirectory,
             dependencies: .mockWith(
                 userInfoProvider: .mockWith(
-                    userInfo: UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com")
+                    userInfo: UserInfo(
+                        id: "abc-123",
+                        name: "Foo",
+                        email: "foo@bar.com",
+                        extraInfo: ["extra_key": "extra_value"]
+                    )
                 )
             )
         )
@@ -465,6 +470,9 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
         let expectedUserInfo = RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com")
+        rumEventMatchers.forEach { event in
+            event.jsonMatcher.assertValue(forKey: "context.usr.extra_key", equals: "extra_value")
+        }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMDataAction.self) { action in
             XCTAssertEqual(action.usr, expectedUserInfo)
         }

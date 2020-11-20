@@ -186,16 +186,16 @@ class LoggerTests: XCTestCase {
         Datadog.setUserInfo(id: "abc-123", name: "Foo")
         logger.debug("message with user `id` and `name`")
 
-        Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
-        logger.debug("message with user `id`, `name` and `email`")
+        Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com", extraInfo: ["extra_key": "extra_value"])
+        logger.debug("message with user `id`, `name`, `email` and `extraInfo`")
 
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
         logger.debug("message with no user info")
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 4)
         logMatchers[0].assertUserInfo(equals: nil)
-        logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
-        logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com"))
+        logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil, extraInfo: nil))
+        logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com", extraInfo: ["extra_key": "extra_value"]))
         logMatchers[3].assertUserInfo(equals: nil)
     }
 

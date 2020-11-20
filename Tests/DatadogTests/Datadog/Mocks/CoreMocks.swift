@@ -382,7 +382,7 @@ extension UserInfo {
     }
 
     static func mockEmpty() -> UserInfo {
-        return UserInfo(id: nil, name: nil, email: nil)
+        return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
     }
 }
 

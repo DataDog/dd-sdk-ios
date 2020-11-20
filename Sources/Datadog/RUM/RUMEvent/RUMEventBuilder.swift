@@ -6,8 +6,18 @@
 
 import Foundation
 
-internal struct RUMEventBuilder {
+internal class RUMEventBuilder {
+    let userInfoProvider: UserInfoProvider
+
+    init(userInfoProvider: UserInfoProvider) {
+        self.userInfoProvider = userInfoProvider
+    }
+
     func createRUMEvent<DM: RUMDataModel>(with model: DM, attributes: [String: Encodable]) -> RUMEvent<DM> {
-        return RUMEvent(model: model, attributes: attributes)
+        return RUMEvent(
+            model: model,
+            attributes: attributes,
+            userInfoAttributes: userInfoProvider.value.extraInfo
+        )
     }
 }

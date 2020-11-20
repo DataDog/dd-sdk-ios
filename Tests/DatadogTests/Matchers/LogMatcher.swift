@@ -112,7 +112,7 @@ internal class LogMatcher: JSONDataMatcher {
         assertValue(forKey: JSONKey.message, equals: message, file: file, line: line)
     }
 
-    func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {
+    func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?, extraInfo: [String: String]?)?, file: StaticString = #file, line: UInt = #line) {
         if let id = userInfo?.id {
             assertValue(forKey: JSONKey.userId, equals: id, file: file, line: line)
         } else {
@@ -127,6 +127,9 @@ internal class LogMatcher: JSONDataMatcher {
             assertValue(forKey: JSONKey.userEmail, equals: email, file: file, line: line)
         } else {
             assertNoValue(forKey: JSONKey.userEmail, file: file, line: line)
+        }
+        userInfo?.extraInfo?.forEach {
+            assertValue(forKey: "usr.\($0)", equals: $1)
         }
     }
 

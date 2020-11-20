@@ -9,7 +9,7 @@ import XCTest
 
 class RUMEventBuilderTests: XCTestCase {
     func testItBuildsRUMEvent() {
-        let builder = RUMEventBuilder()
+        let builder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())
         let event = builder.createRUMEvent(
             with: RUMDataModelMock(attribute: "foo"),
             attributes: ["foo": "bar", "fizz": "buzz"]

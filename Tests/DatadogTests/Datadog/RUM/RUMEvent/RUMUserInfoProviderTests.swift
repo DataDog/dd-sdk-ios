@@ -19,13 +19,16 @@ class RUMUserInfoProviderTests: XCTestCase {
     }
 
     func testWhenUserInfoIsAvailable_itReturnsRUMUserInfo() {
-        userInfoProvider.value = UserInfo(id: "abc-123", name: nil, email: nil)
+        userInfoProvider.value = UserInfo(id: "abc-123", name: nil, email: nil, extraInfo: [:])
         XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: nil, email: nil))
 
-        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil)
+        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
         XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: nil))
 
-        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com")
+        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: [:])
+        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com"))
+
+        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: [:])
         XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com"))
     }
 }

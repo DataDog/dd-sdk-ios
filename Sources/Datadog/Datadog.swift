@@ -78,9 +78,15 @@ public class Datadog {
     public static func setUserInfo(
         id: String? = nil,
         name: String? = nil,
-        email: String? = nil
+        email: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        instance?.userInfoProvider.value = UserInfo(id: id, name: name, email: email)
+        instance?.userInfoProvider.value = UserInfo(
+            id: id,
+            name: name,
+            email: email,
+            extraInfo: extraInfo
+        )
     }
 
     // MARK: - Internal
