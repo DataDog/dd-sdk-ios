@@ -22,10 +22,11 @@ export DD_SDK_TESTING_XCCONFIG_CI
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@carthage bootstrap --platform iOS
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
-		@brew install gh
+		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip
 		@rm -rf instrumented-tests/DatadogSDKTesting.framework
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.framework-iphonesimulator.zip"
