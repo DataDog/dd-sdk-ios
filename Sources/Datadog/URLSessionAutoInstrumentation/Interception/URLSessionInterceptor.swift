@@ -198,10 +198,8 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     private func extractSpanContext(from request: URLRequest) -> DDSpanContext? {
-        guard let tracer = Global.sharedTracer as? Tracer else {
-            return nil
-        }
-        guard let headers = request.allHTTPHeaderFields else {
+        guard let tracer = Global.sharedTracer as? Tracer,
+              let headers = request.allHTTPHeaderFields else {
             return nil
         }
 

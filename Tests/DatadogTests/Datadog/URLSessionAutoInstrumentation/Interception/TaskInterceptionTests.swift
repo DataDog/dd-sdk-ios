@@ -15,8 +15,8 @@ class TaskInterceptionTests: XCTestCase {
 
         // Then
         XCTAssertNotEqual(interception1.identifier, interception2.identifier)
-        XCTAssertTrue(interception1.isFirstPartyRequets)
-        XCTAssertFalse(interception2.isFirstPartyRequets)
+        XCTAssertTrue(interception1.isFirstPartyRequest)
+        XCTAssertFalse(interception2.isFirstPartyRequest)
     }
 
     func testWhenInterceptionReceivesBothMetricsAndCompletion_itIsConsideredDone() {

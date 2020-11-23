@@ -14,7 +14,7 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
     }
 
     func notify_taskInterceptionCompleted(interception: TaskInterception) {
-        if !interception.isFirstPartyRequets {
+        if !interception.isFirstPartyRequest {
             return // `Span` should be only send for 1st party requests
         }
         guard let tracer = Global.sharedTracer as? Tracer else {
