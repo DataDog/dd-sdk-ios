@@ -748,7 +748,7 @@ class RUMMonitorTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         // Given
-        let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.rumResourceHandler)
+        let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
         let viewsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.views?.handler)
         let userActionsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.userActions?.handler)
 
@@ -756,7 +756,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
         // Then
-        resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny()))
+        resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
         XCTAssertEqual(output.recordedLog?.level, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,

@@ -33,6 +33,7 @@ internal class URLSessionAutoInstrumentation {
     }
 
     func subscribe(commandSubscriber: RUMCommandSubscriber) {
-        interceptor.rumResourceHandler?.subscribe(commandsSubscriber: commandSubscriber)
+        let rumResourceHandler = interceptor.handler as? URLSessionRUMResourcesHandler
+        rumResourceHandler?.subscribe(commandsSubscriber: commandSubscriber)
     }
 }

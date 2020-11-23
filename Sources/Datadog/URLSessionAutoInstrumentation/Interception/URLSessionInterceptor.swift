@@ -34,11 +34,15 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     private let firstPartyURLsFilter: FirstPartyURLsFilter
     /// Filters internal `URLs` used by the SDK.
     private let internalURLsFilter: InternalURLsFilter
-
-    /// Handles tracing `Span` creation for intercepted resources. `nil` if Tracing is disabled.
-    internal let tracingHandler: URLSessionTracingHandlerType?
-    /// Handles RUM Resource creation for intercepted resources. `nil` if RUM is disabled.
-    internal let rumResourceHandler: URLSessionRUMResourcesHandlerType?
+    /// Handles resources interception.
+    /// Depending on which instrumentation is enabled, this can be either RUM or Tracing handler sending respectively: RUM Resource or tracing Span.
+    internal let handler: URLSessionInterceptionHandler
+    /// Whether or not to inject tracing headers to intercepted 1st party requests.
+    /// Set to `true` if Tracing instrumentation is enabled (no matter o RUM state).
+    internal let injectTracingHeadersToFirstPartyRequests: Bool
+    /// Additional header injected to intercepted 1st party requests.
+    /// Set to `x-datadog-origin: rum` if both RUM and Tracing instrumentations are enabled and `nil` in all other cases.
+    internal let additionalHeadersForFirstPartyRequests: [String: String]?
 
     // MARK: - Initialization
 
@@ -46,29 +50,47 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         dateProvider: DateProvider
     ) {
-        self.init(
-            configuration: configuration,
-            tracingHandler: configuration.instrumentTracing ? URLSessionTracingHandler() : nil,
-            rumResourceHandler: configuration.instrumentRUM ? URLSessionRUMResourcesHandler(dateProvider: dateProvider) : nil
-        )
+        let handler: URLSessionInterceptionHandler
+
+        if configuration.instrumentRUM {
+            handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider)
+        } else {
+            handler = URLSessionTracingHandler()
+        }
+
+        self.init(configuration: configuration, handler: handler)
     }
 
     init(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        tracingHandler: URLSessionTracingHandlerType?,
-        rumResourceHandler: URLSessionRUMResourcesHandlerType?
+        handler: URLSessionInterceptionHandler
     ) {
         self.firstPartyURLsFilter = FirstPartyURLsFilter(configuration: configuration)
         self.internalURLsFilter = InternalURLsFilter(configuration: configuration)
-        self.tracingHandler = tracingHandler
-        self.rumResourceHandler = rumResourceHandler
-        self.queue = DispatchQueue(label: "com.datadoghq.URLSessionInterceptor", target: .global(qos: .utility))
+        self.handler = handler
+
+        if configuration.instrumentTracing {
+            self.injectTracingHeadersToFirstPartyRequests = true
+
+            if configuration.instrumentRUM {
+                // If RUM instrumentation is enabled, additional `x-datadog-origin: rum` header is injected to the user request,
+                // so that user's backend instrumentation can further process it and count on RUM quota.
+                self.additionalHeadersForFirstPartyRequests = [
+                    TracingHTTPHeaders.originField: TracingHTTPHeaders.rumOriginValue
+                ]
+            } else {
+                self.additionalHeadersForFirstPartyRequests = nil
+            }
+        } else {
+            self.injectTracingHeadersToFirstPartyRequests = false
+            self.additionalHeadersForFirstPartyRequests = nil
+        }
     }
 
     // MARK: - URLSessionInterceptorType
 
     /// An internal queue for synchronising the access to `interceptionByTask`.
-    private let queue: DispatchQueue
+    private let queue = DispatchQueue(label: "com.datadoghq.URLSessionInterceptor", target: .global(qos: .utility))
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     private var interceptionByTask: [URLSessionTask: TaskInterception] = [:]
 
@@ -76,10 +98,9 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         guard !internalURLsFilter.isInternal(url: request.url) else {
             return request
         }
-        if let tracer = Global.sharedTracer as? Tracer {
-            if firstPartyURLsFilter.isFirstParty(url: request.url) {
-                return injectSpanContext(into: request, using: tracer)
-            }
+        if injectTracingHeadersToFirstPartyRequests,
+           firstPartyURLsFilter.isFirstParty(url: request.url) {
+            return injectSpanContext(into: request)
         }
         return request
     }
@@ -91,15 +112,17 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         }
 
         queue.async {
-            let interception = TaskInterception(request: request)
+            let interception = TaskInterception(
+                request: request,
+                isFirstParty: self.firstPartyURLsFilter.isFirstParty(url: request.url)
+            )
             self.interceptionByTask[task] = interception
 
-            if let tracer = Global.sharedTracer as? Tracer,
-               let spanContext = self.extractSpanContext(from: request, using: tracer) {
+            if let spanContext = self.extractSpanContext(from: request) {
                 interception.register(spanContext: spanContext)
             }
 
-            self.rumResourceHandler?.notify_taskInterceptionStarted(interception: interception)
+            self.handler.notify_taskInterceptionStarted(interception: interception)
         }
     }
 
@@ -147,34 +170,39 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
         interceptionByTask[task] = nil
-
-        if let tracer = Global.sharedTracer as? Tracer,
-           firstPartyURLsFilter.isFirstParty(url: interception.request.url) {
-            tracingHandler?.sendSpan(for: interception, using: tracer)
-        }
-
-        self.rumResourceHandler?.notify_taskInterceptionCompleted(interception: interception)
+        handler.notify_taskInterceptionCompleted(interception: interception)
     }
 
     // MARK: - SpanContext Injection & Extraction
 
-    private func injectSpanContext(into request: URLRequest, using tracer: Tracer) -> URLRequest {
+    private func injectSpanContext(into firstPartyRequest: URLRequest) -> URLRequest {
+        guard let tracer = Global.sharedTracer as? Tracer else {
+            return firstPartyRequest
+        }
+
         let writer = HTTPHeadersWriter()
         let spanContext = tracer.createSpanContext()
 
         tracer.inject(spanContext: spanContext, writer: writer)
 
-        var newRequest = request
+        var newRequest = firstPartyRequest
         writer.tracePropagationHTTPHeaders.forEach { field, value in
             newRequest.setValue(value, forHTTPHeaderField: field)
         }
+
+        additionalHeadersForFirstPartyRequests?.forEach { field, value in
+            newRequest.setValue(value, forHTTPHeaderField: field)
+        }
+
         return newRequest
     }
 
-    private func extractSpanContext(from request: URLRequest, using tracer: Tracer) -> DDSpanContext? {
-        guard let headers = request.allHTTPHeaderFields else {
+    private func extractSpanContext(from request: URLRequest) -> DDSpanContext? {
+        guard let tracer = Global.sharedTracer as? Tracer,
+              let headers = request.allHTTPHeaderFields else {
             return nil
         }
+
         let reader = HTTPHeadersReader(httpHeaderFields: headers)
         return tracer.extract(reader: reader) as? DDSpanContext
     }

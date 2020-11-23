@@ -37,7 +37,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let resourcesHandler = URLSessionAutoInstrumentation.instance?.interceptor.rumResourceHandler as? URLSessionRUMResourcesHandler
+        let resourcesHandler = URLSessionAutoInstrumentation.instance?.interceptor.handler as? URLSessionRUMResourcesHandler
         XCTAssertTrue(resourcesHandler?.subscriber === Global.rum)
     }
 }

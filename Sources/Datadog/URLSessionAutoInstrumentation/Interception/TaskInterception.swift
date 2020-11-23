@@ -12,6 +12,8 @@ internal class TaskInterception {
     /// The initial request send during this interception. It is, the request send from `URLSession`, not the one
     /// given by the user (as the request could have been modified in `URLSessionSwizzler`).
     internal let request: URLRequest
+    /// Tells if the `request` is send to a 1st party host.
+    internal let isFirstPartyRequest: Bool
     /// Task metrics collected during this interception.
     private(set) var metrics: ResourceMetrics?
     /// Task completion collected during this interception.
@@ -20,9 +22,10 @@ internal class TaskInterception {
     /// or when the task was created through `URLSession.dataTask(with:url)` on some iOS13+.
     private(set) var spanContext: DDSpanContext?
 
-    init(request: URLRequest) {
+    init(request: URLRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
+        self.isFirstPartyRequest = isFirstParty
     }
 
     func register(metrics: ResourceMetrics) {

@@ -9,6 +9,10 @@ import Foundation
 internal struct TracingHTTPHeaders {
     static let traceIDField = "x-datadog-trace-id"
     static let parentSpanIDField = "x-datadog-parent-id"
+    static let originField = "x-datadog-origin"
+    /// Value for `originField` header field, indicating that the request is tracked as RUM Resource by the client.
+    static let rumOriginValue = "rum"
+
     // TODO: RUMM-338 support `x-datadog-sampling-priority`. `dd-trace-ot` reference:
     // https://github.com/DataDog/dd-trace-java/blob/4ba0ca0f9da748d4018310d026b1a72b607947f1/dd-trace-ot/src/main/java/datadog/opentracing/propagation/DatadogHttpCodec.java#L23
 }
