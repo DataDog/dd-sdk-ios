@@ -138,18 +138,7 @@ class URLSessionInterceptorTests: XCTestCase {
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
         XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField], TracingHTTPHeaders.rumOriginValue)
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-
-        XCTAssertNotEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should be modified.")
-        XCTAssertEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
-        XCTAssertEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
-
-        XCTAssertEqual(
+        assertRequestsEqual(
             interceptedFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
@@ -157,6 +146,8 @@ class URLSessionInterceptorTests: XCTestCase {
             firstPartyRequest,
             "The only modification of the original requests should be the addition of 3 tracing headers."
         )
+        assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
+        assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
     }
 
     func testGivenOnlyTracingInstrumentationEnabled_whenInterceptingRequests_itInjectsTracingContextToFirstPartyRequests() throws {
@@ -177,24 +168,15 @@ class URLSessionInterceptorTests: XCTestCase {
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
         XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField], "Origin header should not be added if RUM is disabled.")
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-
-        XCTAssertNotEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should be modified.")
-        XCTAssertEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
-        XCTAssertEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
-
-        XCTAssertEqual(
+        assertRequestsEqual(
             interceptedFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField),
             firstPartyRequest,
             "The only modification of the original requests should be the addition of 2 tracing headers."
         )
+        assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
+        assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
     }
 
     func testGivenOnlyRUMInstrumentationEnabled_whenInterceptingRequests_itDoesNotModifyThem() throws {
@@ -212,19 +194,9 @@ class URLSessionInterceptorTests: XCTestCase {
         let interceptedInternalRequest = interceptor.modify(request: internalRequest)
 
         // Then
-        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedThirdPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedInternalRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-
-        XCTAssertEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should not be modified.")
-        XCTAssertEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
-        XCTAssertEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
+        assertRequestsEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should not be modified.")
+        assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
+        assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
     }
 
     func testGivenTracingInstrumentationEnabledButTracerNotRegistered_whenInterceptingRequests_itDoesNotInjectTracingContextToAnyRequest() throws {
@@ -241,9 +213,9 @@ class URLSessionInterceptorTests: XCTestCase {
         let interceptedInternalRequest = interceptor.modify(request: internalRequest)
 
         // Then
-        XCTAssertEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should not be modified.")
-        XCTAssertEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
-        XCTAssertEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
+        assertRequestsEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should not be modified.")
+        assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
+        assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
     }
 
     // MARK: - URLSessionTask Interception
@@ -422,5 +394,23 @@ class URLSessionInterceptorTests: XCTestCase {
             iterations: 50
         )
         // swiftlint:enable opening_brace
+    }
+
+    // MARK: - Helpers
+
+    /// Because of https://openradar.appspot.com/radar?id=4988276943355904
+    /// it is not always reliable to compare `URLRequests` using in-build equality operator (`r1 == r2`).
+    /// This method implements a workaround by comparing request HTTP headers before checking equality.
+    private func assertRequestsEqual(
+        _ request1: URLRequest,
+        _ request2: URLRequest,
+        _ message: String = "",
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let headers1 = request1.allHTTPHeaderFields ?? [:]
+        let headers2 = request2.allHTTPHeaderFields ?? [:]
+        XCTAssertEqual(headers1, headers2, message, file: file, line: line)
+        XCTAssertEqual(request1, request2, message, file: file, line: line)
     }
 }
