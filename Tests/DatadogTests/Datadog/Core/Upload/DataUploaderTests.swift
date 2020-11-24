@@ -46,6 +46,15 @@ class DataUploadURLProviderTests: XCTestCase {
         dateProvider.advance(bySeconds: 9.999)
         XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404009999"))
     }
+
+    func testItEscapesWhitespacesInQueryItems() throws {
+        let urlProvider = UploadURLProvider(
+            urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
+            queryItemProviders: [.ddtags(tags: ["some string with whitespace"])]
+        )
+
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddtags=some%20string%20with%20whitespace"))
+    }
 }
 
 class DataUploaderTests: XCTestCase {
