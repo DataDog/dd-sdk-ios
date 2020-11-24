@@ -17,11 +17,13 @@ let package = Package(
             type: .dynamic,
             targets: ["DatadogObjc"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/lyft/Kronos.git", .upToNextMinor(from: "4.1.0"))
+    ],
     targets: [
         .target(
             name: "Datadog",
-            dependencies: ["_Datadog_Private"]),
+            dependencies: ["_Datadog_Private", "Kronos"]),
         .target(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
