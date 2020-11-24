@@ -1,3 +1,6 @@
+// Include base config
+#include "Base.xcconfig"
+
 RUM_APPLICATION_ID=// use your own RUM Application ID obtained on datadoghq.com
 DATADOG_CLIENT_TOKEN=// use your own Client Token, generated for RUM_APPLICATION_ID
 DEVELOPMENT_TEAM[sdk=iphoneos*]=// use your own Development Team
