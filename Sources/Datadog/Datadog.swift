@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import Kronos
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -48,10 +47,6 @@ public class Datadog {
     ///   - appContext: context passing information about the app.
     ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
     public static func initialize(appContext: AppContext, configuration: Configuration) {
-        // TODO: RUMM-655 This is only to check at runtime if `lyft/Kronos` is properly linked. Will be removed before
-        // merging to `master` branch.
-        _ = Clock.now
-
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
