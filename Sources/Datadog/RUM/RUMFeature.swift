@@ -78,7 +78,6 @@ internal final class RUMFeature {
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
                     .ddsource(),
-                    .batchTime(using: commonDependencies.dateProvider),
                     .ddtags(
                         tags: [
                             "service:\(configuration.common.serviceName)",

@@ -15,36 +15,23 @@ class DataUploadURLProviderTests: XCTestCase {
         XCTAssertEqual(item.value().value, "ios")
     }
 
-    func testBatchTimeQueryItem() {
-        let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
-        let item: UploadURLProvider.QueryItemProvider = .batchTime(using: dateProvider)
-
-        XCTAssertEqual(item.value().name, "batch_time")
-        XCTAssertEqual(item.value().value, "1576404000000")
-        dateProvider.advance(bySeconds: 9.999)
-        XCTAssertEqual(item.value().name, "batch_time")
-        XCTAssertEqual(item.value().value, "1576404009999")
-    }
-
     func testItBuildsValidURLUsingNoQueryItems() throws {
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
             queryItemProviders: []
         )
 
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc"))
     }
 
     func testItBuildsValidURLUsingAllQueryItems() throws {
-        let dateProvider = RelativeDateProvider(using: Date.mockDecember15th2019At10AMUTC())
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
-            queryItemProviders: [.ddsource(), .batchTime(using: dateProvider)]
+            queryItemProviders: [.ddsource(), .ddtags(tags: ["abc:def"])]
         )
 
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404000000"))
-        dateProvider.advance(bySeconds: 9.999)
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&batch_time=1576404009999"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&ddtags=abc:def"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&ddtags=abc:def"))
     }
 
     func testItEscapesWhitespacesInQueryItems() throws {

@@ -14,14 +14,6 @@ internal class UploadURLProvider {
     class QueryItemProvider {
         let value: () -> URLQueryItem
 
-        /// Creates `batch_time=...` query item adding current timestamp (in milliseconds) to the URL.
-        static func batchTime(using dateProvider: DateProvider) -> QueryItemProvider {
-            return QueryItemProvider {
-                let timestamp = dateProvider.currentDate().timeIntervalSince1970.toMilliseconds
-                return URLQueryItem(name: "batch_time", value: "\(timestamp)")
-            }
-        }
-
         /// Creates `ddsource=ios` query item.
         static func ddsource() -> QueryItemProvider {
             let queryItem = URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource)
@@ -41,7 +33,10 @@ internal class UploadURLProvider {
 
     var url: URL {
         var urlComponents = URLComponents(url: urlWithClientToken, resolvingAgainstBaseURL: false)
-        urlComponents?.queryItems = queryItemProviders.map { $0.value() }
+
+        if !queryItemProviders.isEmpty {
+            urlComponents?.queryItems = queryItemProviders.map { $0.value() }
+        }
 
         guard let url = urlComponents?.url else {
             userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItemProviders)")
