@@ -186,7 +186,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),
-                    rumUUIDGenerator: DefaultRUMUUIDGenerator()
+                    rumUUIDGenerator: DefaultRUMUUIDGenerator(),
+                    dateCorrection: rumFeature.dateCorrection
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate
             ),
