@@ -82,9 +82,7 @@ internal final class TracingFeature {
             ),
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: [
-                    .batchTime(using: commonDependencies.dateProvider)
-                ]
+                queryItemProviders: []
             ),
             commonDependencies: commonDependencies
         )
