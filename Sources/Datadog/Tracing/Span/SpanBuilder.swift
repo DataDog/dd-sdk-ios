@@ -21,7 +21,7 @@ internal struct SpanBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given tracer).
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts span's time (device time) to server time.
-    let dateCorrection: NTPDateCorrectionType
+    let dateCorrection: DateCorrectionType
 
     /// Encodes tag `Span` tag values as JSON string
     private let tagsJSONEncoder: JSONEncoder = .default()

@@ -27,7 +27,7 @@ internal final class RUMFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
-    let dateCorrection: NTPDateCorrectionType
+    let dateCorrection: DateCorrectionType
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
