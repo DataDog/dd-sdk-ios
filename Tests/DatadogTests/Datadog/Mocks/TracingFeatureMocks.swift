@@ -197,7 +197,8 @@ extension SpanBuilder {
         serviceName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        dateCorrection: NTPDateCorrectionType = NTPDateCorrectionMock()
     ) -> SpanBuilder {
         return SpanBuilder(
             applicationVersion: applicationVersion,
@@ -205,7 +206,8 @@ extension SpanBuilder {
             serviceName: serviceName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            dateCorrection: dateCorrection
         )
     }
 }

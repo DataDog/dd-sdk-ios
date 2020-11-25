@@ -20,6 +20,8 @@ internal struct SpanBuilder {
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
     /// Shared mobile carrier info provider (or `nil` if disabled for given tracer).
     let carrierInfoProvider: CarrierInfoProviderType?
+    /// Adjusts span's time (device time) to server time.
+    let dateCorrection: NTPDateCorrectionType
 
     /// Encodes tag `Span` tag values as JSON string
     private let tagsJSONEncoder: JSONEncoder = .default()
@@ -50,7 +52,7 @@ internal struct SpanBuilder {
             operationName: ddspan.operationName,
             serviceName: serviceName,
             resource: tagsReducer.extractedResourceName ?? ddspan.operationName,
-            startTime: ddspan.startTime,
+            startTime: dateCorrection.toServerDate(deviceDate: ddspan.startTime),
             duration: finishTime.timeIntervalSince(ddspan.startTime),
             isError: tagsReducer.extractedIsError ?? false,
             tracerVersion: sdkVersion,
