@@ -6,8 +6,9 @@
 
 import Foundation
 
-/// Interface for date provider used for files orchestration.
+/// Provides current device time information.
 internal protocol DateProvider {
+    /// Current device time.
     func currentDate() -> Date
 }
 
