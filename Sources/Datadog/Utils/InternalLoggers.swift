@@ -51,7 +51,8 @@ internal func createSDKDeveloperLogger(
             loggerName: "sdk-developer",
             userInfoProvider: configuration.userInfoProvider,
             networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
-            carrierInfoProvider: configuration.carrierInfoProvider
+            carrierInfoProvider: configuration.carrierInfoProvider,
+            dateCorrection: nil
         ),
         format: .shortWith(prefix: "🐶 → "),
         timeZone: timeZone,
@@ -91,7 +92,8 @@ internal func createSDKUserLogger(
             loggerName: "sdk-user",
             userInfoProvider: configuration.userInfoProvider,
             networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
-            carrierInfoProvider: configuration.carrierInfoProvider
+            carrierInfoProvider: configuration.carrierInfoProvider,
+            dateCorrection: nil
         ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
         timeZone: timeZone,

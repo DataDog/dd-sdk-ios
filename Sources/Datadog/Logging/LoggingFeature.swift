@@ -27,6 +27,7 @@ internal final class LoggingFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
+    let dateCorrection: NTPDateCorrectionType
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -109,6 +110,7 @@ internal final class LoggingFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrection = commonDependencies.dateCorrection
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider

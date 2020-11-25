@@ -129,6 +129,7 @@ public class Datadog {
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
+            dateCorrection: dateCorrection,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
