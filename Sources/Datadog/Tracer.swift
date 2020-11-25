@@ -97,7 +97,8 @@ public class Tracer: OTTracer {
                     serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
+                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
+                    dateCorrection: tracingFeature.dateCorrection
                 ),
                 fileWriter: tracingFeature.storage.writer
             ),

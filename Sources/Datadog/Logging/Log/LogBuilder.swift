@@ -26,9 +26,8 @@ internal struct LogBuilder {
     let dateCorrection: NTPDateCorrectionType?
 
     func createLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
-        let dateInServerTime = dateCorrection?.toServerDate(deviceDate: date)
         return Log(
-            date: dateInServerTime ?? date,
+            date: dateCorrection?.toServerDate(deviceDate: date) ?? date,
             status: logStatus(for: level),
             message: message,
             serviceName: serviceName,
