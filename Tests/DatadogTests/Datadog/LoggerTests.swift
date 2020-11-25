@@ -669,6 +669,33 @@ class LoggerTests: XCTestCase {
         logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID)
     }
 
+    // MARK: - Log Dates Correction
+
+    func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingLogs_thenLogDateUsesServerTime() throws {
+        // Given
+        let deviceTime: Date = .mockDecember15th2019At10AMUTC()
+        let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
+
+        // When
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directory: temporaryDirectory,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(using: deviceTime),
+                dateCorrection: NTPDateCorrectionMock(correctionOffset: serverTimeDifference)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.debug("message")
+
+        // Then
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 1)
+        logMatchers[0].assertDate { logDate in
+            logDate == deviceTime.addingTimeInterval(serverTimeDifference)
+        }
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
