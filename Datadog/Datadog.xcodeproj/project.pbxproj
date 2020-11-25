@@ -256,6 +256,7 @@
 		61C3E63924BF19B4008053F2 /* RUMContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63824BF19B4008053F2 /* RUMContext.swift */; };
 		61C3E63B24BF1A4B008053F2 /* RUMCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */; };
 		61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
+		61C576C6256E65BD00295F7C /* NTPDateCorrection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C576C5256E65BD00295F7C /* NTPDateCorrection.swift */; };
 		61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87824509A0C00DA608C /* DDSpan.swift */; };
 		61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		61C5A88624509A0C00DA608C /* TracingUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */; };
@@ -670,6 +671,7 @@
 		61C3E63824BF19B4008053F2 /* RUMContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContext.swift; sourceTree = "<group>"; };
 		61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommand.swift; sourceTree = "<group>"; };
 		61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMApplicationScope.swift; sourceTree = "<group>"; };
+		61C576C5256E65BD00295F7C /* NTPDateCorrection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NTPDateCorrection.swift; sourceTree = "<group>"; };
 		61C5A87824509A0C00DA608C /* DDSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpan.swift; sourceTree = "<group>"; };
 		61C5A87924509A0C00DA608C /* DDNoOps.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDNoOps.swift; sourceTree = "<group>"; };
 		61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TracingUUIDGenerator.swift; sourceTree = "<group>"; };
@@ -923,7 +925,7 @@
 		61133BA12423979B00786299 /* System */ = {
 			isa = PBXGroup;
 			children = (
-				61133BA82423979B00786299 /* DateProvider.swift */,
+				61C576C4256E655600295F7C /* Time */,
 				61E36A10254B2280001AD6F2 /* LaunchTimeProvider.swift */,
 				61133BA22423979B00786299 /* CarrierInfoProvider.swift */,
 				61133BA32423979B00786299 /* MobileDevice.swift */,
@@ -1837,6 +1839,15 @@
 			path = Scopes;
 			sourceTree = "<group>";
 		};
+		61C576C4256E655600295F7C /* Time */ = {
+			isa = PBXGroup;
+			children = (
+				61133BA82423979B00786299 /* DateProvider.swift */,
+				61C576C5256E65BD00295F7C /* NTPDateCorrection.swift */,
+			);
+			path = Time;
+			sourceTree = "<group>";
+		};
 		61C5A87724509A0C00DA608C /* Tracing */ = {
 			isa = PBXGroup;
 			children = (
@@ -2490,6 +2501,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */,
+				61C576C6256E65BD00295F7C /* NTPDateCorrection.swift in Sources */,
 				61E909ED24A24DD3005EA2DE /* OTSpan.swift in Sources */,
 				61133BDE2423979B00786299 /* CompilationConditions.swift in Sources */,
 				61E909F324A24DD3005EA2DE /* OTSpanContext.swift in Sources */,

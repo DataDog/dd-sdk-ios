@@ -96,6 +96,7 @@ public class Datadog {
         }
 
         let dateProvider = SystemDateProvider()
+        let dateCorrection = NTPDateCorrection()
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
