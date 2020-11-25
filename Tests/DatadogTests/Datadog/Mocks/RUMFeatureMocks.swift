@@ -325,7 +325,8 @@ extension RUMScopeDependencies {
         ),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
-        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        dateCorrection: NTPDateCorrectionType = NTPDateCorrectionMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
@@ -333,7 +334,8 @@ extension RUMScopeDependencies {
             connectivityInfoProvider: connectivityInfoProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
-            rumUUIDGenerator: rumUUIDGenerator
+            rumUUIDGenerator: rumUUIDGenerator,
+            dateCorrection: dateCorrection
         )
     }
 }

@@ -211,7 +211,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendApplicationStartAction(on command: RUMCommand) {
         let eventData = RUMDataAction(
-            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
+            date: dependencies.dateCorrection.toServerDate(deviceDate: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
@@ -244,7 +244,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMDataView(
-            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
+            date: dependencies.dateCorrection.toServerDate(deviceDate: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
@@ -279,7 +279,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMDataError(
-            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
+            date: dependencies.dateCorrection.toServerDate(deviceDate: command.time).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
