@@ -343,7 +343,7 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        dateCorrection: DateCorrectionType = NTPDateCorrectionMock()
+        dateCorrection: DateCorrectionType = DateCorrectionMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
