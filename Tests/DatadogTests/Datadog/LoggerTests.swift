@@ -186,7 +186,16 @@ class LoggerTests: XCTestCase {
         Datadog.setUserInfo(id: "abc-123", name: "Foo")
         logger.debug("message with user `id` and `name`")
 
-        Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com", extraInfo: ["extra_key": "extra_value"])
+        Datadog.setUserInfo(
+            id: "abc-123",
+            name: "Foo",
+            email: "foo@example.com",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
+        )
         logger.debug("message with user `id`, `name`, `email` and `extraInfo`")
 
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
@@ -194,8 +203,20 @@ class LoggerTests: XCTestCase {
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 4)
         logMatchers[0].assertUserInfo(equals: nil)
-        logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil, extraInfo: nil))
-        logMatchers[2].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: "foo@example.com", extraInfo: ["extra_key": "extra_value"]))
+
+        logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
+
+        logMatchers[2].assertUserInfo(
+            equals: (
+                id: "abc-123",
+                name: "Foo",
+                email: "foo@example.com"
+            )
+        )
+        logMatchers[2].assertValue(forKey: "usr.str", equals: "value")
+        logMatchers[2].assertValue(forKey: "usr.int", equals: 11_235)
+        logMatchers[2].assertValue(forKey: "usr.bool", equals: true)
+
         logMatchers[3].assertUserInfo(equals: nil)
     }
 

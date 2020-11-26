@@ -75,6 +75,13 @@ public class Datadog {
         }
     }
 
+    /// Sets current user information.
+    /// Those will be added to logs, traces and RUM events automatically.
+    /// - Parameters:
+    ///   - id: User ID, if any
+    ///   - name: Name representing the user, if any
+    ///   - email: User's email, if any
+    ///   - extraInfo: User's custom attributes, if any
     public static func setUserInfo(
         id: String? = nil,
         name: String? = nil,

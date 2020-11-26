@@ -449,7 +449,11 @@ class RUMMonitorTests: XCTestCase {
                         id: "abc-123",
                         name: "Foo",
                         email: "foo@bar.com",
-                        extraInfo: ["extra_key": "extra_value"]
+                        extraInfo: [
+                            "str": "value",
+                            "int": 11_235,
+                            "bool": true
+                        ]
                     )
                 )
             )
@@ -471,7 +475,9 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
         let expectedUserInfo = RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com")
         rumEventMatchers.forEach { event in
-            event.jsonMatcher.assertValue(forKey: "context.usr.extra_key", equals: "extra_value")
+            event.jsonMatcher.assertValue(forKey: "context.usr.str", equals: "value")
+            event.jsonMatcher.assertValue(forKey: "context.usr.int", equals: 11_235)
+            event.jsonMatcher.assertValue(forKey: "context.usr.bool", equals: true)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMDataAction.self) { action in
             XCTAssertEqual(action.usr, expectedUserInfo)
