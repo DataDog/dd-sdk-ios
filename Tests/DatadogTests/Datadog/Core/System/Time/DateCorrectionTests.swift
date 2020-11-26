@@ -45,11 +45,15 @@ class DateCorrectionTests: XCTestCase {
         let serverDateProvider = ServerDateProviderMock()
         let deviceDateProvider = SystemDateProvider()
 
-        // When
-        _ = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        var randomlyChoosenServers: Set<String> = []
 
-        // Then
-        XCTAssertTrue(DateCorrection.datadogNTPServers.contains(serverDateProvider.synchronizedNTPPool!))
+        (0..<100).forEach { _ in
+            _ = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+            randomlyChoosenServers.insert(serverDateProvider.synchronizedNTPPool!)
+        }
+
+        let allAvailableServers = Set(DateCorrection.datadogNTPServers)
+        XCTAssertEqual(randomlyChoosenServers, allAvailableServers, "Each time Datadog NTP server should be picked randomly.")
     }
 
     func testWhenNTPSynchronizationSucceeds_itPrintsInfoMessage() throws {

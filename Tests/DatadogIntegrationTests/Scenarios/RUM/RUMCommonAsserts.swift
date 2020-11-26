@@ -21,8 +21,8 @@ extension RUMCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1576404000000&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration`
-            let pathRegex = #"^(.*)(\/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)(&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)([0-9].[0-9].[0-9]([-a-z0-9])*)(,env:integration)$"#
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration`
+            let pathRegex = #"^(.*)(\/ui-tests-client-token\?ddsource=ios&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)([0-9].[0-9].[0-9]([-a-z0-9])*)(,env:integration)$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
                 """
