@@ -8,6 +8,21 @@ import Foundation
 import class Datadog.Datadog
 
 @objcMembers
+public class DDEndpoint: NSObject {
+    internal let sdkEndpoint: Datadog.Configuration.DatadogEndpoint
+
+    internal init(sdkEndpoint: Datadog.Configuration.DatadogEndpoint) {
+        self.sdkEndpoint = sdkEndpoint
+    }
+
+    // MARK: - Public
+
+    public static func eu() -> DDEndpoint { .init(sdkEndpoint: .eu) }
+    public static func us() -> DDEndpoint { .init(sdkEndpoint: .us) }
+    public static func gov() -> DDEndpoint { .init(sdkEndpoint: .gov) }
+}
+
+@objcMembers
 public class DDLogsEndpoint: NSObject {
     internal let sdkEndpoint: Datadog.Configuration.LogsEndpoint
 
@@ -66,11 +81,6 @@ public class DDConfigurationBuilder: NSObject {
 
     // MARK: - Public
 
-    @available(*, deprecated, renamed: "set(logsEndpoint:)")
-    public func set(endpoint: DDLogsEndpoint) {
-        set(logsEndpoint: endpoint)
-    }
-
     public func enableLogging(_ enabled: Bool) {
         _ = sdkBuilder.enableLogging(enabled)
     }
@@ -79,10 +89,16 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.enableTracing(enabled)
     }
 
+    public func set(endpoint: DDEndpoint) {
+        _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
+    }
+
+    @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
     public func set(logsEndpoint: DDLogsEndpoint) {
         _ = sdkBuilder.set(logsEndpoint: logsEndpoint.sdkEndpoint)
     }
 
+    @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
     public func set(tracesEndpoint: DDTracesEndpoint) {
         _ = sdkBuilder.set(tracesEndpoint: tracesEndpoint.sdkEndpoint)
     }

@@ -47,19 +47,27 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
     func testCustomizedBuilder() {
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
-            builder
+            _ = builder
                 .set(serviceName: "service-name")
                 .enableLogging(false)
                 .enableTracing(false)
                 .enableRUM(false)
                 .set(endpoint: .eu)
-                .set(logsEndpoint: .eu)
-                .set(tracesEndpoint: .eu)
-                .set(rumEndpoint: .eu)
                 .track(firstPartyHosts: ["example.com"])
                 .set(rumSessionsSamplingRate: 42.5)
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(true)
+
+            _ = (builder as ConfigurationBuilderDeprecatedAPIs)
+                .set(logsEndpoint: .eu)
+
+            _ = (builder as ConfigurationBuilderDeprecatedAPIs)
+                .set(tracesEndpoint: .eu)
+
+            _ = (builder as ConfigurationBuilderDeprecatedAPIs)
+                .set(rumEndpoint: .eu)
+
+            return builder
         }
 
         let defaultBuilder = Datadog.Configuration
@@ -103,5 +111,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 /// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
 private protocol ConfigurationBuilderDeprecatedAPIs {
     func set(tracedHosts: Set<String>) -> Datadog.Configuration.Builder
+    func set(logsEndpoint: Datadog.Configuration.LogsEndpoint) -> Datadog.Configuration.Builder
+    func set(tracesEndpoint: Datadog.Configuration.TracesEndpoint) -> Datadog.Configuration.Builder
+    func set(rumEndpoint: Datadog.Configuration.RUMEndpoint) -> Datadog.Configuration.Builder
 }
 extension Datadog.Configuration.Builder: ConfigurationBuilderDeprecatedAPIs {}

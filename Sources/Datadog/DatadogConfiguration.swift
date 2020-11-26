@@ -233,6 +233,7 @@ extension Datadog {
 
             /// Sets the server endpoint to which logs are sent.
             /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
+            @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
             public func set(logsEndpoint: LogsEndpoint) -> Builder {
                 configuration.logsEndpoint = logsEndpoint
                 return self
@@ -257,6 +258,7 @@ extension Datadog {
 
             /// Sets the server endpoint to which traces are sent.
             /// - Parameter tracesEndpoint: server endpoint (default value is `TracesEndpoint.us` )
+            @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
             public func set(tracesEndpoint: TracesEndpoint) -> Builder {
                 configuration.tracesEndpoint = tracesEndpoint
                 return self
@@ -323,6 +325,7 @@ extension Datadog {
 
             /// Sets the server endpoint to which RUM events are sent.
             /// - Parameter rumEndpoint: server endpoint (default value is `RUMEndpoint.us` )
+            @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
             public func set(rumEndpoint: RUMEndpoint) -> Builder {
                 configuration.rumEndpoint = rumEndpoint
                 return self
