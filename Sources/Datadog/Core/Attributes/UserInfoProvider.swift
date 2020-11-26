@@ -12,11 +12,11 @@ internal class UserInfoProvider {
     /// `UserInfo` can be mutated by any user thread with `Datadog.setUserInfo(id:name:email:)` - at the same
     /// time it might be accessed by different queues running in the SDK.
     private let queue = DispatchQueue(label: "com.datadoghq.user-info-provider", qos: .userInteractive)
-    private var current = UserInfo(id: nil, name: nil, email: nil)
+    private var _value = UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
 
     var value: UserInfo {
-        set { queue.async { self.current = newValue } }
-        get { queue.sync { self.current } }
+        set { queue.async { self._value = newValue } }
+        get { queue.sync { self._value } }
     }
 }
 
@@ -25,4 +25,5 @@ internal struct UserInfo {
     let id: String?
     let name: String?
     let email: String?
+    let extraInfo: [AttributeKey: AttributeValue]
 }

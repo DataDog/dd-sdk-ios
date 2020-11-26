@@ -335,8 +335,17 @@ class TracerTests: XCTestCase {
         Datadog.setUserInfo(id: "abc-123", name: "Foo")
         tracer.startSpan(operationName: "span with user `id` and `name`").finish()
 
-        Datadog.setUserInfo(id: "abc-123", name: "Foo", email: "foo@example.com")
-        tracer.startSpan(operationName: "span with user `id`, `name` and `email`").finish()
+        Datadog.setUserInfo(
+            id: "abc-123",
+            name: "Foo",
+            email: "foo@example.com",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
+        )
+        tracer.startSpan(operationName: "span with user `id`, `name`, `email` and `extraInfo`").finish()
 
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
         tracer.startSpan(operationName: "span with no user info").finish()
@@ -353,6 +362,9 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatchers[2].meta.userID(), "abc-123")
         XCTAssertEqual(try spanMatchers[2].meta.userName(), "Foo")
         XCTAssertEqual(try spanMatchers[2].meta.userEmail(), "foo@example.com")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.usr.str"), "value")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.usr.int"), "11235")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.usr.bool"), "true")
 
         XCTAssertNil(try? spanMatchers[3].meta.userID())
         XCTAssertNil(try? spanMatchers[3].meta.userName())

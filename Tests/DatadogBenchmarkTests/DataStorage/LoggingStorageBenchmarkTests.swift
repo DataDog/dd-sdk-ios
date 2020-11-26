@@ -80,7 +80,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             loggerVersion: "0.0.0",
             threadName: "main",
             applicationVersion: "0.0.0",
-            userInfo: .init(id: "abc-123", name: "foo", email: "foo@bar.com"),
+            userInfo: .init(id: "abc-123", name: "foo", email: "foo@bar.com", extraInfo: ["str": "value", "int": 11_235, "bool": true]),
             networkConnectionInfo: .init(
                 reachability: .yes,
                 availableInterfaces: [.cellular],

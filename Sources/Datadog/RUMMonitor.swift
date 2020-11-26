@@ -182,7 +182,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
                         carrierInfoProvider: rumFeature.carrierInfoProvider
                     ),
-                    eventBuilder: RUMEventBuilder(),
+                    eventBuilder: RUMEventBuilder(userInfoProvider: rumFeature.userInfoProvider),
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),

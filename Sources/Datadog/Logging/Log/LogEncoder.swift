@@ -137,13 +137,19 @@ internal struct LogEncoder {
         // Encode attributes...
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
 
-        // ... first, user attributes ...
+        // 1. user info attributes
+        try log.userInfo.extraInfo.forEach {
+            let key = DynamicCodingKey("usr.\($0)")
+            try attributesContainer.encode(EncodableValue($1), forKey: key)
+        }
+
+        // 2. user attributes
         let encodableUserAttributes = Dictionary(
             uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, EncodableValue(value)) }
         )
         try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
 
-        // ... then, internal attributes:
+        // 3. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
             let encodableInternalAttributes = Dictionary(
                 uniqueKeysWithValues: internalAttributes.map { name, value in (name, EncodableValue(value)) }

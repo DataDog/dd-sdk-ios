@@ -80,7 +80,7 @@ struct RUMDataModelMock: RUMDataModel, Equatable {
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
-        return RUMEventBuilder()
+        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())
     }
 }
 
@@ -323,7 +323,7 @@ extension RUMScopeDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
-        eventBuilder: RUMEventBuilder = RUMEventBuilder(),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
     ) -> RUMScopeDependencies {

@@ -33,7 +33,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         // Set user information
-        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com")
+        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         // Create Logger
         logger = Logger.builder
