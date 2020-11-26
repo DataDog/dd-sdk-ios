@@ -277,7 +277,7 @@ extension FeaturesCommonDependencies {
             }
         ),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrection: DateCorrectionType = NTPDateCorrectionMock(),
+        dateCorrection: DateCorrectionType = DateCorrectionMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -374,8 +374,8 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-/// `NTPDateCorrectionType` mock, correcting dates by adding predefined offset.
-struct NTPDateCorrectionMock: DateCorrectionType {
+/// `DateCorrectionType` mock, correcting dates by adding predefined offset.
+struct DateCorrectionMock: DateCorrectionType {
     var correctionOffset: TimeInterval = 0
 
     func toServerDate(deviceDate: Date) -> Date {
