@@ -7,6 +7,11 @@
 import XCTest
 @testable import Datadog
 
+extension Datadog.Configuration.DatadogEndpoint: EquatableInTests {}
+extension Datadog.Configuration.LogsEndpoint: EquatableInTests {}
+extension Datadog.Configuration.TracesEndpoint: EquatableInTests {}
+extension Datadog.Configuration.RUMEndpoint: EquatableInTests {}
+
 class DatadogConfigurationBuilderTests: XCTestCase {
     func testDefaultBuilder() {
         let configuration = Datadog.Configuration
@@ -28,9 +33,10 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
-            XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.com/v1/input/")
-            XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.com/v1/input/")
-            XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.com/v1/input/")
+            XCTAssertNil(configuration.datadogEndpoint)
+            XCTAssertEqual(configuration.logsEndpoint, .us)
+            XCTAssertEqual(configuration.tracesEndpoint, .us)
+            XCTAssertEqual(configuration.rumEndpoint, .us)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
@@ -46,6 +52,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .enableLogging(false)
                 .enableTracing(false)
                 .enableRUM(false)
+                .set(endpoint: .eu)
                 .set(logsEndpoint: .eu)
                 .set(tracesEndpoint: .eu)
                 .set(rumEndpoint: .eu)
@@ -73,9 +80,10 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertFalse(configuration.loggingEnabled)
             XCTAssertFalse(configuration.tracingEnabled)
             XCTAssertFalse(configuration.rumEnabled)
-            XCTAssertEqual(configuration.logsEndpoint.url, "https://mobile-http-intake.logs.datadoghq.eu/v1/input/")
-            XCTAssertEqual(configuration.tracesEndpoint.url, "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/")
-            XCTAssertEqual(configuration.rumEndpoint.url, "https://rum-http-intake.logs.datadoghq.eu/v1/input/")
+            XCTAssertEqual(configuration.datadogEndpoint, .eu)
+            XCTAssertEqual(configuration.logsEndpoint, .eu)
+            XCTAssertEqual(configuration.tracesEndpoint, .eu)
+            XCTAssertEqual(configuration.rumEndpoint, .eu)
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumUIKitViewsPredicate)

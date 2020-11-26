@@ -14,6 +14,42 @@ extension Datadog {
 
     /// Datadog SDK configuration.
     public struct Configuration {
+        public enum DatadogEndpoint {
+            /// US based servers.
+            /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us
+            /// Europe based servers.
+            /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu
+            /// Gov servers.
+            /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case gov
+
+            internal var logsEndpoint: LogsEndpoint {
+                switch self {
+                case .us: return .us
+                case .eu: return .eu
+                case .gov: return .gov
+                }
+            }
+
+            internal var tracesEndpoint: TracesEndpoint {
+                switch self {
+                case .us: return .us
+                case .eu: return .eu
+                case .gov: return .gov
+                }
+            }
+
+            internal var rumEndpoint: RUMEndpoint {
+                switch self {
+                case .us: return .us
+                case .eu: return .eu
+                case .gov: return .gov
+                }
+            }
+        }
+
         /// Determines the server for uploading logs.
         public enum LogsEndpoint {
             /// US based servers.
@@ -94,6 +130,8 @@ extension Datadog {
         private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
+        /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
+        private(set) var datadogEndpoint: DatadogEndpoint?
         private(set) var logsEndpoint: LogsEndpoint
         private(set) var tracesEndpoint: TracesEndpoint
         private(set) var rumEndpoint: RUMEndpoint
@@ -146,6 +184,9 @@ extension Datadog {
                     loggingEnabled: true,
                     tracingEnabled: true,
                     rumEnabled: rumApplicationID != nil,
+                    // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
+                    // so we know the clear user's intent to override deprecated values.
+                    datadogEndpoint: nil,
                     logsEndpoint: .us,
                     tracesEndpoint: .us,
                     rumEndpoint: .us,
@@ -155,6 +196,19 @@ extension Datadog {
                     rumUIKitViewsPredicate: nil,
                     rumUIKitActionsTrackingEnabled: false
                 )
+            }
+
+            /// Sets the Datadog server endpoint to which data is sent.
+            ///
+            /// If set, it will override values set by any of these deprecated APIs:
+            /// * `set(logsEndpoint:)`
+            /// * `set(tracesEndpoint:)`
+            /// * `set(rumEndpoint:)`
+            ///
+            /// - Parameter endpoint: server endpoint (default value is `.us`)
+            public func set(endpoint: DatadogEndpoint) -> Builder {
+                configuration.datadogEndpoint = endpoint
+                return self
             }
 
             // MARK: - Logging Configuration

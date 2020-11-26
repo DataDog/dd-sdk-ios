@@ -82,6 +82,18 @@ extension FeaturesConfiguration {
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
 
+        var logsEndpoint = configuration.logsEndpoint
+        var tracesEndpoint = configuration.tracesEndpoint
+        var rumEndpoint = configuration.rumEndpoint
+
+        if let datadogEndpoint = configuration.datadogEndpoint {
+            // If `.set(endpoint:)` API was used, it should override the values
+            // set by deprecated `.set(<feature>Endpoint:)` APIs.
+            logsEndpoint = datadogEndpoint.logsEndpoint
+            tracesEndpoint = datadogEndpoint.tracesEndpoint
+            rumEndpoint = datadogEndpoint.rumEndpoint
+        }
+
         let common = Common(
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",
@@ -95,7 +107,7 @@ extension FeaturesConfiguration {
             logging = Logging(
                 common: common,
                 uploadURLWithClientToken: try ifValid(
-                    endpointURLString: configuration.logsEndpoint.url,
+                    endpointURLString: logsEndpoint.url,
                     clientToken: configuration.clientToken
                 )
             )
@@ -105,7 +117,7 @@ extension FeaturesConfiguration {
             tracing = Tracing(
                 common: common,
                 uploadURLWithClientToken: try ifValid(
-                    endpointURLString: configuration.tracesEndpoint.url,
+                    endpointURLString: tracesEndpoint.url,
                     clientToken: configuration.clientToken
                 )
             )
@@ -125,7 +137,7 @@ extension FeaturesConfiguration {
                 rum = RUM(
                     common: common,
                     uploadURLWithClientToken: try ifValid(
-                        endpointURLString: configuration.rumEndpoint.url,
+                        endpointURLString: rumEndpoint.url,
                         clientToken: configuration.clientToken
                     ),
                     applicationID: rumApplicationID,
@@ -148,9 +160,9 @@ extension FeaturesConfiguration {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                     userDefinedFirstPartyHosts: firstPartyHosts,
                     sdkInternalURLs: [
-                        configuration.logsEndpoint.url,
-                        configuration.tracesEndpoint.url,
-                        configuration.rumEndpoint.url
+                        logsEndpoint.url,
+                        tracesEndpoint.url,
+                        rumEndpoint.url
                     ],
                     instrumentTracing: configuration.tracingEnabled,
                     instrumentRUM: configuration.rumEnabled

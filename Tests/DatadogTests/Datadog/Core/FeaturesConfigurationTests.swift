@@ -124,20 +124,47 @@ class FeaturesConfigurationTests: XCTestCase {
             "Feature configuration should not be available if the feature is disabled"
         )
 
+        func randomEndpoint() -> Datadog.Configuration.LogsEndpoint {
+            return [.us, .eu, .gov, .custom(url: "http://example.com/api")].randomElement()!
+        }
+
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", logsEndpoint: .us).logging?.uploadURLWithClientToken,
             URL(string: "https://mobile-http-intake.logs.datadoghq.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .us, logsEndpoint: randomEndpoint()
+            ).logging?.uploadURLWithClientToken,
+            URL(string: "https://mobile-http-intake.logs.datadoghq.com/v1/input/abc")!,
+            "Deprecated value should get overwritten."
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", logsEndpoint: .eu).logging?.uploadURLWithClientToken,
             URL(string: "https://mobile-http-intake.logs.datadoghq.eu/v1/input/abc")!
         )
         XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .eu, logsEndpoint: randomEndpoint()
+            ).logging?.uploadURLWithClientToken,
+            URL(string: "https://mobile-http-intake.logs.datadoghq.eu/v1/input/abc")!,
+            "Deprecated value should get overwritten."
+        )
+        XCTAssertEqual(
             try createConfiguration(clientToken: "abc", logsEndpoint: .gov).logging?.uploadURLWithClientToken,
             URL(string: "https://mobile-http-intake.logs.ddog-gov.com/v1/input/abc")!
         )
         XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", logsEndpoint: .custom(url: "http://example.com/api")).logging?.uploadURLWithClientToken,
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .gov, logsEndpoint: randomEndpoint()
+            ).logging?.uploadURLWithClientToken,
+            URL(string: "https://mobile-http-intake.logs.ddog-gov.com/v1/input/abc")!,
+            "Deprecated value should get overwritten."
+        )
+        XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", logsEndpoint: .custom(url: "http://example.com/api")
+            ).logging?.uploadURLWithClientToken,
             URL(string: "http://example.com/api/abc")!
         )
     }
@@ -150,17 +177,42 @@ class FeaturesConfigurationTests: XCTestCase {
             "Feature configuration should not be available if the feature is disabled"
         )
 
+        func randomEndpoint() -> Datadog.Configuration.TracesEndpoint {
+            return [.us, .eu, .gov, .custom(url: "http://example.com/api")].randomElement()!
+        }
+
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", tracesEndpoint: .us).tracing?.uploadURLWithClientToken,
             URL(string: "https://public-trace-http-intake.logs.datadoghq.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .us, tracesEndpoint: randomEndpoint()
+            ).tracing?.uploadURLWithClientToken,
+            URL(string: "https://public-trace-http-intake.logs.datadoghq.com/v1/input/abc")!,
+            "Deprecated value should get overwritten."
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", tracesEndpoint: .eu).tracing?.uploadURLWithClientToken,
             URL(string: "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/abc")!
         )
         XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .eu, tracesEndpoint: randomEndpoint()
+            ).tracing?.uploadURLWithClientToken,
+            URL(string: "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/abc")!,
+            "Deprecated value should get overwritten."
+        )
+        XCTAssertEqual(
             try createConfiguration(clientToken: "abc", tracesEndpoint: .gov).tracing?.uploadURLWithClientToken,
             URL(string: "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .gov, tracesEndpoint: randomEndpoint()
+            ).tracing?.uploadURLWithClientToken,
+            URL(string: "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/abc")!,
+            "Deprecated value should get overwritten."
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", tracesEndpoint: .custom(url: "http://example.com/api")).tracing?.uploadURLWithClientToken,
@@ -176,17 +228,42 @@ class FeaturesConfigurationTests: XCTestCase {
             "Feature configuration should not be available if the feature is disabled"
         )
 
+        func randomEndpoint() -> Datadog.Configuration.RUMEndpoint {
+            return [.us, .eu, .gov, .custom(url: "http://example.com/api")].randomElement()!
+        }
+
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", rumEndpoint: .us).rum?.uploadURLWithClientToken,
             URL(string: "https://rum-http-intake.logs.datadoghq.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .us, rumEndpoint: randomEndpoint()
+            ).rum?.uploadURLWithClientToken,
+            URL(string: "https://rum-http-intake.logs.datadoghq.com/v1/input/abc")!,
+            "Deprecated value should get overwritten."
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", rumEndpoint: .eu).rum?.uploadURLWithClientToken,
             URL(string: "https://rum-http-intake.logs.datadoghq.eu/v1/input/abc")!
         )
         XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .eu, rumEndpoint: randomEndpoint()
+            ).rum?.uploadURLWithClientToken,
+            URL(string: "https://rum-http-intake.logs.datadoghq.eu/v1/input/abc")!,
+            "Deprecated value should get overwritten."
+        )
+        XCTAssertEqual(
             try createConfiguration(clientToken: "abc", rumEndpoint: .gov).rum?.uploadURLWithClientToken,
             URL(string: "https://rum-http-intake.logs.ddog-gov.com/v1/input/abc")!
+        )
+        XCTAssertEqual(
+            try createConfiguration(
+                clientToken: "abc", datadogEndpoint: .gov, rumEndpoint: randomEndpoint()
+            ).rum?.uploadURLWithClientToken,
+            URL(string: "https://rum-http-intake.logs.ddog-gov.com/v1/input/abc")!,
+            "Deprecated value should get overwritten."
         )
         XCTAssertEqual(
             try createConfiguration(clientToken: "abc", rumEndpoint: .custom(url: "http://example.com/api")).rum?.uploadURLWithClientToken,
@@ -256,6 +333,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: true,
                 rumEnabled: true,
+                datadogEndpoint: Bool.random() ? .us : nil,
                 firstPartyHosts: firstPartyHosts
             ),
             appContext: .mockAny()
@@ -393,6 +471,7 @@ class FeaturesConfigurationTests: XCTestCase {
 
     private func createConfiguration(
         clientToken: String = "abc",
+        datadogEndpoint: Datadog.Configuration.DatadogEndpoint? = nil,
         logsEndpoint: Datadog.Configuration.LogsEndpoint = .us,
         tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us,
         rumEndpoint: Datadog.Configuration.RUMEndpoint = .us
@@ -403,6 +482,7 @@ class FeaturesConfigurationTests: XCTestCase {
                 loggingEnabled: true,
                 tracingEnabled: true,
                 rumEnabled: true,
+                datadogEndpoint: datadogEndpoint,
                 logsEndpoint: logsEndpoint,
                 tracesEndpoint: tracesEndpoint,
                 rumEndpoint: rumEndpoint
