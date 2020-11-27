@@ -130,11 +130,23 @@ extension Datadog {
         private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
+
         /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
         private(set) var datadogEndpoint: DatadogEndpoint?
+        /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogEndpoint`.
+        private(set) var customLogsEndpoint: URL?
+        /// If `customTracesEndpoint` is set, it will override traces endpoint value configured with `tracesEndpoint` and `DatadogEndpoint`.
+        private(set) var customTracesEndpoint: URL?
+        /// If `customRUMEndpoint` is set, it will override rum endpoint value configured with `rumEndpoint` and `DatadogEndpoint`.
+        private(set) var customRUMEndpoint: URL?
+
+        /// Deprecated value
         private(set) var logsEndpoint: LogsEndpoint
+        /// Deprecated value
         private(set) var tracesEndpoint: TracesEndpoint
+        /// Deprecated value
         private(set) var rumEndpoint: RUMEndpoint
+
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
         private(set) var rumSessionsSamplingRate: Float
@@ -187,6 +199,9 @@ extension Datadog {
                     // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
                     // so we know the clear user's intent to override deprecated values.
                     datadogEndpoint: nil,
+                    customLogsEndpoint: nil,
+                    customTracesEndpoint: nil,
+                    customRUMEndpoint: nil,
                     logsEndpoint: .us,
                     tracesEndpoint: .us,
                     rumEndpoint: .us,
@@ -198,7 +213,7 @@ extension Datadog {
                 )
             }
 
-            /// Sets the Datadog server endpoint to which data is sent.
+            /// Sets the Datadog server endpoint where data is sent.
             ///
             /// If set, it will override values set by any of these deprecated APIs:
             /// * `set(logsEndpoint:)`
@@ -208,6 +223,30 @@ extension Datadog {
             /// - Parameter endpoint: server endpoint (default value is `.us`)
             public func set(endpoint: DatadogEndpoint) -> Builder {
                 configuration.datadogEndpoint = endpoint
+                return self
+            }
+
+            /// Sets the custom server endpoint where Logs are sent.
+            ///
+            /// - Parameter endpoint: server endpoint (not set by default)
+            public func set(customLogsEndpoint: URL) -> Builder {
+                configuration.customLogsEndpoint = customLogsEndpoint
+                return self
+            }
+
+            /// Sets the custom server endpoint where Spans are sent.
+            ///
+            /// - Parameter customTracesEndpoint: server endpoint (not set by default)
+            public func set(customTracesEndpoint: URL) -> Builder {
+                configuration.customTracesEndpoint = customTracesEndpoint
+                return self
+            }
+
+            /// Sets the custom server endpoint where RUM events are sent.
+            ///
+            /// - Parameter customRUMEndpoint: server endpoint (not set by default)
+            public func set(customRUMEndpoint: URL) -> Builder {
+                configuration.customRUMEndpoint = customRUMEndpoint
                 return self
             }
 

@@ -93,6 +93,14 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
     }
 
+    public func set(customLogsEndpoint: URL) {
+        _ = sdkBuilder.set(customLogsEndpoint: customLogsEndpoint)
+    }
+
+    public func set(customTracesEndpoint: URL) {
+        _ = sdkBuilder.set(customTracesEndpoint: customTracesEndpoint)
+    }
+
     @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
     public func set(logsEndpoint: DDLogsEndpoint) {
         _ = sdkBuilder.set(logsEndpoint: logsEndpoint.sdkEndpoint)

@@ -62,11 +62,13 @@ class DDConfigurationTests: XCTestCase {
         let swiftConfigurationGov = objcBuilder.build().sdkConfiguration
         XCTAssertEqual(swiftConfigurationGov.datadogEndpoint, .gov)
 
-        objcBuilder.set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs"))
-        objcBuilder.set(tracesEndpoint: .custom(url: "https://api.example.com/v1/logs"))
+        let customLogsEndpoint = URL(string: "https://api.example.com/v1/logs")!
+        let customTracesEndpoint = URL(string: "https://api.example.com/v1/traces")!
+        objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
+        objcBuilder.set(customTracesEndpoint: customTracesEndpoint)
         let swiftConfigurationCustom = objcBuilder.build().sdkConfiguration
-        XCTAssertEqual(swiftConfigurationCustom.logsEndpoint, .custom(url: "https://api.example.com/v1/logs"))
-        XCTAssertEqual(swiftConfigurationCustom.tracesEndpoint, .custom(url: "https://api.example.com/v1/logs"))
+        XCTAssertEqual(swiftConfigurationCustom.customLogsEndpoint, customLogsEndpoint)
+        XCTAssertEqual(swiftConfigurationCustom.customTracesEndpoint, customTracesEndpoint)
 
         objcBuilder.set(serviceName: "service-name")
         let swiftConfigurationServiceName = objcBuilder.build().sdkConfiguration

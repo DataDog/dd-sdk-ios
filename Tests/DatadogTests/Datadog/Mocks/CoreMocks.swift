@@ -19,6 +19,9 @@ extension Datadog.Configuration {
         tracingEnabled: Bool = false,
         rumEnabled: Bool = false,
         datadogEndpoint: DatadogEndpoint? = nil,
+        customLogsEndpoint: URL? = nil,
+        customTracesEndpoint: URL? = nil,
+        customRUMEndpoint: URL? = nil,
         logsEndpoint: LogsEndpoint = .us,
         tracesEndpoint: TracesEndpoint = .us,
         rumEndpoint: RUMEndpoint = .us,
@@ -36,6 +39,9 @@ extension Datadog.Configuration {
             tracingEnabled: tracingEnabled,
             rumEnabled: rumEnabled,
             datadogEndpoint: datadogEndpoint,
+            customLogsEndpoint: customLogsEndpoint,
+            customTracesEndpoint: customTracesEndpoint,
+            customRUMEndpoint: customRUMEndpoint,
             logsEndpoint: logsEndpoint,
             tracesEndpoint: tracesEndpoint,
             rumEndpoint: rumEndpoint,
@@ -45,6 +51,30 @@ extension Datadog.Configuration {
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled
         )
+    }
+}
+
+extension Datadog.Configuration.DatadogEndpoint {
+    static func mockRandom() -> Self {
+        return [.us, .eu, .gov].randomElement()!
+    }
+}
+
+extension Datadog.Configuration.LogsEndpoint {
+    static func mockRandom() -> Self {
+        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+    }
+}
+
+extension Datadog.Configuration.TracesEndpoint {
+    static func mockRandom() -> Self {
+        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+    }
+}
+
+extension Datadog.Configuration.RUMEndpoint {
+    static func mockRandom() -> Self {
+        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 

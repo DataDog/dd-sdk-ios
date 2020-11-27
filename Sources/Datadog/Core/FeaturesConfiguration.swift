@@ -94,6 +94,21 @@ extension FeaturesConfiguration {
             rumEndpoint = datadogEndpoint.rumEndpoint
         }
 
+        if let customLogsEndpoint = configuration.customLogsEndpoint {
+            // If `.set(cusstomLogsEndpoint:)` API was used, it should override logs endpoint
+            logsEndpoint = .custom(url: customLogsEndpoint.absoluteString)
+        }
+
+        if let customTracesEndpoint = configuration.customTracesEndpoint {
+            // If `.set(cusstomLogsEndpoint:)` API was used, it should override traces endpoint
+            tracesEndpoint = .custom(url: customTracesEndpoint.absoluteString)
+        }
+
+        if let customRUMEndpoint = configuration.customRUMEndpoint {
+            // If `.set(cusstomLogsEndpoint:)` API was used, it should override RUM endpoint
+            rumEndpoint = .custom(url: customRUMEndpoint.absoluteString)
+        }
+
         let common = Common(
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",

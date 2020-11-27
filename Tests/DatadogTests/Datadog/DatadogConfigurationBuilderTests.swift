@@ -34,6 +34,9 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertNil(configuration.datadogEndpoint)
+            XCTAssertNil(configuration.customLogsEndpoint)
+            XCTAssertNil(configuration.customTracesEndpoint)
+            XCTAssertNil(configuration.customRUMEndpoint)
             XCTAssertEqual(configuration.logsEndpoint, .us)
             XCTAssertEqual(configuration.tracesEndpoint, .us)
             XCTAssertEqual(configuration.rumEndpoint, .us)
@@ -53,19 +56,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .enableTracing(false)
                 .enableRUM(false)
                 .set(endpoint: .eu)
+                .set(customLogsEndpoint: URL(string: "https://api.custom.logs/")!)
+                .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
+                .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .track(firstPartyHosts: ["example.com"])
                 .set(rumSessionsSamplingRate: 42.5)
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(true)
-
-            _ = (builder as ConfigurationBuilderDeprecatedAPIs)
-                .set(logsEndpoint: .eu)
-
-            _ = (builder as ConfigurationBuilderDeprecatedAPIs)
-                .set(tracesEndpoint: .eu)
-
-            _ = (builder as ConfigurationBuilderDeprecatedAPIs)
-                .set(rumEndpoint: .eu)
 
             return builder
         }
@@ -89,9 +86,9 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertFalse(configuration.tracingEnabled)
             XCTAssertFalse(configuration.rumEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .eu)
-            XCTAssertEqual(configuration.logsEndpoint, .eu)
-            XCTAssertEqual(configuration.tracesEndpoint, .eu)
-            XCTAssertEqual(configuration.rumEndpoint, .eu)
+            XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
+            XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)
+            XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumUIKitViewsPredicate)
@@ -102,9 +99,16 @@ class DatadogConfigurationBuilderTests: XCTestCase {
     func testDeprecatedAPIs() {
         let builder = Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracedHosts: ["example.com"])
+        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(logsEndpoint: .eu)
+        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracesEndpoint: .eu)
+        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(rumEndpoint: .eu)
+
         let configuration = builder.build()
 
         XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+        XCTAssertEqual(configuration.logsEndpoint, .eu)
+        XCTAssertEqual(configuration.tracesEndpoint, .eu)
+        XCTAssertEqual(configuration.rumEndpoint, .eu)
     }
 }
 
