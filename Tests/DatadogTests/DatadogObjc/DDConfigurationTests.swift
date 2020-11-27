@@ -50,29 +50,25 @@ class DDConfigurationTests: XCTestCase {
         let swiftConfigurationTracingDisabled = objcBuilder.build().sdkConfiguration
         XCTAssertFalse(swiftConfigurationTracingDisabled.tracingEnabled)
 
-        objcBuilder.set(logsEndpoint: .eu())
-        objcBuilder.set(tracesEndpoint: .eu())
+        objcBuilder.set(endpoint: .eu())
         let swiftConfigurationEU = objcBuilder.build().sdkConfiguration
-        XCTAssertEqual(swiftConfigurationEU.logsEndpoint, .eu)
-        XCTAssertEqual(swiftConfigurationEU.tracesEndpoint, .eu)
+        XCTAssertEqual(swiftConfigurationEU.datadogEndpoint, .eu)
 
-        objcBuilder.set(logsEndpoint: .us())
-        objcBuilder.set(tracesEndpoint: .us())
+        objcBuilder.set(endpoint: .us())
         let swiftConfigurationUS = objcBuilder.build().sdkConfiguration
-        XCTAssertEqual(swiftConfigurationUS.logsEndpoint, .us)
-        XCTAssertEqual(swiftConfigurationUS.tracesEndpoint, .us)
+        XCTAssertEqual(swiftConfigurationUS.datadogEndpoint, .us)
 
-        objcBuilder.set(logsEndpoint: .gov())
-        objcBuilder.set(tracesEndpoint: .gov())
+        objcBuilder.set(endpoint: .gov())
         let swiftConfigurationGov = objcBuilder.build().sdkConfiguration
-        XCTAssertEqual(swiftConfigurationGov.logsEndpoint, .gov)
-        XCTAssertEqual(swiftConfigurationGov.tracesEndpoint, .gov)
+        XCTAssertEqual(swiftConfigurationGov.datadogEndpoint, .gov)
 
-        objcBuilder.set(logsEndpoint: .custom(url: "https://api.example.com/v1/logs"))
-        objcBuilder.set(tracesEndpoint: .custom(url: "https://api.example.com/v1/logs"))
+        let customLogsEndpoint = URL(string: "https://api.example.com/v1/logs")!
+        let customTracesEndpoint = URL(string: "https://api.example.com/v1/traces")!
+        objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
+        objcBuilder.set(customTracesEndpoint: customTracesEndpoint)
         let swiftConfigurationCustom = objcBuilder.build().sdkConfiguration
-        XCTAssertEqual(swiftConfigurationCustom.logsEndpoint, .custom(url: "https://api.example.com/v1/logs"))
-        XCTAssertEqual(swiftConfigurationCustom.tracesEndpoint, .custom(url: "https://api.example.com/v1/logs"))
+        XCTAssertEqual(swiftConfigurationCustom.customLogsEndpoint, customLogsEndpoint)
+        XCTAssertEqual(swiftConfigurationCustom.customTracesEndpoint, customTracesEndpoint)
 
         objcBuilder.set(serviceName: "service-name")
         let swiftConfigurationServiceName = objcBuilder.build().sdkConfiguration

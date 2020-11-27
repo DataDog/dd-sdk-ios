@@ -22,8 +22,12 @@ public class Datadog
  public static func initialize(appContext: AppContext, configuration: Configuration)
  public static var verbosityLevel: LogLevel? = nil
  public static var debugRUM: Bool = false
- public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil)
+ public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
  public struct Configuration
+  public enum DatadogEndpoint
+   case us
+   case eu
+   case gov
   public enum LogsEndpoint
    case us
    case eu
@@ -42,6 +46,10 @@ public class Datadog
   public static func builderUsing(rumApplicationID: String, clientToken: String, environment: String) -> Builder
   public static func builderUsing(clientToken: String, environment: String) -> Builder
   public class Builder
+   public func set(endpoint: DatadogEndpoint) -> Builder
+   public func set(customLogsEndpoint: URL) -> Builder
+   public func set(customTracesEndpoint: URL) -> Builder
+   public func set(customRUMEndpoint: URL) -> Builder
    public func enableLogging(_ enabled: Bool) -> Builder
    public func set(logsEndpoint: LogsEndpoint) -> Builder
    public func enableTracing(_ enabled: Bool) -> Builder

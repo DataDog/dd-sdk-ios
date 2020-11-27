@@ -44,9 +44,9 @@ class BenchmarkTests: XCTestCase {
             appContext: .init(),
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: "rum-123", clientToken: "rum-abc", environment: "benchmarks")
-                .set(logsEndpoint: .custom(url: anyURL.absoluteString))
-                .set(tracesEndpoint: .custom(url: anyURL.absoluteString))
-                .set(rumEndpoint: .custom(url: anyURL.absoluteString))
+                .set(customLogsEndpoint: anyURL)
+                .set(customTracesEndpoint: anyURL)
+                .set(customRUMEndpoint: anyURL)
                 .build()
         )
 

@@ -7,6 +7,10 @@ public class DDDatadog: NSObject
  public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
  public static func verbosityLevel() -> DDSDKVerbosityLevel
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil)
+public class DDEndpoint: NSObject
+ public static func eu() -> DDEndpoint
+ public static func us() -> DDEndpoint
+ public static func gov() -> DDEndpoint
 public class DDLogsEndpoint: NSObject
  public static func eu() -> DDLogsEndpoint
  public static func us() -> DDLogsEndpoint
@@ -20,9 +24,11 @@ public class DDTracesEndpoint: NSObject
 public class DDConfiguration: NSObject
  public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder
 public class DDConfigurationBuilder: NSObject
- public func set(endpoint: DDLogsEndpoint)
  public func enableLogging(_ enabled: Bool)
  public func enableTracing(_ enabled: Bool)
+ public func set(endpoint: DDEndpoint)
+ public func set(customLogsEndpoint: URL)
+ public func set(customTracesEndpoint: URL)
  public func set(logsEndpoint: DDLogsEndpoint)
  public func set(tracesEndpoint: DDTracesEndpoint)
  public func set(tracedHosts: Set<String>)

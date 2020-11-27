@@ -116,87 +116,165 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(iOSAppExtensionConfiguration.common.performance, .instantDataDelivery)
     }
 
+    func testEndpoint() throws {
+        let clientToken: String = .mockRandom(among: "abcdef")
+        let randomLogsEndpoint: Datadog.Configuration.LogsEndpoint = .mockRandom()
+        let randomTracesEndpoint: Datadog.Configuration.TracesEndpoint = .mockRandom()
+        let randomRUMEndpoint: Datadog.Configuration.RUMEndpoint = .mockRandom()
+
+        func configuration(datadogEndpoint: Datadog.Configuration.DatadogEndpoint?) throws -> FeaturesConfiguration {
+            try createConfiguration(
+                clientToken: clientToken,
+                datadogEndpoint: datadogEndpoint,
+                logsEndpoint: randomLogsEndpoint,
+                tracesEndpoint: randomTracesEndpoint,
+                rumEndpoint: randomRUMEndpoint
+            )
+        }
+
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us).logging?.uploadURLWithClientToken.absoluteString,
+            "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu).logging?.uploadURLWithClientToken.absoluteString,
+            "https://mobile-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .gov).logging?.uploadURLWithClientToken.absoluteString,
+            "https://mobile-http-intake.logs.ddog-gov.com/v1/input/" + clientToken
+        )
+
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://public-trace-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .gov).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/" + clientToken
+        )
+
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .gov).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum-http-intake.logs.ddog-gov.com/v1/input/" + clientToken
+        )
+
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: nil).logging?.uploadURLWithClientToken.absoluteString,
+            randomLogsEndpoint.url + clientToken,
+            "When `DatadogEndpoint` is not set, it should default to `LogsEndpoint` value."
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: nil).tracing?.uploadURLWithClientToken.absoluteString,
+            randomTracesEndpoint.url + clientToken,
+            "When `DatadogEndpoint` is not set, it should default to `TracesEndpoint` value."
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: nil).rum?.uploadURLWithClientToken.absoluteString,
+            randomRUMEndpoint.url + clientToken,
+            "When `DatadogEndpoint` is not set, it should default to `RUMEndpoint` value."
+        )
+    }
+
     // MARK: - Logging Configuration Tests
 
-    func testLoggingConfiguration() throws {
+    func testWhenLoggingIsDisabled() throws {
         XCTAssertNil(
             try FeaturesConfiguration(configuration: .mockWith(loggingEnabled: false), appContext: .mockAny()).logging,
             "Feature configuration should not be available if the feature is disabled"
         )
+    }
+
+    func testCustomLogsEndpoint() throws {
+        let clientToken: String = .mockRandom(among: "abcdef")
+        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomCustomEndpoint: URL = .mockRandom()
+
+        let configuration = try createConfiguration(
+            clientToken: clientToken,
+            datadogEndpoint: randomDatadogEndpoint,
+            customLogsEndpoint: randomCustomEndpoint
+        )
 
         XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", logsEndpoint: .us).logging?.uploadURLWithClientToken,
-            URL(string: "https://mobile-http-intake.logs.datadoghq.com/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", logsEndpoint: .eu).logging?.uploadURLWithClientToken,
-            URL(string: "https://mobile-http-intake.logs.datadoghq.eu/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", logsEndpoint: .gov).logging?.uploadURLWithClientToken,
-            URL(string: "https://mobile-http-intake.logs.ddog-gov.com/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", logsEndpoint: .custom(url: "http://example.com/api")).logging?.uploadURLWithClientToken,
-            URL(string: "http://example.com/api/abc")!
+            configuration.logging?.uploadURLWithClientToken,
+            randomCustomEndpoint.appendingPathComponent(clientToken),
+            "When custom endpoint is set it shuold override `DatadogEndpoint`"
         )
     }
 
     // MARK: - Tracing Configuration Tests
 
-    func testTracingConfiguration() throws {
+    func testWhenTracingIsDisabled() throws {
         XCTAssertNil(
             try FeaturesConfiguration(configuration: .mockWith(tracingEnabled: false), appContext: .mockAny()).tracing,
             "Feature configuration should not be available if the feature is disabled"
         )
+    }
+
+    func testCustomTracesEndpoint() throws {
+        let clientToken: String = .mockRandom(among: "abcdef")
+        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomCustomEndpoint: URL = .mockRandom()
+
+        let configuration = try createConfiguration(
+            clientToken: clientToken,
+            datadogEndpoint: randomDatadogEndpoint,
+            customTracesEndpoint: randomCustomEndpoint
+        )
 
         XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", tracesEndpoint: .us).tracing?.uploadURLWithClientToken,
-            URL(string: "https://public-trace-http-intake.logs.datadoghq.com/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", tracesEndpoint: .eu).tracing?.uploadURLWithClientToken,
-            URL(string: "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", tracesEndpoint: .gov).tracing?.uploadURLWithClientToken,
-            URL(string: "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", tracesEndpoint: .custom(url: "http://example.com/api")).tracing?.uploadURLWithClientToken,
-            URL(string: "http://example.com/api/abc")!
+            configuration.tracing?.uploadURLWithClientToken,
+            randomCustomEndpoint.appendingPathComponent(clientToken),
+            "When custom endpoint is set it shuold override `DatadogEndpoint`"
         )
     }
 
     // MARK: - RUM Configuration Tests
 
-    func testRUMConfiguration() throws {
+    func testWhenRUMIsDisabled() throws {
         XCTAssertNil(
             try FeaturesConfiguration(configuration: .mockWith(rumEnabled: false), appContext: .mockAny()).rum,
             "Feature configuration should not be available if the feature is disabled"
         )
+    }
+
+    func testCustomRUMEndpoint() throws {
+        let clientToken: String = .mockRandom(among: "abcdef")
+        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomCustomEndpoint: URL = .mockRandom()
+
+        let configuration = try createConfiguration(
+            clientToken: clientToken,
+            datadogEndpoint: randomDatadogEndpoint,
+            customRUMEndpoint: randomCustomEndpoint
+        )
 
         XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", rumEndpoint: .us).rum?.uploadURLWithClientToken,
-            URL(string: "https://rum-http-intake.logs.datadoghq.com/v1/input/abc")!
+            configuration.rum?.uploadURLWithClientToken,
+            randomCustomEndpoint.appendingPathComponent(clientToken),
+            "When custom endpoint is set it shuold override `DatadogEndpoint`"
         )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", rumEndpoint: .eu).rum?.uploadURLWithClientToken,
-            URL(string: "https://rum-http-intake.logs.datadoghq.eu/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", rumEndpoint: .gov).rum?.uploadURLWithClientToken,
-            URL(string: "https://rum-http-intake.logs.ddog-gov.com/v1/input/abc")!
-        )
-        XCTAssertEqual(
-            try createConfiguration(clientToken: "abc", rumEndpoint: .custom(url: "http://example.com/api")).rum?.uploadURLWithClientToken,
-            URL(string: "http://example.com/api/abc")!
-        )
+    }
 
+    func testRUMSamplingRate() throws {
         let custom = try FeaturesConfiguration(
             configuration: .mockWith(
                 rumApplicationID: "rum-app-id",
-                rumEnabled: true, rumSessionsSamplingRate: 45.2
+                rumEnabled: true,
+                rumSessionsSamplingRate: 45.2
             ),
             appContext: .mockAny()
         )
@@ -244,63 +322,75 @@ class FeaturesConfigurationTests: XCTestCase {
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
+        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomCustomLogsEndpoint: URL? = Bool.random() ? .mockRandom() : nil
+        let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
+        let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
+
         let firstPartyHosts: Set<String> = ["example.com", "foo.eu"]
-        let sdkInternalURLs: Set<String> =             [
-            Datadog.Configuration.LogsEndpoint.us.url,
-            Datadog.Configuration.TracesEndpoint.us.url,
-            Datadog.Configuration.RUMEndpoint.us.url
+        let expectedSDKInternalURLs: Set<String> = [
+            randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
+            randomCustomTracesEndpoint?.absoluteString ?? randomDatadogEndpoint.tracesEndpoint.url,
+            randomCustomRUMEndpoint?.absoluteString ?? randomDatadogEndpoint.rumEndpoint.url
         ]
 
+        func createConfiguration(
+            tracingEnabled: Bool,
+            rumEnabled: Bool,
+            firstPartyHosts: Set<String>?
+        ) throws -> FeaturesConfiguration {
+            try FeaturesConfiguration(
+                configuration: .mockWith(
+                    tracingEnabled: tracingEnabled,
+                    rumEnabled: rumEnabled,
+                    datadogEndpoint: randomDatadogEndpoint,
+                    customLogsEndpoint: randomCustomLogsEndpoint,
+                    customTracesEndpoint: randomCustomTracesEndpoint,
+                    customRUMEndpoint: randomCustomRUMEndpoint,
+                    firstPartyHosts: firstPartyHosts
+                ),
+                appContext: .mockAny()
+            )
+        }
+
         // When `firstPartyHosts` are provided and both Tracing and RUM are enabled
-        var configuration = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                rumEnabled: true,
-                firstPartyHosts: firstPartyHosts
-            ),
-            appContext: .mockAny()
+        var configuration = try createConfiguration(
+            tracingEnabled: true,
+            rumEnabled: true,
+            firstPartyHosts: firstPartyHosts
         )
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, sdkInternalURLs)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
 
         // When `firstPartyHosts` are set and only Tracing is enabled
-        configuration = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                rumEnabled: false,
-                firstPartyHosts: firstPartyHosts
-            ),
-            appContext: .mockAny()
+        configuration = try createConfiguration(
+            tracingEnabled: true,
+            rumEnabled: false,
+            firstPartyHosts: firstPartyHosts
         )
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, sdkInternalURLs)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
 
-        // When `firstPartyHosts` are set and only Tracing is enabled
-        configuration = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: false,
-                rumEnabled: true,
-                firstPartyHosts: firstPartyHosts
-            ),
-            appContext: .mockAny()
+        // When `firstPartyHosts` are set and only RUM is enabled
+        configuration = try createConfiguration(
+            tracingEnabled: false,
+            rumEnabled: true,
+            firstPartyHosts: firstPartyHosts
         )
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, sdkInternalURLs)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
 
         // When `firstPartyHosts` are not set
-        configuration = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                rumEnabled: true,
-                firstPartyHosts: nil
-            ),
-            appContext: .mockAny()
+        configuration = try createConfiguration(
+            tracingEnabled: true,
+            rumEnabled: true,
+            firstPartyHosts: nil
         )
         XCTAssertNil(
             configuration.urlSessionAutoInstrumentation,
@@ -308,13 +398,10 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         // When `firstPartyHosts` are set empty
-        configuration = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                rumEnabled: true,
-                firstPartyHosts: []
-            ),
-            appContext: .mockAny()
+        configuration = try createConfiguration(
+            tracingEnabled: true,
+            rumEnabled: true,
+            firstPartyHosts: []
         )
         XCTAssertNil(
             configuration.urlSessionAutoInstrumentation,
@@ -393,6 +480,10 @@ class FeaturesConfigurationTests: XCTestCase {
 
     private func createConfiguration(
         clientToken: String = "abc",
+        datadogEndpoint: Datadog.Configuration.DatadogEndpoint? = nil,
+        customLogsEndpoint: URL? = nil,
+        customTracesEndpoint: URL? = nil,
+        customRUMEndpoint: URL? = nil,
         logsEndpoint: Datadog.Configuration.LogsEndpoint = .us,
         tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us,
         rumEndpoint: Datadog.Configuration.RUMEndpoint = .us
@@ -403,6 +494,10 @@ class FeaturesConfigurationTests: XCTestCase {
                 loggingEnabled: true,
                 tracingEnabled: true,
                 rumEnabled: true,
+                datadogEndpoint: datadogEndpoint,
+                customLogsEndpoint: customLogsEndpoint,
+                customTracesEndpoint: customTracesEndpoint,
+                customRUMEndpoint: customRUMEndpoint,
                 logsEndpoint: logsEndpoint,
                 tracesEndpoint: tracesEndpoint,
                 rumEndpoint: rumEndpoint

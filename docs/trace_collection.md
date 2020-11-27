@@ -66,7 +66,7 @@ Datadog.initialize(
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
         .set(serviceName: "app-name")
-        .set(tracesEndpoint: .eu)
+        .set(endpoint: .eu)
         .build()
 )
 ```
