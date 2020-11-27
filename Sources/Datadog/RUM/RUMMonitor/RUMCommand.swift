@@ -92,6 +92,15 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     }
 }
 
+internal struct RUMAddViewTimingCommand: RUMCommand {
+    let time: Date
+    var attributes: [AttributeKey: AttributeValue]
+
+    /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
+    /// measured since the start of the View.
+    let timingName: String
+}
+
 // MARK: - RUM Resource related commands
 
 internal protocol RUMResourceCommand: RUMCommand {

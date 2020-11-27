@@ -302,6 +302,29 @@ extension FeaturesCommonDependencies {
             launchTimeProvider: launchTimeProvider
         )
     }
+
+    /// Creates new instance of `FeaturesCommonDependencies` by replacing individual dependencies.
+    func replacing(
+        performance: PerformancePreset? = nil,
+        httpClient: HTTPClient? = nil,
+        mobileDevice: MobileDevice? = nil,
+        dateProvider: DateProvider? = nil,
+        userInfoProvider: UserInfoProvider? = nil,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
+        carrierInfoProvider: CarrierInfoProviderType? = nil,
+        launchTimeProvider: LaunchTimeProviderType? = nil
+    ) -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            performance: performance ?? self.performance,
+            httpClient: httpClient ?? self.httpClient,
+            mobileDevice: mobileDevice ?? self.mobileDevice,
+            dateProvider: dateProvider ?? self.dateProvider,
+            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider
+        )
+    }
 }
 
 class NoOpFileWriter: FileWriterType {

@@ -13,11 +13,16 @@ internal class RUMEventBuilder {
         self.userInfoProvider = userInfoProvider
     }
 
-    func createRUMEvent<DM: RUMDataModel>(with model: DM, attributes: [String: Encodable]) -> RUMEvent<DM> {
+    func createRUMEvent<DM: RUMDataModel>(
+        with model: DM,
+        attributes: [String: Encodable],
+        customTimings: [RUMViewCustomTiming]? = nil
+    ) -> RUMEvent<DM> {
         return RUMEvent(
             model: model,
             attributes: attributes,
-            userInfoAttributes: userInfoProvider.value.extraInfo
+            userInfoAttributes: userInfoProvider.value.extraInfo,
+            customViewTimings: customTimings
         )
     }
 }

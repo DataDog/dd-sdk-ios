@@ -15,6 +15,9 @@ internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     let attributes: [String: Encodable]
     let userInfoAttributes: [String: Encodable]
 
+    /// Custom View timings (only available if `DM` is a RUM View model)
+    let customViewTimings: [RUMViewCustomTiming]?
+
     func encode(to encoder: Encoder) throws {
         try RUMEventEncoder().encode(self, to: encoder)
     }
@@ -39,6 +42,9 @@ internal struct RUMEventEncoder {
         }
         try event.userInfoAttributes.forEach { attributeName, attributeValue in
             try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.usr.\(attributeName)"))
+        }
+        try event.customViewTimings?.forEach { customTiming in
+            try attributesContainer.encode(customTiming.duration, forKey: DynamicCodingKey("view.custom_timings.\(customTiming.name)"))
         }
 
         // Encode `RUMDataModel`

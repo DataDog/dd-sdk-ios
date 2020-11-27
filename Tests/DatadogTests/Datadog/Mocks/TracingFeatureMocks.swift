@@ -48,7 +48,11 @@ extension TracingFeature {
     ) -> TracingFeature {
         // Get the full feature mock:
         let fullFeature: TracingFeature = .mockWith(
-            directory: directory, dependencies: dependencies, loggingFeature: loggingFeature, tracingUUIDGenerator: tracingUUIDGenerator
+            directory: directory,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            ),
+            loggingFeature: loggingFeature, tracingUUIDGenerator: tracingUUIDGenerator
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)

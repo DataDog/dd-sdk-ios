@@ -6,6 +6,13 @@
 
 import Foundation
 
+internal struct RUMViewCustomTiming: Encodable {
+    /// Timing name.
+    let name: String
+    /// Timing duration (in nanoseconds).
+    let duration: Int64
+}
+
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
@@ -23,6 +30,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private(set) weak var identity: AnyObject?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
+    /// View custom timings.
+    private(set) var customTimings: [RUMViewCustomTiming] = []
 
     /// This View's UUID.
     let viewUUID: RUMUUID
@@ -54,12 +63,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         identity: AnyObject,
         uri: String,
         attributes: [AttributeKey: AttributeValue],
+        customTimings: [RUMViewCustomTiming],
         startTime: Date
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.identity = identity
         self.attributes = attributes
+        self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewURI = uri
         self.viewStartTime = startTime
@@ -111,6 +122,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
         case let command as RUMStopViewCommand where command.identity === identity:
             isActiveView = false
+            needsViewUpdate = true
+
+        case let command as RUMAddViewTimingCommand where isActiveView:
+            addCustomTiming(on: command)
             needsViewUpdate = true
 
         // Resource commands
@@ -207,6 +222,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
     }
 
+    private func addCustomTiming(on command: RUMAddViewTimingCommand) {
+        customTimings.append(
+            RUMViewCustomTiming(
+                name: command.timingName,
+                duration: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+            )
+        )
+    }
+
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction(on command: RUMCommand) {
@@ -271,7 +295,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(documentVersion: version.toInt64)
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
+        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
         dependencies.eventOutput.write(rumEvent: event)
     }
 
