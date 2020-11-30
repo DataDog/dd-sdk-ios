@@ -106,7 +106,8 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 dd: .init(documentVersion: .mockAny())
             ),
             attributes: ["attribute": "value"],
-            userInfoAttributes: ["str": "value", "int": 11_235, "bool": true]
+            userInfoAttributes: ["str": "value", "int": 11_235, "bool": true],
+            customViewTimings: nil
         )
     }
 }
