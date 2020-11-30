@@ -15,7 +15,9 @@ extension JSONEncoder {
             try container.encode(formatted)
         }
         if #available(iOS 13.0, OSX 10.15, *) {
-            encoder.outputFormatting = [.withoutEscapingSlashes]
+            encoder.outputFormatting = [.withoutEscapingSlashes, .sortedKeys]
+        } else {
+            encoder.outputFormatting = [.sortedKeys]
         }
         return encoder
     }
