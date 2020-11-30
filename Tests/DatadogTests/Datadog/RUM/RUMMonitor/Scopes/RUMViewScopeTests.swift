@@ -8,8 +8,6 @@ import XCTest
 import UIKit
 @testable import Datadog
 
-extension RUMViewCustomTiming: EquatableInTests {}
-
 class RUMViewScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
     private let parent = RUMContextProviderMock()
@@ -24,7 +22,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: .mockAny()
         )
 
@@ -44,7 +42,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: .mockAny()
         )
 
@@ -68,7 +66,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -98,7 +96,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -131,7 +129,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: ["foo": "bar", "fizz": "buzz"],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -164,7 +162,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -212,7 +210,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: view1,
             uri: "FirstViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -241,7 +239,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "FirstViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -270,7 +268,7 @@ class RUMViewScopeTests: XCTestCase {
                 identity: mockView,
                 uri: uri,
                 attributes: [:],
-                customTimings: [],
+                customTimings: [:],
                 startTime: .mockAny()
             )
         }
@@ -305,7 +303,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: Date()
         )
         XCTAssertTrue(
@@ -353,7 +351,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: Date()
         )
 
@@ -398,7 +396,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: Date()
         )
         XCTAssertTrue(
@@ -438,7 +436,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
         XCTAssertTrue(
@@ -479,7 +477,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
 
@@ -525,7 +523,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: Date()
         )
 
@@ -562,7 +560,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
         XCTAssertTrue(
@@ -592,13 +590,17 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let events = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataView>.self))
-        let expectedTiming1 = RUMViewCustomTiming(name: "timing-after-500000000ns", duration: 500_000_000)
-        let expectedTiming2 = RUMViewCustomTiming(name: "timing-after-1000000000ns", duration: 1_000_000_000)
 
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
-        XCTAssertEqual(events[0].customViewTimings, [])
-        XCTAssertEqual(events[1].customViewTimings, [expectedTiming1])
-        XCTAssertEqual(events[2].customViewTimings, [expectedTiming1, expectedTiming2])
+        XCTAssertEqual(events[0].customViewTimings, [:])
+        XCTAssertEqual(
+            events[1].customViewTimings,
+            ["timing-after-500000000ns": 500_000_000]
+        )
+        XCTAssertEqual(
+            events[2].customViewTimings,
+            ["timing-after-500000000ns": 500_000_000, "timing-after-1000000000ns": 1_000_000_000]
+        )
     }
 
     func testGivenInactiveView_whenCustomTimingIsRegistered_itDoesNotSendViewUpdateEvent() throws {
@@ -609,7 +611,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             uri: "UIViewController",
             attributes: [:],
-            customTimings: [],
+            customTimings: [:],
             startTime: currentTime
         )
         XCTAssertTrue(
@@ -631,6 +633,6 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let lastEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataView>.self).last)
-        XCTAssertEqual(lastEvent.customViewTimings, [])
+        XCTAssertEqual(lastEvent.customViewTimings, [:])
     }
 }

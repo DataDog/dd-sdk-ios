@@ -6,13 +6,6 @@
 
 import Foundation
 
-internal struct RUMViewCustomTiming: Encodable {
-    /// Timing name.
-    let name: String
-    /// Timing duration (in nanoseconds).
-    let duration: Int64
-}
-
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
@@ -30,8 +23,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private(set) weak var identity: AnyObject?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
-    /// View custom timings.
-    private(set) var customTimings: [RUMViewCustomTiming] = []
+    /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
+    private(set) var customTimings: [String: Int64] = [:]
 
     /// This View's UUID.
     let viewUUID: RUMUUID
@@ -63,7 +56,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         identity: AnyObject,
         uri: String,
         attributes: [AttributeKey: AttributeValue],
-        customTimings: [RUMViewCustomTiming],
+        customTimings: [String: Int64],
         startTime: Date
     ) {
         self.parent = parent
@@ -125,7 +118,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
 
         case let command as RUMAddViewTimingCommand where isActiveView:
-            addCustomTiming(on: command)
+            customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
 
         // Resource commands
@@ -219,15 +212,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             attributes: command.attributes,
             startTime: command.time,
             isContinuous: false
-        )
-    }
-
-    private func addCustomTiming(on command: RUMAddViewTimingCommand) {
-        customTimings.append(
-            RUMViewCustomTiming(
-                name: command.timingName,
-                duration: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
-            )
         )
     }
 

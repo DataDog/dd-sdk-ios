@@ -434,7 +434,7 @@ extension RUMViewScope {
         identity: AnyObject = mockView,
         uri: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        customTimings: [RUMViewCustomTiming] = [],
+        customTimings: [String: Int64] = [:],
         startTime: Date = .mockAny()
     ) -> RUMViewScope {
         return RUMViewScope(

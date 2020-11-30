@@ -16,7 +16,7 @@ internal class RUMEventBuilder {
     func createRUMEvent<DM: RUMDataModel>(
         with model: DM,
         attributes: [String: Encodable],
-        customTimings: [RUMViewCustomTiming]? = nil
+        customTimings: [String: Int64]? = nil
     ) -> RUMEvent<DM> {
         return RUMEvent(
             model: model,

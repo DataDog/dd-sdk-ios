@@ -124,7 +124,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 identity: command.identity,
                 uri: command.path,
                 attributes: command.attributes,
-                customTimings: [],
+                customTimings: [:],
                 startTime: command.time
             )
         )
