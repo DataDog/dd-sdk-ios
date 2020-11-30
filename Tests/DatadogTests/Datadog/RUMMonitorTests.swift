@@ -638,8 +638,8 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
         let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
-        XCTAssertEqual(try lastViewUpdate.attribute(forKeyPath: "view.custom_timings.timing1"), 1_000_000_000)
-        XCTAssertEqual(try lastViewUpdate.attribute(forKeyPath: "view.custom_timings.timing2"), 2_000_000_000)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing1"), 1_000_000_000)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
     }
 
     // MARK: - Thread safety
