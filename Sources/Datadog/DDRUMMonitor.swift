@@ -36,7 +36,7 @@ public class DDRUMMonitor {
     /// Adds a specific timing in the currently presented View. The timing duration will be computed as the
     /// number of nanoseconds between the time the View was started and the time the timing was added.
     /// - Parameters:
-    ///   - name: the name of the custom timing attribute.
+    ///   - name: the name of the custom timing attribute. It must be unique for each timing.
     public func addTiming(
         name: String
     ) {}
