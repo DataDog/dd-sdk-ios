@@ -19,7 +19,13 @@ class RUMStorageBenchmarkTests: XCTestCase {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "rum-benchmark")
 
-        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: .mockAny())
+        let storage = RUMFeature.createStorage(
+            directories: FeatureDirectories(
+                unauthorized: obtainUniqueTemporaryDirectory(),
+                authorized: directory
+            ),
+            commonDependencies: .mockAny()
+        )
         self.writer = storage.writer as? FileWriter
         self.reader = storage.reader as? FileReader
         self.queue = self.writer.queue

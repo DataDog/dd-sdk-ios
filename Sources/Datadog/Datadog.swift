@@ -149,7 +149,7 @@ public class Datadog {
 
         if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
-                directory: try obtainLoggingFeatureDirectory(),
+                directories: try obtainLoggingFeatureDirectories(),
                 configuration: loggingConfiguration,
                 commonDependencies: commonDependencies
             )
@@ -157,7 +157,7 @@ public class Datadog {
 
         if let tracingConfiguration = configuration.tracing {
             tracing = TracingFeature(
-                directory: try obtainTracingFeatureDirectory(),
+                directories: try obtainTracingFeatureDirectories(),
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
@@ -167,7 +167,7 @@ public class Datadog {
 
         if let rumConfiguration = configuration.rum {
             rum = RUMFeature(
-                directory: try obtainRUMFeatureDirectory(),
+                directories: try obtainRUMFeatureDirectories(),
                 configuration: rumConfiguration,
                 commonDependencies: commonDependencies
             )

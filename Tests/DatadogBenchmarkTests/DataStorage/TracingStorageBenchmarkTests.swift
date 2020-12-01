@@ -19,7 +19,13 @@ class TracingStorageBenchmarkTests: XCTestCase {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "tracing-benchmark")
 
-        let storage = TracingFeature.createStorage(directory: directory, commonDependencies: .mockAny())
+        let storage = TracingFeature.createStorage(
+            directories: FeatureDirectories(
+                unauthorized: obtainUniqueTemporaryDirectory(),
+                authorized: directory
+            ),
+            commonDependencies: .mockAny()
+        )
         self.writer = storage.writer as? FileWriter
         self.reader = storage.reader as? FileReader
         self.queue = self.writer.queue
