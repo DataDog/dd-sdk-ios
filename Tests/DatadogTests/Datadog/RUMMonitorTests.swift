@@ -474,10 +474,10 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
         let expectedUserInfo = RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com")
-        rumEventMatchers.forEach { event in
-            event.jsonMatcher.assertValue(forKey: "context.usr.str", equals: "value")
-            event.jsonMatcher.assertValue(forKey: "context.usr.int", equals: 11_235)
-            event.jsonMatcher.assertValue(forKey: "context.usr.bool", equals: true)
+        try rumEventMatchers.forEach { event in
+            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.str"), "value")
+            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.int"), 11_235)
+            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMDataAction.self) { action in
             XCTAssertEqual(action.usr, expectedUserInfo)
@@ -612,6 +612,34 @@ class RUMMonitorTests: XCTestCase {
         try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a1"), "bar1", "The value should be updated")
         try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a2"), "foo2", "The attribute should not be removed")
         try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a3"), "foo3", "The attribute should be added")
+    }
+
+    // MARK: - Sending Custom Timings
+
+    func testStartingView_thenAddingTiming() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directory: temporaryDirectory,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.addTiming(name: "timing1")
+        monitor.addTiming(name: "timing2")
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing1"), 1_000_000_000)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
     }
 
     // MARK: - Thread safety

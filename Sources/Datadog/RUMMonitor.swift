@@ -239,6 +239,18 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func addTiming(
+        name: String
+    ) {
+        process(
+            command: RUMAddViewTimingCommand(
+                time: dateProvider.currentDate(),
+                attributes: [:],
+                timingName: name
+            )
+        )
+    }
+
     override public func addError(
         message: String,
         source: RUMErrorSource,

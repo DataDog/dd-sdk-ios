@@ -20,6 +20,10 @@ internal class SendRUMFixture1ViewController: UIViewController {
         super.viewDidAppear(animated)
 
         rumMonitor.startView(viewController: self)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            rumMonitor.addTiming(name: "content-ready")
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -29,6 +33,8 @@ internal class SendRUMFixture1ViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: Any) {
+        rumMonitor.addTiming(name: "first-interaction")
+
         let simulatedResourceKey1 = "/resource/1"
         let simulatedResourceRequest1 = URLRequest(url: URL(string: "https://foo.com/resource/1")!)
         let simulatedResourceKey2 = "/resource/2"

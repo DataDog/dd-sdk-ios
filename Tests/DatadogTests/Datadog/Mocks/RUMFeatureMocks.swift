@@ -36,7 +36,12 @@ extension RUMFeature {
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
         // Get the full feature mock:
-        let fullFeature: RUMFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let fullFeature: RUMFeature = .mockWith(
+            directory: directory,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            )
+        )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
@@ -161,6 +166,18 @@ extension RUMAddCurrentViewErrorCommand {
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time, message: message, stack: stack, source: source, attributes: attributes
+        )
+    }
+}
+
+extension RUMAddViewTimingCommand {
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        timingName: String = .mockAny()
+    ) -> RUMAddViewTimingCommand {
+        return RUMAddViewTimingCommand(
+            time: time, attributes: attributes, timingName: timingName
         )
     }
 }
@@ -417,6 +434,7 @@ extension RUMViewScope {
         identity: AnyObject = mockView,
         uri: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
+        customTimings: [String: Int64] = [:],
         startTime: Date = .mockAny()
     ) -> RUMViewScope {
         return RUMViewScope(
@@ -425,6 +443,7 @@ extension RUMViewScope {
             identity: identity,
             uri: uri,
             attributes: attributes,
+            customTimings: customTimings,
             startTime: startTime
         )
     }

@@ -23,6 +23,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private(set) weak var identity: AnyObject?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
+    /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
+    private(set) var customTimings: [String: Int64] = [:]
 
     /// This View's UUID.
     let viewUUID: RUMUUID
@@ -54,12 +56,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         identity: AnyObject,
         uri: String,
         attributes: [AttributeKey: AttributeValue],
+        customTimings: [String: Int64],
         startTime: Date
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.identity = identity
         self.attributes = attributes
+        self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewURI = uri
         self.viewStartTime = startTime
@@ -111,6 +115,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
         case let command as RUMStopViewCommand where command.identity === identity:
             isActiveView = false
+            needsViewUpdate = true
+
+        case let command as RUMAddViewTimingCommand where isActiveView:
+            customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
 
         // Resource commands
@@ -271,7 +279,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(documentVersion: version.toInt64)
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
+        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
         dependencies.eventOutput.write(rumEvent: event)
     }
 
