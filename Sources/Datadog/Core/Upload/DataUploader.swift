@@ -32,6 +32,9 @@ internal class UploadURLProvider {
     }
 
     var url: URL {
+        // In RUMM-655 we've removed the last dynamic query item and this `url` may just become constant
+        // in the future.
+
         var urlComponents = URLComponents(url: urlWithClientToken, resolvingAgainstBaseURL: false)
 
         if !queryItemProviders.isEmpty {
