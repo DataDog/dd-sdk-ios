@@ -642,7 +642,6 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
     }
 
-
     // MARK: - RUM Events Dates Correction
 
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingRUMEvents_thenEventsDateUseServerTime() throws {
