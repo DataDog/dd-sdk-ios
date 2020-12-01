@@ -56,8 +56,11 @@ internal struct FeatureStorage {
             dateProvider: commonDependencies.dateProvider
         )
 
+        // TODO: RUMM-833 Share consent provider among all features
+        let consentProvider = ConsentProvider(initialConsent: .granted)
+
         let consentAwareDataWriter = ConsentAwareDataWriter(
-            initialConsent: .granted, // TODO: RUMM-830 Inject `ConsentProvider`
+            consentProvider: consentProvider,
             queue: readWriteQueue,
             unauthorizedFileWriter: FileWriter(
                 dataFormat: dataFormat,

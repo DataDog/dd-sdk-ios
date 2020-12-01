@@ -12,26 +12,35 @@ internal protocol ConsentSubscriber: class {
 
 /// Provides the current `TrackingConsent` value and notifies all subscribers on its change.
 internal class ConsentProvider {
+    private let queue = DispatchQueue(
+        label: "com.datadoghq.tracking-consent",
+        target: .global(qos: .userInteractive)
+    )
     private var subscribers: [ConsentSubscriber] = []
 
     init(initialConsent: TrackingConsent) {
-        self.currentValue = initialConsent
+        self.unsafeCurrentValue = initialConsent
     }
 
     // MARK: - Consent Value
 
-    /// The current value of `TrackingConsent`.
+    /// Unsychronized consent value. Use `self.currentValue` setter & getter.
+    private var unsafeCurrentValue: TrackingConsent
+
+    /// The current value of`TrackingConsent`.
     private(set) var currentValue: TrackingConsent {
-        didSet {
-            subscribers.forEach { subscriber in
-                subscriber.consentChanged(from: oldValue, to: currentValue)
-            }
-        }
+        get { queue.sync { unsafeCurrentValue } }
+        set { queue.async { self.unsafeCurrentValue = newValue } }
     }
 
     /// Sets the new value of `TrackingConsent` and notifies all subscribers.
     func changeConsent(to newValue: TrackingConsent) {
-        self.currentValue = newValue
+        let oldValue = currentValue
+        currentValue = newValue
+
+        subscribers.forEach { subscriber in
+            subscriber.consentChanged(from: oldValue, to: newValue)
+        }
     }
 
     // MARK: - Managing Subscribers
