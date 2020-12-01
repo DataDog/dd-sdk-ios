@@ -162,6 +162,13 @@ internal class RUMSessionMatcher {
             return firstVisitTime < secondVisitTime
         }
 
+        // Sort view events in each visit by document version
+        visits.forEach { visit in
+            visit.viewEvents = visit.viewEvents.sorted { viewUpdate1, viewUpdate2 in
+                viewUpdate1.dd.documentVersion < viewUpdate2.dd.documentVersion
+            }
+        }
+
         self.viewVisits = visitsEventOrderedByTime
     }
 }

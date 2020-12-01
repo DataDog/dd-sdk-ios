@@ -2,8 +2,11 @@
 /build
 /.build
 /.swiftpm
+Carthage/Build
+Carthage/Checkouts
+
 xcuserdata/
-instrumented-tests/DatadogSDKTesting.framework
-instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip
+instrumented-tests/DatadogSDKTesting.*
+instrumented-tests/LICENSE
 
 *.local.xcconfig

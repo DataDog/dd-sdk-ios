@@ -342,7 +342,8 @@ extension RUMScopeDependencies {
         ),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
-        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
@@ -350,7 +351,8 @@ extension RUMScopeDependencies {
             connectivityInfoProvider: connectivityInfoProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
-            rumUUIDGenerator: rumUUIDGenerator
+            rumUUIDGenerator: rumUUIDGenerator,
+            dateCorrector: dateCorrector
         )
     }
 }

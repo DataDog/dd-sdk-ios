@@ -117,5 +117,5 @@ class DebugTracingViewController: UIViewController {
 }
 
 private func wait(seconds: TimeInterval) {
-    Thread.sleep(forTimeInterval: 0.5)
+    Thread.sleep(forTimeInterval: seconds)
 }

@@ -309,6 +309,7 @@ extension FeaturesCommonDependencies {
             }
         ),
         dateProvider: DateProvider = SystemDateProvider(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -328,6 +329,7 @@ extension FeaturesCommonDependencies {
             httpClient: HTTPClient(session: .serverMockURLSession),
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
+            dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
@@ -341,6 +343,7 @@ extension FeaturesCommonDependencies {
         httpClient: HTTPClient? = nil,
         mobileDevice: MobileDevice? = nil,
         dateProvider: DateProvider? = nil,
+        dateCorrector: DateCorrectorType? = nil,
         userInfoProvider: UserInfoProvider? = nil,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
@@ -351,6 +354,7 @@ extension FeaturesCommonDependencies {
             httpClient: httpClient ?? self.httpClient,
             mobileDevice: mobileDevice ?? self.mobileDevice,
             dateProvider: dateProvider ?? self.dateProvider,
+            dateCorrector: dateCorrector ?? self.dateCorrector,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
@@ -424,6 +428,15 @@ class RelativeDateProvider: DateProvider {
         queue.async {
             self.date = self.date.addingTimeInterval(seconds)
         }
+    }
+}
+
+/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
+struct DateCorrectorMock: DateCorrectorType {
+    var correctionOffset: TimeInterval = 0
+
+    func toServerDate(deviceDate: Date) -> Date {
+        return deviceDate.addingTimeInterval(correctionOffset)
     }
 }
 

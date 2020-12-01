@@ -140,7 +140,8 @@ extension LogBuilder {
         loggerName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        dateCorrector: DateCorrectorType? = nil
     ) -> LogBuilder {
         return LogBuilder(
             applicationVersion: applicationVersion,
@@ -149,7 +150,8 @@ extension LogBuilder {
             loggerName: loggerName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            dateCorrector: dateCorrector
         )
     }
 }

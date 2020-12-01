@@ -22,10 +22,11 @@ export DD_SDK_TESTING_XCCONFIG_CI
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@carthage bootstrap --platform iOS
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
-		@brew install gh
+		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE

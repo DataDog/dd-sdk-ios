@@ -6,6 +6,12 @@
 
 @testable import Datadog
 
+private struct DateCorrectorMock: DateCorrectorType {
+    func toServerDate(deviceDate: Date) -> Date {
+        return deviceDate
+    }
+}
+
 extension FeaturesCommonDependencies {
     static func mockAny() -> Self {
         return .init(
@@ -13,6 +19,7 @@ extension FeaturesCommonDependencies {
             httpClient: HTTPClient(),
             mobileDevice: .current,
             dateProvider: SystemDateProvider(),
+            dateCorrector: DateCorrectorMock(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
             carrierInfoProvider: CarrierInfoProvider(),

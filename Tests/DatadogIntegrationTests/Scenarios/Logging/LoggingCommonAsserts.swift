@@ -21,8 +21,8 @@ extension LoggingCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios&batch_time=1589969230153`
-            let pathRegex = #"^(.*)(/ui-tests-client-token\?ddsource=ios&batch_time=)([0-9]+)$"#
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token?ddsource=ios`
+            let pathRegex = #"^(.*)(/ui-tests-client-token\?ddsource=ios)$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
                 """

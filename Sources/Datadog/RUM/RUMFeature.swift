@@ -27,6 +27,7 @@ internal final class RUMFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
+    let dateCorrector: DateCorrectorType
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -77,7 +78,6 @@ internal final class RUMFeature {
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
                     .ddsource(),
-                    .batchTime(using: commonDependencies.dateProvider),
                     .ddtags(
                         tags: [
                             "service:\(configuration.common.serviceName)",
@@ -118,6 +118,7 @@ internal final class RUMFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrector = commonDependencies.dateCorrector
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider

@@ -33,6 +33,7 @@ internal final class TracingFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
+    let dateCorrector: DateCorrectorType
     let tracingUUIDGenerator: TracingUUIDGenerator
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
@@ -81,9 +82,7 @@ internal final class TracingFeature {
             ),
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: [
-                    .batchTime(using: commonDependencies.dateProvider)
-                ]
+                queryItemProviders: []
             ),
             commonDependencies: commonDependencies
         )
@@ -124,6 +123,7 @@ internal final class TracingFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrector = commonDependencies.dateCorrector
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider

@@ -58,7 +58,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_IDENTIFIER"
-            value = "TracingScenario"
+            value = "TracingManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
