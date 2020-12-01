@@ -68,7 +68,7 @@
          <EnvironmentVariable
             key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_DISABLE_HEADERS_INJECTION"
@@ -88,11 +88,6 @@
          <EnvironmentVariable
             key = "BITRISE_SOURCE_DIR"
             value = "$(BITRISE_SOURCE_DIR)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_TRIGGERED_WORKFLOW_ID"
-            value = "$(BITRISE_TRIGGERED_WORKFLOW_ID)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -128,6 +123,16 @@
          <EnvironmentVariable
             key = "GIT_CLONE_COMMIT_HASH"
             value = "$(GIT_CLONE_COMMIT_HASH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_APP_TITLE"
+            value = "$(BITRISE_APP_TITLE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_BUILD_SLUG"
+            value = "$(BITRISE_BUILD_SLUG)"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

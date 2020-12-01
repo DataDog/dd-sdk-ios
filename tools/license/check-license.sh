@@ -17,7 +17,7 @@ function files {
 		-not -path "*Carthage/Build/*" \
 		-not -path "*Carthage/Checkouts/*" \
 		-not -path "./tools/generate-models/rum-events-format/*" \
-		-not -path "./instrumented-tests/DatadogSDKTesting.framework/*" \
+		-not -path "./instrumented-tests/DatadogSDKTesting.xcframework/*" \
 		-not -name "OTSpan.swift" \
 		-not -name "OTFormat.swift" \
 		-not -name "OTTracer.swift" \
