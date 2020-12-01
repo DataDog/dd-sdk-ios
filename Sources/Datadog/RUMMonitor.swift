@@ -187,7 +187,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         fileWriter: rumFeature.storage.writer
                     ),
                     rumUUIDGenerator: DefaultRUMUUIDGenerator(),
-                    dateCorrection: rumFeature.dateCorrection
+                    dateCorrector: rumFeature.dateCorrector
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate
             ),

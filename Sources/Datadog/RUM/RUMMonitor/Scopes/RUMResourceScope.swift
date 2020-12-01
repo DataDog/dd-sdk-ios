@@ -98,7 +98,7 @@ internal class RUMResourceScope: RUMScope {
         }
 
         let eventData = RUMDataResource(
-            date: dependencies.dateCorrection.toServerDate(deviceDate: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: dependencies.dateCorrector.toServerDate(deviceDate: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
@@ -171,7 +171,7 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMDataError(
-            date: dependencies.dateCorrection.toServerDate(deviceDate: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: dependencies.dateCorrector.toServerDate(deviceDate: command.time).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),

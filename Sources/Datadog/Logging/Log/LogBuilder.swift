@@ -23,11 +23,11 @@ internal struct LogBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given logger).
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts log's time (device time) to server time.
-    let dateCorrection: DateCorrectionType?
+    let dateCorrector: DateCorrectorType?
 
     func createLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
         return Log(
-            date: dateCorrection?.toServerDate(deviceDate: date) ?? date,
+            date: dateCorrector?.toServerDate(deviceDate: date) ?? date,
             status: logStatus(for: level),
             message: message,
             serviceName: serviceName,

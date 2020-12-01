@@ -109,7 +109,7 @@ public class Datadog {
         }
 
         let dateProvider = SystemDateProvider()
-        let dateCorrection = DateCorrection(
+        let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
             serverDateProvider: NTPServerDateProvider()
         )
@@ -145,7 +145,7 @@ public class Datadog {
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
-            dateCorrection: dateCorrection,
+            dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,

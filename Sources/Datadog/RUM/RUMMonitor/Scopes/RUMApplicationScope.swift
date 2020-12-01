@@ -15,7 +15,7 @@ internal struct RUMScopeDependencies {
     let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Adjusts RUM events time (device time) to server time.
-    let dateCorrection: DateCorrectionType
+    let dateCorrector: DateCorrectorType
 }
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {

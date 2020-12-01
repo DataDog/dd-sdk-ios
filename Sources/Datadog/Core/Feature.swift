@@ -12,7 +12,7 @@ internal struct FeaturesCommonDependencies {
     let httpClient: HTTPClient
     let mobileDevice: MobileDevice
     let dateProvider: DateProvider
-    let dateCorrection: DateCorrectionType
+    let dateCorrector: DateCorrectorType
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType

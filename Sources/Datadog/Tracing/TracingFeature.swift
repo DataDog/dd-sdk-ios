@@ -33,7 +33,7 @@ internal final class TracingFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
-    let dateCorrection: DateCorrectionType
+    let dateCorrector: DateCorrectorType
     let tracingUUIDGenerator: TracingUUIDGenerator
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
@@ -123,7 +123,7 @@ internal final class TracingFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
-        self.dateCorrection = commonDependencies.dateCorrection
+        self.dateCorrector = commonDependencies.dateCorrector
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider

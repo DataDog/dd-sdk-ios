@@ -681,7 +681,7 @@ class LoggerTests: XCTestCase {
             directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: deviceTime),
-                dateCorrection: DateCorrectionMock(correctionOffset: serverTimeDifference)
+                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
         defer { LoggingFeature.instance = nil }

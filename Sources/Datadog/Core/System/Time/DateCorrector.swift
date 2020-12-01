@@ -7,12 +7,12 @@
 import Foundation
 
 /// Adjusts device time to server time using the time difference calculated with NTP.
-internal protocol DateCorrectionType {
+internal protocol DateCorrectorType {
     /// Corrects given device time to server time using the last known time difference between the two.
     func toServerDate(deviceDate: Date) -> Date
 }
 
-internal class DateCorrection: DateCorrectionType {
+internal class DateCorrector: DateCorrectorType {
     static let datadogNTPServers = [
         "0.datadog.pool.ntp.org",
         "1.datadog.pool.ntp.org",
@@ -27,7 +27,7 @@ internal class DateCorrection: DateCorrectionType {
         self.serverDateProvider = serverDateProvider
         // swiftlint:disable trailing_closure
         serverDateProvider.synchronize(
-            with: DateCorrection.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
+            with: DateCorrector.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
             completion: { serverTime in
                 let deviceTime = deviceDateProvider.currentDate()
                 if let serverTime = serverTime {

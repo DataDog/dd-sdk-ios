@@ -659,7 +659,7 @@ class RUMMonitorTests: XCTestCase {
             directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: dateProvider,
-                dateCorrection: DateCorrectionMock(correctionOffset: serverTimeDifference)
+                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
         defer { RUMFeature.instance = nil }

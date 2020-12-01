@@ -25,7 +25,7 @@ private class ServerDateProviderMock: ServerDateProvider {
     }
 }
 
-class DateCorrectionTests: XCTestCase {
+class DateCorrectorTests: XCTestCase {
     private var previousUserLogger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
     private var userLogOutput: LogOutputMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -48,11 +48,11 @@ class DateCorrectionTests: XCTestCase {
         var randomlyChoosenServers: Set<String> = []
 
         (0..<100).forEach { _ in
-            _ = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+            _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
             randomlyChoosenServers.insert(serverDateProvider.synchronizedNTPPool!)
         }
 
-        let allAvailableServers = Set(DateCorrection.datadogNTPServers)
+        let allAvailableServers = Set(DateCorrector.datadogNTPServers)
         XCTAssertEqual(randomlyChoosenServers, allAvailableServers, "Each time Datadog NTP server should be picked randomly.")
     }
 
@@ -61,7 +61,7 @@ class DateCorrectionTests: XCTestCase {
         let deviceDateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
         // When
-        _ = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         // Then
         let log = try XCTUnwrap(userLogOutput.recordedLog)
@@ -80,7 +80,7 @@ class DateCorrectionTests: XCTestCase {
         let deviceDateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
 
         // When
-        _ = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         // Then
         let log = try XCTUnwrap(userLogOutput.recordedLog)
@@ -99,7 +99,7 @@ class DateCorrectionTests: XCTestCase {
         let deviceDateProvider = RelativeDateProvider(using: .mockAny())
 
         // When
-        let correction = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        let correction = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         // Then
         let randomDeviceTime: Date = .mockRandomInThePast()
@@ -115,7 +115,7 @@ class DateCorrectionTests: XCTestCase {
         }
 
         // When
-        let correction = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        let correction = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         // Then
         XCTAssertTrue(
@@ -156,7 +156,7 @@ class DateCorrectionTests: XCTestCase {
     func testRandomlyCallingCorrectionConcurrentlyDoesNotCrash() {
         let serverDateProvider = ServerDateProviderMock(using: .mockRandomInThePast())
         let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
-        let correction = DateCorrection(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        let correction = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         DispatchQueue.concurrentPerform(iterations: 50) { iteration in
             _ = correction.toServerDate(deviceDate: .mockRandomInThePast())

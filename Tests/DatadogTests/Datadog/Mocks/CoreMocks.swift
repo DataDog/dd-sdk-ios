@@ -309,7 +309,7 @@ extension FeaturesCommonDependencies {
             }
         ),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrection: DateCorrectionType = DateCorrectionMock(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -329,7 +329,7 @@ extension FeaturesCommonDependencies {
             httpClient: HTTPClient(session: .serverMockURLSession),
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
-            dateCorrection: dateCorrection,
+            dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
@@ -343,7 +343,7 @@ extension FeaturesCommonDependencies {
         httpClient: HTTPClient? = nil,
         mobileDevice: MobileDevice? = nil,
         dateProvider: DateProvider? = nil,
-        dateCorrection: DateCorrectionType? = nil,
+        dateCorrector: DateCorrectorType? = nil,
         userInfoProvider: UserInfoProvider? = nil,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
@@ -354,7 +354,7 @@ extension FeaturesCommonDependencies {
             httpClient: httpClient ?? self.httpClient,
             mobileDevice: mobileDevice ?? self.mobileDevice,
             dateProvider: dateProvider ?? self.dateProvider,
-            dateCorrection: dateCorrection ?? self.dateCorrection,
+            dateCorrector: dateCorrector ?? self.dateCorrector,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
@@ -431,8 +431,8 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-/// `DateCorrectionType` mock, correcting dates by adding predefined offset.
-struct DateCorrectionMock: DateCorrectionType {
+/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
+struct DateCorrectorMock: DateCorrectorType {
     var correctionOffset: TimeInterval = 0
 
     func toServerDate(deviceDate: Date) -> Date {

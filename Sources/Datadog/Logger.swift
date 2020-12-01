@@ -405,7 +405,7 @@ public class Logger {
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil,
-                dateCorrection: loggingFeature.dateCorrection
+                dateCorrector: loggingFeature.dateCorrector
             )
 
             switch (useFileOutput, useConsoleLogFormat) {
