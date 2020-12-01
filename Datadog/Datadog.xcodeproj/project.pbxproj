@@ -82,6 +82,9 @@
 		61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C472423990D00786299 /* DatadogExtensions.swift */; };
 		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		6114FDEC257659E90084E372 /* FeatureDirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */; };
+		6114FE0F257667D40084E372 /* ConsentAwareDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */; };
+		6114FE1625766B310084E372 /* TrackingConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FE1525766B310084E372 /* TrackingConsent.swift */; };
+		6114FE23257671F00084E372 /* ConsentAwareDataWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FE22257671F00084E372 /* ConsentAwareDataWriterTests.swift */; };
 		61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C36252DDD60007DD5BF /* RUMMVSViewController.swift */; };
 		61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */; };
 		61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */; };
@@ -479,6 +482,9 @@
 		61133C462423990D00786299 /* TestsDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		61133C472423990D00786299 /* DatadogExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogExtensions.swift; sourceTree = "<group>"; };
 		6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureDirectoriesMock.swift; sourceTree = "<group>"; };
+		6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentAwareDataWriter.swift; sourceTree = "<group>"; };
+		6114FE1525766B310084E372 /* TrackingConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsent.swift; sourceTree = "<group>"; };
+		6114FE22257671F00084E372 /* ConsentAwareDataWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentAwareDataWriterTests.swift; sourceTree = "<group>"; };
 		61163C36252DDD60007DD5BF /* RUMMVSViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMVSViewController.swift; sourceTree = "<group>"; };
 		61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMVSModalViewController.swift; sourceTree = "<group>"; };
 		61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMModalViewsScenarioTests.swift; sourceTree = "<group>"; };
@@ -915,6 +921,7 @@
 				61133BA92423979B00786299 /* FilesOrchestrator.swift */,
 				61133BA72423979B00786299 /* FileWriter.swift */,
 				61133BAD2423979B00786299 /* FileReader.swift */,
+				6114FE0D257667AD0084E372 /* Privacy */,
 				61133BAA2423979B00786299 /* Files */,
 			);
 			path = Persistence;
@@ -1140,6 +1147,7 @@
 				61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */,
 				61133C292423990D00786299 /* FileWriterTests.swift */,
 				61133C282423990D00786299 /* FileReaderTests.swift */,
+				6114FE21257671CB0084E372 /* Privacy */,
 				61133C2B2423990D00786299 /* Files */,
 			);
 			path = Persistence;
@@ -1236,6 +1244,23 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6114FE0D257667AD0084E372 /* Privacy */ = {
+			isa = PBXGroup;
+			children = (
+				6114FE1525766B310084E372 /* TrackingConsent.swift */,
+				6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */,
+			);
+			path = Privacy;
+			sourceTree = "<group>";
+		};
+		6114FE21257671CB0084E372 /* Privacy */ = {
+			isa = PBXGroup;
+			children = (
+				6114FE22257671F00084E372 /* ConsentAwareDataWriterTests.swift */,
+			);
+			path = Privacy;
 			sourceTree = "<group>";
 		};
 		61216277247D1F2100AC5D67 /* FeaturesIntegration */ = {
@@ -2472,6 +2497,7 @@
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
+				6114FE1625766B310084E372 /* TrackingConsent.swift in Sources */,
 				61F3C9712535AE9400E2F8C4 /* UIKitHierarchyInspector.swift in Sources */,
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
 				6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */,
@@ -2575,6 +2601,7 @@
 				61E5332C24B75C51003D6C4E /* RUMFeature.swift in Sources */,
 				61E5333D24B8791A003D6C4E /* RUMEventEncoder.swift in Sources */,
 				6156CB9D24E18600008CB2B2 /* TracingWithRUMIntegration.swift in Sources */,
+				6114FE0F257667D40084E372 /* ConsentAwareDataWriter.swift in Sources */,
 				61C5A88624509A0C00DA608C /* TracingUUIDGenerator.swift in Sources */,
 				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,
 				61C5A88C24509A0C00DA608C /* HTTPHeadersWriter.swift in Sources */,
@@ -2592,6 +2619,7 @@
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
 				61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
+				6114FE23257671F00084E372 /* ConsentAwareDataWriterTests.swift in Sources */,
 				61410167251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift in Sources */,
 				61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */,
 				61C2C20924C0C75500C0321C /* RUMSessionScopeTests.swift in Sources */,

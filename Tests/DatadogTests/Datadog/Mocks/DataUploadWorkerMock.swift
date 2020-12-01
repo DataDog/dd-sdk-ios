@@ -10,10 +10,10 @@ import XCTest
 
 /// Observers the `FileWriter` and notifies when data was written, so `DataUploaderMock` can read it immediatelly.
 private class FileWriterObserver: FileWriterType {
-    let observedWriter: FileWriter
+    let observedWriter: ConsentAwareDataWriter
     let writeCallback: (() -> Void)
 
-    init(_ observedWriter: FileWriter, writeCallback: @escaping (() -> Void)) {
+    init(_ observedWriter: ConsentAwareDataWriter, writeCallback: @escaping (() -> Void)) {
         self.observedWriter = observedWriter
         self.writeCallback = writeCallback
     }
@@ -37,7 +37,7 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     /// Observes the `FeatureStorage` to immediately capture written data.
     /// Returns new instance of the `FeatureStorage` which shuold be used instead of the original one.
     func observe(featureStorage: FeatureStorage) -> FeatureStorage {
-        let fileWriter = featureStorage.writer as! FileWriter
+        let fileWriter = featureStorage.writer as! ConsentAwareDataWriter
         let observedFileWriter = FileWriterObserver(fileWriter) { [weak self] in
             self?.readNextBatch()
         }

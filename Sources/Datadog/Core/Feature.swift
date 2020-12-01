@@ -50,9 +50,29 @@ internal struct FeatureStorage {
             performance: commonDependencies.performance,
             dateProvider: commonDependencies.dateProvider
         )
+        let unauthorizedFilesOrchestrator = FilesOrchestrator(
+            directory: directories.unauthorized,
+            performance: commonDependencies.performance,
+            dateProvider: commonDependencies.dateProvider
+        )
+
+        let consentAwareDataWriter = ConsentAwareDataWriter(
+            initialConsent: .granted, // TODO: RUMM-830 Inject `ConsentProvider`
+            queue: readWriteQueue,
+            unauthorizedFileWriter: FileWriter(
+                dataFormat: dataFormat,
+                orchestrator: unauthorizedFilesOrchestrator,
+                queue: readWriteQueue
+            ),
+            authorizedFileWriter: FileWriter(
+                dataFormat: dataFormat,
+                orchestrator: authorizedFilesOrchestrator,
+                queue: readWriteQueue
+            )
+        )
 
         self.init(
-            writer: FileWriter(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator, queue: readWriteQueue),
+            writer: consentAwareDataWriter,
             reader: FileReader(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator, queue: readWriteQueue)
         )
     }

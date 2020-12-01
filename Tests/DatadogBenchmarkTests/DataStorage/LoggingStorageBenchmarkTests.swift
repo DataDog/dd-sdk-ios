@@ -11,7 +11,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     private var queue: DispatchQueue!
     private var directory: Directory!
-    private var writer: FileWriter!
+    private var writer: ConsentAwareDataWriter!
     private var reader: FileReader!
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -26,7 +26,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             ),
             commonDependencies: .mockAny()
         )
-        self.writer = storage.writer as? FileWriter
+        self.writer = storage.writer as? ConsentAwareDataWriter
         self.reader = storage.reader as? FileReader
         self.queue = self.writer.queue
 
