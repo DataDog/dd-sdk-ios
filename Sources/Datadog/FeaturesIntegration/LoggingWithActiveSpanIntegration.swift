@@ -16,17 +16,22 @@ internal struct LoggingWithActiveSpanIntegration {
     /// Produces `Log` attributes describing the current active span.
     /// Returns `nil` and prints warning if global `Tracer` is not registered.
     var activeSpanAttributes: [String: Encodable]? {
-        guard let tracer = Global.sharedTracer as? Tracer else {
-            userLogger.warn("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
-            return nil
-        }
-
-        if let activeSpanContext = tracer.activeSpan?.context as? DDSpanContext {
+        let tracer = Global.sharedTracer as? Tracer
+        if let tracer = tracer,
+            let activeSpanContext = tracer.activeSpan?.context as? DDSpanContext {
             return [
                 Attributes.traceID: "\(activeSpanContext.traceID.rawValue)",
                 Attributes.spanID: "\(activeSpanContext.spanID.rawValue)"
             ]
+        } else if let environmentContext = Global.environmentContext {
+            return [
+                Attributes.traceID: "\(environmentContext.traceID.rawValue)",
+                Attributes.spanID: "\(environmentContext.spanID.rawValue)"
+            ]
         } else {
+            if tracer == nil {
+                userLogger.warn("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
+            }
             return nil
         }
     }

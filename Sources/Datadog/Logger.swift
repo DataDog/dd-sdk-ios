@@ -392,7 +392,7 @@ public class Logger {
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
                 rumContextIntegration: (RUMFeature.isEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                activeSpanIntegration: (TracingFeature.isEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
+                activeSpanIntegration: ((TracingFeature.isEnabled && bundleWithTrace) || (Global.environmentContext != nil)) ? LoggingWithActiveSpanIntegration() : nil
             )
         }
 

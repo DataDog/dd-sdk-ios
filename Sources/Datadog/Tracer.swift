@@ -174,9 +174,9 @@ public class Tracer: OTTracer {
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: parentSpanContext?.traceID ?? (Global.environmentContext?.traceID ?? tracingUUIDGenerator.generateUnique()),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentSpanContext?.spanID,
+            parentSpanID: parentSpanContext?.spanID ?? Global.environmentContext?.spanID,
             baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
         )
     }
