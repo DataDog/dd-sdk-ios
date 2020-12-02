@@ -19,6 +19,10 @@ class ConsentAwareDataWriterTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
     private let unauthorizedWriter = FileWriterMock()
     private let authorizedWriter = FileWriterMock()
+    private lazy var dataProcessorFactory = DataProcessorFactory(
+        unauthorizedFileWriter: unauthorizedWriter,
+        authorizedFileWriter: authorizedWriter
+    )
 
     override func setUp() {
         super.setUp()
@@ -37,8 +41,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .granted),
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // Then
@@ -54,8 +57,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .pending),
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // Then
@@ -71,8 +73,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .notGranted),
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // Then
@@ -91,8 +92,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // When
@@ -112,8 +112,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // When
@@ -133,8 +132,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // When
@@ -159,8 +157,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            dataProcessorFactory: dataProcessorFactory
         )
 
         DispatchQueue.concurrentPerform(iterations: 10_000) { iteration in

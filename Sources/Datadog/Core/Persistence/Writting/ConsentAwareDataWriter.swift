@@ -11,28 +11,20 @@ import Foundation
 internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
     /// Queue used to synchronize reads and writes for the feature.
     internal let readWriteQueue: DispatchQueue
-    /// File writer writting unauthorized data when consent is `.pending`.
-    private let unauthorizedFileWriter: Writer
-    /// File writer writting authorized data when consent is `.granted`.
-    private let authorizedFileWriter: Writer
+    /// Creates data processors depending on the tracking consent value.
+    private let dataProcessorFactory: DataProcessorFactory
 
-    /// File writer for current consent value (including `nil` if consent is `.notGranted`).
-    private var activeFileWriter: Writer?
+    /// Data processor for current tracking consent.
+    private var processor: DataProcessor?
 
     init(
         consentProvider: ConsentProvider,
         readWriteQueue: DispatchQueue,
-        unauthorizedFileWriter: Writer,
-        authorizedFileWriter: Writer
+        dataProcessorFactory: DataProcessorFactory
     ) {
         self.readWriteQueue = readWriteQueue
-        self.unauthorizedFileWriter = unauthorizedFileWriter
-        self.authorizedFileWriter = authorizedFileWriter
-        self.activeFileWriter = resolveActiveFileWriter(
-            for: consentProvider.currentValue,
-            unauthorizedWriter: unauthorizedFileWriter,
-            authorizedWriter: authorizedFileWriter
-        )
+        self.dataProcessorFactory = dataProcessorFactory
+        self.processor = dataProcessorFactory.resolveProcessor(for: consentProvider.currentValue)
 
         consentProvider.subscribe(consentSubscriber: self)
     }
@@ -41,7 +33,7 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
 
     func write<T>(value: T) where T: Encodable {
         readWriteQueue.async {
-            self.activeFileWriter?.write(value: value)
+            self.processor?.write(value: value)
         }
     }
 
@@ -49,24 +41,7 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
 
     func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
         readWriteQueue.async {
-            self.activeFileWriter = resolveActiveFileWriter(
-                for: newValue,
-                unauthorizedWriter: self.unauthorizedFileWriter,
-                authorizedWriter: self.authorizedFileWriter
-            )
+            self.processor = self.dataProcessorFactory.resolveProcessor(for: newValue)
         }
-    }
-}
-
-// TODO: RUMM-831 Move writer resolution to `DataProcessorFactory`
-private func resolveActiveFileWriter(
-    for consent: TrackingConsent,
-    unauthorizedWriter: Writer,
-    authorizedWriter: Writer
-) -> Writer? {
-    switch consent {
-    case .granted: return authorizedWriter
-    case .notGranted: return nil
-    case .pending: return unauthorizedWriter
     }
 }

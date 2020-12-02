@@ -63,13 +63,15 @@ internal struct FeatureStorage {
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: readWriteQueue,
-            unauthorizedFileWriter: FileWriter(
-                dataFormat: dataFormat,
-                orchestrator: unauthorizedFilesOrchestrator
-            ),
-            authorizedFileWriter: FileWriter(
-                dataFormat: dataFormat,
-                orchestrator: authorizedFilesOrchestrator
+            dataProcessorFactory: DataProcessorFactory(
+                unauthorizedFileWriter: FileWriter(
+                    dataFormat: dataFormat,
+                    orchestrator: unauthorizedFilesOrchestrator
+                ),
+                authorizedFileWriter: FileWriter(
+                    dataFormat: dataFormat,
+                    orchestrator: authorizedFilesOrchestrator
+                )
             )
         )
 

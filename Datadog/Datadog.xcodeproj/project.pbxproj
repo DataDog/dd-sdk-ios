@@ -222,6 +222,7 @@
 		6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */; };
 		61940C7C25668EC600A20043 /* URLSessionInterceptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
+		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		61A763DC252DB2B3005A23F2 /* NSURLSessionBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 61A763DB252DB2B3005A23F2 /* NSURLSessionBridge.m */; };
 		61A9238E256FCAA2009B9667 /* DateCorrectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9238D256FCAA2009B9667 /* DateCorrectionTests.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
@@ -653,6 +654,7 @@
 		6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASCollectionViewController.swift; sourceTree = "<group>"; };
 		61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptionHandler.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
+		619E16D72577C1CB00B2516B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
 		61A763D9252DB2B3005A23F2 /* DatadogTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DatadogTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		61A763DA252DB2B3005A23F2 /* NSURLSessionBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSURLSessionBridge.h; sourceTree = "<group>"; };
 		61A763DB252DB2B3005A23F2 /* NSURLSessionBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSURLSessionBridge.m; sourceTree = "<group>"; };
@@ -1464,6 +1466,7 @@
 				613E79272577B0EE00DFCC17 /* Writer.swift */,
 				6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */,
 				61133BA72423979B00786299 /* FileWriter.swift */,
+				619E16D62577C19F00B2516B /* Processing */,
 			);
 			path = Writting;
 			sourceTree = "<group>";
@@ -1865,6 +1868,14 @@
 				61133C282423990D00786299 /* FileReaderTests.swift */,
 			);
 			path = Reading;
+			sourceTree = "<group>";
+		};
+		619E16D62577C19F00B2516B /* Processing */ = {
+			isa = PBXGroup;
+			children = (
+				619E16D72577C1CB00B2516B /* DataProcessor.swift */,
+			);
+			path = Processing;
 			sourceTree = "<group>";
 		};
 		61B03872252724AB00518F3C /* URLSessionAutoInstrumentation */ = {
@@ -2697,6 +2708,7 @@
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
 				61B038542527246D00518F3C /* URLSessionSwizzler.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
+				619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */,
 				614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */,
 				61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
