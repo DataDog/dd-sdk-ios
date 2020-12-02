@@ -20,7 +20,6 @@ class LogFileOutputTests: XCTestCase {
 
     func testItWritesLogToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
-        let queue = DispatchQueue(label: "com.datadohq.testItWritesCurrentDateToLogs")
         let output = LogFileOutput(
             logBuilder: .mockAny(),
             fileWriter: FileWriter(
@@ -32,19 +31,16 @@ class LogFileOutputTests: XCTestCase {
                         uploadPerformance: .noOp
                     ),
                     dateProvider: fileCreationDateProvider
-                ),
-                queue: queue
+                )
             ),
             rumErrorsIntegration: nil
         )
 
         output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: .mockAny(), tags: [])
-        queue.sync {} // wait on writter queue
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
         output.writeLogWith(level: .info, message: "log message 2", date: .mockAny(), attributes: .mockAny(), tags: [])
-        queue.sync {} // wait on writter queue
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let log1Data = try temporaryDirectory.file(named: log1FileName).read()

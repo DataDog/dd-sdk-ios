@@ -11,8 +11,8 @@ class TracingStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     private var queue: DispatchQueue!
     private var directory: Directory!
-    private var writer: ConsentAwareDataWriter!
-    private var reader: FileReader!
+    private var writer: Writer!
+    private var reader: Reader!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
@@ -26,9 +26,9 @@ class TracingStorageBenchmarkTests: XCTestCase {
             ),
             commonDependencies: .mockAny()
         )
-        self.writer = storage.writer as? ConsentAwareDataWriter
-        self.reader = storage.reader as? FileReader
-        self.queue = self.writer.queue
+        self.writer = storage.writer
+        self.reader = storage.reader
+        self.queue = (storage.writer as! ConsentAwareDataWriter).readWriteQueue
 
         XCTAssertTrue(try directory.files().count == 0)
     }

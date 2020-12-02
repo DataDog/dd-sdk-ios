@@ -6,10 +6,14 @@
 
 import Foundation
 
-internal struct RUMEventFileOutput: RUMEventOutput {
-    let fileWriter: Writer
+internal struct Batch {
+    let data: Data
+    /// File from which `data` was read.
+    let file: ReadableFile
+}
 
-    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {
-        fileWriter.write(value: rumEvent)
-    }
+/// A type, reading batched data.
+internal protocol Reader {
+    func readNextBatch() -> Batch?
+    func markBatchAsRead(_ batch: Batch)
 }

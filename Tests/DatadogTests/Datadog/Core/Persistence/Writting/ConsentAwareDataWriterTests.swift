@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-private class FileWriterMock: FileWriterType {
+private class FileWriterMock: Writer {
     var dataWritten: Encodable?
 
     func write<T>(value: T) where T: Encodable {
@@ -36,7 +36,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .granted),
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )
@@ -53,7 +53,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .pending),
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )
@@ -70,7 +70,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .notGranted),
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )
@@ -90,7 +90,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )
@@ -111,7 +111,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )
@@ -132,7 +132,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )
@@ -158,7 +158,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: randomConsent())
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
+            readWriteQueue: queue,
             unauthorizedFileWriter: unauthorizedWriter,
             authorizedFileWriter: authorizedWriter
         )

@@ -8,8 +8,6 @@ import XCTest
 @testable import Datadog
 
 class FileWriterTests: XCTestCase {
-    private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
-
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
@@ -21,23 +19,19 @@ class FileWriterTests: XCTestCase {
     }
 
     func testItWritesDataToSingleFile() throws {
-        let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
             dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: PerformancePreset.default,
                 dateProvider: SystemDateProvider()
-            ),
-            queue: queue
+            )
         )
 
         writer.write(value: ["key1": "value1"])
         writer.write(value: ["key2": "value3"])
         writer.write(value: ["key3": "value3"])
 
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 1, handler: nil)
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         XCTAssertEqual(
             try temporaryDirectory.files()[0].read(),
@@ -46,8 +40,6 @@ class FileWriterTests: XCTestCase {
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
-        let expectation1 = self.expectation(description: "write completed")
-        let expectation2 = self.expectation(description: "second write completed")
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 
@@ -68,27 +60,21 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
                 ),
                 dateProvider: SystemDateProvider()
-            ),
-            queue: queue
+            )
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
 
-        waitForWritesCompletion(on: queue, thenFulfill: expectation1)
-        wait(for: [expectation1], timeout: 1)
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data)
 
         writer.write(value: ["key2": "value3 that makes it exceed 17 bytes"]) // will be dropped
 
-        waitForWritesCompletion(on: queue, thenFulfill: expectation2)
-        wait(for: [expectation2], timeout: 1)
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
         XCTAssertEqual(output.recordedLog?.level, .error)
         XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: data exceeds the maximum size of 17 bytes.")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
-        let expectation = self.expectation(description: "write completed")
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 
@@ -101,21 +87,16 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.default,
                 dateProvider: SystemDateProvider()
-            ),
-            queue: queue
+            )
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
-
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 1, handler: nil)
 
         XCTAssertEqual(output.recordedLog?.level, .error)
         XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: failed to encode `FailingEncodable`.")
     }
 
     func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
-        let expectation = self.expectation(description: "write completed")
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 
@@ -128,17 +109,13 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.default,
                 dateProvider: SystemDateProvider()
-            ),
-            queue: queue
+            )
         )
 
         writer.write(value: ["ok"]) // will create the file
-        queue.async { try? temporaryDirectory.files()[0].makeReadonly() }
+        try? temporaryDirectory.files()[0].makeReadonly()
         writer.write(value: ["won't be written"])
-        queue.async { try? temporaryDirectory.files()[0].makeReadWrite() }
-
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 1, handler: nil)
+        try? temporaryDirectory.files()[0].makeReadWrite()
 
         XCTAssertEqual(output.recordedLog?.level, .error)
         XCTAssertNotNil(output.recordedLog?.message)
@@ -147,7 +124,6 @@ class FileWriterTests: XCTestCase {
 
     /// NOTE: Test added after incident-4797
     func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
-        let expectation = self.expectation(description: "write completed")
         let writer = FileWriter(
             dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
@@ -162,8 +138,7 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: .max
                 ),
                 dateProvider: SystemDateProvider()
-            ),
-            queue: queue
+            )
         )
 
         let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")
@@ -184,8 +159,7 @@ class FileWriterTests: XCTestCase {
         }
 
         ioInterruptionQueue.sync { }
-        waitForWritesCompletion(on: queue, thenFulfill: expectation)
-        waitForExpectations(timeout: 7, handler: nil)
+
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
 
         let fileData = try temporaryDirectory.files()[0].read()
@@ -196,9 +170,5 @@ class FileWriterTests: XCTestCase {
         // Assert that some (including all) `Foo`s were written
         XCTAssertGreaterThan(writtenData.count, 0)
         XCTAssertLessThanOrEqual(writtenData.count, 300)
-    }
-
-    private func waitForWritesCompletion(on queue: DispatchQueue, thenFulfill expectation: XCTestExpectation) {
-        queue.async { expectation.fulfill() }
     }
 }

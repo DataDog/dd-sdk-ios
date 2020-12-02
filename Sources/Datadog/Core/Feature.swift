@@ -32,9 +32,9 @@ internal struct FeaturesCommonDependencies {
 
 internal struct FeatureStorage {
     /// Writes data to files.
-    let writer: FileWriterType
+    let writer: Writer
     /// Reads data from files.
-    let reader: FileReaderType
+    let reader: Reader
 
     init(
         featureName: String,
@@ -62,26 +62,29 @@ internal struct FeatureStorage {
 
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: readWriteQueue,
+            readWriteQueue: readWriteQueue,
             unauthorizedFileWriter: FileWriter(
                 dataFormat: dataFormat,
-                orchestrator: unauthorizedFilesOrchestrator,
-                queue: readWriteQueue
+                orchestrator: unauthorizedFilesOrchestrator
             ),
             authorizedFileWriter: FileWriter(
                 dataFormat: dataFormat,
-                orchestrator: authorizedFilesOrchestrator,
-                queue: readWriteQueue
+                orchestrator: authorizedFilesOrchestrator
             )
+        )
+
+        let dataReader = DataReader(
+            readWriteQueue: readWriteQueue,
+            fileReader: FileReader(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator)
         )
 
         self.init(
             writer: consentAwareDataWriter,
-            reader: FileReader(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator, queue: readWriteQueue)
+            reader: dataReader
         )
     }
 
-    init(writer: FileWriterType, reader: FileReaderType) {
+    init(writer: Writer, reader: Reader) {
         self.writer = writer
         self.reader = reader
     }
