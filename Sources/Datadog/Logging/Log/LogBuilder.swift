@@ -27,7 +27,7 @@ internal struct LogBuilder {
 
     func createLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
         return Log(
-            date: dateCorrector?.toServerDate(deviceDate: date) ?? date,
+            date: dateCorrector?.currentCorrection.adjustToServerDate(date) ?? date,
             status: logStatus(for: level),
             message: message,
             serviceName: serviceName,

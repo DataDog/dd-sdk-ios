@@ -7,8 +7,8 @@
 @testable import Datadog
 
 private struct DateCorrectorMock: DateCorrectorType {
-    func toServerDate(deviceDate: Date) -> Date {
-        return deviceDate
+    var currentCorrection: DateCorrection {
+        return DateCorrection(serverToDeviceTimeDifference: 0)
     }
 }
 

@@ -6,10 +6,21 @@
 
 import Foundation
 
-/// Adjusts device time to server time using the time difference calculated with NTP.
+/// Calculates the date correction for adjusting device time to server time.
 internal protocol DateCorrectorType {
-    /// Corrects given device time to server time using the last known time difference between the two.
-    func toServerDate(deviceDate: Date) -> Date
+    /// Returns recent date correction for adjusting device time to server time.
+    var currentCorrection: DateCorrection { get }
+}
+
+/// Date correction for adjusting device time to server time.
+internal struct DateCorrection {
+    /// The difference between server time and device time known at the time of creating this `DateCorrection`.
+    let serverToDeviceTimeDifference: TimeInterval
+
+    /// Adjusts given `deviceDate` to server time using the difference known at the time of creating this `DateCorrection`.
+    func adjustToServerDate(_ deviceDate: Date) -> Date {
+        return deviceDate.addingTimeInterval(serverToDeviceTimeDifference)
+    }
 }
 
 internal class DateCorrector: DateCorrectorType {
@@ -51,13 +62,14 @@ internal class DateCorrector: DateCorrectorType {
         // swiftlint:enable trailing_closure
     }
 
-    func toServerDate(deviceDate: Date) -> Date {
+    var currentCorrection: DateCorrection {
         if let serverTime = serverDateProvider.currentDate() {
             let deviceTime = deviceDateProvider.currentDate()
-            let timeDifference = serverTime.timeIntervalSince(deviceTime)
-            return deviceDate.addingTimeInterval(timeDifference)
+            return DateCorrection(
+                serverToDeviceTimeDifference: serverTime.timeIntervalSince(deviceTime)
+            )
         } else {
-            return deviceDate
+            return DateCorrection(serverToDeviceTimeDifference: 0)
         }
     }
 }

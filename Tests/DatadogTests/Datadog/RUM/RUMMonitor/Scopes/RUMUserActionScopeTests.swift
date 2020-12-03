@@ -28,6 +28,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .swipe,
             attributes: [:],
             startTime: .mockAny(),
+            dateCorrection: .zero,
             isContinuous: .mockAny()
         )
 
@@ -68,6 +69,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .swipe,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -108,6 +110,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .swipe,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -132,6 +135,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -183,6 +187,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -215,6 +220,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -245,6 +251,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .swipe,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: false
         )
 
@@ -271,6 +278,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: false
         )
 
@@ -325,6 +333,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .scroll,
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             isContinuous: false
         )
 

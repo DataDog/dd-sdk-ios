@@ -32,6 +32,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewURI: String
     /// The start time of this View.
     private let viewStartTime: Date
+    /// Date correction to server time.
+    private let dateCorrection: DateCorrection
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
@@ -67,6 +69,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewURI = uri
         self.viewStartTime = startTime
+        self.dateCorrection = dependencies.dateCorrector.currentCorrection
     }
 
     // MARK: - RUMContextProvider
@@ -184,6 +187,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             resourceKey: command.resourceKey,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             url: command.url,
             httpMethod: command.httpMethod,
             resourceKindBasedOnRequest: command.kind,
@@ -199,6 +203,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             isContinuous: true
         )
     }
@@ -211,6 +216,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             isContinuous: false
         )
     }
@@ -219,7 +225,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendApplicationStartAction(on command: RUMCommand) {
         let eventData = RUMDataAction(
-            date: dependencies.dateCorrector.toServerDate(deviceDate: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.adjustToServerDate(viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
@@ -252,7 +258,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMDataView(
-            date: dependencies.dateCorrector.toServerDate(deviceDate: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.adjustToServerDate(viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
@@ -287,7 +293,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMDataError(
-            date: dependencies.dateCorrector.toServerDate(deviceDate: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.adjustToServerDate(command.time).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
