@@ -635,4 +635,75 @@ class RUMViewScopeTests: XCTestCase {
         let lastEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataView>.self).last)
         XCTAssertEqual(lastEvent.customViewTimings, [:])
     }
+
+    // MARK: - Dates Correction
+
+    func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {
+        let initialDeviceTime: Date = .mockDecember15th2019At10AMUTC()
+        let initialServerTimeOffset: TimeInterval = 120 // 2 minutes
+        let dateCorrectorMock = DateCorrectorMock(correctionOffset: initialServerTimeOffset)
+
+        var currentDeviceTime = initialDeviceTime
+
+        // Given
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies.replacing(dateCorrector: dateCorrectorMock),
+            identity: mockView,
+            uri: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: initialDeviceTime
+        )
+
+        // When
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentDeviceTime, identity: mockView))
+
+        dateCorrectorMock.correctionOffset = .random(in: -10...10) // randomize server time offset
+        currentDeviceTime.addTimeInterval(1) // advance device time
+
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentDeviceTime)
+        )
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentDeviceTime)
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentDeviceTime)
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2", time: currentDeviceTime)
+        )
+        _ = scope.process(
+            command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentDeviceTime)
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: currentDeviceTime)
+        )
+
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentDeviceTime, identity: mockView))
+
+        // Then
+        let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataView>.self)
+        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self)
+        let errorEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataError>.self)
+        let actionEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataAction>.self)
+
+        let initialRealTime = initialDeviceTime.addingTimeInterval(initialServerTimeOffset)
+        let expectedViewEventsDate = initialRealTime.timeIntervalSince1970.toInt64Milliseconds
+        let expectedOtherEventsDate = initialRealTime.addingTimeInterval(1).timeIntervalSince1970.toInt64Milliseconds
+
+        viewEvents.forEach { view in
+            XCTAssertEqual(view.model.date, expectedViewEventsDate)
+        }
+        resourceEvents.forEach { view in
+            XCTAssertEqual(view.model.date, expectedOtherEventsDate)
+        }
+        errorEvents.forEach { view in
+            XCTAssertEqual(view.model.date, expectedOtherEventsDate)
+        }
+        actionEvents.forEach { view in
+            XCTAssertEqual(view.model.date, expectedOtherEventsDate)
+        }
+    }
 }

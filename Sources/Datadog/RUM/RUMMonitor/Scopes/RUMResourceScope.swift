@@ -23,6 +23,8 @@ internal class RUMResourceScope: RUMScope {
     private var resourceURL: String
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
+    /// Date correction to server time.
+    private let dateCorrection: DateCorrection
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMHTTPMethod
     /// The Resource kind captured when starting the `URLRequest`.
@@ -42,6 +44,7 @@ internal class RUMResourceScope: RUMScope {
         resourceKey: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
+        dateCorrection: DateCorrection,
         url: String,
         httpMethod: RUMHTTPMethod,
         resourceKindBasedOnRequest: RUMResourceKind?,
@@ -54,6 +57,7 @@ internal class RUMResourceScope: RUMScope {
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
+        self.dateCorrection = dateCorrection
         self.resourceHTTPMethod = httpMethod
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
@@ -98,7 +102,7 @@ internal class RUMResourceScope: RUMScope {
         }
 
         let eventData = RUMDataResource(
-            date: dependencies.dateCorrector.toServerDate(deviceDate: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
@@ -171,7 +175,7 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMDataError(
-            date: dependencies.dateCorrector.toServerDate(deviceDate: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),

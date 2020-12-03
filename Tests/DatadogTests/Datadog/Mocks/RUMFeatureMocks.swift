@@ -355,6 +355,27 @@ extension RUMScopeDependencies {
             dateCorrector: dateCorrector
         )
     }
+
+    /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
+    func replacing(
+        userInfoProvider: RUMUserInfoProvider? = nil,
+        launchTimeProvider: LaunchTimeProviderType? = nil,
+        connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
+        eventBuilder: RUMEventBuilder? = nil,
+        eventOutput: RUMEventOutput? = nil,
+        rumUUIDGenerator: RUMUUIDGenerator? = nil,
+        dateCorrector: DateCorrectorType? = nil
+    ) -> RUMScopeDependencies {
+        return RUMScopeDependencies(
+            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
+            connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
+            eventBuilder: eventBuilder ?? self.eventBuilder,
+            eventOutput: eventOutput ?? self.eventOutput,
+            rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
+            dateCorrector: dateCorrector ?? self.dateCorrector
+        )
+    }
 }
 
 extension RUMApplicationScope {

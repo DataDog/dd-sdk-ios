@@ -431,12 +431,22 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
-struct DateCorrectorMock: DateCorrectorType {
-    var correctionOffset: TimeInterval = 0
+extension DateCorrection {
+    static var zero: DateCorrection {
+        return DateCorrection(serverTimeOffset: 0)
+    }
+}
 
-    func toServerDate(deviceDate: Date) -> Date {
-        return deviceDate.addingTimeInterval(correctionOffset)
+/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
+class DateCorrectorMock: DateCorrectorType {
+    var correctionOffset: TimeInterval
+
+    init(correctionOffset: TimeInterval = 0) {
+        self.correctionOffset = correctionOffset
+    }
+
+    var currentCorrection: DateCorrection {
+        return DateCorrection(serverTimeOffset: correctionOffset)
     }
 }
 
