@@ -8,7 +8,7 @@
 
 private struct DateCorrectorMock: DateCorrectorType {
     var currentCorrection: DateCorrection {
-        return DateCorrection(serverToDeviceTimeDifference: 0)
+        return DateCorrection(serverTimeOffset: 0)
     }
 }
 

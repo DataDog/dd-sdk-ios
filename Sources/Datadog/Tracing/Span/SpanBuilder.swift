@@ -52,7 +52,7 @@ internal struct SpanBuilder {
             operationName: ddspan.operationName,
             serviceName: serviceName,
             resource: tagsReducer.extractedResourceName ?? ddspan.operationName,
-            startTime: dateCorrector.currentCorrection.adjustToServerDate(ddspan.startTime),
+            startTime: dateCorrector.currentCorrection.applying(to: ddspan.startTime),
             duration: finishTime.timeIntervalSince(ddspan.startTime),
             isError: tagsReducer.extractedIsError ?? false,
             tracerVersion: sdkVersion,

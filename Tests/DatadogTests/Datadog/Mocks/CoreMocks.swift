@@ -433,7 +433,7 @@ class RelativeDateProvider: DateProvider {
 
 extension DateCorrection {
     static var zero: DateCorrection {
-        return DateCorrection(serverToDeviceTimeDifference: 0)
+        return DateCorrection(serverTimeOffset: 0)
     }
 }
 
@@ -446,7 +446,7 @@ class DateCorrectorMock: DateCorrectorType {
     }
 
     var currentCorrection: DateCorrection {
-        return DateCorrection(serverToDeviceTimeDifference: correctionOffset)
+        return DateCorrection(serverTimeOffset: correctionOffset)
     }
 }
 

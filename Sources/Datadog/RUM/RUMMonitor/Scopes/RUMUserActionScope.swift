@@ -115,7 +115,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         }
 
         let eventData = RUMDataAction(
-            date: dateCorrection.adjustToServerDate(actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             application: .init(id: context.rumApplicationID),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),

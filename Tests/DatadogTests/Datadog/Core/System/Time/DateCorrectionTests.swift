@@ -103,7 +103,7 @@ class DateCorrectorTests: XCTestCase {
 
         // Then
         let randomDeviceTime: Date = .mockRandomInThePast()
-        XCTAssertEqual(corrector.currentCorrection.adjustToServerDate(randomDeviceTime), randomDeviceTime)
+        XCTAssertEqual(corrector.currentCorrection.applying(to: randomDeviceTime), randomDeviceTime)
     }
 
     func testWhenServerTimeIsAvailable_itCorrectsDatesByTimeDifference() {
@@ -120,7 +120,7 @@ class DateCorrectorTests: XCTestCase {
         // Then
         XCTAssertTrue(
             datesEqual(
-                corrector.currentCorrection.adjustToServerDate(deviceDateProvider.currentDate()),
+                corrector.currentCorrection.applying(to: deviceDateProvider.currentDate()),
                 serverDateProvider.currentDate()!
             ),
             "The device current time should be corrected to the server time."
@@ -129,7 +129,7 @@ class DateCorrectorTests: XCTestCase {
         let randomDeviceTime: Date = .mockRandomInThePast()
         XCTAssertTrue(
             datesEqual(
-                corrector.currentCorrection.adjustToServerDate(randomDeviceTime),
+                corrector.currentCorrection.applying(to: randomDeviceTime),
                 randomDeviceTime.addingTimeInterval(currentTimeDifference())
             ),
             "Any device time should be corrected by the server-to-device time difference."
@@ -138,7 +138,7 @@ class DateCorrectorTests: XCTestCase {
         serverDateProvider.serverTime = .mockRandomInThePast()
         XCTAssertTrue(
             datesEqual(
-                corrector.currentCorrection.adjustToServerDate(randomDeviceTime),
+                corrector.currentCorrection.applying(to: randomDeviceTime),
                 randomDeviceTime.addingTimeInterval(currentTimeDifference())
             ),
             "When the server time goes on, any next correction should include new server-to-device time difference."
@@ -159,7 +159,7 @@ class DateCorrectorTests: XCTestCase {
         let corrector = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         DispatchQueue.concurrentPerform(iterations: 50) { iteration in
-            _ = corrector.currentCorrection.adjustToServerDate(.mockRandomInThePast())
+            _ = corrector.currentCorrection.applying(to: .mockRandomInThePast())
         }
     }
 }

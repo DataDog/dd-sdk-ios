@@ -15,11 +15,11 @@ internal protocol DateCorrectorType {
 /// Date correction for adjusting device time to server time.
 internal struct DateCorrection {
     /// The difference between server time and device time known at the time of creating this `DateCorrection`.
-    let serverToDeviceTimeDifference: TimeInterval
+    let serverTimeOffset: TimeInterval
 
-    /// Adjusts given `deviceDate` to server time using the difference known at the time of creating this `DateCorrection`.
-    func adjustToServerDate(_ deviceDate: Date) -> Date {
-        return deviceDate.addingTimeInterval(serverToDeviceTimeDifference)
+    /// Applies this correction to given `deviceDate` to represent it in server time.
+    func applying(to deviceDate: Date) -> Date {
+        return deviceDate.addingTimeInterval(serverTimeOffset)
     }
 }
 
@@ -66,10 +66,10 @@ internal class DateCorrector: DateCorrectorType {
         if let serverTime = serverDateProvider.currentDate() {
             let deviceTime = deviceDateProvider.currentDate()
             return DateCorrection(
-                serverToDeviceTimeDifference: serverTime.timeIntervalSince(deviceTime)
+                serverTimeOffset: serverTime.timeIntervalSince(deviceTime)
             )
         } else {
-            return DateCorrection(serverToDeviceTimeDifference: 0)
+            return DateCorrection(serverTimeOffset: 0)
         }
     }
 }
