@@ -1035,8 +1035,8 @@ class TracerTests: XCTestCase {
         TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
-        setenv("x-datadog-trace-id", String(TracingUUID(rawValue: 111_111).rawValue), 1)
-        setenv("x-datadog-parent-id", String(TracingUUID(rawValue: 222_222).rawValue), 1)
+        setenv("x-datadog-trace-id", "111111", 1)
+        setenv("x-datadog-parent-id", "222222", 1)
 
         let tracer = Tracer.initialize(configuration: .init()).dd
         let queue = DispatchQueue(label: "\(#function)-queue")
@@ -1072,8 +1072,8 @@ class TracerTests: XCTestCase {
         TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         defer { TracingFeature.instance = nil }
 
-        setenv("x-datadog-trace-id", String(TracingUUID(rawValue: 111_111).rawValue), 1)
-        setenv("x-datadog-parent-id", String(TracingUUID(rawValue: 222_222).rawValue), 1)
+        setenv("x-datadog-trace-id", "111111", 1)
+        setenv("x-datadog-parent-id", "222222", 1)
 
         let tracer = Tracer.initialize(configuration: .init()).dd
         let queue1 = DispatchQueue(label: "\(#function)-queue1")

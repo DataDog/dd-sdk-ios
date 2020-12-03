@@ -675,8 +675,8 @@ class LoggerTests: XCTestCase {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { LoggingFeature.instance = nil }
 
-        setenv("x-datadog-trace-id", String(TracingUUID(rawValue: 111_111).rawValue), 1)
-        setenv("x-datadog-parent-id", String(TracingUUID(rawValue: 222_222).rawValue), 1)
+        setenv("x-datadog-trace-id", "111111", 1)
+        setenv("x-datadog-parent-id", "222222", 1)
 
         TracingFeature.instance = .mockNoOp()
         defer { TracingFeature.instance = nil }
@@ -695,19 +695,19 @@ class LoggerTests: XCTestCase {
         // then
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID,
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.traceID,
             equals: "\(span.context.dd.traceID.rawValue)"
         )
         logMatchers[0].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID,
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.spanID,
             equals: "\(span.context.dd.spanID.rawValue)"
         )
         logMatchers[1].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID,
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.traceID,
             equals: "\(TracingUUID(rawValue: 111_111).rawValue)"
         )
         logMatchers[1].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID,
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.spanID,
             equals: "\(TracingUUID(rawValue: 222_222).rawValue)"
         )
 

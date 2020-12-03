@@ -53,6 +53,8 @@ public class Logger {
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
     /// Integration with Tracing. `nil` if disabled for this Logger or if the Tracing feature disabled.
     internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
+    /// Integration with Span context injected by environment.
+    internal let environmentSpanIntegration = LoggingWithEnvironmentSpanIntegration()
 
     init(
         logOutput: LogOutput,
@@ -247,6 +249,8 @@ public class Logger {
         }
         if let activeSpanAttributes = activeSpanIntegration?.activeSpanAttributes {
             combinedInternalAttributes.merge(activeSpanAttributes) { $1 }
+        } else if let environmentSpanAttributes = environmentSpanIntegration.environmentSpanAttributes {
+            combinedInternalAttributes.merge(environmentSpanAttributes) { $1 }
         }
 
         let tags = queue.sync {
@@ -392,7 +396,7 @@ public class Logger {
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
                 rumContextIntegration: (RUMFeature.isEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                activeSpanIntegration: ((TracingFeature.isEnabled && bundleWithTrace) || (Global.environmentContext != nil)) ? LoggingWithActiveSpanIntegration() : nil
+                activeSpanIntegration: (TracingFeature.isEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
             )
         }
 
