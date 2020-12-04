@@ -345,12 +345,6 @@
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9EF963E82537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */; };
 		9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */; };
-		B33C98F52571133E00F92F3B /* DdLogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C98EA2571133D00F92F3B /* DdLogs.swift */; };
-		B33C98F62571133E00F92F3B /* DdRum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C98EB2571133D00F92F3B /* DdRum.swift */; };
-		B33C98F72571133E00F92F3B /* DdTrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C98EC2571133D00F92F3B /* DdTrace.swift */; };
-		B3BB8393257526C100E80154 /* Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB8390257526C100E80154 /* Bridge.swift */; };
-		B3BB8394257526C100E80154 /* DdSdk.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB8391257526C100E80154 /* DdSdk.swift */; };
-		B3BB8395257526C100E80154 /* DdSdkConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB8392257526C100E80154 /* DdSdkConfiguration.swift */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
 		E1D202EA24C065CF00D1AF3A /* ActiveSpansPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */; };
@@ -766,12 +760,6 @@
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
 		9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDURLSessionDelegateAsSuperclassTests.swift; sourceTree = "<group>"; };
 		9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPartyURLsFilter.swift; sourceTree = "<group>"; };
-		B33C98EA2571133D00F92F3B /* DdLogs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DdLogs.swift; path = ../../Sources/Bridge/DdLogs.swift; sourceTree = "<group>"; };
-		B33C98EB2571133D00F92F3B /* DdRum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DdRum.swift; path = ../../Sources/Bridge/DdRum.swift; sourceTree = "<group>"; };
-		B33C98EC2571133D00F92F3B /* DdTrace.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DdTrace.swift; path = ../../Sources/Bridge/DdTrace.swift; sourceTree = "<group>"; };
-		B3BB8390257526C100E80154 /* Bridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Bridge.swift; path = ../../Sources/Bridge/Bridge.swift; sourceTree = "<group>"; };
-		B3BB8391257526C100E80154 /* DdSdk.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DdSdk.swift; path = ../../Sources/Bridge/DdSdk.swift; sourceTree = "<group>"; };
-		B3BB8392257526C100E80154 /* DdSdkConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DdSdkConfiguration.swift; path = ../../Sources/Bridge/DdSdkConfiguration.swift; sourceTree = "<group>"; };
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		E1B082CB25641DF9002DB9D2 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
@@ -838,7 +826,6 @@
 		61133B78242393DE00786299 = {
 			isa = PBXGroup;
 			children = (
-				B33C98E32571131600F92F3B /* Bridge */,
 				61133B9C2423979B00786299 /* Datadog */,
 				61133C082423983800786299 /* DatadogObjc */,
 				9E68FB52244707FD0013A8AA /* _Datadog_Private */,
@@ -2221,19 +2208,6 @@
 			path = DatadogIntegrationTests;
 			sourceTree = "<group>";
 		};
-		B33C98E32571131600F92F3B /* Bridge */ = {
-			isa = PBXGroup;
-			children = (
-				B3BB8390257526C100E80154 /* Bridge.swift */,
-				B3BB8391257526C100E80154 /* DdSdk.swift */,
-				B3BB8392257526C100E80154 /* DdSdkConfiguration.swift */,
-				B33C98EA2571133D00F92F3B /* DdLogs.swift */,
-				B33C98EB2571133D00F92F3B /* DdRum.swift */,
-				B33C98EC2571133D00F92F3B /* DdTrace.swift */,
-			);
-			path = Bridge;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2550,7 +2524,6 @@
 				61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */,
 				61E909EF24A24DD3005EA2DE /* Global.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
-				B3BB8394257526C100E80154 /* DdSdk.swift in Sources */,
 				6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
 				61F3C9712535AE9400E2F8C4 /* UIKitHierarchyInspector.swift in Sources */,
@@ -2564,7 +2537,6 @@
 				61E909F224A24DD3005EA2DE /* OTConstants.swift in Sources */,
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
 				61C5A8A724509FAA00DA608C /* SpanBuilder.swift in Sources */,
-				B3BB8393257526C100E80154 /* Bridge.swift in Sources */,
 				6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */,
 				61AD4E3824531500006E34EA /* DataFormat.swift in Sources */,
 				9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */,
@@ -2589,7 +2561,6 @@
 				618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */,
 				9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */,
 				61B0386C2527247B00518F3C /* TaskInterception.swift in Sources */,
-				B33C98F52571133E00F92F3B /* DdLogs.swift in Sources */,
 				61B03892252724D900518F3C /* HTTPHeadersReader.swift in Sources */,
 				61B0384E2527246900518F3C /* URLSessionAutoInstrumentation.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
@@ -2602,10 +2573,8 @@
 				61B0385A2527247000518F3C /* DDURLSessionDelegate.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				6149FB3A2529D17F00EE387A /* InternalURLsFilter.swift in Sources */,
-				B33C98F72571133E00F92F3B /* DdTrace.swift in Sources */,
 				618DCFD724C7265300589570 /* RUMUUID.swift in Sources */,
 				61B038662527247800518F3C /* URLSessionInterceptor.swift in Sources */,
-				B3BB8395257526C100E80154 /* DdSdkConfiguration.swift in Sources */,
 				61B03898252724DE00518F3C /* TracingHTTPHeaders.swift in Sources */,
 				9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */,
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
@@ -2641,7 +2610,6 @@
 				61B22E5A24F3E6B700DC26D2 /* RUMDebugging.swift in Sources */,
 				61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */,
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
-				B33C98F62571133E00F92F3B /* DdRum.swift in Sources */,
 				61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */,
 				61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */,
 				61FF281E24B8968D000B3D9B /* RUMEventBuilder.swift in Sources */,

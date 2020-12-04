@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
-  s.name         = "DatadogSDK"
-  s.module_name  = "Datadog"
-  s.version      = "1.4.0-beta1"
-  s.summary      = "Official Datadog Swift SDK for iOS."
+  s.name         = "DatadogSDKBridge"
+  s.module_name  = "DatadogBridge"
+  s.version      = "0.0.1"
+  s.summary      = "Official Datadog SDK Bridge for cross-platform projects."
   
   s.homepage     = "https://www.datadoghq.com"
   s.social_media_url   = "https://twitter.com/datadoghq"
@@ -18,11 +18,7 @@ Pod::Spec.new do |s|
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
-  s.source_files = ["Sources/Datadog/**/*.swift",
-                    "Sources/_Datadog_Private/**/*.{h,m}",
-                    "Datadog/TargetSupport/Datadog/Datadog.h"]
-  s.public_header_files = "Datadog/TargetSupport/Datadog/Datadog.h"
-  s.private_header_files = "Sources/_Datadog_Private/include/*.h"
-  s.module_map = "Sources/Datadog/Datadog.modulemap"
+  s.source_files = ["Sources/Bridge/**/*.swift"]
+  s.dependency 'DatadogSDK'
   s.dependency 'Kronos', '~> 4.1'
 end
