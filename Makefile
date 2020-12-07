@@ -7,11 +7,11 @@ tools:
 		@echo "OK 👌"
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.3.0
+DD_SDK_SWIFT_TESTING_VERSION = 0.4.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
-FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/\n
-LD_RUNPATH_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/\n
+FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
@@ -22,15 +22,17 @@ export DD_SDK_TESTING_XCCONFIG_CI
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@carthage bootstrap --platform iOS
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
-		@brew install gh
-		@rm -rf instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip
-		@rm -rf instrumented-tests/DatadogSDKTesting.framework
-		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.framework-iphonesimulator.zip"
-		@unzip instrumented-tests/DatadogSDKTesting.framework-iphonesimulator.zip -d instrumented-tests
-		@[ -e "instrumented-tests/DatadogSDKTesting.framework" ] && echo "DatadogSDKTesting.framework - OK" || { echo "DatadogSDKTesting.framework - missing"; exit 1; }
+		@brew list gh &>/dev/null || brew install gh
+		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
+		@rm -rf instrumented-tests/DatadogSDKTesting.zip
+		@rm -rf instrumented-tests/LICENSE
+		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
+		@unzip instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
+		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."

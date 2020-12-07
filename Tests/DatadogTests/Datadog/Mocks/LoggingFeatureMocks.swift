@@ -35,7 +35,12 @@ extension LoggingFeature {
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
         // Get the full feature mock:
-        let fullFeature: LoggingFeature = .mockWith(directories: directories, dependencies: dependencies)
+        let fullFeature: LoggingFeature = .mockWith(
+            directories: directories,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            )
+        )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
@@ -135,7 +140,8 @@ extension LogBuilder {
         loggerName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        dateCorrector: DateCorrectorType? = nil
     ) -> LogBuilder {
         return LogBuilder(
             applicationVersion: applicationVersion,
@@ -144,7 +150,8 @@ extension LogBuilder {
             loggerName: loggerName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            dateCorrector: dateCorrector
         )
     }
 }

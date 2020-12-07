@@ -186,7 +186,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),
-                    rumUUIDGenerator: DefaultRUMUUIDGenerator()
+                    rumUUIDGenerator: DefaultRUMUUIDGenerator(),
+                    dateCorrector: rumFeature.dateCorrector
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate
             ),
@@ -235,6 +236,18 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 identity: viewController
+            )
+        )
+    }
+
+    override public func addTiming(
+        name: String
+    ) {
+        process(
+            command: RUMAddViewTimingCommand(
+                time: dateProvider.currentDate(),
+                attributes: [:],
+                timingName: name
             )
         )
     }

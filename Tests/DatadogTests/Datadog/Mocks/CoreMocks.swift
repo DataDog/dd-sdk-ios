@@ -309,6 +309,7 @@ extension FeaturesCommonDependencies {
             }
         ),
         dateProvider: DateProvider = SystemDateProvider(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -328,10 +329,36 @@ extension FeaturesCommonDependencies {
             httpClient: HTTPClient(session: .serverMockURLSession),
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
+            dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
             launchTimeProvider: launchTimeProvider
+        )
+    }
+
+    /// Creates new instance of `FeaturesCommonDependencies` by replacing individual dependencies.
+    func replacing(
+        performance: PerformancePreset? = nil,
+        httpClient: HTTPClient? = nil,
+        mobileDevice: MobileDevice? = nil,
+        dateProvider: DateProvider? = nil,
+        dateCorrector: DateCorrectorType? = nil,
+        userInfoProvider: UserInfoProvider? = nil,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
+        carrierInfoProvider: CarrierInfoProviderType? = nil,
+        launchTimeProvider: LaunchTimeProviderType? = nil
+    ) -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            performance: performance ?? self.performance,
+            httpClient: httpClient ?? self.httpClient,
+            mobileDevice: mobileDevice ?? self.mobileDevice,
+            dateProvider: dateProvider ?? self.dateProvider,
+            dateCorrector: dateCorrector ?? self.dateCorrector,
+            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider
         )
     }
 }
@@ -401,6 +428,25 @@ class RelativeDateProvider: DateProvider {
         queue.async {
             self.date = self.date.addingTimeInterval(seconds)
         }
+    }
+}
+
+extension DateCorrection {
+    static var zero: DateCorrection {
+        return DateCorrection(serverTimeOffset: 0)
+    }
+}
+
+/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
+class DateCorrectorMock: DateCorrectorType {
+    var correctionOffset: TimeInterval
+
+    init(correctionOffset: TimeInterval = 0) {
+        self.correctionOffset = correctionOffset
+    }
+
+    var currentCorrection: DateCorrection {
+        return DateCorrection(serverTimeOffset: correctionOffset)
     }
 }
 

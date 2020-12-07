@@ -36,7 +36,12 @@ extension RUMFeature {
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
         // Get the full feature mock:
-        let fullFeature: RUMFeature = .mockWith(directories: directories, dependencies: dependencies)
+        let fullFeature: RUMFeature = .mockWith(
+            directories: directories,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            )
+        )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
@@ -161,6 +166,18 @@ extension RUMAddCurrentViewErrorCommand {
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time, message: message, stack: stack, source: source, attributes: attributes
+        )
+    }
+}
+
+extension RUMAddViewTimingCommand {
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        timingName: String = .mockAny()
+    ) -> RUMAddViewTimingCommand {
+        return RUMAddViewTimingCommand(
+            time: time, attributes: attributes, timingName: timingName
         )
     }
 }
@@ -325,7 +342,8 @@ extension RUMScopeDependencies {
         ),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
-        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
@@ -333,7 +351,29 @@ extension RUMScopeDependencies {
             connectivityInfoProvider: connectivityInfoProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
-            rumUUIDGenerator: rumUUIDGenerator
+            rumUUIDGenerator: rumUUIDGenerator,
+            dateCorrector: dateCorrector
+        )
+    }
+
+    /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
+    func replacing(
+        userInfoProvider: RUMUserInfoProvider? = nil,
+        launchTimeProvider: LaunchTimeProviderType? = nil,
+        connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
+        eventBuilder: RUMEventBuilder? = nil,
+        eventOutput: RUMEventOutput? = nil,
+        rumUUIDGenerator: RUMUUIDGenerator? = nil,
+        dateCorrector: DateCorrectorType? = nil
+    ) -> RUMScopeDependencies {
+        return RUMScopeDependencies(
+            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
+            connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
+            eventBuilder: eventBuilder ?? self.eventBuilder,
+            eventOutput: eventOutput ?? self.eventOutput,
+            rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
+            dateCorrector: dateCorrector ?? self.dateCorrector
         )
     }
 }
@@ -417,6 +457,7 @@ extension RUMViewScope {
         identity: AnyObject = mockView,
         uri: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
+        customTimings: [String: Int64] = [:],
         startTime: Date = .mockAny()
     ) -> RUMViewScope {
         return RUMViewScope(
@@ -425,6 +466,7 @@ extension RUMViewScope {
             identity: identity,
             uri: uri,
             attributes: attributes,
+            customTimings: customTimings,
             startTime: startTime
         )
     }

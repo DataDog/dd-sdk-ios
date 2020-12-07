@@ -474,10 +474,10 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
         let expectedUserInfo = RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com")
-        rumEventMatchers.forEach { event in
-            event.jsonMatcher.assertValue(forKey: "context.usr.str", equals: "value")
-            event.jsonMatcher.assertValue(forKey: "context.usr.int", equals: 11_235)
-            event.jsonMatcher.assertValue(forKey: "context.usr.bool", equals: true)
+        try rumEventMatchers.forEach { event in
+            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.str"), "value")
+            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.int"), 11_235)
+            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMDataAction.self) { action in
             XCTAssertEqual(action.usr, expectedUserInfo)
@@ -612,6 +612,97 @@ class RUMMonitorTests: XCTestCase {
         try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a1"), "bar1", "The value should be updated")
         try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a2"), "foo2", "The attribute should not be removed")
         try XCTAssertEqual(lastViewUpdate.attribute(forKeyPath: "context.a3"), "foo3", "The attribute should be added")
+    }
+
+    // MARK: - Sending Custom Timings
+
+    func testStartingView_thenAddingTiming() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.addTiming(name: "timing1")
+        monitor.addTiming(name: "timing2")
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing1"), 1_000_000_000)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
+    }
+
+    // MARK: - RUM Events Dates Correction
+
+    func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingRUMEvents_thenEventsDateUseServerTime() throws {
+        // Given
+        let deviceTime: Date = .mockDecember15th2019At10AMUTC()
+        var serverTimeDifference = TimeInterval.random(in: 600..<1_200).rounded() // 10 - 20 minutes difference
+        serverTimeDifference = serverTimeDifference * (Bool.random() ? 1 : -1) // positive or negative difference
+        let dateProvider = RelativeDateProvider(
+            startingFrom: deviceTime,
+            advancingBySeconds: 1 // short advancing, so all events will be collected less than a minute after `deviceTime`
+        )
+
+        // When
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: dateProvider,
+                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        monitor.startView(viewController: mockView)
+        monitor.addUserAction(type: .tap, name: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
+        monitor.addError(message: .mockAny())
+
+        // Then
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 10)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
+
+        let viewEvents = session.viewVisits[0].viewEvents
+        let actionEvents = session.viewVisits[0].actionEvents
+        let resourceEvents = session.viewVisits[0].resourceEvents
+        let errorEvents = session.viewVisits[0].errorEvents
+
+        XCTAssertGreaterThan(viewEvents.count, 0)
+        XCTAssertGreaterThan(actionEvents.count, 0)
+        XCTAssertGreaterThan(resourceEvents.count, 0)
+        XCTAssertGreaterThan(errorEvents.count, 0)
+
+        // All RUM events should be send later than or equal this earliest server time
+        let earliestServerTime = deviceTime.addingTimeInterval(serverTimeDifference).timeIntervalSince1970.toInt64Milliseconds
+
+        viewEvents.forEach { view in
+            XCTAssertGreaterThanOrEqual(view.date, earliestServerTime, "Event `date` should be adjusted to server time")
+        }
+        actionEvents.forEach { action in
+            XCTAssertGreaterThanOrEqual(action.date, earliestServerTime, "Event `date` should be adjusted to server time")
+        }
+        resourceEvents.forEach { resource in
+            XCTAssertGreaterThanOrEqual(resource.date, earliestServerTime, "Event `date` should be adjusted to server time")
+        }
+        errorEvents.forEach { error in
+            XCTAssertGreaterThanOrEqual(error.date, earliestServerTime, "Event `date` should be adjusted to server time")
+        }
     }
 
     // MARK: - Thread safety

@@ -48,7 +48,11 @@ extension TracingFeature {
     ) -> TracingFeature {
         // Get the full feature mock:
         let fullFeature: TracingFeature = .mockWith(
-            directories: directories, dependencies: dependencies, loggingFeature: loggingFeature, tracingUUIDGenerator: tracingUUIDGenerator
+            directories: directories,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            ),
+            loggingFeature: loggingFeature, tracingUUIDGenerator: tracingUUIDGenerator
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
@@ -193,7 +197,8 @@ extension SpanBuilder {
         serviceName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock()
     ) -> SpanBuilder {
         return SpanBuilder(
             applicationVersion: applicationVersion,
@@ -201,7 +206,8 @@ extension SpanBuilder {
             serviceName: serviceName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            dateCorrector: dateCorrector
         )
     }
 }

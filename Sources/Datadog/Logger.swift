@@ -404,7 +404,8 @@ public class Logger {
                 loggerName: resolveLoggerName(for: loggingFeature),
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil
+                carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil,
+                dateCorrector: loggingFeature.dateCorrector
             )
 
             switch (useFileOutput, useConsoleLogFormat) {

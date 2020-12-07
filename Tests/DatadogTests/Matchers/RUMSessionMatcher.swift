@@ -53,6 +53,9 @@ internal class RUMSessionMatcher {
         /// `RUMView` events tracked during this visit.
         fileprivate(set) var viewEvents: [RUMDataView] = []
 
+        /// `RUMEventMatchers` corresponding to item in `viewEvents`.
+        fileprivate(set) var viewEventMatchers: [RUMEventMatcher] = []
+
         /// `RUMAction` events tracked during this visit.
         fileprivate(set) var actionEvents: [RUMDataAction] = []
 
@@ -81,8 +84,8 @@ internal class RUMSessionMatcher {
 
         // Get RUM Events by kind:
 
-        let viewEvents: [RUMDataView] = try (eventsMatchersByType["view"] ?? [])
-            .map { matcher in try matcher.model() }
+        let viewEventMatchers = eventsMatchersByType["view"] ?? []
+        let viewEvents: [RUMDataView] = try viewEventMatchers.map { matcher in try matcher.model() }
 
         let actionEvents: [RUMDataAction] = try (eventsMatchersByType["action"] ?? [])
             .map { matcher in try matcher.model() }
@@ -103,10 +106,11 @@ internal class RUMSessionMatcher {
         var visitsByViewID: [String: ViewVisit] = [:]
         visits.forEach { visit in visitsByViewID[visit.viewID] = visit }
 
-        // Group RUM Events by View Visits:
-        try viewEvents.forEach { rumEvent in
+        // Group RUM Events and their matchers by View Visits:
+        try zip(viewEvents, viewEventMatchers).forEach { rumEvent, matcher in
             if let visit = visitsByViewID[rumEvent.view.id] {
                 visit.viewEvents.append(rumEvent)
+                visit.viewEventMatchers.append(matcher)
                 if visit.path.isEmpty {
                     visit.path = rumEvent.view.url
                 } else if visit.path != rumEvent.view.url {
@@ -156,6 +160,13 @@ internal class RUMSessionMatcher {
             let firstVisitTime = firstVisit.viewEvents[0].date
             let secondVisitTime = secondVisit.viewEvents[0].date
             return firstVisitTime < secondVisitTime
+        }
+
+        // Sort view events in each visit by document version
+        visits.forEach { visit in
+            visit.viewEvents = visit.viewEvents.sorted { viewUpdate1, viewUpdate2 in
+                viewUpdate1.dd.documentVersion < viewUpdate2.dd.documentVersion
+            }
         }
 
         self.viewVisits = visitsEventOrderedByTime

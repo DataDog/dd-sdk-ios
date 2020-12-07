@@ -582,7 +582,7 @@ class TracerTests: XCTestCase {
         )
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.person"),
-            #"{"name":"Adam","age":30,"nationality":"Polish"}"#
+            #"{"age":30,"name":"Adam","nationality":"Polish"}"#
         )
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.nested.string"), "hello")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.url"), "https://example.com/image.png")
@@ -794,6 +794,42 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
         XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
         XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
+    }
+
+    // MARK: - Span Dates Correction
+
+    func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingSpans_thenSpanDateUsesServerTime() throws {
+        // Given
+        let deviceTime: Date = .mockDecember15th2019At10AMUTC()
+        let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
+
+        // When
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(using: deviceTime),
+                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
+            )
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+
+        let span = tracer.startSpan(operationName: .mockAny())
+        span.finish(at: deviceTime.addingTimeInterval(2)) // 2 seconds long span
+
+        // Then
+        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        XCTAssertEqual(
+            try spanMatcher.startTime(),
+            deviceTime.addingTimeInterval(serverTimeDifference).timeIntervalSince1970.toNanoseconds,
+            "The `startTime` should be using server time."
+        )
+        XCTAssertEqual(
+            try spanMatcher.duration(),
+            2_000_000_000,
+            "The `duration` should remain unaffected."
+        )
     }
 
     // MARK: - Thread safety

@@ -109,6 +109,10 @@ public class Datadog {
         }
 
         let dateProvider = SystemDateProvider()
+        let dateCorrector = DateCorrector(
+            deviceDateProvider: dateProvider,
+            serverDateProvider: NTPServerDateProvider()
+        )
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
@@ -141,6 +145,7 @@ public class Datadog {
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
+            dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,

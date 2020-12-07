@@ -25,7 +25,7 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
     /// `DataUploader` leaves no memory footprint (the memory peak after upload is less or equal `0kB`).
     func testUploadingDataToServer_leavesNoMemoryFootprint() throws {
         let dataUploader = DataUploader(
-            urlProvider: mockUniqueUploadURLProvider(),
+            urlProvider: mockUploadURLProvider(),
             httpClient: HTTPClient(),
             httpHeaders: HTTPHeaders(headers: [])
         )
@@ -42,17 +42,10 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
         }
     }
 
-    /// Creates the `UploadURLProvider` giving an unique URL for each upload.
-    /// URLs are differentiated by the value of `batch` query item.
-    private func mockUniqueUploadURLProvider() -> UploadURLProvider {
-        struct BatchTimeProvider: DateProvider {
-            func currentDate() -> Date {
-                Date(timeIntervalSince1970: .random(in: 0..<1_000_000))
-            }
-        }
+    private func mockUploadURLProvider() -> UploadURLProvider {
         return UploadURLProvider(
             urlWithClientToken: server.obtainUniqueRecordingSession().recordingURL,
-            queryItemProviders: [.batchTime(using: BatchTimeProvider())]
+            queryItemProviders: [.ddtags(tags: ["foo:bar"])]
         )
     }
 }
