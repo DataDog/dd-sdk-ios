@@ -43,6 +43,24 @@ internal struct Directory {
             .contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])
             .map { url in File(url: url) }
     }
+
+    /// Deletes all files in this directory.
+    func deleteAllFiles() throws {
+        // Instead of iterating over all files and removing them one by one, we create a temporary
+        // empty directory and replace source directory content with (empty) temporary folder.
+        // This makes the deletion atomic, and is more performant in benchmarks.
+        let temporaryDirectory = try Directory(withSubdirectoryPath: "com.datadoghq/\(UUID().uuidString)")
+        _ = try FileManager.default.replaceItemAt(url, withItemAt: temporaryDirectory.url)
+        try? FileManager.default.removeItem(at: temporaryDirectory.url)
+    }
+
+    /// Moves all files from this directory to `destinationDirectory`.
+    func moveAllFilesTo(_ destinationDirectory: Directory) throws {
+        try files().forEach { file in
+            let destinationFileURL = destinationDirectory.url.appendingPathComponent(file.name)
+            try? FileManager.default.moveItem(at: file.url, to: destinationFileURL)
+        }
+    }
 }
 
 /// Creates subdirectory at given path in `/Library/Caches` if it does not exist. Might throw `ProgrammerError` when it's not possible.

@@ -223,6 +223,8 @@
 		61940C7C25668EC600A20043 /* URLSessionInterceptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
+		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
+		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
 		61A763DC252DB2B3005A23F2 /* NSURLSessionBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 61A763DB252DB2B3005A23F2 /* NSURLSessionBridge.m */; };
 		61A9238E256FCAA2009B9667 /* DateCorrectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9238D256FCAA2009B9667 /* DateCorrectionTests.swift */; };
 		61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */; };
@@ -317,6 +319,10 @@
 		61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917CE2464270500E6C631 /* EncodableValueTests.swift */; };
 		61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D02465423600E6C631 /* TracerConfiguration.swift */; };
 		61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */; };
+		61EF7890257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF788F257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift */; };
+		61EF789B257E2B0200EDCCB3 /* DataMigratorBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF789A257E2B0200EDCCB3 /* DataMigratorBenchmarkTests.swift */; };
+		61EF78B1257E2E7A00EDCCB3 /* MoveDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78B0257E2E7A00EDCCB3 /* MoveDataMigrator.swift */; };
+		61EF78B7257E37D500EDCCB3 /* MoveDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */; };
 		61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A6192498A51700075390 /* CoreMocks.swift */; };
 		61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A620249A45E400075390 /* DDSpanContextTests.swift */; };
 		61F1A623249B811200075390 /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A622249B811200075390 /* Encoding.swift */; };
@@ -655,6 +661,8 @@
 		61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptionHandler.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
 		619E16D72577C1CB00B2516B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
+		619E16E82578E73E00B2516B /* DataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigrator.swift; sourceTree = "<group>"; };
+		619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAllDataMigrator.swift; sourceTree = "<group>"; };
 		61A763D9252DB2B3005A23F2 /* DatadogTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DatadogTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		61A763DA252DB2B3005A23F2 /* NSURLSessionBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSURLSessionBridge.h; sourceTree = "<group>"; };
 		61A763DB252DB2B3005A23F2 /* NSURLSessionBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSURLSessionBridge.m; sourceTree = "<group>"; };
@@ -744,6 +752,10 @@
 		61E917CE2464270500E6C631 /* EncodableValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableValueTests.swift; sourceTree = "<group>"; };
 		61E917D02465423600E6C631 /* TracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfiguration.swift; sourceTree = "<group>"; };
 		61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfigurationTests.swift; sourceTree = "<group>"; };
+		61EF788F257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAllDataMigratorTests.swift; sourceTree = "<group>"; };
+		61EF789A257E2B0200EDCCB3 /* DataMigratorBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigratorBenchmarkTests.swift; sourceTree = "<group>"; };
+		61EF78B0257E2E7A00EDCCB3 /* MoveDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveDataMigrator.swift; sourceTree = "<group>"; };
+		61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveDataMigratorTests.swift; sourceTree = "<group>"; };
 		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
 		61F1A620249A45E400075390 /* DDSpanContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanContextTests.swift; sourceTree = "<group>"; };
 		61F1A622249B811200075390 /* Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
@@ -966,6 +978,7 @@
 				61133BA92423979B00786299 /* FilesOrchestrator.swift */,
 				613E79412577C08900DFCC17 /* Writting */,
 				613E79422577C09B00DFCC17 /* Reading */,
+				619E16EF2578E81900B2516B /* Migrating */,
 				6114FE0D257667AD0084E372 /* Privacy */,
 				61133BAA2423979B00786299 /* Files */,
 			);
@@ -1193,6 +1206,7 @@
 				61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */,
 				619E16D42577C11B00B2516B /* Writting */,
 				619E16D52577C12100B2516B /* Reading */,
+				61EF788E257E287B00EDCCB3 /* Migrating */,
 				6114FE21257671CB0084E372 /* Privacy */,
 				61133C2B2423990D00786299 /* Files */,
 			);
@@ -1456,6 +1470,7 @@
 				61441C792461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift */,
 				E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */,
 				613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */,
+				61EF789A257E2B0200EDCCB3 /* DataMigratorBenchmarkTests.swift */,
 			);
 			path = DataStorage;
 			sourceTree = "<group>";
@@ -1845,14 +1860,6 @@
 			path = TapActionAutoInstrumentation;
 			sourceTree = "<group>";
 		};
-		61A9238C256FCA92009B9667 /* Time */ = {
-			isa = PBXGroup;
-			children = (
-				61A9238D256FCAA2009B9667 /* DateCorrectionTests.swift */,
-			);
-			path = Time;
-			sourceTree = "<group>";
-		};
 		619E16D42577C11B00B2516B /* Writting */ = {
 			isa = PBXGroup;
 			children = (
@@ -1876,6 +1883,24 @@
 				619E16D72577C1CB00B2516B /* DataProcessor.swift */,
 			);
 			path = Processing;
+			sourceTree = "<group>";
+		};
+		619E16EF2578E81900B2516B /* Migrating */ = {
+			isa = PBXGroup;
+			children = (
+				619E16E82578E73E00B2516B /* DataMigrator.swift */,
+				619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */,
+				61EF78B0257E2E7A00EDCCB3 /* MoveDataMigrator.swift */,
+			);
+			path = Migrating;
+			sourceTree = "<group>";
+		};
+		61A9238C256FCA92009B9667 /* Time */ = {
+			isa = PBXGroup;
+			children = (
+				61A9238D256FCAA2009B9667 /* DateCorrectionTests.swift */,
+			);
+			path = Time;
 			sourceTree = "<group>";
 		};
 		61B03872252724AB00518F3C /* URLSessionAutoInstrumentation */ = {
@@ -2117,6 +2142,15 @@
 				61E917CE2464270500E6C631 /* EncodableValueTests.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		61EF788E257E287B00EDCCB3 /* Migrating */ = {
+			isa = PBXGroup;
+			children = (
+				61EF788F257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift */,
+				61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */,
+			);
+			path = Migrating;
 			sourceTree = "<group>";
 		};
 		61F1A61B2498AD2C00075390 /* SystemFrameworks */ = {
@@ -2611,6 +2645,7 @@
 				61E909EF24A24DD3005EA2DE /* Global.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */,
+				61EF78B1257E2E7A00EDCCB3 /* MoveDataMigrator.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
 				6114FE1625766B310084E372 /* TrackingConsent.swift in Sources */,
 				61F3C9712535AE9400E2F8C4 /* UIKitHierarchyInspector.swift in Sources */,
@@ -2646,6 +2681,7 @@
 				61940C7C25668EC600A20043 /* URLSessionInterceptionHandler.swift in Sources */,
 				61F3CDA3251118FB00C816E5 /* UIKitRUMViewsHandler.swift in Sources */,
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
+				619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */,
 				618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */,
 				9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */,
 				61B0386C2527247B00518F3C /* TaskInterception.swift in Sources */,
@@ -2681,6 +2717,7 @@
 				61E5333624B84B43003D6C4E /* RUMMonitor.swift in Sources */,
 				6156CB9824DEFD44008CB2B2 /* LoggingWithRUMIntegration.swift in Sources */,
 				61133BD62423979B00786299 /* DataUploader.swift in Sources */,
+				619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */,
 				61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */,
 				61C5A88724509A0C00DA608C /* Casting.swift in Sources */,
 				61C3E63724BF191F008053F2 /* RUMScope.swift in Sources */,
@@ -2771,6 +2808,7 @@
 				61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */,
 				615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */,
 				615A4A8724A3452800233986 /* DDTracerConfigurationTests.swift in Sources */,
+				61EF78B7257E37D500EDCCB3 /* MoveDataMigratorTests.swift in Sources */,
 				61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */,
 				615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */,
 				61E917CF2464270500E6C631 /* EncodableValueTests.swift in Sources */,
@@ -2816,6 +2854,7 @@
 				61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */,
 				61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */,
 				61A9238E256FCAA2009B9667 /* DateCorrectionTests.swift in Sources */,
+				61EF7890257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift in Sources */,
 				61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */,
 				614AD086254C3027004999A3 /* LaunchTimeProviderTests.swift in Sources */,
 				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,
@@ -2956,6 +2995,7 @@
 				613BE0432563FB9E0015216C /* RUMBenchmarkTests.swift in Sources */,
 				E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */,
 				613BE04A25640FF80015216C /* BenchmarkTests.swift in Sources */,
+				61EF789B257E2B0200EDCCB3 /* DataMigratorBenchmarkTests.swift in Sources */,
 				61441C7C2461A244003D8BB8 /* TestsDirectory.swift in Sources */,
 				613BE06225642F790015216C /* RUMStorageBenchmarkTests.swift in Sources */,
 				61D6FF7E24E53D3B00D0E375 /* BenchmarkMocks.swift in Sources */,
