@@ -11,7 +11,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     private var queue: DispatchQueue!
     private var directory: Directory!
-    private var writer: FileWriter!
+    private var writer: ConsentAwareDataWriter!
     private var reader: FileReader!
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -19,8 +19,14 @@ class RUMStorageBenchmarkTests: XCTestCase {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "rum-benchmark")
 
-        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: .mockAny())
-        self.writer = storage.writer as? FileWriter
+        let storage = RUMFeature.createStorage(
+            directories: FeatureDirectories(
+                unauthorized: obtainUniqueTemporaryDirectory(),
+                authorized: directory
+            ),
+            commonDependencies: .mockAny()
+        )
+        self.writer = storage.writer as? ConsentAwareDataWriter
         self.reader = storage.reader as? FileReader
         self.queue = self.writer.queue
 
