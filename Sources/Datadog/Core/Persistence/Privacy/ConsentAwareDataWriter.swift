@@ -7,9 +7,9 @@
 import Foundation
 
 /// File writer which writes data to different folders depending on the tracking consent value.
-internal class ConsentAwareDataWriter: FileWriterType {
+internal class ConsentAwareDataWriter: FileWriterType, ConsentSubscriber {
     /// Queue used to synchronize reads and writes for the feature.
-    /// TODO: RUMM-777 will be used synchronize `activeFileWriter` swaps on consent change.
+    /// TODO: RUMM-832 will be used to synchornize data migration with reads and writes.
     internal let queue: DispatchQueue
     /// File writer writting unauthorized data when consent is `.pending`.
     private let unauthorizedFileWriter: FileWriterType
@@ -20,7 +20,7 @@ internal class ConsentAwareDataWriter: FileWriterType {
     private var activeFileWriter: FileWriterType?
 
     init(
-        initialConsent: TrackingConsent,
+        consentProvider: ConsentProvider,
         queue: DispatchQueue,
         unauthorizedFileWriter: FileWriterType,
         authorizedFileWriter: FileWriterType
@@ -28,15 +28,53 @@ internal class ConsentAwareDataWriter: FileWriterType {
         self.queue = queue
         self.unauthorizedFileWriter = unauthorizedFileWriter
         self.authorizedFileWriter = authorizedFileWriter
+        self.activeFileWriter = resolveActiveFileWriter(
+            for: consentProvider.currentValue,
+            unauthorizedWriter: unauthorizedFileWriter,
+            authorizedWriter: authorizedFileWriter
+        )
 
-        switch initialConsent {
-        case .granted: self.activeFileWriter = authorizedFileWriter
-        case .notGranted: self.activeFileWriter = nil
-        case .pending: self.activeFileWriter = unauthorizedFileWriter
+        consentProvider.subscribe(consentSubscriber: self)
+    }
+
+    // MARK: - FileWriterType
+
+    func write<T>(value: T) where T: Encodable {
+        synchronized {
+            activeFileWriter?.write(value: value)
         }
     }
 
-    func write<T>(value: T) where T: Encodable {
-        activeFileWriter?.write(value: value)
+    // MARK: - ConsentSubscriber
+
+    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
+        synchronized {
+            activeFileWriter = resolveActiveFileWriter(
+                for: newValue,
+                unauthorizedWriter: unauthorizedFileWriter,
+                authorizedWriter: authorizedFileWriter
+            )
+        }
+    }
+
+    // MARK: - Private
+
+    private func synchronized(block: () -> Void) {
+        objc_sync_enter(self)
+        block()
+        objc_sync_exit(self)
+    }
+}
+
+// TODO: RUMM-831 Move writer resolution to `DataProcessorFactory`
+private func resolveActiveFileWriter(
+    for consent: TrackingConsent,
+    unauthorizedWriter: FileWriterType,
+    authorizedWriter: FileWriterType
+) -> FileWriterType? {
+    switch consent {
+    case .granted: return authorizedWriter
+    case .notGranted: return nil
+    case .pending: return unauthorizedWriter
     }
 }
