@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-private class FileWriterMock: FileWriterType {
+private class FileWriterMock: Writer {
     var dataWritten: Encodable?
 
     func write<T>(value: T) where T: Encodable {
@@ -19,6 +19,10 @@ class ConsentAwareDataWriterTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
     private let unauthorizedWriter = FileWriterMock()
     private let authorizedWriter = FileWriterMock()
+    private lazy var dataProcessorFactory = DataProcessorFactory(
+        unauthorizedFileWriter: unauthorizedWriter,
+        authorizedFileWriter: authorizedWriter
+    )
 
     override func setUp() {
         super.setUp()
@@ -36,9 +40,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .granted),
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // Then
@@ -53,9 +56,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .pending),
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // Then
@@ -70,9 +72,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .notGranted),
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // Then
@@ -90,9 +91,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // When
@@ -111,9 +111,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // When
@@ -132,9 +131,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         // When
@@ -158,9 +156,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: randomConsent())
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
-            queue: queue,
-            unauthorizedFileWriter: unauthorizedWriter,
-            authorizedFileWriter: authorizedWriter
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory
         )
 
         DispatchQueue.concurrentPerform(iterations: 10_000) { iteration in

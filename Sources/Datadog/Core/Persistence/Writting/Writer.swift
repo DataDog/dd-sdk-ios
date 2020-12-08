@@ -6,10 +6,7 @@
 
 import Foundation
 
-internal struct RUMEventFileOutput: RUMEventOutput {
-    let fileWriter: Writer
-
-    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {
-        fileWriter.write(value: rumEvent)
-    }
+/// A type, writting data.
+internal protocol Writer {
+    func write<T: Encodable>(value: T)
 }

@@ -363,11 +363,11 @@ extension FeaturesCommonDependencies {
     }
 }
 
-class NoOpFileWriter: FileWriterType {
+class NoOpFileWriter: Writer {
     func write<T>(value: T) where T: Encodable {}
 }
 
-class NoOpFileReader: FileReaderType {
+class NoOpFileReader: Reader {
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
 }

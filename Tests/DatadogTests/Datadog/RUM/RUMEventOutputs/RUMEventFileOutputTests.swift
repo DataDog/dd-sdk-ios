@@ -20,7 +20,6 @@ class RUMEventFileOutputTests: XCTestCase {
 
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
-        let queue = DispatchQueue(label: "com.datadohq.testItWritesRUMEventToFileAsJSON")
         let builder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
@@ -32,8 +31,7 @@ class RUMEventFileOutputTests: XCTestCase {
                         uploadPerformance: .noOp
                     ),
                     dateProvider: fileCreationDateProvider
-                ),
-                queue: queue
+                )
             )
         )
 
@@ -43,12 +41,10 @@ class RUMEventFileOutputTests: XCTestCase {
         let event2 = builder.createRUMEvent(with: dataModel2, attributes: [:])
 
         output.write(rumEvent: event1)
-        queue.sync {} // wait on writter queue
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
         output.write(rumEvent: event2)
-        queue.sync {} // wait on writter queue
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let event1Data = try temporaryDirectory.file(named: event1FileName).read()

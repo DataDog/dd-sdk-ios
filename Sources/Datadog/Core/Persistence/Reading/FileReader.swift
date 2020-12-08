@@ -6,45 +6,24 @@
 
 import Foundation
 
-internal struct Batch {
-    /// Data read from file, prefixed with `[` and suffixed with `]`.
-    let data: Data
-    /// File from which `data` was read.
-    fileprivate let file: ReadableFile
-}
-
-/// Abstracts the `FileReader`, so we can have no-op reader in tests.
-internal protocol FileReaderType {
-    func readNextBatch() -> Batch?
-    func markBatchAsRead(_ batch: Batch)
-}
-
-internal final class FileReader: FileReaderType {
+/// Reads data from files.
+internal final class FileReader: Reader {
     /// Data reading format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestrator
-    /// Queue used to synchronize files access (read / write).
-    private let queue: DispatchQueue
 
     /// Files marked as read.
     private var filesRead: [ReadableFile] = []
 
-    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator, queue: DispatchQueue) {
+    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator
-        self.queue = queue
     }
 
     // MARK: - Reading batches
 
     func readNextBatch() -> Batch? {
-        queue.sync {
-            synchronizedReadNextBatch()
-        }
-    }
-
-    private func synchronizedReadNextBatch() -> Batch? {
         if let file = orchestrator.getReadableFile(excludingFilesNamed: Set(filesRead.map { $0.name })) {
             do {
                 let fileData = try file.read()
@@ -62,12 +41,6 @@ internal final class FileReader: FileReaderType {
     // MARK: - Accepting batches
 
     func markBatchAsRead(_ batch: Batch) {
-        queue.sync { [weak self] in
-            self?.synchronizedMarkBatchAsRead(batch)
-        }
-    }
-
-    private func synchronizedMarkBatchAsRead(_ batch: Batch) {
         orchestrator.delete(readableFile: batch.file)
         filesRead.append(batch.file)
     }

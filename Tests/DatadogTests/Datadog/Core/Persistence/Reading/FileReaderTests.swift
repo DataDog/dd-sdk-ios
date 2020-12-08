@@ -8,8 +8,6 @@ import XCTest
 @testable import Datadog
 
 class FileReaderTests: XCTestCase {
-    private let queue = DispatchQueue(label: "dd-tests-read", target: .global(qos: .utility))
-
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
@@ -27,8 +25,7 @@ class FileReaderTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider()
-            ),
-            queue: queue
+            )
         )
         _ = try temporaryDirectory
             .createFile(named: Date.mockAny().toFileName)
@@ -48,8 +45,7 @@ class FileReaderTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: dateProvider
-            ),
-            queue: queue
+            )
         )
         let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
         try file1.append(data: "1".utf8Data)
