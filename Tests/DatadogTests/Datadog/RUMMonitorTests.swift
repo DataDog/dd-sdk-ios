@@ -705,6 +705,46 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
+    // MARK: - Tracking Consent
+
+    func testWhenChangingConsentValues_itUploadsOnlyAuthorizedRUMEvents() throws {
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+
+        // Given
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(consentProvider: consentProvider)
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        // When
+        monitor.startView(viewController: mockView, path: "view in `.pending` consent changed to `.granted`")
+        monitor.stopView(viewController: mockView)
+        monitor.dd.queue.sync {} // wait for processing the event in `RUMMonitor`
+        consentProvider.changeConsent(to: .granted)
+        monitor.startView(viewController: mockView, path: "view in `.granted` consent")
+        monitor.stopView(viewController: mockView)
+        monitor.dd.queue.sync {}
+        consentProvider.changeConsent(to: .notGranted)
+        monitor.startView(viewController: mockView, path: "view in `.notGranted` consent")
+        monitor.stopView(viewController: mockView)
+        monitor.dd.queue.sync {}
+        consentProvider.changeConsent(to: .granted)
+        monitor.startView(viewController: mockView, path: "another view in `.granted` consent")
+        monitor.stopView(viewController: mockView)
+
+        // Then
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 7)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
+
+        XCTAssertEqual(session.viewVisits.count, 3, "Only 3 RUM Views were visited in authorized consent.")
+        XCTAssertEqual(session.viewVisits[0].path, "view in `.pending` consent changed to `.granted`")
+        XCTAssertEqual(session.viewVisits[1].path, "view in `.granted` consent")
+        XCTAssertEqual(session.viewVisits[2].path, "another view in `.granted` consent")
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {

@@ -697,6 +697,36 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    // MARK: - Tracking Consent
+
+    func testWhenChangingConsentValues_itUploadsOnlyAuthorizedLogs() throws {
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+
+        // Given
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(consentProvider: consentProvider)
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+
+        // When
+        logger.info("message in `.pending` consent changed to `.granted`")
+        consentProvider.changeConsent(to: .granted)
+        logger.info("message in `.granted` consent")
+        consentProvider.changeConsent(to: .notGranted)
+        logger.info("message in `.notGranted` consent")
+        consentProvider.changeConsent(to: .granted)
+        logger.info("another message in `.granted` consent")
+
+        // Then
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
+        logMatchers[0].assertMessage(equals: "message in `.pending` consent changed to `.granted`")
+        logMatchers[1].assertMessage(equals: "message in `.granted` consent")
+        logMatchers[2].assertMessage(equals: "another message in `.granted` consent")
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {

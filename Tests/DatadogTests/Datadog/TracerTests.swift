@@ -833,6 +833,36 @@ class TracerTests: XCTestCase {
         )
     }
 
+    // MARK: - Tracking Consent
+
+    func testWhenChangingConsentValues_itUploadsOnlyAuthorizedSpans() throws {
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+
+        // Given
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(consentProvider: consentProvider)
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+
+        // When
+        tracer.startSpan(operationName: "span in `.pending` consent changed to `.granted`").finish()
+        consentProvider.changeConsent(to: .granted)
+        tracer.startSpan(operationName: "span in `.granted` consent").finish()
+        consentProvider.changeConsent(to: .notGranted)
+        tracer.startSpan(operationName: "span in `.notGranted` consent").finish()
+        consentProvider.changeConsent(to: .granted)
+        tracer.startSpan(operationName: "another span in `.granted` consent").finish()
+
+        // Then
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
+        XCTAssertEqual(try spanMatchers[0].operationName(), "span in `.pending` consent changed to `.granted`")
+        XCTAssertEqual(try spanMatchers[1].operationName(), "span in `.granted` consent")
+        XCTAssertEqual(try spanMatchers[2].operationName(), "another span in `.granted` consent")
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
