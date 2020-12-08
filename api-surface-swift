@@ -1,8 +1,13 @@
 public typealias AttributeKey = String
 public typealias AttributeValue = Encodable
+public enum TrackingConsent
+ case granted
+ case notGranted
+ case pending
 public class DDRUMMonitor
  public func startView(viewController: UIViewController,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
+ public func addTiming(name: String)
  public func addError(message: String,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
  public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
@@ -20,9 +25,11 @@ public class Datadog
  public struct AppContext
   public init(mainBundle: Bundle = Bundle.main)
  public static func initialize(appContext: AppContext, configuration: Configuration)
+ public static func initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
  public static var verbosityLevel: LogLevel? = nil
  public static var debugRUM: Bool = false
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
+ public static func set(trackingConsent: TrackingConsent)
  public struct Configuration
   public enum DatadogEndpoint
    case us
@@ -191,6 +198,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
  override public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue])
  override public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+ override public func addTiming(name: String)
  override public func addError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
  override public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
  override public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])

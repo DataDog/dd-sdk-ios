@@ -1,12 +1,18 @@
 public class DDNSURLSessionDelegate: DDURLSessionDelegate
+public class DDTrackingConsent: NSObject
+ public static func granted() -> DDTrackingConsent
+ public static func notGranted() -> DDTrackingConsent
+ public static func pending() -> DDTrackingConsent
 public class DDAppContext: NSObject
  public init(mainBundle: Bundle)
  override public init()
 public class DDDatadog: NSObject
  public static func initialize(appContext: DDAppContext, configuration: DDConfiguration)
+ public static func initialize(appContext: DDAppContext,trackingConsent: DDTrackingConsent,configuration: DDConfiguration)
  public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
  public static func verbosityLevel() -> DDSDKVerbosityLevel
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil)
+ public static func setTrackingConsent(consent: DDTrackingConsent)
 public class DDEndpoint: NSObject
  public static func eu() -> DDEndpoint
  public static func us() -> DDEndpoint
