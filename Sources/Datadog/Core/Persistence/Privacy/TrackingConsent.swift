@@ -6,8 +6,11 @@
 
 import Foundation
 
-/// Possible values for the Data Tracking Consent.
-internal enum TrackingConsent {
+/// Possible values for the Data Tracking Consent given by the user of the app.
+///
+/// This value should be used to grant the permission for Datadog SDK to store data collected in
+/// Logging, Tracing or RUM and upload it to Datadog servers.
+public enum TrackingConsent {
     /// The permission to persist and send data to the Datadog servers was granted.
     /// Any previously stored pending data will be marked as ready for sent.
     case granted

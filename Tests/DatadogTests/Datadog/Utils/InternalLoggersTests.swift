@@ -24,13 +24,21 @@ class InternalLoggersTests: XCTestCase {
 
     func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() throws {
         let defaultSDKConfiguration = Datadog.Configuration.builderUsing(clientToken: "abc", environment: "test").build()
-        Datadog.initialize(appContext: .mockAny(), configuration: defaultSDKConfiguration)
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultSDKConfiguration
+        )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
         try Datadog.deinitializeOrThrow()
     }
 
     func testGivenLoggingFeatureDisabled_whenSDKisInitialized_itUsesWorkingUserLogger() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: .mockWith(loggingEnabled: false))
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: .mockWith(loggingEnabled: false)
+        )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
         try Datadog.deinitializeOrThrow()
     }
@@ -104,7 +112,11 @@ class InternalLoggersTests: XCTestCase {
         let originalValue = CompilationConditions.isSDKCompiledForDevelopment
         defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
 
-        Datadog.initialize(appContext: .mockAny(), configuration: .mockAny())
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: .mockAny()
+        )
         XCTAssertNotNil(developerLogger)
         try Datadog.deinitializeOrThrow()
     }
@@ -113,7 +125,11 @@ class InternalLoggersTests: XCTestCase {
         let originalValue = CompilationConditions.isSDKCompiledForDevelopment
         defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
 
-        Datadog.initialize(appContext: .mockAny(), configuration: .mockWith(loggingEnabled: false))
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: .mockWith(loggingEnabled: false)
+        )
         XCTAssertNotNil(developerLogger)
         try Datadog.deinitializeOrThrow()
     }

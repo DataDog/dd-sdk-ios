@@ -8,6 +8,12 @@
 
 // MARK: - Configuration Mocks
 
+extension TrackingConsent {
+    static func mockRandom() -> TrackingConsent {
+        return [.granted, .notGranted, .pending].randomElement()!
+    }
+}
+
 extension Datadog.Configuration {
     static func mockAny() -> Datadog.Configuration { .mockWith() }
 

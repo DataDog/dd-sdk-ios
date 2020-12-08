@@ -767,6 +767,7 @@ class RUMMonitorTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration.builderUsing(clientToken: "abc-def", environment: "tests").build()
         )
 
@@ -791,6 +792,7 @@ class RUMMonitorTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration.builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny()).build()
         )
         Global.rum = RUMMonitor.initialize()
@@ -814,6 +816,7 @@ class RUMMonitorTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: .mockWith(rumApplicationID: "rum-123", rumEnabled: true)
         )
         Global.rum = RUMMonitor.initialize()
@@ -841,6 +844,7 @@ class RUMMonitorTests: XCTestCase {
     func testGivenRUMAutoInstrumentationEnabled_whenRUMMonitorIsNotRegistered_itPrintsWarningsOnEachEvent() throws {
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
                 .track(firstPartyHosts: [.mockAny()])
