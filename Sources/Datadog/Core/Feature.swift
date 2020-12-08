@@ -19,6 +19,7 @@ internal struct FeatureDirectories {
 
 /// Container with dependencies common to all features (Logging, Tracing and RUM).
 internal struct FeaturesCommonDependencies {
+    let consentProvider: ConsentProvider
     let performance: PerformancePreset
     let httpClient: HTTPClient
     let mobileDevice: MobileDevice
@@ -57,11 +58,8 @@ internal struct FeatureStorage {
             dateProvider: commonDependencies.dateProvider
         )
 
-        // TODO: RUMM-833 Share consent provider among all features
-        let consentProvider = ConsentProvider(initialConsent: .granted)
-
         let consentAwareDataWriter = ConsentAwareDataWriter(
-            consentProvider: consentProvider,
+            consentProvider: commonDependencies.consentProvider,
             readWriteQueue: readWriteQueue,
             dataProcessorFactory: DataProcessorFactory(
                 unauthorizedFileWriter: FileWriter(
