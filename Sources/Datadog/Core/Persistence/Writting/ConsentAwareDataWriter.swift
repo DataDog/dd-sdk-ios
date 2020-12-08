@@ -13,6 +13,8 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
     internal let readWriteQueue: DispatchQueue
     /// Creates data processors depending on the tracking consent value.
     private let dataProcessorFactory: DataProcessorFactory
+    /// Creates data migrators depending on the tracking consent transition.
+    private let dataMigratorFactory: DataMigratorFactory
 
     /// Data processor for current tracking consent.
     private var processor: DataProcessor?
@@ -20,13 +22,18 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
     init(
         consentProvider: ConsentProvider,
         readWriteQueue: DispatchQueue,
-        dataProcessorFactory: DataProcessorFactory
+        dataProcessorFactory: DataProcessorFactory,
+        dataMigratorFactory: DataMigratorFactory
     ) {
         self.readWriteQueue = readWriteQueue
         self.dataProcessorFactory = dataProcessorFactory
+        self.dataMigratorFactory = dataMigratorFactory
         self.processor = dataProcessorFactory.resolveProcessor(for: consentProvider.currentValue)
 
         consentProvider.subscribe(consentSubscriber: self)
+
+        let initialDataMigrator = dataMigratorFactory.resolveInitialMigrator()
+        readWriteQueue.async { initialDataMigrator.migrate() }
     }
 
     // MARK: - Writer
@@ -42,6 +49,9 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
     func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
         readWriteQueue.async {
             self.processor = self.dataProcessorFactory.resolveProcessor(for: newValue)
+            self.dataMigratorFactory
+                .resolveMigratorForConsentChange(from: oldValue, to: newValue)?
+                .migrate()
         }
     }
 }

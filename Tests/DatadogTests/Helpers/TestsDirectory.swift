@@ -45,4 +45,10 @@ extension Directory {
             }
         }
     }
+
+    func createMockFiles(count: Int, prefix: String = "file") {
+        (0..<count).forEach { index in
+            _ = try! createFile(named: "\(prefix)\(index)")
+        }
+    }
 }

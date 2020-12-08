@@ -7,14 +7,6 @@
 import XCTest
 @testable import Datadog
 
-private class FileWriterMock: Writer {
-    var dataWritten: Encodable?
-
-    func write<T>(value: T) where T: Encodable {
-        dataWritten = value
-    }
-}
-
 class ConsentAwareDataWriterTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
     private let unauthorizedWriter = FileWriterMock()
@@ -22,6 +14,9 @@ class ConsentAwareDataWriterTests: XCTestCase {
     private lazy var dataProcessorFactory = DataProcessorFactory(
         unauthorizedFileWriter: unauthorizedWriter,
         authorizedFileWriter: authorizedWriter
+    )
+    private lazy var dataMigratorFactory = DataMigratorFactory(
+        directories: temporaryFeatureDirectories
     )
 
     override func setUp() {
@@ -34,20 +29,21 @@ class ConsentAwareDataWriterTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Testing Initial Consent
+    // MARK: - Writting Data on Initial Consent
 
     func testWhenInitializedWithConsentGranted_thenItWritesDataToAuthorizedFolder() {
         // When
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .granted),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         // Then
         writer.write(value: "authorized data")
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertNil(unauthorizedWriter.dataWritten)
         XCTAssertEqual(authorizedWriter.dataWritten as? String, "authorized data")
     }
@@ -57,13 +53,14 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .pending),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         // Then
         writer.write(value: "unauthorized data")
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertNil(authorizedWriter.dataWritten)
         XCTAssertEqual(unauthorizedWriter.dataWritten as? String, "unauthorized data")
     }
@@ -73,26 +70,28 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .notGranted),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         // Then
         writer.write(value: "rejected data")
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertNil(unauthorizedWriter.dataWritten)
         XCTAssertNil(authorizedWriter.dataWritten)
     }
 
-    // MARK: - Testing Consent Changes
+    // MARK: - Writing Data After Consent Change
 
-    func testWhenConsentChangesToGranted_thenItStartsWrittingDataToAuthorizedFolder() {
+    func testWhenConsentChangesToGranted_thenItStartsWritingDataToAuthorizedFolder() {
         let initialConsent: TrackingConsent = [.pending, .notGranted].randomElement()!
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         // When
@@ -101,18 +100,19 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // Then
         writer.write(value: "authorized data")
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertNil(unauthorizedWriter.dataWritten)
         XCTAssertEqual(authorizedWriter.dataWritten as? String, "authorized data")
     }
 
-    func testWhenConsentChangesPending_thenItStartsWrittingDataToUnauthorizedFolder() {
+    func testWhenConsentChangesToPending_thenItStartsWritingDataToUnauthorizedFolder() {
         let initialConsent: TrackingConsent = [.granted, .notGranted].randomElement()!
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         // When
@@ -121,18 +121,19 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // Then
         writer.write(value: "unauthorized data")
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertEqual(unauthorizedWriter.dataWritten as? String, "unauthorized data")
         XCTAssertNil(authorizedWriter.dataWritten)
     }
 
-    func testWhenConsentChangesToNotGranted_thenItStopsWrittingDataToAnyFolder() {
+    func testWhenConsentChangesToNotGranted_thenItStopsWritingDataToAnyFolder() {
         let initialConsent: TrackingConsent = [.granted, .pending].randomElement()!
         let consentProvider = ConsentProvider(initialConsent: initialConsent)
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         // When
@@ -141,9 +142,109 @@ class ConsentAwareDataWriterTests: XCTestCase {
         // Then
         writer.write(value: "rejected data")
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertNil(unauthorizedWriter.dataWritten)
         XCTAssertNil(authorizedWriter.dataWritten)
+    }
+
+    // MARK: - Data Migration
+
+    func testGivenDataWrittenInUnauthorizedFolder_whenInitializedWithAnyConsent_thenItDeletesAllDataInUnauthorizedFolder() throws {
+        let directories = temporaryFeatureDirectories
+
+        // Given
+        directories.unauthorized.createMockFiles(count: 10)
+        XCTAssertEqual(try directories.unauthorized.files().count, 10)
+
+        // When
+        let initialConsent: TrackingConsent = [.granted, .pending, .notGranted].randomElement()!
+        _ = ConsentAwareDataWriter(
+            consentProvider: ConsentProvider(initialConsent: initialConsent),
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
+        )
+
+        // Then
+        waitForOperationCompletion(on: queue)
+        XCTAssertEqual(try directories.unauthorized.files().count, 0)
+    }
+
+    func testGivenDataWrittenWithConsentPending_whenConsentChangesToNotGranted_itDeletesAllDataInUnauthorizedFolder() throws {
+        let directories = temporaryFeatureDirectories
+
+        // Given
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+        _ = ConsentAwareDataWriter(
+            consentProvider: consentProvider,
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
+        )
+
+        waitForOperationCompletion(on: queue)
+        directories.unauthorized.createMockFiles(count: 10)
+        XCTAssertEqual(try directories.unauthorized.files().count, 10)
+
+        // When
+        consentProvider.changeConsent(to: .notGranted)
+
+        // Then
+        waitForOperationCompletion(on: queue)
+        XCTAssertEqual(try directories.unauthorized.files().count, 0)
+    }
+
+    func testGivenDataWrittenWithConsentPending_whenConsentChangesToGranted_itMovesAllDataToAuthorizedFolder() throws {
+        let directories = temporaryFeatureDirectories
+
+        // Given
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+        _ = ConsentAwareDataWriter(
+            consentProvider: consentProvider,
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
+        )
+
+        waitForOperationCompletion(on: queue)
+        directories.unauthorized.createMockFiles(count: 10)
+        XCTAssertEqual(try directories.unauthorized.files().count, 10)
+        XCTAssertEqual(try directories.authorized.files().count, 0)
+
+        // When
+        consentProvider.changeConsent(to: .granted)
+
+        // Then
+        waitForOperationCompletion(on: queue)
+        XCTAssertEqual(try directories.unauthorized.files().count, 0)
+        XCTAssertEqual(try directories.authorized.files().count, 10)
+    }
+
+    func testGivenDataWrittenInAuthorizedFolder_whenConsentChanges_itDoesNotModifyAuthorizedFolder() throws {
+        let directories = temporaryFeatureDirectories
+
+        // Given
+        let consentProvider = ConsentProvider(initialConsent: .granted)
+        _ = ConsentAwareDataWriter(
+            consentProvider: consentProvider,
+            readWriteQueue: queue,
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
+        )
+
+        waitForOperationCompletion(on: queue)
+        directories.authorized.createMockFiles(count: 10)
+        XCTAssertEqual(try directories.authorized.files().count, 10)
+
+        // When
+        let nextConsents: [TrackingConsent] = [.granted, .pending, .notGranted].shuffled()
+        nextConsents.forEach { nextConsent in
+            consentProvider.changeConsent(to: nextConsent)
+        }
+
+        // Then
+        waitForOperationCompletion(on: queue)
+        XCTAssertEqual(try directories.authorized.files().count, 10)
     }
 
     // MARK: - Thread Safety
@@ -157,7 +258,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory
+            dataProcessorFactory: dataProcessorFactory,
+            dataMigratorFactory: dataMigratorFactory
         )
 
         DispatchQueue.concurrentPerform(iterations: 10_000) { iteration in
@@ -168,14 +270,14 @@ class ConsentAwareDataWriterTests: XCTestCase {
             }
         }
 
-        waitForAsyncWrite(on: queue)
+        waitForOperationCompletion(on: queue)
         XCTAssertNotNil(unauthorizedWriter.dataWritten, "There should be some unauthorized data written.")
         XCTAssertNotNil(authorizedWriter.dataWritten, "There should be some authorized data written.")
     }
 
     // MARK: - Helpers
 
-    private func waitForAsyncWrite(on queue: DispatchQueue) {
+    private func waitForOperationCompletion(on queue: DispatchQueue) {
         queue.sync {}
     }
 }

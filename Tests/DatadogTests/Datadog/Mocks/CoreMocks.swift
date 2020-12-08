@@ -363,6 +363,14 @@ extension FeaturesCommonDependencies {
     }
 }
 
+class FileWriterMock: Writer {
+    var dataWritten: Encodable?
+
+    func write<T>(value: T) where T: Encodable {
+        dataWritten = value
+    }
+}
+
 class NoOpFileWriter: Writer {
     func write<T>(value: T) where T: Encodable {}
 }

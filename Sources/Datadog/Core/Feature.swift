@@ -72,6 +72,9 @@ internal struct FeatureStorage {
                     dataFormat: dataFormat,
                     orchestrator: authorizedFilesOrchestrator
                 )
+            ),
+            dataMigratorFactory: DataMigratorFactory(
+                directories: directories
             )
         )
 
