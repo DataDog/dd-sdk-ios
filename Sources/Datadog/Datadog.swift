@@ -49,6 +49,8 @@ public class Datadog {
     @available(*, deprecated, message: """
     This method is deprecated and uses the `TrackingConsent.granted` value as a default privacy consent.
     This means that the SDK will start recording and sending data immediately after initialisation without waiting for the user's consent to be given.
+
+    Use `Datadog.initialize(appContext:trackingConsent:configuration:)` and set consent to `.granted` to preserve previous behaviour.
     """)
     public static func initialize(appContext: AppContext, configuration: Configuration) {
         initialize(
