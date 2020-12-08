@@ -55,7 +55,7 @@ internal struct Directory {
     }
 
     /// Moves all files from this directory to `destinationDirectory`.
-    func moveAllFilesTo(_ destinationDirectory: Directory) throws {
+    func moveAllFiles(to destinationDirectory: Directory) throws {
         try files().forEach { file in
             let destinationFileURL = destinationDirectory.url.appendingPathComponent(file.name)
             try? FileManager.default.moveItem(at: file.url, to: destinationFileURL)

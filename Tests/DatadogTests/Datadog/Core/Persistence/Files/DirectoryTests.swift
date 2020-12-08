@@ -104,7 +104,7 @@ class DirectoryTests: XCTestCase {
         XCTAssertEqual(try sourceDirectory.files().count, 3)
         XCTAssertEqual(try destinationDirectory.files().count, 0)
 
-        try sourceDirectory.moveAllFilesTo(destinationDirectory)
+        try sourceDirectory.moveAllFiles(to: destinationDirectory)
 
         XCTAssertEqual(try sourceDirectory.files().count, 0)
         XCTAssertEqual(try destinationDirectory.files().count, 3)

@@ -19,7 +19,7 @@ internal struct MoveDataMigrator: DataMigrator {
 
     func migrate() {
         do {
-            try sourceDirectory.moveAllFilesTo(destinationDirectory)
+            try sourceDirectory.moveAllFiles(to: destinationDirectory)
         } catch {
             developerLogger?.error(
                 """
