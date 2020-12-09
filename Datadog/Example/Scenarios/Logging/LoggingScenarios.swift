@@ -1,0 +1,16 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-2020 Datadog, Inc.
+ */
+
+import Datadog
+
+let allLoggingScenarios: [TestScenario.Type] = [
+    LoggingManualInstrumentationScenario.self,
+]
+
+/// Scenario which starts a view controller that sends bunch of logs to the server.
+struct LoggingManualInstrumentationScenario: TestScenario {
+    static let storyboardName = "LoggingManualInstrumentationScenario"
+}
