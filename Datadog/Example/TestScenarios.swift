@@ -14,18 +14,23 @@ protocol TestScenario {
     /// The name of the storyboard containing this scenario.
     static var storyboardName: String { get }
 
-    /// Applies additional SDK configuration for running this scenario.
-    /// Defaults to no-op.
-    func configureSDK(builder: Datadog.Configuration.Builder)
-
     /// An identifier for this scenario used to pass its reference in environment variable.
     /// Defaults to `storyboardName`.
     static func envIdentifier() -> String
+
+    /// The value of initial tracking consent for this scenario.
+    /// Defaults to `.granted`
+    var initialTrackingConsent: TrackingConsent { get }
+
+    /// Applies additional SDK configuration for running this scenario.
+    /// Defaults to no-op.
+    func configureSDK(builder: Datadog.Configuration.Builder)
 }
 
 /// Defaults.
 extension TestScenario {
     static func envIdentifier() -> String { storyboardName }
+    var initialTrackingConsent: TrackingConsent { .granted }
     func configureSDK(builder: Datadog.Configuration.Builder) { /* no-op */ }
 }
 
