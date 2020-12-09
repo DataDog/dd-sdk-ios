@@ -91,6 +91,8 @@
 		61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */; };
 		61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */; };
 		611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */; };
+		611EA12D2580F42600BC0E56 /* TrackingConsentScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA12C2580F42600BC0E56 /* TrackingConsentScenarios.swift */; };
+		611EA13C2580F77400BC0E56 /* TrackingConsentScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 611EA13B2580F77400BC0E56 /* TrackingConsentScenario.storyboard */; };
 		611F82032563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */; };
 		61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
 		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
@@ -527,6 +529,8 @@
 		61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMVSModalViewController.swift; sourceTree = "<group>"; };
 		61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMModalViewsScenarioTests.swift; sourceTree = "<group>"; };
 		611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionDelegate+objc.swift"; sourceTree = "<group>"; };
+		611EA12C2580F42600BC0E56 /* TrackingConsentScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentScenarios.swift; sourceTree = "<group>"; };
+		611EA13B2580F77400BC0E56 /* TrackingConsentScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = TrackingConsentScenario.storyboard; sourceTree = "<group>"; };
 		611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
 		61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapter.swift; sourceTree = "<group>"; };
 		61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapterTests.swift; sourceTree = "<group>"; };
@@ -1335,6 +1339,23 @@
 			path = Privacy;
 			sourceTree = "<group>";
 		};
+		611EA12B2580F40E00BC0E56 /* TrackingConsent */ = {
+			isa = PBXGroup;
+			children = (
+				611EA12C2580F42600BC0E56 /* TrackingConsentScenarios.swift */,
+				611EA13A2580F75B00BC0E56 /* TrackingConsent */,
+			);
+			path = TrackingConsent;
+			sourceTree = "<group>";
+		};
+		611EA13A2580F75B00BC0E56 /* TrackingConsent */ = {
+			isa = PBXGroup;
+			children = (
+				611EA13B2580F77400BC0E56 /* TrackingConsentScenario.storyboard */,
+			);
+			path = TrackingConsent;
+			sourceTree = "<group>";
+		};
 		61216277247D1F2100AC5D67 /* FeaturesIntegration */ = {
 			isa = PBXGroup;
 			children = (
@@ -1403,6 +1424,7 @@
 				61337030250F829E00236D58 /* Logging */,
 				61337033250F847500236D58 /* Tracing */,
 				61337036250F84F100236D58 /* RUM */,
+				611EA12B2580F40E00BC0E56 /* TrackingConsent */,
 				6164AE7D252B4CE2000D78C4 /* URLSession */,
 			);
 			path = Scenarios;
@@ -2581,6 +2603,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61337032250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard in Resources */,
+				611EA13C2580F77400BC0E56 /* TrackingConsentScenario.storyboard in Resources */,
 				61441C1124616DEC003D8BB8 /* LaunchScreen.storyboard in Resources */,
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
 				6193DCA4251B5691009B8011 /* RUMTapActionScenario.storyboard in Resources */,
@@ -2978,6 +3001,7 @@
 				61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */,
 				618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */,
 				61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */,
+				611EA12D2580F42600BC0E56 /* TrackingConsentScenarios.swift in Sources */,
 				614CADD72510BAC000B93D2D /* Environment.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
