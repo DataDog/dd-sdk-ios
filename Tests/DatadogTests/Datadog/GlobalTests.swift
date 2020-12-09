@@ -15,4 +15,8 @@ class GlobalTests: XCTestCase {
     func testWhenRUMMonitorIsNotInitialized_itGivesNoOpImplementation() {
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }
+
+    func testDDGlobalIsGlobalTypealias() {
+        XCTAssertTrue(DDGlobal.self == Global.self)
+    }
 }

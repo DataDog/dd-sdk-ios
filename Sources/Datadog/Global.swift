@@ -4,6 +4,10 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
+/// Because `Global` is a common name widely used across different projects,
+/// `DDGlobal` typealias can be used to avoid compiler ambiguity.
+public typealias DDGlobal = Global
+
 /// Namespace storing global Datadog components.
 public struct Global {
     /// Shared tracer instance to use throughout the app.

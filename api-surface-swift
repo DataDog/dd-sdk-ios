@@ -63,6 +63,7 @@ public class Datadog
    public func trackUIKitActions(_ enabled: Bool) -> Builder
    public func set(serviceName: String) -> Builder
    public func build() -> Configuration
+public typealias DDGlobal = Global
 public struct Global
  public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
  public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
