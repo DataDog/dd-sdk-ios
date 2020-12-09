@@ -8,6 +8,13 @@ import UIKit
 
 extension UIButton {
     func disableFor(seconds: TimeInterval) {
+        let completion = disableUntilCompletion()
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            completion()
+        }
+    }
+
+    func disableUntilCompletion() -> () -> Void {
         let originalBackgroundColor = self.backgroundColor
 
         self.isEnabled = false
@@ -17,9 +24,9 @@ extension UIButton {
             self.backgroundColor = .systemGray
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
-            self?.isEnabled = true
-            self?.backgroundColor = originalBackgroundColor
+        return {
+            self.isEnabled = true
+            self.backgroundColor = originalBackgroundColor
         }
     }
 }

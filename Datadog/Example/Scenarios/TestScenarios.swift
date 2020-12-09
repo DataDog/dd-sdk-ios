@@ -34,7 +34,11 @@ extension TestScenario {
 
 /// Returns `TestScenario` for given env identifier.
 func createTestScenario(for envIdentifier: String) -> TestScenario {
-    let allScenarios = allLoggingScenarios + allTracingScenarios + allRUMScenarios
+    let allScenarios = allLoggingScenarios
+        + allTracingScenarios
+        + allRUMScenarios
+        + allTrackingConsentScenarios
+
     let scenarioClass = allScenarios.first { $0.envIdentifier() == envIdentifier }
 
     guard let scenario = scenarioClass?.init() else {
