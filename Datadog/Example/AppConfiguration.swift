@@ -57,13 +57,17 @@ struct ExampleAppConfiguration: AppConfiguration {
 struct UITestsAppConfiguration: AppConfiguration {
     let testScenario = Environment.testScenario()
 
+    init() {
+        if Environment.shouldClearPersistentData() {
+            deletePersistedSDKData()
+        }
+    }
+
     var initialTrackingConsent: TrackingConsent {
         return testScenario!.initialTrackingConsent
     }
 
     func sdkConfiguration() -> Datadog.Configuration {
-        deletePersistedSDKData()
-
         let configuration = Datadog.Configuration
             .builderUsing(
                 rumApplicationID: "rum-application-id",
