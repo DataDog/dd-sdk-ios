@@ -66,9 +66,11 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
 
     /// The `UIViewController` indicating the active `RUMView`.
     private weak var lastStartedViewController: UIViewController?
+    /// The last started `RUMView`.
+    private var lastStartedRUMView: RUMView?
 
     private func startIfNotStarted(rumView: RUMView, for viewController: UIViewController) {
-        if viewController === lastStartedViewController {
+        if viewController === lastStartedViewController || rumView.path == lastStartedRUMView?.path {
             return
         }
 
@@ -101,5 +103,6 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
         )
 
         lastStartedViewController = viewController
+        lastStartedRUMView = rumView
     }
 }

@@ -187,4 +187,43 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(predicate.numberOfCalls, 1)
     }
+
+    func testGivenPredicate_whenHierarchyChangesToTheSameViewPath_thenAnotherRUMViewIsNotStarted() {
+        var view1: UIViewController? = createMockViewInWindow()
+
+        // Given
+        predicate.result = RUMView(path: "rum-view-A")
+
+        // When
+        handler.notify_viewDidAppear(viewController: view1!, animated: .mockAny())
+
+        predicate.result = RUMView(path: "rum-view-A") // starting another view with the same path
+        var view2: UIViewController? = createMockViewInWindow()
+        handler.notify_viewDidAppear(viewController: view2!, animated: .mockAny())
+        handler.notify_viewDidDisappear(viewController: view1!, animated: .mockAny())
+        view1 = nil
+
+        predicate.result = RUMView(path: "rum-view-B") // starting another view different path
+        let view3 = createMockViewInWindow()
+        handler.notify_viewDidAppear(viewController: view3, animated: .mockAny())
+        handler.notify_viewDidDisappear(viewController: view2!, animated: .mockAny())
+        view2 = nil
+
+        // Then
+        let commands = commandSubscriber.receivedCommands
+        XCTAssertEqual(commands.count, 3)
+
+        XCTAssertEqual(
+            commands.filter { $0 is RUMStartViewCommand }.count,
+            2,
+            """
+            Although 3 view controllers were started only 2 RUM Views should be reported
+            as only two distinct paths were given.
+            """
+        )
+
+        XCTAssertEqual((commands[0] as? RUMStartViewCommand)?.path, "rum-view-A")
+        XCTAssertTrue(commands[1] is RUMStopViewCommand)
+        XCTAssertEqual((commands[2] as? RUMStartViewCommand)?.path, "rum-view-B")
+    }
 }
