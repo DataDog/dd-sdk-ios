@@ -234,3 +234,14 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
  public func inject(spanContext: OTSpanContext)
  override public init()
+public protocol URLSessionInterceptorType: class
+ func modify(request: URLRequest) -> URLRequest
+ func taskCreated(task: URLSessionTask)
+ func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
+ func taskCompleted(task: URLSessionTask, error: Error?)
+public class URLSessionInterceptor: URLSessionInterceptorType
+ public static var shared: URLSessionInterceptor?
+ public func modify(request: URLRequest) -> URLRequest
+ public func taskCreated(task: URLSessionTask)
+ public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
+ public func taskCompleted(task: URLSessionTask, error: Error?)
