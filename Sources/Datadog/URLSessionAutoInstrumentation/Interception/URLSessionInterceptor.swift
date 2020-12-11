@@ -6,30 +6,26 @@
 
 import Foundation
 
-/// An object performing interception of requests sent from `URLSession`.
-internal protocol URLSessionInterceptorType: class {
-    /// Modifies the `URLRequest` before the `URLSessionTask` is started.
-    /// Called from swizzled implementations of `URLSession.dataTask(...)` methods.
-    /// It gets called for tasks created with `URLRequest` (prior to iOS 13.0 also for tasks created with `URL`).
+/// An object performing interception of requests sent with `URLSession`.
+public protocol URLSessionInterceptorType: class {
+    /// Modifies the `URLRequest` before the `URLSessionTask` is created.
     func modify(request: URLRequest) -> URLRequest
 
-    /// Notifies the `URLSessionTask` creation for any task of every `URLSession`.
-    /// Called from swizzled implementations of `URLSession.dataTask(...)` methods.
-    func taskCreated(urlSession: URLSession, task: URLSessionTask)
+    /// Notifies the `URLSessionTask` creation.
+    func taskCreated(task: URLSessionTask)
 
-    /// Notifies the `URLSessionTask` metrics collection for any task of every `URLSession` which uses `DDURLSessionDelegate`.
-    /// Called from `DDURLSessionDelegate`.
-    func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics)
+    /// Notifies the `URLSessionTask` metrics collection.
+    func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
 
     /// Notifies the `URLSessionTask` completion.
-    /// Depending on the `URLSession` method used to produce the `task`, it may be called from:
-    /// * `URLSession.dataTask(with:completion:)` completion block,
-    /// * or `DDURLSessionDelegate` if the task was created with `URLSession.dataTask(with:)` and
-    ///   the session uses `DDURLSessionDelegate`.
-    func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?)
+    func taskCompleted(task: URLSessionTask, error: Error?)
 }
 
-internal class URLSessionInterceptor: URLSessionInterceptorType {
+public class URLSessionInterceptor: URLSessionInterceptorType {
+    public static var shared: URLSessionInterceptor? {
+        URLSessionAutoInstrumentation.instance?.interceptor
+    }
+
     /// Filters first party `URLs` defined by the user.
     private let firstPartyURLsFilter: FirstPartyURLsFilter
     /// Filters internal `URLs` used by the SDK.
@@ -94,7 +90,7 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     private var interceptionByTask: [URLSessionTask: TaskInterception] = [:]
 
-    func modify(request: URLRequest) -> URLRequest {
+    public func modify(request: URLRequest) -> URLRequest {
         guard !internalURLsFilter.isInternal(url: request.url) else {
             return request
         }
@@ -105,7 +101,7 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         return request
     }
 
-    func taskCreated(urlSession: URLSession, task: URLSessionTask) {
+    public func taskCreated(task: URLSessionTask) {
         guard let request = task.originalRequest,
               !internalURLsFilter.isInternal(url: request.url) else {
             return
@@ -126,7 +122,7 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         }
     }
 
-    func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
+    public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics) {
         guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
             return
         }
@@ -146,7 +142,7 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         }
     }
 
-    func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?) {
+    public func taskCompleted(task: URLSessionTask, error: Error?) {
         guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
             return
         }
