@@ -30,6 +30,9 @@ extension Tracer {
         /// Initializes the Datadog Tracer configuration.
         /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
         /// - Parameter sendNetworkInfo: adds network connection info to every span and span logs (`false` by default).
+        /// - Parameter bundleWithRUM: enables the tracing integration with RUM. If enabled all the Spans will be enriched with the current RUM View information and
+        /// it will be possible to see all the Spans sent during a specific View lifespan in the RUM Explorer (`true` by default).
+        /// - Parameter globalTags: sets global tags for all Spans (`nil` by default).
         public init(
             serviceName: String? = nil,
             sendNetworkInfo: Bool = false,
