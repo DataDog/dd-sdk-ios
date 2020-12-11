@@ -248,7 +248,7 @@ Example:
 }
 ```
 
-**Note**: when using `.startUserAction(type:name:)` and `.stopUserAction(type:)`. This is necessary for the SDK to match a resource's start with its completion. 
+**Note**: When using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same. This is necessary for the SDK to match a resource's start with its completion. 
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
