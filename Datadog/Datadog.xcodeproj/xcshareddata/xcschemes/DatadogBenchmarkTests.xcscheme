@@ -102,6 +102,11 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
+            key = "DD_DISABLE_SDKIOS_INTEGRATION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
             value = "1"
             isEnabled = "YES">
