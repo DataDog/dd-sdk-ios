@@ -407,10 +407,10 @@ extension Datadog {
             /// **NOTE:** Enabling this option will install swizzlings on `UIApplication.sendEvent(_:)` method. Refer
             /// to `UIApplicationSwizzler.swift` for implementation details.
             ///
-            /// By default, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
+            /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
             ///
-            /// - Parameter enabled: `false` by default
-            public func trackUIKitActions(_ enabled: Bool) -> Builder {
+            /// - Parameter enabled: `true` by default
+            public func trackUIKitActions(_ enabled: Bool = true) -> Builder {
                 configuration.rumUIKitActionsTrackingEnabled = enabled
                 return self
             }
