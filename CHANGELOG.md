@@ -1,3 +1,22 @@
+# 1.4.0 / 12-14-2020
+
+### Changes
+
+* [BUGFIX] Fix crash when `serviceName` contains space characters. See #317 (Thanks @philtre)
+* [BUGFIX] Fix issue with data uploads when battery status is `.unknown`. See #320
+* [BUGFIX] Fix compilation issue for Mac Catalyst. See #277 (Thanks @Hengyu)
+* [FEATURE] RUM: Add RUM monitoring feature (manual and auto instrumentation)
+* [FEATURE] Add single `.set(endpoint:)` API to configure all Datadog endpoints. See #322
+* [FEATURE] Add support for GovCloud endpoints. See #235
+* [FEATURE] Add support for extra user attributes. See #315
+* [FEATURE] Logs: Add `error: Error` attribute to logging APIs. See #303 (Thanks @sdejesusF)
+* [FEATURE] Trace: Add `span.setActive()` API for indirect referencing Spans. See #187
+* [FEATURE] Trace: Add `Global.sharedTracer.startRootSpan(...)` API. See #236
+* [IMPROVEMENT] Trace: Add auto instrumentation for `URLSessionTasks` created with no completion handler. See #262
+* [IMPROVEMENT] Extend allowed characters set for the `environment` value. See #246 (Thanks @sdejesusF)
+* [IMPROVEMENT] Improve data upload performance. See #249
+
+
 # 1.3.1 / 08-14-2020
 
 ### Changes
