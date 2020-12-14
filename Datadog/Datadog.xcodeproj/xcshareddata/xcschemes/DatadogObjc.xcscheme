@@ -66,9 +66,9 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
+            key = "DD_DISABLE_SDKIOS_INTEGRATION"
             value = "1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_DISABLE_HEADERS_INJECTION"
