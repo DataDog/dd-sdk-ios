@@ -59,8 +59,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(customLogsEndpoint: URL(string: "https://api.custom.logs/")!)
                 .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
-                .track(firstPartyHosts: ["example.com"])
                 .set(rumSessionsSamplingRate: 42.5)
+                .track(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(true)
 
@@ -71,9 +71,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             .builderUsing(clientToken: "abc-123", environment: "tests")
         let defaultRUMBuilder = Datadog.Configuration
             .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
+        let rumBuilderWithDefaultPredicate = Datadog.Configuration
+            .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
+            .trackUIKitRUMViews()
 
         let configuration = customized(defaultBuilder).build()
         let rumConfiguration = customized(defaultRUMBuilder).build()
+        let rumConfigurationWithDefaultPredicate = rumBuilderWithDefaultPredicate.build()
 
         XCTAssertNil(configuration.rumApplicationID)
         XCTAssertEqual(rumConfiguration.rumApplicationID, "rum-app-id")
@@ -91,9 +95,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
-            XCTAssertNotNil(configuration.rumUIKitViewsPredicate)
+            XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitActionsTrackingEnabled)
         }
+
+        XCTAssertTrue(rumConfigurationWithDefaultPredicate.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
     }
 
     func testDeprecatedAPIs() {
