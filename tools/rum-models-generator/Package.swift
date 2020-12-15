@@ -13,6 +13,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.2.0"),
+        .package(name: "Difference", url: "https://github.com/krzysztofzablocki/Difference.git", from: "0.5.0"),
     ],
     targets: [
         .target(
@@ -26,7 +27,7 @@ let package = Package(
             dependencies: []
         ),
         .testTarget(
-            name: "rum-models-generatorTests",
-            dependencies: ["rum-models-generator"]),
+            name: "rum-models-generator-coreTests",
+            dependencies: ["RUMModelsGeneratorCore", "Difference"]),
     ]
 )

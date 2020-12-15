@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "resource-schema.json",
+  "title": "RumResourceEvent",
+  "type": "object",
+  "description": "Schema of all properties of a Resource event",
+  "allOf": [
+    {
+      "$ref": "_common-schema.json"
+    },
+    {
+      "required": [
+        "type",
+        "resource"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "RUM event type",
+          "const": "resource",
+          "readOnly": true
+        },
+        "resource": {
+          "type": "object",
+          "description": "Resource properties",
+          "required": [
+            "type",
+            "url",
+            "duration"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "UUID of the resource",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+              "readOnly": true
+            },
+            "type": {
+              "type": "string",
+              "description": "Resource type",
+              "enum": ["document", "xhr", "beacon", "fetch", "css", "js", "image", "font", "media", "other"],
+              "readOnly": true
+            },
+            "method": {
+              "type": "string",
+              "description": "HTTP method of the resource",
+              "enum": ["POST", "GET", "HEAD", "PUT", "DELETE", "PATCH"],
+              "readOnly": true
+            },
+            "url": {
+              "type": "string",
+              "description": "URL of the resource",
+              "readOnly": false
+            },
+            "status_code": {
+              "type": "integer",
+              "description": "HTTP status code of the resource",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "duration": {
+              "type": "integer",
+              "description": "Duration of the resource",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "size": {
+              "type": "integer",
+              "description": "Size in octet of the resource response body",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "redirect": {
+              "type": "object",
+              "description": "Redirect phase properties",
+              "required": [
+                "duration",
+                "start"
+              ],
+              "properties": {
+                "duration": {
+                  "type": "integer",
+                  "description": "Duration in ns of the resource redirect phase",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "start": {
+                  "type": "integer",
+                  "description": "Duration in ns between start of the request and start of the redirect phase",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "dns": {
+              "type": "object",
+              "description": "DNS phase properties",
+              "required": [
+                "duration",
+                "start"
+              ],
+              "properties": {
+                "duration": {
+                  "type": "integer",
+                  "description": "Duration in ns of the resource dns phase",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "start": {
+                  "type": "integer",
+                  "description": "Duration in ns between start of the request and start of the dns phase",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "connect": {
+              "type": "object",
+              "description": "Connect phase properties",
+              "required": [
+                "duration",
+                "start"
+              ],
+              "properties": {
+                "duration": {
+                  "type": "integer",
+                  "description": "Duration in ns of the resource connect phase",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "start": {
+                  "type": "integer",
+                  "description": "Duration in ns between start of the request and start of the connect phase",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "ssl": {
+              "type": "object",
+              "description": "SSL phase properties",
+              "required": [
+                "duration",
+                "start"
+              ],
+              "properties": {
+                "duration": {
+                  "type": "integer",
+                  "description": "Duration in ns of the resource ssl phase",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "start": {
+                  "type": "integer",
+                  "description": "Duration in ns between start of the request and start of the ssl phase",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "first_byte": {
+              "type": "object",
+              "description": "First Byte phase properties",
+              "required": [
+                "duration",
+                "start"
+              ],
+              "properties": {
+                "duration": {
+                  "type": "integer",
+                  "description": "Duration in ns of the resource first byte phase",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "start": {
+                  "type": "integer",
+                  "description": "Duration in ns between start of the request and start of the first byte phase",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "download": {
+              "type": "object",
+              "description": "Download phase properties",
+              "required": [
+                "duration",
+                "start"
+              ],
+              "properties": {
+                "duration": {
+                  "type": "integer",
+                  "description": "Duration in ns of the resource download phase",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "start": {
+                  "type": "integer",
+                  "description": "Duration in ns between start of the request and start of the download phase",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "provider": {
+              "type": "object",
+              "description": "The provider for this resource",
+              "properties": {
+                "domain": {
+                  "type": "string",
+                  "description": "The domain name of the provider",
+                  "readOnly": true
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The user friendly name of the provider",
+                  "readOnly": true
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The type of provider",
+                  "enum": ["ad", "advertising", "analytics", "cdn", "content", "customer-success", "first party", "hosting", "marketing", "other", "social", "tag-manager", "utility", "video"],
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        },
+        "action": {
+          "type": "object",
+          "description": "Action properties",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "UUID of the action",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        },
+        "_dd": {
+          "type": "object",
+          "description": "Internal properties",
+          "properties": {
+            "span_id": {
+              "type": "string",
+              "description": "span identifier in decimal format",
+              "pattern": "^[0-9]+$",
+              "readOnly": true
+            },
+            "trace_id": {
+              "type": "string",
+              "description": "trace identifier in decimal format",
+              "pattern": "^[0-9]+$",
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}

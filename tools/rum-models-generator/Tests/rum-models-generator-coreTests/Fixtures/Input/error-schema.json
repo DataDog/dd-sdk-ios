@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "error-schema.json",
+  "title": "RumErrorEvent",
+  "type": "object",
+  "description": "Schema of all properties of an Error event",
+  "allOf": [
+    {
+      "$ref": "_common-schema.json"
+    },
+    {
+      "required": [
+        "type",
+        "error"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "RUM event type",
+          "const": "error",
+          "readOnly": true
+        },
+        "error": {
+          "type": "object",
+          "description": "Error properties",
+          "required": [
+            "message",
+            "source"
+          ],
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "Error message",
+              "readOnly": false
+            },
+            "source": {
+              "type": "string",
+              "description": "Source of the error",
+              "enum": ["network", "source", "console", "logger", "agent", "webview", "custom"],
+              "readOnly": true
+            },
+            "stack": {
+              "type": "string",
+              "description": "Stacktrace of the error",
+              "readOnly": false
+            },
+            "is_crash": {
+              "type": "boolean",
+              "description": "Whether this error crashed the host application",
+              "readOnly": true
+            },
+            "resource": {
+              "type": "object",
+              "description": "Resource properties of the error",
+              "required": [
+                "method",
+                "status_code",
+                "url"
+              ],
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "description": "HTTP method of the resource",
+                  "enum": ["POST", "GET", "HEAD", "PUT", "DELETE", "PATCH"],
+                  "readOnly": true
+                },
+                "status_code": {
+                  "type": "integer",
+                  "description": "HTTP Status code of the resource",
+                  "minimum": 0,
+                  "readOnly": true
+                },
+                "url": {
+                  "type": "string",
+                  "description": "URL of the resource",
+                  "readOnly": false
+                },
+                "provider": {
+                  "type": "object",
+                  "description": "The provider for this resource",
+                  "properties": {
+                    "domain": {
+                      "type": "string",
+                      "description": "The domain name of the provider",
+                      "readOnly": true
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The user friendly name of the provider",
+                      "readOnly": true
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "The type of provider",
+                      "enum": ["ad", "advertising", "analytics", "cdn", "content", "customer-success", "first party", "hosting", "marketing", "other", "social", "tag-manager", "utility", "video"],
+                      "readOnly": true
+                    }
+                  },
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        },
+        "action": {
+          "type": "object",
+          "description": "Action properties",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "UUID of the action",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}

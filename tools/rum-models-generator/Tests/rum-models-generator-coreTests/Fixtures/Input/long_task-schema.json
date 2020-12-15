@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "long_task-schema.json",
+  "title": "RumLongTaskEvent",
+  "type": "object",
+  "description": "Schema of all properties of a Long Task event",
+  "allOf": [
+    {
+      "$ref": "_common-schema.json"
+    },
+    {
+      "required": [
+        "type",
+        "long_task"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "RUM event type",
+          "const": "long_task",
+          "readOnly": true
+        },
+        "long_task": {
+          "type": "object",
+          "description": "Long Task properties",
+          "required": [
+            "duration"
+          ],
+          "properties": {
+            "duration": {
+              "type": "integer",
+              "description": "Duration in ns of the long task",
+              "minimum": 0,
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        },
+        "action": {
+          "type": "object",
+          "description": "Action properties",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "UUID of the action",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}

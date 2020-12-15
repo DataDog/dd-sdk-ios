@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "action-schema.json",
+  "title": "RumActionEvent",
+  "type": "object",
+  "description": "Schema of all properties of an Action event",
+  "allOf": [
+    {
+      "$ref": "_common-schema.json"
+    },
+    {
+      "required": [
+        "type",
+        "action"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "RUM event type",
+          "const": "action",
+          "readOnly": true
+        },
+        "action": {
+          "type": "object",
+          "description": "Action properties",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Type of the action",
+              "enum": ["custom", "click", "tap", "scroll", "swipe", "application_start", "back"],
+              "readOnly": true
+            },
+            "id": {
+              "type": "string",
+              "description": "UUID of the action",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+              "readOnly": true
+            },
+            "loading_time": {
+              "type": "integer",
+              "description": "Duration in ns to the action is considered loaded",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "target": {
+              "type": "object",
+              "description": "Action target properties",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Target name",
+                  "readOnly": false
+                }
+              },
+              "readOnly": true
+            },
+            "error": {
+              "type": "object",
+              "description": "Properties of the errors of the action",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of errors that occurred on the action",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "crash": {
+              "type": "object",
+              "description": "Properties of the crashes of the action",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of crashes that occurred on the action",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "long_task": {
+              "type": "object",
+              "description": "Properties of the long tasks of the action",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of long tasks that occurred on the action",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "resource": {
+              "type": "object",
+              "description": "Properties of the resources of the action",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of resources that occurred on the action",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}

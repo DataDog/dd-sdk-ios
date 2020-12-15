@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "_common-schema.json",
+  "title": "CommonProperties",
+  "type": "object",
+  "description": "Schema of common properties of RUM events",
+  "required": [
+    "date",
+    "application",
+    "session",
+    "view",
+    "_dd"
+  ],
+  "properties": {
+    "date": {
+      "type": "integer",
+      "description": "Start of the event in ms from epoch",
+      "minimum": 0,
+      "readOnly": true
+    },
+    "application": {
+      "type": "object",
+      "description": "Application properties",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "UUID of the application",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+          "readOnly": true
+        }
+      },
+      "readOnly": true
+    },
+    "service": {
+      "type": "string",
+      "description": "The service name for this application",
+      "readOnly": true
+    },
+    "session": {
+      "type": "object",
+      "description": "Session properties",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "UUID of the session",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+          "readOnly": true
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of the session",
+          "enum": ["user", "synthetics"],
+          "readOnly": true
+        }
+      },
+      "readOnly": true
+    },
+    "view": {
+      "type": "object",
+      "description": "View properties",
+      "required": [
+        "id",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "UUID of the view",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+          "readOnly": true
+        },
+        "referrer": {
+          "type": "string",
+          "description": "URL that linked to the initial view of the page",
+          "readOnly": false
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the view",
+          "readOnly": false
+        }
+      },
+      "readOnly": true
+    },
+    "usr": {
+      "type": "object",
+      "description": "User properties",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifier of the user",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the user",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "description": "Email of the user",
+          "readOnly": true
+        }
+      },
+      "readOnly": true
+    },
+    "connectivity": {
+      "type": "object",
+      "description": "Device connectivity properties",
+      "required": [
+        "status",
+        "interfaces"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Status of the device connectivity",
+          "enum": ["connected", "not_connected", "maybe"],
+          "readOnly": true
+        },
+        "interfaces": {
+          "type": "array",
+          "description": "The list of available network interfaces",
+          "items": {
+            "type": "string",
+            "enum": ["bluetooth", "cellular", "ethernet", "wifi", "wimax", "mixed", "other", "unknown", "none"]
+          },
+          "readOnly": true
+        },
+        "cellular": {
+          "type": "object",
+          "description": "Cellular connectivity properties",
+          "properties": {
+            "technology": {
+              "type": "string",
+              "description": "The type of a radio technology used for cellular connection",
+              "readOnly": true
+            },
+            "carrier_name": {
+              "type": "string",
+              "description": "The name of the SIM carrier",
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        }
+      }
+    },
+    "_dd": {
+      "type": "object",
+      "description": "Internal properties",
+      "required": [
+        "format_version"
+      ],
+      "properties": {
+        "format_version": {
+          "type": "integer",
+          "const": 2,
+          "description": "Version of the RUM event format",
+          "readOnly": true
+        }
+      },
+      "readOnly": true
+    }
+  }
+}

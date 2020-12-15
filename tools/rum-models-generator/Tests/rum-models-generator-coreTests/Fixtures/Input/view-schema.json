@@ -1,0 +1,209 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "view-schema.json",
+  "title": "RumViewEvent",
+  "type": "object",
+  "description": "Schema of all properties of a View event",
+  "allOf": [
+    {
+      "$ref": "_common-schema.json"
+    },
+    {
+      "required": [
+        "type",
+        "view",
+        "_dd"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "RUM event type",
+          "const": "view",
+          "readOnly": true
+        },
+        "view": {
+          "type": "object",
+          "description": "View properties",
+          "required": [
+            "id",
+            "url",
+            "time_spent",
+            "action",
+            "error",
+            "resource"
+          ],
+          "properties": {
+            "loading_time": {
+              "type": "integer",
+              "description": "Duration in ns to the view is considered loaded",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "loading_type": {
+              "type": "string",
+              "description": "Type of the loading of the view",
+              "enum": ["initial_load", "route_change", "activity_display", "activity_redisplay", "fragment_display", "fragment_redisplay", "view_controller_display", "view_controller_redisplay"],
+              "readOnly": true
+            },
+            "time_spent": {
+              "type": "integer",
+              "description": "Time spent on the view in ns",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "first_contentful_paint": {
+              "type": "integer",
+              "description": "Duration in ns to the first rendering",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "largest_contentful_paint": {
+              "type": "integer",
+              "description": "Duration in ns to the largest contentful paint",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "first_input_delay": {
+              "type": "integer",
+              "description": "Duration in ns of the first input event delay",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "cumulative_layout_shift": {
+              "type": "number",
+              "description": "Total layout shift score that occured on the view",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "dom_complete": {
+              "type": "integer",
+              "description": "Duration in ns to the complete parsing and loading of the document and its sub resources",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "dom_content_loaded": {
+              "type": "integer",
+              "description": "Duration in ns to the complete parsing and loading of the document without its sub resources",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "dom_interactive": {
+              "type": "integer",
+              "description": "Duration in ns to the end of the parsing of the document",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "load_event": {
+              "type": "integer",
+              "description": "Duration in ns to the end of the load event handler execution",
+              "minimum": 0,
+              "readOnly": true
+            },
+            "is_active": {
+              "type": "boolean",
+              "description": "Whether the View corresponding to this event is considered active",
+              "readOnly": true
+            },
+            "action": {
+              "type": "object",
+              "description": "Properties of the actions of the view",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of actions that occurred on the view",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "error": {
+              "type": "object",
+              "description": "Properties of the errors of the view",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of errors that occurred on the view",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "crash": {
+              "type": "object",
+              "description": "Properties of the crashes of the view",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of crashes that occurred on the view",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "long_task": {
+              "type": "object",
+              "description": "Properties of the long tasks of the view",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of long tasks that occurred on the view",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            },
+            "resource": {
+              "type": "object",
+              "description": "Properties of the resources of the view",
+              "required": [
+                "count"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of resources that occurred on the view",
+                  "minimum": 0,
+                  "readOnly": true
+                }
+              },
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        },
+        "_dd": {
+          "type": "object",
+          "description": "Internal properties",
+          "required": [
+            "document_version"
+          ],
+          "properties": {
+            "document_version": {
+              "type": "integer",
+              "description": "Version of the update of the view event",
+              "minimum": 0,
+              "readOnly": true
+            }
+          },
+          "readOnly": true
+        }
+      }
+    }
+  ]
+}
