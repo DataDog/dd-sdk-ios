@@ -67,7 +67,7 @@ public class Datadog
    public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(rumSessionsSamplingRate: Float) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
-   public func trackUIKitActions(_ enabled: Bool) -> Builder
+   public func trackUIKitActions(_ enabled: Bool = true) -> Builder
    public func set(serviceName: String) -> Builder
    public func build() -> Configuration
 public typealias DDGlobal = Global

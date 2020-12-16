@@ -1,7 +1,5 @@
 # iOS RUM Collection
 
-<div class="alert alert-info">The iOS RUM collection is in beta. If you have any questions, contact the <a href="https://docs.datadoghq.com/help/" target="_blank">support team</a>.</div>
-
 Send [Real User Monitoring data][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-ios` client-side RUM SDK][2] and leverage the following features:
 
 * Get a holistic view of your app’s performance and demographics.
@@ -17,7 +15,7 @@ Send [Real User Monitoring data][1] to Datadog from your iOS applications with [
 
 You can use [CocoaPods][4] to install `dd-sdk-ios`:
 ```
-pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => '1.4.0-beta1'
+pod 'DatadogSDK'
 ```
 
 [4]: https://cocoapods.org/
@@ -27,7 +25,7 @@ pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => '
 
 To integrate the SDK using Apple's [Swift Package Manager][5], add the following as a dependency to your `Package.swift`:
 ```swift
-.package(url: "https://github.com/DataDog/dd-sdk-ios.git", .exact("1.4.0-beta1"))
+.package(url: "https://github.com/DataDog/dd-sdk-ios.git", .upToNextMajor(from: "1.0.0"))
 ```
 
 [5]: https://swift.org/package-manager/
@@ -37,7 +35,7 @@ To integrate the SDK using Apple's [Swift Package Manager][5], add the following
 
 You can use [Carthage][6] to install `dd-sdk-ios`:
 ```
-github "DataDog/dd-sdk-ios" "1.4.0-beta1"
+github "DataDog/dd-sdk-ios"
 ```
 
 [6]: https://github.com/Carthage/Carthage
@@ -104,17 +102,17 @@ The RUM SDK offers two instrumentation methods:
 
 ### RUM Views
 
-To enable RUM views tracking, use the `.trackUIKitRUMViews(using:)` option when configuring the SDK:
+To enable RUM views tracking, use the `.trackUIKitRUMViews()` option when configuring the SDK:
 ```swift
 Datadog.Configuration
    .builderUsing(...)
-   .trackUIKitRUMViews(using: predicate)
+   .trackUIKitRUMViews()
    .build()
 
 Global.rum = RUMMonitor.initialize()
 ```
 
-`predicate` must be a type that conforms to `UIKitRUMViewsPredicate` protocol:
+To customize RUM views tracking, use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
 ```swift
 public protocol UIKitRUMViewsPredicate {
     func rumView(for viewController: UIViewController) -> RUMView?
@@ -149,11 +147,11 @@ This will make the SDK track requests sent from this instance of the `URLSession
 
 ### RUM Actions
 
-To enable RUM actions tracking, use the `.trackUIKitActions(_:)` option when configuring the SDK:
+To enable RUM actions tracking, use the `.trackUIKitActions()` option when configuring the SDK:
 ```
 Datadog.Configuration
    .builderUsing(...)
-   .trackUIKitActions(true)
+   .trackUIKitActions()
    .build()
 
 Global.rum = RUMMonitor.initialize()
