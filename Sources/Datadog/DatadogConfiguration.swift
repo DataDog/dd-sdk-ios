@@ -388,10 +388,11 @@ extension Datadog {
             /// **NOTE:** Enabling this option will install swizzlings on `UIViewController's` lifecycle methods. Refer
             /// to `UIViewControllerSwizzler.swift` for implementation details.
             ///
-            /// By default, automatic tracking of `UIViewControllers` is disabled and no swizzlings are installed on the `UIViewController` class.
+            /// Until this option is enabled, automatic tracking of `UIViewControllers` is disabled and no swizzlings are installed on the `UIViewController` class.
             ///
             /// - Parameter predicate: the predicate deciding if a given `UIViewController` marks the beginning or end of the RUM View.
-            public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate) -> Builder {
+            /// Defaults to `DefaultUIKitRUMViewsPredicate` instance.
+            public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder {
                 configuration.rumUIKitViewsPredicate = predicate
                 return self
             }
@@ -406,10 +407,10 @@ extension Datadog {
             /// **NOTE:** Enabling this option will install swizzlings on `UIApplication.sendEvent(_:)` method. Refer
             /// to `UIApplicationSwizzler.swift` for implementation details.
             ///
-            /// By default, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
+            /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
             ///
-            /// - Parameter enabled: `false` by default
-            public func trackUIKitActions(_ enabled: Bool) -> Builder {
+            /// - Parameter enabled: `true` by default
+            public func trackUIKitActions(_ enabled: Bool = true) -> Builder {
                 configuration.rumUIKitActionsTrackingEnabled = enabled
                 return self
             }

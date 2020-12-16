@@ -59,10 +59,11 @@ public class Datadog
    public func enableRUM(_ enabled: Bool) -> Builder
    public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(rumSessionsSamplingRate: Float) -> Builder
-   public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate) -> Builder
+   public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool) -> Builder
    public func set(serviceName: String) -> Builder
    public func build() -> Configuration
+public typealias DDGlobal = Global
 public struct Global
  public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
  public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
