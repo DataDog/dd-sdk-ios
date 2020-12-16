@@ -50,15 +50,21 @@ internal struct Directory {
         // empty directory and replace source directory content with (empty) temporary folder.
         // This makes the deletion atomic, and is more performant in benchmarks.
         let temporaryDirectory = try Directory(withSubdirectoryPath: "com.datadoghq/\(UUID().uuidString)")
-        _ = try FileManager.default.replaceItemAt(url, withItemAt: temporaryDirectory.url)
+        try retry(times: 3, delay: 0.001) {
+            _ = try FileManager.default.replaceItemAt(url, withItemAt: temporaryDirectory.url)
+        }
         try? FileManager.default.removeItem(at: temporaryDirectory.url)
     }
 
     /// Moves all files from this directory to `destinationDirectory`.
     func moveAllFiles(to destinationDirectory: Directory) throws {
-        try files().forEach { file in
-            let destinationFileURL = destinationDirectory.url.appendingPathComponent(file.name)
-            try? FileManager.default.moveItem(at: file.url, to: destinationFileURL)
+        try retry(times: 3, delay: 0.001) {
+            try files().forEach { file in
+                let destinationFileURL = destinationDirectory.url.appendingPathComponent(file.name)
+                try? retry(times: 3, delay: 0.000_1) {
+                    try FileManager.default.moveItem(at: file.url, to: destinationFileURL)
+                }
+            }
         }
     }
 }
