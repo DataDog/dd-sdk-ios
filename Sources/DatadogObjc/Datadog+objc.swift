@@ -8,6 +8,21 @@ import Foundation
 import Datadog
 
 @objcMembers
+public class DDTrackingConsent: NSObject {
+    internal let sdkConsent: TrackingConsent
+
+    internal init(sdkConsent: TrackingConsent) {
+        self.sdkConsent = sdkConsent
+    }
+
+    // MARK: - Public
+
+    public static func granted() -> DDTrackingConsent { .init(sdkConsent: .granted) }
+    public static func notGranted() -> DDTrackingConsent { .init(sdkConsent: .notGranted) }
+    public static func pending() -> DDTrackingConsent { .init(sdkConsent: .pending) }
+}
+
+@objcMembers
 public class DDAppContext: NSObject {
     internal let sdkAppContext: Datadog.AppContext
 
@@ -26,9 +41,27 @@ public class DDAppContext: NSObject {
 public class DDDatadog: NSObject {
     // MARK: - Public
 
+    @available(*, deprecated, message: """
+    This method is deprecated and uses the `DDTrackingConsent.granted()` value as a default privacy consent.
+    This means that the SDK will start recording and sending data immediately after initialisation without waiting for the user's consent to be given.
+
+    Use `DDDatadog.initialize(appContext:trackingConsent:configuration:)` and set consent to `granted()` to preserve previous behaviour.
+    """)
     public static func initialize(appContext: DDAppContext, configuration: DDConfiguration) {
         Datadog.initialize(
             appContext: appContext.sdkAppContext,
+            configuration: configuration.sdkConfiguration
+        )
+    }
+
+    public static func initialize(
+        appContext: DDAppContext,
+        trackingConsent: DDTrackingConsent,
+        configuration: DDConfiguration
+    ) {
+        Datadog.initialize(
+            appContext: appContext.sdkAppContext,
+            trackingConsent: trackingConsent.sdkConsent,
             configuration: configuration.sdkConfiguration
         )
     }
@@ -62,4 +95,8 @@ public class DDDatadog: NSObject {
         Datadog.setUserInfo(id: id, name: name, email: email)
     }
     // swiftlint:enable identifier_name
+
+    public static func setTrackingConsent(consent: DDTrackingConsent) {
+        Datadog.set(trackingConsent: consent.sdkConsent)
+    }
 }

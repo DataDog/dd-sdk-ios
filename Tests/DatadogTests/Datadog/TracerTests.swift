@@ -315,6 +315,7 @@ class TracerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         Datadog.instance = Datadog(
+            consentProvider: ConsentProvider(initialConsent: .granted),
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
@@ -832,6 +833,36 @@ class TracerTests: XCTestCase {
         )
     }
 
+    // MARK: - Tracking Consent
+
+    func testWhenChangingConsentValues_itUploadsOnlyAuthorizedSpans() throws {
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+
+        // Given
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(consentProvider: consentProvider)
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+
+        // When
+        tracer.startSpan(operationName: "span in `.pending` consent changed to `.granted`").finish()
+        consentProvider.changeConsent(to: .granted)
+        tracer.startSpan(operationName: "span in `.granted` consent").finish()
+        consentProvider.changeConsent(to: .notGranted)
+        tracer.startSpan(operationName: "span in `.notGranted` consent").finish()
+        consentProvider.changeConsent(to: .granted)
+        tracer.startSpan(operationName: "another span in `.granted` consent").finish()
+
+        // Then
+        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
+        XCTAssertEqual(try spanMatchers[0].operationName(), "span in `.pending` consent changed to `.granted`")
+        XCTAssertEqual(try spanMatchers[1].operationName(), "span in `.granted` consent")
+        XCTAssertEqual(try spanMatchers[2].operationName(), "another span in `.granted` consent")
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
@@ -926,6 +957,7 @@ class TracerTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
                 .enableTracing(false)
                 .build()
@@ -948,6 +980,7 @@ class TracerTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
                 .enableLogging(false)
                 .build()
@@ -976,6 +1009,7 @@ class TracerTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny()).build()
         )
         Global.sharedTracer = Tracer.initialize(configuration: .init())
@@ -998,6 +1032,7 @@ class TracerTests: XCTestCase {
     func testGivenOnlyTracingAutoInstrumentationEnabled_whenTracerIsNotRegistered_itPrintsWarningsOnEachFirstPartyRequest() throws {
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: .mockAny(), environment: .mockAny())
                 .track(firstPartyHosts: [.mockAny()])
