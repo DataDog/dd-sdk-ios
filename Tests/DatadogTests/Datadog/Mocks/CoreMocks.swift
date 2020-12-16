@@ -298,6 +298,7 @@ extension FeaturesCommonDependencies {
     /// Mocks features common dependencies.
     /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
     static func mockWith(
+        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
         performance: PerformancePreset = .combining(
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
@@ -325,6 +326,7 @@ extension FeaturesCommonDependencies {
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
+            consentProvider: consentProvider,
             performance: performance,
             httpClient: HTTPClient(session: .serverMockURLSession),
             mobileDevice: mobileDevice,
@@ -339,6 +341,7 @@ extension FeaturesCommonDependencies {
 
     /// Creates new instance of `FeaturesCommonDependencies` by replacing individual dependencies.
     func replacing(
+        consentProvider: ConsentProvider? = nil,
         performance: PerformancePreset? = nil,
         httpClient: HTTPClient? = nil,
         mobileDevice: MobileDevice? = nil,
@@ -350,6 +353,7 @@ extension FeaturesCommonDependencies {
         launchTimeProvider: LaunchTimeProviderType? = nil
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
+            consentProvider: consentProvider ?? self.consentProvider,
             performance: performance ?? self.performance,
             httpClient: httpClient ?? self.httpClient,
             mobileDevice: mobileDevice ?? self.mobileDevice,
@@ -360,6 +364,14 @@ extension FeaturesCommonDependencies {
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider
         )
+    }
+}
+
+class FileWriterMock: Writer {
+    var dataWritten: Encodable?
+
+    func write<T>(value: T) where T: Encodable {
+        dataWritten = value
     }
 }
 

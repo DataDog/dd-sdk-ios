@@ -141,6 +141,7 @@ public class Datadog {
         var rumAutoInstrumentation: RUMAutoInstrumentation?
 
         let commonDependencies = FeaturesCommonDependencies(
+            consentProvider: ConsentProvider(initialConsent: .granted),
             performance: configuration.common.performance,
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice.current,
