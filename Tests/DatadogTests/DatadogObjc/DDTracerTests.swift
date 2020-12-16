@@ -12,17 +12,17 @@ class DDTracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
     func testSendingCustomizedSpans() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
         defer { TracingFeature.instance = nil }
 
         let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
@@ -115,7 +115,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -123,7 +123,7 @@ class DDTracerTests: XCTestCase {
         defer { LoggingFeature.instance = nil }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),

@@ -45,15 +45,42 @@ public class Datadog {
     /// Initializes the Datadog SDK.
     /// - Parameters:
     ///   - appContext: context passing information about the app.
-    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(clientToken:)`.
+    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(...)`.
+    @available(*, deprecated, message: """
+    This method is deprecated and uses the `TrackingConsent.granted` value as a default privacy consent.
+    This means that the SDK will start recording and sending data immediately after initialisation without waiting for the user's consent to be given.
+
+    Use `Datadog.initialize(appContext:trackingConsent:configuration:)` and set consent to `.granted` to preserve previous behaviour.
+    """)
     public static func initialize(appContext: AppContext, configuration: Configuration) {
+        initialize(
+            appContext: appContext,
+            trackingConsent: .granted,
+            configuration: configuration
+        )
+    }
+
+    /// Initializes the Datadog SDK.
+    /// - Parameters:
+    ///   - appContext: context passing information about the app.
+    ///   - trackingConsent: the initial state of the Data Tracking Consent given by the user of the app.
+    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(...)`.
+    public static func initialize(
+        appContext: AppContext,
+        trackingConsent: TrackingConsent,
+        configuration: Configuration
+    ) {
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
         do {
             try initializeOrThrow(
-                configuration: try FeaturesConfiguration(configuration: configuration, appContext: appContext)
+                initialTrackingConsent: trackingConsent,
+                configuration: try FeaturesConfiguration(
+                    configuration: configuration,
+                    appContext: appContext
+                )
             )
         } catch {
             consolePrint("\(error)")
@@ -96,18 +123,29 @@ public class Datadog {
         )
     }
 
+    /// Sets the tracking consent regarding the data collection for the Datadog SDK.
+    /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
+    public static func set(trackingConsent: TrackingConsent) {
+        instance?.consentProvider.changeConsent(to: trackingConsent)
+    }
+
     // MARK: - Internal
 
     internal static var instance: Datadog?
 
+    internal let consentProvider: ConsentProvider
     internal let userInfoProvider: UserInfoProvider
     internal let launchTimeProvider: LaunchTimeProviderType
 
-    private static func initializeOrThrow(configuration: FeaturesConfiguration) throws {
+    private static func initializeOrThrow(
+        initialTrackingConsent: TrackingConsent,
+        configuration: FeaturesConfiguration
+    ) throws {
         guard Datadog.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
+        let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let dateProvider = SystemDateProvider()
         let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
@@ -141,6 +179,7 @@ public class Datadog {
         var rumAutoInstrumentation: RUMAutoInstrumentation?
 
         let commonDependencies = FeaturesCommonDependencies(
+            consentProvider: consentProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice.current,
@@ -154,7 +193,7 @@ public class Datadog {
 
         if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
-                directory: try obtainLoggingFeatureDirectory(),
+                directories: try obtainLoggingFeatureDirectories(),
                 configuration: loggingConfiguration,
                 commonDependencies: commonDependencies
             )
@@ -162,7 +201,7 @@ public class Datadog {
 
         if let tracingConfiguration = configuration.tracing {
             tracing = TracingFeature(
-                directory: try obtainTracingFeatureDirectory(),
+                directories: try obtainTracingFeatureDirectories(),
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
@@ -172,7 +211,7 @@ public class Datadog {
 
         if let rumConfiguration = configuration.rum {
             rum = RUMFeature(
-                directory: try obtainRUMFeatureDirectory(),
+                directories: try obtainRUMFeatureDirectories(),
                 configuration: rumConfiguration,
                 commonDependencies: commonDependencies
             )
@@ -203,15 +242,18 @@ public class Datadog {
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(
+            consentProvider: consentProvider,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider
         )
     }
 
     internal init(
+        consentProvider: ConsentProvider,
         userInfoProvider: UserInfoProvider,
         launchTimeProvider: LaunchTimeProviderType
     ) {
+        self.consentProvider = consentProvider
         self.userInfoProvider = userInfoProvider
         self.launchTimeProvider = launchTimeProvider
     }

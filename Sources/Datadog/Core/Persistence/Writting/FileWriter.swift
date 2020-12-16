@@ -6,39 +6,25 @@
 
 import Foundation
 
-/// Abstracts the `FileWriter`, so we can have no-op writer in tests.
-internal protocol FileWriterType {
-    func write<T: Encodable>(value: T)
-}
-
-internal final class FileWriter: FileWriterType {
+/// Writes data to files.
+internal final class FileWriter: Writer {
     /// Data writting format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to writable file.
     private let orchestrator: FilesOrchestrator
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
-    /// Queue used to synchronize files access (read / write) and perform decoding on background thread.
-    internal let queue: DispatchQueue
 
-    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator, queue: DispatchQueue) {
+    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator
-        self.queue = queue
         self.jsonEncoder = JSONEncoder.default()
     }
 
     // MARK: - Writing data
 
-    /// Encodes given value to JSON data and writes it to file.
-    /// Comma is used to separate consecutive values in the file.
+    /// Encodes given value to JSON data and writes it to the file.
     func write<T: Encodable>(value: T) {
-        queue.async { [weak self] in
-            self?.synchronizedWrite(value: value)
-        }
-    }
-
-    private func synchronizedWrite<T: Encodable>(value: T) {
         do {
             let data = try jsonEncoder.encode(value)
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))

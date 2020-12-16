@@ -8,19 +8,19 @@ import Foundation
 import XCTest
 @testable import Datadog
 
-/// Observers the `FileWriter` and notifies when data was written, so `DataUploaderMock` can read it immediatelly.
-private class FileWriterObserver: FileWriterType {
-    let observedWriter: FileWriter
+/// Observers the `Writer` and notifies when data was written, so `DataUploaderMock` can read it immediatelly.
+private class WriterObserver: Writer {
+    let observedWriter: ConsentAwareDataWriter
     let writeCallback: (() -> Void)
 
-    init(_ observedWriter: FileWriter, writeCallback: @escaping (() -> Void)) {
+    init(_ observedWriter: ConsentAwareDataWriter, writeCallback: @escaping (() -> Void)) {
         self.observedWriter = observedWriter
         self.writeCallback = writeCallback
     }
 
     func write<T>(value: T) where T: Encodable {
         observedWriter.write(value: value)
-        observedWriter.queue.async { [weak self] in
+        observedWriter.readWriteQueue.async { [weak self] in
             self?.writeCallback()
         }
     }
@@ -29,7 +29,7 @@ private class FileWriterObserver: FileWriterType {
 class DataUploadWorkerMock: DataUploadWorkerType {
     private let queue = DispatchQueue(label: "com.datadoghq.DataUploadWorkerMock-\(UUID().uuidString)")
 
-    private var fileReader: FileReader?
+    private var reader: Reader?
     private var batches: [Batch] = []
 
     // MARK: - Observing FeatureStorage
@@ -37,19 +37,20 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     /// Observes the `FeatureStorage` to immediately capture written data.
     /// Returns new instance of the `FeatureStorage` which shuold be used instead of the original one.
     func observe(featureStorage: FeatureStorage) -> FeatureStorage {
-        let fileWriter = featureStorage.writer as! FileWriter
-        let observedFileWriter = FileWriterObserver(fileWriter) { [weak self] in
+        let originalWriter = featureStorage.writer as! ConsentAwareDataWriter
+        let observedWriter = WriterObserver(originalWriter) { [weak self] in
             self?.readNextBatch()
         }
-        fileReader = featureStorage.reader as? FileReader
-        return FeatureStorage(writer: observedFileWriter, reader: featureStorage.reader)
+        let originalReader = featureStorage.reader
+        reader = originalReader
+        return FeatureStorage(writer: observedWriter, reader: originalReader)
     }
 
     private func readNextBatch() {
         queue.async {
-            if let nextBatch = self.fileReader?.readNextBatch() {
+            if let nextBatch = self.reader?.readNextBatch() {
                 self.record(nextBatch: nextBatch)
-                self.fileReader?.markBatchAsRead(nextBatch)
+                self.reader?.markBatchAsRead(nextBatch)
             }
         }
     }

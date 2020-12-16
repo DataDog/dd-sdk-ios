@@ -10,14 +10,14 @@ import XCTest
 class TracingWithRUMErrorsIntegrationTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        temporaryFeatureDirectories.create()
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         Global.rum = RUMMonitor.initialize()
         Global.rum.startView(viewController: mockView)
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         RUMFeature.instance = nil
         Global.rum = DDNoopRUMMonitor()
         super.tearDown()

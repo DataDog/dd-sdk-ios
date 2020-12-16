@@ -11,18 +11,24 @@ class LoggingStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     private var queue: DispatchQueue!
     private var directory: Directory!
-    private var writer: FileWriter!
-    private var reader: FileReader!
+    private var writer: Writer!
+    private var reader: Reader!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "logging-benchmark")
 
-        let storage = LoggingFeature.createStorage(directory: directory, commonDependencies: .mockAny())
-        self.writer = storage.writer as? FileWriter
-        self.reader = storage.reader as? FileReader
-        self.queue = self.writer.queue
+        let storage = LoggingFeature.createStorage(
+            directories: FeatureDirectories(
+                unauthorized: obtainUniqueTemporaryDirectory(),
+                authorized: directory
+            ),
+            commonDependencies: .mockAny()
+        )
+        self.writer = storage.writer
+        self.reader = storage.reader
+        self.queue = (storage.writer as! ConsentAwareDataWriter).readWriteQueue
 
         XCTAssertTrue(try directory.files().count == 0)
     }

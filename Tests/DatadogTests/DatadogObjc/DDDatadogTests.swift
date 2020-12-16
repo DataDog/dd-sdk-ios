@@ -32,6 +32,7 @@ class DDDatadogTests: XCTestCase {
 
         DDDatadog.initialize(
             appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
+            trackingConsent: randomConsent().objc,
             configuration: configBuilder.build()
         )
 
@@ -44,11 +45,33 @@ class DDDatadogTests: XCTestCase {
         try Datadog.deinitializeOrThrow()
     }
 
+    // MARK: - Changing Tracking Consent
+
+    func testItForwardsTrackingConsentToSwift() throws {
+        let initialConsent = randomConsent()
+        let nextConsent = randomConsent()
+
+        DDDatadog.initialize(
+            appContext: .init(),
+            trackingConsent: initialConsent.objc,
+            configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
+        )
+
+        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, initialConsent.swift)
+
+        DDDatadog.setTrackingConsent(consent: nextConsent.objc)
+
+        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent.swift)
+
+        try Datadog.deinitializeOrThrow()
+    }
+
     // MARK: - Setting user info
 
     func testItForwardsUserInfoToSwift() throws {
         DDDatadog.initialize(
             appContext: .init(),
+            trackingConsent: randomConsent().objc,
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
         let userInfo = Datadog.instance?.userInfoProvider
@@ -91,5 +114,14 @@ class DDDatadogTests: XCTestCase {
             Datadog.verbosityLevel = swiftLevel
             XCTAssertEqual(DDDatadog.verbosityLevel(), objcLevel)
         }
+    }
+
+    // MARK: - Helpers
+
+    private func randomConsent() -> (objc: DDTrackingConsent, swift: TrackingConsent) {
+        let objcConsents: [DDTrackingConsent] = [.granted(), .notGranted(), .pending()]
+        let swiftConsents: [TrackingConsent] = [.granted, .notGranted, .pending]
+        let index: Int = .random(in: 0..<3)
+        return (objc: objcConsents[index], swift: swiftConsents[index])
     }
 }

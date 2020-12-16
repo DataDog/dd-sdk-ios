@@ -14,17 +14,17 @@ class DDLoggerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(LoggingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(LoggingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -46,7 +46,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingNSError() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -78,7 +78,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -103,7 +103,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let objcLogger = DDLogger.builder().build()
@@ -141,7 +141,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSettingTagsAndAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "test"))
         )
         defer { LoggingFeature.instance = nil }

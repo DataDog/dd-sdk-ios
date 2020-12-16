@@ -21,23 +21,23 @@ extension RUMFeature {
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
-        return RUMFeature(directory: directory, configuration: configuration, commonDependencies: dependencies)
+        return RUMFeature(directories: directories, configuration: configuration, commonDependencies: dependencies)
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
         // Get the full feature mock:
         let fullFeature: RUMFeature = .mockWith(
-            directory: directory,
+            directories: directories,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
             )

@@ -6,8 +6,20 @@
 
 import Foundation
 
+/// Lists different types of data directories used by the feature.
+internal struct FeatureDirectories {
+    /// Data directory for storing unauthorized data collected without knowing the tracking consent value.
+    /// Due to the consent change, data in this directory may be either moved to `authorized` folder or entirely deleted.
+    let unauthorized: Directory
+    /// Data directory for storing authorized data collected when tracking consent is granted.
+    /// Consent change does not impact data already stored in this folder.
+    /// Data in this folder gets uploaded to the server.
+    let authorized: Directory
+}
+
 /// Container with dependencies common to all features (Logging, Tracing and RUM).
 internal struct FeaturesCommonDependencies {
+    let consentProvider: ConsentProvider
     let performance: PerformancePreset
     let httpClient: HTTPClient
     let mobileDevice: MobileDevice
@@ -21,33 +33,61 @@ internal struct FeaturesCommonDependencies {
 
 internal struct FeatureStorage {
     /// Writes data to files.
-    let writer: FileWriterType
+    let writer: Writer
     /// Reads data from files.
-    let reader: FileReaderType
+    let reader: Reader
 
     init(
         featureName: String,
         dataFormat: DataFormat,
-        directory: Directory,
+        directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies
     ) {
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-read-write",
             target: .global(qos: .utility)
         )
-        let orchestrator = FilesOrchestrator(
-            directory: directory,
+        let authorizedFilesOrchestrator = FilesOrchestrator(
+            directory: directories.authorized,
+            performance: commonDependencies.performance,
+            dateProvider: commonDependencies.dateProvider
+        )
+        let unauthorizedFilesOrchestrator = FilesOrchestrator(
+            directory: directories.unauthorized,
             performance: commonDependencies.performance,
             dateProvider: commonDependencies.dateProvider
         )
 
+        let consentAwareDataWriter = ConsentAwareDataWriter(
+            consentProvider: commonDependencies.consentProvider,
+            readWriteQueue: readWriteQueue,
+            dataProcessorFactory: DataProcessorFactory(
+                unauthorizedFileWriter: FileWriter(
+                    dataFormat: dataFormat,
+                    orchestrator: unauthorizedFilesOrchestrator
+                ),
+                authorizedFileWriter: FileWriter(
+                    dataFormat: dataFormat,
+                    orchestrator: authorizedFilesOrchestrator
+                )
+            ),
+            dataMigratorFactory: DataMigratorFactory(
+                directories: directories
+            )
+        )
+
+        let dataReader = DataReader(
+            readWriteQueue: readWriteQueue,
+            fileReader: FileReader(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator)
+        )
+
         self.init(
-            writer: FileWriter(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue),
-            reader: FileReader(dataFormat: dataFormat, orchestrator: orchestrator, queue: readWriteQueue)
+            writer: consentAwareDataWriter,
+            reader: dataReader
         )
     }
 
-    init(writer: FileWriterType, reader: FileReaderType) {
+    init(writer: Writer, reader: Reader) {
         self.writer = writer
         self.reader = reader
     }

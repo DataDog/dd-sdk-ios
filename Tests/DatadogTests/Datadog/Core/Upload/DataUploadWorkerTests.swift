@@ -8,7 +8,6 @@ import XCTest
 @testable import Datadog
 
 class DataUploadWorkerTests: XCTestCase {
-    private let fileReadWriteQueue = DispatchQueue(label: "dd-tests-read-write", target: .global(qos: .utility))
     private let uploaderQueue = DispatchQueue(label: "dd-tests-uploader", target: .global(qos: .utility))
 
     lazy var dateProvider = RelativeDateProvider(advancingBySeconds: 1)
@@ -19,13 +18,11 @@ class DataUploadWorkerTests: XCTestCase {
     )
     lazy var writer = FileWriter(
         dataFormat: .mockWith(prefix: "[", suffix: "]"),
-        orchestrator: orchestrator,
-        queue: fileReadWriteQueue
+        orchestrator: orchestrator
     )
     lazy var reader = FileReader(
         dataFormat: .mockWith(prefix: "[", suffix: "]"),
-        orchestrator: orchestrator,
-        queue: fileReadWriteQueue
+        orchestrator: orchestrator
     )
 
     override func setUp() {
@@ -66,7 +63,6 @@ class DataUploadWorkerTests: XCTestCase {
             XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
 
             uploaderQueue.sync {} // wait until last "process upload" operation completes (to make sure "delete file" was requested)
-            fileReadWriteQueue.sync {} // wait until last scheduled "delete file" operation completed
 
             XCTAssertEqual(try temporaryDirectory.files().count, 0)
         }

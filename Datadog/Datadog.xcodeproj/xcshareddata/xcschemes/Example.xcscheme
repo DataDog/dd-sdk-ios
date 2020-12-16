@@ -101,6 +101,16 @@
             value = "RUMResourcesScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "TrackingConsentStartPendingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "TrackingConsentStartGrantedScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

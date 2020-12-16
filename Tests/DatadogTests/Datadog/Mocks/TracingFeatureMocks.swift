@@ -22,14 +22,14 @@ extension TracingFeature {
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
     ) -> TracingFeature {
         return TracingFeature(
-            directory: directory,
+            directories: directories,
             configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
@@ -40,7 +40,7 @@ extension TracingFeature {
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
@@ -48,7 +48,7 @@ extension TracingFeature {
     ) -> TracingFeature {
         // Get the full feature mock:
         let fullFeature: TracingFeature = .mockWith(
-            directory: directory,
+            directories: directories,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
             ),

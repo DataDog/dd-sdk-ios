@@ -12,13 +12,13 @@ class RUMFeatureTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(RUMFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(RUMFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
@@ -27,7 +27,7 @@ class RUMFeatureTests: XCTestCase {
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationName: "FoobarApp",
@@ -64,7 +64,7 @@ class RUMFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(

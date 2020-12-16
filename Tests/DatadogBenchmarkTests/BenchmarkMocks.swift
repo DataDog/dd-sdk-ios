@@ -15,6 +15,7 @@ private struct DateCorrectorMock: DateCorrectorType {
 extension FeaturesCommonDependencies {
     static func mockAny() -> Self {
         return .init(
+            consentProvider: ConsentProvider(initialConsent: .granted),
             performance: .default,
             httpClient: HTTPClient(),
             mobileDevice: .current,

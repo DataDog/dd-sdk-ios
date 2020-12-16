@@ -6,9 +6,13 @@
 
 import Foundation
 
-/// Obtains a subdirectory in `/Library/Caches` for writting RUM events.
-internal func obtainRUMFeatureDirectory() throws -> Directory {
-    return try Directory(withSubdirectoryPath: "com.datadoghq.rum/v1")
+/// Obtains subdirectories in `/Library/Caches` where RUM data is stored.
+internal func obtainRUMFeatureDirectories() throws -> FeatureDirectories {
+    let version = "v1"
+    return FeatureDirectories(
+        unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/intermediate-\(version)"),
+        authorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/\(version)")
+    )
 }
 
 /// Creates and owns componetns enabling RUM feature.
@@ -46,18 +50,17 @@ internal final class RUMFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
-            directory: directory,
+            directories: directories,
             commonDependencies: commonDependencies
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
-        directory: Directory,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) -> FeatureUpload {
@@ -93,12 +96,12 @@ internal final class RUMFeature {
     }
 
     convenience init(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
-        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = RUMFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
+        let storage = RUMFeature.createStorage(directories: directories, commonDependencies: commonDependencies)
+        let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,

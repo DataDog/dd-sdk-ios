@@ -12,13 +12,13 @@ class TracingFeatureTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
@@ -27,7 +27,7 @@ class TracingFeatureTests: XCTestCase {
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationName: "FoobarApp",
@@ -57,7 +57,7 @@ class TracingFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(

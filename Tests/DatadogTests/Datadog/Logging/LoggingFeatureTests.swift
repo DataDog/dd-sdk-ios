@@ -12,13 +12,13 @@ class LoggingFeatureTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
@@ -27,7 +27,7 @@ class LoggingFeatureTests: XCTestCase {
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationName: "FoobarApp",
@@ -55,7 +55,7 @@ class LoggingFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
