@@ -14,7 +14,7 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: LoggingScenario.self,
+            testScenario: LoggingManualInstrumentationScenario.self,
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL
             )

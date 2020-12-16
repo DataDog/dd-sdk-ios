@@ -29,7 +29,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
-            trackingConsent: .granted,
+            trackingConsent: appConfiguration.initialTrackingConsent,
             configuration: appConfiguration.sdkConfiguration()
         )
 
