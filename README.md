@@ -16,6 +16,12 @@ See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/
 
 ![Datadog iOS Log Collection](docs/images/tracing.png)
 
+## Integrations
+
+### Alamofire
+
+If you use [Alamofire](https://github.com/Alamofire/Alamofire), take a look at [`DatadogAlamofireExtension` library](Sources/DatadogExtensions/Alamofire/) to learn how to auto instrument your requests with Datadog SDK.
+
 ## Contributing
 
 Pull requests are welcome. First, open an issue to discuss what you would like to change. For more information, read the [Contributing Guide](CONTRIBUTING.md).
