@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class Datadog.Datadog
+import Datadog
 
 @objcMembers
 public class DDEndpoint: NSObject {
@@ -122,6 +122,20 @@ public class DDConfigurationBuilder: NSObject {
 
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
+    }
+
+    public func trackUIKitRUMViews() {
+        let defaultPredicate = DefaultUIKitRUMViewsPredicate()
+        _ = sdkBuilder.trackUIKitRUMViews(using: defaultPredicate)
+    }
+
+    public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate) {
+        let predicateBridge = PredicateBridge(objcPredicate: predicate)
+        _ = sdkBuilder.trackUIKitRUMViews(using: predicateBridge)
+    }
+
+    public func trackUIKitActions() {
+        _ = sdkBuilder.trackUIKitActions(true)
     }
 
     public func build() -> DDConfiguration {

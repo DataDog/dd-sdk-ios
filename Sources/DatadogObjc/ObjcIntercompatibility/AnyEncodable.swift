@@ -6,6 +6,10 @@
 
 import Foundation
 
+internal func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Encodable] {
+    return attributes.mapValues { AnyEncodable($0) }
+}
+
 /// Type erasing `Encodable` wrapper to bridge Objective-C's `Any` to Swift `Encodable`.
 ///
 /// Inspired by `AnyCodable` by Flight-School (MIT):

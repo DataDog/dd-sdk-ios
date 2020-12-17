@@ -8,18 +8,37 @@ import Foundation
 import Datadog
 
 @objcMembers
+public class DDGlobal: NSObject {
+    public internal(set) static var tracer: OTTracer = noopTracer {
+        didSet {
+            // We must also set the Swift `Global.tracer`
+            // as it's used internally by auto-instrumentation feature.
+            if let ddTracer = tracer.dd?.swiftTracer {
+                Global.sharedTracer = ddTracer
+            }
+        }
+    }
+    public internal(set) static var rum = DDRUM(isNoOp: true) {
+        // We must also set the Swift `Global.rum`
+        // as it's used internally by auto-instrumentation feature.
+        didSet { Global.rum = rum.sdkRUM }
+    }
+}
+
+@available(*, deprecated, message: "Please use DDGlobal.tracer instead.")
+@objcMembers
 @objc(OTGlobal)
 public class OTGlobal: NSObject {
     public static func initSharedTracer(_ tracer: OTTracer) {
         guard let ddtracer = tracer.dd else {
             return
         }
-
         sharedTracer = ddtracer
-
-        // We must also set the Swift `sharedTracer` as it's used internally by auto-instrumentation feature.
         Global.sharedTracer = ddtracer.swiftTracer
     }
 
-    public internal(set) static var sharedTracer: OTTracer = noopTracer
+    public internal(set) static var sharedTracer: OTTracer {
+        get { DDGlobal.tracer }
+        set { DDGlobal.tracer = newValue }
+    }
 }

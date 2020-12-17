@@ -198,5 +198,6 @@ public class DDRUMMonitor {
 }
 
 /// The no-op variant of `DDRUMMonitor`.
-internal class DDNoopRUMMonitor: DDRUMMonitor {
+public class DDNoopRUMMonitor: DDRUMMonitor {
+    override public init() { }
 }

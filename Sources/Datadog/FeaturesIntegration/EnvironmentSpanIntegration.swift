@@ -8,7 +8,7 @@ import Foundation
 
 fileprivate struct EnvironmentSpanIntegration {
     /// Tracing context read from environment variables if injected
-    internal static var environmentContext: (spanID: String, traceID: String)? {
+    static var environmentContext: (spanID: String, traceID: String)? {
         guard let spanIDValue = ProcessInfo.processInfo.environment[TracingHTTPHeaders.parentSpanIDField] ,
               let traceIDValue = ProcessInfo.processInfo.environment[TracingHTTPHeaders.traceIDField] else {
             return nil
