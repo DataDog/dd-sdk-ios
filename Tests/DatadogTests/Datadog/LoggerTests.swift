@@ -673,7 +673,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With Environment Context
 
     func testGivenBundlingWithTraceEnabledAndTracerRegisteredAndEnvironmentContext_whenSendingLog_itContainsEnvironmentContextAttributes() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         setenv("x-datadog-trace-id", "111111", 1)

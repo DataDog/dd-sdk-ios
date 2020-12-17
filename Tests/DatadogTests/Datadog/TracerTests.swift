@@ -1067,7 +1067,7 @@ class TracerTests: XCTestCase {
     // MARK: - Environment Context
 
     func testSendingSpansWithNoDirectParentAndEnvironmentContext() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
         defer { TracingFeature.instance = nil }
 
         setenv("x-datadog-trace-id", "111111", 1)
@@ -1104,7 +1104,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithActiveSpanAsAParentAndEnvironmentContext() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
         defer { TracingFeature.instance = nil }
 
         setenv("x-datadog-trace-id", "111111", 1)
