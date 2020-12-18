@@ -142,11 +142,6 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "BITRISE_APP_URL"
-            value = "$(BITRISE_APP_URL)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
             key = "BITRISE_GIT_BRANCH"
             value = "$(BITRISE_GIT_BRANCH)"
             isEnabled = "YES">
@@ -174,6 +169,41 @@
          <EnvironmentVariable
             key = "BITRISE_BUILD_SLUG"
             value = "$(BITRISE_BUILD_SLUG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_GIT_MESSAGE"
+            value = "$(BITRISE_GIT_MESSAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GIT_CLONE_COMMIT_MESSAGE_SUBJECT"
+            value = "$(GIT_CLONE_COMMIT_MESSAGE_SUBJECT)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GIT_CLONE_COMMIT_MESSAGE_BODY"
+            value = "$(GIT_CLONE_COMMIT_MESSAGE_BODY)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GIT_CLONE_COMMIT_AUTHOR_NAME"
+            value = "$(GIT_CLONE_COMMIT_AUTHOR_NAME)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GIT_CLONE_COMMIT_AUTHOR_EMAIL"
+            value = "$(GIT_CLONE_COMMIT_AUTHOR_EMAIL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GIT_CLONE_COMMIT_COMMITER_NAME"
+            value = "$(GIT_CLONE_COMMIT_COMMITER_NAME)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GIT_CLONE_COMMIT_COMMITER_EMAIL"
+            value = "$(GIT_CLONE_COMMIT_COMMITER_EMAIL)"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
