@@ -1,14 +1,14 @@
 # Datadog Integration for Alamofire
 
 `DatadogAlamofireExtension` enables `Alamofire.Session` auto instrumentation with Datadog SDK.
-It's a counterpart of `DDURLSessionDelegate` which we provide for native `URLSession` instrumentation.
+It's a counterpart of `DDURLSessionDelegate`, which is provided for native `URLSession` instrumentation.
 
-## Getting Started
+## Getting started
 
 ### CocoaPods
 
 To include the Datadog integration for [Alamofire][1] in your project, add the
-following to your `Podfile`.
+following to your `Podfile`:
 ```ruby
 pod 'DatadogSDKAlamofireExtension'
 ```
@@ -16,7 +16,7 @@ pod 'DatadogSDKAlamofireExtension'
 
 ### Carthage and SPM
 
-Although our [Alamofire][1] integration doesn't currently support [Carthage][2] nor [SPM][3], the number of code needed to set it up is very low and you may want to just include the source files from this folder directly in your project.
+The Datadog [Alamofire][1] integration doesn't support [Carthage][2] or [SPM][3], however, the code needed for set up is very low. You may want to include the source files from this folder directly in your project.
 
 ### Initial setup
 
@@ -34,7 +34,7 @@ let alamofireSession = Session(
 )
 ```
 
-This will make the Datadog SDK track requests sent from this instance of the `Alamofire.Session`.
+Using this setup makes the Datadog SDK track requests from this instance of the `Alamofire.Session`.
 
 ## Contributing
 

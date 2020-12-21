@@ -20,7 +20,7 @@ See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/
 
 ### Alamofire
 
-If you use [Alamofire](https://github.com/Alamofire/Alamofire), take a look at [`DatadogAlamofireExtension` library](Sources/DatadogExtensions/Alamofire/) to learn how to auto instrument your requests with Datadog SDK.
+If you use [Alamofire](https://github.com/Alamofire/Alamofire), review the [`DatadogAlamofireExtension` library](Sources/DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with Datadog SDK.
 
 ## Contributing
 
