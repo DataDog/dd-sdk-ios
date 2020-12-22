@@ -30,7 +30,7 @@ extension Datadog.Configuration.TracesEndpoint: Equatable {
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
-    func testItFowardsInitializationToSwift() {
+    func testItFowardsInitializationToSwift() throws {
         let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
 
         let swiftConfigurationDefault = objcBuilder.build().sdkConfiguration
@@ -41,6 +41,8 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(swiftConfigurationDefault.tracesEndpoint, .us)
         XCTAssertEqual(swiftConfigurationDefault.environment, "tests")
         XCTAssertNil(swiftConfigurationDefault.serviceName)
+        XCTAssertFalse(swiftConfigurationDefault.rumUIKitActionsTrackingEnabled)
+        XCTAssertNil(swiftConfigurationDefault.rumUIKitViewsPredicate)
 
         objcBuilder.enableLogging(false)
         let swiftConfigurationLoggingDisabled = objcBuilder.build().sdkConfiguration
@@ -77,5 +79,34 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.track(firstPartyHosts: ["example.com"])
         let swiftConfigurationTracedHosts = objcBuilder.build().sdkConfiguration
         XCTAssertEqual(swiftConfigurationTracedHosts.firstPartyHosts, ["example.com"])
+
+        objcBuilder.trackUIKitActions()
+        let swiftConfigurationTrackingActions = objcBuilder.build().sdkConfiguration
+        XCTAssertTrue(swiftConfigurationTrackingActions.rumUIKitActionsTrackingEnabled)
+    }
+
+    func testDefaultViewPredicate() throws {
+        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
+
+        objcBuilder.trackUIKitRUMViews()
+        let swiftConfigurationViewPredicate = objcBuilder.build().sdkConfiguration
+        XCTAssertNotNil(swiftConfigurationViewPredicate.rumUIKitViewsPredicate)
+    }
+
+    func testCustomViewPredicate() throws {
+        class ObjCPredicate: DDUIKitRUMViewsPredicate {
+            var returnView: DDRUMView?
+            func rumView(for viewController: UIViewController) -> DDRUMView? {
+                return returnView
+            }
+        }
+
+        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
+
+        let predicate = ObjCPredicate()
+        objcBuilder.trackUIKitRUMViews(using: predicate)
+        let swiftConfigurationViewPredicate = objcBuilder.build().sdkConfiguration
+        let predicateBridge = try XCTUnwrap(swiftConfigurationViewPredicate.rumUIKitViewsPredicate as? PredicateBridge)
+        XCTAssert(predicateBridge.objcPredicate === predicate)
     }
 }

@@ -35,7 +35,7 @@ public class DDRUMView: NSObject {
 }
 
 @objc
-public protocol DDUIKitRUMViewsPredicate {
+public protocol DDUIKitRUMViewsPredicate: AnyObject {
     /// The predicate deciding if the RUM View should be started or ended for given instance of the `UIViewController`.
     /// - Parameter viewController: an instance of the view controller noticed by the SDK.
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
@@ -91,12 +91,8 @@ public class DDRUM: NSObject {
         super.init()
     }
 
-    internal init(isNoOp: Bool) {
-        if isNoOp {
-            sdkRUM = DDNoopRUMMonitor()
-        } else {
-            sdkRUM = RUMMonitor.initialize()
-        }
+    internal init(_ sdkRUM: DDRUMMonitor) {
+        self.sdkRUM = sdkRUM
         super.init()
     }
 
@@ -115,12 +111,8 @@ public class DDRUM: NSObject {
         sdkRUM.stopView(viewController: viewController, attributes: castAttributesToSwift(attributes))
     }
 
-    public func addError(
-        message: String,
-        source: DDRUMErrorSource,
-        attributes: [String: Any]
-    ) {
-        sdkRUM.addError(message: message, source: source.swiftType, attributes: castAttributesToSwift(attributes))
+    public func addTiming(name: String) {
+        sdkRUM.addTiming(name: name)
     }
 
     public func addError(
