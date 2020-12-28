@@ -568,12 +568,12 @@ internal struct RUMResourceEvent: RUMDataModel {
 
         /// HTTP method of the resource
         internal enum Method: String, Codable {
-            case pOST = "POST"
-            case gET = "GET"
-            case hEAD = "HEAD"
-            case pUT = "PUT"
-            case dELETE = "DELETE"
-            case pATCH = "PATCH"
+            case post = "POST"
+            case get = "GET"
+            case head = "HEAD"
+            case put = "PUT"
+            case delete = "DELETE"
+            case patch = "PATCH"
         }
 
         /// The provider for this resource
@@ -1162,12 +1162,12 @@ internal struct RUMErrorEvent: RUMDataModel {
 
             /// HTTP method of the resource
             internal enum Method: String, Codable {
-                case pOST = "POST"
-                case gET = "GET"
-                case hEAD = "HEAD"
-                case pUT = "PUT"
-                case dELETE = "DELETE"
-                case pATCH = "PATCH"
+                case post = "POST"
+                case get = "GET"
+                case head = "HEAD"
+                case put = "PUT"
+                case delete = "DELETE"
+                case patch = "PATCH"
             }
 
             /// The provider for this resource

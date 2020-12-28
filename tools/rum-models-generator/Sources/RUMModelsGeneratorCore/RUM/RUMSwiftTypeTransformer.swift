@@ -107,7 +107,13 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
     }
 
     private func format(enumCaseName: String) -> String {
-        enumCaseName.lowerCamelCased
+        // When generating enum cases for Resource's HTTP method, force lowercase
+        // (`.get`, `.post`, ...)
+        if (context.current as? SwiftEnum)?.name.lowercased() == "method" {
+            return enumCaseName.lowercased()
+        }
+
+        return enumCaseName.lowerCamelCased
     }
 
     /// Some RUM type names need additional fix to not conflict with Swift keywords (like `Type`) or just to look better.
