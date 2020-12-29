@@ -94,10 +94,10 @@ extension SwiftEnum: Equatable {
     }
 }
 
-func == (lhs: SwiftType, rhs: SwiftType) -> Bool {
+internal func == (lhs: SwiftType, rhs: SwiftType) -> Bool {
     return String(describing: lhs) == String(describing: rhs)
 }
 
-func != (lhs: SwiftType, rhs: SwiftType) -> Bool {
+internal func != (lhs: SwiftType, rhs: SwiftType) -> Bool {
     return !(lhs == rhs)
 }

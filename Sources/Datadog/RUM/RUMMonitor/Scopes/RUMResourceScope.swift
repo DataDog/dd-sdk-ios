@@ -101,70 +101,71 @@ internal class RUMResourceScope: RUMScope {
             size = command.size
         }
 
-        let eventData = RUMDataResource(
-            date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            application: .init(id: context.rumApplicationID),
-            service: nil,
-            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
-            view: .init(
-                id: context.activeViewID.orNull.toRUMDataFormat,
-                referrer: nil,
-                url: context.activeViewURI ?? ""
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
+        let eventData = RUMResourceEvent(
             dd: .init(
-                spanID: spanContext?.spanID,
-                traceID: spanContext?.traceID
+                spanId: spanContext?.spanID,
+                traceId: spanContext?.traceID
             ),
+            action: context.activeUserActionID.flatMap { rumUUID in
+                .init(id: rumUUID.toRUMDataFormat)
+            },
+            application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             resource: .init(
-                id: resourceUUID.toRUMDataFormat,
-                type: (resourceKindBasedOnRequest ?? command.kind).toRUMDataFormat,
-                method: resourceHTTPMethod.toRUMDataFormat,
-                url: resourceURL,
-                statusCode: command.httpStatusCode?.toInt64,
-                duration: resourceDuration.toInt64Nanoseconds,
-                size: size ?? 0,
-                redirect: resourceMetrics?.redirection.flatMap { metric in
-                    RUMDataRedirect(
+                connect: resourceMetrics?.connect.flatMap { metric in
+                    .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
                 dns: resourceMetrics?.dns.flatMap { metric in
-                    RUMDataDNS(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
-                    )
-                },
-                connect: resourceMetrics?.connect.flatMap { metric in
-                    RUMDataConnect(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
-                    )
-                },
-                ssl: resourceMetrics?.ssl.flatMap { metric in
-                    RUMDataSSL(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
-                    )
-                },
-                firstByte: resourceMetrics?.firstByte.flatMap { metric in
-                    RUMDataFirstByte(
+                    .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
                 download: resourceMetrics?.download.flatMap { metric in
-                    RUMDataDownload(
+                    .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
-                }
+                },
+                duration: resourceDuration.toInt64Nanoseconds,
+                firstByte: resourceMetrics?.firstByte.flatMap { metric in
+                    .init(
+                        duration: metric.duration.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                    )
+                },
+                id: resourceUUID.toRUMDataFormat,
+                method: resourceHTTPMethod.toRUMDataFormat,
+                provider: nil,
+                redirect: resourceMetrics?.redirection.flatMap { metric in
+                    .init(
+                        duration: metric.duration.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                    )
+                },
+                size: size ?? 0,
+                ssl: resourceMetrics?.ssl.flatMap { metric in
+                    .init(
+                        duration: metric.duration.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                    )
+                },
+                statusCode: command.httpStatusCode?.toInt64,
+                type: (resourceKindBasedOnRequest ?? command.kind).toRUMDataFormat,
+                url: resourceURL
             ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
-            }
+            service: nil,
+            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
+            view: .init(
+                id: context.activeViewID.orNull.toRUMDataFormat,
+                referrer: nil,
+                url: context.activeViewURI ?? ""
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
@@ -174,33 +175,34 @@ internal class RUMResourceScope: RUMScope {
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMDataError(
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMErrorEvent(
+            dd: .init(),
+            action: context.activeUserActionID.flatMap { rumUUID in
+                .init(id: rumUUID.toRUMDataFormat)
+            },
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            error: .init(
+                isCrash: false,
+                message: command.errorMessage,
+                resource: .init(
+                    method: resourceHTTPMethod.toRUMDataFormat,
+                    provider: nil,
+                    statusCode: command.httpStatusCode?.toInt64 ?? 0,
+                    url: resourceURL
+                ),
+                source: command.errorSource.toRUMDataFormat,
+                stack: command.stack
+            ),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            error: .init(
-                message: command.errorMessage,
-                source: command.errorSource.toRUMDataFormat,
-                stack: command.stack,
-                isCrash: false,
-                resource: .init(
-                    method: resourceHTTPMethod.toRUMDataFormat,
-                    statusCode: command.httpStatusCode?.toInt64 ?? 0,
-                    url: resourceURL
-                )
-            ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
-            }
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

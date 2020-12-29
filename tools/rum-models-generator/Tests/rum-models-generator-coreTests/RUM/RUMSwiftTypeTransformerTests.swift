@@ -257,7 +257,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     SwiftStruct.Property(
                         name: "method",
                         comment: nil,
-                        type: SwiftTypeReference(referencedTypeName: "RUMHTTPMethod"),
+                        type: SwiftTypeReference(referencedTypeName: "RUMMethod"),
                         isOptional: true,
                         isMutable: false,
                         defaultVaule: nil,
@@ -279,7 +279,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                 conformance: [codableProtocol]
             ),
             SwiftEnum(
-                name: "RUMHTTPMethod",
+                name: "RUMMethod",
                 comment: nil,
                 cases: [],
                 conformance: [codableProtocol]
