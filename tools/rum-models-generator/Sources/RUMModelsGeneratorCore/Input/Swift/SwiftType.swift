@@ -62,7 +62,23 @@ internal struct SwiftProtocol: SwiftType {
     var conformance: [SwiftProtocol]
 }
 
+/// Reference to any other Swift type.
+internal struct SwiftTypeReference: SwiftType {
+    var referencedTypeName: String
+}
+
 internal let codableProtocol = SwiftProtocol(name: "Codable", conformance: [])
+
+// MARK: - Helpers
+
+extension SwiftType {
+    /// The name of this type (or `nil` if this type is unnamed).
+    var typeName: String? {
+        let `struct` = self as? SwiftStruct
+        let `enum` = self as? SwiftEnum
+        return `struct`?.name ?? `enum`?.name
+    }
+}
 
 // MARK: - Equatable
 
@@ -70,4 +86,18 @@ extension SwiftStruct: Equatable {
     static func == (lhs: SwiftStruct, rhs: SwiftStruct) -> Bool {
         return String(describing: lhs) == String(describing: rhs)
     }
+}
+
+extension SwiftEnum: Equatable {
+    static func == (lhs: SwiftEnum, rhs: SwiftEnum) -> Bool {
+        return String(describing: lhs) == String(describing: rhs)
+    }
+}
+
+func == (lhs: SwiftType, rhs: SwiftType) -> Bool {
+    return String(describing: lhs) == String(describing: rhs)
+}
+
+func != (lhs: SwiftType, rhs: SwiftType) -> Bool {
+    return !(lhs == rhs)
 }

@@ -45,7 +45,7 @@ public extension RUMJSONSchemaFiles {
 public class RUMModelsGenerator {
     private let jsonSchemaReader = JSONSchemaReader()
     private let jsonObjectReader = JSONTypeReader()
-    private let swiftStructReader = SwiftTypeReader()
+    private let swiftTypeReader = SwiftTypeReader()
     private let rumSwiftTransformer = RUMSwiftTypeTransformer()
     private let swiftPrinter = SwiftPrinter()
 
@@ -73,17 +73,18 @@ public class RUMModelsGenerator {
             schemaFiles.longTaskSchema
         ]
 
-        try mainSchemaFiles.forEach { schemaFile in
+        let swiftModels: [SwiftType] = try mainSchemaFiles.map { schemaFile in
             let jsonSchema = try jsonSchemaReader.readJSONSchema(
                 from: schemaFile,
                 resolvingAgainst: [schemaFiles.commonSchema]
             )
             let jsonObject = try jsonObjectReader.readJSONObject(from: jsonSchema)
-            var swiftStruct = try swiftStructReader.readSwiftStruct(from: jsonObject)
-            swiftStruct = rumSwiftTransformer.transform(type: swiftStruct) as! SwiftStruct // swiftlint:disable:this force_cast
-            output += "\n"
-            output += try swiftPrinter.print(swiftStruct: swiftStruct)
+            return try swiftTypeReader.readSwiftStruct(from: jsonObject)
         }
+
+        let rumModels = try rumSwiftTransformer.transform(types: swiftModels)
+
+        output += try swiftPrinter.print(swiftTypes: rumModels)
 
         return output
     }

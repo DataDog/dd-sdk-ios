@@ -8,18 +8,25 @@ import Foundation
 
 /// Transforms `SwiftTypes` for RUM code generation.
 internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
+    /// Types which will shared between all input `types`. Sharing means detaching those types from nested declaration
+    /// and putting them at the root level of the resultant `types` array, so the type can be printed without being nested.
+    private let sharedTypeNames = ["RUMConnectivity", "RUMUser", "RUMHTTPMethod"]
+    /// `RUMDataModel` protocol, implemented by all RUM models.
     private let rumDataModelProtocol = SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])
 
-    override func transform(type: SwiftType) -> SwiftType {
+    override func transform(types: [SwiftType]) throws -> [SwiftType] {
+        sharedRootTypes = []
+
         precondition(context.current == nil)
-        let transformed = transformAny(type: type)
+        let transformed = try types.map { try transformAny(type: $0) }
         precondition(context.current == nil)
-        return transformed
+
+        return transformed + sharedRootTypes
     }
 
-    // MARK: - Private
+    // MARK: - Type Transformations
 
-    private func transformAny(type: SwiftType) -> SwiftType {
+    private func transformAny(type: SwiftType) throws -> SwiftType {
         context.enter(type)
         defer { context.leave() }
 
@@ -27,11 +34,13 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         case let primitive as SwiftPrimitiveType:
             return transform(primitive: primitive)
         case let array as SwiftArray:
-            return transform(array: array)
+            return try transform(array: array)
         case let `enum` as SwiftEnum:
-            return transform(enum: `enum`)
+            let transformed = transform(enum: `enum`)
+            return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
         case let `struct` as SwiftStruct:
-            return transform(struct: `struct`)
+            let transformed = try transform(struct: `struct`)
+            return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
         default:
             return type
         }
@@ -45,9 +54,9 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         }
     }
 
-    private func transform(array: SwiftArray) -> SwiftArray {
+    private func transform(array: SwiftArray) throws -> SwiftArray {
         var array = array
-        array.element = transformAny(type: array.element)
+        array.element = try transformAny(type: array.element)
         return array
     }
 
@@ -65,8 +74,8 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         return `enum`
     }
 
-    private func transform(`struct`: SwiftStruct) -> SwiftStruct {
-        func transform(structProperty: SwiftStruct.Property) -> SwiftStruct.Property {
+    private func transform(`struct`: SwiftStruct) throws -> SwiftStruct {
+        func transform(structProperty: SwiftStruct.Property) throws -> SwiftStruct.Property {
             func transform(defaultValue: SwiftPropertyDefaultValue) -> SwiftPropertyDefaultValue {
                 if var enumCase = defaultValue as? SwiftEnum.Case {
                     enumCase.label = format(enumCaseName: enumCase.label)
@@ -78,14 +87,14 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
 
             var structProperty = structProperty
             structProperty.name = format(propertyName: structProperty.name)
-            structProperty.type = transformAny(type: structProperty.type)
+            structProperty.type = try transformAny(type: structProperty.type)
             structProperty.defaultVaule = structProperty.defaultVaule.ifNotNil { transform(defaultValue: $0) }
             return structProperty
         }
 
         var `struct` = `struct`
         `struct`.name = format(structName: `struct`.name)
-        `struct`.properties = `struct`.properties.map { transform(structProperty: $0) }
+        `struct`.properties = try `struct`.properties.map { try transform(structProperty: $0) }
         if context.parent == nil {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
         } else {
@@ -93,6 +102,8 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         }
         return `struct`
     }
+
+    // MARK: - Naming Conventions
 
     private func format(structName: String) -> String {
         fix(typeName: structName.upperCamelCased)
@@ -136,6 +147,55 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             fixedName = format(structName: parentTypeName) + fixedName
         }
 
+        if fixedName == "Connectivity" {
+            fixedName = "RUMConnectivity"
+        }
+
+        if fixedName == "USR" {
+            fixedName = "RUMUser"
+        }
+
+        if fixedName == "Method" {
+            fixedName = "RUMHTTPMethod"
+        }
+
         return fixedName
+    }
+
+    // MARK: - Shared Types
+
+    private var sharedRootTypes: [SwiftType] = []
+
+    /// Returns `true` if this `type` is configured to be shared.
+    private func isSharedType(_ type: SwiftType) -> Bool {
+        if let name = type.typeName {
+            return sharedTypeNames.contains(name)
+        } else {
+            return false
+        }
+    }
+
+    /// Detaches given `type` from nested declaration by replacing it with `SwiftTypeReference` and
+    /// appending to `sharedRootTypes`.
+    private func replaceWithSharedTypeReference(_ type: SwiftType) throws -> SwiftTypeReference {
+        guard let name = type.typeName else {
+            throw Exception.illegal("Type \(type) cannot be shared.")
+        }
+
+        if let existing = sharedRootTypes.first(where: { $0.typeName == name }) {
+            // If a type with given name is already declared as shared, its definition must be
+            // equal to `type`, otherwise sharing is not possible.
+            guard existing == type else {
+                throw Exception.inconsistency(
+                    """
+                    \(type) and \(existing) cannot be printed as a shared root type because their definitions are different.
+                    """
+                )
+            }
+        } else {
+            sharedRootTypes.append(type)
+        }
+
+        return SwiftTypeReference(referencedTypeName: name)
     }
 }

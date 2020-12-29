@@ -12,7 +12,7 @@ internal class Printer {
 
     // MARK: - Indentation
 
-    private var indentationLevel: Int = 0
+    private(set) var indentationLevel: Int = 0
 
     private var currentIndentation: String {
         let indentation = "    "
