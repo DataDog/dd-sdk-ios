@@ -45,7 +45,7 @@ class RUMDataModelsMappingTests: XCTestCase {
     }
 
     func testRUMHTTPMethod() {
-        verify(value: RUMHTTPMethod.GET, matches: .methodGET)
+        verify(value: RUMHTTPMethod.GET, matches: .get)
         verify(value: RUMHTTPMethod.POST, matches: .post)
         verify(value: RUMHTTPMethod.PUT, matches: .put)
         verify(value: RUMHTTPMethod.DELETE, matches: .delete)

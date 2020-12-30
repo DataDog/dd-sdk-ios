@@ -589,14 +589,14 @@ class LoggerTests: XCTestCase {
         // then
         // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
-        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMDataError.self) }
-        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMDataError.self) }
-        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMDataError.self) { rumModel in
+        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
         }
-        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMDataError.self) { rumModel in
+        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "critical message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)

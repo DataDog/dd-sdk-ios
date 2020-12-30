@@ -69,9 +69,9 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createRandomizedRUMEvent() -> RUMEvent<RUMDataView> {
+    private func createRandomizedRUMEvent() -> RUMEvent<RUMViewEvent> {
         return RUMEvent(
-            model: RUMDataView(
+            model: RUMViewEvent(
                 date: Int64.random(in: Int64.min..<Int64.max),
                 application: .init(id: UUID().uuidString),
                 service: .mockRandom(length: 20),
