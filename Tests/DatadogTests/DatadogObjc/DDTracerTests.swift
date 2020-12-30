@@ -25,7 +25,7 @@ class DDTracerTests: XCTestCase {
         TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
         defer { TracingFeature.instance = nil }
 
-        let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
+        let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
 
         let objcSpan1 = objcTracer.startSpan("operation")
         let objcSpan2 = objcTracer.startSpan(
@@ -180,34 +180,7 @@ class DDTracerTests: XCTestCase {
         )
     }
 
-    func testWhenSettingGlobalTracer_itSetsSwiftTracerAswell() {
-        XCTAssertTrue(OTGlobal.sharedTracer === noopTracer)
-
-        let swiftTracer = Tracer.mockAny()
-        let objcTracer = DDTracer(swiftTracer: swiftTracer)
-
-        let previousObjcTracer = OTGlobal.sharedTracer
-        let previousSwiftTracer = Global.sharedTracer
-        OTGlobal.initSharedTracer(objcTracer)
-        defer {
-            OTGlobal.sharedTracer = previousObjcTracer
-            Global.sharedTracer = previousSwiftTracer
-        }
-
-        XCTAssertTrue(OTGlobal.sharedTracer === objcTracer)
-        XCTAssertTrue(Global.sharedTracer as? Tracer === swiftTracer)
-    }
-
     // MARK: - Usage errors
-
-    func testsWhenUsingUnexpectedOTTracer() throws {
-        let previousObjcTracer = OTGlobal.sharedTracer
-
-        OTGlobal.initSharedTracer(noopTracer)
-
-        XCTAssertTrue(OTGlobal.sharedTracer === previousObjcTracer)
-        XCTAssertFalse(Global.sharedTracer is Tracer)
-    }
 
     func testsWhenUsingUnexpectedOTSpanContext() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())

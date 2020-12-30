@@ -5,19 +5,17 @@
  */
 
 import Foundation
-import Datadog
 
 @available(*, deprecated, renamed: "DDGlobal")
 @objcMembers
 @objc(OTGlobal)
 public class OTGlobal: NSObject {
-    @available(*, deprecated, message: "Please set DDGlobal.sharedTracer instead of using this method.")
+    @available(*, deprecated, message: "Use `DDGlobal.sharedTracer`.")
     public static func initSharedTracer(_ tracer: OTTracer) {
         guard let ddtracer = tracer.dd else {
             return
         }
         sharedTracer = ddtracer
-        Global.sharedTracer = ddtracer.swiftTracer
     }
 
     public internal(set) static var sharedTracer: OTTracer {

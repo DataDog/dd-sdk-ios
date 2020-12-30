@@ -6,7 +6,12 @@
 
 import Foundation
 import UIKit
-import Datadog
+import class Datadog.DDRUMMonitor
+import class Datadog.RUMMonitor
+import enum Datadog.RUMErrorSource
+import enum Datadog.RUMUserActionType
+import struct Datadog.RUMView
+import protocol Datadog.UIKitRUMViewsPredicate
 
 internal struct PredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
@@ -82,18 +87,22 @@ public enum DDRUMUserActionType: Int {
     }
 }
 
-@objcMembers
-public class DDRUM: NSObject {
-    let sdkRUM: DDRUMMonitor
+internal let noopRUMMonitor = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: nil)
 
-    override public init() {
-        sdkRUM = RUMMonitor.initialize()
-        super.init()
+@objcMembers
+public class DDRUMMonitor: NSObject {
+    // MARK: - Internal
+
+    internal let swiftRUMMonitor: Datadog.DDRUMMonitor?
+
+    internal init(swiftRUMMonitor: Datadog.DDRUMMonitor?) {
+        self.swiftRUMMonitor = swiftRUMMonitor
     }
 
-    internal init(_ sdkRUM: DDRUMMonitor) {
-        self.sdkRUM = sdkRUM
-        super.init()
+    // MARK: - Public
+
+    override public convenience init() {
+        self.init(swiftRUMMonitor: RUMMonitor.initialize())
     }
 
     public func startView(
@@ -101,18 +110,18 @@ public class DDRUM: NSObject {
         path: String?,
         attributes: [String: Any]
     ) {
-        sdkRUM.startView(viewController: viewController, path: path, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.startView(viewController: viewController, path: path, attributes: castAttributesToSwift(attributes))
     }
 
     public func stopView(
         viewController: UIViewController,
         attributes: [String: Any]
     ) {
-        sdkRUM.stopView(viewController: viewController, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.stopView(viewController: viewController, attributes: castAttributesToSwift(attributes))
     }
 
     public func addTiming(name: String) {
-        sdkRUM.addTiming(name: name)
+        swiftRUMMonitor?.addTiming(name: name)
     }
 
     public func addError(
@@ -120,7 +129,7 @@ public class DDRUM: NSObject {
         source: DDRUMErrorSource,
         attributes: [String: Any]
     ) {
-        sdkRUM.addError(error: error, source: source.swiftType, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.addError(error: error, source: source.swiftType, attributes: castAttributesToSwift(attributes))
     }
 
     public func startResourceLoading(
@@ -128,7 +137,7 @@ public class DDRUM: NSObject {
         request: URLRequest,
         attributes: [String: Any]
     ) {
-        sdkRUM.startResourceLoading(resourceKey: resourceKey, request: request, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.startResourceLoading(resourceKey: resourceKey, request: request, attributes: castAttributesToSwift(attributes))
     }
 
     public func startResourceLoading(
@@ -136,7 +145,7 @@ public class DDRUM: NSObject {
         url: URL,
         attributes: [String: Any]
     ) {
-        sdkRUM.startResourceLoading(resourceKey: resourceKey, url: url, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.startResourceLoading(resourceKey: resourceKey, url: url, attributes: castAttributesToSwift(attributes))
     }
 
     public func addResourceMetrics(
@@ -144,7 +153,7 @@ public class DDRUM: NSObject {
         metrics: URLSessionTaskMetrics,
         attributes: [String: Any]
     ) {
-        sdkRUM.addResourceMetrics(resourceKey: resourceKey, metrics: metrics, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.addResourceMetrics(resourceKey: resourceKey, metrics: metrics, attributes: castAttributesToSwift(attributes))
     }
 
     public func stopResourceLoading(
@@ -153,7 +162,7 @@ public class DDRUM: NSObject {
         size: Int64?,
         attributes: [String: Any]
     ) {
-        sdkRUM.stopResourceLoading(resourceKey: resourceKey, response: response, size: size, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.stopResourceLoading(resourceKey: resourceKey, response: response, size: size, attributes: castAttributesToSwift(attributes))
     }
 
     public func stopResourceLoadingWithError(
@@ -162,7 +171,7 @@ public class DDRUM: NSObject {
         response: URLResponse?,
         attributes: [String: Any]
     ) {
-        sdkRUM.stopResourceLoadingWithError(resourceKey: resourceKey, error: error, response: response, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.stopResourceLoadingWithError(resourceKey: resourceKey, error: error, response: response, attributes: castAttributesToSwift(attributes))
     }
 
     public func stopResourceLoadingWithError(
@@ -171,7 +180,7 @@ public class DDRUM: NSObject {
         response: URLResponse?,
         attributes: [String: Any]
     ) {
-        sdkRUM.stopResourceLoadingWithError(resourceKey: resourceKey, errorMessage: errorMessage, response: response, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.stopResourceLoadingWithError(resourceKey: resourceKey, errorMessage: errorMessage, response: response, attributes: castAttributesToSwift(attributes))
     }
 
     public func startUserAction(
@@ -179,7 +188,7 @@ public class DDRUM: NSObject {
         name: String,
         attributes: [String: Any]
     ) {
-        sdkRUM.startUserAction(type: type.swiftType, name: name, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.startUserAction(type: type.swiftType, name: name, attributes: castAttributesToSwift(attributes))
     }
 
     public func stopUserAction(
@@ -187,7 +196,7 @@ public class DDRUM: NSObject {
         name: String?,
         attributes: [String: Any]
     ) {
-        sdkRUM.stopUserAction(type: type.swiftType, name: name, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.stopUserAction(type: type.swiftType, name: name, attributes: castAttributesToSwift(attributes))
     }
 
     public func addUserAction(
@@ -195,17 +204,17 @@ public class DDRUM: NSObject {
         name: String,
         attributes: [String: Any]
     ) {
-        sdkRUM.addUserAction(type: type.swiftType, name: name, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor?.addUserAction(type: type.swiftType, name: name, attributes: castAttributesToSwift(attributes))
     }
 
     public func addAttribute(
         forKey key: String,
         value: Any
     ) {
-        sdkRUM.addAttribute(forKey: key, value: AnyEncodable(value))
+        swiftRUMMonitor?.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
     public func removeAttribute(forKey key: String) {
-        sdkRUM.removeAttribute(forKey: key)
+        swiftRUMMonitor?.removeAttribute(forKey: key)
     }
 }
