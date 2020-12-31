@@ -29,18 +29,28 @@ public class DDTracesEndpoint: NSObject
  public static func custom(url: String) -> DDTracesEndpoint
 public class DDConfiguration: NSObject
  public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder
+ public static func builder(rumApplicationID: String, clientToken: String, environment: String) -> DDConfigurationBuilder
 public class DDConfigurationBuilder: NSObject
  public func enableLogging(_ enabled: Bool)
  public func enableTracing(_ enabled: Bool)
+ public func enableRUM(_ enabled: Bool)
  public func set(endpoint: DDEndpoint)
  public func set(customLogsEndpoint: URL)
  public func set(customTracesEndpoint: URL)
+ public func set(customRUMEndpoint: URL)
  public func set(logsEndpoint: DDLogsEndpoint)
  public func set(tracesEndpoint: DDTracesEndpoint)
  public func set(tracedHosts: Set<String>)
  public func track(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
+ public func set(rumSessionsSamplingRate: Float)
+ public func trackUIKitRUMViews()
+ public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
+ public func trackUIKitActions()
  public func build() -> DDConfiguration
+public class DDGlobal: NSObject
+ public static var sharedTracer: DatadogObjc.OTTracer = noopTracer
+ public static var rum: DatadogObjc.DDRUMMonitor = noopRUMMonitor
 public enum DDSDKVerbosityLevel: Int
  case none
  case debug
@@ -84,7 +94,7 @@ public class DDLoggerBuilder: NSObject
  public func build() -> DDLogger
 public class OTGlobal: NSObject
  public static func initSharedTracer(_ tracer: OTTracer)
- public internal(set) static var sharedTracer: OTTracer = noopTracer
+ public internal(set) static var sharedTracer: OTTracer
 public protocol OTSpan
  var context: OTSpanContext
  var tracer: OTTracer
@@ -110,8 +120,42 @@ public protocol OTTracer
  func startSpan(_ operationName: String, childOf parent: OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> OTSpan
  func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws
  func extractWithFormat(_ format: String, carrier: Any) throws
-public class DDTracer: DatadogObjc.OTTracer
+public class DDRUMView: NSObject
+ public var path: String
+ public var attributes: [String: Any]
+ public init(path: String, attributes: [String: Any])
+public protocol DDUIKitRUMViewsPredicate: AnyObject
+ func rumView(for viewController: UIViewController) -> DDRUMView?
+public enum DDRUMErrorSource: Int
+ case source
+ case network
+ case webview
+ case custom
+public enum DDRUMUserActionType: Int
+ case tap
+ case scroll
+ case swipe
+ case custom
+public class DDRUMMonitor: NSObject
+ override public convenience init()
+ public func startView(viewController: UIViewController,path: String?,attributes: [String: Any])
+ public func stopView(viewController: UIViewController,attributes: [String: Any])
+ public func addTiming(name: String)
+ public func addError(error: Error,source: DDRUMErrorSource,attributes: [String: Any])
+ public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [String: Any])
+ public func startResourceLoading(resourceKey: String,url: URL,attributes: [String: Any])
+ public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [String: Any])
+ public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
+ public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [String: Any])
+ public func startUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
+ public func stopUserAction(type: DDRUMUserActionType,name: String?,attributes: [String: Any])
+ public func addUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
+ public func addAttribute(forKey key: String,value: Any)
+ public func removeAttribute(forKey key: String)
+public class DDTracer: NSObject, DatadogObjc.OTTracer
  public static func initialize(configuration: DDTracerConfiguration) -> DatadogObjc.OTTracer
+ public convenience init(configuration: DDTracerConfiguration)
  public func startSpan(_ operationName: String) -> OTSpan
  public func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
  public func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan
