@@ -516,7 +516,31 @@ class FeaturesConfigurationTests: XCTestCase {
             ]
         )
 
-        // TODO: RUMM-904 Check if warning is printed
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: '192.168.0.3:8080' is not a valid host name and will be dropped.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: '' is not a valid host name and will be dropped.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://first-party.com' is an url and will be sanitized to: 'first-party.com'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://192.168.0.1/api' is an url and will be sanitized to: '192.168.0.1'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'http://api.first-party.com' is an url and will be sanitized to: 'api.first-party.com'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://first-party.com/v2/api' is an url and will be sanitized to: 'first-party.com'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'invalid-host-name' is not a valid host name and will be dropped.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://192.168.0.2' is an url and will be sanitized to: '192.168.0.2'.")
+        )
+        XCTAssertEqual(printFunction.printedMessages.count, 8)
     }
 
     // MARK: - Helpers
