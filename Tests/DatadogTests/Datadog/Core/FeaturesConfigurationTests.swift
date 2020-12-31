@@ -476,6 +476,49 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    func testWhenSomeOfTheFirstPartyHostsAreMistaken_itPrintsWarningsAndDoesSanitization() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // When
+        let firstPartyHosts: Set<String> = [
+            "https://first-party.com", // sanitize to → "first-party.com"
+            "http://api.first-party.com", // sanitize to → "api.first-party.com"
+            "https://first-party.com/v2/api", // sanitize to → "first-party.com"
+            "https://192.168.0.1/api", // sanitize to → "192.168.0.1"
+            "https://192.168.0.2", // sanitize to → "192.168.0.2"
+            "invalid-host-name", // drop
+            "192.168.0.3:8080", // drop
+            "", // drop
+            "localhost", // accept
+            "192.168.0.4", // accept
+            "valid-host-name.com", // accept
+        ]
+
+        // Then
+        let configuration = try FeaturesConfiguration(
+            configuration: .mockWith(rumEnabled: true, firstPartyHosts: firstPartyHosts),
+            appContext: .mockAny()
+        )
+
+        XCTAssertEqual(
+            configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts,
+            [
+                "first-party.com",
+                "api.first-party.com",
+                "localhost",
+                "192.168.0.1",
+                "192.168.0.2",
+                "localhost",
+                "192.168.0.4",
+                "valid-host-name.com"
+            ]
+        )
+
+        // TODO: RUMM-904 Check if warning is printed
+    }
+
     // MARK: - Helpers
 
     private func createConfiguration(
