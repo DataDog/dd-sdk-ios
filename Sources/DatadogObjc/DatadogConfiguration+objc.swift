@@ -149,7 +149,7 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate) {
-        let predicateBridge = PredicateBridge(objcPredicate: predicate)
+        let predicateBridge = UIKitRUMViewsPredicateBridge(objcPredicate: predicate)
         _ = sdkBuilder.trackUIKitRUMViews(using: predicateBridge)
     }
 

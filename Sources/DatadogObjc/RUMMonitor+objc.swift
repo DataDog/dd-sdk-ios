@@ -13,8 +13,9 @@ import enum Datadog.RUMUserActionType
 import struct Datadog.RUMView
 import protocol Datadog.UIKitRUMViewsPredicate
 
-internal struct PredicateBridge: UIKitRUMViewsPredicate {
+internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
+
     func rumView(for viewController: UIViewController) -> RUMView? {
         return objcPredicate.rumView(for: viewController)?.swiftView
     }
@@ -58,7 +59,7 @@ public enum DDRUMErrorSource: Int {
     /// Custom error source.
     case custom
 
-    fileprivate var swiftType: RUMErrorSource {
+    internal var swiftType: RUMErrorSource {
         switch self {
         case .source: return .source
         case .network: return .network
@@ -76,7 +77,7 @@ public enum DDRUMUserActionType: Int {
     case swipe
     case custom
 
-    fileprivate var swiftType: RUMUserActionType {
+    internal var swiftType: RUMUserActionType {
         switch self {
         case .tap: return .tap
         case .scroll: return .scroll

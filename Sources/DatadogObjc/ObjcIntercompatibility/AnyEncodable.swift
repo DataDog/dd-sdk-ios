@@ -15,7 +15,7 @@ internal func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Enc
 /// Inspired by `AnyCodable` by Flight-School (MIT):
 /// https://github.com/Flight-School/AnyCodable/blob/master/Sources/AnyCodable/AnyEncodable.swift
 internal class AnyEncodable: Encodable {
-    private let value: Any
+    internal let value: Any
 
     init(_ value: Any) {
         self.value = value

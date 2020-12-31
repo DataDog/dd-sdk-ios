@@ -112,7 +112,7 @@ class DDConfigurationTests: XCTestCase {
         }
         let predicate = ObjCPredicate()
         objcBuilder.trackUIKitRUMViews(using: predicate)
-        XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate as? PredicateBridge)?.objcPredicate === predicate)
+        XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate === predicate)
 
         objcBuilder.set(rumSessionsSamplingRate: 42.5)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumSessionsSamplingRate, 42.5)
