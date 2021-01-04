@@ -48,8 +48,8 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
         interceptor.onRequestModified = { _ in requestModified.fulfill() }
-        interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let session = interceptedSession()
@@ -79,8 +79,8 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
         interceptor.onRequestModified = { _ in requestModified.fulfill() }
-        interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let session = interceptedSession()
@@ -110,8 +110,8 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
         interceptor.onRequestModified = { _ in requestModified.fulfill() }
-        interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let session = interceptedSession()
@@ -136,8 +136,8 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
         interceptor.onRequestModified = { _ in requestNotModified.fulfill() }
-        interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let session = interceptedSession()
@@ -161,8 +161,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onTaskCreated = { _, _ in notifyTaskCreated.fulfill() }
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let nsSession = NSURLSessionBridge(interceptedSession())!
@@ -186,7 +186,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onRequestModified = { _ in doNotModifyRequest.fulfill() }
         let doNotNotifyTaskCreated = expectation(description: "Notify task creation")
         doNotNotifyTaskCreated.isInverted = true
-        interceptor.onTaskCreated = { _, _ in doNotNotifyTaskCreated.fulfill() }
+        interceptor.onTaskCreated = { _ in doNotNotifyTaskCreated.fulfill() }
 
         // Given
         let session = URLSession(configuration: .default)
@@ -212,7 +212,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         completionHandlersCalled.expectedFulfillmentCount = 2
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         notifyTaskCompleted.expectedFulfillmentCount = 4
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let expectedResponse: HTTPURLResponse = .mockResponseWith(statusCode: 200)
@@ -250,27 +250,19 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record all 4 tasks created.")
         XCTAssertEqual(interceptor.tasksCompleted.count, 4, "Interceptor should record all 4 tasks completed.")
 
-        XCTAssertTrue(interceptor.tasksCreated[0].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[0].task === taskWithURLRequestAndCompletion)
-        XCTAssertTrue(interceptor.tasksCompleted[0].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[0] === taskWithURLRequestAndCompletion)
         XCTAssertTrue(interceptor.tasksCompleted[0].task === taskWithURLRequestAndCompletion)
         XCTAssertNil(interceptor.tasksCompleted[0].error)
 
-        XCTAssertTrue(interceptor.tasksCreated[1].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[1].task === taskWithURLAndCompletion)
-        XCTAssertTrue(interceptor.tasksCompleted[1].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[1] === taskWithURLAndCompletion)
         XCTAssertTrue(interceptor.tasksCompleted[1].task === taskWithURLAndCompletion)
         XCTAssertNil(interceptor.tasksCompleted[1].error)
 
-        XCTAssertTrue(interceptor.tasksCreated[2].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[2].task === taskWithURLRequest)
-        XCTAssertTrue(interceptor.tasksCompleted[2].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[2] === taskWithURLRequest)
         XCTAssertTrue(interceptor.tasksCompleted[2].task === taskWithURLRequest)
         XCTAssertNil(interceptor.tasksCompleted[2].error)
 
-        XCTAssertTrue(interceptor.tasksCreated[3].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[3].task === taskWithURL)
-        XCTAssertTrue(interceptor.tasksCompleted[3].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[3] === taskWithURL)
         XCTAssertTrue(interceptor.tasksCompleted[3].task === taskWithURL)
         XCTAssertNil(interceptor.tasksCompleted[3].error)
     }
@@ -280,7 +272,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         completionHandlersCalled.expectedFulfillmentCount = 2
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         notifyTaskCompleted.expectedFulfillmentCount = 4
-        interceptor.onTaskCompleted = { _, _, _ in notifyTaskCompleted.fulfill() }
+        interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
@@ -317,27 +309,19 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record all 4 tasks created.")
         XCTAssertEqual(interceptor.tasksCompleted.count, 4, "Interceptor should record all 4 tasks completed.")
 
-        XCTAssertTrue(interceptor.tasksCreated[0].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[0].task === taskWithURLRequestAndCompletion)
-        XCTAssertTrue(interceptor.tasksCompleted[0].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[0] === taskWithURLRequestAndCompletion)
         XCTAssertTrue(interceptor.tasksCompleted[0].task === taskWithURLRequestAndCompletion)
         XCTAssertEqual((interceptor.tasksCompleted[0].error! as NSError).localizedDescription, "some error")
 
-        XCTAssertTrue(interceptor.tasksCreated[1].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[1].task === taskWithURLAndCompletion)
-        XCTAssertTrue(interceptor.tasksCompleted[1].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[1] === taskWithURLAndCompletion)
         XCTAssertTrue(interceptor.tasksCompleted[1].task === taskWithURLAndCompletion)
         XCTAssertEqual((interceptor.tasksCompleted[1].error! as NSError).localizedDescription, "some error")
 
-        XCTAssertTrue(interceptor.tasksCreated[2].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[2].task === taskWithURLRequest)
-        XCTAssertTrue(interceptor.tasksCompleted[2].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[2] === taskWithURLRequest)
         XCTAssertTrue(interceptor.tasksCompleted[2].task === taskWithURLRequest)
         XCTAssertEqual((interceptor.tasksCompleted[2].error! as NSError).localizedDescription, "some error")
 
-        XCTAssertTrue(interceptor.tasksCreated[3].session === session)
-        XCTAssertTrue(interceptor.tasksCreated[3].task === taskWithURL)
-        XCTAssertTrue(interceptor.tasksCompleted[3].session === session)
+        XCTAssertTrue(interceptor.tasksCreated[3] === taskWithURL)
         XCTAssertTrue(interceptor.tasksCompleted[3].task === taskWithURL)
         XCTAssertEqual((interceptor.tasksCompleted[3].error! as NSError).localizedDescription, "some error")
     }

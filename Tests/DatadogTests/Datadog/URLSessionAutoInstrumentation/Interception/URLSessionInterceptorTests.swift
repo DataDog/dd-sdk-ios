@@ -254,17 +254,17 @@ class URLSessionInterceptorTests: XCTestCase {
 
         // swiftlint:disable opening_brace
         callConcurrently(
-            { interceptor.taskCreated(urlSession: .mockAny(), task: firstPartyTask) },
-            { interceptor.taskCreated(urlSession: .mockAny(), task: thirdPartyTask) },
-            { interceptor.taskCreated(urlSession: .mockAny(), task: internalTask) }
+            { interceptor.taskCreated(task: firstPartyTask) },
+            { interceptor.taskCreated(task: thirdPartyTask) },
+            { interceptor.taskCreated(task: internalTask) }
         )
         callConcurrently(
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: firstPartyTask, error: nil) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: thirdPartyTask, error: nil) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: internalTask, error: nil) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: firstPartyTask, metrics: .mockAny()) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: thirdPartyTask, metrics: .mockAny()) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: internalTask, metrics: .mockAny()) }
+            { interceptor.taskCompleted(task: firstPartyTask, error: nil) },
+            { interceptor.taskCompleted(task: thirdPartyTask, error: nil) },
+            { interceptor.taskCompleted(task: internalTask, error: nil) },
+            { interceptor.taskMetricsCollected(task: firstPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(task: thirdPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(task: internalTask, metrics: .mockAny()) }
         )
         // swiftlint:enable opening_brace
 
@@ -329,17 +329,17 @@ class URLSessionInterceptorTests: XCTestCase {
 
         // swiftlint:disable opening_brace
         callConcurrently(
-            { interceptor.taskCreated(urlSession: .mockAny(), task: firstPartyTask) },
-            { interceptor.taskCreated(urlSession: .mockAny(), task: thirdPartyTask) },
-            { interceptor.taskCreated(urlSession: .mockAny(), task: internalTask) }
+            { interceptor.taskCreated(task: firstPartyTask) },
+            { interceptor.taskCreated(task: thirdPartyTask) },
+            { interceptor.taskCreated(task: internalTask) }
         )
         callConcurrently(
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: firstPartyTask, error: nil) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: thirdPartyTask, error: nil) },
-            { interceptor.taskCompleted(urlSession: .mockAny(), task: internalTask, error: nil) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: firstPartyTask, metrics: .mockAny()) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: thirdPartyTask, metrics: .mockAny()) },
-            { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: internalTask, metrics: .mockAny()) }
+            { interceptor.taskCompleted(task: firstPartyTask, error: nil) },
+            { interceptor.taskCompleted(task: thirdPartyTask, error: nil) },
+            { interceptor.taskCompleted(task: internalTask, error: nil) },
+            { interceptor.taskMetricsCollected(task: firstPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(task: thirdPartyTask, metrics: .mockAny()) },
+            { interceptor.taskMetricsCollected(task: internalTask, metrics: .mockAny()) }
         )
         // swiftlint:enable opening_brace
 
@@ -387,9 +387,9 @@ class URLSessionInterceptorTests: XCTestCase {
         callConcurrently(
             closures: [
                 { _ = interceptor.modify(request: requests.randomElement()!) },
-                { interceptor.taskCreated(urlSession: .mockAny(), task: tasks.randomElement()!) },
-                { interceptor.taskMetricsCollected(urlSession: .mockAny(), task: tasks.randomElement()!, metrics: .mockAny()) },
-                { interceptor.taskCompleted(urlSession: .mockAny(), task: tasks.randomElement()!, error: nil) }
+                { interceptor.taskCreated(task: tasks.randomElement()!) },
+                { interceptor.taskMetricsCollected(task: tasks.randomElement()!, metrics: .mockAny()) },
+                { interceptor.taskCompleted(task: tasks.randomElement()!, error: nil) }
             ],
             iterations: 50
         )
