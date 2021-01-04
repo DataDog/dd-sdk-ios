@@ -80,11 +80,11 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMDataView.self)
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 3)
 
-        let event1: RUMDataView = try viewEvents[0].model()
-        let event2: RUMDataView = try viewEvents[1].model()
+        let event1: RUMViewEvent = try viewEvents[0].model()
+        let event2: RUMViewEvent = try viewEvents[1].model()
         XCTAssertEqual(event1.view.url, "SomeView")
         XCTAssertEqual(event2.view.url, "SomeView")
         XCTAssertEqual(try viewEvents.first?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
@@ -120,11 +120,11 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
 
-        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMDataResource.self)
+        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
         XCTAssertEqual(resourceEvents.count, 1)
 
         let event1Matcher = resourceEvents[0]
-        let event1: RUMDataResource = try event1Matcher.model()
+        let event1: RUMResourceEvent = try event1Matcher.model()
         XCTAssertEqual(event1.resource.url, "https://foo.com/1")
         XCTAssertEqual(event1.resource.duration, 2_000_000_000)
         XCTAssertNotNil(event1.resource.dns)
@@ -157,11 +157,11 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
 
-        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMDataError.self)
+        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
         XCTAssertEqual(errorEvents.count, 3)
 
         let event1Matcher = errorEvents[0]
-        let event1: RUMDataError = try event1Matcher.model()
+        let event1: RUMErrorEvent = try event1Matcher.model()
         XCTAssertEqual(event1.error.resource?.url, request.url!.absoluteString)
         XCTAssertEqual(event1.error.message, "ErrorMock")
         XCTAssertEqual(event1.error.source, .network)
@@ -170,7 +170,7 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
 
         let event2Matcher = errorEvents[1]
-        let event2: RUMDataError = try event2Matcher.model()
+        let event2: RUMErrorEvent = try event2Matcher.model()
         XCTAssertEqual(event2.error.resource?.url, request.url!.absoluteString)
         XCTAssertEqual(event2.error.message, "error message")
         XCTAssertEqual(event2.error.source, .network)
@@ -179,7 +179,7 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
 
         let event3Matcher = errorEvents[2]
-        let event3: RUMDataError = try event3Matcher.model()
+        let event3: RUMErrorEvent = try event3Matcher.model()
         XCTAssertNil(event3.error.resource)
         XCTAssertEqual(event3.error.message, "ErrorMock")
         XCTAssertEqual(event3.error.source, .custom)
@@ -207,20 +207,20 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
 
-        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMDataAction.self)
+        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
         XCTAssertEqual(actionEvents.count, 3)
 
         let event1Matcher = actionEvents[0]
-        let event1: RUMDataAction = try event1Matcher.model()
+        let event1: RUMActionEvent = try event1Matcher.model()
         XCTAssertEqual(event1.action.type, .applicationStart)
 
         let event2Matcher = actionEvents[1]
-        let event2: RUMDataAction = try event2Matcher.model()
+        let event2: RUMActionEvent = try event2Matcher.model()
         XCTAssertEqual(event2.action.type, .tap)
         XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
 
         let event3Matcher = actionEvents[2]
-        let event3: RUMDataAction = try event3Matcher.model()
+        let event3: RUMActionEvent = try event3Matcher.model()
         XCTAssertEqual(event3.action.type, .swipe)
         XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
@@ -239,7 +239,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMDataView.self)
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 1)
 
         XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute1"), "foo1")
