@@ -107,11 +107,9 @@
 		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
 		612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612983CC2449E62E00D4424B /* LoggingFeature.swift */; };
 		6132BF4224A38D2400D7BD17 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
-		6132BF4424A3AAD700D7BD17 /* OTGlobal+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4324A3AAD700D7BD17 /* OTGlobal+objc.swift */; };
 		6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
 		6132BF4924A49B6800D7BD17 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */; };
 		6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */; };
-		6132BF4E24A49D5400D7BD17 /* OTNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4D24A49D5400D7BD17 /* OTNoop.swift */; };
 		6132BF5124A49F7400D7BD17 /* Casting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF5024A49F7400D7BD17 /* Casting.swift */; };
 		61337032250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61337031250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard */; };
 		61337035250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61337034250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard */; };
@@ -556,11 +554,9 @@
 		61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapterTests.swift; sourceTree = "<group>"; };
 		612983CC2449E62E00D4424B /* LoggingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeature.swift; sourceTree = "<group>"; };
 		6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTTracer+objc.swift"; sourceTree = "<group>"; };
-		6132BF4324A3AAD700D7BD17 /* OTGlobal+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTGlobal+objc.swift"; sourceTree = "<group>"; };
 		6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
 		6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpanContext+objc.swift"; sourceTree = "<group>"; };
 		6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
-		6132BF4D24A49D5400D7BD17 /* OTNoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTNoop.swift; sourceTree = "<group>"; };
 		6132BF5024A49F7400D7BD17 /* Casting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Casting.swift; sourceTree = "<group>"; };
 		61337031250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LoggingManualInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		61337034250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = TracingManualInstrumentationScenario.storyboard; sourceTree = "<group>"; };
@@ -1425,11 +1421,9 @@
 		6132BF4024A38D0600D7BD17 /* OpenTracing */ = {
 			isa = PBXGroup;
 			children = (
-				6132BF4324A3AAD700D7BD17 /* OTGlobal+objc.swift */,
 				6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */,
 				615A4A8A24A3568900233986 /* OTSpan+objc.swift */,
 				615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */,
-				6132BF4D24A49D5400D7BD17 /* OTNoop.swift */,
 			);
 			path = OpenTracing;
 			sourceTree = "<group>";
@@ -3010,9 +3004,7 @@
 				615A4A8324A3431600233986 /* Tracer+objc.swift in Sources */,
 				6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */,
 				6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */,
-				6132BF4E24A49D5400D7BD17 /* OTNoop.swift in Sources */,
 				615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */,
-				6132BF4424A3AAD700D7BD17 /* OTGlobal+objc.swift in Sources */,
 				611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */,
 				9E55407C25812D1C00F6E3AD /* RUMMonitor+objc.swift in Sources */,
 				615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */,

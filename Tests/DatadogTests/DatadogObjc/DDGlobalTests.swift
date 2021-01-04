@@ -18,7 +18,7 @@ class DDGlobalTests: XCTestCase {
     // MARK: - Test Global Tracer
 
     func testWhenTracerIsNotSet_itReturnsNoOpImplementation() {
-        XCTAssertTrue(DatadogObjc.DDGlobal.sharedTracer === noopTracer)
+        XCTAssertTrue(DatadogObjc.DDGlobal.sharedTracer.swiftTracer is Datadog.DDNoopTracer)
         XCTAssertTrue(Datadog.DDGlobal.sharedTracer is Datadog.DDNoopTracer)
     }
 
@@ -45,7 +45,7 @@ class DDGlobalTests: XCTestCase {
     // MARK: - Test Global RUMMonitor
 
     func testWhenRUMMonitorIsNotSet_itReturnsNoOpImplementation() {
-        XCTAssertTrue(DatadogObjc.DDGlobal.rum === noopRUMMonitor)
+        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is Datadog.DDNoopRUMMonitor)
         XCTAssertTrue(Datadog.DDGlobal.rum is Datadog.DDNoopRUMMonitor)
     }
 

@@ -182,26 +182,6 @@ class DDTracerTests: XCTestCase {
 
     // MARK: - Usage errors
 
-    func testsWhenUsingUnexpectedOTSpanContext() throws {
-        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
-
-        let firstSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext)
-        XCTAssertNil(firstSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
-
-        let secondSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary()).setActive()
-        XCTAssertNil(secondSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
-
-        let thirdSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary(), startTime: .mockAny())
-        XCTAssertEqual(thirdSpan.dd!.swiftSpan.dd.ddContext.parentSpanID, secondSpan .dd!.swiftSpan.dd.ddContext.spanID)
-
-        let objcWriter = DDHTTPHeadersWriter()
-        try objcTracer.inject(noopSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
-        XCTAssertEqual(objcWriter.swiftHTTPHeadersWriter.tracePropagationHTTPHeaders.count, 0)
-        firstSpan.finish()
-        secondSpan.finish()
-        thirdSpan.finish()
-    }
-
     func testsWhenUsingUnexpectedTagsDictionary() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
 
@@ -210,33 +190,5 @@ class DDTracerTests: XCTestCase {
 
         XCTAssertEqual(objcSpan.dd?.swiftSpan.dd.tags.count, 0)
         objcSpan.finish()
-    }
-
-    func testUsingNoopTracerIsSafe() {
-        // noop Tracer
-        XCTAssertTrue(noopTracer.startSpan(.mockAny()) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), tags: nil) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil, tags: nil) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil, tags: nil, startTime: nil) === noopSpan)
-        XCTAssertNoThrow(try noopTracer.inject(noopSpanContext, format: .mockAny(), carrier: NSObject()))
-        XCTAssertNoThrow(try noopTracer.extractWithFormat(.mockAny(), carrier: NSObject()))
-
-        // noop Span
-        XCTAssertTrue(noopSpan.context === noopSpanContext)
-        XCTAssertTrue(noopSpan.tracer === noopTracer)
-        noopSpan.setOperationName(.mockAny())
-        noopSpan.setTag(.mockAny(), value: "")
-        noopSpan.setTag(.mockAny(), numberValue: 0)
-        noopSpan.setTag(.mockAny(), boolValue: false)
-        noopSpan.log([:])
-        noopSpan.log([:], timestamp: nil)
-        _ = noopSpan.setBaggageItem(.mockAny(), value: .mockAny())
-        _ = noopSpan.getBaggageItem(.mockAny())
-        noopSpan.finish()
-        noopSpan.finishWithTime(nil)
-
-        // noop SpanContext
-        noopSpanContext.forEachBaggageItem { _, _ in false }
     }
 }
