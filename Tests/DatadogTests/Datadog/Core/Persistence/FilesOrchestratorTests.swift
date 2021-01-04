@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class FilesOrchestratorTests: XCTestCase {
-    private let performance: PerformancePreset = .default
+    private let performance = PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
 
     override func setUp() {
         super.setUp()

@@ -23,7 +23,7 @@ class FileWriterTests: XCTestCase {
             dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset.default,
+                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -85,7 +85,7 @@ class FileWriterTests: XCTestCase {
             dataFormat: .mockAny(),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset.default,
+                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -107,7 +107,7 @@ class FileWriterTests: XCTestCase {
             dataFormat: .mockAny(),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset.default,
+                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
                 dateProvider: SystemDateProvider()
             )
         )
