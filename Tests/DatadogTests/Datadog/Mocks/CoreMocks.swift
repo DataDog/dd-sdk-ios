@@ -710,9 +710,10 @@ extension EncodableValue {
 ///     consolePrint = printFunction.print
 ///
 class PrintFunctionMock {
-    private(set) var printedMessage: String?
+    private(set) var printedMessages: [String] = []
+    var printedMessage: String? { printedMessages.last }
 
     func print(message: String) {
-        printedMessage = message
+        printedMessages.append(message)
     }
 }
