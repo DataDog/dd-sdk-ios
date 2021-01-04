@@ -8,9 +8,24 @@ import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
 internal class SwiftPrinter: Printer {
-    func print(swiftStruct: SwiftStruct) throws -> String {
+    // MARK: - Printing
+
+    func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
-        try printStruct(swiftStruct)
+
+        try swiftTypes.forEach { type in
+            precondition(indentationLevel == 0)
+            writeEmptyLine()
+            if let `struct` = type as? SwiftStruct {
+                try printStruct(`struct`)
+            } else if let `enum` = type as? SwiftEnum {
+                try printEnum(`enum`)
+            } else {
+                throw Exception.illegal("\(type) cannot be printed as root declaration.")
+            }
+            precondition(indentationLevel == 0)
+        }
+
         return output
     }
 
@@ -125,6 +140,8 @@ internal class SwiftPrinter: Printer {
             return swiftEnum.name
         case let swiftStruct as SwiftStruct:
             return swiftStruct.name
+        case let swiftTypeReference as SwiftTypeReference:
+            return swiftTypeReference.referencedTypeName
         default:
             throw Exception.unimplemented("Printing \(type) is not implemented.")
         }

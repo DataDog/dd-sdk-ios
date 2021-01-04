@@ -74,7 +74,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         )
         XCTAssertEqual(view1.errorEvents[0].error.source, .network)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
-        XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .methodGET)
+        XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .get)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
 
         let contentReadyTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "content-ready"))

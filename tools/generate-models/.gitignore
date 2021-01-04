@@ -1,9 +1,0 @@
-# macOS
-.DS_Store
-# npm
-/node_modules
-package-lock.json
-# rum-events repo
-/rum-events-format
-# temporary files
-*.bak
