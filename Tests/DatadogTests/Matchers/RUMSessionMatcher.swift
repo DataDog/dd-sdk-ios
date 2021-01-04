@@ -51,19 +51,19 @@ internal class RUMSessionMatcher {
         fileprivate(set) var path: String = ""
 
         /// `RUMView` events tracked during this visit.
-        fileprivate(set) var viewEvents: [RUMDataView] = []
+        fileprivate(set) var viewEvents: [RUMViewEvent] = []
 
         /// `RUMEventMatchers` corresponding to item in `viewEvents`.
         fileprivate(set) var viewEventMatchers: [RUMEventMatcher] = []
 
         /// `RUMAction` events tracked during this visit.
-        fileprivate(set) var actionEvents: [RUMDataAction] = []
+        fileprivate(set) var actionEvents: [RUMActionEvent] = []
 
         /// `RUMResource` events tracked during this visit.
-        fileprivate(set) var resourceEvents: [RUMDataResource] = []
+        fileprivate(set) var resourceEvents: [RUMResourceEvent] = []
 
         /// `RUMError` events tracked during this visit.
-        fileprivate(set) var errorEvents: [RUMDataError] = []
+        fileprivate(set) var errorEvents: [RUMErrorEvent] = []
     }
 
     /// An array of view visits tracked during this RUM Session.
@@ -85,15 +85,15 @@ internal class RUMSessionMatcher {
         // Get RUM Events by kind:
 
         let viewEventMatchers = eventsMatchersByType["view"] ?? []
-        let viewEvents: [RUMDataView] = try viewEventMatchers.map { matcher in try matcher.model() }
+        let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
-        let actionEvents: [RUMDataAction] = try (eventsMatchersByType["action"] ?? [])
+        let actionEvents: [RUMActionEvent] = try (eventsMatchersByType["action"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let resourceEvents: [RUMDataResource] = try (eventsMatchersByType["resource"] ?? [])
+        let resourceEvents: [RUMResourceEvent] = try (eventsMatchersByType["resource"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let errorEvents: [RUMDataError] = try (eventsMatchersByType["error"] ?? [])
+        let errorEvents: [RUMErrorEvent] = try (eventsMatchersByType["error"] ?? [])
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually
@@ -173,12 +173,12 @@ internal class RUMSessionMatcher {
     }
 }
 
-private func validate(rumResourceEvents: [RUMDataResource]) throws {
-    // Each `RUMResource` should have unique ID
+private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
+    // Each `RUMResourceEvent` should have unique ID
     let ids = Set(rumResourceEvents.map { $0.resource.id })
     if ids.count != rumResourceEvents.count {
         throw RUMSessionConsistencyException(
-            description: "`resource.id` should be unique - found at least two RUMResource events with the same `resource.id`."
+            description: "`resource.id` should be unique - found at least two RUMResourceEvents with the same `resource.id`."
         )
     }
 }

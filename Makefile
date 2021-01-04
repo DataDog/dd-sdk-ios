@@ -57,9 +57,15 @@ test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
 # Generate RUM data models from rum-events-format JSON Schemas
-generate-rum-models:
+rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
-		./tools/generate-models/run.sh generate
+		./tools/rum-models-generator/run.sh generate
+		@echo "OK 👌"
+
+# Verify if RUM data models follow rum-events-format JSON Schemas
+rum-models-verify:
+		@echo "🧪  Verifying RUM models..."
+		./tools/rum-models-generator/run.sh verify
 		@echo "OK 👌"
 
 # Generate api-surface files for Datadog and DatadogObjc.

@@ -44,17 +44,17 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
-        try rumEventMatchers[1].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
         }
-        try rumEventMatchers[2].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.timeSpent, 1_000_000_000)
         }
-        try rumEventMatchers[3].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
         }
     }
@@ -72,18 +72,18 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
-        try rumEventMatchers[1].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMDataResource.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
             XCTAssertEqual(rumModel.resource.type, .image)
             XCTAssertEqual(rumModel.resource.statusCode, 200)
         }
-        try rumEventMatchers[3].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
         }
@@ -168,18 +168,18 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
-        try rumEventMatchers[1].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .tap)
             XCTAssertEqual(rumModel.action.target?.name, actionName)
         }
-        try rumEventMatchers[3].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
@@ -202,41 +202,41 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
-        try rumEventMatchers[1].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 0)
         }
         var userActionID: String?
-        try rumEventMatchers[2].model(ofType: RUMDataResource.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
             userActionID = rumModel.action?.id
             XCTAssertEqual(rumModel.resource.statusCode, 200)
-            XCTAssertEqual(rumModel.resource.method, .methodGET)
+            XCTAssertEqual(rumModel.resource.method, .get)
         }
         XCTAssertNotNil(userActionID, "Resource should be associated with the User Action that issued its loading")
-        try rumEventMatchers[3].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 1)
             XCTAssertEqual(rumModel.view.error.count, 0)
         }
-        try rumEventMatchers[4].model(ofType: RUMDataResource.self) { rumModel in
+        try rumEventMatchers[4].model(ofType: RUMResourceEvent.self) { rumModel in
             XCTAssertEqual(rumModel.resource.statusCode, 202)
             XCTAssertEqual(rumModel.resource.method, .post)
         }
-        try rumEventMatchers[5].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 2)
             XCTAssertEqual(rumModel.view.error.count, 0)
         }
-        try rumEventMatchers[6].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.resource?.count, 2)
             XCTAssertEqual(rumModel.action.error?.count, 0)
             XCTAssertEqual(rumModel.action.id, userActionID)
         }
-        try rumEventMatchers[7].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 2)
             XCTAssertEqual(rumModel.view.error.count, 0)
@@ -264,28 +264,28 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
-        try rumEventMatchers[1].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[2].model(ofType: RUMDataError.self) { rumModel in
+        try rumEventMatchers[2].model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "View error message")
             XCTAssertEqual(rumModel.error.stack, "Foo.swift:100")
             XCTAssertEqual(rumModel.error.source, .source)
         }
-        try rumEventMatchers[3].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 1)
         }
-        try rumEventMatchers[4].model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers[4].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .scroll)
             XCTAssertEqual(rumModel.action.error?.count, 1)
         }
-        try rumEventMatchers[5].model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 1)
@@ -320,28 +320,28 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 9)
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "FirstViewController" }
-            .model(ofType: RUMDataView.self) { rumModel in
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
+            .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController")
                 XCTAssertEqual(rumModel.view.action.count, 1, "First View should track only the 'applicationStart' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 0)
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "SecondViewController" }
-            .model(ofType: RUMDataView.self) { rumModel in
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
+            .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController")
                 XCTAssertEqual(rumModel.view.action.count, 1, "Second View should track the 'tap' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "Second View should track the Resource")
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataAction.self)
-            .model(ofType: RUMDataAction.self) { rumModel in
+            .lastRUMEvent(ofType: RUMActionEvent.self)
+            .model(ofType: RUMActionEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Action should be associated with the second View")
                 XCTAssertEqual(rumModel.action.type, .tap)
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataResource.self)
-            .model(ofType: RUMDataResource.self) { rumModel in
+            .lastRUMEvent(ofType: RUMResourceEvent.self)
+            .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
             }
     }
@@ -373,36 +373,36 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 13)
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "FirstViewController" }
-            .model(ofType: RUMDataView.self) { rumModel in
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
+            .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "First View should track 1 Resource")
                 XCTAssertEqual(rumModel.view.error.count, 1, "First View should track 1 Resource Error")
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "SecondViewController" }
-            .model(ofType: RUMDataView.self) { rumModel in
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
+            .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController")
                 XCTAssertEqual(rumModel.view.resource.count, 2, "Second View should track 2 Resources")
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataResource.self) { rumModel in rumModel.resource.url.contains("/resource/1") }
-            .model(ofType: RUMDataResource.self) { rumModel in
+            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/1") }
+            .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataError.self) { rumModel in rumModel.error.resource?.url.contains("/resource/2") ?? false }
-            .model(ofType: RUMDataError.self) { rumModel in
+            .lastRUMEvent(ofType: RUMErrorEvent.self) { rumModel in rumModel.error.resource?.url.contains("/resource/2") ?? false }
+            .model(ofType: RUMErrorEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataResource.self) { rumModel in rumModel.resource.url.contains("/resource/3") }
-            .model(ofType: RUMDataResource.self) { rumModel in
+            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/3") }
+            .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataResource.self) { rumModel in rumModel.resource.url.contains("/resource/4") }
-            .model(ofType: RUMDataResource.self) { rumModel in
+            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/4") }
+            .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
             }
     }
@@ -424,16 +424,16 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
-        try rumEventMatchers.lastRUMEvent(ofType: RUMDataAction.self) { $0.action.target?.name == "1st action" }
-            .model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers.lastRUMEvent(ofType: RUMActionEvent.self) { $0.action.target?.name == "1st action" }
+            .model(ofType: RUMActionEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.action.type, .tap)
             }
-        try rumEventMatchers.lastRUMEvent(ofType: RUMDataAction.self) { $0.action.target?.name == "2nd action" }
-            .model(ofType: RUMDataAction.self) { rumModel in
+        try rumEventMatchers.lastRUMEvent(ofType: RUMActionEvent.self) { $0.action.target?.name == "2nd action" }
+            .model(ofType: RUMActionEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.action.type, .swipe)
             }
-        try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
-            .model(ofType: RUMDataView.self) { rumModel in
+        try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
+            .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.action.count, 3)
             }
     }
@@ -473,22 +473,22 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
-        let expectedUserInfo = RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com")
+        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo")
         try rumEventMatchers.forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.str"), "value")
             XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.int"), 11_235)
             XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataAction.self) { action in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMActionEvent.self) { action in
             XCTAssertEqual(action.usr, expectedUserInfo)
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataView.self) { view in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMViewEvent.self) { view in
             XCTAssertEqual(view.usr, expectedUserInfo)
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataResource.self) { resource in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMResourceEvent.self) { resource in
             XCTAssertEqual(resource.usr, expectedUserInfo)
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataError.self) { error in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMErrorEvent.self) { error in
             XCTAssertEqual(error.usr, expectedUserInfo)
         }
     }
@@ -522,21 +522,21 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
-        let expectedConnectivityInfo = RUMDataConnectivity(
-            status: .connected,
+        let expectedConnectivityInfo = RUMConnectivity(
+            cellular: RUMConnectivity.Cellular(carrierName: "Carrier Name", technology: "GPRS"),
             interfaces: [.cellular],
-            cellular: RUMDataCellular(technology: "GPRS", carrierName: "Carrier Name")
+            status: .connected
         )
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataAction.self) { action in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMActionEvent.self) { action in
             XCTAssertEqual(action.connectivity, expectedConnectivityInfo)
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataView.self) { view in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMViewEvent.self) { view in
             XCTAssertEqual(view.connectivity, expectedConnectivityInfo)
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataResource.self) { resource in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMResourceEvent.self) { resource in
             XCTAssertEqual(resource.connectivity, expectedConnectivityInfo)
         }
-        try rumEventMatchers.forEachRUMEvent(ofType: RUMDataError.self) { error in
+        try rumEventMatchers.forEachRUMEvent(ofType: RUMErrorEvent.self) { error in
             XCTAssertEqual(error.connectivity, expectedConnectivityInfo)
         }
     }
@@ -571,7 +571,7 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         let firstViewEvent = try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "FirstViewController" }
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
 
         XCTAssertNil(try? firstViewEvent.attribute(forKeyPath: "attribute1") as String)
         XCTAssertNil(try? firstViewEvent.attribute(forKeyPath: "attribute2") as String)
@@ -579,7 +579,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "context.attribute2") as String, "value 2")
 
         let secondViewEvent = try rumEventMatchers
-            .lastRUMEvent(ofType: RUMDataView.self) { rumModel in rumModel.view.url == "SecondViewController" }
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
 
         XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute1") as String)
         XCTAssertEqual(try secondViewEvent.attribute(forKeyPath: "context.attribute1") as String, "changed value 1")
@@ -604,7 +604,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
-        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
+        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
 
         XCTAssertNil(try? lastViewUpdate.attribute(forKeyPath: "a1") as String)
         XCTAssertNil(try? lastViewUpdate.attribute(forKeyPath: "a2") as String)
@@ -637,7 +637,7 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
-        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMDataView.self)
+        let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing1"), 1_000_000_000)
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
     }

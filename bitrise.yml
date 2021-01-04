@@ -68,7 +68,7 @@ workflows:
         - content: |-
             #!/usr/bin/env zsh
             set -e
-            ./tools/generate-models/run.sh verify
+            make rum-models-verify ci=${CI}
 
   run_unit_tests:
     description: |-
