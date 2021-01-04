@@ -11,13 +11,13 @@ internal struct RUMUserInfoProvider {
     /// Shared user info provider.
     let userInfoProvider: UserInfoProvider
 
-    var current: RUMDataUSR? {
+    var current: RUMUser? {
         let userInfo = userInfoProvider.value
 
         if userInfo.id == nil && userInfo.name == nil && userInfo.email == nil {
             return nil
         } else {
-            return RUMDataUSR(id: userInfo.id, name: userInfo.name, email: userInfo.email)
+            return RUMUser(email: userInfo.email, id: userInfo.id, name: userInfo.name)
         }
     }
 }

@@ -224,28 +224,28 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction(on command: RUMCommand) {
-        let eventData = RUMDataAction(
-            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMActionEvent(
+            dd: .init(),
+            action: .init(
+                crash: nil,
+                error: nil,
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                loadingTime: dependencies.launchTimeProvider.launchTime?.toInt64Nanoseconds,
+                longTask: nil,
+                resource: nil,
+                target: nil,
+                type: .applicationStart
+            ),
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 referrer: nil,
                 url: viewURI
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            action: .init(
-                type: .applicationStart,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: dependencies.launchTimeProvider.launchTime?.toInt64Nanoseconds,
-                target: nil,
-                error: nil,
-                crash: nil,
-                longTask: nil,
-                resource: nil
             )
         )
 
@@ -257,32 +257,36 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMDataView(
-            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMViewEvent(
+            dd: .init(documentVersion: version.toInt64),
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
-                id: viewUUID.toRUMDataFormat,
-                referrer: nil,
-                url: viewURI,
-                loadingTime: nil,
-                loadingType: nil,
-                timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
-                firstContentfulPaint: nil,
+                action: .init(count: actionsCount.toInt64),
+                crash: nil,
+                cumulativeLayoutShift: nil,
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,
-                loadEvent: nil,
-                action: .init(count: actionsCount.toInt64),
                 error: .init(count: errorsCount.toInt64),
-                crash: nil,
+                firstContentfulPaint: nil,
+                firstInputDelay: nil,
+                id: viewUUID.toRUMDataFormat,
+                isActive: nil,
+                largestContentfulPaint: nil,
+                loadEvent: nil,
+                loadingTime: nil,
+                loadingType: nil,
                 longTask: nil,
-                resource: .init(count: resourcesCount.toInt64)
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(documentVersion: version.toInt64)
+                referrer: nil,
+                resource: .init(count: resourcesCount.toInt64),
+                timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
+                url: viewURI
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
@@ -292,29 +296,29 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMDataError(
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMErrorEvent(
+            dd: .init(),
+            action: context.activeUserActionID.flatMap { rumUUID in
+                .init(id: rumUUID.toRUMDataFormat)
+            },
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            error: .init(
+                isCrash: nil,
+                message: command.message,
+                resource: nil,
+                source: command.source.toRUMDataFormat,
+                stack: command.stack
+            ),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            error: .init(
-                message: command.message,
-                source: command.source.toRUMDataFormat,
-                stack: command.stack,
-                isCrash: nil,
-                resource: nil
-            ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
-            }
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

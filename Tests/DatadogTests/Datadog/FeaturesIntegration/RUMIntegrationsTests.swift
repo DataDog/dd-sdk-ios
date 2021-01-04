@@ -90,8 +90,8 @@ class RUMErrorsIntegrationTests: XCTestCase {
 
         // then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
-        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMDataError.self) }
-        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMDataError.self) { rumModel in
+        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertEqual(rumModel.error.stack, "Foo.swift:10")

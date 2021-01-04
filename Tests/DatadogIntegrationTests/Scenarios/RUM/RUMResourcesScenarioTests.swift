@@ -96,11 +96,11 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyGETResourceURL.absoluteString },
             "RUM Resource should be send for `firstPartyGETResourceURL`"
         )
-        XCTAssertEqual(firstPartyResource1.resource.method, .methodGET)
+        XCTAssertEqual(firstPartyResource1.resource.method, .get)
         XCTAssertGreaterThan(firstPartyResource1.resource.duration, 0)
 
-        XCTAssertNil(firstPartyResource1.dd.traceID, "`firstPartyGETResourceURL` should not be traced")
-        XCTAssertNil(firstPartyResource1.dd.spanID, "`firstPartyGETResourceURL` should not be traced")
+        XCTAssertNil(firstPartyResource1.dd.traceId, "`firstPartyGETResourceURL` should not be traced")
+        XCTAssertNil(firstPartyResource1.dd.spanId, "`firstPartyGETResourceURL` should not be traced")
 
         let firstPartyResource2 = try XCTUnwrap(
             session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyPOSTResourceURL.absoluteString },
@@ -109,12 +109,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(firstPartyResource2.resource.method, .post)
         XCTAssertGreaterThan(firstPartyResource2.resource.duration, 0)
         XCTAssertEqual(
-            firstPartyResource2.dd.traceID,
+            firstPartyResource2.dd.traceId,
             firstPartyPOSTRequestTraceID,
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
         XCTAssertEqual(
-            firstPartyResource2.dd.spanID,
+            firstPartyResource2.dd.spanId,
             firstPartyPOSTRequestSpanID,
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
@@ -123,7 +123,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             session.viewVisits[0].errorEvents.first { $0.error.resource?.url == firstPartyBadResourceURL.absoluteString },
             "RUM Error should be send for `firstPartyBadResourceURL`"
         )
-        XCTAssertEqual(firstPartyResourceError1.error.resource?.method, .methodGET)
+        XCTAssertEqual(firstPartyResourceError1.error.resource?.method, .get)
 
         // Asserts in `SendThirdPartyRequestsVC` RUM View
         XCTAssertEqual(session.viewVisits[1].path, "Example.SendThirdPartyRequestsViewController")
@@ -134,10 +134,10 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             session.viewVisits[1].resourceEvents.first { $0.resource.url == thirdPartyGETResourceURL.absoluteString },
             "RUM Resource should be send for `thirdPartyGETResourceURL`"
         )
-        XCTAssertEqual(thirdPartyResource1.resource.method, .methodGET)
+        XCTAssertEqual(thirdPartyResource1.resource.method, .get)
         XCTAssertGreaterThan(thirdPartyResource1.resource.duration, 0)
-        XCTAssertNil(thirdPartyResource1.dd.traceID, "3rd party RUM Resources should not be traced")
-        XCTAssertNil(thirdPartyResource1.dd.spanID, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource1.dd.traceId, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource1.dd.spanId, "3rd party RUM Resources should not be traced")
 
         let thirdPartyResource2 = try XCTUnwrap(
             session.viewVisits[1].resourceEvents.first { $0.resource.url == thirdPartyPOSTResourceURL.absoluteString },
@@ -145,8 +145,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
         XCTAssertEqual(thirdPartyResource2.resource.method, .post)
         XCTAssertGreaterThan(thirdPartyResource2.resource.duration, 0)
-        XCTAssertNil(thirdPartyResource2.dd.traceID, "3rd party RUM Resources should not be traced")
-        XCTAssertNil(thirdPartyResource2.dd.spanID, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource2.dd.traceId, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource2.dd.spanId, "3rd party RUM Resources should not be traced")
 
         XCTAssertTrue(
             thirdPartyResource1.resource.dns != nil || thirdPartyResource2.resource.dns != nil,

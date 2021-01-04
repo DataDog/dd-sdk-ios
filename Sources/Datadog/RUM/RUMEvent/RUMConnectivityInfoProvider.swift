@@ -13,22 +13,22 @@ internal struct RUMConnectivityInfoProvider {
     /// Shared mobile carrier info provider.
     let carrierInfoProvider: CarrierInfoProviderType
 
-    var current: RUMDataConnectivity? {
+    var current: RUMConnectivity? {
         guard let networkInfo = networkConnectionInfoProvider.current else {
             return nil
         }
         let carrierInfo = carrierInfoProvider.current
 
-        return RUMDataConnectivity(
-            status: connectivityStatus(for: networkInfo),
+        return RUMConnectivity(
+            cellular: carrierInfo.flatMap { connectivityCellularInfo(for: $0) },
             interfaces: connectivityInterfaces(for: networkInfo),
-            cellular: carrierInfo.flatMap { connectivityCellularInfo(for: $0) }
+            status: connectivityStatus(for: networkInfo)
         )
     }
 
     // MARK: - Private
 
-    private func connectivityStatus(for networkInfo: NetworkConnectionInfo) -> RUMDataStatus {
+    private func connectivityStatus(for networkInfo: NetworkConnectionInfo) -> RUMConnectivity.Status {
         switch networkInfo.reachability {
         case .yes:   return .connected
         case .maybe: return .maybe
@@ -36,7 +36,7 @@ internal struct RUMConnectivityInfoProvider {
         }
     }
 
-    private func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMDataInterface] {
+    private func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMConnectivity.Interfaces] {
         guard let availableInterfaces = networkInfo.availableInterfaces, !availableInterfaces.isEmpty else {
             return [.none]
         }
@@ -51,10 +51,10 @@ internal struct RUMConnectivityInfoProvider {
         }
     }
 
-    private func connectivityCellularInfo(for carrierInfo: CarrierInfo) -> RUMDataCellular {
-        return .init(
-            technology: carrierInfo.radioAccessTechnology.rawValue,
-            carrierName: carrierInfo.carrierName
+    private func connectivityCellularInfo(for carrierInfo: CarrierInfo) -> RUMConnectivity.Cellular {
+        return RUMConnectivity.Cellular(
+            carrierName: carrierInfo.carrierName,
+            technology: carrierInfo.radioAccessTechnology.rawValue
         )
     }
 }

@@ -21,9 +21,9 @@ internal extension RUMUUID {
 }
 
 internal extension RUMHTTPMethod {
-    var toRUMDataFormat: RUMDataMethod {
+    var toRUMDataFormat: RUMMethod {
         switch self {
-        case .GET: return .methodGET
+        case .GET: return .get
         case .POST: return .post
         case .PUT: return .put
         case .DELETE: return .delete
@@ -34,7 +34,7 @@ internal extension RUMHTTPMethod {
 }
 
 internal extension RUMResourceKind {
-    var toRUMDataFormat: RUMDataResourceType {
+    var toRUMDataFormat: RUMResourceEvent.Resource.ResourceType {
         switch self {
         case .image: return .image
         case .xhr: return .xhr
@@ -51,7 +51,7 @@ internal extension RUMResourceKind {
 }
 
 internal extension RUMInternalErrorSource {
-    var toRUMDataFormat: RUMDataSource {
+    var toRUMDataFormat: RUMErrorEvent.Error.Source {
         switch self {
         case .custom: return .custom
         case .source: return .source
@@ -63,7 +63,7 @@ internal extension RUMInternalErrorSource {
 }
 
 internal extension RUMUserActionType {
-    var toRUMDataFormat: RUMDataActionType {
+    var toRUMDataFormat: RUMActionEvent.Action.ActionType {
         switch self {
         case .tap: return .tap
         case .scroll: return .scroll

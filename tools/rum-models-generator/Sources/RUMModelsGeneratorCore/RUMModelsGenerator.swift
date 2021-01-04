@@ -54,12 +54,12 @@ public class RUMModelsGenerator {
     public func printRUMModels(for schemaFiles: RUMJSONSchemaFiles) throws -> String {
         var output = """
         /*
-        * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-        * This product includes software developed at Datadog (https://www.datadoghq.com/).
-        * Copyright 2019-2020 Datadog, Inc.
-        */
+         * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+         * This product includes software developed at Datadog (https://www.datadoghq.com/).
+         * Copyright 2019-2020 Datadog, Inc.
+         */
 
-        import Foundation
+        // This file was generated from JSON Schema. Do not modify it directly.
 
         internal protocol RUMDataModel: Codable {}
 
@@ -69,8 +69,7 @@ public class RUMModelsGenerator {
             schemaFiles.viewSchema,
             schemaFiles.resourceSchema,
             schemaFiles.actionSchema,
-            schemaFiles.errorSchema,
-            schemaFiles.longTaskSchema
+            schemaFiles.errorSchema
         ]
 
         let swiftModels: [SwiftType] = try mainSchemaFiles.map { schemaFile in

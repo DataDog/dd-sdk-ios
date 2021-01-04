@@ -114,28 +114,28 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
 
-        let eventData = RUMDataAction(
-            date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMActionEvent(
+            dd: .init(),
+            action: .init(
+                crash: nil,
+                error: .init(count: errorsCount.toInt64),
+                id: actionUUID.toRUMDataFormat,
+                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
+                longTask: nil,
+                resource: .init(count: resourcesCount.toInt64),
+                target: .init(name: name),
+                type: actionType.toRUMDataFormat
+            ),
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            action: .init(
-                type: actionType.toRUMDataFormat,
-                id: actionUUID.toRUMDataFormat,
-                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
-                target: RUMDataTarget(name: name),
-                error: .init(count: errorsCount.toInt64),
-                crash: nil,
-                longTask: nil,
-                resource: .init(count: resourcesCount.toInt64)
             )
         )
 
