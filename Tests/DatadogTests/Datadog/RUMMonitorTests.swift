@@ -713,7 +713,13 @@ class RUMMonitorTests: XCTestCase {
         // Given
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
-            dependencies: .mockWith(consentProvider: consentProvider)
+            dependencies: .mockWith(
+                consentProvider: consentProvider,
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
         )
         defer { RUMFeature.instance = nil }
 

@@ -11,7 +11,8 @@ import struct Datadog.OTReference
 import class Datadog.HTTPHeadersWriter
 
 @objcMembers
-public class DDTracer: DatadogObjc.OTTracer {
+public class DDTracer: NSObject, DatadogObjc.OTTracer {
+    @available(*, deprecated, message: "Use `DDTracer(configuration:)`.")
     public static func initialize(configuration: DDTracerConfiguration) -> DatadogObjc.OTTracer {
         return DDTracer(configuration: configuration)
     }
@@ -20,19 +21,19 @@ public class DDTracer: DatadogObjc.OTTracer {
 
     internal let swiftTracer: Datadog.OTTracer
 
-    internal convenience init(configuration: DDTracerConfiguration) {
+    internal init(swiftTracer: Datadog.OTTracer) {
+        self.swiftTracer = swiftTracer
+    }
+
+    // MARK: - Public
+
+    public convenience init(configuration: DDTracerConfiguration) {
         self.init(
             swiftTracer: Datadog.Tracer.initialize(
                 configuration: configuration.swiftConfiguration
             )
         )
     }
-
-    internal init(swiftTracer: Datadog.OTTracer) {
-        self.swiftTracer = swiftTracer
-    }
-
-    // MARK: - OTTracer
 
     public func startSpan(_ operationName: String) -> OTSpan {
         return DDSpanObjc(

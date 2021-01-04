@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class Datadog.Datadog
+import Datadog
 
 @objcMembers
 public class DDEndpoint: NSObject {
@@ -69,6 +69,13 @@ public class DDConfiguration: NSObject {
             sdkBuilder: Datadog.Configuration.builderUsing(clientToken: clientToken, environment: environment)
         )
     }
+
+    public static func builder(rumApplicationID: String, clientToken: String, environment: String) -> DDConfigurationBuilder {
+        return DDConfigurationBuilder(
+            sdkBuilder: Datadog.Configuration
+                .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: environment)
+        )
+    }
 }
 
 @objcMembers
@@ -89,6 +96,10 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.enableTracing(enabled)
     }
 
+    public func enableRUM(_ enabled: Bool) {
+        _ = sdkBuilder.enableRUM(enabled)
+    }
+
     public func set(endpoint: DDEndpoint) {
         _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
     }
@@ -99,6 +110,10 @@ public class DDConfigurationBuilder: NSObject {
 
     public func set(customTracesEndpoint: URL) {
         _ = sdkBuilder.set(customTracesEndpoint: customTracesEndpoint)
+    }
+
+    public func set(customRUMEndpoint: URL) {
+        _ = sdkBuilder.set(customRUMEndpoint: customRUMEndpoint)
     }
 
     @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
@@ -122,6 +137,24 @@ public class DDConfigurationBuilder: NSObject {
 
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
+    }
+
+    public func set(rumSessionsSamplingRate: Float) {
+        _ = sdkBuilder.set(rumSessionsSamplingRate: rumSessionsSamplingRate)
+    }
+
+    public func trackUIKitRUMViews() {
+        let defaultPredicate = DefaultUIKitRUMViewsPredicate()
+        _ = sdkBuilder.trackUIKitRUMViews(using: defaultPredicate)
+    }
+
+    public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate) {
+        let predicateBridge = UIKitRUMViewsPredicateBridge(objcPredicate: predicate)
+        _ = sdkBuilder.trackUIKitRUMViews(using: predicateBridge)
+    }
+
+    public func trackUIKitActions() {
+        _ = sdkBuilder.trackUIKitActions(true)
     }
 
     public func build() -> DDConfiguration {

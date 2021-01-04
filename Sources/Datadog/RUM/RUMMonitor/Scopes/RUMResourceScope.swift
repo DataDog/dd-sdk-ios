@@ -74,11 +74,16 @@ internal class RUMResourceScope: RUMScope {
             sendErrorEvent(on: command)
             return false
         case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
-            resourceMetrics = command.metrics
+            addMetrics(from: command)
         default:
             break
         }
         return true
+    }
+
+    private func addMetrics(from command: RUMAddResourceMetricsCommand) {
+        attributes.merge(rumCommandAttributes: command.attributes)
+        resourceMetrics = command.metrics
     }
 
     // MARK: - Sending RUM Events

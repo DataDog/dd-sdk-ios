@@ -127,12 +127,6 @@ public class DDLogger: NSObject {
     public static func builder() -> DDLoggerBuilder {
         return DDLoggerBuilder(sdkBuilder: Logger.builder)
     }
-
-    // MARK: - Private
-
-    private func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Encodable] {
-        return attributes.mapValues { AnyEncodable($0) }
-    }
 }
 
 @objcMembers
