@@ -56,6 +56,8 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertEqual(configuration.batchSize, .medium)
+            XCTAssertEqual(configuration.uploadFrequency, .average)
         }
     }
 
@@ -116,5 +118,17 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(rumSessionsSamplingRate: 42.5)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumSessionsSamplingRate, 42.5)
+
+        objcBuilder.set(batchSize: .small)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
+
+        objcBuilder.set(batchSize: .large)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .large)
+
+        objcBuilder.set(uploadFrequency: .frequent)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .frequent)
+
+        objcBuilder.set(uploadFrequency: .rare)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .rare)
     }
 }
