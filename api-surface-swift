@@ -31,6 +31,14 @@ public class Datadog
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
  public static func set(trackingConsent: TrackingConsent)
  public struct Configuration
+  public enum BatchSize
+   case small
+   case medium
+   case large
+  public enum UploadFrequency
+   case frequent
+   case average
+   case rare
   public enum DatadogEndpoint
    case us
    case eu
@@ -69,6 +77,8 @@ public class Datadog
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
    public func set(serviceName: String) -> Builder
+   public func set(batchSize: BatchSize) -> Builder
+   public func set(uploadFrequency: UploadFrequency) -> Builder
    public func build() -> Configuration
 public typealias DDGlobal = Global
 public struct Global
@@ -234,8 +244,8 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
  public func inject(spanContext: OTSpanContext)
  override public init()
-public class DDURLSessionInterceptor: URLSessionInterceptorType
- public static var shared: DDURLSessionInterceptor?
+public class URLSessionInterceptor: URLSessionInterceptorType
+ public static var shared: URLSessionInterceptor?
  public func modify(request: URLRequest) -> URLRequest
  public func taskCreated(task: URLSessionTask)
  public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
