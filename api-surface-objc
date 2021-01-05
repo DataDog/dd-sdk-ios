@@ -59,8 +59,8 @@ public class DDConfigurationBuilder: NSObject
  public func set(uploadFrequency: DDUploadFrequency)
  public func build() -> DDConfiguration
 public class DDGlobal: NSObject
- public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
- public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum)
+ @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
+ @objc public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum)
 public enum DDSDKVerbosityLevel: Int
  case none
  case debug
@@ -102,7 +102,7 @@ public class DDLoggerBuilder: NSObject
  public func sendLogsToDatadog(_ enabled: Bool)
  public func printLogsToConsole(_ enabled: Bool)
  public func build() -> DDLogger
-public protocol OTSpan
+@objc public protocol OTSpan
  var context: OTSpanContext
  var tracer: OTTracer
  func setOperationName(_ operationName: String)
@@ -116,10 +116,11 @@ public protocol OTSpan
  func finish()
  func finishWithTime(_ finishTime: Date?)
  func setActive() -> OTSpan
-public protocol OTSpanContext
+@objc public protocol OTSpanContext
  func forEachBaggageItem(_ callback: (_ key: String, _ value: String) -> Bool)
-public let OTFormatHTTPHeaders = "OTFormatHTTPHeaders"
-public protocol OTTracer
+public class OT: NSObject
+ @objc public static let formatTextMap = "OTFormatTextMap"
+@objc public protocol OTTracer
  func startSpan(_ operationName: String) -> OTSpan
  func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
  func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan
@@ -128,8 +129,8 @@ public protocol OTTracer
  func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws
  func extractWithFormat(_ format: String, carrier: Any) throws
 public class DDRUMView: NSObject
- public var path: String
- public var attributes: [String: Any]
+ @objc public var path: String
+ @objc public var attributes: [String: Any]
  public init(path: String, attributes: [String: Any])
 public protocol DDUIKitRUMViewsPredicate: AnyObject
  func rumView(for viewController: UIViewController) -> DDRUMView?
@@ -152,7 +153,7 @@ public class DDRUMMonitor: NSObject
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [String: Any])
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [String: Any])
  public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
- public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,response: URLResponse,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [String: Any])
  public func startUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
