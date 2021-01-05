@@ -158,10 +158,9 @@ public class DDRUMMonitor: NSObject {
     public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
-        size: Int64?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, response: response, size: size, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, response: response, attributes: castAttributesToSwift(attributes))
     }
 
     public func stopResourceLoadingWithError(
