@@ -116,7 +116,7 @@ class DDRUMMonitorTests: XCTestCase {
             ),
             attributes: ["event-attribute2": "foo2"]
         )
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: 42, attributes: ["event-attribute3": "foo3"])
+        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), attributes: ["event-attribute3": "foo3"])
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
 
