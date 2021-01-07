@@ -35,7 +35,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let usr: RUMUser?
 
     /// View properties
-    public let view: View
+    public var view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -260,7 +260,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let date: Int64
 
     /// Resource properties
-    public let resource: Resource
+    public var resource: Resource
 
     /// The service name for this application
     public let service: String?
@@ -275,7 +275,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let usr: RUMUser?
 
     /// View properties
-    public let view: View
+    public var view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -570,7 +570,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let dd: DD
 
     /// Action properties
-    public let action: Action
+    public var action: Action
 
     /// Application properties
     public let application: Application
@@ -594,7 +594,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let usr: RUMUser?
 
     /// View properties
-    public let view: View
+    public var view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -640,7 +640,7 @@ public struct RUMActionEvent: RUMDataModel {
         public let resource: Resource?
 
         /// Action target properties
-        public let target: Target?
+        public var target: Target?
 
         /// Type of the action
         public let type: ActionType
@@ -785,7 +785,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let date: Int64
 
     /// Error properties
-    public let error: Error
+    public var error: Error
 
     /// The service name for this application
     public let service: String?
@@ -800,7 +800,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let usr: RUMUser?
 
     /// View properties
-    public let view: View
+    public var view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -855,7 +855,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public var message: String
 
         /// Resource properties of the error
-        public let resource: Resource?
+        public var resource: Resource?
 
         /// Source of the error
         public let source: Source
