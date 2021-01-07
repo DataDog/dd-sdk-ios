@@ -107,15 +107,15 @@ final class SwiftPrinterTests: XCTestCase {
         let expected = """
 
         /// Description of FooBar.
-        internal struct FooBar: RUMDataModel {
+        public struct FooBar: RUMDataModel {
             /// Description of Bar.
-            let bar: BAR?
+            public let bar: BAR?
 
             /// Description of FooBar's `bizz`.
-            let bizz: Bizz = .case2
+            public let bizz: Bizz = .case2
 
             /// Description of FooBar's `buzz`.
-            var buzz: [Buzz]?
+            public var buzz: [Buzz]?
 
             enum CodingKeys: String, CodingKey {
                 case bar = "bar"
@@ -124,12 +124,12 @@ final class SwiftPrinterTests: XCTestCase {
             }
 
             /// Description of Bar.
-            internal struct BAR: Codable {
+            public struct BAR: Codable {
                 /// Description of Bar's `property1`.
-                let property1: String?
+                public let property1: String?
 
                 /// Description of Bar's `property2`.
-                var property2: String
+                public var property2: String
 
                 enum CodingKeys: String, CodingKey {
                     case property1 = "property1"
@@ -138,14 +138,14 @@ final class SwiftPrinterTests: XCTestCase {
             }
 
             /// Description of FooBar's `bizz`.
-            internal enum Bizz: String, Codable {
+            public enum Bizz: String, Codable {
                 case case1 = "case 1"
                 case case2 = "case 2"
                 case case3 = "case 3"
                 case case4 = "case 4"
             }
 
-            internal enum Buzz: String, Codable {
+            public enum Buzz: String, Codable {
                 case option1 = "option-1"
                 case option2 = "option-2"
                 case option3 = "option-3"
@@ -153,7 +153,7 @@ final class SwiftPrinterTests: XCTestCase {
             }
         }
 
-        internal enum BizzBuzz: String, Codable {
+        public enum BizzBuzz: String, Codable {
             case case1 = "case 1"
             case case2 = "case 2"
             case case3 = "case 3"

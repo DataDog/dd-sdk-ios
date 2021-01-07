@@ -9,33 +9,33 @@
 internal protocol RUMDataModel: Codable {}
 
 /// Schema of all properties of a View event
-internal struct RUMViewEvent: RUMDataModel {
+public struct RUMViewEvent: RUMDataModel {
     /// Internal properties
-    let dd: DD
+    public let dd: DD
 
     /// Application properties
-    let application: Application
+    public let application: Application
 
     /// Device connectivity properties
-    let connectivity: RUMConnectivity?
+    public let connectivity: RUMConnectivity?
 
     /// Start of the event in ms from epoch
-    let date: Int64
+    public let date: Int64
 
     /// The service name for this application
-    let service: String?
+    public let service: String?
 
     /// Session properties
-    let session: Session
+    public let session: Session
 
     /// RUM event type
-    let type: String = "view"
+    public let type: String = "view"
 
     /// User properties
-    let usr: RUMUser?
+    public let usr: RUMUser?
 
     /// View properties
-    let view: View
+    public let view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -50,12 +50,12 @@ internal struct RUMViewEvent: RUMDataModel {
     }
 
     /// Internal properties
-    internal struct DD: Codable {
+    public struct DD: Codable {
         /// Version of the update of the view event
-        let documentVersion: Int64
+        public let documentVersion: Int64
 
         /// Version of the RUM event format
-        let formatVersion: Int64 = 2
+        public let formatVersion: Int64 = 2
 
         enum CodingKeys: String, CodingKey {
             case documentVersion = "document_version"
@@ -64,9 +64,9 @@ internal struct RUMViewEvent: RUMDataModel {
     }
 
     /// Application properties
-    internal struct Application: Codable {
+    public struct Application: Codable {
         /// UUID of the application
-        let id: String
+        public let id: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -74,12 +74,12 @@ internal struct RUMViewEvent: RUMDataModel {
     }
 
     /// Session properties
-    internal struct Session: Codable {
+    public struct Session: Codable {
         /// UUID of the session
-        let id: String
+        public let id: String
 
         /// Type of the session
-        let type: SessionType
+        public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -87,73 +87,73 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Type of the session
-        internal enum SessionType: String, Codable {
+        public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
         }
     }
 
     /// View properties
-    internal struct View: Codable {
+    public struct View: Codable {
         /// Properties of the actions of the view
-        let action: Action
+        public let action: Action
 
         /// Properties of the crashes of the view
-        let crash: Crash?
+        public let crash: Crash?
 
         /// Total layout shift score that occured on the view
-        let cumulativeLayoutShift: Double?
+        public let cumulativeLayoutShift: Double?
 
         /// Duration in ns to the complete parsing and loading of the document and its sub resources
-        let domComplete: Int64?
+        public let domComplete: Int64?
 
         /// Duration in ns to the complete parsing and loading of the document without its sub resources
-        let domContentLoaded: Int64?
+        public let domContentLoaded: Int64?
 
         /// Duration in ns to the end of the parsing of the document
-        let domInteractive: Int64?
+        public let domInteractive: Int64?
 
         /// Properties of the errors of the view
-        let error: Error
+        public let error: Error
 
         /// Duration in ns to the first rendering
-        let firstContentfulPaint: Int64?
+        public let firstContentfulPaint: Int64?
 
         /// Duration in ns of the first input event delay
-        let firstInputDelay: Int64?
+        public let firstInputDelay: Int64?
 
         /// UUID of the view
-        let id: String
+        public let id: String
 
         /// Whether the View corresponding to this event is considered active
-        let isActive: Bool?
+        public let isActive: Bool?
 
         /// Duration in ns to the largest contentful paint
-        let largestContentfulPaint: Int64?
+        public let largestContentfulPaint: Int64?
 
         /// Duration in ns to the end of the load event handler execution
-        let loadEvent: Int64?
+        public let loadEvent: Int64?
 
         /// Duration in ns to the view is considered loaded
-        let loadingTime: Int64?
+        public let loadingTime: Int64?
 
         /// Type of the loading of the view
-        let loadingType: LoadingType?
+        public let loadingType: LoadingType?
 
         /// Properties of the long tasks of the view
-        let longTask: LongTask?
+        public let longTask: LongTask?
 
         /// URL that linked to the initial view of the page
-        var referrer: String?
+        public var referrer: String?
 
         /// Properties of the resources of the view
-        let resource: Resource
+        public let resource: Resource
 
         /// Time spent on the view in ns
-        let timeSpent: Int64
+        public let timeSpent: Int64
 
         /// URL of the view
-        var url: String
+        public var url: String
 
         enum CodingKeys: String, CodingKey {
             case action = "action"
@@ -179,9 +179,9 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the actions of the view
-        internal struct Action: Codable {
+        public struct Action: Codable {
             /// Number of actions that occurred on the view
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -189,9 +189,9 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the crashes of the view
-        internal struct Crash: Codable {
+        public struct Crash: Codable {
             /// Number of crashes that occurred on the view
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -199,9 +199,9 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the errors of the view
-        internal struct Error: Codable {
+        public struct Error: Codable {
             /// Number of errors that occurred on the view
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -209,7 +209,7 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Type of the loading of the view
-        internal enum LoadingType: String, Codable {
+        public enum LoadingType: String, Codable {
             case initialLoad = "initial_load"
             case routeChange = "route_change"
             case activityDisplay = "activity_display"
@@ -221,9 +221,9 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the long tasks of the view
-        internal struct LongTask: Codable {
+        public struct LongTask: Codable {
             /// Number of long tasks that occurred on the view
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -231,9 +231,9 @@ internal struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the resources of the view
-        internal struct Resource: Codable {
+        public struct Resource: Codable {
             /// Number of resources that occurred on the view
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -243,39 +243,39 @@ internal struct RUMViewEvent: RUMDataModel {
 }
 
 /// Schema of all properties of a Resource event
-internal struct RUMResourceEvent: RUMDataModel {
+public struct RUMResourceEvent: RUMDataModel {
     /// Internal properties
-    let dd: DD
+    public let dd: DD
 
     /// Action properties
-    let action: Action?
+    public let action: Action?
 
     /// Application properties
-    let application: Application
+    public let application: Application
 
     /// Device connectivity properties
-    let connectivity: RUMConnectivity?
+    public let connectivity: RUMConnectivity?
 
     /// Start of the event in ms from epoch
-    let date: Int64
+    public let date: Int64
 
     /// Resource properties
-    let resource: Resource
+    public let resource: Resource
 
     /// The service name for this application
-    let service: String?
+    public let service: String?
 
     /// Session properties
-    let session: Session
+    public let session: Session
 
     /// RUM event type
-    let type: String = "resource"
+    public let type: String = "resource"
 
     /// User properties
-    let usr: RUMUser?
+    public let usr: RUMUser?
 
     /// View properties
-    let view: View
+    public let view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -292,15 +292,15 @@ internal struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Internal properties
-    internal struct DD: Codable {
+    public struct DD: Codable {
         /// Version of the RUM event format
-        let formatVersion: Int64 = 2
+        public let formatVersion: Int64 = 2
 
         /// span identifier in decimal format
-        let spanId: String?
+        public let spanId: String?
 
         /// trace identifier in decimal format
-        let traceId: String?
+        public let traceId: String?
 
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
@@ -310,9 +310,9 @@ internal struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Action properties
-    internal struct Action: Codable {
+    public struct Action: Codable {
         /// UUID of the action
-        let id: String
+        public let id: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -320,9 +320,9 @@ internal struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Application properties
-    internal struct Application: Codable {
+    public struct Application: Codable {
         /// UUID of the application
-        let id: String
+        public let id: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -330,48 +330,48 @@ internal struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Resource properties
-    internal struct Resource: Codable {
+    public struct Resource: Codable {
         /// Connect phase properties
-        let connect: Connect?
+        public let connect: Connect?
 
         /// DNS phase properties
-        let dns: DNS?
+        public let dns: DNS?
 
         /// Download phase properties
-        let download: Download?
+        public let download: Download?
 
         /// Duration of the resource
-        let duration: Int64
+        public let duration: Int64
 
         /// First Byte phase properties
-        let firstByte: FirstByte?
+        public let firstByte: FirstByte?
 
         /// UUID of the resource
-        let id: String?
+        public let id: String?
 
         /// HTTP method of the resource
-        let method: RUMMethod?
+        public let method: RUMMethod?
 
         /// The provider for this resource
-        let provider: Provider?
+        public let provider: Provider?
 
         /// Redirect phase properties
-        let redirect: Redirect?
+        public let redirect: Redirect?
 
         /// Size in octet of the resource response body
-        let size: Int64?
+        public let size: Int64?
 
         /// SSL phase properties
-        let ssl: SSL?
+        public let ssl: SSL?
 
         /// HTTP status code of the resource
-        let statusCode: Int64?
+        public let statusCode: Int64?
 
         /// Resource type
-        let type: ResourceType
+        public let type: ResourceType
 
         /// URL of the resource
-        var url: String
+        public var url: String
 
         enum CodingKeys: String, CodingKey {
             case connect = "connect"
@@ -391,12 +391,12 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Connect phase properties
-        internal struct Connect: Codable {
+        public struct Connect: Codable {
             /// Duration in ns of the resource connect phase
-            let duration: Int64
+            public let duration: Int64
 
             /// Duration in ns between start of the request and start of the connect phase
-            let start: Int64
+            public let start: Int64
 
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
@@ -405,12 +405,12 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// DNS phase properties
-        internal struct DNS: Codable {
+        public struct DNS: Codable {
             /// Duration in ns of the resource dns phase
-            let duration: Int64
+            public let duration: Int64
 
             /// Duration in ns between start of the request and start of the dns phase
-            let start: Int64
+            public let start: Int64
 
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
@@ -419,12 +419,12 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Download phase properties
-        internal struct Download: Codable {
+        public struct Download: Codable {
             /// Duration in ns of the resource download phase
-            let duration: Int64
+            public let duration: Int64
 
             /// Duration in ns between start of the request and start of the download phase
-            let start: Int64
+            public let start: Int64
 
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
@@ -433,12 +433,12 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// First Byte phase properties
-        internal struct FirstByte: Codable {
+        public struct FirstByte: Codable {
             /// Duration in ns of the resource first byte phase
-            let duration: Int64
+            public let duration: Int64
 
             /// Duration in ns between start of the request and start of the first byte phase
-            let start: Int64
+            public let start: Int64
 
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
@@ -447,15 +447,15 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// The provider for this resource
-        internal struct Provider: Codable {
+        public struct Provider: Codable {
             /// The domain name of the provider
-            let domain: String?
+            public let domain: String?
 
             /// The user friendly name of the provider
-            let name: String?
+            public let name: String?
 
             /// The type of provider
-            let type: ProviderType?
+            public let type: ProviderType?
 
             enum CodingKeys: String, CodingKey {
                 case domain = "domain"
@@ -464,7 +464,7 @@ internal struct RUMResourceEvent: RUMDataModel {
             }
 
             /// The type of provider
-            internal enum ProviderType: String, Codable {
+            public enum ProviderType: String, Codable {
                 case ad = "ad"
                 case advertising = "advertising"
                 case analytics = "analytics"
@@ -483,12 +483,12 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Redirect phase properties
-        internal struct Redirect: Codable {
+        public struct Redirect: Codable {
             /// Duration in ns of the resource redirect phase
-            let duration: Int64
+            public let duration: Int64
 
             /// Duration in ns between start of the request and start of the redirect phase
-            let start: Int64
+            public let start: Int64
 
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
@@ -497,12 +497,12 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// SSL phase properties
-        internal struct SSL: Codable {
+        public struct SSL: Codable {
             /// Duration in ns of the resource ssl phase
-            let duration: Int64
+            public let duration: Int64
 
             /// Duration in ns between start of the request and start of the ssl phase
-            let start: Int64
+            public let start: Int64
 
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
@@ -511,7 +511,7 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Resource type
-        internal enum ResourceType: String, Codable {
+        public enum ResourceType: String, Codable {
             case document = "document"
             case xhr = "xhr"
             case beacon = "beacon"
@@ -526,12 +526,12 @@ internal struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Session properties
-    internal struct Session: Codable {
+    public struct Session: Codable {
         /// UUID of the session
-        let id: String
+        public let id: String
 
         /// Type of the session
-        let type: SessionType
+        public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -539,22 +539,22 @@ internal struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Type of the session
-        internal enum SessionType: String, Codable {
+        public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
         }
     }
 
     /// View properties
-    internal struct View: Codable {
+    public struct View: Codable {
         /// UUID of the view
-        let id: String
+        public let id: String
 
         /// URL that linked to the initial view of the page
-        var referrer: String?
+        public var referrer: String?
 
         /// URL of the view
-        var url: String
+        public var url: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -565,36 +565,36 @@ internal struct RUMResourceEvent: RUMDataModel {
 }
 
 /// Schema of all properties of an Action event
-internal struct RUMActionEvent: RUMDataModel {
+public struct RUMActionEvent: RUMDataModel {
     /// Internal properties
-    let dd: DD
+    public let dd: DD
 
     /// Action properties
-    let action: Action
+    public let action: Action
 
     /// Application properties
-    let application: Application
+    public let application: Application
 
     /// Device connectivity properties
-    let connectivity: RUMConnectivity?
+    public let connectivity: RUMConnectivity?
 
     /// Start of the event in ms from epoch
-    let date: Int64
+    public let date: Int64
 
     /// The service name for this application
-    let service: String?
+    public let service: String?
 
     /// Session properties
-    let session: Session
+    public let session: Session
 
     /// RUM event type
-    let type: String = "action"
+    public let type: String = "action"
 
     /// User properties
-    let usr: RUMUser?
+    public let usr: RUMUser?
 
     /// View properties
-    let view: View
+    public let view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -610,9 +610,9 @@ internal struct RUMActionEvent: RUMDataModel {
     }
 
     /// Internal properties
-    internal struct DD: Codable {
+    public struct DD: Codable {
         /// Version of the RUM event format
-        let formatVersion: Int64 = 2
+        public let formatVersion: Int64 = 2
 
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
@@ -620,30 +620,30 @@ internal struct RUMActionEvent: RUMDataModel {
     }
 
     /// Action properties
-    internal struct Action: Codable {
+    public struct Action: Codable {
         /// Properties of the crashes of the action
-        let crash: Crash?
+        public let crash: Crash?
 
         /// Properties of the errors of the action
-        let error: Error?
+        public let error: Error?
 
         /// UUID of the action
-        let id: String?
+        public let id: String?
 
         /// Duration in ns to the action is considered loaded
-        let loadingTime: Int64?
+        public let loadingTime: Int64?
 
         /// Properties of the long tasks of the action
-        let longTask: LongTask?
+        public let longTask: LongTask?
 
         /// Properties of the resources of the action
-        let resource: Resource?
+        public let resource: Resource?
 
         /// Action target properties
-        let target: Target?
+        public let target: Target?
 
         /// Type of the action
-        let type: ActionType
+        public let type: ActionType
 
         enum CodingKeys: String, CodingKey {
             case crash = "crash"
@@ -657,9 +657,9 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the crashes of the action
-        internal struct Crash: Codable {
+        public struct Crash: Codable {
             /// Number of crashes that occurred on the action
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -667,9 +667,9 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the errors of the action
-        internal struct Error: Codable {
+        public struct Error: Codable {
             /// Number of errors that occurred on the action
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -677,9 +677,9 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the long tasks of the action
-        internal struct LongTask: Codable {
+        public struct LongTask: Codable {
             /// Number of long tasks that occurred on the action
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -687,9 +687,9 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the resources of the action
-        internal struct Resource: Codable {
+        public struct Resource: Codable {
             /// Number of resources that occurred on the action
-            let count: Int64
+            public let count: Int64
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -697,9 +697,9 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Action target properties
-        internal struct Target: Codable {
+        public struct Target: Codable {
             /// Target name
-            var name: String
+            public var name: String
 
             enum CodingKeys: String, CodingKey {
                 case name = "name"
@@ -707,7 +707,7 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Type of the action
-        internal enum ActionType: String, Codable {
+        public enum ActionType: String, Codable {
             case custom = "custom"
             case click = "click"
             case tap = "tap"
@@ -719,9 +719,9 @@ internal struct RUMActionEvent: RUMDataModel {
     }
 
     /// Application properties
-    internal struct Application: Codable {
+    public struct Application: Codable {
         /// UUID of the application
-        let id: String
+        public let id: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -729,12 +729,12 @@ internal struct RUMActionEvent: RUMDataModel {
     }
 
     /// Session properties
-    internal struct Session: Codable {
+    public struct Session: Codable {
         /// UUID of the session
-        let id: String
+        public let id: String
 
         /// Type of the session
-        let type: SessionType
+        public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -742,22 +742,22 @@ internal struct RUMActionEvent: RUMDataModel {
         }
 
         /// Type of the session
-        internal enum SessionType: String, Codable {
+        public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
         }
     }
 
     /// View properties
-    internal struct View: Codable {
+    public struct View: Codable {
         /// UUID of the view
-        let id: String
+        public let id: String
 
         /// URL that linked to the initial view of the page
-        var referrer: String?
+        public var referrer: String?
 
         /// URL of the view
-        var url: String
+        public var url: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -768,39 +768,39 @@ internal struct RUMActionEvent: RUMDataModel {
 }
 
 /// Schema of all properties of an Error event
-internal struct RUMErrorEvent: RUMDataModel {
+public struct RUMErrorEvent: RUMDataModel {
     /// Internal properties
-    let dd: DD
+    public let dd: DD
 
     /// Action properties
-    let action: Action?
+    public let action: Action?
 
     /// Application properties
-    let application: Application
+    public let application: Application
 
     /// Device connectivity properties
-    let connectivity: RUMConnectivity?
+    public let connectivity: RUMConnectivity?
 
     /// Start of the event in ms from epoch
-    let date: Int64
+    public let date: Int64
 
     /// Error properties
-    let error: Error
+    public let error: Error
 
     /// The service name for this application
-    let service: String?
+    public let service: String?
 
     /// Session properties
-    let session: Session
+    public let session: Session
 
     /// RUM event type
-    let type: String = "error"
+    public let type: String = "error"
 
     /// User properties
-    let usr: RUMUser?
+    public let usr: RUMUser?
 
     /// View properties
-    let view: View
+    public let view: View
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -817,9 +817,9 @@ internal struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Internal properties
-    internal struct DD: Codable {
+    public struct DD: Codable {
         /// Version of the RUM event format
-        let formatVersion: Int64 = 2
+        public let formatVersion: Int64 = 2
 
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
@@ -827,9 +827,9 @@ internal struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Action properties
-    internal struct Action: Codable {
+    public struct Action: Codable {
         /// UUID of the action
-        let id: String
+        public let id: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -837,9 +837,9 @@ internal struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Application properties
-    internal struct Application: Codable {
+    public struct Application: Codable {
         /// UUID of the application
-        let id: String
+        public let id: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -847,21 +847,21 @@ internal struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Error properties
-    internal struct Error: Codable {
+    public struct Error: Codable {
         /// Whether this error crashed the host application
-        let isCrash: Bool?
+        public let isCrash: Bool?
 
         /// Error message
-        var message: String
+        public var message: String
 
         /// Resource properties of the error
-        let resource: Resource?
+        public let resource: Resource?
 
         /// Source of the error
-        let source: Source
+        public let source: Source
 
         /// Stacktrace of the error
-        var stack: String?
+        public var stack: String?
 
         enum CodingKeys: String, CodingKey {
             case isCrash = "is_crash"
@@ -872,18 +872,18 @@ internal struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Resource properties of the error
-        internal struct Resource: Codable {
+        public struct Resource: Codable {
             /// HTTP method of the resource
-            let method: RUMMethod
+            public let method: RUMMethod
 
             /// The provider for this resource
-            let provider: Provider?
+            public let provider: Provider?
 
             /// HTTP Status code of the resource
-            let statusCode: Int64
+            public let statusCode: Int64
 
             /// URL of the resource
-            var url: String
+            public var url: String
 
             enum CodingKeys: String, CodingKey {
                 case method = "method"
@@ -893,15 +893,15 @@ internal struct RUMErrorEvent: RUMDataModel {
             }
 
             /// The provider for this resource
-            internal struct Provider: Codable {
+            public struct Provider: Codable {
                 /// The domain name of the provider
-                let domain: String?
+                public let domain: String?
 
                 /// The user friendly name of the provider
-                let name: String?
+                public let name: String?
 
                 /// The type of provider
-                let type: ProviderType?
+                public let type: ProviderType?
 
                 enum CodingKeys: String, CodingKey {
                     case domain = "domain"
@@ -910,7 +910,7 @@ internal struct RUMErrorEvent: RUMDataModel {
                 }
 
                 /// The type of provider
-                internal enum ProviderType: String, Codable {
+                public enum ProviderType: String, Codable {
                     case ad = "ad"
                     case advertising = "advertising"
                     case analytics = "analytics"
@@ -930,7 +930,7 @@ internal struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Source of the error
-        internal enum Source: String, Codable {
+        public enum Source: String, Codable {
             case network = "network"
             case source = "source"
             case console = "console"
@@ -942,12 +942,12 @@ internal struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Session properties
-    internal struct Session: Codable {
+    public struct Session: Codable {
         /// UUID of the session
-        let id: String
+        public let id: String
 
         /// Type of the session
-        let type: SessionType
+        public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -955,22 +955,22 @@ internal struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Type of the session
-        internal enum SessionType: String, Codable {
+        public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
         }
     }
 
     /// View properties
-    internal struct View: Codable {
+    public struct View: Codable {
         /// UUID of the view
-        let id: String
+        public let id: String
 
         /// URL that linked to the initial view of the page
-        var referrer: String?
+        public var referrer: String?
 
         /// URL of the view
-        var url: String
+        public var url: String
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -981,15 +981,15 @@ internal struct RUMErrorEvent: RUMDataModel {
 }
 
 /// Device connectivity properties
-internal struct RUMConnectivity: Codable {
+public struct RUMConnectivity: Codable {
     /// Cellular connectivity properties
-    let cellular: Cellular?
+    public let cellular: Cellular?
 
     /// The list of available network interfaces
-    let interfaces: [Interfaces]
+    public let interfaces: [Interfaces]
 
     /// Status of the device connectivity
-    let status: Status
+    public let status: Status
 
     enum CodingKeys: String, CodingKey {
         case cellular = "cellular"
@@ -998,12 +998,12 @@ internal struct RUMConnectivity: Codable {
     }
 
     /// Cellular connectivity properties
-    internal struct Cellular: Codable {
+    public struct Cellular: Codable {
         /// The name of the SIM carrier
-        let carrierName: String?
+        public let carrierName: String?
 
         /// The type of a radio technology used for cellular connection
-        let technology: String?
+        public let technology: String?
 
         enum CodingKeys: String, CodingKey {
             case carrierName = "carrier_name"
@@ -1011,7 +1011,7 @@ internal struct RUMConnectivity: Codable {
         }
     }
 
-    internal enum Interfaces: String, Codable {
+    public enum Interfaces: String, Codable {
         case bluetooth = "bluetooth"
         case cellular = "cellular"
         case ethernet = "ethernet"
@@ -1024,7 +1024,7 @@ internal struct RUMConnectivity: Codable {
     }
 
     /// Status of the device connectivity
-    internal enum Status: String, Codable {
+    public enum Status: String, Codable {
         case connected = "connected"
         case notConnected = "not_connected"
         case maybe = "maybe"
@@ -1032,15 +1032,15 @@ internal struct RUMConnectivity: Codable {
 }
 
 /// User properties
-internal struct RUMUser: Codable {
+public struct RUMUser: Codable {
     /// Email of the user
-    let email: String?
+    public let email: String?
 
     /// Identifier of the user
-    let id: String?
+    public let id: String?
 
     /// Name of the user
-    let name: String?
+    public let name: String?
 
     enum CodingKeys: String, CodingKey {
         case email = "email"
@@ -1050,7 +1050,7 @@ internal struct RUMUser: Codable {
 }
 
 /// HTTP method of the resource
-internal enum RUMMethod: String, Codable {
+public enum RUMMethod: String, Codable {
     case post = "POST"
     case get = "GET"
     case head = "HEAD"
