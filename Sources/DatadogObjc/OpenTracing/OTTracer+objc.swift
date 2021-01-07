@@ -5,11 +5,14 @@
  */
 
 import Foundation
-public let OTFormatHTTPHeaders = "OTFormatHTTPHeaders"
 
 @objc
+public class OT: NSObject {
+    @objc public static let formatTextMap = "OTFormatTextMap"
+}
+
 /// Corresponds to: https://github.com/opentracing/opentracing-objc/blob/master/Pod/Classes/OTTracer.h
-public protocol OTTracer {
+@objc public protocol OTTracer {
     func startSpan(_ operationName: String) -> OTSpan
     func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
     func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan
