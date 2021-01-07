@@ -35,7 +35,9 @@ extension Datadog.Configuration {
         firstPartyHosts: Set<String>? = nil,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        rumUIKitActionsTrackingEnabled: Bool = false
+        rumUIKitActionsTrackingEnabled: Bool = false,
+        batchSize: BatchSize = .medium,
+        uploadFrequency: UploadFrequency = .average
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -55,9 +57,35 @@ extension Datadog.Configuration {
             firstPartyHosts: firstPartyHosts,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
-            rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled
+            rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
+            batchSize: batchSize,
+            uploadFrequency: uploadFrequency
         )
     }
+}
+
+typealias BatchSize = Datadog.Configuration.BatchSize
+
+extension BatchSize: CaseIterable {
+    public static var allCases: [Self] { [.small, .medium, .large] }
+
+    static func mockRandom() -> Self {
+        allCases.randomElement()!
+    }
+}
+
+typealias UploadFrequency = Datadog.Configuration.UploadFrequency
+
+extension UploadFrequency: CaseIterable {
+    public static var allCases: [Self] { [.frequent, .average, .rare] }
+
+    static func mockRandom() -> Self {
+        allCases.randomElement()!
+    }
+}
+
+extension BundleType: CaseIterable {
+    public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
 extension Datadog.Configuration.DatadogEndpoint {
@@ -113,7 +141,7 @@ extension FeaturesConfiguration.Common {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        performance: PerformancePreset = .best(for: .iOSApp)
+        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
     ) -> Self {
         return .init(
             applicationName: applicationName,

@@ -58,7 +58,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
         }
 
         // Wait enough time for `reader` to accept the youngest batch file
-        Thread.sleep(forTimeInterval: PerformancePreset.default.minFileAgeForRead + 0.1)
+        Thread.sleep(forTimeInterval: PerformancePreset.benchmarksPreset.minFileAgeForRead + 0.1)
 
         measureMetrics([.wallClockTime], automaticallyStartMeasuring: false) {
             self.startMeasuring()

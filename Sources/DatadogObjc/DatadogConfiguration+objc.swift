@@ -54,6 +54,36 @@ public class DDTracesEndpoint: NSObject {
     public static func custom(url: String) -> DDTracesEndpoint { .init(sdkEndpoint: .custom(url: url)) }
 }
 
+@objc
+public enum DDBatchSize: Int {
+    case small
+    case medium
+    case large
+
+    internal var swiftType: Datadog.Configuration.BatchSize {
+        switch self {
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        }
+    }
+}
+
+@objc
+public enum DDUploadFrequency: Int {
+    case frequent
+    case average
+    case rare
+
+    internal var swiftType: Datadog.Configuration.UploadFrequency {
+        switch self {
+        case .frequent: return .frequent
+        case .average: return .average
+        case .rare: return .rare
+        }
+    }
+}
+
 @objcMembers
 public class DDConfiguration: NSObject {
     internal let sdkConfiguration: Datadog.Configuration
@@ -155,6 +185,14 @@ public class DDConfigurationBuilder: NSObject {
 
     public func trackUIKitActions() {
         _ = sdkBuilder.trackUIKitActions(true)
+    }
+
+    public func set(batchSize: DDBatchSize) {
+        _ = sdkBuilder.set(batchSize: batchSize.swiftType)
+    }
+
+    public func set(uploadFrequency: DDUploadFrequency) {
+        _ = sdkBuilder.set(uploadFrequency: uploadFrequency.swiftType)
     }
 
     public func build() -> DDConfiguration {

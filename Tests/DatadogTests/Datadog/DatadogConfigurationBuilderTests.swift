@@ -45,6 +45,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertEqual(configuration.batchSize, .medium)
+            XCTAssertEqual(configuration.uploadFrequency, .average)
         }
     }
 
@@ -63,6 +65,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .track(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(false)
+                .set(batchSize: .small)
+                .set(uploadFrequency: .frequent)
 
             return builder
         }
@@ -98,6 +102,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertEqual(configuration.batchSize, .small)
+            XCTAssertEqual(configuration.uploadFrequency, .frequent)
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

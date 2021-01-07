@@ -25,7 +25,7 @@ class SpanFileOutputTests: XCTestCase {
                 dataFormat: TracingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
-                    performance: PerformancePreset.default,
+                    performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
                     dateProvider: SystemDateProvider()
                 )
             )

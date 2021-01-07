@@ -27,6 +27,14 @@ public class DDTracesEndpoint: NSObject
  public static func us() -> DDTracesEndpoint
  public static func gov() -> DDTracesEndpoint
  public static func custom(url: String) -> DDTracesEndpoint
+public enum DDBatchSize: Int
+ case small
+ case medium
+ case large
+public enum DDUploadFrequency: Int
+ case frequent
+ case average
+ case rare
 public class DDConfiguration: NSObject
  public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder
  public static func builder(rumApplicationID: String, clientToken: String, environment: String) -> DDConfigurationBuilder
@@ -47,10 +55,12 @@ public class DDConfigurationBuilder: NSObject
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()
+ public func set(batchSize: DDBatchSize)
+ public func set(uploadFrequency: DDUploadFrequency)
  public func build() -> DDConfiguration
 public class DDGlobal: NSObject
- public static var sharedTracer: DatadogObjc.OTTracer = noopTracer
- public static var rum: DatadogObjc.DDRUMMonitor = noopRUMMonitor
+ public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
+ public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum)
 public enum DDSDKVerbosityLevel: Int
  case none
  case debug
@@ -92,9 +102,6 @@ public class DDLoggerBuilder: NSObject
  public func sendLogsToDatadog(_ enabled: Bool)
  public func printLogsToConsole(_ enabled: Bool)
  public func build() -> DDLogger
-public class OTGlobal: NSObject
- public static func initSharedTracer(_ tracer: OTTracer)
- public internal(set) static var sharedTracer: OTTracer
 public protocol OTSpan
  var context: OTSpanContext
  var tracer: OTTracer

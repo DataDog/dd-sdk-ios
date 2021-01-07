@@ -36,6 +36,8 @@ struct ExampleAppConfiguration: AppConfiguration {
                 environment: "tests"
             )
             .set(serviceName: serviceName)
+            .set(batchSize: .small)
+            .set(uploadFrequency: .frequent)
 
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {
@@ -75,6 +77,8 @@ struct UITestsAppConfiguration: AppConfiguration {
                 environment: "integration"
             )
             .set(serviceName: "ui-tests-service-name")
+            .set(batchSize: .small)
+            .set(uploadFrequency: .frequent)
 
         let serverMockConfiguration = Environment.serverMockConfiguration()
 

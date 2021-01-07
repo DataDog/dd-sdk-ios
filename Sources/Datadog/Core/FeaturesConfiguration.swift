@@ -115,7 +115,11 @@ extension FeaturesConfiguration {
             applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
             serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
             environment: try ifValid(environment: configuration.environment),
-            performance: .best(for: appContext.bundleType)
+            performance: PerformancePreset(
+                batchSize: configuration.batchSize,
+                uploadFrequency: configuration.uploadFrequency,
+                bundleType: appContext.bundleType
+            )
         )
 
         if configuration.loggingEnabled {

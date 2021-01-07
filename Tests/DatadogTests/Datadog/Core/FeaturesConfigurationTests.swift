@@ -104,16 +104,21 @@ class FeaturesConfigurationTests: XCTestCase {
         verify(invalidEnvironmentName: String(repeating: "a", count: 197))
     }
 
-    func testPerformance() throws {
-        let iOSAppConfiguration = try FeaturesConfiguration(
-            configuration: .mockAny(), appContext: .mockWith(bundleType: .iOSApp)
-        )
-        XCTAssertEqual(iOSAppConfiguration.common.performance, .lowRuntimeImpact)
+    func testPerformancePreset() throws {
+        try BatchSize.allCases
+            .combined(with: UploadFrequency.allCases)
+            .combined(with: BundleType.allCases)
+            .map { ($0.0, $0.1, $1) }
+            .forEach { batchSize, uploadFrequency, bundleType in
+                let actualPerformancePreset = try FeaturesConfiguration(
+                    configuration: .mockWith(batchSize: batchSize,uploadFrequency: uploadFrequency),
+                    appContext: .mockWith(bundleType: bundleType)
+                ).common.performance
 
-        let iOSAppExtensionConfiguration = try FeaturesConfiguration(
-            configuration: .mockAny(), appContext: .mockWith(bundleType: .iOSAppExtension)
-        )
-        XCTAssertEqual(iOSAppExtensionConfiguration.common.performance, .instantDataDelivery)
+                let expectedPerformancePreset = PerformancePreset(batchSize: batchSize, uploadFrequency: uploadFrequency, bundleType: bundleType)
+
+                XCTAssertEqual(actualPerformancePreset, expectedPerformancePreset)
+            }
     }
 
     func testEndpoint() throws {

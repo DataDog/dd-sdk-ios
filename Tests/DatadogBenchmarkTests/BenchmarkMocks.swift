@@ -12,11 +12,15 @@ private struct DateCorrectorMock: DateCorrectorType {
     }
 }
 
+extension PerformancePreset {
+    static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)
+}
+
 extension FeaturesCommonDependencies {
     static func mockAny() -> Self {
         return .init(
             consentProvider: ConsentProvider(initialConsent: .granted),
-            performance: .default,
+            performance: .benchmarksPreset,
             httpClient: HTTPClient(),
             mobileDevice: .current,
             dateProvider: SystemDateProvider(),
