@@ -17,12 +17,14 @@ extension MethodSwizzler {
     }
 }
 
-@objcMembers
+@objc
 private class EmptySubclass: BaseClass { }
 
-@objcMembers
+@objc
 private class BaseClass: NSObject {
-    static let returnValue = "this is base class"
+    @objc static let returnValue = "this is base class"
+
+    @objc
     func methodToSwizzle() -> String {
         return Self.returnValue
     }

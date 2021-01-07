@@ -7,9 +7,9 @@
 import Foundation
 import struct Datadog.Global
 
-@objcMembers
+@objc
 public class DDGlobal: NSObject {
-    public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer) {
+    @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer) {
         didSet {
             // We must also set the Swift `Global.tracer`
             // as it's used internally by auto-instrumentation feature.
@@ -17,7 +17,7 @@ public class DDGlobal: NSObject {
         }
     }
 
-    public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum) {
+    @objc public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum) {
         didSet {
             // We must also set the Swift `Global.rum`
             // as it's used internally by auto-instrumentation feature.

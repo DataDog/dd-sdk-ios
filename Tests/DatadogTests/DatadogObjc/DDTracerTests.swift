@@ -153,7 +153,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDHTTPHeadersWriter()
-        try objcTracer.inject(objcSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
             "x-datadog-trace-id": "1",
@@ -174,7 +174,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcInvalidWriter = NSObject()
-        let objcValidFormat = OTFormatHTTPHeaders
+        let objcValidFormat = OT.formatTextMap
         XCTAssertThrowsError(
             try objcTracer.inject(objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
         )
