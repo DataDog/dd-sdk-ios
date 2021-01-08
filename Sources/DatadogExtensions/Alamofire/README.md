@@ -12,7 +12,7 @@ following to your `Podfile`:
 ```ruby
 pod 'DatadogSDKAlamofireExtension'
 ```
-`DatadogSDKAlamofireExtension` requires Datadog SDK `1.4.0` (or higher).
+`DatadogSDKAlamofireExtension` requires Datadog SDK `1.5.0` or higher and `Alamofire 5.0` or higher.
 
 ### Carthage and SPM
 
