@@ -9,7 +9,8 @@ import Foundation
 /// `Encodable` representation of RUM event.
 internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     /// The actual RUM event model created by `RUMMonitor`
-    let model: DM
+    /// It's mutable as it may be redacted by the user through data scrubbing API.
+    var model: DM
 
     /// Custom attributes set by the user
     let attributes: [String: Encodable]

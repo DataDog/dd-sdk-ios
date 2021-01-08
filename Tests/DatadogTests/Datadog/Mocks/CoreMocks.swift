@@ -401,6 +401,14 @@ extension FeaturesCommonDependencies {
     }
 }
 
+struct EventMapperMock: EventMapper {
+    let mappedEvent: Any?
+
+    func map<T>(event: T) -> T? {
+        return mappedEvent as? T
+    }
+}
+
 class FileWriterMock: Writer {
     var dataWritten: Encodable?
 

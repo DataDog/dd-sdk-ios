@@ -83,6 +83,43 @@ struct RUMDataModelMock: RUMDataModel, Equatable {
 
 // MARK: - Component Mocks
 
+extension RUMEvent {
+    static func mockWith<DM: RUMDataModel>(
+        model: DM,
+        attributes: [String: Encodable] = [:],
+        userInfoAttributes: [String: Encodable] = [:],
+        customViewTimings: [String: Int64]? = nil
+    ) -> RUMEvent<DM> {
+        return RUMEvent<DM>(
+            model: model,
+            attributes: attributes,
+            userInfoAttributes: userInfoAttributes,
+            customViewTimings: customViewTimings
+        )
+    }
+
+    static func mockRandomWith<DM: RUMDataModel>(model: DM) -> RUMEvent<DM> {
+        func randomAttributes(prefixed prefix: String) -> [String: Encodable] {
+            var attributes: [String: String] = [:]
+            (0..<10).forEach { index in attributes["\(prefix)\(index)"] = "value\(index)" }
+            return attributes
+        }
+
+        func randomTimings() -> [String: Int64] {
+            var timings: [String: Int64] = [:]
+            (0..<10).forEach { index in timings["timing\(index)"] = .mockRandom() }
+            return timings
+        }
+
+        return RUMEvent<DM>(
+            model: model,
+            attributes: randomAttributes(prefixed: "event-attribute"),
+            userInfoAttributes: randomAttributes(prefixed: "user-attribute"),
+            customViewTimings: randomTimings()
+        )
+    }
+}
+
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
         return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())

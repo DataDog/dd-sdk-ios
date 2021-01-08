@@ -55,6 +55,7 @@ internal final class RUMFeature {
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directories: directories,
+            eventMapper: nil,
             commonDependencies: commonDependencies
         )
     }

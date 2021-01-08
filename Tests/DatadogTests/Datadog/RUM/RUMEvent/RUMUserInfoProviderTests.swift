@@ -7,8 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension RUMUser: EquatableInTests {}
-
 class RUMUserInfoProviderTests: XCTestCase {
     private let userInfoProvider = UserInfoProvider()
     private lazy var rumUserInfoProvider = RUMUserInfoProvider(userInfoProvider: userInfoProvider)

@@ -61,6 +61,7 @@ internal final class TracingFeature {
             featureName: TracingFeature.featureName,
             dataFormat: TracingFeature.dataFormat,
             directories: directories,
+            eventMapper: nil,
             commonDependencies: commonDependencies
         )
     }
