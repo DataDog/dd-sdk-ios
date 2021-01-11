@@ -148,6 +148,8 @@ public class DDRUMMonitor: NSObject
  override public convenience init()
  public func startView(viewController: UIViewController,path: String?,attributes: [String: Any])
  public func stopView(viewController: UIViewController,attributes: [String: Any])
+ public func startView(key: String,path: String?,attributes: [String: Any])
+ public func stopView(key: String,attributes: [String: Any])
  public func addTiming(name: String)
  public func addError(error: Error,source: DDRUMErrorSource,attributes: [String: Any])
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [String: Any])

@@ -7,6 +7,8 @@ public enum TrackingConsent
 public class DDRUMMonitor
  public func startView(viewController: UIViewController,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startView(key: String,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
  public func addTiming(name: String)
  public func addError(message: String,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
  public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
@@ -209,6 +211,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
  override public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue])
  override public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+ override public func startView(key: String,path: String?,attributes: [AttributeKey: AttributeValue])
+ override public func stopView(key: String,attributes: [AttributeKey: AttributeValue])
  override public func addTiming(name: String)
  override public func addError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
  override public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
