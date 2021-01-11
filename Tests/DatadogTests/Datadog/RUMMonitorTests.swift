@@ -25,7 +25,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Sending RUM events
 
-    func testStartingView() throws {
+    func testStartingViewIdentifiedByViewController() throws {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
@@ -57,6 +57,32 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
         }
+    }
+
+    func testStartingViewIdentifiedByStringKey() throws {
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: dateProvider
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(key: "view1", path: "View1")
+        monitor.stopView(key: "view1")
+        monitor.startView(key: "view2", path: "View2")
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        XCTAssertEqual(session.viewVisits.count, 2)
+        XCTAssertEqual(session.viewVisits[0].path, "View1")
+        XCTAssertEqual(session.viewVisits[1].path, "View2")
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
