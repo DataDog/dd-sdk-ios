@@ -45,10 +45,11 @@ class RUMApplicationScopeTests: XCTestCase {
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
+        let secondSessionViewScope = try XCTUnwrap(secondSessionViewScopes.first)
 
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
         XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
-        XCTAssertTrue(secondSessionViewScopes.first?.identity === view)
+        XCTAssertTrue(secondSessionViewScope.identity.equals(view))
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {

@@ -116,7 +116,7 @@ extension RUMStartViewCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: AnyObject = mockView,
+        identity: RUMViewIdentifiable = mockView,
         path: String? = nil,
         isInitialView: Bool = false
     ) -> RUMStartViewCommand {
@@ -137,7 +137,7 @@ extension RUMStopViewCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: AnyObject = mockView
+        identity: RUMViewIdentifiable = mockView
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
             time: time, attributes: attributes, identity: identity
@@ -454,7 +454,7 @@ extension RUMViewScope {
     static func mockWith(
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        identity: AnyObject = mockView,
+        identity: RUMViewIdentifiable = mockView,
         uri: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = [:],

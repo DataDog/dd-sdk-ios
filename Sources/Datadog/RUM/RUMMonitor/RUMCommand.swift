@@ -20,8 +20,8 @@ internal struct RUMStartViewCommand: RUMCommand {
     let time: Date
     var attributes: [AttributeKey: AttributeValue]
 
-    /// The object (typically `UIViewController`) identifying the RUM View.
-    let identity: AnyObject
+    /// The value holding stable identity of the RUM View.
+    let identity: RUMViewIdentifiable
 
     /// The path of this View, rendered in RUM Explorer.
     let path: String
@@ -31,15 +31,11 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// * it can be set to `true` by the `RUMApplicationScope` which tracks this state.
     var isInitialView = false
 
-    init(time: Date, identity: AnyObject, path: String?, attributes: [AttributeKey: AttributeValue]) {
+    init(time: Date, identity: RUMViewIdentifiable, path: String?, attributes: [AttributeKey: AttributeValue]) {
         self.time = time
         self.attributes = attributes
         self.identity = identity
-        self.path = path ?? RUMStartViewCommand.viewPath(from: identity)
-    }
-
-    private static func viewPath(from id: AnyObject) -> String {
-        return "\(type(of: id))"
+        self.path = path ?? identity.defaultViewPath
     }
 }
 
@@ -47,8 +43,8 @@ internal struct RUMStopViewCommand: RUMCommand {
     let time: Date
     var attributes: [AttributeKey: AttributeValue]
 
-    /// The object (typically `UIViewController`) identifying the RUM View.
-    let identity: AnyObject
+    /// The value holding stable identity of the RUM View.
+    let identity: RUMViewIdentifiable
 }
 
 internal struct RUMAddCurrentViewErrorCommand: RUMCommand {

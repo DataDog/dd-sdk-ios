@@ -31,7 +31,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
     // MARK: - Handling `viewDidAppear`
 
-    func testGivenAcceptingPredicate_whenViewDidAppear_itStartsRUMView() {
+    func testGivenAcceptingPredicate_whenViewDidAppear_itStartsRUMView() throws {
         let view = createMockViewInWindow()
 
         // Given
@@ -43,14 +43,14 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
 
-        let command = commandSubscriber.receivedCommands[0] as? RUMStartViewCommand
-        XCTAssertTrue(command?.identity === view)
-        XCTAssertEqual(command?.path, "Foo")
-        XCTAssertEqual(command?.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
+        let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        XCTAssertTrue(command.identity.equals(view))
+        XCTAssertEqual(command.path, "Foo")
+        XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
-    func testGivenAcceptingPredicate_whenViewDidAppear_itStopsPreviousRUMView() {
+    func testGivenAcceptingPredicate_whenViewDidAppear_itStopsPreviousRUMView() throws {
         let view1 = createMockViewInWindow()
         let view2 = createMockViewInWindow()
 
@@ -67,12 +67,12 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
 
-        let startCommand1 = commandSubscriber.receivedCommands[0] as? RUMStartViewCommand
-        let stopCommand = commandSubscriber.receivedCommands[1] as? RUMStopViewCommand
-        let startCommand2 = commandSubscriber.receivedCommands[2] as? RUMStartViewCommand
-        XCTAssertTrue(startCommand1?.identity === view1)
-        XCTAssertTrue(stopCommand?.identity === view1)
-        XCTAssertTrue(startCommand2?.identity === view2)
+        let startCommand1 = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        XCTAssertTrue(startCommand1.identity.equals(view1))
+        XCTAssertTrue(stopCommand.identity.equals(view1))
+        XCTAssertTrue(startCommand2.identity.equals(view2))
     }
 
     func testGivenAcceptingPredicate_whenViewDidAppear_itDoesNotStartTheSameRUMViewTwice() {
@@ -105,7 +105,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
     // MARK: - Handling `viewDidDisappear`
 
-    func testGivenAcceptingPredicate_whenViewDidDisappear_itStartsRUMViewForTopViewController() {
+    func testGivenAcceptingPredicate_whenViewDidDisappear_itStartsRUMViewForTopViewController() throws {
         let view = createMockViewInWindow()
         let topViewController = createMockViewInWindow()
         uiKitHierarchyInspector.mockTopViewController = topViewController
@@ -121,10 +121,10 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
 
-        let command = commandSubscriber.receivedCommands[0] as? RUMStartViewCommand
-        XCTAssertTrue(command?.identity === topViewController)
-        XCTAssertEqual(command?.path, "Top")
-        XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
+        let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        XCTAssertTrue(command.identity.equals(topViewController))
+        XCTAssertEqual(command.path, "Top")
+        XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
     func testGivenAcceptingPredicate_whenViewDidDisappearButThereIsNoTopViewController_itDoesNotStartAnyRUMView() {
