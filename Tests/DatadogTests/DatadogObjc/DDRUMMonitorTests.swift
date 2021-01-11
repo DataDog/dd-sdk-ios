@@ -68,6 +68,36 @@ class DDRUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
+    func testSendingViewEvents() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        defer { RUMFeature.instance = nil }
+
+        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+
+        objcRUMMonitor.startView(viewController: mockView, path: "FirstView", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
+        objcRUMMonitor.startView(key: "view2", path: "SecondView", attributes: ["event-attribute1": "bar1"])
+        objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 5)
+
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 4)
+
+        let event1: RUMViewEvent = try viewEvents[0].model()
+        let event2: RUMViewEvent = try viewEvents[1].model()
+        let event3: RUMViewEvent = try viewEvents[2].model()
+        let event4: RUMViewEvent = try viewEvents[3].model()
+        XCTAssertEqual(event1.view.url, "FirstView")
+        XCTAssertEqual(event2.view.url, "FirstView")
+        XCTAssertEqual(event3.view.url, "SecondView")
+        XCTAssertEqual(event4.view.url, "SecondView")
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
+        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute1"), "bar1")
+        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute2"), "bar2")
+    }
+
     func testSendingViewEventsWithTiming() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance = nil }
