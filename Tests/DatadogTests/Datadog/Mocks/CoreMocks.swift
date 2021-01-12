@@ -187,6 +187,7 @@ extension FeaturesConfiguration.RUM {
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
+        eventMapper: RUMEventsMapper = .mockNoOp(),
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(
@@ -194,6 +195,7 @@ extension FeaturesConfiguration.RUM {
             uploadURLWithClientToken: uploadURLWithClientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
+            eventMapper: eventMapper,
             autoInstrumentation: autoInstrumentation
         )
     }

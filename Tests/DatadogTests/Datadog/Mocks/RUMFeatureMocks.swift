@@ -141,6 +141,17 @@ class RUMEventOutputMock: RUMEventOutput {
     }
 }
 
+extension RUMEventsMapper {
+    static func mockNoOp() -> RUMEventsMapper {
+        return RUMEventsMapper(
+            viewEventMapper: nil,
+            errorEventMapper: nil,
+            resourceEventMapper: nil,
+            actionEventMapper: nil
+        )
+    }
+}
+
 // MARK: - RUMCommand Mocks
 
 struct RUMCommandMock: RUMCommand {

@@ -40,6 +40,7 @@ internal struct FeaturesConfiguration {
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
+        let eventMapper: RUMEventsMapper
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
     }
@@ -161,6 +162,12 @@ extension FeaturesConfiguration {
                     ),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
+                    eventMapper: RUMEventsMapper(
+                        viewEventMapper: configuration.rumViewEventMapper,
+                        errorEventMapper: configuration.rumErrorEventMapper,
+                        resourceEventMapper: configuration.rumResourceEventMapper,
+                        actionEventMapper: configuration.rumActionEventMapper
+                    ),
                     autoInstrumentation: autoInstrumentation
                 )
             } else {
