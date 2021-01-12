@@ -240,6 +240,34 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func startView(
+        key: String,
+        path: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        process(
+            command: RUMStartViewCommand(
+                time: dateProvider.currentDate(),
+                identity: key,
+                path: path,
+                attributes: attributes
+            )
+        )
+    }
+
+    override public func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        process(
+            command: RUMStopViewCommand(
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                identity: key
+            )
+        )
+    }
+
     override public func addTiming(
         name: String
     ) {

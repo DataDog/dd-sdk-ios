@@ -33,6 +33,26 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Notifies that the View starts being presented to the user.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this View. It must match the `key` passed later to `stopView(key:attributes:)`.
+    ///   - path: the View path used for RUM Explorer. If not provided, the `key` name will be used.
+    ///   - attributes: custom attributes to attach to the View.
+    public func startView(
+        key: String,
+        path: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
+    /// Notifies that the View stops being presented to the user.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this View. It must match the `key` passed earlier to `startView(key:path:attributes:)`.
+    ///   - attributes: custom attributes to attach to the View.
+    public func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
     /// Adds a specific timing in the currently presented View. The timing duration will be computed as the
     /// number of nanoseconds between the time the View was started and the time the timing was added.
     /// - Parameters:

@@ -124,6 +124,23 @@ public class DDRUMMonitor: NSObject {
     }
 
     @objc
+    public func startView(
+        key: String,
+        path: String?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startView(key: key, path: path, attributes: castAttributesToSwift(attributes))
+    }
+
+    @objc
+    public func stopView(
+        key: String,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopView(key: key, attributes: castAttributesToSwift(attributes))
+    }
+
+    @objc
     public func addTiming(name: String) {
         swiftRUMMonitor.addTiming(name: name)
     }

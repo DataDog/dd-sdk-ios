@@ -19,8 +19,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
-    /// Weak reference to corresponding `UIViewController`, used to identify this View.
-    private(set) weak var identity: AnyObject?
+    /// The value holding stable identity of this RUM View.
+    let identity: RUMViewIdentity
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
@@ -55,7 +55,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
-        identity: AnyObject,
+        identity: RUMViewIdentifiable,
         uri: String,
         attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
@@ -63,7 +63,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.identity = identity
+        self.identity = identity.asRUMViewIdentity()
         self.attributes = attributes
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -101,7 +101,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Apply side effects
         switch command {
         // View commands
-        case let command as RUMStartViewCommand where command.identity === identity:
+        case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
@@ -113,10 +113,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
             didReceiveStartCommand = true
             needsViewUpdate = true
-        case let command as RUMStartViewCommand where command.identity !== identity:
+        case let command as RUMStartViewCommand where !identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
-        case let command as RUMStopViewCommand where command.identity === identity:
+        case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true
 
