@@ -24,6 +24,12 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 unauthorized: obtainUniqueTemporaryDirectory(),
                 authorized: directory
             ),
+            eventMapper: RUMEventsMapper(
+                viewEventMapper: nil,
+                errorEventMapper: nil,
+                resourceEventMapper: nil,
+                actionEventMapper: nil
+            ),
             commonDependencies: .mockAny()
         )
         self.writer = storage.writer
