@@ -37,6 +37,7 @@ extension LoggingFeature {
         // Get the full feature mock:
         let fullFeature: LoggingFeature = .mockWith(
             directories: directories,
+            configuration: configuration,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
             )

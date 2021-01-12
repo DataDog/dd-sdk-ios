@@ -38,6 +38,7 @@ extension RUMFeature {
         // Get the full feature mock:
         let fullFeature: RUMFeature = .mockWith(
             directories: directories,
+            configuration: configuration,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
             )
