@@ -49,7 +49,7 @@ internal class BaggageItems {
     }
 
     func get(key: String) -> String? {
-        queue.sync { self.unsafeItems[key] }
+        queue.sync { self.unsafeAll[key] }
     }
 
     var all: [String: String] {

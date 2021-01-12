@@ -49,4 +49,17 @@ class DDSpanContextTests: XCTestCase {
         XCTAssertEqual(parentBaggageItems.all["foo"], "a")
         XCTAssertEqual(childBaggageItems.all["foo"], "b")
     }
+
+    func testChildItemsGetParentItems() {
+        let parentBaggageItems = BaggageItems(targetQueue: queue, parentSpanItems: nil)
+        let childBaggageItems = BaggageItems(targetQueue: queue, parentSpanItems: parentBaggageItems)
+
+        parentBaggageItems.set(key: "foo", value: "a")
+        childBaggageItems.set(key: "bar", value: "b")
+
+        XCTAssertEqual(childBaggageItems.get(key: "foo"), "a")
+
+        XCTAssertNil(parentBaggageItems.get(key: "bar"))
+        XCTAssertEqual(childBaggageItems.get(key: "bar"), "b")
+    }
 }
