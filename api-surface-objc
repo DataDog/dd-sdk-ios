@@ -152,7 +152,7 @@ public class DDRUMMonitor: NSObject
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [String: Any])
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [String: Any])
  public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
- public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,response: URLResponse,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [String: Any])
  public func startUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
