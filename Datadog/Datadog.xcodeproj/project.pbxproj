@@ -106,6 +106,8 @@
 		61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
 		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
 		612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612983CC2449E62E00D4424B /* LoggingFeature.swift */; };
+		612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */; };
+		612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */; };
 		6132BF4224A38D2400D7BD17 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
 		6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
 		6132BF4924A49B6800D7BD17 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */; };
@@ -559,6 +561,8 @@
 		61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapter.swift; sourceTree = "<group>"; };
 		61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapterTests.swift; sourceTree = "<group>"; };
 		612983CC2449E62E00D4424B /* LoggingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeature.swift; sourceTree = "<group>"; };
+		612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMScrubbingScenario.storyboard; sourceTree = "<group>"; };
+		612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrubbingViewController.swift; sourceTree = "<group>"; };
 		6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTTracer+objc.swift"; sourceTree = "<group>"; };
 		6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
 		6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpanContext+objc.swift"; sourceTree = "<group>"; };
@@ -1431,6 +1435,15 @@
 			path = FeaturesIntegration;
 			sourceTree = "<group>";
 		};
+		612D8F6725AEE65F000E2E09 /* Scrubbing */ = {
+			isa = PBXGroup;
+			children = (
+				612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */,
+				612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */,
+			);
+			path = Scrubbing;
+			sourceTree = "<group>";
+		};
 		6132BF4024A38D0600D7BD17 /* OpenTracing */ = {
 			isa = PBXGroup;
 			children = (
@@ -1508,6 +1521,7 @@
 				615AAC34251E34EF00C89EE9 /* TabBarAutoInstrumentation */,
 				6137E647252DD85400720485 /* ModalViewsAutoInstrumentation */,
 				6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */,
+				612D8F6725AEE65F000E2E09 /* Scrubbing */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -2685,6 +2699,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61337032250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard in Resources */,
+				612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */,
 				611EA13C2580F77400BC0E56 /* TrackingConsentScenario.storyboard in Resources */,
 				61441C1124616DEC003D8BB8 /* LaunchScreen.storyboard in Resources */,
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
@@ -3070,6 +3085,7 @@
 				61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */,
 				6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */,
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
+				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
