@@ -14,6 +14,7 @@ let allRUMScenarios: [TestScenario.Type] = [
     RUMModalViewsAutoInstrumentationScenario.self,
     RUMTapActionScenario.self,
     RUMResourcesScenario.self,
+    RUMScrubbingScenario.self,
 ]
 
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
@@ -141,5 +142,50 @@ final class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
             .trackUIKitRUMViews(using: DefaultUIKitRUMViewsPredicate())
 
         super.configureSDK(builder: builder) // applies the `track(firstPartyHosts:)`
+    }
+}
+
+/// Scenario which uses RUM manual instrumentation API to send bunch of RUM events. Each event contains some
+/// "sensitive" information which is scrubbed as configured in `Datadog.Configuration`.
+final class RUMScrubbingScenario: TestScenario {
+    static var storyboardName: String = "RUMScrubbingScenario"
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        func redacted(_ string: String) -> String {
+            return string.replacingOccurrences(of: "sensitive", with: "REDACTED")
+        }
+
+        _ = builder
+            .enableLogging(false)
+            .enableTracing(false)
+            .setRUMViewEventMapper { viewEvent in
+                var viewEvent = viewEvent
+                viewEvent.view.url = redacted(viewEvent.view.url)
+                return viewEvent
+            }
+            .setRUMErrorEventMapper { errorEvent in
+                var errorEvent = errorEvent
+                errorEvent.error.message = redacted(errorEvent.error.message)
+                errorEvent.view.url = redacted(errorEvent.view.url)
+                if let resourceURL = errorEvent.error.resource?.url {
+                    errorEvent.error.resource?.url = redacted(resourceURL)
+                }
+                if let errorStack = errorEvent.error.stack {
+                    errorEvent.error.stack = redacted(errorStack)
+                }
+                return errorEvent
+            }
+            .setRUMResourceEventMapper { resourceEvent in
+                var resourceEvent = resourceEvent
+                resourceEvent.resource.url = redacted(resourceEvent.resource.url)
+                return resourceEvent
+            }
+            .setRUMActionEventMapper { actionEvent in
+                var actionEvent = actionEvent
+                if let targetName = actionEvent.action.target?.name {
+                    actionEvent.action.target?.name = redacted(targetName)
+                }
+                return actionEvent
+            }
     }
 }
