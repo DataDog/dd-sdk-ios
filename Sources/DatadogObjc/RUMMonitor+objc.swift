@@ -11,6 +11,7 @@ import class Datadog.RUMMonitor
 import enum Datadog.RUMErrorSource
 import enum Datadog.RUMUserActionType
 import enum Datadog.RUMResourceKind
+import enum Datadog.RUMMethod
 import struct Datadog.RUMView
 import protocol Datadog.UIKitRUMViewsPredicate
 
@@ -120,6 +121,28 @@ public enum DDRUMResourceKind: Int {
 }
 
 @objc
+public enum DDRUMMethod: Int {
+    case post
+    case get
+    case head
+    case put
+    case delete
+    case patch
+
+    internal var swiftType: RUMMethod {
+        switch self {
+        case .post: return .post
+        case .get: return .get
+        case .head: return .head
+        case .put: return .put
+        case .delete: return .delete
+        case .patch: return .patch
+        default: return .get
+        }
+    }
+}
+
+@objc
 public class DDRUMMonitor: NSObject {
     // MARK: - Internal
 
@@ -215,11 +238,11 @@ public class DDRUMMonitor: NSObject {
     @objc
     public func startResourceLoading(
         resourceKey: String,
-        httpMethod: String,
+        httpMethod: DDRUMMethod,
         urlString: String,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.startResourceLoading(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.startResourceLoading(resourceKey: resourceKey, httpMethod: httpMethod.swiftType, urlString: urlString, attributes: castAttributesToSwift(attributes))
     }
 
     @objc

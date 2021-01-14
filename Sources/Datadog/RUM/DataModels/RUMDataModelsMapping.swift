@@ -20,19 +20,6 @@ internal extension RUMUUID {
     }
 }
 
-internal extension RUMHTTPMethod {
-    var toRUMDataFormat: RUMMethod {
-        switch self {
-        case .GET: return .get
-        case .POST: return .post
-        case .PUT: return .put
-        case .DELETE: return .delete
-        case .HEAD: return .head
-        case .PATCH: return .patch
-        }
-    }
-}
-
 internal extension RUMResourceKind {
     var toRUMDataFormat: RUMResourceEvent.Resource.ResourceType {
         switch self {

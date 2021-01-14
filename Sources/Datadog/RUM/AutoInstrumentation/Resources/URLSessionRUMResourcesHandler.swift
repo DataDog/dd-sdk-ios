@@ -34,7 +34,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
                 time: dateProvider.currentDate(),
                 attributes: [:],
                 url: url,
-                httpMethod: RUMHTTPMethod(request: interception.request),
+                httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
                 kind: RUMResourceKind(request: interception.request),
                 spanContext: interception.spanContext.flatMap { spanContext in
                     .init(

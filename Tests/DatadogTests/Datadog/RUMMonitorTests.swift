@@ -183,7 +183,7 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", httpMethod: "post", urlString: "/some/url/string", attributes: [:])
+        monitor.startResourceLoading(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [:])
         monitor.stopResourceLoading(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
@@ -1035,28 +1035,28 @@ class RUMMonitorTests: XCTestCase {
 class RUMHTTPMethodTests: XCTestCase {
     func testItCanBeInitializedFromURLRequest() {
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "get".randomcased())), .GET
+            RUMMethod(httpMethod: "get".randomcased()), .get
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "post".randomcased())), .POST
+            RUMMethod(httpMethod: "post".randomcased()), .post
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "put".randomcased())), .PUT
+            RUMMethod(httpMethod: "put".randomcased()), .put
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "delete".randomcased())), .DELETE
+            RUMMethod(httpMethod: "delete".randomcased()), .delete
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "head".randomcased())), .HEAD
+            RUMMethod(httpMethod: "head".randomcased()), .head
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "patch".randomcased())), .PATCH
+            RUMMethod(httpMethod: "patch".randomcased()), .patch
         )
     }
 
     func testWhenInitializingFromURLRequest_itDefaultsToGET() {
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "unknown_method")), .GET
+            RUMMethod(httpMethod: "unknown_method".randomcased()), .get
         )
     }
 }

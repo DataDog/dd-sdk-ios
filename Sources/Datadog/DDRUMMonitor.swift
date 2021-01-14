@@ -65,7 +65,7 @@ public class DDRUMMonitor {
     /// - Parameters:
     ///   - message: a message explaining the Error.
     ///   - source: the origin of the error.
-    ///   - stack: stack trace of the error. no specific format needed. overwrites `file` and `line` parameters below.
+    ///   - stack: stack trace of the error. No specific format needed. Overwrites `file` and `line` parameters below.
     ///   - attributes: custom attributes to attach to the Error
     ///   - file: the file in which the Error occurred (the default is the file name in which this method was called).
     ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
@@ -111,7 +111,7 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
-    /// Notifies that the Resource starts being loaded using GET request to given `url`.
+    /// Notifies that the Resource starts being loaded from given `urlString`.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must be unique among all Resources being currently loaded.
     ///   - httpMethod: HTTP method used to fetch resource
@@ -119,7 +119,7 @@ public class DDRUMMonitor {
     ///   - attributes: custom attributes to attach to the Resource.
     public func startResourceLoading(
         resourceKey: String,
-        httpMethod: String,
+        httpMethod: RUMMethod,
         urlString: String,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}

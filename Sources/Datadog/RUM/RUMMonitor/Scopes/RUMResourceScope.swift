@@ -26,7 +26,7 @@ internal class RUMResourceScope: RUMScope {
     /// Date correction to server time.
     private let dateCorrection: DateCorrection
     /// The HTTP method used to load this Resource.
-    private var resourceHTTPMethod: RUMHTTPMethod
+    private var resourceHTTPMethod: RUMMethod
     /// The Resource kind captured when starting the `URLRequest`.
     /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
     private var resourceKindBasedOnRequest: RUMResourceKind?
@@ -46,7 +46,7 @@ internal class RUMResourceScope: RUMScope {
         startTime: Date,
         dateCorrection: DateCorrection,
         url: String,
-        httpMethod: RUMHTTPMethod,
+        httpMethod: RUMMethod,
         resourceKindBasedOnRequest: RUMResourceKind?,
         spanContext: RUMSpanContext?
     ) {
@@ -144,7 +144,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 id: resourceUUID.toRUMDataFormat,
-                method: resourceHTTPMethod.toRUMDataFormat,
+                method: resourceHTTPMethod,
                 provider: nil,
                 redirect: resourceMetrics?.redirection.flatMap { metric in
                     .init(
@@ -192,7 +192,7 @@ internal class RUMResourceScope: RUMScope {
                 isCrash: false,
                 message: command.errorMessage,
                 resource: .init(
-                    method: resourceHTTPMethod.toRUMDataFormat,
+                    method: resourceHTTPMethod,
                     provider: nil,
                     statusCode: command.httpStatusCode?.toInt64 ?? 0,
                     url: resourceURL

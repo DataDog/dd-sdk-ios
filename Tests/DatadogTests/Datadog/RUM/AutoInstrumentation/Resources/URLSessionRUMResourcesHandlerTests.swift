@@ -40,7 +40,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStartCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStartCommand.attributes.count, 0)
         XCTAssertEqual(resourceStartCommand.url, taskInterception.request.url?.absoluteString)
-        XCTAssertEqual(resourceStartCommand.httpMethod, RUMHTTPMethod(request: request))
+        XCTAssertEqual(resourceStartCommand.httpMethod, RUMMethod(httpMethod: request.httpMethod))
         XCTAssertNil(resourceStartCommand.spanContext)
     }
 

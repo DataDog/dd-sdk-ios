@@ -67,8 +67,8 @@ extension RUMFeature {
 
 // MARK: - Public API Mocks
 
-extension RUMHTTPMethod {
-    static func mockAny() -> RUMHTTPMethod { .GET }
+extension RUMMethod {
+    static func mockAny() -> RUMMethod { .get }
 }
 
 extension RUMResourceKind {
@@ -190,7 +190,7 @@ extension RUMStartResourceCommand {
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
-        httpMethod: RUMHTTPMethod = .mockAny(),
+        httpMethod: RUMMethod = .mockAny(),
         kind: RUMResourceKind = .mockAny(),
         spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {

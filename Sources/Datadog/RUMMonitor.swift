@@ -7,19 +7,14 @@
 import UIKit
 import Foundation
 
-internal enum RUMHTTPMethod: String {
-    case GET
-    case POST
-    case PUT
-    case DELETE
-    case HEAD
-    case PATCH
-
-    /// Determines the `RUMHTTPMethod` based on a given `URLRequest`. Defaults to `.GET`.
-    /// - Parameter request: the `URLRequest` for the resource.
-    init(request: URLRequest) {
-        let requestMethod = request.httpMethod ?? "GET"
-        self = RUMHTTPMethod(rawValue: requestMethod.uppercased()) ?? .GET
+internal extension RUMMethod {
+    init(httpMethod: String?) {
+        if let someMethod = httpMethod,
+           let someCase = RUMMethod(rawValue: someMethod.uppercased()) {
+            self = someCase
+        } else {
+            self = .get
+        }
     }
 }
 
@@ -342,7 +337,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
-                httpMethod: RUMHTTPMethod(request: request),
+                httpMethod: RUMMethod(httpMethod: request.httpMethod),
                 kind: RUMResourceKind(request: request),
                 spanContext: nil
             )
@@ -360,7 +355,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 url: url.absoluteString,
-                httpMethod: .GET,
+                httpMethod: .get,
                 kind: nil,
                 spanContext: nil
             )
@@ -369,7 +364,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     override public func startResourceLoading(
         resourceKey: String,
-        httpMethod: String,
+        httpMethod: RUMMethod,
         urlString: String,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
@@ -379,7 +374,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 url: urlString,
-                httpMethod: RUMHTTPMethod(rawValue: httpMethod.uppercased()) ?? .GET,
+                httpMethod: httpMethod,
                 kind: nil,
                 spanContext: nil
             )

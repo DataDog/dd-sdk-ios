@@ -70,6 +70,17 @@ class DDRUMResourceKindTests: XCTestCase {
     }
 }
 
+class DDRUMMethodTests: XCTestCase {
+    func testMappingToSwiftRUMMethod() {
+        XCTAssertEqual(DDRUMMethod.post.swiftType, .post)
+        XCTAssertEqual(DDRUMMethod.get.swiftType, .get)
+        XCTAssertEqual(DDRUMMethod.head.swiftType, .head)
+        XCTAssertEqual(DDRUMMethod.put.swiftType, .put)
+        XCTAssertEqual(DDRUMMethod.delete.swiftType, .delete)
+        XCTAssertEqual(DDRUMMethod.patch.swiftType, .patch)
+    }
+}
+
 class DDRUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -163,7 +174,7 @@ class DDRUMMonitorTests: XCTestCase {
         )
         objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), attributes: ["event-attribute3": "foo3"])
 
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: "GET", urlString: "/some/url/string", attributes: [:])
+        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/string", attributes: [:])
         objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, attributes: [:])
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)

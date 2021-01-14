@@ -51,7 +51,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -111,7 +111,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -162,7 +162,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -306,7 +306,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: Date(),
             dateCorrection: .zero,
             url: .mockAny(),
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: kindBasedOnRequest,
             spanContext: nil
         )
