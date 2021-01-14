@@ -57,16 +57,16 @@ class DDRUMErrorSourceTests: XCTestCase {
 
 class DDRUMResourceKindTests: XCTestCase {
     func testMappingToSwiftRUMResourceKind() {
-        XCTAssertEqual(DDRUMResourceKind.image.swiftType, .image)
-        XCTAssertEqual(DDRUMResourceKind.xhr.swiftType, .xhr)
-        XCTAssertEqual(DDRUMResourceKind.beacon.swiftType, .beacon)
-        XCTAssertEqual(DDRUMResourceKind.css.swiftType, .css)
-        XCTAssertEqual(DDRUMResourceKind.document.swiftType, .document)
-        XCTAssertEqual(DDRUMResourceKind.fetch.swiftType, .fetch)
-        XCTAssertEqual(DDRUMResourceKind.font.swiftType, .font)
-        XCTAssertEqual(DDRUMResourceKind.js.swiftType, .js)
-        XCTAssertEqual(DDRUMResourceKind.media.swiftType, .media)
-        XCTAssertEqual(DDRUMResourceKind.other.swiftType, .other)
+        XCTAssertEqual(DDRUMResourceType.image.swiftType, .image)
+        XCTAssertEqual(DDRUMResourceType.xhr.swiftType, .xhr)
+        XCTAssertEqual(DDRUMResourceType.beacon.swiftType, .beacon)
+        XCTAssertEqual(DDRUMResourceType.css.swiftType, .css)
+        XCTAssertEqual(DDRUMResourceType.document.swiftType, .document)
+        XCTAssertEqual(DDRUMResourceType.fetch.swiftType, .fetch)
+        XCTAssertEqual(DDRUMResourceType.font.swiftType, .font)
+        XCTAssertEqual(DDRUMResourceType.js.swiftType, .js)
+        XCTAssertEqual(DDRUMResourceType.media.swiftType, .media)
+        XCTAssertEqual(DDRUMResourceType.other.swiftType, .other)
     }
 }
 

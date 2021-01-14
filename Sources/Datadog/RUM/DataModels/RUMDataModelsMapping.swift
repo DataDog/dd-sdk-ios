@@ -20,23 +20,6 @@ internal extension RUMUUID {
     }
 }
 
-internal extension RUMResourceKind {
-    var toRUMDataFormat: RUMResourceEvent.Resource.ResourceType {
-        switch self {
-        case .image: return .image
-        case .xhr: return .xhr
-        case .beacon: return .beacon
-        case .css: return .css
-        case .document: return .document
-        case .fetch: return .fetch
-        case .font: return .font
-        case .js: return .js
-        case .media: return .media
-        case .other: return .other
-        }
-    }
-}
-
 internal extension RUMInternalErrorSource {
     var toRUMDataFormat: RUMErrorEvent.Error.Source {
         switch self {

@@ -1063,7 +1063,7 @@ class RUMHTTPMethodTests: XCTestCase {
 
 class RUMResourceKindTests: XCTestCase {
     func testWhenInitializedWithResponse_itReturnsKindBasedOnMIMEType() {
-        let fixtures: [(mime: String, kind: RUMResourceKind)] = [
+        let fixtures: [(mime: String, kind: RUMResourceType)] = [
             (mime: "image/png", kind: .image),
             (mime: "video/mpeg", kind: .media),
             (mime: "audio/ogg", kind: .media),
@@ -1076,7 +1076,7 @@ class RUMResourceKindTests: XCTestCase {
 
         fixtures.forEach { mime, expectedKind in
             XCTAssertEqual(
-                RUMResourceKind(response: .mockWith(mimeType: mime.randomcased())),
+                RUMResourceType(response: .mockWith(mimeType: mime.randomcased())),
                 expectedKind
             )
         }
@@ -1084,31 +1084,31 @@ class RUMResourceKindTests: XCTestCase {
 
     func testWhenInitializedWithPOSTorPUTorDELETErequest_itReturnsXHR() {
         XCTAssertEqual(
-            RUMResourceKind(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
         )
         XCTAssertEqual(
-            RUMResourceKind(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
         )
         XCTAssertEqual(
-            RUMResourceKind(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
         )
     }
 
     func testWhenInitializedWithGETorHEADorPATCHrequest_itReturnsNil() {
         XCTAssertNil(
-            RUMResourceKind(request: .mockWith(httpMethod: "GET".randomcased()))
+            RUMResourceType(request: .mockWith(httpMethod: "GET".randomcased()))
         )
         XCTAssertNil(
-            RUMResourceKind(request: .mockWith(httpMethod: "HEAD".randomcased()))
+            RUMResourceType(request: .mockWith(httpMethod: "HEAD".randomcased()))
         )
         XCTAssertNil(
-            RUMResourceKind(request: .mockWith(httpMethod: "PATCH".randomcased()))
+            RUMResourceType(request: .mockWith(httpMethod: "PATCH".randomcased()))
         )
     }
 
     func testWhenInitializingFromHTTPURLResponse_itDefaultsToOther() {
         XCTAssertEqual(
-            RUMResourceKind(response: .mockWith(mimeType: "unknown/type")), .other
+            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .other
         )
     }
 }

@@ -18,34 +18,25 @@ internal extension RUMMethod {
     }
 }
 
-public enum RUMResourceKind {
-    case image
-    case xhr
-    case beacon
-    case css
-    case document
-    case fetch
-    case font
-    case js
-    case media
-    case other
-
-    private static let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
-
-    /// Determines the `RUMResourceKind` based on a given `URLRequest`.
+public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
+internal extension RUMResourceType {
+    /// Determines the `RUMResourceType` based on a given `URLRequest`.
     /// Returns `nil` if the kind cannot be determined with only `URLRequest` and `HTTPURLRespones` is needed.
     ///
     /// - Parameters:
     ///   - request: the `URLRequest` for the resource.
     init?(request: URLRequest) {
-        if let requestMethod = request.httpMethod?.uppercased(), RUMResourceKind.xhrHTTPMethods.contains(requestMethod) {
+        let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
+
+        if let requestMethod = request.httpMethod?.uppercased(),
+           xhrHTTPMethods.contains(requestMethod) {
             self = .xhr
         } else {
             return nil
         }
     }
 
-    /// Determines the `RUMResourceKind` based on the MIME type of given `HTTPURLResponse`.
+    /// Determines the `RUMResourceType` based on the MIME type of given `HTTPURLResponse`.
     /// Defaults to `.other`.
     ///
     /// - Parameters:
@@ -338,7 +329,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMMethod(httpMethod: request.httpMethod),
-                kind: RUMResourceKind(request: request),
+                kind: RUMResourceType(request: request),
                 spanContext: nil
             )
         )
@@ -402,11 +393,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         size: Int64?,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        let resourceKind: RUMResourceKind
+        let resourceKind: RUMResourceType
         var statusCode: Int?
 
         if let response = response as? HTTPURLResponse {
-            resourceKind = RUMResourceKind(response: response)
+            resourceKind = RUMResourceType(response: response)
             statusCode = response.statusCode
         } else {
             resourceKind = .other
@@ -427,7 +418,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopResourceLoading(
         resourceKey: String,
         statusCode: Int?,
-        kind: RUMResourceKind,
+        kind: RUMResourceType,
         size: Int64? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {

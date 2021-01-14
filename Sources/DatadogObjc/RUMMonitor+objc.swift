@@ -10,7 +10,8 @@ import class Datadog.DDRUMMonitor
 import class Datadog.RUMMonitor
 import enum Datadog.RUMErrorSource
 import enum Datadog.RUMUserActionType
-import enum Datadog.RUMResourceKind
+//import enum Datadog.RUM
+import typealias Datadog.RUMResourceType
 import enum Datadog.RUMMethod
 import struct Datadog.RUMView
 import protocol Datadog.UIKitRUMViewsPredicate
@@ -92,7 +93,7 @@ public enum DDRUMUserActionType: Int {
 }
 
 @objc
-public enum DDRUMResourceKind: Int {
+public enum DDRUMResourceType: Int {
     case image
     case xhr
     case beacon
@@ -104,7 +105,7 @@ public enum DDRUMResourceKind: Int {
     case media
     case other
 
-    internal var swiftType: RUMResourceKind {
+    internal var swiftType: RUMResourceType {
         switch self {
         case .image: return .image
         case .xhr: return .xhr
@@ -267,7 +268,7 @@ public class DDRUMMonitor: NSObject {
     public func stopResourceLoading(
         resourceKey: String,
         statusCode: Int,
-        kind: DDRUMResourceKind,
+        kind: DDRUMResourceType,
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, statusCode: statusCode, kind: kind.swiftType, attributes: castAttributesToSwift(attributes))

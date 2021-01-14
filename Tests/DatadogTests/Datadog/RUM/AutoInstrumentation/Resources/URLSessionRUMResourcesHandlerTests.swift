@@ -96,7 +96,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
-        XCTAssertEqual(resourceStopCommand.kind, RUMResourceKind(response: resourceCompletion.httpResponse!))
+        XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: resourceCompletion.httpResponse!))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
         XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
     }

@@ -121,7 +121,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     /// HTTP method used to load the Resource
     let httpMethod: RUMMethod
     /// A type of the Resource if it's possible to determine on start (when the response MIME is not yet known).
-    let kind: RUMResourceKind?
+    let kind: RUMResourceType?
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     let spanContext: RUMSpanContext?
 }
@@ -141,7 +141,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     var attributes: [AttributeKey: AttributeValue]
 
     /// A type of the Resource
-    let kind: RUMResourceKind
+    let kind: RUMResourceType
     /// HTTP status code of loading the Ressource
     let httpStatusCode: Int?
     /// The size of loaded Resource

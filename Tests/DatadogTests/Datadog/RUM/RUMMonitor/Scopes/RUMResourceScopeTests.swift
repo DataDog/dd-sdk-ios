@@ -293,7 +293,7 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
-        let kinds: [RUMResourceKind] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
+        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
         let kindBasedOnRequest = kinds.randomElement()!
         let kindBasedOnResponse = kinds.randomElement()!
 
@@ -323,6 +323,6 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest.toRUMDataFormat)
+        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest)
     }
 }
