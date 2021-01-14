@@ -36,7 +36,7 @@ internal class SwiftPrinter: Printer {
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
 
         printComment(swiftStruct.comment)
-        writeLine("internal struct \(swiftStruct.name)\(conformance) {")
+        writeLine("public struct \(swiftStruct.name)\(conformance) {")
         indentRight()
         try printPropertiesList(swiftStruct.properties)
         try printCodingKeys(for: swiftStruct.properties)
@@ -53,6 +53,7 @@ internal class SwiftPrinter: Printer {
 
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
+            let accessLevel = "public"
             let kind = property.isMutable ? "var" : "let"
             let name = property.name
             let type = try typeDeclaration(property.type)
@@ -71,7 +72,7 @@ internal class SwiftPrinter: Printer {
             }
 
             printComment(property.comment)
-            writeLine("\(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")")
+            writeLine("\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")")
 
             if index < properties.count - 1 {
                 writeEmptyLine()
@@ -111,7 +112,7 @@ internal class SwiftPrinter: Printer {
         let conformance = implementedProtocols.isEmpty ? "" : ", \(implementedProtocols.joined(separator: ", "))"
 
         printComment(enumeration.comment)
-        writeLine("internal enum \(enumeration.name): String\(conformance) {")
+        writeLine("public enum \(enumeration.name): String\(conformance) {")
         indentRight()
         enumeration.cases.forEach { `case` in
             writeLine("case \(`case`.label) = \"\(`case`.rawValue)\"")

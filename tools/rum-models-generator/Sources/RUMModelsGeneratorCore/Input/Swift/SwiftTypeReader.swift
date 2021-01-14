@@ -9,7 +9,9 @@ import Foundation
 /// Reads `SwiftStruct` definition from `JSONObject`.
 internal class SwiftTypeReader {
     func readSwiftStruct(from object: JSONObject) throws -> SwiftStruct {
-        return try readStruct(from: object)
+        var `struct` = try readStruct(from: object)
+        `struct` = resolveTransitiveMutableProperties(in: `struct`)
+        return `struct`
     }
 
     // MARK: - Reading ambiguous types
@@ -93,5 +95,61 @@ internal class SwiftTypeReader {
             properties: try readProperties(from: object.properties),
             conformance: []
         )
+    }
+
+    // MARK: - Resolving transitive mutable properties
+
+    /// Looks recursively into given `struct` and changes mutability
+    /// signatures in properties referencing structs with mutable properties.
+    ///
+    /// For example, receiving such structure as input:
+    ///
+    ///         struct Foo {
+    ///             struct Bar {
+    ///                 let bizz: String
+    ///                 var buzz: String // ⚠️ this can't be mutated as `bar` is immutable
+    ///             }
+    ///             let bar: Bar
+    ///         }
+    ///
+    /// it transforms the `bar` property mutability signature from `let` to `var` to allow modification of `buzz` property:
+    ///
+    ///         struct Foo {
+    ///             struct Bar {
+    ///                 let bizz: String
+    ///                 var buzz: String
+    ///             }
+    ///             var bar: Bar // 💫 fix, now `bar.buzz` can be mutated
+    ///         }
+    ///
+    private func resolveTransitiveMutableProperties(in `struct`: SwiftStruct) -> SwiftStruct {
+        var `struct` = `struct`
+
+        `struct`.properties = `struct`.properties.map { property in
+            var property = property
+            property.isMutable = property.isMutable || hasTransitiveMutableProperty(type: property.type)
+
+            if let nestedStruct = property.type as? SwiftStruct {
+                property.type = resolveTransitiveMutableProperties(in: nestedStruct)
+            }
+
+            return property
+        }
+
+        return `struct`
+    }
+
+    /// Returns `true` if the given `SwiftType` contains a mutable property (`var`) or any of its nested types does.
+    private func hasTransitiveMutableProperty(type: SwiftType) -> Bool {
+        switch type {
+        case let array as SwiftArray:
+            return hasTransitiveMutableProperty(type: array.element)
+        case let `struct` as SwiftStruct:
+            return `struct`.properties.contains { property in
+                property.isMutable || hasTransitiveMutableProperty(type: property.type)
+            }
+        default:
+            return false
+        }
     }
 }

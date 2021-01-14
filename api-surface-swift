@@ -197,6 +197,310 @@ public protocol UIKitRUMViewsPredicate
 public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
  public init ()
  public func rumView(for viewController: UIViewController) -> RUMView?
+public struct RUMViewEvent: RUMDataModel
+ public let dd: DD
+ public let application: Application
+ public let connectivity: RUMConnectivity?
+ public let date: Int64
+ public let service: String?
+ public let session: Session
+ public let type: String = "view"
+ public let usr: RUMUser?
+ public var view: View
+ public struct DD: Codable
+  public let documentVersion: Int64
+  public let formatVersion: Int64 = 2
+ public struct Application: Codable
+  public let id: String
+ public struct Session: Codable
+  public let id: String
+  public let type: SessionType
+  public enum SessionType: String, Codable
+   case user = "user"
+   case synthetics = "synthetics"
+ public struct View: Codable
+  public let action: Action
+  public let crash: Crash?
+  public let cumulativeLayoutShift: Double?
+  public let domComplete: Int64?
+  public let domContentLoaded: Int64?
+  public let domInteractive: Int64?
+  public let error: Error
+  public let firstContentfulPaint: Int64?
+  public let firstInputDelay: Int64?
+  public let id: String
+  public let isActive: Bool?
+  public let largestContentfulPaint: Int64?
+  public let loadEvent: Int64?
+  public let loadingTime: Int64?
+  public let loadingType: LoadingType?
+  public let longTask: LongTask?
+  public var referrer: String?
+  public let resource: Resource
+  public let timeSpent: Int64
+  public var url: String
+  public struct Action: Codable
+   public let count: Int64
+  public struct Crash: Codable
+   public let count: Int64
+  public struct Error: Codable
+   public let count: Int64
+  public enum LoadingType: String, Codable
+   case initialLoad = "initial_load"
+   case routeChange = "route_change"
+   case activityDisplay = "activity_display"
+   case activityRedisplay = "activity_redisplay"
+   case fragmentDisplay = "fragment_display"
+   case fragmentRedisplay = "fragment_redisplay"
+   case viewControllerDisplay = "view_controller_display"
+   case viewControllerRedisplay = "view_controller_redisplay"
+  public struct LongTask: Codable
+   public let count: Int64
+  public struct Resource: Codable
+   public let count: Int64
+public struct RUMResourceEvent: RUMDataModel
+ public let dd: DD
+ public let action: Action?
+ public let application: Application
+ public let connectivity: RUMConnectivity?
+ public let date: Int64
+ public var resource: Resource
+ public let service: String?
+ public let session: Session
+ public let type: String = "resource"
+ public let usr: RUMUser?
+ public var view: View
+ public struct DD: Codable
+  public let formatVersion: Int64 = 2
+  public let spanId: String?
+  public let traceId: String?
+ public struct Action: Codable
+  public let id: String
+ public struct Application: Codable
+  public let id: String
+ public struct Resource: Codable
+  public let connect: Connect?
+  public let dns: DNS?
+  public let download: Download?
+  public let duration: Int64
+  public let firstByte: FirstByte?
+  public let id: String?
+  public let method: RUMMethod?
+  public let provider: Provider?
+  public let redirect: Redirect?
+  public let size: Int64?
+  public let ssl: SSL?
+  public let statusCode: Int64?
+  public let type: ResourceType
+  public var url: String
+  public struct Connect: Codable
+   public let duration: Int64
+   public let start: Int64
+  public struct DNS: Codable
+   public let duration: Int64
+   public let start: Int64
+  public struct Download: Codable
+   public let duration: Int64
+   public let start: Int64
+  public struct FirstByte: Codable
+   public let duration: Int64
+   public let start: Int64
+  public struct Provider: Codable
+   public let domain: String?
+   public let name: String?
+   public let type: ProviderType?
+   public enum ProviderType: String, Codable
+    case ad = "ad"
+    case advertising = "advertising"
+    case analytics = "analytics"
+    case cdn = "cdn"
+    case content = "content"
+    case customerSuccess = "customer-success"
+    case firstParty = "first party"
+    case hosting = "hosting"
+    case marketing = "marketing"
+    case other = "other"
+    case social = "social"
+    case tagManager = "tag-manager"
+    case utility = "utility"
+    case video = "video"
+  public struct Redirect: Codable
+   public let duration: Int64
+   public let start: Int64
+  public struct SSL: Codable
+   public let duration: Int64
+   public let start: Int64
+  public enum ResourceType: String, Codable
+   case document = "document"
+   case xhr = "xhr"
+   case beacon = "beacon"
+   case fetch = "fetch"
+   case css = "css"
+   case js = "js"
+   case image = "image"
+   case font = "font"
+   case media = "media"
+   case other = "other"
+ public struct Session: Codable
+  public let id: String
+  public let type: SessionType
+  public enum SessionType: String, Codable
+   case user = "user"
+   case synthetics = "synthetics"
+ public struct View: Codable
+  public let id: String
+  public var referrer: String?
+  public var url: String
+public struct RUMActionEvent: RUMDataModel
+ public let dd: DD
+ public var action: Action
+ public let application: Application
+ public let connectivity: RUMConnectivity?
+ public let date: Int64
+ public let service: String?
+ public let session: Session
+ public let type: String = "action"
+ public let usr: RUMUser?
+ public var view: View
+ public struct DD: Codable
+  public let formatVersion: Int64 = 2
+ public struct Action: Codable
+  public let crash: Crash?
+  public let error: Error?
+  public let id: String?
+  public let loadingTime: Int64?
+  public let longTask: LongTask?
+  public let resource: Resource?
+  public var target: Target?
+  public let type: ActionType
+  public struct Crash: Codable
+   public let count: Int64
+  public struct Error: Codable
+   public let count: Int64
+  public struct LongTask: Codable
+   public let count: Int64
+  public struct Resource: Codable
+   public let count: Int64
+  public struct Target: Codable
+   public var name: String
+  public enum ActionType: String, Codable
+   case custom = "custom"
+   case click = "click"
+   case tap = "tap"
+   case scroll = "scroll"
+   case swipe = "swipe"
+   case applicationStart = "application_start"
+   case back = "back"
+ public struct Application: Codable
+  public let id: String
+ public struct Session: Codable
+  public let id: String
+  public let type: SessionType
+  public enum SessionType: String, Codable
+   case user = "user"
+   case synthetics = "synthetics"
+ public struct View: Codable
+  public let id: String
+  public var referrer: String?
+  public var url: String
+public struct RUMErrorEvent: RUMDataModel
+ public let dd: DD
+ public let action: Action?
+ public let application: Application
+ public let connectivity: RUMConnectivity?
+ public let date: Int64
+ public var error: Error
+ public let service: String?
+ public let session: Session
+ public let type: String = "error"
+ public let usr: RUMUser?
+ public var view: View
+ public struct DD: Codable
+  public let formatVersion: Int64 = 2
+ public struct Action: Codable
+  public let id: String
+ public struct Application: Codable
+  public let id: String
+ public struct Error: Codable
+  public let isCrash: Bool?
+  public var message: String
+  public var resource: Resource?
+  public let source: Source
+  public var stack: String?
+  public struct Resource: Codable
+   public let method: RUMMethod
+   public let provider: Provider?
+   public let statusCode: Int64
+   public var url: String
+   public struct Provider: Codable
+    public let domain: String?
+    public let name: String?
+    public let type: ProviderType?
+    public enum ProviderType: String, Codable
+     case ad = "ad"
+     case advertising = "advertising"
+     case analytics = "analytics"
+     case cdn = "cdn"
+     case content = "content"
+     case customerSuccess = "customer-success"
+     case firstParty = "first party"
+     case hosting = "hosting"
+     case marketing = "marketing"
+     case other = "other"
+     case social = "social"
+     case tagManager = "tag-manager"
+     case utility = "utility"
+     case video = "video"
+  public enum Source: String, Codable
+   case network = "network"
+   case source = "source"
+   case console = "console"
+   case logger = "logger"
+   case agent = "agent"
+   case webview = "webview"
+   case custom = "custom"
+ public struct Session: Codable
+  public let id: String
+  public let type: SessionType
+  public enum SessionType: String, Codable
+   case user = "user"
+   case synthetics = "synthetics"
+ public struct View: Codable
+  public let id: String
+  public var referrer: String?
+  public var url: String
+public struct RUMConnectivity: Codable
+ public let cellular: Cellular?
+ public let interfaces: [Interfaces]
+ public let status: Status
+ public struct Cellular: Codable
+  public let carrierName: String?
+  public let technology: String?
+ public enum Interfaces: String, Codable
+  case bluetooth = "bluetooth"
+  case cellular = "cellular"
+  case ethernet = "ethernet"
+  case wifi = "wifi"
+  case wimax = "wimax"
+  case mixed = "mixed"
+  case other = "other"
+  case unknown = "unknown"
+  case none = "none"
+ public enum Status: String, Codable
+  case connected = "connected"
+  case notConnected = "not_connected"
+  case maybe = "maybe"
+public struct RUMUser: Codable
+ public let email: String?
+ public let id: String?
+ public let name: String?
+public enum RUMMethod: String, Codable
+ case post = "POST"
+ case get = "GET"
+ case head = "HEAD"
+ case put = "PUT"
+ case delete = "DELETE"
+ case patch = "PATCH"
 public enum RUMUserActionType
  case tap
  case scroll

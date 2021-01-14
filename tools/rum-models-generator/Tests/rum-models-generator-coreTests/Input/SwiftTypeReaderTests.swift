@@ -106,7 +106,7 @@ final class SwiftTypeReaderTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    isMutable: true, // should be mutable as at least one of the `Bar's` properties is mutable
                     defaultVaule: nil,
                     codingKey: "bar"
                 ),
