@@ -54,6 +54,43 @@ class RUMEventsMapperTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(mappedActionEvent), modifiedActionEvent, "Mapper should return modified event.")
     }
 
+    func testGivenMappersEnabled_whenModifyingEvents_itDoesNotModifyCustomAttributes() throws {
+        // Given
+        let mapper = RUMEventsMapper(
+            viewEventMapper: { _ in .mockRandom() },
+            errorEventMapper: { _ in .mockRandom() },
+            resourceEventMapper: { _ in .mockRandom() },
+            actionEventMapper: { _ in .mockRandom() }
+        )
+
+        // When
+        let rumEvent1: RUMEvent<RUMViewEvent> = .mockRandomWith(model: .mockRandom())
+        let rumEvent2: RUMEvent<RUMErrorEvent> = .mockRandomWith(model: .mockRandom())
+        let rumEvent3: RUMEvent<RUMResourceEvent> = .mockRandomWith(model: .mockRandom())
+        let rumEvent4: RUMEvent<RUMActionEvent> = .mockRandomWith(model: .mockRandom())
+        let mappedRUMEvent1 = try XCTUnwrap(mapper.map(event: rumEvent1))
+        let mappedRUMEvent2 = try XCTUnwrap(mapper.map(event: rumEvent2))
+        let mappedRUMEvent3 = try XCTUnwrap(mapper.map(event: rumEvent3))
+        let mappedRUMEvent4 = try XCTUnwrap(mapper.map(event: rumEvent4))
+
+        // Then
+        XCTAssertEqual(rumEvent1.attributes as! [String: String], mappedRUMEvent1.attributes as! [String: String])
+        XCTAssertEqual(rumEvent1.userInfoAttributes as! [String: String], mappedRUMEvent1.userInfoAttributes as! [String: String])
+        XCTAssertEqual(rumEvent1.customViewTimings, mappedRUMEvent1.customViewTimings)
+
+        XCTAssertEqual(rumEvent2.attributes as! [String: String], mappedRUMEvent2.attributes as! [String: String])
+        XCTAssertEqual(rumEvent2.userInfoAttributes as! [String: String], mappedRUMEvent2.userInfoAttributes as! [String: String])
+        XCTAssertEqual(rumEvent2.customViewTimings, mappedRUMEvent2.customViewTimings)
+
+        XCTAssertEqual(rumEvent3.attributes as! [String: String], mappedRUMEvent3.attributes as! [String: String])
+        XCTAssertEqual(rumEvent3.userInfoAttributes as! [String: String], mappedRUMEvent3.userInfoAttributes as! [String: String])
+        XCTAssertEqual(rumEvent3.customViewTimings, mappedRUMEvent3.customViewTimings)
+
+        XCTAssertEqual(rumEvent4.attributes as! [String: String], mappedRUMEvent4.attributes as! [String: String])
+        XCTAssertEqual(rumEvent4.userInfoAttributes as! [String: String], mappedRUMEvent4.userInfoAttributes as! [String: String])
+        XCTAssertEqual(rumEvent4.customViewTimings, mappedRUMEvent4.customViewTimings)
+    }
+
     func testGivenMappersEnabled_whenDroppingEvents_itReturnsNil() {
         let originalViewEvent: RUMViewEvent = .mockRandom()
         let originalErrorEvent: RUMErrorEvent = .mockRandom()

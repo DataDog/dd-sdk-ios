@@ -13,22 +13,10 @@ internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
 
 /// The `EventMapper` for RUM events.
 internal struct RUMEventsMapper: EventMapper {
-    private let viewEventMapper: RUMViewEventMapper
-    private let errorEventMapper: RUMErrorEventMapper
-    private let resourceEventMapper: RUMResourceEventMapper
-    private let actionEventMapper: RUMActionEventMapper
-
-    init(
-        viewEventMapper: RUMViewEventMapper?,
-        errorEventMapper: RUMErrorEventMapper?,
-        resourceEventMapper: RUMResourceEventMapper?,
-        actionEventMapper: RUMActionEventMapper?
-    ) {
-        self.viewEventMapper = viewEventMapper ?? RUMEventsMapper.noOpMapper(_:)
-        self.errorEventMapper = errorEventMapper ?? RUMEventsMapper.noOpMapper(_:)
-        self.resourceEventMapper = resourceEventMapper ?? RUMEventsMapper.noOpMapper(_:)
-        self.actionEventMapper = actionEventMapper ?? RUMEventsMapper.noOpMapper(_:)
-    }
+    let viewEventMapper: RUMViewEventMapper?
+    let errorEventMapper: RUMErrorEventMapper?
+    let resourceEventMapper: RUMResourceEventMapper?
+    let actionEventMapper: RUMActionEventMapper?
 
     // MARK: - EventMapper
 
@@ -48,7 +36,11 @@ internal struct RUMEventsMapper: EventMapper {
         }
     }
 
-    private func map<DM: RUMDataModel>(rumEvent: RUMEvent<DM>, using mapper: (DM) -> DM?) -> RUMEvent<DM>? {
+    private func map<DM: RUMDataModel>(rumEvent: RUMEvent<DM>, using mapper: ((DM) -> DM?)?) -> RUMEvent<DM>? {
+        guard let mapper = mapper else {
+            return rumEvent // if no mapper is provided, do not modify the `rumEvent`
+        }
+
         if let mappedModel = mapper(rumEvent.model) {
             var mutableRUMEvent = rumEvent
             mutableRUMEvent.model = mappedModel
@@ -57,9 +49,4 @@ internal struct RUMEventsMapper: EventMapper {
             return nil
         }
     }
-
-    // MARK: - Private
-
-    /// Generic mapping function which returns the `event` with no change.
-    private static func noOpMapper<T: Encodable>(_ event: T) -> T { event }
 }
