@@ -173,6 +173,10 @@ extension Datadog {
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitActionsTrackingEnabled: Bool
+        private(set) var rumViewEventMapper: RUMViewEventMapper?
+        private(set) var rumResourceEventMapper: RUMResourceEventMapper?
+        private(set) var rumActionEventMapper: RUMActionEventMapper?
+        private(set) var rumErrorEventMapper: RUMErrorEventMapper?
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
 
@@ -233,6 +237,10 @@ extension Datadog {
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
                     rumUIKitActionsTrackingEnabled: false,
+                    rumViewEventMapper: nil,
+                    rumResourceEventMapper: nil,
+                    rumActionEventMapper: nil,
+                    rumErrorEventMapper: nil,
                     batchSize: .medium,
                     uploadFrequency: .average
                 )
@@ -437,6 +445,42 @@ extension Datadog {
             /// - Parameter enabled: `true` by default
             public func trackUIKitActions(_ enabled: Bool = true) -> Builder {
                 configuration.rumUIKitActionsTrackingEnabled = enabled
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMViewEvent`. This can be used to modify RUM View events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM View event entirely, so it won't be send to Datadog.
+            public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent?) -> Builder {
+                configuration.rumViewEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMResourceEvent`. This can be used to modify RUM Resource events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMResourceEvent` as input and expecting `RUMResourceEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMResourceEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Resource event entirely, so it won't be send to Datadog.
+            public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder {
+                configuration.rumResourceEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMActionEvent`. This can be used to modify RUM Action events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMActionEvent` as input and expecting `RUMActionEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMActionEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Action event entirely, so it won't be send to Datadog.
+            public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder {
+                configuration.rumActionEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMErrorEvent`. This can be used to modify RUM Error events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMErrorEvent` as input and expecting `RUMErrorEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMErrorEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
+            public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
+                configuration.rumErrorEventMapper = mapper
                 return self
             }
 

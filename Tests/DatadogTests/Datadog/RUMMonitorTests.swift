@@ -777,6 +777,70 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[2].path, "another view in `.granted` consent")
     }
 
+    // MARK: - Data Scrubbing
+
+    func testModifyingEventsBeforeTheyGetSend() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                eventMapper: RUMEventsMapper(
+                    viewEventMapper: { viewEvent in
+                        var viewEvent = viewEvent
+                        viewEvent.view.url = "ModifiedViewName"
+                        return viewEvent
+                    },
+                    errorEventMapper: { errorEvent in
+                        var errorEvent = errorEvent
+                        errorEvent.error.message = "Modified error message"
+                        return errorEvent
+                    },
+                    resourceEventMapper: { resourceEvent in
+                        var resourceEvent = resourceEvent
+                        resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
+                        return resourceEvent
+                    },
+                    actionEventMapper: { actionEvent in
+                        if actionEvent.action.type == .applicationStart {
+                            return nil // drop `.applicationStart` action
+                        } else {
+                            var actionEvent = actionEvent
+                            actionEvent.action.target?.name = "Modified tap action name"
+                            return actionEvent
+                        }
+                    }
+                )
+            ),
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        monitor.startView(viewController: mockView, path: "OriginalViewName")
+        monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.addUserAction(type: .tap, name: "Original tap action name")
+        monitor.addError(message: "Original error message")
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
+        let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+
+        XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
+        let session = sessions[0]
+
+        session.viewVisits[0].viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.view.url, "ModifiedViewName")
+        }
+        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 1)
+        XCTAssertEqual(session.viewVisits[0].resourceEvents[0].resource.url, "https://foo.com?q=modified-resource-url")
+        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
+        XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.target?.name, "Modified tap action name")
+        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1)
+        XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {

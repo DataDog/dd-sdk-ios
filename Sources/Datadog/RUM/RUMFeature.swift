@@ -50,11 +50,16 @@ internal final class RUMFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(
+        directories: FeatureDirectories,
+        eventMapper: RUMEventsMapper,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directories: directories,
+            eventMapper: eventMapper,
             commonDependencies: commonDependencies
         )
     }
@@ -100,7 +105,11 @@ internal final class RUMFeature {
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
-        let storage = RUMFeature.createStorage(directories: directories, commonDependencies: commonDependencies)
+        let storage = RUMFeature.createStorage(
+            directories: directories,
+            eventMapper: configuration.eventMapper,
+            commonDependencies: commonDependencies
+        )
         let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,

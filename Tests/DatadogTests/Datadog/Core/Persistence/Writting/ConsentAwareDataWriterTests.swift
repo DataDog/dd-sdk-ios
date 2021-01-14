@@ -13,7 +13,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
     private let authorizedWriter = FileWriterMock()
     private lazy var dataProcessorFactory = DataProcessorFactory(
         unauthorizedFileWriter: unauthorizedWriter,
-        authorizedFileWriter: authorizedWriter
+        authorizedFileWriter: authorizedWriter,
+        eventMapper: nil
     )
     private lazy var dataMigratorFactory = DataMigratorFactory(
         directories: temporaryFeatureDirectories
