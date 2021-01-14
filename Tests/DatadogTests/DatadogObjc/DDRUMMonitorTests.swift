@@ -55,6 +55,21 @@ class DDRUMErrorSourceTests: XCTestCase {
     }
 }
 
+class DDRUMResourceKindTests: XCTestCase {
+    func testMappingToSwiftRUMResourceKind() {
+        XCTAssertEqual(DDRUMResourceKind.image.swiftType, .image)
+        XCTAssertEqual(DDRUMResourceKind.xhr.swiftType, .xhr)
+        XCTAssertEqual(DDRUMResourceKind.beacon.swiftType, .beacon)
+        XCTAssertEqual(DDRUMResourceKind.css.swiftType, .css)
+        XCTAssertEqual(DDRUMResourceKind.document.swiftType, .document)
+        XCTAssertEqual(DDRUMResourceKind.fetch.swiftType, .fetch)
+        XCTAssertEqual(DDRUMResourceKind.font.swiftType, .font)
+        XCTAssertEqual(DDRUMResourceKind.js.swiftType, .js)
+        XCTAssertEqual(DDRUMResourceKind.media.swiftType, .media)
+        XCTAssertEqual(DDRUMResourceKind.other.swiftType, .other)
+    }
+}
+
 class DDRUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -148,10 +163,13 @@ class DDRUMMonitorTests: XCTestCase {
         )
         objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), attributes: ["event-attribute3": "foo3"])
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: "GET", urlString: "/some/url/string", attributes: [:])
+        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, attributes: [:])
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
 
         let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
-        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(resourceEvents.count, 2)
 
         let event1Matcher = resourceEvents[0]
         let event1: RUMResourceEvent = try event1Matcher.model()
@@ -161,6 +179,12 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute3"), "foo3")
+
+        let event2Matcher = resourceEvents[1]
+        let event2: RUMResourceEvent = try event2Matcher.model()
+        XCTAssertEqual(event2.resource.url, "/some/url/string")
+        XCTAssertEqual(event2.resource.type, .beacon)
+        XCTAssertEqual(event2.resource.statusCode, 333)
     }
 
     func testSendingErrorEvents() throws {
@@ -184,11 +208,12 @@ class DDRUMMonitorTests: XCTestCase {
         )
 
         objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 9)
 
         let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
-        XCTAssertEqual(errorEvents.count, 3)
+        XCTAssertEqual(errorEvents.count, 4)
 
         let event1Matcher = errorEvents[0]
         let event1: RUMErrorEvent = try event1Matcher.model()
@@ -215,6 +240,12 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event3.error.source, .custom)
         XCTAssertEqual(event3.error.stack, "error details")
         XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+
+        let event4Matcher = errorEvents[3]
+        let event4: RUMErrorEvent = try event4Matcher.model()
+        XCTAssertEqual(event4.error.message, "error message")
+        XCTAssertEqual(event4.error.source, .source)
+        XCTAssertEqual(event4.error.stack, "error stack")
     }
 
     func testSendingActionEvents() throws {

@@ -23,7 +23,7 @@ internal enum RUMHTTPMethod: String {
     }
 }
 
-internal enum RUMResourceKind {
+public enum RUMResourceKind {
     case image
     case xhr
     case beacon
@@ -283,14 +283,19 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func addError(
         message: String,
         source: RUMErrorSource,
+        stack: String?,
         attributes: [AttributeKey: AttributeValue],
         file: StaticString?,
         line: UInt?
     ) {
-        var stack: String? = nil
-        if let file = file, let fileName = "\(file)".split(separator: "/").last, let line = line {
-            stack = "\(fileName):\(line)"
-        }
+        let stack: String? = stack ?? {
+            if let file = file,
+               let fileName = "\(file)".split(separator: "/").last,
+               let line = line {
+                return "\(fileName):\(line)"
+            }
+            return nil
+        }()
         addError(message: message, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
     }
 
@@ -362,6 +367,25 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func startResourceLoading(
+        resourceKey: String,
+        httpMethod: String,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        process(
+            command: RUMStartResourceCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                url: urlString,
+                httpMethod: RUMHTTPMethod(rawValue: httpMethod.uppercased()) ?? .GET,
+                kind: nil,
+                spanContext: nil
+            )
+        )
+    }
+
     override public func addResourceMetrics(
         resourceKey: String,
         metrics: URLSessionTaskMetrics,
@@ -399,6 +423,25 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 attributes: attributes,
                 kind: resourceKind,
+                httpStatusCode: statusCode,
+                size: size
+            )
+        )
+    }
+
+    override public func stopResourceLoading(
+        resourceKey: String,
+        statusCode: Int?,
+        kind: RUMResourceKind,
+        size: Int64? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        process(
+            command: RUMStopResourceCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                kind: kind,
                 httpStatusCode: statusCode,
                 size: size
             )

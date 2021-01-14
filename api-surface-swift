@@ -10,12 +10,14 @@ public class DDRUMMonitor
  public func startView(key: String,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
  public func addTiming(name: String)
- public func addError(message: String,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
+ public func addError(message: String,source: RUMErrorSource = .custom,stack: String? = nil,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
  public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startResourceLoading(resourceKey: String,httpMethod: String,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
  public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceKind,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func startUserAction(type: RUMUserActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
@@ -501,6 +503,17 @@ public enum RUMMethod: String, Codable
  case put = "PUT"
  case delete = "DELETE"
  case patch = "PATCH"
+public enum RUMResourceKind
+ case image
+ case xhr
+ case beacon
+ case css
+ case document
+ case fetch
+ case font
+ case js
+ case media
+ case other
 public enum RUMUserActionType
  case tap
  case scroll
@@ -518,12 +531,14 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  override public func startView(key: String,path: String?,attributes: [AttributeKey: AttributeValue])
  override public func stopView(key: String,attributes: [AttributeKey: AttributeValue])
  override public func addTiming(name: String)
- override public func addError(message: String,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+ override public func addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
  override public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
  override public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
  override public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue])
+ override public func startResourceLoading(resourceKey: String,httpMethod: String,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
  override public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue])
  override public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [AttributeKey: AttributeValue])
+ override public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceKind,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  override public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
  override public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
  override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
