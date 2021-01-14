@@ -19,6 +19,7 @@ internal extension RUMMethod {
 }
 
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
+
 internal extension RUMResourceType {
     /// Determines the `RUMResourceType` based on a given `URLRequest`.
     /// Returns `nil` if the kind cannot be determined with only `URLRequest` and `HTTPURLRespones` is needed.

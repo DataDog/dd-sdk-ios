@@ -10,7 +10,6 @@ import class Datadog.DDRUMMonitor
 import class Datadog.RUMMonitor
 import enum Datadog.RUMErrorSource
 import enum Datadog.RUMUserActionType
-//import enum Datadog.RUM
 import typealias Datadog.RUMResourceType
 import enum Datadog.RUMMethod
 import struct Datadog.RUMView
