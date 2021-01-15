@@ -21,12 +21,6 @@ internal struct LogSanitizer {
             LoggingWithActiveSpanIntegration.Attributes.traceID,
             LoggingWithActiveSpanIntegration.Attributes.spanID,
         ]
-        /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
-        /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).
-        static let maxNestedLevelsInAttributeName: Int = 9
-        /// Maximum number of attributes in log.
-        /// If this number is exceeded, extra attributes will be ignored.
-        static let maxNumberOfAttributes: Int = 256
         /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
         /// Tags with name starting with different character will be dropped.
         static let allowedTagNameFirstCharacterASCIIRange: [UInt8] = Array(97...122)
@@ -42,6 +36,8 @@ internal struct LogSanitizer {
         /// If this number is exceeded, extra attributes will be ignored.
         static let maxNumberOfTags: Int = 100
     }
+
+    private let attributesSanitizer = AttributesSanitizer()
 
     func sanitize(log: Log) -> Log {
         return Log(
@@ -69,9 +65,9 @@ internal struct LogSanitizer {
         var userAttributes = rawAttributes.userAttributes
         userAttributes = removeInvalidAttributes(userAttributes)
         userAttributes = removeReservedAttributes(userAttributes)
-        userAttributes = sanitizeAttributeNames(userAttributes)
-        let userAttributesLimit = Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
-        userAttributes = limitToMaxNumberOfAttributes(userAttributes, limit: userAttributesLimit)
+        userAttributes = attributesSanitizer.sanitizeKeys(for: userAttributes)
+        let userAttributesLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
+        userAttributes = attributesSanitizer.limitNumberOf(attributes: userAttributes, to: userAttributesLimit)
 
         return LogAttributes(
             userAttributes: userAttributes,
@@ -97,45 +93,6 @@ internal struct LogSanitizer {
                 return false
             }
             return true
-        }
-    }
-
-    private func sanitizeAttributeNames(_ attributes: [String: Encodable]) -> [String: Encodable] {
-        let sanitizedAttributes: [(String, Encodable)] = attributes.map { name, value in
-            let sanitizedName = sanitize(attributeName: name)
-            if sanitizedName != name {
-                userLogger.error("Attribute '\(name)' was modified to '\(sanitizedName)' to match Datadog constraints.")
-                return (sanitizedName, value)
-            } else {
-                return (name, value)
-            }
-        }
-        return Dictionary(uniqueKeysWithValues: sanitizedAttributes)
-    }
-
-    private func sanitize(attributeName: String) -> String {
-        // Attribute name can only have `Constants.maxNestedLevelsInAttributeName` levels. Escape extra levels with "_".
-        var dotsCount = 0
-        var sanitized = ""
-        for char in attributeName {
-            if char == "." {
-                dotsCount += 1
-                sanitized.append(dotsCount > Constraints.maxNestedLevelsInAttributeName ? "_" : char)
-            } else {
-                sanitized.append(char)
-            }
-        }
-        return sanitized
-    }
-
-    private func limitToMaxNumberOfAttributes(_ attributes: [String: Encodable], limit: Int) -> [String: Encodable] {
-        // Only `limit` number of attributes are allowed.
-        if attributes.count > limit {
-            let extraAttributesCount = attributes.count - Constraints.maxNumberOfAttributes
-            userLogger.error("Number of attributes exceeds the limit of \(Constraints.maxNumberOfAttributes). \(extraAttributesCount) attribute(s) will be ignored.")
-            return Dictionary(uniqueKeysWithValues: attributes.dropLast(extraAttributesCount))
-        } else {
-            return attributes
         }
     }
 
