@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 
   s.source_files = ["Sources/DatadogExtensions/Alamofire/**/*.swift"]
-  s.dependency 'DatadogSDK', '~> 1.5.0-alpha1'
+  s.dependency 'DatadogSDK', '~> 1.5.0-alpha2'
   s.dependency 'Alamofire', '~> 5.0'
 end
