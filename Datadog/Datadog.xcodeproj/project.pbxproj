@@ -12,6 +12,7 @@
 		61122ED425B1B84D00F9C7F5 /* RUMEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */; };
 		61122EDA25B1BA9700F9C7F5 /* AttributesSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED925B1BA9700F9C7F5 /* AttributesSanitizer.swift */; };
 		61122EE825B1C92500F9C7F5 /* SpanSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122EE725B1C92500F9C7F5 /* SpanSanitizerTests.swift */; };
+		61122EEE25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122EED25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift */; };
 		61133B8C242393DE00786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		61133B93242393DE00786299 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		61133BCA2423979B00786299 /* EncodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* EncodableValue.swift */; };
@@ -470,6 +471,7 @@
 		61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventSanitizer.swift; sourceTree = "<group>"; };
 		61122ED925B1BA9700F9C7F5 /* AttributesSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributesSanitizer.swift; sourceTree = "<group>"; };
 		61122EE725B1C92500F9C7F5 /* SpanSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSanitizerTests.swift; sourceTree = "<group>"; };
+		61122EED25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventSanitizerTests.swift; sourceTree = "<group>"; };
 		61133B82242393DE00786299 /* Datadog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61133B85242393DE00786299 /* Datadog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Datadog.h; sourceTree = "<group>"; };
 		61133B86242393DE00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -2400,6 +2402,7 @@
 			children = (
 				614B0A4C24EBD71500A2A780 /* RUMUserInfoProviderTests.swift */,
 				61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */,
+				61122EED25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift */,
 				614B0A5024EBDC8000A2A780 /* RUMConnectivityInfoProviderTests.swift */,
 			);
 			path = RUMEvent;
@@ -3025,6 +3028,7 @@
 				618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */,
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,
+				61122EEE25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift in Sources */,
 				614B0A5124EBDC8000A2A780 /* RUMConnectivityInfoProviderTests.swift in Sources */,
 				611F82032563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
