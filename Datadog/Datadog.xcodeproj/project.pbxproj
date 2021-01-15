@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */; };
+		61122ECE25B1B74500F9C7F5 /* SpanSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */; };
+		61122ED425B1B84D00F9C7F5 /* RUMEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */; };
 		61133B8C242393DE00786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		61133B93242393DE00786299 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		61133BCA2423979B00786299 /* EncodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* EncodableValue.swift */; };
@@ -462,6 +464,8 @@
 
 /* Begin PBXFileReference section */
 		6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingWithActiveSpanIntegration.swift; sourceTree = "<group>"; };
+		61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSanitizer.swift; sourceTree = "<group>"; };
+		61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventSanitizer.swift; sourceTree = "<group>"; };
 		61133B82242393DE00786299 /* Datadog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61133B85242393DE00786299 /* Datadog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Datadog.h; sourceTree = "<group>"; };
 		61133B86242393DE00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -2164,6 +2168,7 @@
 			children = (
 				61C5A8A424509FAA00DA608C /* SpanEncoder.swift */,
 				61C5A8A524509FAA00DA608C /* SpanBuilder.swift */,
+				61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */,
 				614872762485067300E3EBDB /* SpanTagsReducer.swift */,
 			);
 			path = Span;
@@ -2243,6 +2248,7 @@
 				614B0A4A24EBC43D00A2A780 /* RUMUserInfoProvider.swift */,
 				61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */,
 				61E5333C24B8791A003D6C4E /* RUMEventEncoder.swift */,
+				61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */,
 				614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */,
 			);
 			path = RUMEvent;
@@ -2816,6 +2822,7 @@
 				9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */,
 				61B0386C2527247B00518F3C /* TaskInterception.swift in Sources */,
 				61B03892252724D900518F3C /* HTTPHeadersReader.swift in Sources */,
+				61122ECE25B1B74500F9C7F5 /* SpanSanitizer.swift in Sources */,
 				613E79282577B0EE00DFCC17 /* Writer.swift in Sources */,
 				61B0384E2527246900518F3C /* URLSessionAutoInstrumentation.swift in Sources */,
 				61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */,
@@ -2882,6 +2889,7 @@
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
 				E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */,
 				61B038602527247200518F3C /* URLSessionTracingHandler.swift in Sources */,
+				61122ED425B1B84D00F9C7F5 /* RUMEventSanitizer.swift in Sources */,
 				61363D9D24D999F70084CD6F /* DDError.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
 				612983CD2449E62E00D4424B /* LoggingFeature.swift in Sources */,

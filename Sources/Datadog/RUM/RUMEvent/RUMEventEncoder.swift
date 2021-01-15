@@ -20,7 +20,8 @@ internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     let customViewTimings: [String: Int64]?
 
     func encode(to encoder: Encoder) throws {
-        try RUMEventEncoder().encode(self, to: encoder)
+        let sanitizedEvent = RUMEventSanitizer().sanitize(event: self)
+        try RUMEventEncoder().encode(sanitizedEvent, to: encoder)
     }
 }
 

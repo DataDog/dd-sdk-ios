@@ -61,7 +61,8 @@ internal struct Span: Encodable {
     let tags: [String: JSONStringEncodableValue]
 
     func encode(to encoder: Encoder) throws {
-        try SpanEncoder().encode(self, to: encoder)
+        let sanitizedSpan = SpanSanitizer().sanitize(span: self)
+        try SpanEncoder().encode(sanitizedSpan, to: encoder)
     }
 }
 
