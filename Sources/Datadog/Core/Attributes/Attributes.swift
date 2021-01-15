@@ -22,7 +22,7 @@ import Foundation
 ///     }
 ///
 /// - Important
-/// Values can be nested up to 10 levels deep. Keys using more than 10 levels will be sanitized by SDK.
+/// Values can be nested up to 8 levels deep. Keys using more than 8 levels will be sanitized by the SDK.
 ///
 public typealias AttributeKey = String
 

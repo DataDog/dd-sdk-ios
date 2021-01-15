@@ -958,7 +958,6 @@
 				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
 				61133BBB2423979B00786299 /* Datadog.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
-				61C3E63424BF1794008053F2 /* Attributes.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
 				61E909E824A24DD3005EA2DE /* Global.swift */,
 				61C5A88D24509A1F00DA608C /* Tracer.swift */,
@@ -1081,6 +1080,7 @@
 		61133BBF2423979B00786299 /* Attributes */ = {
 			isa = PBXGroup;
 			children = (
+				61C3E63424BF1794008053F2 /* Attributes.swift */,
 				61133BC02423979B00786299 /* UserInfoProvider.swift */,
 			);
 			path = Attributes;
