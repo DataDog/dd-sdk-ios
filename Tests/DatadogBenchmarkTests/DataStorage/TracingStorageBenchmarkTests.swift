@@ -98,7 +98,16 @@ class TracingStorageBenchmarkTests: XCTestCase {
                 isConstrained: false
             ),
             mobileCarrierInfo: nil,
-            userInfo: .init(id: "abc-123", name: "foo", email: "foo@bar.com", extraInfo: ["str": "value", "int": 11_235, "bool": true]),
+            userInfo: .init(
+                id: "abc-123",
+                name: "foo",
+                email: "foo@bar.com",
+                extraInfo: [
+                    "str": JSONStringEncodableValue("value", encodedUsing: JSONEncoder()),
+                    "int": JSONStringEncodableValue(11_235, encodedUsing: JSONEncoder()),
+                    "bool": JSONStringEncodableValue(true, encodedUsing: JSONEncoder())
+                ]
+            ),
             tags: [
                 "tag": JSONStringEncodableValue("value", encodedUsing: JSONEncoder())
             ]
