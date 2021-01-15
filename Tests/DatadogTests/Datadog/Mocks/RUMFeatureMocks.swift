@@ -68,12 +68,12 @@ extension RUMFeature {
 
 // MARK: - Public API Mocks
 
-extension RUMHTTPMethod {
-    static func mockAny() -> RUMHTTPMethod { .GET }
+extension RUMMethod {
+    static func mockAny() -> RUMMethod { .get }
 }
 
-extension RUMResourceKind {
-    static func mockAny() -> RUMResourceKind { .image }
+extension RUMResourceType {
+    static func mockAny() -> RUMResourceType { .image }
 }
 
 // MARK: - RUMDataModel Mocks
@@ -239,8 +239,8 @@ extension RUMStartResourceCommand {
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
-        httpMethod: RUMHTTPMethod = .mockAny(),
-        kind: RUMResourceKind = .mockAny(),
+        httpMethod: RUMMethod = .mockAny(),
+        kind: RUMResourceType = .mockAny(),
         spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
@@ -262,7 +262,7 @@ extension RUMStopResourceCommand {
         resourceKey: String = .mockAny(),
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        kind: RUMResourceKind = .mockAny(),
+        kind: RUMResourceType = .mockAny(),
         httpStatusCode: Int? = .mockAny(),
         size: Int64? = .mockAny()
     ) -> RUMStopResourceCommand {

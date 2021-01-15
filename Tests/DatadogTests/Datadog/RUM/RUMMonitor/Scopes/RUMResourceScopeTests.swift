@@ -51,7 +51,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -111,7 +111,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -162,7 +162,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -293,7 +293,7 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
-        let kinds: [RUMResourceKind] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
+        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
         let kindBasedOnRequest = kinds.randomElement()!
         let kindBasedOnResponse = kinds.randomElement()!
 
@@ -306,7 +306,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: Date(),
             dateCorrection: .zero,
             url: .mockAny(),
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: kindBasedOnRequest,
             spanContext: nil
         )
@@ -323,6 +323,6 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest.toRUMDataFormat)
+        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest)
     }
 }

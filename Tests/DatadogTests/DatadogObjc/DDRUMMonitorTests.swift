@@ -55,6 +55,32 @@ class DDRUMErrorSourceTests: XCTestCase {
     }
 }
 
+class DDRUMResourceKindTests: XCTestCase {
+    func testMappingToSwiftRUMResourceKind() {
+        XCTAssertEqual(DDRUMResourceType.image.swiftType, .image)
+        XCTAssertEqual(DDRUMResourceType.xhr.swiftType, .xhr)
+        XCTAssertEqual(DDRUMResourceType.beacon.swiftType, .beacon)
+        XCTAssertEqual(DDRUMResourceType.css.swiftType, .css)
+        XCTAssertEqual(DDRUMResourceType.document.swiftType, .document)
+        XCTAssertEqual(DDRUMResourceType.fetch.swiftType, .fetch)
+        XCTAssertEqual(DDRUMResourceType.font.swiftType, .font)
+        XCTAssertEqual(DDRUMResourceType.js.swiftType, .js)
+        XCTAssertEqual(DDRUMResourceType.media.swiftType, .media)
+        XCTAssertEqual(DDRUMResourceType.other.swiftType, .other)
+    }
+}
+
+class DDRUMMethodTests: XCTestCase {
+    func testMappingToSwiftRUMMethod() {
+        XCTAssertEqual(DDRUMMethod.post.swiftType, .post)
+        XCTAssertEqual(DDRUMMethod.get.swiftType, .get)
+        XCTAssertEqual(DDRUMMethod.head.swiftType, .head)
+        XCTAssertEqual(DDRUMMethod.put.swiftType, .put)
+        XCTAssertEqual(DDRUMMethod.delete.swiftType, .delete)
+        XCTAssertEqual(DDRUMMethod.patch.swiftType, .patch)
+    }
+}
+
 class DDRUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -148,10 +174,13 @@ class DDRUMMonitorTests: XCTestCase {
         )
         objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), attributes: ["event-attribute3": "foo3"])
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/string", attributes: [:])
+        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, attributes: [:])
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
 
         let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
-        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(resourceEvents.count, 2)
 
         let event1Matcher = resourceEvents[0]
         let event1: RUMResourceEvent = try event1Matcher.model()
@@ -161,6 +190,12 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute3"), "foo3")
+
+        let event2Matcher = resourceEvents[1]
+        let event2: RUMResourceEvent = try event2Matcher.model()
+        XCTAssertEqual(event2.resource.url, "/some/url/string")
+        XCTAssertEqual(event2.resource.type, .beacon)
+        XCTAssertEqual(event2.resource.statusCode, 333)
     }
 
     func testSendingErrorEvents() throws {
@@ -184,11 +219,12 @@ class DDRUMMonitorTests: XCTestCase {
         )
 
         objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 9)
 
         let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
-        XCTAssertEqual(errorEvents.count, 3)
+        XCTAssertEqual(errorEvents.count, 4)
 
         let event1Matcher = errorEvents[0]
         let event1: RUMErrorEvent = try event1Matcher.model()
@@ -215,6 +251,12 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event3.error.source, .custom)
         XCTAssertEqual(event3.error.stack, "error details")
         XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+
+        let event4Matcher = errorEvents[3]
+        let event4: RUMErrorEvent = try event4Matcher.model()
+        XCTAssertEqual(event4.error.message, "error message")
+        XCTAssertEqual(event4.error.source, .source)
+        XCTAssertEqual(event4.error.stack, "error stack")
     }
 
     func testSendingActionEvents() throws {

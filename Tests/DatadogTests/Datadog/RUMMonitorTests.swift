@@ -175,6 +175,28 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
     }
 
+    func testStartingView_thenLoadingResourceWithURLString() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [:])
+        monitor.stopResourceLoading(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.url, "/some/url/string")
+        XCTAssertEqual(resourceEvent.resource.statusCode, 333)
+        XCTAssertEqual(resourceEvent.resource.type, .beacon)
+        XCTAssertEqual(resourceEvent.resource.method, .post)
+    }
+
     func testStartingView_thenTappingButton() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
@@ -286,9 +308,10 @@ class RUMMonitorTests: XCTestCase {
         #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
         monitor.addError(message: "View error message", source: .source)
         #sourceLocation()
+        monitor.addError(message: "Another error message", source: .webview, stack: "Error stack")
         monitor.stopUserAction(type: .scroll)
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
@@ -307,14 +330,24 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 1)
         }
-        try rumEventMatchers[4].model(ofType: RUMActionEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.action.type, .scroll)
-            XCTAssertEqual(rumModel.action.error?.count, 1)
+        try rumEventMatchers[4].model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "Another error message")
+            XCTAssertEqual(rumModel.error.stack, "Error stack")
+            XCTAssertEqual(rumModel.error.source, .webview)
         }
         try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+            XCTAssertEqual(rumModel.view.error.count, 2)
+        }
+        try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.action.type, .scroll)
+            XCTAssertEqual(rumModel.action.error?.count, 2)
+        }
+        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 0)
-            XCTAssertEqual(rumModel.view.error.count, 1)
+            XCTAssertEqual(rumModel.view.error.count, 2)
         }
     }
 
@@ -1066,35 +1099,35 @@ class RUMMonitorTests: XCTestCase {
 class RUMHTTPMethodTests: XCTestCase {
     func testItCanBeInitializedFromURLRequest() {
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "get".randomcased())), .GET
+            RUMMethod(httpMethod: "get".randomcased()), .get
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "post".randomcased())), .POST
+            RUMMethod(httpMethod: "post".randomcased()), .post
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "put".randomcased())), .PUT
+            RUMMethod(httpMethod: "put".randomcased()), .put
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "delete".randomcased())), .DELETE
+            RUMMethod(httpMethod: "delete".randomcased()), .delete
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "head".randomcased())), .HEAD
+            RUMMethod(httpMethod: "head".randomcased()), .head
         )
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "patch".randomcased())), .PATCH
+            RUMMethod(httpMethod: "patch".randomcased()), .patch
         )
     }
 
     func testWhenInitializingFromURLRequest_itDefaultsToGET() {
         XCTAssertEqual(
-            RUMHTTPMethod(request: .mockWith(httpMethod: "unknown_method")), .GET
+            RUMMethod(httpMethod: "unknown_method".randomcased()), .get
         )
     }
 }
 
 class RUMResourceKindTests: XCTestCase {
     func testWhenInitializedWithResponse_itReturnsKindBasedOnMIMEType() {
-        let fixtures: [(mime: String, kind: RUMResourceKind)] = [
+        let fixtures: [(mime: String, kind: RUMResourceType)] = [
             (mime: "image/png", kind: .image),
             (mime: "video/mpeg", kind: .media),
             (mime: "audio/ogg", kind: .media),
@@ -1107,7 +1140,7 @@ class RUMResourceKindTests: XCTestCase {
 
         fixtures.forEach { mime, expectedKind in
             XCTAssertEqual(
-                RUMResourceKind(response: .mockWith(mimeType: mime.randomcased())),
+                RUMResourceType(response: .mockWith(mimeType: mime.randomcased())),
                 expectedKind
             )
         }
@@ -1115,31 +1148,31 @@ class RUMResourceKindTests: XCTestCase {
 
     func testWhenInitializedWithPOSTorPUTorDELETErequest_itReturnsXHR() {
         XCTAssertEqual(
-            RUMResourceKind(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
         )
         XCTAssertEqual(
-            RUMResourceKind(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
         )
         XCTAssertEqual(
-            RUMResourceKind(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
         )
     }
 
     func testWhenInitializedWithGETorHEADorPATCHrequest_itReturnsNil() {
         XCTAssertNil(
-            RUMResourceKind(request: .mockWith(httpMethod: "GET".randomcased()))
+            RUMResourceType(request: .mockWith(httpMethod: "GET".randomcased()))
         )
         XCTAssertNil(
-            RUMResourceKind(request: .mockWith(httpMethod: "HEAD".randomcased()))
+            RUMResourceType(request: .mockWith(httpMethod: "HEAD".randomcased()))
         )
         XCTAssertNil(
-            RUMResourceKind(request: .mockWith(httpMethod: "PATCH".randomcased()))
+            RUMResourceType(request: .mockWith(httpMethod: "PATCH".randomcased()))
         )
     }
 
     func testWhenInitializingFromHTTPURLResponse_itDefaultsToOther() {
         XCTAssertEqual(
-            RUMResourceKind(response: .mockWith(mimeType: "unknown/type")), .other
+            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .other
         )
     }
 }

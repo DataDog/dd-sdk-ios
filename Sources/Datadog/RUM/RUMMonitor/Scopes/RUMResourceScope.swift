@@ -26,10 +26,10 @@ internal class RUMResourceScope: RUMScope {
     /// Date correction to server time.
     private let dateCorrection: DateCorrection
     /// The HTTP method used to load this Resource.
-    private var resourceHTTPMethod: RUMHTTPMethod
+    private var resourceHTTPMethod: RUMMethod
     /// The Resource kind captured when starting the `URLRequest`.
     /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
-    private var resourceKindBasedOnRequest: RUMResourceKind?
+    private var resourceKindBasedOnRequest: RUMResourceType?
 
     /// The Resource metrics, if received. When sending RUM Resource event, `resourceMetrics` values
     /// take precedence over other values collected for this Resource.
@@ -46,8 +46,8 @@ internal class RUMResourceScope: RUMScope {
         startTime: Date,
         dateCorrection: DateCorrection,
         url: String,
-        httpMethod: RUMHTTPMethod,
-        resourceKindBasedOnRequest: RUMResourceKind?,
+        httpMethod: RUMMethod,
+        resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?
     ) {
         self.context = context
@@ -105,6 +105,7 @@ internal class RUMResourceScope: RUMScope {
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
         }
+        let resourceType: RUMResourceType = resourceKindBasedOnRequest ?? command.kind
 
         let eventData = RUMResourceEvent(
             dd: .init(
@@ -144,7 +145,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 id: resourceUUID.toRUMDataFormat,
-                method: resourceHTTPMethod.toRUMDataFormat,
+                method: resourceHTTPMethod,
                 provider: nil,
                 redirect: resourceMetrics?.redirection.flatMap { metric in
                     .init(
@@ -160,7 +161,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 statusCode: command.httpStatusCode?.toInt64,
-                type: (resourceKindBasedOnRequest ?? command.kind).toRUMDataFormat,
+                type: resourceType,
                 url: resourceURL
             ),
             service: nil,
@@ -192,7 +193,7 @@ internal class RUMResourceScope: RUMScope {
                 isCrash: false,
                 message: command.errorMessage,
                 resource: .init(
-                    method: resourceHTTPMethod.toRUMDataFormat,
+                    method: resourceHTTPMethod,
                     provider: nil,
                     statusCode: command.httpStatusCode?.toInt64 ?? 0,
                     url: resourceURL

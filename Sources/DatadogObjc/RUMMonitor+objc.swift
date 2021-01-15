@@ -10,6 +10,8 @@ import class Datadog.DDRUMMonitor
 import class Datadog.RUMMonitor
 import enum Datadog.RUMErrorSource
 import enum Datadog.RUMUserActionType
+import typealias Datadog.RUMResourceType
+import enum Datadog.RUMMethod
 import struct Datadog.RUMView
 import protocol Datadog.UIKitRUMViewsPredicate
 
@@ -90,6 +92,57 @@ public enum DDRUMUserActionType: Int {
 }
 
 @objc
+public enum DDRUMResourceType: Int {
+    case image
+    case xhr
+    case beacon
+    case css
+    case document
+    case fetch
+    case font
+    case js
+    case media
+    case other
+
+    internal var swiftType: RUMResourceType {
+        switch self {
+        case .image: return .image
+        case .xhr: return .xhr
+        case .beacon: return .beacon
+        case .css: return .css
+        case .document: return .document
+        case .fetch: return .fetch
+        case .font: return .font
+        case .js: return .js
+        case .media: return .media
+        default: return .other
+        }
+    }
+}
+
+@objc
+public enum DDRUMMethod: Int {
+    case post
+    case get
+    case head
+    case put
+    case delete
+    case patch
+
+    internal var swiftType: RUMMethod {
+        switch self {
+        case .post: return .post
+        case .get: return .get
+        case .head: return .head
+        case .put: return .put
+        case .delete: return .delete
+        case .patch: return .patch
+        default: return .get
+        }
+    }
+}
+
+@objc
 public class DDRUMMonitor: NSObject {
     // MARK: - Internal
 
@@ -147,6 +200,16 @@ public class DDRUMMonitor: NSObject {
 
     @objc
     public func addError(
+        message: String,
+        source: DDRUMErrorSource,
+        stack: String?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.addError(message: message, source: source.swiftType, stack: stack, attributes: castAttributesToSwift(attributes))
+    }
+
+    @objc
+    public func addError(
         error: Error,
         source: DDRUMErrorSource,
         attributes: [String: Any]
@@ -173,6 +236,16 @@ public class DDRUMMonitor: NSObject {
     }
 
     @objc
+    public func startResourceLoading(
+        resourceKey: String,
+        httpMethod: DDRUMMethod,
+        urlString: String,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startResourceLoading(resourceKey: resourceKey, httpMethod: httpMethod.swiftType, urlString: urlString, attributes: castAttributesToSwift(attributes))
+    }
+
+    @objc
     public func addResourceMetrics(
         resourceKey: String,
         metrics: URLSessionTaskMetrics,
@@ -188,6 +261,16 @@ public class DDRUMMonitor: NSObject {
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, response: response, attributes: castAttributesToSwift(attributes))
+    }
+
+    @objc
+    public func stopResourceLoading(
+        resourceKey: String,
+        statusCode: Int,
+        kind: DDRUMResourceType,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, statusCode: statusCode, kind: kind.swiftType, attributes: castAttributesToSwift(attributes))
     }
 
     @objc

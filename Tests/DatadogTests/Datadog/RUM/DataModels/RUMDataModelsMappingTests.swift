@@ -12,8 +12,6 @@ private protocol RUMDataFormatConvertible {
     var toRUMDataFormat: DTOValue { get }
 }
 
-extension RUMHTTPMethod: RUMDataFormatConvertible {}
-extension RUMResourceKind: RUMDataFormatConvertible {}
 extension RUMInternalErrorSource: RUMDataFormatConvertible {}
 extension RUMUserActionType: RUMDataFormatConvertible {}
 
@@ -42,28 +40,6 @@ class RUMDataModelsMappingTests: XCTestCase {
         (0...50).forEach { _ in
             XCTAssertValidRumUUID(generator.generateUnique().toRUMDataFormat)
         }
-    }
-
-    func testRUMHTTPMethod() {
-        verify(value: RUMHTTPMethod.GET, matches: .get)
-        verify(value: RUMHTTPMethod.POST, matches: .post)
-        verify(value: RUMHTTPMethod.PUT, matches: .put)
-        verify(value: RUMHTTPMethod.DELETE, matches: .delete)
-        verify(value: RUMHTTPMethod.HEAD, matches: .head)
-        verify(value: RUMHTTPMethod.PATCH, matches: .patch)
-    }
-
-    func testRUMResourceKind() {
-        verify(value: RUMResourceKind.image, matches: .image)
-        verify(value: RUMResourceKind.xhr, matches: .xhr)
-        verify(value: RUMResourceKind.beacon, matches: .beacon)
-        verify(value: RUMResourceKind.css, matches: .css)
-        verify(value: RUMResourceKind.document, matches: .document)
-        verify(value: RUMResourceKind.fetch, matches: .fetch)
-        verify(value: RUMResourceKind.font, matches: .font)
-        verify(value: RUMResourceKind.js, matches: .js)
-        verify(value: RUMResourceKind.media, matches: .media)
-        verify(value: RUMResourceKind.other, matches: .other)
     }
 
     func testRUMInternalErrorSource() {
