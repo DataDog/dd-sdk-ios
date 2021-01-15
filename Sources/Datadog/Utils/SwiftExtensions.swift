@@ -19,6 +19,10 @@ extension Optional {
 // MARK: - TimeInterval
 
 extension TimeInterval {
+    init(fromMiliseconds miliseconds: Int64) {
+        self = Double(miliseconds) / 1_000
+    }
+
     /// `TimeInterval` represented in milliseconds (capped to `UInt64.max`).
     var toMilliseconds: UInt64 {
         let miliseconds = self * 1_000
