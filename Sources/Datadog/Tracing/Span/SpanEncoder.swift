@@ -47,6 +47,14 @@ internal struct Span: Encodable {
     let applicationVersion: String
     let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
+
+    struct UserInfo {
+        let id: String?
+        let name: String?
+        let email: String?
+        let extraInfo: [AttributeKey: JSONStringEncodableValue]
+    }
+
     let userInfo: UserInfo
 
     /// Custom tags, received from user
@@ -194,6 +202,11 @@ internal struct SpanEncoder {
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: Span, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
         // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        try span.userInfo.extraInfo.forEach {
+            let metaKey = "meta.usr.\($0.key)"
+            try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+        }
+
         try span.tags.forEach {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))

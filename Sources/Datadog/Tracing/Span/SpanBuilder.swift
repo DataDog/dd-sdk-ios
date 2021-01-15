@@ -30,20 +30,25 @@ internal struct SpanBuilder {
         let tagsReducer = SpanTagsReducer(spanTags: ddspan.tags, logFields: ddspan.logFields)
 
         var jsonStringEncodedTags = [String: JSONStringEncodableValue]()
-        // 1. add user info attributes as tags
-        for (itemKey, itemValue) in userInfoProvider.value.extraInfo {
-            let encodedKey = "usr.\(itemKey)"
-            let encodableValue = JSONStringEncodableValue(itemValue, encodedUsing: tagsJSONEncoder)
-            jsonStringEncodedTags[encodedKey] = encodableValue
-        }
-        // 2. add baggage items as tags
+
+        // Add baggage items as tags
         for (itemKey, itemValue) in ddspan.ddContext.baggageItems.all {
             jsonStringEncodedTags[itemKey] = JSONStringEncodableValue(itemValue, encodedUsing: tagsJSONEncoder)
         }
-        // 3. add regular tags
+
+        // Add regular tags
         for (tagName, tagValue) in tagsReducer.reducedSpanTags {
             jsonStringEncodedTags[tagName] = JSONStringEncodableValue(tagValue, encodedUsing: tagsJSONEncoder)
         }
+
+        // Transform user info to `Span.UserInfo` representation
+        let userInfo = userInfoProvider.value
+        let spanUserInfo = Span.UserInfo(
+            id: userInfo.id,
+            name: userInfo.name,
+            email: userInfo.email,
+            extraInfo: userInfo.extraInfo.mapValues { value in JSONStringEncodableValue(value, encodedUsing: tagsJSONEncoder) }
+        )
 
         return Span(
             traceID: ddspan.ddContext.traceID,
@@ -59,7 +64,7 @@ internal struct SpanBuilder {
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfoProvider?.current,
             mobileCarrierInfo: carrierInfoProvider?.current,
-            userInfo: userInfoProvider.value,
+            userInfo: spanUserInfo,
             tags: jsonStringEncodedTags
         )
     }
