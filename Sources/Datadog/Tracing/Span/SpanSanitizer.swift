@@ -8,7 +8,7 @@ import Foundation
 
 /// Sanitizes `Span` representation received from the user, so it can match Datadog APM constraints.
 internal struct SpanSanitizer {
-    private let attributesSanitizer = AttributesSanitizer()
+    private let attributesSanitizer = AttributesSanitizer(featureName: "Span")
 
     func sanitize(span: Span) -> Span {
         // Sanitize attribute names

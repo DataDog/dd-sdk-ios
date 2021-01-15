@@ -37,7 +37,7 @@ internal struct LogSanitizer {
         static let maxNumberOfTags: Int = 100
     }
 
-    private let attributesSanitizer = AttributesSanitizer()
+    private let attributesSanitizer = AttributesSanitizer(featureName: "Log")
 
     func sanitize(log: Log) -> Log {
         return Log(

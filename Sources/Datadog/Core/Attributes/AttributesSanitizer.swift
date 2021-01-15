@@ -17,6 +17,8 @@ internal struct AttributesSanitizer {
         static let maxNumberOfAttributes: Int = 128
     }
 
+    let featureName: String
+
     // MARK: - Attribute keys sanitization
 
     /// Attribute keys can only have `Constants.maxNestedLevelsInAttributeName` levels.
@@ -34,7 +36,7 @@ internal struct AttributesSanitizer {
             if sanitizedName != key {
                 userLogger.warn(
                     """
-                    Attribute '\(key)' was modified to '\(sanitizedName)' to match Datadog constraints.
+                    \(featureName) attribute '\(key)' was modified to '\(sanitizedName)' to match Datadog constraints.
                     """
                 )
                 return (sanitizedName, value)
@@ -67,7 +69,7 @@ internal struct AttributesSanitizer {
             let extraAttributesCount = attributes.count - count
             userLogger.warn(
                 """
-                Number of attributes exceeds the limit of \(Constraints.maxNumberOfAttributes).
+                Number of \(featureName) attributes exceeds the limit of \(Constraints.maxNumberOfAttributes).
                 \(extraAttributesCount) attribute(s) will be ignored.
                 """
             )

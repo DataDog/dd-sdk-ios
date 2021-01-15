@@ -8,7 +8,7 @@ import Foundation
 
 /// Sanitizes `RUMEvent` representation received from the user, so it can match Datadog RUM Events constraints.
 internal struct RUMEventSanitizer {
-    private let attributesSanitizer = AttributesSanitizer()
+    private let attributesSanitizer = AttributesSanitizer(featureName: "RUM Event")
 
     func sanitize<DM: RUMDataModel>(event: RUMEvent<DM>) -> RUMEvent<DM> {
         // Sanitize attribute names
