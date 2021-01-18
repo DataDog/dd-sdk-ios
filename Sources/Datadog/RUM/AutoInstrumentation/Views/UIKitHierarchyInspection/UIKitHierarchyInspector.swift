@@ -18,7 +18,7 @@ internal struct UIKitHierarchyInspector: UIKitHierarchyInspectorType {
 
     init(
         rootViewControllerProvider: @escaping () -> UIViewController? = {
-            let keyWindow = UIApplication.shared.windows.first { $0.isKeyWindow }
+            let keyWindow = UIApplication.managedShared?.windows.first { $0.isKeyWindow }
             return keyWindow?.rootViewController
         }
     ) {
