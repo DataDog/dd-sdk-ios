@@ -47,14 +47,14 @@ workflows:
     description: |-
         Runs swiftlint and license check for all source and test files.
     steps:
-    - swiftlint@0.7.0:
+    - swiftlint@0.8.0:
         title: Lint Sources/*
         inputs:
         - strict: 'yes'
         - lint_config_file: "$BITRISE_SOURCE_DIR/tools/lint/sources.swiftlint.yml"
         - linting_path: "$BITRISE_SOURCE_DIR"
         - reporter: emoji
-    - swiftlint@0.7.0:
+    - swiftlint@0.8.0:
         title: Lint Tests/*
         is_always_run: true
         inputs:
