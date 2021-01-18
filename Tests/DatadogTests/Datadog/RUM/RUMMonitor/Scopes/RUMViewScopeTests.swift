@@ -113,6 +113,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        let viewIsActive = try XCTUnwrap(event.model.view.isActive)
+        XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, 0)
         XCTAssertEqual(event.model.view.action.count, 1, "The initial view udate must have come with `application_start` action sent.")
         XCTAssertEqual(event.model.view.error.count, 0)
@@ -146,6 +148,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        let viewIsActive = try XCTUnwrap(event.model.view.isActive)
+        XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, 0)
         XCTAssertEqual(event.model.view.action.count, 0)
         XCTAssertEqual(event.model.view.error.count, 0)
@@ -192,6 +196,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        let viewIsActive = try XCTUnwrap(event.model.view.isActive)
+        XCTAssertFalse(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
         XCTAssertEqual(event.model.view.action.count, 0)
         XCTAssertEqual(event.model.view.error.count, 0)
@@ -226,9 +232,15 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self)
-        let event = try XCTUnwrap(viewEvents.dropFirst().first)
-        XCTAssertEqual(event.model.view.url, "FirstViewController")
-        XCTAssertEqual(event.model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
+        XCTAssertTrue(viewEvents.count == 2)
+        if viewEvents.count == 2 {
+            let view1WasActive = try XCTUnwrap(viewEvents[0].model.view.isActive)
+            XCTAssertTrue(view1WasActive)
+            XCTAssertEqual(viewEvents[1].model.view.url, "FirstViewController")
+            let view2IsActive = try XCTUnwrap(viewEvents[1].model.view.isActive)
+            XCTAssertFalse(view2IsActive)
+            XCTAssertEqual(viewEvents[1].model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
+        }
     }
 
     func testWhenTheViewIsStartedAnotherTime_itEndsTheScope() throws {
@@ -255,9 +267,15 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self)
-        let event = try XCTUnwrap(viewEvents.first)
-        XCTAssertEqual(event.model.view.url, "FirstViewController")
-        XCTAssertEqual(event.model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
+        XCTAssertTrue(viewEvents.count == 2)
+        if viewEvents.count == 2 {
+            let viewWasActive = try XCTUnwrap(viewEvents[0].model.view.isActive)
+            XCTAssertTrue(viewWasActive)
+            XCTAssertEqual(viewEvents[0].model.view.url, "FirstViewController")
+            let viewIsActive = try XCTUnwrap(viewEvents[1].model.view.isActive)
+            XCTAssertFalse(viewIsActive)
+            XCTAssertEqual(viewEvents[0].model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
+        }
     }
 
     func testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID() throws {
