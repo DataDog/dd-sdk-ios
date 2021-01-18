@@ -278,7 +278,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 id: viewUUID.toRUMDataFormat,
-                isActive: nil,
+                isActive: isActiveView,
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
