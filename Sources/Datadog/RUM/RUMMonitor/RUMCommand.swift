@@ -9,7 +9,7 @@ import Foundation
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
     /// The time of command issue.
-    var time: Date { get }
+    var time: Date { set get }
     /// Attributes associated with the command.
     var attributes: [AttributeKey: AttributeValue] { set get }
 }
@@ -17,7 +17,7 @@ internal protocol RUMCommand {
 // MARK: - RUM View related commands
 
 internal struct RUMStartViewCommand: RUMCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// The value holding stable identity of the RUM View.
@@ -40,7 +40,7 @@ internal struct RUMStartViewCommand: RUMCommand {
 }
 
 internal struct RUMStopViewCommand: RUMCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// The value holding stable identity of the RUM View.
@@ -48,7 +48,7 @@ internal struct RUMStopViewCommand: RUMCommand {
 }
 
 internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// The error message.
@@ -89,7 +89,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 }
 
 internal struct RUMAddViewTimingCommand: RUMCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
@@ -113,7 +113,7 @@ internal struct RUMSpanContext {
 
 internal struct RUMStartResourceCommand: RUMResourceCommand {
     let resourceKey: String
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// Resource url
@@ -128,7 +128,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
 
 internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     let resourceKey: String
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// Resource metrics.
@@ -137,7 +137,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
 
 internal struct RUMStopResourceCommand: RUMResourceCommand {
     let resourceKey: String
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// A type of the Resource
@@ -150,7 +150,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
 
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let resourceKey: String
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     /// The error message.
@@ -210,7 +210,7 @@ internal protocol RUMUserActionCommand: RUMCommand {
 
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
@@ -219,7 +219,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 
 /// Stops continuous User Action.
 internal struct RUMStopUserActionCommand: RUMUserActionCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType
@@ -228,7 +228,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
-    let time: Date
+    var time: Date
     var attributes: [AttributeKey: AttributeValue]
 
     let actionType: RUMUserActionType

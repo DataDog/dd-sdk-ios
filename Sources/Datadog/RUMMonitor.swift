@@ -99,6 +99,12 @@ internal enum RUMInternalErrorSource {
     }
 }
 
+// MARK: - Special attributes
+
+internal enum RUMAttribute {
+    static let internalTimestamp = "_dd.timestamp"
+}
+
 /// A class enabling Datadog RUM features.
 ///
 /// `RUMMonitor` allows recording user events that can be explored and analyzed in Datadog Dashboards.
@@ -531,17 +537,34 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         queue.async {
-            var combinedUserAttributes = self.rumAttributes
-            combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
-
-            var command = command
-            command.attributes = combinedUserAttributes
-
-            _ = self.applicationScope.process(command: command)
+            let transformedCommand = self.transform(command: command)
+            _ = self.applicationScope.process(command: transformedCommand)
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
             }
         }
+    }
+
+    // TODO: RUMM-896
+    // transform() is extracted from process since process() cannot be tested currently
+    // once we can mock ApplicationScope, we can test process()
+    // then we can remove transform()
+    //
+    // NOTE: transform() calls self.rumAttributes outside of queue
+    // therefore it should be removed once process() is testable
+    func transform(command: RUMCommand) -> RUMCommand {
+        var mutableCommand = command
+
+        var combinedUserAttributes = self.rumAttributes
+        combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
+
+        if let customTimestampInMiliseconds = combinedUserAttributes.removeValue(forKey: RUMAttribute.internalTimestamp) as? Int64 {
+            let customTimeInterval = TimeInterval(fromMiliseconds: customTimestampInMiliseconds)
+            mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
+        }
+        mutableCommand.attributes = combinedUserAttributes
+
+        return mutableCommand
     }
 }

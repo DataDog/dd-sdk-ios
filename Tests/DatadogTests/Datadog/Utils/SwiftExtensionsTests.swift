@@ -8,6 +8,14 @@ import XCTest
 @testable import Datadog
 
 class TimeIntervalExtensionTests: XCTestCase {
+    func testTimeIntervalFromMiliseconds() {
+        let miliseconds: Int64 = 1_576_404_000_000
+
+        let timeInterval = TimeInterval(fromMiliseconds: miliseconds)
+        let date = Date(timeIntervalSince1970: timeInterval)
+        XCTAssertEqual(date, Date.mockDecember15th2019At10AMUTC())
+    }
+
     func testTimeIntervalSince1970InMilliseconds() {
         let date15Dec2019 = Date.mockDecember15th2019At10AMUTC()
         XCTAssertEqual(date15Dec2019.timeIntervalSince1970.toMilliseconds, 1_576_404_000_000)

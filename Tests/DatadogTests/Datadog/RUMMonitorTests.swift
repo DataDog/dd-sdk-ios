@@ -1077,6 +1077,25 @@ class RUMMonitorTests: XCTestCase {
         try Datadog.deinitializeOrThrow()
     }
 
+    // MARK: - Internal attributes
+
+    func testHandlingInternalTimestampAttribute() throws {
+        RUMFeature.instance = .mockNoOp()
+        defer { RUMFeature.instance = nil }
+
+        var mockCommand = RUMCommandMock()
+        mockCommand.attributes = [
+            RUMAttribute.internalTimestamp: Int64(1_000) // 1000 in miliseconds
+        ]
+
+        let monitor = try XCTUnwrap(RUMMonitor.initialize() as? RUMMonitor)
+
+        let transformedCommand = monitor.transform(command: mockCommand)
+        XCTAssertTrue(transformedCommand.attributes.isEmpty)
+        XCTAssertNotEqual(transformedCommand.time, mockCommand.time)
+        XCTAssertEqual(transformedCommand.time, Date(timeIntervalSince1970: 1)) // 1 in seconds
+    }
+
     // MARK: - Private helpers
 
     private var expectedAttributes = [String: String]()
