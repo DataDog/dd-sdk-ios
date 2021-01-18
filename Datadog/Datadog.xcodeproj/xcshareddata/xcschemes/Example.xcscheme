@@ -111,6 +111,11 @@
             value = "TrackingConsentStartGrantedScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "RUMScrubbingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
