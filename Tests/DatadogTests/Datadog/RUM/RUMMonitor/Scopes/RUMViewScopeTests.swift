@@ -114,7 +114,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
         XCTAssertEqual(event.model.view.timeSpent, 0)
-        XCTAssertEqual(event.model.view.action.count, 1, "The initial view udate must have come with `applicat_start` action sent.")
+        XCTAssertEqual(event.model.view.action.count, 1, "The initial view udate must have come with `application_start` action sent.")
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
