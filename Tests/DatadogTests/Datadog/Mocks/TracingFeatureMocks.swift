@@ -162,6 +162,62 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
     }
 }
 
+extension Span {
+    static func mockWith(
+        traceID: TracingUUID = .mockAny(),
+        spanID: TracingUUID = .mockAny(),
+        parentID: TracingUUID? = .mockAny(),
+        operationName: String = .mockAny(),
+        serviceName: String = .mockAny(),
+        resource: String = .mockAny(),
+        startTime: Date = .mockAny(),
+        duration: TimeInterval = .mockAny(),
+        isError: Bool = .mockAny(),
+        tracerVersion: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
+        mobileCarrierInfo: CarrierInfo? = .mockAny(),
+        userInfo: Span.UserInfo = .mockAny(),
+        tags: [String: JSONStringEncodableValue] = [:]
+    ) -> Span {
+        return Span(
+            traceID: traceID,
+            spanID: spanID,
+            parentID: parentID,
+            operationName: operationName,
+            serviceName: serviceName,
+            resource: resource,
+            startTime: startTime,
+            duration: duration,
+            isError: isError,
+            tracerVersion: tracerVersion,
+            applicationVersion: applicationVersion,
+            networkConnectionInfo: networkConnectionInfo,
+            mobileCarrierInfo: mobileCarrierInfo,
+            userInfo: userInfo,
+            tags: tags
+        )
+    }
+}
+
+extension Span.UserInfo {
+    static func mockWith(
+        id: String? = .mockAny(),
+        name: String? = .mockAny(),
+        email: String? = .mockAny(),
+        extraInfo: [AttributeKey: JSONStringEncodableValue] = [:]
+    ) -> Span.UserInfo {
+        return Span.UserInfo(
+            id: id,
+            name: name,
+            email: email,
+            extraInfo: extraInfo
+        )
+    }
+
+    static func mockAny() -> Span.UserInfo { .mockWith() }
+}
+
 // MARK: - Component Mocks
 
 extension Tracer {

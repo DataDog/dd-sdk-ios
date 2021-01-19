@@ -30,6 +30,7 @@ internal struct SpanEnvelope: Encodable {
 }
 
 /// `Encodable` representation of span.
+/// All mutable properties are subject of sanitization.
 internal struct Span: Encodable {
     let traceID: TracingUUID
     let spanID: TracingUUID
@@ -47,13 +48,22 @@ internal struct Span: Encodable {
     let applicationVersion: String
     let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
-    let userInfo: UserInfo
 
-    /// Custom tags, received from user
-    let tags: [String: JSONStringEncodableValue]
+    struct UserInfo {
+        let id: String?
+        let name: String?
+        let email: String?
+        var extraInfo: [AttributeKey: JSONStringEncodableValue]
+    }
+
+    var userInfo: UserInfo
+
+    /// Custom tags, received from the user.
+    var tags: [String: JSONStringEncodableValue]
 
     func encode(to encoder: Encoder) throws {
-        try SpanEncoder().encode(self, to: encoder)
+        let sanitizedSpan = SpanSanitizer().sanitize(span: self)
+        try SpanEncoder().encode(sanitizedSpan, to: encoder)
     }
 }
 
@@ -194,6 +204,11 @@ internal struct SpanEncoder {
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: Span, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
         // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        try span.userInfo.extraInfo.forEach {
+            let metaKey = "meta.usr.\($0.key)"
+            try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+        }
+
         try span.tags.forEach {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))

@@ -7,6 +7,7 @@
 import Foundation
 
 /// `Encodable` representation of log. It gets sanitized before encoding.
+/// All mutable properties are subject of sanitization.
 internal struct Log: Encodable {
     enum Status: String, Encodable {
         case debug
@@ -29,8 +30,8 @@ internal struct Log: Encodable {
     let userInfo: UserInfo
     let networkConnectionInfo: NetworkConnectionInfo?
     let mobileCarrierInfo: CarrierInfo?
-    let attributes: LogAttributes
-    let tags: [String]?
+    var attributes: LogAttributes
+    var tags: [String]?
 
     func encode(to encoder: Encoder) throws {
         let sanitizedLog = LogSanitizer().sanitize(log: self)
