@@ -6,9 +6,13 @@
 
 import Foundation
 
-/// Obtains a subdirectory in `/Library/Caches` where span files are stored.
-internal func obtainTracingFeatureDirectory() throws -> Directory {
-    return try Directory(withSubdirectoryPath: "com.datadoghq.traces/v1")
+/// Obtains subdirectories in `/Library/Caches` where tracing data is stored.
+internal func obtainTracingFeatureDirectories() throws -> FeatureDirectories {
+    let version = "v1"
+    return FeatureDirectories(
+        unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.traces/intermediate-\(version)"),
+        authorized: try Directory(withSubdirectoryPath: "com.datadoghq.traces/\(version)")
+    )
 }
 
 /// Creates and owns componetns enabling tracing feature.
@@ -33,6 +37,7 @@ internal final class TracingFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
+    let dateCorrector: DateCorrectorType
     let tracingUUIDGenerator: TracingUUIDGenerator
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
@@ -51,18 +56,18 @@ internal final class TracingFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
         return FeatureStorage(
             featureName: TracingFeature.featureName,
             dataFormat: TracingFeature.dataFormat,
-            directory: directory,
+            directories: directories,
+            eventMapper: nil,
             commonDependencies: commonDependencies
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
-        directory: Directory,
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies
     ) -> FeatureUpload {
@@ -81,23 +86,21 @@ internal final class TracingFeature {
             ),
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: [
-                    .batchTime(using: commonDependencies.dateProvider)
-                ]
+                queryItemProviders: []
             ),
             commonDependencies: commonDependencies
         )
     }
 
     convenience init(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
         tracingUUIDGenerator: TracingUUIDGenerator
     ) {
-        let storage = TracingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = TracingFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
+        let storage = TracingFeature.createStorage(directories: directories, commonDependencies: commonDependencies)
+        let upload = TracingFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
@@ -124,6 +127,7 @@ internal final class TracingFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrector = commonDependencies.dateCorrector
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider

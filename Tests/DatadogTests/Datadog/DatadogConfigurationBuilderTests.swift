@@ -45,10 +45,21 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertNil(configuration.rumViewEventMapper)
+            XCTAssertNil(configuration.rumResourceEventMapper)
+            XCTAssertNil(configuration.rumActionEventMapper)
+            XCTAssertNil(configuration.rumErrorEventMapper)
+            XCTAssertEqual(configuration.batchSize, .medium)
+            XCTAssertEqual(configuration.uploadFrequency, .average)
         }
     }
 
     func testCustomizedBuilder() {
+        let mockRUMViewEvent: RUMViewEvent = .mockRandom()
+        let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
+        let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
+        let mockRUMActionEvent: RUMActionEvent = .mockRandom()
+
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
             _ = builder
                 .set(serviceName: "service-name")
@@ -63,6 +74,12 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .track(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(false)
+                .setRUMViewEventMapper { _ in mockRUMViewEvent }
+                .setRUMErrorEventMapper { _ in mockRUMErrorEvent }
+                .setRUMResourceEventMapper { _ in mockRUMResourceEvent }
+                .setRUMActionEventMapper { _ in mockRUMActionEvent }
+                .set(batchSize: .small)
+                .set(uploadFrequency: .frequent)
 
             return builder
         }
@@ -98,6 +115,12 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
+            XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
+            XCTAssertEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
+            XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
+            XCTAssertEqual(configuration.batchSize, .small)
+            XCTAssertEqual(configuration.uploadFrequency, .frequent)
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

@@ -9,7 +9,7 @@ import Foundation
 /// `SpanOutput` which saves spans to file.
 internal struct SpanFileOutput: SpanOutput {
     let spanBuilder: SpanBuilder
-    let fileWriter: FileWriterType
+    let fileWriter: Writer
     /// Integration with RUM Errors.
     let rumErrorsIntegration = TracingWithRUMErrorsIntegration()
 

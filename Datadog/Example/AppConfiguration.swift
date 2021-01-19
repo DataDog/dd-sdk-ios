@@ -8,6 +8,9 @@ import UIKit
 import Datadog
 
 protocol AppConfiguration {
+    /// The tracking consent value applied when initializing the SDK.
+    var initialTrackingConsent: TrackingConsent { get }
+
     /// Datadog SDK configuration for given app configuration.
     func sdkConfiguration() -> Datadog.Configuration
 
@@ -23,6 +26,8 @@ struct ExampleAppConfiguration: AppConfiguration {
     let serviceName = "ios-sdk-example-app"
     let testScenario = Environment.testScenario()
 
+    let initialTrackingConsent: TrackingConsent = .granted
+
     func sdkConfiguration() -> Datadog.Configuration {
         let configuration = Datadog.Configuration
             .builderUsing(
@@ -31,6 +36,8 @@ struct ExampleAppConfiguration: AppConfiguration {
                 environment: "tests"
             )
             .set(serviceName: serviceName)
+            .set(batchSize: .small)
+            .set(uploadFrequency: .frequent)
 
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {
@@ -52,9 +59,17 @@ struct ExampleAppConfiguration: AppConfiguration {
 struct UITestsAppConfiguration: AppConfiguration {
     let testScenario = Environment.testScenario()
 
-    func sdkConfiguration() -> Datadog.Configuration {
-        deletePersistedSDKData()
+    init() {
+        if Environment.shouldClearPersistentData() {
+            deletePersistedSDKData()
+        }
+    }
 
+    var initialTrackingConsent: TrackingConsent {
+        return testScenario!.initialTrackingConsent
+    }
+
+    func sdkConfiguration() -> Datadog.Configuration {
         let configuration = Datadog.Configuration
             .builderUsing(
                 rumApplicationID: "rum-application-id",
@@ -62,6 +77,8 @@ struct UITestsAppConfiguration: AppConfiguration {
                 environment: "integration"
             )
             .set(serviceName: "ui-tests-service-name")
+            .set(batchSize: .small)
+            .set(uploadFrequency: .frequent)
 
         let serverMockConfiguration = Environment.serverMockConfiguration()
 

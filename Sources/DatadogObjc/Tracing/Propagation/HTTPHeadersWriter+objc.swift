@@ -7,9 +7,10 @@
 import Foundation
 import class Datadog.HTTPHeadersWriter
 
-@objcMembers
+@objc
 public class DDHTTPHeadersWriter: NSObject {
     let swiftHTTPHeadersWriter = HTTPHeadersWriter()
 
+    @objc
     override public init() {}
 }

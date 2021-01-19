@@ -8,6 +8,12 @@
 
 // MARK: - Configuration Mocks
 
+extension TrackingConsent {
+    static func mockRandom() -> TrackingConsent {
+        return [.granted, .notGranted, .pending].randomElement()!
+    }
+}
+
 extension Datadog.Configuration {
     static func mockAny() -> Datadog.Configuration { .mockWith() }
 
@@ -29,7 +35,9 @@ extension Datadog.Configuration {
         firstPartyHosts: Set<String>? = nil,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        rumUIKitActionsTrackingEnabled: Bool = false
+        rumUIKitActionsTrackingEnabled: Bool = false,
+        batchSize: BatchSize = .medium,
+        uploadFrequency: UploadFrequency = .average
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -49,9 +57,35 @@ extension Datadog.Configuration {
             firstPartyHosts: firstPartyHosts,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
-            rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled
+            rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
+            batchSize: batchSize,
+            uploadFrequency: uploadFrequency
         )
     }
+}
+
+typealias BatchSize = Datadog.Configuration.BatchSize
+
+extension BatchSize: CaseIterable {
+    public static var allCases: [Self] { [.small, .medium, .large] }
+
+    static func mockRandom() -> Self {
+        allCases.randomElement()!
+    }
+}
+
+typealias UploadFrequency = Datadog.Configuration.UploadFrequency
+
+extension UploadFrequency: CaseIterable {
+    public static var allCases: [Self] { [.frequent, .average, .rare] }
+
+    static func mockRandom() -> Self {
+        allCases.randomElement()!
+    }
+}
+
+extension BundleType: CaseIterable {
+    public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
 extension Datadog.Configuration.DatadogEndpoint {
@@ -107,7 +141,7 @@ extension FeaturesConfiguration.Common {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        performance: PerformancePreset = .best(for: .iOSApp)
+        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -153,6 +187,7 @@ extension FeaturesConfiguration.RUM {
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
+        eventMapper: RUMEventsMapper = .mockNoOp(),
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(
@@ -160,6 +195,7 @@ extension FeaturesConfiguration.RUM {
             uploadURLWithClientToken: uploadURLWithClientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
+            eventMapper: eventMapper,
             autoInstrumentation: autoInstrumentation
         )
     }
@@ -298,6 +334,7 @@ extension FeaturesCommonDependencies {
     /// Mocks features common dependencies.
     /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
     static func mockWith(
+        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
         performance: PerformancePreset = .combining(
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
@@ -309,6 +346,7 @@ extension FeaturesCommonDependencies {
             }
         ),
         dateProvider: DateProvider = SystemDateProvider(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -324,23 +362,68 @@ extension FeaturesCommonDependencies {
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
+            consentProvider: consentProvider,
             performance: performance,
             httpClient: HTTPClient(session: .serverMockURLSession),
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
+            dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
             launchTimeProvider: launchTimeProvider
         )
     }
+
+    /// Creates new instance of `FeaturesCommonDependencies` by replacing individual dependencies.
+    func replacing(
+        consentProvider: ConsentProvider? = nil,
+        performance: PerformancePreset? = nil,
+        httpClient: HTTPClient? = nil,
+        mobileDevice: MobileDevice? = nil,
+        dateProvider: DateProvider? = nil,
+        dateCorrector: DateCorrectorType? = nil,
+        userInfoProvider: UserInfoProvider? = nil,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
+        carrierInfoProvider: CarrierInfoProviderType? = nil,
+        launchTimeProvider: LaunchTimeProviderType? = nil
+    ) -> FeaturesCommonDependencies {
+        return FeaturesCommonDependencies(
+            consentProvider: consentProvider ?? self.consentProvider,
+            performance: performance ?? self.performance,
+            httpClient: httpClient ?? self.httpClient,
+            mobileDevice: mobileDevice ?? self.mobileDevice,
+            dateProvider: dateProvider ?? self.dateProvider,
+            dateCorrector: dateCorrector ?? self.dateCorrector,
+            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider
+        )
+    }
 }
 
-class NoOpFileWriter: FileWriterType {
+struct EventMapperMock: EventMapper {
+    let mappedEvent: Any?
+
+    func map<T>(event: T) -> T? {
+        return mappedEvent as? T
+    }
+}
+
+class FileWriterMock: Writer {
+    var dataWritten: Encodable?
+
+    func write<T>(value: T) where T: Encodable {
+        dataWritten = value
+    }
+}
+
+class NoOpFileWriter: Writer {
     func write<T>(value: T) where T: Encodable {}
 }
 
-class NoOpFileReader: FileReaderType {
+class NoOpFileReader: Reader {
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
 }
@@ -401,6 +484,25 @@ class RelativeDateProvider: DateProvider {
         queue.async {
             self.date = self.date.addingTimeInterval(seconds)
         }
+    }
+}
+
+extension DateCorrection {
+    static var zero: DateCorrection {
+        return DateCorrection(serverTimeOffset: 0)
+    }
+}
+
+/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
+class DateCorrectorMock: DateCorrectorType {
+    var correctionOffset: TimeInterval
+
+    init(correctionOffset: TimeInterval = 0) {
+        self.correctionOffset = correctionOffset
+    }
+
+    var currentCorrection: DateCorrection {
+        return DateCorrection(serverTimeOffset: correctionOffset)
     }
 }
 
@@ -646,9 +748,10 @@ extension EncodableValue {
 ///     consolePrint = printFunction.print
 ///
 class PrintFunctionMock {
-    private(set) var printedMessage: String?
+    private(set) var printedMessages: [String] = []
+    var printedMessage: String? { printedMessages.last }
 
     func print(message: String) {
-        printedMessage = message
+        printedMessages.append(message)
     }
 }

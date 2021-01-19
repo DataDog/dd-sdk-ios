@@ -25,6 +25,7 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: .mockAny(),
             attributes: [:],
             startTime: .mockAny(),
+            dateCorrection: .zero,
             url: .mockAny(),
             httpMethod: .mockAny(),
             resourceKindBasedOnRequest: nil,
@@ -48,8 +49,9 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -71,7 +73,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
         XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
@@ -93,8 +95,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.model.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.model.dd.traceID, "100")
-        XCTAssertEqual(event.model.dd.spanID, "200")
+        XCTAssertEqual(event.model.dd.traceId, "100")
+        XCTAssertEqual(event.model.dd.spanId, "200")
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -107,8 +109,9 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -130,7 +133,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataError>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
         XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
@@ -157,8 +160,9 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
+            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -223,7 +227,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let metrics = metricsCommand.metrics
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self).first)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
         XCTAssertEqual(event.model.date, metrics.fetch.start.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
@@ -251,8 +255,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.resource.download?.duration, 1_000_000_000)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertNil(event.model.dd.traceID)
-        XCTAssertNil(event.model.dd.spanID)
+        XCTAssertNil(event.model.dd.traceId)
+        XCTAssertNil(event.model.dd.spanId)
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
@@ -264,6 +268,7 @@ class RUMResourceScopeTests: XCTestCase {
                 resourceKey: resourceKey,
                 attributes: [:],
                 startTime: .mockAny(),
+                dateCorrection: .zero,
                 url: url,
                 httpMethod: .mockAny(),
                 resourceKindBasedOnRequest: nil,
@@ -279,7 +284,7 @@ class RUMResourceScopeTests: XCTestCase {
         _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey))
 
         // Then
-        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self)
+        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self)
         let resource1Events = resourceEvents.filter { $0.model.resource.url == "/r/1" }
         let resource2Events = resourceEvents.filter { $0.model.resource.url == "/r/2" }
         XCTAssertEqual(resource1Events.count, 1)
@@ -288,7 +293,7 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
-        let kinds: [RUMResourceKind] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
+        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
         let kindBasedOnRequest = kinds.randomElement()!
         let kindBasedOnResponse = kinds.randomElement()!
 
@@ -299,8 +304,9 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/resource/1",
             attributes: [:],
             startTime: Date(),
+            dateCorrection: .zero,
             url: .mockAny(),
-            httpMethod: .POST,
+            httpMethod: .post,
             resourceKindBasedOnRequest: kindBasedOnRequest,
             spanContext: nil
         )
@@ -316,7 +322,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMDataResource>.self).first)
-        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest.toRUMDataFormat)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
+        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest)
     }
 }

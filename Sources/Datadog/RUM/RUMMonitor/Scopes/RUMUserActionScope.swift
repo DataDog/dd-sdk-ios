@@ -31,6 +31,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     let actionUUID: RUMUUID
     /// The start time of this User Action.
     private let actionStartTime: Date
+    /// Date correction to server time.
+    private let dateCorrection: DateCorrection
     /// Tells if this action is continuous over time, like "scroll" (or discrete, like "tap").
     internal let isContinuous: Bool
     /// Time of the last RUM activity noticed by this User Action (i.e. Resource loading).
@@ -50,6 +52,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         actionType: RUMUserActionType,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
+        dateCorrection: DateCorrection,
         isContinuous: Bool
     ) {
         self.parent = parent
@@ -59,6 +62,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.attributes = attributes
         self.actionUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.actionStartTime = startTime
+        self.dateCorrection = dateCorrection
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
     }
@@ -110,28 +114,28 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
 
-        let eventData = RUMDataAction(
-            date: actionStartTime.timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMActionEvent(
+            dd: .init(),
+            action: .init(
+                crash: nil,
+                error: .init(count: errorsCount.toInt64),
+                id: actionUUID.toRUMDataFormat,
+                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
+                longTask: nil,
+                resource: .init(count: resourcesCount.toInt64),
+                target: .init(name: name),
+                type: actionType.toRUMDataFormat
+            ),
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            action: .init(
-                type: actionType.toRUMDataFormat,
-                id: actionUUID.toRUMDataFormat,
-                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
-                target: RUMDataTarget(name: name),
-                error: .init(count: errorsCount.toInt64),
-                crash: nil,
-                longTask: nil,
-                resource: .init(count: resourcesCount.toInt64)
             )
         )
 

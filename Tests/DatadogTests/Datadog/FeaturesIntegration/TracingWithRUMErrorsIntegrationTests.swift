@@ -10,14 +10,14 @@ import XCTest
 class TracingWithRUMErrorsIntegrationTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        temporaryFeatureDirectories.create()
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         Global.rum = RUMMonitor.initialize()
         Global.rum.startView(viewController: mockView)
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         RUMFeature.instance = nil
         Global.rum = DDNoopRUMMonitor()
         super.tearDown()
@@ -79,10 +79,10 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func waitAndReturnRUMErrorSent() throws -> RUMDataError {
+    private func waitAndReturnRUMErrorSent() throws -> RUMErrorEvent {
         // [RUMView, RUMAction, RUMError] events sent:
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
-        let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMDataError.self) })
+        let rumErrorMatcher = try XCTUnwrap(rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) })
         return try rumErrorMatcher.model()
     }
 }

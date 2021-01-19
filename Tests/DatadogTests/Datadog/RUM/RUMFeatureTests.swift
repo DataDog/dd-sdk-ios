@@ -12,13 +12,13 @@ class RUMFeatureTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(RUMFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(RUMFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
@@ -27,7 +27,7 @@ class RUMFeatureTests: XCTestCase {
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationName: "FoobarApp",
@@ -37,8 +37,7 @@ class RUMFeatureTests: XCTestCase {
                 )
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
         defer { RUMFeature.instance = nil }
@@ -53,7 +52,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(
             request.url?.query,
             """
-            ddsource=ios&batch_time=1576404000000&ddtags=service:service-name,version:2.1.0,sdk_version:\(sdkVersion),env:environment-name
+            ddsource=ios&ddtags=service:service-name,version:2.1.0,sdk_version:\(sdkVersion),env:environment-name
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
@@ -65,7 +64,7 @@ class RUMFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(

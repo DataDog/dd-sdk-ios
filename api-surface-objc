@@ -1,12 +1,18 @@
 public class DDNSURLSessionDelegate: DDURLSessionDelegate
+public class DDTrackingConsent: NSObject
+ public static func granted() -> DDTrackingConsent
+ public static func notGranted() -> DDTrackingConsent
+ public static func pending() -> DDTrackingConsent
 public class DDAppContext: NSObject
  public init(mainBundle: Bundle)
  override public init()
 public class DDDatadog: NSObject
  public static func initialize(appContext: DDAppContext, configuration: DDConfiguration)
+ public static func initialize(appContext: DDAppContext,trackingConsent: DDTrackingConsent,configuration: DDConfiguration)
  public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
  public static func verbosityLevel() -> DDSDKVerbosityLevel
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil)
+ public static func setTrackingConsent(consent: DDTrackingConsent)
 public class DDEndpoint: NSObject
  public static func eu() -> DDEndpoint
  public static func us() -> DDEndpoint
@@ -21,20 +27,40 @@ public class DDTracesEndpoint: NSObject
  public static func us() -> DDTracesEndpoint
  public static func gov() -> DDTracesEndpoint
  public static func custom(url: String) -> DDTracesEndpoint
+public enum DDBatchSize: Int
+ case small
+ case medium
+ case large
+public enum DDUploadFrequency: Int
+ case frequent
+ case average
+ case rare
 public class DDConfiguration: NSObject
  public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder
+ public static func builder(rumApplicationID: String, clientToken: String, environment: String) -> DDConfigurationBuilder
 public class DDConfigurationBuilder: NSObject
  public func enableLogging(_ enabled: Bool)
  public func enableTracing(_ enabled: Bool)
+ public func enableRUM(_ enabled: Bool)
  public func set(endpoint: DDEndpoint)
  public func set(customLogsEndpoint: URL)
  public func set(customTracesEndpoint: URL)
+ public func set(customRUMEndpoint: URL)
  public func set(logsEndpoint: DDLogsEndpoint)
  public func set(tracesEndpoint: DDTracesEndpoint)
  public func set(tracedHosts: Set<String>)
  public func track(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
+ public func set(rumSessionsSamplingRate: Float)
+ public func trackUIKitRUMViews()
+ public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
+ public func trackUIKitActions()
+ public func set(batchSize: DDBatchSize)
+ public func set(uploadFrequency: DDUploadFrequency)
  public func build() -> DDConfiguration
+public class DDGlobal: NSObject
+ @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
+ @objc public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum)
 public enum DDSDKVerbosityLevel: Int
  case none
  case debug
@@ -76,10 +102,7 @@ public class DDLoggerBuilder: NSObject
  public func sendLogsToDatadog(_ enabled: Bool)
  public func printLogsToConsole(_ enabled: Bool)
  public func build() -> DDLogger
-public class OTGlobal: NSObject
- public static func initSharedTracer(_ tracer: OTTracer)
- public internal(set) static var sharedTracer: OTTracer = noopTracer
-public protocol OTSpan
+@objc public protocol OTSpan
  var context: OTSpanContext
  var tracer: OTTracer
  func setOperationName(_ operationName: String)
@@ -93,10 +116,11 @@ public protocol OTSpan
  func finish()
  func finishWithTime(_ finishTime: Date?)
  func setActive() -> OTSpan
-public protocol OTSpanContext
+@objc public protocol OTSpanContext
  func forEachBaggageItem(_ callback: (_ key: String, _ value: String) -> Bool)
-public let OTFormatHTTPHeaders = "OTFormatHTTPHeaders"
-public protocol OTTracer
+public class OT: NSObject
+ @objc public static let formatTextMap = "OTFormatTextMap"
+@objc public protocol OTTracer
  func startSpan(_ operationName: String) -> OTSpan
  func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
  func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan
@@ -104,8 +128,58 @@ public protocol OTTracer
  func startSpan(_ operationName: String, childOf parent: OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> OTSpan
  func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws
  func extractWithFormat(_ format: String, carrier: Any) throws
-public class DDTracer: DatadogObjc.OTTracer
+public class DDRUMView: NSObject
+ @objc public var path: String
+ @objc public var attributes: [String: Any]
+ public init(path: String, attributes: [String: Any])
+public protocol DDUIKitRUMViewsPredicate: AnyObject
+ func rumView(for viewController: UIViewController) -> DDRUMView?
+public enum DDRUMErrorSource: Int
+ case source
+ case network
+ case webview
+ case custom
+public enum DDRUMUserActionType: Int
+ case tap
+ case scroll
+ case swipe
+ case custom
+public enum DDRUMResourceKind: Int
+ case image
+ case xhr
+ case beacon
+ case css
+ case document
+ case fetch
+ case font
+ case js
+ case media
+ case other
+public class DDRUMMonitor: NSObject
+ override public convenience init()
+ public func startView(viewController: UIViewController,path: String?,attributes: [String: Any])
+ public func stopView(viewController: UIViewController,attributes: [String: Any])
+ public func startView(key: String,path: String?,attributes: [String: Any])
+ public func stopView(key: String,attributes: [String: Any])
+ public func addTiming(name: String)
+ public func addError(message: String,source: DDRUMErrorSource,stack: String?,attributes: [String: Any])
+ public func addError(error: Error,source: DDRUMErrorSource,attributes: [String: Any])
+ public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [String: Any])
+ public func startResourceLoading(resourceKey: String,url: URL,attributes: [String: Any])
+ public func startResourceLoading(resourceKey: String,httpMethod: String,urlString: String,attributes: [String: Any])
+ public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,response: URLResponse,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,statusCode: Int,kind: DDRUMResourceKind,attributes: [String: Any])
+ public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
+ public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [String: Any])
+ public func startUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
+ public func stopUserAction(type: DDRUMUserActionType,name: String?,attributes: [String: Any])
+ public func addUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
+ public func addAttribute(forKey key: String,value: Any)
+ public func removeAttribute(forKey key: String)
+public class DDTracer: NSObject, DatadogObjc.OTTracer
  public static func initialize(configuration: DDTracerConfiguration) -> DatadogObjc.OTTracer
+ public convenience init(configuration: DDTracerConfiguration)
  public func startSpan(_ operationName: String) -> OTSpan
  public func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
  public func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan

@@ -65,6 +65,12 @@ extension Array where Element == Data {
     }
 }
 
+extension Array {
+    func randomElements() -> [Element] {
+        return compactMap { Bool.random() ? $0 : nil }
+    }
+}
+
 extension Date {
     static func mockAny() -> Date {
         return Date(timeIntervalSinceReferenceDate: 1)
@@ -154,9 +160,8 @@ extension Int {
 }
 
 extension Int64 {
-    static func mockAny() -> Int64 {
-        return 0
-    }
+    static func mockAny() -> Int64 { 0 }
+    static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }
 }
 
 extension UInt64 {
@@ -174,6 +179,12 @@ extension Bool {
 extension Float {
     static func mockAny() -> Float {
         return 0
+    }
+}
+
+extension Double {
+    static func mockRandom() -> Double {
+        return Double.random(in: 0..<Double.greatestFiniteMagnitude)
     }
 }
 

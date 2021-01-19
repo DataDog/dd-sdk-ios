@@ -95,6 +95,10 @@ internal class RUMEventMatcher {
     func attribute<T: Equatable>(forKeyPath keyPath: String) throws -> T {
         return try jsonMatcher.value(forKeyPath: keyPath)
     }
+
+    func timing(named timingName: String) throws -> Int64 {
+        return try attribute(forKeyPath: "view.custom_timings.\(timingName)")
+    }
 }
 
 extension RUMEventMatcher: CustomStringConvertible {

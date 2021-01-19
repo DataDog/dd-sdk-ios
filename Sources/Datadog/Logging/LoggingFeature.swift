@@ -6,9 +6,13 @@
 
 import Foundation
 
-/// Obtains a subdirectory in `/Library/Caches` where log files are stored.
-internal func obtainLoggingFeatureDirectory() throws -> Directory {
-    return try Directory(withSubdirectoryPath: "com.datadoghq.logs/v1")
+/// Obtains subdirectories in `/Library/Caches` where logging data is stored.
+internal func obtainLoggingFeatureDirectories() throws -> FeatureDirectories {
+    let version = "v1"
+    return FeatureDirectories(
+        unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.logs/intermediate-\(version)"),
+        authorized: try Directory(withSubdirectoryPath: "com.datadoghq.logs/\(version)")
+    )
 }
 
 /// Creates and owns componetns enabling logging feature.
@@ -27,6 +31,7 @@ internal final class LoggingFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
+    let dateCorrector: DateCorrectorType
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -44,18 +49,18 @@ internal final class LoggingFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
         return FeatureStorage(
             featureName: LoggingFeature.featureName,
             dataFormat: LoggingFeature.dataFormat,
-            directory: directory,
+            directories: directories,
+            eventMapper: nil,
             commonDependencies: commonDependencies
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
-        directory: Directory,
         configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies
     ) -> FeatureUpload {
@@ -75,8 +80,7 @@ internal final class LoggingFeature {
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
-                    .ddsource(),
-                    .batchTime(using: commonDependencies.dateProvider)
+                    .ddsource()
                 ]
             ),
             commonDependencies: commonDependencies
@@ -84,12 +88,12 @@ internal final class LoggingFeature {
     }
 
     convenience init(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies
     ) {
-        let storage = LoggingFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = LoggingFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
+        let storage = LoggingFeature.createStorage(directories: directories, commonDependencies: commonDependencies)
+        let upload = LoggingFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
@@ -109,6 +113,7 @@ internal final class LoggingFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrector = commonDependencies.dateCorrector
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider

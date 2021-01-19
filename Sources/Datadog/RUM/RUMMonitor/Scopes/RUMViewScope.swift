@@ -19,10 +19,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
-    /// Weak reference to corresponding `UIViewController`, used to identify this View.
-    private(set) weak var identity: AnyObject?
+    /// The value holding stable identity of this RUM View.
+    let identity: RUMViewIdentity
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
+    /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
+    private(set) var customTimings: [String: Int64] = [:]
 
     /// This View's UUID.
     let viewUUID: RUMUUID
@@ -30,6 +32,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewURI: String
     /// The start time of this View.
     private let viewStartTime: Date
+    /// Date correction to server time.
+    private let dateCorrection: DateCorrection
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
@@ -51,18 +55,21 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
-        identity: AnyObject,
+        identity: RUMViewIdentifiable,
         uri: String,
         attributes: [AttributeKey: AttributeValue],
+        customTimings: [String: Int64],
         startTime: Date
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.identity = identity
+        self.identity = identity.asRUMViewIdentity()
         self.attributes = attributes
+        self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewURI = uri
         self.viewStartTime = startTime
+        self.dateCorrection = dependencies.dateCorrector.currentCorrection
     }
 
     // MARK: - RUMContextProvider
@@ -94,7 +101,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Apply side effects
         switch command {
         // View commands
-        case let command as RUMStartViewCommand where command.identity === identity:
+        case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
@@ -106,11 +113,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
             didReceiveStartCommand = true
             needsViewUpdate = true
-        case let command as RUMStartViewCommand where command.identity !== identity:
+        case let command as RUMStartViewCommand where !identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
-        case let command as RUMStopViewCommand where command.identity === identity:
+        case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
+            needsViewUpdate = true
+
+        case let command as RUMAddViewTimingCommand where isActiveView:
+            customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
 
         // Resource commands
@@ -176,6 +187,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             resourceKey: command.resourceKey,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             url: command.url,
             httpMethod: command.httpMethod,
             resourceKindBasedOnRequest: command.kind,
@@ -191,6 +203,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             isContinuous: true
         )
     }
@@ -203,6 +216,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             isContinuous: false
         )
     }
@@ -210,28 +224,28 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction(on command: RUMCommand) {
-        let eventData = RUMDataAction(
-            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMActionEvent(
+            dd: .init(),
+            action: .init(
+                crash: nil,
+                error: nil,
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                loadingTime: dependencies.launchTimeProvider.launchTime?.toInt64Nanoseconds,
+                longTask: nil,
+                resource: nil,
+                target: nil,
+                type: .applicationStart
+            ),
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 referrer: nil,
                 url: viewURI
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            action: .init(
-                type: .applicationStart,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: dependencies.launchTimeProvider.launchTime?.toInt64Nanoseconds,
-                target: nil,
-                error: nil,
-                crash: nil,
-                longTask: nil,
-                resource: nil
             )
         )
 
@@ -243,64 +257,68 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMDataView(
-            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMViewEvent(
+            dd: .init(documentVersion: version.toInt64),
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
-                id: viewUUID.toRUMDataFormat,
-                referrer: nil,
-                url: viewURI,
-                loadingTime: nil,
-                loadingType: nil,
-                timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
-                firstContentfulPaint: nil,
+                action: .init(count: actionsCount.toInt64),
+                crash: nil,
+                cumulativeLayoutShift: nil,
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,
-                loadEvent: nil,
-                action: .init(count: actionsCount.toInt64),
                 error: .init(count: errorsCount.toInt64),
-                crash: nil,
+                firstContentfulPaint: nil,
+                firstInputDelay: nil,
+                id: viewUUID.toRUMDataFormat,
+                isActive: nil,
+                largestContentfulPaint: nil,
+                loadEvent: nil,
+                loadingTime: nil,
+                loadingType: nil,
                 longTask: nil,
-                resource: .init(count: resourcesCount.toInt64)
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(documentVersion: version.toInt64)
+                referrer: nil,
+                resource: .init(count: resourcesCount.toInt64),
+                timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
+                url: viewURI
+            )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
+        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
         dependencies.eventOutput.write(rumEvent: event)
     }
 
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMDataError(
-            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
+        let eventData = RUMErrorEvent(
+            dd: .init(),
+            action: context.activeUserActionID.flatMap { rumUUID in
+                .init(id: rumUUID.toRUMDataFormat)
+            },
             application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            error: .init(
+                isCrash: nil,
+                message: command.message,
+                resource: nil,
+                source: command.source.toRUMDataFormat,
+                stack: command.stack
+            ),
             service: nil,
             session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
-            ),
-            usr: dependencies.userInfoProvider.current,
-            connectivity: dependencies.connectivityInfoProvider.current,
-            dd: .init(),
-            error: .init(
-                message: command.message,
-                source: command.source.toRUMDataFormat,
-                stack: command.stack,
-                isCrash: nil,
-                resource: nil
-            ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
-            }
+            )
         )
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)

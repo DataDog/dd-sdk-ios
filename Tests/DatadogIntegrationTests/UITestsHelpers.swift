@@ -9,11 +9,22 @@ import XCTest
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
     /// Launches the app by providing mock server configuration.
+    /// If `clearPeristentData` is set to `true`, the app will clear all SDK data persisted in previous session(s).
     func launchWith(
         testScenario: TestScenario.Type,
-        serverConfiguration: HTTPServerMockConfiguration
+        serverConfiguration: HTTPServerMockConfiguration,
+        clearPeristentData: Bool = true
     ) {
-        launchArguments = [Environment.Argument.isRunningUITests]
+        if clearPeristentData {
+            launchArguments = [
+                Environment.Argument.isRunningUITests
+            ]
+        } else {
+            launchArguments = [
+                Environment.Argument.isRunningUITests,
+                Environment.Argument.doNotClearPersistentData
+            ]
+        }
 
         var variables: [String: String] = [:]
         variables[Environment.Variable.testScenarioIdentifier] = testScenario.envIdentifier()
@@ -31,11 +42,11 @@ extension Array where Element == RUMEventMatcher {
     ///
     /// Example output:
     ///
-    ///     [0] - RUMEventMatcher<RUMDataAction>
-    ///     [1] - RUMEventMatcher<RUMDataView>
-    ///     [2] - RUMEventMatcher<RUMDataResource>
-    ///     [3] - RUMEventMatcher<RUMDataView>
-    ///     [4] - RUMEventMatcher<RUMDataAction>
+    ///     [0] - RUMEventMatcher<RUMActionEvent>
+    ///     [1] - RUMEventMatcher<RUMViewEvent>
+    ///     [2] - RUMEventMatcher<RUMResourceEvent>
+    ///     [3] - RUMEventMatcher<RUMViewEvent>
+    ///     [4] - RUMEventMatcher<RUMActionEvent>
     ///
     func inspect() {
         enumerated().forEach { index, matcher in
@@ -45,10 +56,10 @@ extension Array where Element == RUMEventMatcher {
 
     private func getTypeOf(matcher: RUMEventMatcher) -> String {
         let allPossibleMatchers: [String: (RUMEventMatcher) -> Bool] = [
-            "RUMEventMatcher<RUMDataView>": { matcher in matcher.model(isTypeOf: RUMDataView.self) },
-            "RUMEventMatcher<RUMDataAction>": { matcher in matcher.model(isTypeOf: RUMDataAction.self) },
-            "RUMEventMatcher<RUMDataResource>": { matcher in matcher.model(isTypeOf: RUMDataResource.self) },
-            "RUMEventMatcher<RUMDataError>": { matcher in matcher.model(isTypeOf: RUMDataError.self) }
+            "RUMEventMatcher<RUMViewEvent>": { matcher in matcher.model(isTypeOf: RUMViewEvent.self) },
+            "RUMEventMatcher<RUMActionEvent>": { matcher in matcher.model(isTypeOf: RUMActionEvent.self) },
+            "RUMEventMatcher<RUMResourceEvent>": { matcher in matcher.model(isTypeOf: RUMResourceEvent.self) },
+            "RUMEventMatcher<RUMErrorEvent>": { matcher in matcher.model(isTypeOf: RUMErrorEvent.self) }
         ]
 
         let bestMatcherEntry = allPossibleMatchers

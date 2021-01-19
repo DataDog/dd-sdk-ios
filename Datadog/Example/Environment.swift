@@ -40,8 +40,9 @@ internal struct Environment {
         static let serverMockConfiguration = "DD_TEST_SERVER_MOCK_CONFIGURATION"
     }
     struct Argument {
-        static let isRunningUnitTests   = "IS_RUNNING_UNIT_TESTS"
-        static let isRunningUITests     = "IS_RUNNING_UI_TESTS"
+        static let isRunningUnitTests       = "IS_RUNNING_UNIT_TESTS"
+        static let isRunningUITests         = "IS_RUNNING_UI_TESTS"
+        static let doNotClearPersistentData = "DO_NOT_CLEAR_PERSISTENT_DATA"
     }
     struct InfoPlistKey {
         static let clientToken      = "DatadogClientToken"
@@ -56,6 +57,10 @@ internal struct Environment {
 
     static func isRunningUITests() -> Bool {
         return ProcessInfo.processInfo.arguments.contains(Argument.isRunningUITests)
+    }
+
+    static func shouldClearPersistentData() -> Bool {
+        return !ProcessInfo.processInfo.arguments.contains(Argument.doNotClearPersistentData)
     }
 
     // MARK: - Launch Variables

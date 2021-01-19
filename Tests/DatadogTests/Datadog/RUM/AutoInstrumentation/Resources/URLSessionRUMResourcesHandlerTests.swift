@@ -40,7 +40,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStartCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStartCommand.attributes.count, 0)
         XCTAssertEqual(resourceStartCommand.url, taskInterception.request.url?.absoluteString)
-        XCTAssertEqual(resourceStartCommand.httpMethod, RUMHTTPMethod(request: request))
+        XCTAssertEqual(resourceStartCommand.httpMethod, RUMMethod(httpMethod: request.httpMethod))
         XCTAssertNil(resourceStartCommand.spanContext)
     }
 
@@ -96,7 +96,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
-        XCTAssertEqual(resourceStopCommand.kind, RUMResourceKind(response: resourceCompletion.httpResponse!))
+        XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: resourceCompletion.httpResponse!))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
         XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
     }

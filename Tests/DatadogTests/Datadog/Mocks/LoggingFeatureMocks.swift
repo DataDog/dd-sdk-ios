@@ -20,22 +20,28 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
-        return LoggingFeature(directory: directory, configuration: configuration, commonDependencies: dependencies)
+        return LoggingFeature(directories: directories, configuration: configuration, commonDependencies: dependencies)
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
         // Get the full feature mock:
-        let fullFeature: LoggingFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let fullFeature: LoggingFeature = .mockWith(
+            directories: directories,
+            configuration: configuration,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            )
+        )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
@@ -135,7 +141,8 @@ extension LogBuilder {
         loggerName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny()
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        dateCorrector: DateCorrectorType? = nil
     ) -> LogBuilder {
         return LogBuilder(
             applicationVersion: applicationVersion,
@@ -144,7 +151,8 @@ extension LogBuilder {
             loggerName: loggerName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: carrierInfoProvider,
+            dateCorrector: dateCorrector
         )
     }
 }

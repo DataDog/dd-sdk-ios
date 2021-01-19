@@ -18,7 +18,7 @@ public enum DDSDKVerbosityLevel: Int {
     case critical
 }
 
-@objcMembers
+@objc
 public class DDLogger: NSObject {
     internal let sdkLogger: Logger
 
@@ -28,114 +28,133 @@ public class DDLogger: NSObject {
 
     // MARK: - Public
 
+    @objc
     public func debug(_ message: String) {
         sdkLogger.debug(message)
     }
 
+    @objc
     public func debug(_ message: String, attributes: [String: Any]) {
         sdkLogger.debug(message, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func debug(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.debug(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func info(_ message: String) {
         sdkLogger.info(message)
     }
 
+    @objc
     public func info(_ message: String, attributes: [String: Any]) {
         sdkLogger.info(message, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func info(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.info(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func notice(_ message: String) {
         sdkLogger.notice(message)
     }
 
+    @objc
     public func notice(_ message: String, attributes: [String: Any]) {
         sdkLogger.notice(message, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func notice(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.notice(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func warn(_ message: String) {
         sdkLogger.warn(message)
     }
 
+    @objc
     public func warn(_ message: String, attributes: [String: Any]) {
         sdkLogger.warn(message, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func warn(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.warn(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func error(_ message: String) {
         sdkLogger.error(message)
     }
 
+    @objc
     public func error(_ message: String, attributes: [String: Any]) {
         sdkLogger.error(message, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func error(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.error(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func critical(_ message: String) {
         sdkLogger.critical(message)
     }
 
+    @objc
     public func critical(_ message: String, attributes: [String: Any]) {
         sdkLogger.critical(message, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func critical(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.critical(message, error: error, attributes: castAttributesToSwift(attributes))
     }
 
+    @objc
     public func addAttribute(forKey key: String, value: Any) {
         sdkLogger.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
+    @objc
     public func removeAttribute(forKey key: String) {
         sdkLogger.removeAttribute(forKey: key)
     }
 
+    @objc
     public func addTag(withKey key: String, value: String) {
         sdkLogger.addTag(withKey: key, value: value)
     }
 
+    @objc
     public func removeTag(withKey key: String) {
         sdkLogger.removeTag(withKey: key)
     }
 
+    @objc
     public func add(tag: String) {
         sdkLogger.add(tag: tag)
     }
 
+    @objc
     public func remove(tag: String) {
         sdkLogger.remove(tag: tag)
     }
 
+    @objc
     public static func builder() -> DDLoggerBuilder {
         return DDLoggerBuilder(sdkBuilder: Logger.builder)
     }
-
-    // MARK: - Private
-
-    private func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Encodable] {
-        return attributes.mapValues { AnyEncodable($0) }
-    }
 }
 
-@objcMembers
+@objc
 public class DDLoggerBuilder: NSObject {
     internal let sdkBuilder: Logger.Builder
 
@@ -145,26 +164,32 @@ public class DDLoggerBuilder: NSObject {
 
     // MARK: - Public
 
+    @objc
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
     }
 
+    @objc
     public func set(loggerName: String) {
         _ = sdkBuilder.set(loggerName: loggerName)
     }
 
+    @objc
     public func sendNetworkInfo(_ enabled: Bool) {
         _ = sdkBuilder.sendNetworkInfo(enabled)
     }
 
+    @objc
     public func sendLogsToDatadog(_ enabled: Bool) {
         _ = sdkBuilder.sendLogsToDatadog(enabled)
     }
 
+    @objc
     public func printLogsToConsole(_ enabled: Bool) {
         _ = sdkBuilder.printLogsToConsole(enabled)
     }
 
+    @objc
     public func build() -> DDLogger {
         return DDLogger(sdkLogger: sdkBuilder.build())
     }

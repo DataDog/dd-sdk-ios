@@ -9,11 +9,15 @@ import Foundation
 /// `Encodable` representation of RUM event.
 internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     /// The actual RUM event model created by `RUMMonitor`
-    let model: DM
+    /// It's mutable as it may be redacted by the user through data scrubbing API.
+    var model: DM
 
     /// Custom attributes set by the user
     let attributes: [String: Encodable]
     let userInfoAttributes: [String: Encodable]
+
+    /// Custom View timings (only available if `DM` is a RUM View model)
+    let customViewTimings: [String: Int64]?
 
     func encode(to encoder: Encoder) throws {
         try RUMEventEncoder().encode(self, to: encoder)
@@ -39,6 +43,9 @@ internal struct RUMEventEncoder {
         }
         try event.userInfoAttributes.forEach { attributeName, attributeValue in
             try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.usr.\(attributeName)"))
+        }
+        try event.customViewTimings?.forEach { timingName, timingDuration in
+            try attributesContainer.encode(timingDuration, forKey: DynamicCodingKey("view.custom_timings.\(timingName)"))
         }
 
         // Encode `RUMDataModel`

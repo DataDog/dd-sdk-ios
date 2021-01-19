@@ -7,25 +7,54 @@
 import Foundation
 import Datadog
 
-@objcMembers
+@objc
+public class DDTrackingConsent: NSObject {
+    internal let sdkConsent: TrackingConsent
+
+    internal init(sdkConsent: TrackingConsent) {
+        self.sdkConsent = sdkConsent
+    }
+
+    // MARK: - Public
+
+    @objc
+    public static func granted() -> DDTrackingConsent { .init(sdkConsent: .granted) }
+
+    @objc
+    public static func notGranted() -> DDTrackingConsent { .init(sdkConsent: .notGranted) }
+
+    @objc
+    public static func pending() -> DDTrackingConsent { .init(sdkConsent: .pending) }
+}
+
+@objc
 public class DDAppContext: NSObject {
     internal let sdkAppContext: Datadog.AppContext
 
     // MARK: - Public
 
+    @objc
     public init(mainBundle: Bundle) {
         self.sdkAppContext = Datadog.AppContext(mainBundle: mainBundle)
     }
 
+    @objc
     override public init() {
         self.sdkAppContext = Datadog.AppContext()
     }
 }
 
-@objcMembers
+@objc
 public class DDDatadog: NSObject {
     // MARK: - Public
 
+    @available(*, deprecated, message: """
+    This method is deprecated and uses the `DDTrackingConsent.granted()` value as a default privacy consent.
+    This means that the SDK will start recording and sending data immediately after initialisation without waiting for the user's consent to be given.
+
+    Use `DDDatadog.initialize(appContext:trackingConsent:configuration:)` and set consent to `granted()` to preserve previous behaviour.
+    """)
+    @objc
     public static func initialize(appContext: DDAppContext, configuration: DDConfiguration) {
         Datadog.initialize(
             appContext: appContext.sdkAppContext,
@@ -33,6 +62,20 @@ public class DDDatadog: NSObject {
         )
     }
 
+    @objc
+    public static func initialize(
+        appContext: DDAppContext,
+        trackingConsent: DDTrackingConsent,
+        configuration: DDConfiguration
+    ) {
+        Datadog.initialize(
+            appContext: appContext.sdkAppContext,
+            trackingConsent: trackingConsent.sdkConsent,
+            configuration: configuration.sdkConfiguration
+        )
+    }
+
+    @objc
     public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel) {
         switch verbosityLevel {
         case .debug: Datadog.verbosityLevel = .debug
@@ -45,6 +88,7 @@ public class DDDatadog: NSObject {
         }
     }
 
+    @objc
     public static func verbosityLevel() -> DDSDKVerbosityLevel {
         switch Datadog.verbosityLevel {
         case .debug: return .debug
@@ -57,9 +101,13 @@ public class DDDatadog: NSObject {
         }
     }
 
-    // swiftlint:disable identifier_name
+    @objc
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil) {
         Datadog.setUserInfo(id: id, name: name, email: email)
     }
-    // swiftlint:enable identifier_name
+
+    @objc
+    public static func setTrackingConsent(consent: DDTrackingConsent) {
+        Datadog.set(trackingConsent: consent.sdkConsent)
+    }
 }

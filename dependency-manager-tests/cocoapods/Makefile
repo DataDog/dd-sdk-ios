@@ -1,4 +1,4 @@
-ifdef ci
+ifeq (${ci}, true)
 		GIT_BRANCH := ${BITRISE_GIT_BRANCH}
 else
 		GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)

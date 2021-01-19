@@ -18,6 +18,23 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         super.tearDown()
     }
 
+    func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedIntrceptorIsAvailable() {
+        XCTAssertNil(URLSessionInterceptor.shared)
+
+        // When
+        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
+            configuration: .mockAny(),
+            dateProvider: SystemDateProvider()
+        )
+        defer {
+            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+            URLSessionAutoInstrumentation.instance = nil
+        }
+
+        // Then
+        XCTAssertNotNil(URLSessionInterceptor.shared)
+    }
+
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
         RUMFeature.instance = .mockNoOp()

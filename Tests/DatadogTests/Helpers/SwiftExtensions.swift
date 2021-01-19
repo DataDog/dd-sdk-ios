@@ -96,3 +96,11 @@ extension URLRequest {
         return request
     }
 }
+
+/// Combines two arrays together, e.g. `["a", "b"].combined(with: [1, 2, 3])` gives
+/// `[("a", 1), ("a", 2), ("a", 3), ("b", 1), ("b", 2), ("b", 3)]`.
+extension Array {
+    func combined<B>(with other: [B]) -> [(Element, B)] {
+        return self.flatMap { a in other.map { b in (a, b) } }
+    }
+}

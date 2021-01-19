@@ -10,8 +10,10 @@ import protocol Datadog.OTTracer
 import struct Datadog.OTReference
 import class Datadog.HTTPHeadersWriter
 
-@objcMembers
-public class DDTracer: DatadogObjc.OTTracer {
+@objc
+public class DDTracer: NSObject, DatadogObjc.OTTracer {
+    @available(*, deprecated, message: "Use `DDTracer(configuration:)`.")
+    @objc
     public static func initialize(configuration: DDTracerConfiguration) -> DatadogObjc.OTTracer {
         return DDTracer(configuration: configuration)
     }
@@ -20,7 +22,14 @@ public class DDTracer: DatadogObjc.OTTracer {
 
     internal let swiftTracer: Datadog.OTTracer
 
-    internal convenience init(configuration: DDTracerConfiguration) {
+    internal init(swiftTracer: Datadog.OTTracer) {
+        self.swiftTracer = swiftTracer
+    }
+
+    // MARK: - Public
+
+    @objc
+    public convenience init(configuration: DDTracerConfiguration) {
         self.init(
             swiftTracer: Datadog.Tracer.initialize(
                 configuration: configuration.swiftConfiguration
@@ -28,12 +37,7 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
-    internal init(swiftTracer: Datadog.OTTracer) {
-        self.swiftTracer = swiftTracer
-    }
-
-    // MARK: - OTTracer
-
+    @objc
     public func startSpan(_ operationName: String) -> OTSpan {
         return DDSpanObjc(
             objcTracer: self,
@@ -41,6 +45,7 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
+    @objc
     public func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan {
         return DDSpanObjc(
             objcTracer: self,
@@ -51,6 +56,7 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
+    @objc
     public func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan {
         let ddspanContext = parent?.dd
         return DDSpanObjc(
@@ -62,6 +68,7 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
+    @objc
     public func startSpan(
         _ operationName: String,
         childOf parent: OTSpanContext?,
@@ -78,6 +85,7 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
+    @objc
     public func startSpan(
         _ operationName: String,
         childOf parent: OTSpanContext?,
@@ -96,14 +104,15 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
+    @objc
     public func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws {
-        guard format == OTFormatHTTPHeaders, let objcWriter = carrier as? DDHTTPHeadersWriter else {
+        guard format == OT.formatTextMap, let objcWriter = carrier as? DDHTTPHeadersWriter else {
             let error = NSError(
                 domain: "DDTracer",
                 code: 0,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Trying to inject `OTSpanContext` using wrong format or carrier.",
-                    NSLocalizedRecoverySuggestionErrorKey: "Use `DDHTTPHeadersWriter` carrier with `OTFormatHTTPHeaders` format."
+                    NSLocalizedDescriptionKey: "Trying to inject `OTSpanContext` using wrong format and/or carrier.",
+                    NSLocalizedRecoverySuggestionErrorKey: "Use `DDHTTPHeadersWriter` carrier with `OT.formatTextMap` format."
                 ]
             )
             throw error
@@ -117,6 +126,7 @@ public class DDTracer: DatadogObjc.OTTracer {
         )
     }
 
+    @objc
     public func extractWithFormat(_ format: String, carrier: Any) throws {
         // TODO: RUMM-385 - we don't need to support it now
     }

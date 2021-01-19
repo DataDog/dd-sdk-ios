@@ -6,9 +6,13 @@
 
 import Foundation
 
-/// Obtains a subdirectory in `/Library/Caches` for writting RUM events.
-internal func obtainRUMFeatureDirectory() throws -> Directory {
-    return try Directory(withSubdirectoryPath: "com.datadoghq.rum/v1")
+/// Obtains subdirectories in `/Library/Caches` where RUM data is stored.
+internal func obtainRUMFeatureDirectories() throws -> FeatureDirectories {
+    let version = "v1"
+    return FeatureDirectories(
+        unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/intermediate-\(version)"),
+        authorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/\(version)")
+    )
 }
 
 /// Creates and owns componetns enabling RUM feature.
@@ -27,6 +31,7 @@ internal final class RUMFeature {
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
+    let dateCorrector: DateCorrectorType
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -45,18 +50,22 @@ internal final class RUMFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directory: Directory, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(
+        directories: FeatureDirectories,
+        eventMapper: RUMEventsMapper,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
-            directory: directory,
+            directories: directories,
+            eventMapper: eventMapper,
             commonDependencies: commonDependencies
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
-        directory: Directory,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) -> FeatureUpload {
@@ -77,7 +86,6 @@ internal final class RUMFeature {
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
                     .ddsource(),
-                    .batchTime(using: commonDependencies.dateProvider),
                     .ddtags(
                         tags: [
                             "service:\(configuration.common.serviceName)",
@@ -93,12 +101,16 @@ internal final class RUMFeature {
     }
 
     convenience init(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
-        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: commonDependencies)
-        let upload = RUMFeature.createUpload(storage: storage, directory: directory, configuration: configuration, commonDependencies: commonDependencies)
+        let storage = RUMFeature.createStorage(
+            directories: directories,
+            eventMapper: configuration.eventMapper,
+            commonDependencies: commonDependencies
+        )
+        let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
@@ -118,6 +130,7 @@ internal final class RUMFeature {
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrector = commonDependencies.dateCorrector
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider

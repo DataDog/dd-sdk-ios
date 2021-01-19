@@ -1,0 +1,11 @@
+.DS_Store
+/.build
+/Packages
+/*.xcodeproj
+xcuserdata/
+
+# Directory used to clone `rum-events-format` repository
+/rum-events-format
+
+# Directory used to generate models for `/rum-events-format`
+/.temp

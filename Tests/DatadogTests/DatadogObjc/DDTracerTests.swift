@@ -12,20 +12,20 @@ class DDTracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
     func testSendingCustomizedSpans() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
         defer { TracingFeature.instance = nil }
 
-        let objcTracer = DDTracer.initialize(configuration: DDTracerConfiguration()).dd!
+        let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
 
         let objcSpan1 = objcTracer.startSpan("operation")
         let objcSpan2 = objcTracer.startSpan(
@@ -115,7 +115,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -123,7 +123,7 @@ class DDTracerTests: XCTestCase {
         defer { LoggingFeature.instance = nil }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
@@ -153,7 +153,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDHTTPHeadersWriter()
-        try objcTracer.inject(objcSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
             "x-datadog-trace-id": "1",
@@ -174,60 +174,13 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcInvalidWriter = NSObject()
-        let objcValidFormat = OTFormatHTTPHeaders
+        let objcValidFormat = OT.formatTextMap
         XCTAssertThrowsError(
             try objcTracer.inject(objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
         )
     }
 
-    func testWhenSettingGlobalTracer_itSetsSwiftTracerAswell() {
-        XCTAssertTrue(OTGlobal.sharedTracer === noopTracer)
-
-        let swiftTracer = Tracer.mockAny()
-        let objcTracer = DDTracer(swiftTracer: swiftTracer)
-
-        let previousObjcTracer = OTGlobal.sharedTracer
-        let previousSwiftTracer = Global.sharedTracer
-        OTGlobal.initSharedTracer(objcTracer)
-        defer {
-            OTGlobal.sharedTracer = previousObjcTracer
-            Global.sharedTracer = previousSwiftTracer
-        }
-
-        XCTAssertTrue(OTGlobal.sharedTracer === objcTracer)
-        XCTAssertTrue(Global.sharedTracer as? Tracer === swiftTracer)
-    }
-
     // MARK: - Usage errors
-
-    func testsWhenUsingUnexpectedOTTracer() throws {
-        let previousObjcTracer = OTGlobal.sharedTracer
-
-        OTGlobal.initSharedTracer(noopTracer)
-
-        XCTAssertTrue(OTGlobal.sharedTracer === previousObjcTracer)
-        XCTAssertFalse(Global.sharedTracer is Tracer)
-    }
-
-    func testsWhenUsingUnexpectedOTSpanContext() throws {
-        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
-
-        let firstSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext)
-        XCTAssertNil(firstSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
-
-        let secondSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary()).setActive()
-        XCTAssertNil(secondSpan.dd!.swiftSpan.dd.ddContext.parentSpanID)
-
-        let thirdSpan = objcTracer.startSpan(.mockAny(), childOf: noopSpanContext, tags: NSDictionary(), startTime: .mockAny())
-        XCTAssertEqual(thirdSpan.dd!.swiftSpan.dd.ddContext.parentSpanID, secondSpan .dd!.swiftSpan.dd.ddContext.spanID)
-
-        let objcWriter = DDHTTPHeadersWriter()
-        try objcTracer.inject(noopSpanContext, format: OTFormatHTTPHeaders, carrier: objcWriter)
-        XCTAssertEqual(objcWriter.swiftHTTPHeadersWriter.tracePropagationHTTPHeaders.count, 0)
-        firstSpan.finish()
-        secondSpan.finish()
-        thirdSpan.finish()
-    }
 
     func testsWhenUsingUnexpectedTagsDictionary() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
@@ -237,33 +190,5 @@ class DDTracerTests: XCTestCase {
 
         XCTAssertEqual(objcSpan.dd?.swiftSpan.dd.tags.count, 0)
         objcSpan.finish()
-    }
-
-    func testUsingNoopTracerIsSafe() {
-        // noop Tracer
-        XCTAssertTrue(noopTracer.startSpan(.mockAny()) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), tags: nil) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil, tags: nil) === noopSpan)
-        XCTAssertTrue(noopTracer.startSpan(.mockAny(), childOf: nil, tags: nil, startTime: nil) === noopSpan)
-        XCTAssertNoThrow(try noopTracer.inject(noopSpanContext, format: .mockAny(), carrier: NSObject()))
-        XCTAssertNoThrow(try noopTracer.extractWithFormat(.mockAny(), carrier: NSObject()))
-
-        // noop Span
-        XCTAssertTrue(noopSpan.context === noopSpanContext)
-        XCTAssertTrue(noopSpan.tracer === noopTracer)
-        noopSpan.setOperationName(.mockAny())
-        noopSpan.setTag(.mockAny(), value: "")
-        noopSpan.setTag(.mockAny(), numberValue: 0)
-        noopSpan.setTag(.mockAny(), boolValue: false)
-        noopSpan.log([:])
-        noopSpan.log([:], timestamp: nil)
-        _ = noopSpan.setBaggageItem(.mockAny(), value: .mockAny())
-        _ = noopSpan.getBaggageItem(.mockAny())
-        noopSpan.finish()
-        noopSpan.finishWithTime(nil)
-
-        // noop SpanContext
-        noopSpanContext.forEachBaggageItem { _, _ in false }
     }
 }

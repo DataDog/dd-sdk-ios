@@ -7,7 +7,7 @@ tools:
 		@echo "OK 👌"
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.4.0
+DD_SDK_SWIFT_TESTING_VERSION = 0.5.1
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -22,10 +22,11 @@ export DD_SDK_TESTING_XCCONFIG_CI
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@carthage bootstrap --platform iOS
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
-		@brew install gh
+		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
@@ -56,9 +57,15 @@ test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
 # Generate RUM data models from rum-events-format JSON Schemas
-generate-rum-models:
+rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
-		./tools/generate-models/run.sh generate
+		./tools/rum-models-generator/run.sh generate
+		@echo "OK 👌"
+
+# Verify if RUM data models follow rum-events-format JSON Schemas
+rum-models-verify:
+		@echo "🧪  Verifying RUM models..."
+		./tools/rum-models-generator/run.sh verify
 		@echo "OK 👌"
 
 # Generate api-surface files for Datadog and DatadogObjc.

@@ -6,6 +6,8 @@
 
 import UIKit
 import Datadog
+import DatadogAlamofireExtension
+import Alamofire
 
 internal class ViewController: UIViewController {
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -15,6 +17,7 @@ internal class ViewController: UIViewController {
 
         Datadog.initialize(
             appContext: .init(),
+            trackingConsent: .pending,
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: "abc", environment: "tests")
                 .build()
@@ -27,9 +30,19 @@ internal class ViewController: UIViewController {
 
         Global.sharedTracer = Tracer.initialize(configuration: .init())
 
-        logger.info("It works")
+        Global.rum = RUMMonitor.initialize()
 
-        // Start span, but never finish it (no upload)
+        logger.info("It works")
         _ = Global.sharedTracer.startSpan(operationName: "This too")
+        Global.rum.startView(viewController: self)
+
+        createInstrumentedAlamofireSession()
+    }
+
+    private func createInstrumentedAlamofireSession() {
+        _ = Session(
+            interceptor: DDRequestInterceptor(),
+            eventMonitors: [DDEventMonitor()]
+        )
     }
 }

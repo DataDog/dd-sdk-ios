@@ -7,18 +7,21 @@
 import Foundation
 import Datadog
 
-@objcMembers
+@objc
 public class DDTracerConfiguration: NSObject {
     internal var swiftConfiguration = Tracer.Configuration()
 
+    @objc
     override public init() {}
 
     // MARK: - Public
 
+    @objc
     public func set(serviceName: String) {
         swiftConfiguration.serviceName = serviceName
     }
 
+    @objc
     public func sendNetworkInfo(_ enabled: Bool) {
         swiftConfiguration.sendNetworkInfo = enabled
     }

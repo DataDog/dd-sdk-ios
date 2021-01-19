@@ -68,56 +68,80 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
+}
 
-    // MARK: - Predefined presets
+internal extension PerformancePreset {
+    init(
+        batchSize: Datadog.Configuration.BatchSize,
+        uploadFrequency: Datadog.Configuration.UploadFrequency,
+        bundleType: BundleType
+    ) {
+        let meanFileAgeInSeconds: TimeInterval = {
+            switch (bundleType, batchSize) {
+            case (.iOSApp, .small): return 5
+            case (.iOSApp, .medium): return 15
+            case (.iOSApp, .large): return 60
+            case (.iOSAppExtension, .small): return 1
+            case (.iOSAppExtension, .medium): return 3
+            case (.iOSAppExtension, .large): return 12
+            }
+        }()
 
-    /// Default performance preset.
-    static let `default` = lowRuntimeImpact
+        let minUploadDelayInSeconds: TimeInterval = {
+            switch (bundleType, uploadFrequency) {
+            case (.iOSApp, .frequent): return 1
+            case (.iOSApp, .average): return 5
+            case (.iOSApp, .rare): return 10
+            case (.iOSAppExtension, .frequent): return 0.5
+            case (.iOSAppExtension, .average): return 1
+            case (.iOSAppExtension, .rare): return 5
+            }
+        }()
 
-    /// Performance preset optimized for low runtime impact.
-    /// Minimalizes number of data requests send to the server.
-    static let lowRuntimeImpact = PerformancePreset(
-        // persistence
-        maxFileSize: 4 * 1_024 * 1_024, // 4MB
-        maxDirectorySize: 512 * 1_024 * 1_024, // 512 MB
-        maxFileAgeForWrite: 4.75,
-        minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
-        maxFileAgeForRead: 18 * 60 * 60, // 18h
-        maxObjectsInFile: 500,
-        maxObjectSize: 256 * 1_024, // 256KB
+        let uploadDelayFactors: (initial: Double, default: Double, min: Double, max: Double, changeRate: Double) = {
+            switch bundleType {
+            case .iOSApp:
+                return (
+                    initial: 5,
+                    default: 5,
+                    min: 1,
+                    max: 10,
+                    changeRate: 0.1
+                )
+            case .iOSAppExtension:
+                return (
+                    initial: 0.5, // ensures the the first upload is checked quickly after starting the short-lived app extension
+                    default: 3,
+                    min: 1,
+                    max: 5,
+                    changeRate: 0.5 // if batches are found, reduces interval significantly for more uploads in short-lived app extension
+                )
+            }
+        }()
 
-        // upload
-        initialUploadDelay: 5, // postpone to not impact app launch time
-        defaultUploadDelay: 5,
-        minUploadDelay: 1,
-        maxUploadDelay: 20,
-        uploadDelayChangeRate: 0.1
-    )
+        self.init(
+            meanFileAge: meanFileAgeInSeconds,
+            minUploadDelay: minUploadDelayInSeconds,
+            uploadDelayFactors: uploadDelayFactors
+        )
+    }
 
-    /// Performance preset optimized for instant data delivery.
-    /// Minimalizes the time between receiving data form the user and delivering it to the server.
-    static let instantDataDelivery = PerformancePreset(
-        // persistence
-        maxFileSize: `default`.maxFileSize,
-        maxDirectorySize: `default`.maxDirectorySize,
-        maxFileAgeForWrite: 2.75,
-        minFileAgeForRead: 2.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
-        maxFileAgeForRead: `default`.maxFileAgeForRead,
-        maxObjectsInFile: `default`.maxObjectsInFile,
-        maxObjectSize: `default`.maxObjectSize,
-
-        // upload
-        initialUploadDelay: 0.5, // send quick to have a chance for upload in short-lived app extensions
-        defaultUploadDelay: 3,
-        minUploadDelay: 1,
-        maxUploadDelay: 5,
-        uploadDelayChangeRate: 0.5 // reduce significantly for more uploads in short-lived app extensions
-    )
-
-    static func best(for bundleType: BundleType) -> PerformancePreset {
-        switch bundleType {
-        case .iOSApp: return `default`
-        case .iOSAppExtension: return instantDataDelivery
-        }
+    init(
+        meanFileAge: TimeInterval,
+        minUploadDelay: TimeInterval,
+        uploadDelayFactors: (initial: Double, default: Double, min: Double, max: Double, changeRate: Double)
+    ) {
+        self.maxFileSize = 4 * 1_024 * 1_024 // 4MB
+        self.maxDirectorySize = 512 * 1_024 * 1_024 // 512 MB
+        self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
+        self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
+        self.maxFileAgeForRead = 18 * 60 * 60 // 18h
+        self.maxObjectsInFile = 500
+        self.maxObjectSize = 256 * 1_024 // 256KB
+        self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
+        self.defaultUploadDelay = minUploadDelay * uploadDelayFactors.default
+        self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
+        self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
+        self.uploadDelayChangeRate = uploadDelayFactors.changeRate
     }
 }

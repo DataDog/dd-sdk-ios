@@ -33,16 +33,46 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Notifies that the View starts being presented to the user.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this View. It must match the `key` passed later to `stopView(key:attributes:)`.
+    ///   - path: the View path used for RUM Explorer. If not provided, the `key` name will be used.
+    ///   - attributes: custom attributes to attach to the View.
+    public func startView(
+        key: String,
+        path: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
+    /// Notifies that the View stops being presented to the user.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this View. It must match the `key` passed earlier to `startView(key:path:attributes:)`.
+    ///   - attributes: custom attributes to attach to the View.
+    public func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
+    /// Adds a specific timing in the currently presented View. The timing duration will be computed as the
+    /// number of nanoseconds between the time the View was started and the time the timing was added.
+    /// - Parameters:
+    ///   - name: the name of the custom timing attribute. It must be unique for each timing.
+    public func addTiming(
+        name: String
+    ) {}
+
     /// Notifies that an Error occurred in currently presented View.
     /// - Parameters:
     ///   - message: a message explaining the Error.
     ///   - source: the origin of the error.
+    ///   - stack: stack trace of the error. No specific format needed. Overwrites `file` and `line` parameters below.
     ///   - attributes: custom attributes to attach to the Error
     ///   - file: the file in which the Error occurred (the default is the file name in which this method was called).
     ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
     public func addError(
         message: String,
         source: RUMErrorSource = .custom,
+        stack: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:],
         file: StaticString? = #file,
         line: UInt? = #line
@@ -81,6 +111,19 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Notifies that the Resource starts being loaded from given `urlString`.
+    /// - Parameters:
+    ///   - resourceKey: the key representing the Resource - must be unique among all Resources being currently loaded.
+    ///   - httpMethod: HTTP method used to fetch resource
+    ///   - urlString: the `URL` for the Resource in `String` form.
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func startResourceLoading(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
     /// Adds temporal metrics to given Resource. This method must be called before the Resource is stopped.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
@@ -101,6 +144,21 @@ public class DDRUMMonitor {
     public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
+        size: Int64? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
+    /// Notifies that the Resource stops being loaded succesfully.
+    /// - Parameters:
+    ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - statusCode: HTTP status code of response. e.g: `response.statusCode`
+    ///   - kind: corresponding `RUMResourceType` of the resource.
+    ///   - size: an optional size of the data received for the Resource (in bytes). If not provided, the SDK will try to infer it from the "Content-Length" header of the `response`.
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func stopResourceLoading(
+        resourceKey: String,
+        statusCode: Int?,
+        kind: RUMResourceType,
         size: Int64? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
@@ -191,4 +249,5 @@ public class DDRUMMonitor {
 
 /// The no-op variant of `DDRUMMonitor`.
 internal class DDNoopRUMMonitor: DDRUMMonitor {
+    override init() { }
 }

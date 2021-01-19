@@ -20,38 +20,8 @@ internal extension RUMUUID {
     }
 }
 
-internal extension RUMHTTPMethod {
-    var toRUMDataFormat: RUMDataMethod {
-        switch self {
-        case .GET: return .methodGET
-        case .POST: return .post
-        case .PUT: return .put
-        case .DELETE: return .delete
-        case .HEAD: return .head
-        case .PATCH: return .patch
-        }
-    }
-}
-
-internal extension RUMResourceKind {
-    var toRUMDataFormat: RUMDataResourceType {
-        switch self {
-        case .image: return .image
-        case .xhr: return .xhr
-        case .beacon: return .beacon
-        case .css: return .css
-        case .document: return .document
-        case .fetch: return .fetch
-        case .font: return .font
-        case .js: return .js
-        case .media: return .media
-        case .other: return .other
-        }
-    }
-}
-
 internal extension RUMInternalErrorSource {
-    var toRUMDataFormat: RUMDataSource {
+    var toRUMDataFormat: RUMErrorEvent.Error.Source {
         switch self {
         case .custom: return .custom
         case .source: return .source
@@ -63,7 +33,7 @@ internal extension RUMInternalErrorSource {
 }
 
 internal extension RUMUserActionType {
-    var toRUMDataFormat: RUMDataActionType {
+    var toRUMDataFormat: RUMActionEvent.Action.ActionType {
         switch self {
         case .tap: return .tap
         case .scroll: return .scroll

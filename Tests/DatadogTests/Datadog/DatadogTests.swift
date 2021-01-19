@@ -33,13 +33,21 @@ class DatadogTests: XCTestCase {
     // MARK: - Initializing with different configurations
 
     func testGivenDefaultConfiguration_itCanBeInitialized() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: defaultBuilder.build())
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
         XCTAssertNotNil(Datadog.instance)
         try Datadog.deinitializeOrThrow()
     }
 
     func testGivenDefaultRUMConfiguration_itCanBeInitialized() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: rumBuilder.build())
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: rumBuilder.build()
+        )
         XCTAssertNotNil(Datadog.instance)
         try Datadog.deinitializeOrThrow()
     }
@@ -49,7 +57,11 @@ class DatadogTests: XCTestCase {
             .builderUsing(clientToken: "", environment: "tests")
             .build()
 
-        Datadog.initialize(appContext: .mockAny(), configuration: invalidConiguration)
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: invalidConiguration
+        )
 
         XCTAssertEqual(
             printFunction.printedMessage,
@@ -59,8 +71,16 @@ class DatadogTests: XCTestCase {
     }
 
     func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: defaultBuilder.build())
-        Datadog.initialize(appContext: .mockAny(), configuration: rumBuilder.build())
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: rumBuilder.build()
+        )
 
         XCTAssertEqual(
             printFunction.printedMessage,
@@ -74,7 +94,11 @@ class DatadogTests: XCTestCase {
 
     func testEnablingAndDisablingFeatures() throws {
         func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) throws {
-            Datadog.initialize(appContext: .mockAny(), configuration: configuration)
+            Datadog.initialize(
+                appContext: .mockAny(),
+                trackingConsent: .mockRandom(),
+                configuration: configuration
+            )
             verificationBlock()
 
             RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
@@ -201,27 +225,84 @@ class DatadogTests: XCTestCase {
         }
     }
 
-    // MARK: - Defaults
+    // MARK: - Global Values
 
-    func testDefaultVerbosityLevel() {
-        XCTAssertNil(Datadog.verbosityLevel)
+    func testTrackingConsent() throws {
+        let initialConsent: TrackingConsent = .mockRandom()
+        let nextConsent: TrackingConsent = .mockRandom()
+
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: initialConsent,
+            configuration: defaultBuilder.build()
+        )
+
+        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, initialConsent)
+
+        Datadog.set(trackingConsent: nextConsent)
+
+        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent)
+
+        try Datadog.deinitializeOrThrow()
     }
 
-    func testDefaultUserInfo() throws {
-        Datadog.initialize(appContext: .mockAny(), configuration: defaultBuilder.build())
+    func testUserInfo() throws {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
 
         XCTAssertNotNil(Datadog.instance?.userInfoProvider.value)
         XCTAssertNil(Datadog.instance?.userInfoProvider.value.id)
         XCTAssertNil(Datadog.instance?.userInfoProvider.value.email)
         XCTAssertNil(Datadog.instance?.userInfoProvider.value.name)
+        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.extraInfo as? [String: Int], [:])
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
 
         try Datadog.deinitializeOrThrow()
+    }
+
+    func testDefaultVerbosityLevel() {
+        XCTAssertNil(Datadog.verbosityLevel)
     }
 
     func testDefaultDebugRUM() {
         XCTAssertFalse(Datadog.debugRUM)
     }
+
+    func testDeprecatedAPIs() throws {
+        (Datadog.self as DatadogDeprecatedAPIs.Type).initialize(
+            appContext: .mockAny(),
+            configuration: defaultBuilder.build()
+        )
+
+        XCTAssertEqual(
+            Datadog.instance?.consentProvider.currentValue,
+            .granted,
+            "When using deprecated Datadog initialization API the consent should be set to `.granted`"
+        )
+
+        try Datadog.deinitializeOrThrow()
+    }
 }
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol DatadogDeprecatedAPIs {
+    static func initialize(appContext: AppContext, configuration: Datadog.Configuration)
+}
+extension Datadog: DatadogDeprecatedAPIs {}
 
 class AppContextTests: XCTestCase {
     func testBundleType() {

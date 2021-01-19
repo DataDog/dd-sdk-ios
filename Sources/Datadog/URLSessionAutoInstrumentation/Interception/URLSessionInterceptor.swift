@@ -6,30 +6,19 @@
 
 import Foundation
 
-/// An object performing interception of requests sent from `URLSession`.
 internal protocol URLSessionInterceptorType: class {
-    /// Modifies the `URLRequest` before the `URLSessionTask` is started.
-    /// Called from swizzled implementations of `URLSession.dataTask(...)` methods.
-    /// It gets called for tasks created with `URLRequest` (prior to iOS 13.0 also for tasks created with `URL`).
     func modify(request: URLRequest) -> URLRequest
-
-    /// Notifies the `URLSessionTask` creation for any task of every `URLSession`.
-    /// Called from swizzled implementations of `URLSession.dataTask(...)` methods.
-    func taskCreated(urlSession: URLSession, task: URLSessionTask)
-
-    /// Notifies the `URLSessionTask` metrics collection for any task of every `URLSession` which uses `DDURLSessionDelegate`.
-    /// Called from `DDURLSessionDelegate`.
-    func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics)
-
-    /// Notifies the `URLSessionTask` completion.
-    /// Depending on the `URLSession` method used to produce the `task`, it may be called from:
-    /// * `URLSession.dataTask(with:completion:)` completion block,
-    /// * or `DDURLSessionDelegate` if the task was created with `URLSession.dataTask(with:)` and
-    ///   the session uses `DDURLSessionDelegate`.
-    func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?)
+    func taskCreated(task: URLSessionTask)
+    func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
+    func taskCompleted(task: URLSessionTask, error: Error?)
 }
 
-internal class URLSessionInterceptor: URLSessionInterceptorType {
+/// An object performing interception of requests sent with `URLSession`.
+public class URLSessionInterceptor: URLSessionInterceptorType {
+    public static var shared: URLSessionInterceptor? {
+        URLSessionAutoInstrumentation.instance?.interceptor
+    }
+
     /// Filters first party `URLs` defined by the user.
     private let firstPartyURLsFilter: FirstPartyURLsFilter
     /// Filters internal `URLs` used by the SDK.
@@ -87,14 +76,20 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         }
     }
 
-    // MARK: - URLSessionInterceptorType
-
     /// An internal queue for synchronising the access to `interceptionByTask`.
     private let queue = DispatchQueue(label: "com.datadoghq.URLSessionInterceptor", target: .global(qos: .utility))
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     private var interceptionByTask: [URLSessionTask: TaskInterception] = [:]
 
-    func modify(request: URLRequest) -> URLRequest {
+    // MARK: - Public
+
+    /// Intercepts given `URLRequest` before it is sent.
+    /// If Tracing feature is enabled and first party hosts are configured in `Datadog.Configuration`, this method will
+    /// modify the `request` by adding Datadog trace propagation headers. This will enable end-to-end trace propagation
+    /// from the client application to backend services instrumented with Datadog agents.
+    /// - Parameter request: input request.
+    /// - Returns: modified input requests. The modified request may contain additional Datadog headers.
+    public func modify(request: URLRequest) -> URLRequest {
         guard !internalURLsFilter.isInternal(url: request.url) else {
             return request
         }
@@ -105,7 +100,10 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         return request
     }
 
-    func taskCreated(urlSession: URLSession, task: URLSessionTask) {
+    /// Notifies the `URLSessionTask` creation.
+    /// This method should be called as soon as the task was created.
+    /// - Parameter task: the task object obtained from `URLSession`.
+    public func taskCreated(task: URLSessionTask) {
         guard let request = task.originalRequest,
               !internalURLsFilter.isInternal(url: request.url) else {
             return
@@ -126,7 +124,12 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         }
     }
 
-    func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
+    /// Notifies the `URLSessionTask` metrics collection.
+    /// This method should be called as soon as the task metrics were received by `URLSessionDelegate`.
+    /// - Parameters:
+    ///   - task: task receiving metrics.
+    ///   - metrics: metrics object delivered to `URLSessionDelegate`.
+    public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics) {
         guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
             return
         }
@@ -146,7 +149,11 @@ internal class URLSessionInterceptor: URLSessionInterceptorType {
         }
     }
 
-    func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?) {
+    /// Notifies the `URLSessionTask` completion.
+    /// This method should be called as soon as the task was completed.
+    /// - Parameter task: the task object obtained from `URLSession`.
+    /// - Parameter error: optional `Error` if the task completed with error.
+    public func taskCompleted(task: URLSessionTask, error: Error?) {
         guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
             return
         }

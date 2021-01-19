@@ -13,13 +13,13 @@ class LoggerTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
@@ -27,7 +27,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogWithDefaultLogger() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.0.0",
@@ -62,7 +62,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogWithCustomizedLogger() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder
@@ -94,7 +94,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentDates() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
@@ -115,7 +115,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
@@ -138,7 +138,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Logging an error
 
     func testLoggingError() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         struct TestError: Error {
@@ -167,13 +167,14 @@ class LoggerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         Datadog.instance = Datadog(
+            consentProvider: ConsentProvider(initialConsent: .granted),
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
         defer { Datadog.instance = nil }
 
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 userInfoProvider: Datadog.instance!.userInfoProvider
             )
@@ -225,7 +226,7 @@ class LoggerTests: XCTestCase {
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
@@ -266,7 +267,7 @@ class LoggerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
@@ -324,7 +325,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
@@ -388,7 +389,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         let logger = Logger.builder.build()
@@ -418,7 +419,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { LoggingFeature.instance = nil }
@@ -457,7 +458,7 @@ class LoggerTests: XCTestCase {
     func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 mobileDevice: .mockWith(
                     currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
@@ -477,7 +478,7 @@ class LoggerTests: XCTestCase {
     func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                     networkConnectionInfo: .mockWith(reachability: .no)
@@ -496,7 +497,7 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { LoggingFeature.instance = nil }
@@ -531,7 +532,7 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { LoggingFeature.instance = nil }
@@ -569,7 +570,7 @@ class LoggerTests: XCTestCase {
         LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance = nil }
 
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance = nil }
 
         // given
@@ -589,14 +590,14 @@ class LoggerTests: XCTestCase {
         // then
         // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
-        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMDataError.self) }
-        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMDataError.self) }
-        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMDataError.self) { rumModel in
+        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
         }
-        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMDataError.self) { rumModel in
+        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "critical message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
@@ -606,7 +607,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With Active Span
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         TracingFeature.instance = .mockNoOp()
@@ -638,7 +639,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { LoggingFeature.instance = nil }
 
         TracingFeature.instance = .mockNoOp()
@@ -667,6 +668,109 @@ class LoggerTests: XCTestCase {
         let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID)
         logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID)
+    }
+
+    // MARK: - Integration With Environment Context
+
+    func testGivenBundlingWithTraceEnabledAndTracerRegisteredAndEnvironmentContext_whenSendingLog_itContainsEnvironmentContextAttributes() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        defer { LoggingFeature.instance = nil }
+
+        setenv("x-datadog-trace-id", "111111", 1)
+        setenv("x-datadog-parent-id", "222222", 1)
+
+        TracingFeature.instance = .mockNoOp()
+        defer { TracingFeature.instance = nil }
+
+        // given
+        let logger = Logger.builder.build()
+        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        // when
+        let span = Global.sharedTracer.startSpan(operationName: "span").setActive()
+        logger.info("info message 1")
+        span.finish()
+        logger.info("info message 2")
+
+        // then
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.traceID,
+            equals: "\(span.context.dd.traceID.rawValue)"
+        )
+        logMatchers[0].assertValue(
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.spanID,
+            equals: "\(span.context.dd.spanID.rawValue)"
+        )
+        logMatchers[1].assertValue(
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.traceID,
+            equals: "\(TracingUUID(rawValue: 111_111).rawValue)"
+        )
+        logMatchers[1].assertValue(
+            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.spanID,
+            equals: "\(TracingUUID(rawValue: 222_222).rawValue)"
+        )
+
+        unsetenv("x-datadog-trace-id")
+        unsetenv("x-datadog-parent-id")
+    }
+
+    // MARK: - Log Dates Correction
+
+    func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingLogs_thenLogDateUsesServerTime() throws {
+        // Given
+        let deviceTime: Date = .mockDecember15th2019At10AMUTC()
+        let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
+
+        // When
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(using: deviceTime),
+                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+        logger.debug("message")
+
+        // Then
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 1)
+        logMatchers[0].assertDate { logDate in
+            logDate == deviceTime.addingTimeInterval(serverTimeDifference)
+        }
+    }
+
+    // MARK: - Tracking Consent
+
+    func testWhenChangingConsentValues_itUploadsOnlyAuthorizedLogs() throws {
+        let consentProvider = ConsentProvider(initialConsent: .pending)
+
+        // Given
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(consentProvider: consentProvider)
+        )
+        defer { LoggingFeature.instance = nil }
+
+        let logger = Logger.builder.build()
+
+        // When
+        logger.info("message in `.pending` consent changed to `.granted`")
+        consentProvider.changeConsent(to: .granted)
+        logger.info("message in `.granted` consent")
+        consentProvider.changeConsent(to: .notGranted)
+        logger.info("message in `.notGranted` consent")
+        consentProvider.changeConsent(to: .granted)
+        logger.info("another message in `.granted` consent")
+
+        // Then
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
+        logMatchers[0].assertMessage(equals: "message in `.pending` consent changed to `.granted`")
+        logMatchers[1].assertMessage(equals: "message in `.granted` consent")
+        logMatchers[2].assertMessage(equals: "another message in `.granted` consent")
     }
 
     // MARK: - Thread safety
@@ -731,6 +835,7 @@ class LoggerTests: XCTestCase {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
                 .enableLogging(false)
                 .build()

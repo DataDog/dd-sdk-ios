@@ -54,7 +54,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
 
         let view1 = session.viewVisits[0]
         XCTAssertEqual(view1.path, "SendRUMFixture1ViewController")
-        XCTAssertEqual(view1.viewEvents.count, 4, "First view should receive 4 updates")
+        XCTAssertEqual(view1.viewEvents.count, 6, "First view should receive 6 updates")
         XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
         XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
         XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)
@@ -74,8 +74,15 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         )
         XCTAssertEqual(view1.errorEvents[0].error.source, .network)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
-        XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .methodGET)
+        XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .get)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
+
+        let contentReadyTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "content-ready"))
+        let firstInteractionTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "first-interaction"))
+        XCTAssertGreaterThanOrEqual(contentReadyTiming, 50_000)
+        XCTAssertLessThan(contentReadyTiming, 1_000_000_000)
+        XCTAssertGreaterThan(firstInteractionTiming, 0)
+        XCTAssertLessThan(firstInteractionTiming, 5_000_000_000)
 
         let view2 = session.viewVisits[1]
         XCTAssertEqual(view2.path, "SendRUMFixture2ViewController")

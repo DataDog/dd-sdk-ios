@@ -48,6 +48,8 @@ public class Tracer: OTTracer {
     internal let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
+    /// Integration with Span context injected by environment.
+    internal let environmentSpanIntegration = TracingWithEnvironmentSpanIntegration()
 
     private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
@@ -97,7 +99,8 @@ public class Tracer: OTTracer {
                     serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                     userInfoProvider: tracingFeature.userInfoProvider,
                     networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil
+                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
+                    dateCorrector: tracingFeature.dateCorrector
                 ),
                 fileWriter: tracingFeature.storage.writer
             ),
@@ -173,9 +176,9 @@ public class Tracer: OTTracer {
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
+            traceID: parentSpanContext?.traceID ?? (environmentSpanIntegration.environmentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique()),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentSpanContext?.spanID,
+            parentSpanID: parentSpanContext?.spanID ?? environmentSpanIntegration.environmentSpanContext?.spanID,
             baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
         )
     }

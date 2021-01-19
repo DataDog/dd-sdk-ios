@@ -58,7 +58,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_IDENTIFIER"
-            value = "TracingScenario"
+            value = "TracingManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -99,6 +99,21 @@
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_IDENTIFIER"
             value = "RUMResourcesScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "TrackingConsentStartPendingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "TrackingConsentStartGrantedScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            value = "RUMScrubbingScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>

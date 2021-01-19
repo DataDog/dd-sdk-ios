@@ -14,6 +14,27 @@ extension Datadog {
 
     /// Datadog SDK configuration.
     public struct Configuration {
+        /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
+        /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
+        public enum BatchSize {
+            /// Prefer small sized data batches.
+            case small
+            /// Prefer medium sized data batches.
+            case medium
+            /// Prefer large sized data batches.
+            case large
+        }
+
+        /// Defines the frequency at which Datadog SDK will try to upload data batches.
+        public enum UploadFrequency {
+            /// Try to upload batched data frequently.
+            case frequent
+            /// Try to upload batched data with a medium frequency.
+            case average
+            /// Try to upload batched data rarely.
+            case rare
+        }
+
         public enum DatadogEndpoint {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
@@ -152,6 +173,12 @@ extension Datadog {
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitActionsTrackingEnabled: Bool
+        private(set) var rumViewEventMapper: RUMViewEventMapper?
+        private(set) var rumResourceEventMapper: RUMResourceEventMapper?
+        private(set) var rumActionEventMapper: RUMActionEventMapper?
+        private(set) var rumErrorEventMapper: RUMErrorEventMapper?
+        private(set) var batchSize: BatchSize
+        private(set) var uploadFrequency: UploadFrequency
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -209,7 +236,13 @@ extension Datadog {
                     firstPartyHosts: nil,
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
-                    rumUIKitActionsTrackingEnabled: false
+                    rumUIKitActionsTrackingEnabled: false,
+                    rumViewEventMapper: nil,
+                    rumResourceEventMapper: nil,
+                    rumActionEventMapper: nil,
+                    rumErrorEventMapper: nil,
+                    batchSize: .medium,
+                    uploadFrequency: .average
                 )
             }
 
@@ -415,6 +448,42 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the custom mapper for `RUMViewEvent`. This can be used to modify RUM View events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM View event entirely, so it won't be send to Datadog.
+            public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent?) -> Builder {
+                configuration.rumViewEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMResourceEvent`. This can be used to modify RUM Resource events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMResourceEvent` as input and expecting `RUMResourceEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMResourceEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Resource event entirely, so it won't be send to Datadog.
+            public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder {
+                configuration.rumResourceEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMActionEvent`. This can be used to modify RUM Action events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMActionEvent` as input and expecting `RUMActionEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMActionEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Action event entirely, so it won't be send to Datadog.
+            public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder {
+                configuration.rumActionEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMErrorEvent`. This can be used to modify RUM Error events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMErrorEvent` as input and expecting `RUMErrorEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMErrorEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
+            public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
+                configuration.rumErrorEventMapper = mapper
+                return self
+            }
+
             // MARK: - Features Common Configuration
 
             /// Sets the default service name associated with data send to Datadog.
@@ -422,6 +491,22 @@ extension Datadog {
             /// - Parameter serviceName: the service name (default value is set to application bundle identifier)
             public func set(serviceName: String) -> Builder {
                 configuration.serviceName = serviceName
+                return self
+            }
+
+            /// Sets the preferred size of batched data uploaded to Datadog servers.
+            /// This value impacts the size and number of requests performed by the SDK.
+            /// - Parameter batchSize: `.medium` by default.
+            public func set(batchSize: BatchSize) -> Builder {
+                configuration.batchSize = batchSize
+                return self
+            }
+
+            /// Sets the preferred frequency of uploading data to Datadog servers.
+            /// This value impacts the frequency of performing network requests by the SDK.
+            /// - Parameter uploadFrequency: `.average` by default.
+            public func set(uploadFrequency: UploadFrequency) -> Builder {
+                configuration.uploadFrequency = uploadFrequency
                 return self
             }
 

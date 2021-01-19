@@ -14,7 +14,7 @@ class TracerConfigurationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         TracingFeature.instance = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.2.3",

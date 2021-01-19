@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKObjc"
   s.module_name  = "DatadogObjc"
-  s.version      = "1.4.1"
+  s.version      = "1.5.0-alpha2"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -19,5 +19,5 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => s.version.to_s }
 
   s.source_files = "Sources/DatadogObjc/**/*.swift"
-  s.dependency 'DatadogSDK'
+  s.dependency 'DatadogSDK', '1.5.0-alpha2'
 end

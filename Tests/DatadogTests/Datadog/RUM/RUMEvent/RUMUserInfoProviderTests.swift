@@ -7,8 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension RUMDataUSR: EquatableInTests {}
-
 class RUMUserInfoProviderTests: XCTestCase {
     private let userInfoProvider = UserInfoProvider()
     private lazy var rumUserInfoProvider = RUMUserInfoProvider(userInfoProvider: userInfoProvider)
@@ -20,15 +18,15 @@ class RUMUserInfoProviderTests: XCTestCase {
 
     func testWhenUserInfoIsAvailable_itReturnsRUMUserInfo() {
         userInfoProvider.value = UserInfo(id: "abc-123", name: nil, email: nil, extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: nil, email: nil))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: nil, id: "abc-123", name: nil))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: nil))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: nil, id: "abc-123", name: "Foo"))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com"))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo"))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMDataUSR(id: "abc-123", name: "Foo", email: "foo@bar.com"))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo"))
     }
 }

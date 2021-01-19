@@ -45,10 +45,11 @@ class RUMApplicationScopeTests: XCTestCase {
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
         let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
         let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
+        let secondSessionViewScope = try XCTUnwrap(secondSessionViewScopes.first)
 
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
         XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
-        XCTAssertTrue(secondSessionViewScopes.first?.identity === view)
+        XCTAssertTrue(secondSessionViewScope.identity.equals(view))
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
@@ -71,7 +72,7 @@ class RUMApplicationScopeTests: XCTestCase {
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
 
-        XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMDataView>.self).count, 2)
+        XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count, 2)
     }
 
     func testWhenSamplingRateIs0_noEventsAreSent() {
@@ -83,7 +84,7 @@ class RUMApplicationScopeTests: XCTestCase {
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
 
-        XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMDataView>.self).count, 0)
+        XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count, 0)
     }
 
     func testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent() throws {
@@ -100,7 +101,7 @@ class RUMApplicationScopeTests: XCTestCase {
             currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
         }
 
-        let viewEventsCount = try output.recordedEvents(ofType: RUMEvent<RUMDataView>.self).count
+        let viewEventsCount = try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count
         let trackedSessionsCount = Double(viewEventsCount) / 2 // each Session should send 2 View updates
 
         XCTAssertGreaterThan(trackedSessionsCount, 100 * 0.8) // -20%

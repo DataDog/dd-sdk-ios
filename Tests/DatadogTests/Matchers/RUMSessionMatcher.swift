@@ -51,16 +51,19 @@ internal class RUMSessionMatcher {
         fileprivate(set) var path: String = ""
 
         /// `RUMView` events tracked during this visit.
-        fileprivate(set) var viewEvents: [RUMDataView] = []
+        fileprivate(set) var viewEvents: [RUMViewEvent] = []
+
+        /// `RUMEventMatchers` corresponding to item in `viewEvents`.
+        fileprivate(set) var viewEventMatchers: [RUMEventMatcher] = []
 
         /// `RUMAction` events tracked during this visit.
-        fileprivate(set) var actionEvents: [RUMDataAction] = []
+        fileprivate(set) var actionEvents: [RUMActionEvent] = []
 
         /// `RUMResource` events tracked during this visit.
-        fileprivate(set) var resourceEvents: [RUMDataResource] = []
+        fileprivate(set) var resourceEvents: [RUMResourceEvent] = []
 
         /// `RUMError` events tracked during this visit.
-        fileprivate(set) var errorEvents: [RUMDataError] = []
+        fileprivate(set) var errorEvents: [RUMErrorEvent] = []
     }
 
     /// An array of view visits tracked during this RUM Session.
@@ -81,16 +84,16 @@ internal class RUMSessionMatcher {
 
         // Get RUM Events by kind:
 
-        let viewEvents: [RUMDataView] = try (eventsMatchersByType["view"] ?? [])
+        let viewEventMatchers = eventsMatchersByType["view"] ?? []
+        let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
+
+        let actionEvents: [RUMActionEvent] = try (eventsMatchersByType["action"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let actionEvents: [RUMDataAction] = try (eventsMatchersByType["action"] ?? [])
+        let resourceEvents: [RUMResourceEvent] = try (eventsMatchersByType["resource"] ?? [])
             .map { matcher in try matcher.model() }
 
-        let resourceEvents: [RUMDataResource] = try (eventsMatchersByType["resource"] ?? [])
-            .map { matcher in try matcher.model() }
-
-        let errorEvents: [RUMDataError] = try (eventsMatchersByType["error"] ?? [])
+        let errorEvents: [RUMErrorEvent] = try (eventsMatchersByType["error"] ?? [])
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually
@@ -103,10 +106,11 @@ internal class RUMSessionMatcher {
         var visitsByViewID: [String: ViewVisit] = [:]
         visits.forEach { visit in visitsByViewID[visit.viewID] = visit }
 
-        // Group RUM Events by View Visits:
-        try viewEvents.forEach { rumEvent in
+        // Group RUM Events and their matchers by View Visits:
+        try zip(viewEvents, viewEventMatchers).forEach { rumEvent, matcher in
             if let visit = visitsByViewID[rumEvent.view.id] {
                 visit.viewEvents.append(rumEvent)
+                visit.viewEventMatchers.append(matcher)
                 if visit.path.isEmpty {
                     visit.path = rumEvent.view.url
                 } else if visit.path != rumEvent.view.url {
@@ -158,16 +162,23 @@ internal class RUMSessionMatcher {
             return firstVisitTime < secondVisitTime
         }
 
+        // Sort view events in each visit by document version
+        visits.forEach { visit in
+            visit.viewEvents = visit.viewEvents.sorted { viewUpdate1, viewUpdate2 in
+                viewUpdate1.dd.documentVersion < viewUpdate2.dd.documentVersion
+            }
+        }
+
         self.viewVisits = visitsEventOrderedByTime
     }
 }
 
-private func validate(rumResourceEvents: [RUMDataResource]) throws {
-    // Each `RUMResource` should have unique ID
+private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
+    // Each `RUMResourceEvent` should have unique ID
     let ids = Set(rumResourceEvents.map { $0.resource.id })
     if ids.count != rumResourceEvents.count {
         throw RUMSessionConsistencyException(
-            description: "`resource.id` should be unique - found at least two RUMResource events with the same `resource.id`."
+            description: "`resource.id` should be unique - found at least two RUMResourceEvents with the same `resource.id`."
         )
     }
 }

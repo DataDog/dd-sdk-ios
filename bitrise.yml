@@ -21,21 +21,12 @@ workflows:
         Does `make dependencies` to prepare source code in repo for building and testing.
     steps:
     - script:
-        run_if: .IsCI
-        title: Do `make dependencies` for CI.
+        title: Do `make dependencies`
         inputs:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            make dependencies ci=true
-    - script:
-        run_if: not .IsCI
-        title: Do `make dependencies` for local machine.
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            make dependencies
+            make dependencies ci=${CI}
 
   _deploy_artifacts:
     description: |-
@@ -77,7 +68,7 @@ workflows:
         - content: |-
             #!/usr/bin/env zsh
             set -e
-            ./tools/generate-models/run.sh verify
+            make rum-models-verify ci=${CI}
 
   run_unit_tests:
     description: |-
@@ -145,7 +136,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            make test-spm ci=true
+            make test-spm ci=${CI}
     - xcodebuild:
         title: Build SPMProject for tests - Catalyst
         inputs:
@@ -169,7 +160,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            make test-carthage ci=true
+            make test-carthage ci=${CI}
     - xcode-test:
         title: Run CTProject tests
         inputs:
@@ -185,7 +176,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            make test-cocoapods ci=true
+            make test-cocoapods ci=${CI}
     - xcodebuild:
         title: Build CPProject for tests - Catalyst
         inputs:

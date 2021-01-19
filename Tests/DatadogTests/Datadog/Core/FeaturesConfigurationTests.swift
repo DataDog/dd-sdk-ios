@@ -104,16 +104,21 @@ class FeaturesConfigurationTests: XCTestCase {
         verify(invalidEnvironmentName: String(repeating: "a", count: 197))
     }
 
-    func testPerformance() throws {
-        let iOSAppConfiguration = try FeaturesConfiguration(
-            configuration: .mockAny(), appContext: .mockWith(bundleType: .iOSApp)
-        )
-        XCTAssertEqual(iOSAppConfiguration.common.performance, .lowRuntimeImpact)
+    func testPerformancePreset() throws {
+        try BatchSize.allCases
+            .combined(with: UploadFrequency.allCases)
+            .combined(with: BundleType.allCases)
+            .map { ($0.0, $0.1, $1) }
+            .forEach { batchSize, uploadFrequency, bundleType in
+                let actualPerformancePreset = try FeaturesConfiguration(
+                    configuration: .mockWith(batchSize: batchSize,uploadFrequency: uploadFrequency),
+                    appContext: .mockWith(bundleType: bundleType)
+                ).common.performance
 
-        let iOSAppExtensionConfiguration = try FeaturesConfiguration(
-            configuration: .mockAny(), appContext: .mockWith(bundleType: .iOSAppExtension)
-        )
-        XCTAssertEqual(iOSAppExtensionConfiguration.common.performance, .instantDataDelivery)
+                let expectedPerformancePreset = PerformancePreset(batchSize: batchSize, uploadFrequency: uploadFrequency, bundleType: bundleType)
+
+                XCTAssertEqual(actualPerformancePreset, expectedPerformancePreset)
+            }
     }
 
     func testEndpoint() throws {
@@ -474,6 +479,73 @@ class FeaturesConfigurationTests: XCTestCase {
             🔥 Datadog SDK usage error: To use `.track(firstPartyHosts:)` either RUM or Tracing should be enabled.
             """
         )
+    }
+
+    func testWhenSomeOfTheFirstPartyHostsAreMistaken_itPrintsWarningsAndDoesSanitization() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // When
+        let firstPartyHosts: Set<String> = [
+            "https://first-party.com", // sanitize to → "first-party.com"
+            "http://api.first-party.com", // sanitize to → "api.first-party.com"
+            "https://first-party.com/v2/api", // sanitize to → "first-party.com"
+            "https://192.168.0.1/api", // sanitize to → "192.168.0.1"
+            "https://192.168.0.2", // sanitize to → "192.168.0.2"
+            "invalid-host-name", // drop
+            "192.168.0.3:8080", // drop
+            "", // drop
+            "localhost", // accept
+            "192.168.0.4", // accept
+            "valid-host-name.com", // accept
+        ]
+
+        // Then
+        let configuration = try FeaturesConfiguration(
+            configuration: .mockWith(rumEnabled: true, firstPartyHosts: firstPartyHosts),
+            appContext: .mockAny()
+        )
+
+        XCTAssertEqual(
+            configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts,
+            [
+                "first-party.com",
+                "api.first-party.com",
+                "localhost",
+                "192.168.0.1",
+                "192.168.0.2",
+                "localhost",
+                "192.168.0.4",
+                "valid-host-name.com"
+            ]
+        )
+
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: '192.168.0.3:8080' is not a valid host name and will be dropped.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: '' is not a valid host name and will be dropped.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://first-party.com' is an url and will be sanitized to: 'first-party.com'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://192.168.0.1/api' is an url and will be sanitized to: '192.168.0.1'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'http://api.first-party.com' is an url and will be sanitized to: 'api.first-party.com'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://first-party.com/v2/api' is an url and will be sanitized to: 'first-party.com'.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'invalid-host-name' is not a valid host name and will be dropped.")
+        )
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ The first party host configured for Datadog SDK is not valid: 'https://192.168.0.2' is an url and will be sanitized to: '192.168.0.2'.")
+        )
+        XCTAssertEqual(printFunction.printedMessages.count, 8)
     }
 
     // MARK: - Helpers

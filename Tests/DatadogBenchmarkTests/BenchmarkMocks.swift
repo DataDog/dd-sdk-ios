@@ -6,13 +6,25 @@
 
 @testable import Datadog
 
+private struct DateCorrectorMock: DateCorrectorType {
+    var currentCorrection: DateCorrection {
+        return DateCorrection(serverTimeOffset: 0)
+    }
+}
+
+extension PerformancePreset {
+    static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)
+}
+
 extension FeaturesCommonDependencies {
     static func mockAny() -> Self {
         return .init(
-            performance: .default,
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            performance: .benchmarksPreset,
             httpClient: HTTPClient(),
             mobileDevice: .current,
             dateProvider: SystemDateProvider(),
+            dateCorrector: DateCorrectorMock(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
             carrierInfoProvider: CarrierInfoProvider(),

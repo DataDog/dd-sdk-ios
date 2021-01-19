@@ -78,6 +78,7 @@ included:
   - Tests
   - instrumented-tests/http-server-mock/Tests
   - tools/api-surface/Tests
+  - tools/rum-models-generator/Tests
   - dependency-manager-tests/carthage/CTProjectTests
   - dependency-manager-tests/carthage/CTProjectUITests
   - dependency-manager-tests/cocoapods/CTProjectTests

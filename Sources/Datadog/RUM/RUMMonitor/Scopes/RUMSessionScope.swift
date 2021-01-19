@@ -65,15 +65,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
-            guard let expiredViewIdentity = expiredView.identity else {
-                return nil // if the underlying `UIVIewController` no longer exists, skip transferring its scope
+            guard let expiredViewIdentifiable = expiredView.identity.identifiable else {
+                return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
             }
             return RUMViewScope(
                 parent: self,
                 dependencies: dependencies,
-                identity: expiredViewIdentity,
+                identity: expiredViewIdentifiable,
                 uri: expiredView.viewURI,
                 attributes: expiredView.attributes,
+                customTimings: expiredView.customTimings,
                 startTime: startTime
             )
         }
@@ -123,6 +124,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 identity: command.identity,
                 uri: command.path,
                 attributes: command.attributes,
+                customTimings: [:],
                 startTime: command.time
             )
         )

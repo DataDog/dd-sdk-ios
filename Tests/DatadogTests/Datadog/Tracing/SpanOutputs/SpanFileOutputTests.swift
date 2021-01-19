@@ -19,17 +19,15 @@ class SpanFileOutputTests: XCTestCase {
     }
 
     func testItWritesSpanToFileAsJSON() throws {
-        let queue = DispatchQueue(label: "any")
         let output = SpanFileOutput(
             spanBuilder: .mockAny(),
             fileWriter: FileWriter(
                 dataFormat: TracingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
-                    performance: PerformancePreset.default,
+                    performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
                     dateProvider: SystemDateProvider()
-                ),
-                queue: queue
+                )
             )
         )
 
@@ -44,8 +42,6 @@ class SpanFileOutputTests: XCTestCase {
         )
 
         output.write(ddspan: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
-
-        queue.sync {} // wait on writter queue
 
         let fileData = try temporaryDirectory.files()[0].read()
         let matcher = try SpanMatcher.fromJSONObjectData(fileData)

@@ -12,13 +12,13 @@ class TracingFeatureTests: XCTestCase {
         super.setUp()
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.create()
+        temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(TracingFeature.instance)
-        temporaryDirectory.delete()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
@@ -27,7 +27,7 @@ class TracingFeatureTests: XCTestCase {
     func testItUsesExpectedHTTPMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationName: "FoobarApp",
@@ -35,8 +35,7 @@ class TracingFeatureTests: XCTestCase {
                 )
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1"),
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
         defer { TracingFeature.instance = nil }
@@ -48,7 +47,7 @@ class TracingFeatureTests: XCTestCase {
 
         let request = server.waitAndReturnRequests(count: 1)[0]
         XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertEqual(request.url?.query, "batch_time=1576404000000")
+        XCTAssertNil(request.url?.query)
         XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
     }
@@ -58,7 +57,7 @@ class TracingFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         TracingFeature.instance = .mockWith(
-            directory: temporaryDirectory,
+            directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(

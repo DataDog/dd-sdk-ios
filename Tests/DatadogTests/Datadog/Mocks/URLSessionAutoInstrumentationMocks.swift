@@ -11,32 +11,32 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
     var modifiedRequest: URLRequest?
 
     var onRequestModified: ((URLRequest) -> Void)?
-    var onTaskCreated: ((URLSession, URLSessionTask) -> Void)?
-    var onTaskCompleted: ((URLSession, URLSessionTask, Error?) -> Void)?
-    var onTaskMetricsCollected: ((URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void)?
+    var onTaskCreated: ((URLSessionTask) -> Void)?
+    var onTaskCompleted: ((URLSessionTask, Error?) -> Void)?
+    var onTaskMetricsCollected: ((URLSessionTask, URLSessionTaskMetrics) -> Void)?
 
-    var tasksCreated: [(session: URLSession, task: URLSessionTask)] = []
-    var tasksCompleted: [(session: URLSession, task: URLSessionTask, error: Error?)] = []
-    var taskMetrics: [(session: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
+    var tasksCreated: [URLSessionTask] = []
+    var tasksCompleted: [(task: URLSessionTask, error: Error?)] = []
+    var taskMetrics: [(task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
 
     func modify(request: URLRequest) -> URLRequest {
         onRequestModified?(request)
         return modifiedRequest ?? request
     }
 
-    func taskCreated(urlSession: URLSession, task: URLSessionTask) {
-        tasksCreated.append((session: urlSession, task: task))
-        onTaskCreated?(urlSession, task)
+    func taskCreated(task: URLSessionTask) {
+        tasksCreated.append(task)
+        onTaskCreated?(task)
     }
 
-    func taskCompleted(urlSession: URLSession, task: URLSessionTask, error: Error?) {
-        tasksCompleted.append((session: urlSession, task: task, error: error))
-        onTaskCompleted?(urlSession, task, error)
+    func taskCompleted(task: URLSessionTask, error: Error?) {
+        tasksCompleted.append((task: task, error: error))
+        onTaskCompleted?(task, error)
     }
 
-    func taskMetricsCollected(urlSession: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
-        taskMetrics.append((session: urlSession, task: task, metrics: metrics))
-        onTaskMetricsCollected?(urlSession, task, metrics)
+    func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics) {
+        taskMetrics.append((task: task, metrics: metrics))
+        onTaskMetricsCollected?(task, metrics)
     }
 }
 

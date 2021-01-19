@@ -11,18 +11,30 @@ class RUMStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     private var queue: DispatchQueue!
     private var directory: Directory!
-    private var writer: FileWriter!
-    private var reader: FileReader!
+    private var writer: Writer!
+    private var reader: Reader!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "rum-benchmark")
 
-        let storage = RUMFeature.createStorage(directory: directory, commonDependencies: .mockAny())
-        self.writer = storage.writer as? FileWriter
-        self.reader = storage.reader as? FileReader
-        self.queue = self.writer.queue
+        let storage = RUMFeature.createStorage(
+            directories: FeatureDirectories(
+                unauthorized: obtainUniqueTemporaryDirectory(),
+                authorized: directory
+            ),
+            eventMapper: RUMEventsMapper(
+                viewEventMapper: nil,
+                errorEventMapper: nil,
+                resourceEventMapper: nil,
+                actionEventMapper: nil
+            ),
+            commonDependencies: .mockAny()
+        )
+        self.writer = storage.writer
+        self.reader = storage.reader
+        self.queue = (storage.writer as! ConsentAwareDataWriter).readWriteQueue
 
         XCTAssertTrue(try directory.files().count == 0)
     }
@@ -52,7 +64,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
         }
 
         // Wait enough time for `reader` to accept the youngest batch file
-        Thread.sleep(forTimeInterval: PerformancePreset.default.minFileAgeForRead + 0.1)
+        Thread.sleep(forTimeInterval: PerformancePreset.benchmarksPreset.minFileAgeForRead + 0.1)
 
         measureMetrics([.wallClockTime], automaticallyStartMeasuring: false) {
             self.startMeasuring()
@@ -69,44 +81,46 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createRandomizedRUMEvent() -> RUMEvent<RUMDataView> {
+    private func createRandomizedRUMEvent() -> RUMEvent<RUMViewEvent> {
         return RUMEvent(
-            model: RUMDataView(
-                date: Int64.random(in: Int64.min..<Int64.max),
+            model: RUMViewEvent(
+                dd: .init(documentVersion: .mockAny()),
                 application: .init(id: UUID().uuidString),
+                connectivity: nil,
+                date: Int64.random(in: Int64.min..<Int64.max),
                 service: .mockRandom(length: 20),
-                session: .init(
-                    id: UUID().uuidString,
-                    type: .user
+                session: .init(id: UUID().uuidString, type: .user),
+                usr: .init(
+                    email: .mockRandom(length: 10),
+                    id: .mockRandom(length: 10),
+                    name: .mockRandom(length: 10)
                 ),
                 view: .init(
-                    id: UUID().uuidString,
-                    referrer: .mockRandom(length: 10),
-                    url: .mockRandom(length: 30),
-                    loadingTime: .mockAny(),
-                    loadingType: nil,
-                    timeSpent: .mockAny(),
-                    firstContentfulPaint: nil,
+                    action: .init(count: .mockAny()),
+                    crash: .init(count: .mockAny()),
+                    cumulativeLayoutShift: nil,
                     domComplete: nil,
                     domContentLoaded: nil,
                     domInteractive: nil,
-                    loadEvent: nil,
-                    action: .init(count: .mockAny()),
                     error: .init(count: .mockAny()),
-                    crash: .init(count: .mockAny()),
+                    firstContentfulPaint: nil,
+                    firstInputDelay: nil,
+                    id: UUID().uuidString,
+                    isActive: nil,
+                    largestContentfulPaint: nil,
+                    loadEvent: nil,
+                    loadingTime: .mockAny(),
+                    loadingType: nil,
                     longTask: nil,
-                    resource: .init(count: .mockAny())
-                ),
-                usr: .init(
-                    id: .mockRandom(length: 10),
-                    name: .mockRandom(length: 10),
-                    email: .mockRandom(length: 10)
-                ),
-                connectivity: nil,
-                dd: .init(documentVersion: .mockAny())
+                    referrer: .mockRandom(length: 10),
+                    resource: .init(count: .mockAny()),
+                    timeSpent: .mockAny(),
+                    url: .mockRandom(length: 30)
+                )
             ),
             attributes: ["attribute": "value"],
-            userInfoAttributes: ["str": "value", "int": 11_235, "bool": true]
+            userInfoAttributes: ["str": "value", "int": 11_235, "bool": true],
+            customViewTimings: nil
         )
     }
 }

@@ -21,22 +21,28 @@ extension RUMFeature {
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
-        return RUMFeature(directory: directory, configuration: configuration, commonDependencies: dependencies)
+        return RUMFeature(directories: directories, configuration: configuration, commonDependencies: dependencies)
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        directory: Directory,
+        directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
         // Get the full feature mock:
-        let fullFeature: RUMFeature = .mockWith(directory: directory, dependencies: dependencies)
+        let fullFeature: RUMFeature = .mockWith(
+            directories: directories,
+            configuration: configuration,
+            dependencies: dependencies.replacing(
+                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+            )
+        )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
@@ -62,12 +68,12 @@ extension RUMFeature {
 
 // MARK: - Public API Mocks
 
-extension RUMHTTPMethod {
-    static func mockAny() -> RUMHTTPMethod { .GET }
+extension RUMMethod {
+    static func mockAny() -> RUMMethod { .get }
 }
 
-extension RUMResourceKind {
-    static func mockAny() -> RUMResourceKind { .image }
+extension RUMResourceType {
+    static func mockAny() -> RUMResourceType { .image }
 }
 
 // MARK: - RUMDataModel Mocks
@@ -77,6 +83,43 @@ struct RUMDataModelMock: RUMDataModel, Equatable {
 }
 
 // MARK: - Component Mocks
+
+extension RUMEvent {
+    static func mockWith<DM: RUMDataModel>(
+        model: DM,
+        attributes: [String: Encodable] = [:],
+        userInfoAttributes: [String: Encodable] = [:],
+        customViewTimings: [String: Int64]? = nil
+    ) -> RUMEvent<DM> {
+        return RUMEvent<DM>(
+            model: model,
+            attributes: attributes,
+            userInfoAttributes: userInfoAttributes,
+            customViewTimings: customViewTimings
+        )
+    }
+
+    static func mockRandomWith<DM: RUMDataModel>(model: DM) -> RUMEvent<DM> {
+        func randomAttributes(prefixed prefix: String) -> [String: Encodable] {
+            var attributes: [String: String] = [:]
+            (0..<10).forEach { index in attributes["\(prefix)\(index)"] = "value\(index)" }
+            return attributes
+        }
+
+        func randomTimings() -> [String: Int64] {
+            var timings: [String: Int64] = [:]
+            (0..<10).forEach { index in timings["timing\(index)"] = .mockRandom() }
+            return timings
+        }
+
+        return RUMEvent<DM>(
+            model: model,
+            attributes: randomAttributes(prefixed: "event-attribute"),
+            userInfoAttributes: randomAttributes(prefixed: "user-attribute"),
+            customViewTimings: randomTimings()
+        )
+    }
+}
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
@@ -98,6 +141,17 @@ class RUMEventOutputMock: RUMEventOutput {
     }
 }
 
+extension RUMEventsMapper {
+    static func mockNoOp() -> RUMEventsMapper {
+        return RUMEventsMapper(
+            viewEventMapper: nil,
+            errorEventMapper: nil,
+            resourceEventMapper: nil,
+            actionEventMapper: nil
+        )
+    }
+}
+
 // MARK: - RUMCommand Mocks
 
 struct RUMCommandMock: RUMCommand {
@@ -111,7 +165,7 @@ extension RUMStartViewCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: AnyObject = mockView,
+        identity: RUMViewIdentifiable = mockView,
         path: String? = nil,
         isInitialView: Bool = false
     ) -> RUMStartViewCommand {
@@ -132,7 +186,7 @@ extension RUMStopViewCommand {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: AnyObject = mockView
+        identity: RUMViewIdentifiable = mockView
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
             time: time, attributes: attributes, identity: identity
@@ -165,6 +219,18 @@ extension RUMAddCurrentViewErrorCommand {
     }
 }
 
+extension RUMAddViewTimingCommand {
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        timingName: String = .mockAny()
+    ) -> RUMAddViewTimingCommand {
+        return RUMAddViewTimingCommand(
+            time: time, attributes: attributes, timingName: timingName
+        )
+    }
+}
+
 extension RUMStartResourceCommand {
     static func mockAny() -> RUMStartResourceCommand { mockWith() }
 
@@ -173,8 +239,8 @@ extension RUMStartResourceCommand {
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
-        httpMethod: RUMHTTPMethod = .mockAny(),
-        kind: RUMResourceKind = .mockAny(),
+        httpMethod: RUMMethod = .mockAny(),
+        kind: RUMResourceType = .mockAny(),
         spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
@@ -196,7 +262,7 @@ extension RUMStopResourceCommand {
         resourceKey: String = .mockAny(),
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        kind: RUMResourceKind = .mockAny(),
+        kind: RUMResourceType = .mockAny(),
         httpStatusCode: Int? = .mockAny(),
         size: Int64? = .mockAny()
     ) -> RUMStopResourceCommand {
@@ -325,7 +391,8 @@ extension RUMScopeDependencies {
         ),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
-        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+        rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
@@ -333,7 +400,29 @@ extension RUMScopeDependencies {
             connectivityInfoProvider: connectivityInfoProvider,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
-            rumUUIDGenerator: rumUUIDGenerator
+            rumUUIDGenerator: rumUUIDGenerator,
+            dateCorrector: dateCorrector
+        )
+    }
+
+    /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
+    func replacing(
+        userInfoProvider: RUMUserInfoProvider? = nil,
+        launchTimeProvider: LaunchTimeProviderType? = nil,
+        connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
+        eventBuilder: RUMEventBuilder? = nil,
+        eventOutput: RUMEventOutput? = nil,
+        rumUUIDGenerator: RUMUUIDGenerator? = nil,
+        dateCorrector: DateCorrectorType? = nil
+    ) -> RUMScopeDependencies {
+        return RUMScopeDependencies(
+            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
+            connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
+            eventBuilder: eventBuilder ?? self.eventBuilder,
+            eventOutput: eventOutput ?? self.eventOutput,
+            rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
+            dateCorrector: dateCorrector ?? self.dateCorrector
         )
     }
 }
@@ -414,9 +503,10 @@ extension RUMViewScope {
     static func mockWith(
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        identity: AnyObject = mockView,
+        identity: RUMViewIdentifiable = mockView,
         uri: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
+        customTimings: [String: Int64] = [:],
         startTime: Date = .mockAny()
     ) -> RUMViewScope {
         return RUMViewScope(
@@ -425,6 +515,7 @@ extension RUMViewScope {
             identity: identity,
             uri: uri,
             attributes: attributes,
+            customTimings: customTimings,
             startTime: startTime
         )
     }
