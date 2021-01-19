@@ -265,6 +265,50 @@ Global.rum.addError(message: "error message.")
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
+## Data scrubbing
+
+To modify RUM event attributes before it is send to Datadog or to drop particular event entirely, use event mappers API when configuring the SDK:
+```swift
+Datadog.Configuration
+    .builderUsing(...)
+    .setRUMViewEventMapper { viewEvent in 
+        return viewEvent
+    }
+    .setRUMErrorEventMapper { errorEvent in
+        return errorEvent
+    }
+    .setRUMResourceEventMapper { resourceEvent in
+        return resourceEvent
+    }
+    .setRUMActionEventMapper { actionEvent in
+        return actionEvent
+    }
+    .build()
+```
+Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it gets send, for example to redact sensitive information in RUM Resource's `url` you may implement custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
+```swift
+.setRUMResourceEventMapper { resourceEvent in
+    var resourceEvent = resourceEvent
+    resourceEvent.resource.url = redacted(resourceEvent.resource.url)
+    return resourceEvent
+}
+```
+Returning `nil` from the mapper will drop the event entirely (it won't be send to Datadog).
+
+Only some properties on each event can be mutated:
+
+| Event Type        | Attribute key                     | Description                                     |
+|-------------------|-----------------------------------|-------------------------------------------------|
+| RUMViewEvent      | `viewEvent.view.url`              | URL of the view                                 |
+| RUMActionEvent    | `actionEvent.action.target?.name` | Name of the action                              |
+|                   | `actionEvent.view.url`            | URL of the view linked to this action           |
+| RUMErrorEvent     | `errorEvent.error.message`        | Error message                                   |
+|                   | `errorEvent.error.stack`          | Stacktrace of the error                         |
+|                   | `errorEvent.error.resource?.url`  | URL of the resource the error refers to         |
+|                   | `errorEvent.view.url`             | URL of the view linked to this error            |
+| RUMResourceEvent  | `resourceEvent.resource.url`      | URL of the resource                             |
+|                   | `resourceEvent.view.url`          | URL of the view linked to this resource         |
+
 [1]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
 [2]: https://github.com/DataDog/dd-sdk-ios
 [3]: https://github.com/DataDog/dd-sdk-ios/releases
