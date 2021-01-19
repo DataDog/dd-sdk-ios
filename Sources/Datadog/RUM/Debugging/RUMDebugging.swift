@@ -96,7 +96,7 @@ internal class RUMDebugging {
             canvas.addSubview(view)
         }
         if canvas.superview == nil,
-            let someWindow = UIApplication.shared.keyWindow {
+            let someWindow = UIApplication.managedShared?.keyWindow {
             canvas.frame.size = someWindow.bounds.size
             someWindow.addSubview(canvas)
         }

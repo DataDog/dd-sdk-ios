@@ -205,6 +205,7 @@
 		615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 615AAC35251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard */; };
 		615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */; };
 		615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */; };
+		615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
 		6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6164AE88252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift */; };
 		6164AF06252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF05252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m */; };
 		6164AF0E252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF0D252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m */; };
@@ -659,6 +660,7 @@
 		615AAC35251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMTabBarAutoInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASVariousUIControllsViewController.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandlerTests.swift; sourceTree = "<group>"; };
+		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		6164AE88252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendThirdPartyRequestsViewController.swift; sourceTree = "<group>"; };
 		6164AF04252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcSendFirstPartyRequestsViewController.h; sourceTree = "<group>"; };
 		6164AF05252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcSendFirstPartyRequestsViewController.m; sourceTree = "<group>"; };
@@ -1070,6 +1072,7 @@
 				61133BB82423979B00786299 /* InternalLoggers.swift */,
 				61133BB92423979B00786299 /* CompilationConditions.swift */,
 				61133BBA2423979B00786299 /* SwiftExtensions.swift */,
+				615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2842,6 +2845,7 @@
 				6157FA5E252767CB009A8A3B /* URLSessionRUMResourcesHandler.swift in Sources */,
 				616CCE13250A1868009FED46 /* RUMCommandSubscriber.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
+				615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */,
 				614D812C24E3EA15004C9C5D /* Feature.swift in Sources */,
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				61B0385A2527247000518F3C /* DDURLSessionDelegate.swift in Sources */,

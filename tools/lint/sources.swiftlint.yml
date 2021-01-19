@@ -79,6 +79,15 @@ custom_rules:
       - comment
     message: "All TODOs must be followed by JIRA reference, for example: \"TODO: RUMM-123\""
     severity: error
+  unsafe_uiapplication_shared: # prevents from using `UIApplication.shared` API
+    included: Sources
+    name: "Unsafe API: `UIApplication.shared`"
+    regex: '(UIApplication.shared)|(UIApplication = .shared)'
+    excluded_match_kinds: 
+      - comment
+      - doccomment
+    message: "`UIApplication.shared` is unavailable in some environments. Check `UIApplication.managedShared`."
+    severity: error
 
 included:
   - Sources

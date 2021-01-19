@@ -1,3 +1,9 @@
+# 1.4.1 / 01-18-2021
+
+* [BUGFIX] Fix app extension compilation issue for `UIApplication.shared` symbol. See [#370][] (Thanks [@SimpleApp][])
+
+### Changes
+
 # 1.4.0 / 12-14-2020
 
 ### Changes
@@ -121,10 +127,12 @@
 [#317]: https://github.com/DataDog/dd-sdk-ios/issues/317
 [#320]: https://github.com/DataDog/dd-sdk-ios/issues/320
 [#322]: https://github.com/DataDog/dd-sdk-ios/issues/322
+[#370]: https://github.com/DataDog/dd-sdk-ios/issues/370
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
 [@LeffelMania]: https://github.com/LeffelMania
+[@SimpleApp]: https://github.com/SimpleApp
 [@TsvetelinVladimirov]: https://github.com/TsvetelinVladimirov
 [@flobories]: https://github.com/flobories
 [@hyling]: https://github.com/hyling
