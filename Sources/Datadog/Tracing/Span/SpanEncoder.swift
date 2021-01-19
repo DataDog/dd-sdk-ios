@@ -30,6 +30,7 @@ internal struct SpanEnvelope: Encodable {
 }
 
 /// `Encodable` representation of span.
+/// All mutable properties are subject of sanitization.
 internal struct Span: Encodable {
     let traceID: TracingUUID
     let spanID: TracingUUID
@@ -52,13 +53,13 @@ internal struct Span: Encodable {
         let id: String?
         let name: String?
         let email: String?
-        let extraInfo: [AttributeKey: JSONStringEncodableValue]
+        var extraInfo: [AttributeKey: JSONStringEncodableValue]
     }
 
-    let userInfo: UserInfo
+    var userInfo: UserInfo
 
-    /// Custom tags, received from user
-    let tags: [String: JSONStringEncodableValue]
+    /// Custom tags, received from the user.
+    var tags: [String: JSONStringEncodableValue]
 
     func encode(to encoder: Encoder) throws {
         let sanitizedSpan = SpanSanitizer().sanitize(span: self)

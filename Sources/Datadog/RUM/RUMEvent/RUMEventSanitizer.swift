@@ -34,11 +34,10 @@ internal struct RUMEventSanitizer {
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes - (sanitizedTimings?.count ?? 0) - sanitizedUserExtraInfo.count
         )
 
-        return RUMEvent(
-            model: event.model,
-            attributes: sanitizedAttributes,
-            userInfoAttributes: sanitizedUserExtraInfo,
-            customViewTimings: sanitizedTimings
-        )
+        var sanitizedEvent = event
+        sanitizedEvent.attributes = sanitizedAttributes
+        sanitizedEvent.userInfoAttributes = sanitizedUserExtraInfo
+        sanitizedEvent.customViewTimings = sanitizedTimings
+        return sanitizedEvent
     }
 }

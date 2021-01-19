@@ -40,22 +40,13 @@ internal struct LogSanitizer {
     private let attributesSanitizer = AttributesSanitizer(featureName: "Log")
 
     func sanitize(log: Log) -> Log {
-        return Log(
-            date: log.date,
-            status: log.status,
-            message: log.message,
-            serviceName: log.serviceName,
-            environment: log.environment,
-            loggerName: log.loggerName,
-            loggerVersion: log.loggerVersion,
-            threadName: log.threadName,
-            applicationVersion: log.applicationVersion,
-            userInfo: log.userInfo,
-            networkConnectionInfo: log.networkConnectionInfo,
-            mobileCarrierInfo: log.mobileCarrierInfo,
-            attributes: sanitize(attributes: log.attributes),
-            tags: sanitize(tags: log.tags)
-        )
+        let sanitizedAttributes = sanitize(attributes: log.attributes)
+        let sanitizedTags = sanitize(tags: log.tags)
+
+        var sanitizedLog = log
+        sanitizedLog.attributes = sanitizedAttributes
+        sanitizedLog.tags = sanitizedTags
+        return sanitizedLog
     }
 
     // MARK: - Attributes sanitization

@@ -7,17 +7,17 @@
 import Foundation
 
 /// `Encodable` representation of RUM event.
+/// Mutable properties are subject of sanitization or data scrubbing.
 internal struct RUMEvent<DM: RUMDataModel>: Encodable {
     /// The actual RUM event model created by `RUMMonitor`
-    /// It's mutable as it may be redacted by the user through data scrubbing API.
     var model: DM
 
     /// Custom attributes set by the user
-    let attributes: [String: Encodable]
-    let userInfoAttributes: [String: Encodable]
+    var attributes: [String: Encodable]
+    var userInfoAttributes: [String: Encodable]
 
     /// Custom View timings (only available if `DM` is a RUM View model)
-    let customViewTimings: [String: Int64]?
+    var customViewTimings: [String: Int64]?
 
     func encode(to encoder: Encoder) throws {
         let sanitizedEvent = RUMEventSanitizer().sanitize(event: self)

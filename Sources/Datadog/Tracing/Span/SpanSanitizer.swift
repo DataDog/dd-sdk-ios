@@ -27,27 +27,9 @@ internal struct SpanSanitizer {
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedUserExtraInfo.count
         )
 
-        return Span(
-            traceID: span.traceID,
-            spanID: span.spanID,
-            parentID: span.parentID,
-            operationName: span.operationName,
-            serviceName: span.serviceName,
-            resource: span.resource,
-            startTime: span.startTime,
-            duration: span.duration,
-            isError: span.isError,
-            tracerVersion: span.tracerVersion,
-            applicationVersion: span.applicationVersion,
-            networkConnectionInfo: span.networkConnectionInfo,
-            mobileCarrierInfo: span.mobileCarrierInfo,
-            userInfo: .init(
-                id: span.userInfo.id,
-                name: span.userInfo.name,
-                email: span.userInfo.email,
-                extraInfo: sanitizedUserExtraInfo
-            ),
-            tags: sanitizedTags
-        )
+        var sanitizedSpan = span
+        sanitizedSpan.userInfo.extraInfo = sanitizedUserExtraInfo
+        sanitizedSpan.tags = sanitizedTags
+        return sanitizedSpan
     }
 }
