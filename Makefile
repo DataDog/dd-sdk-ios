@@ -79,8 +79,8 @@ bump:
 		echo Bumped version to $$version
 
 ship:
-		pod spec lint DatadogSDK.podspec
-		pod trunk push DatadogSDK.podspec
+		pod spec lint --allow-warnings DatadogSDK.podspec
+		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
 		pod repo update
-		pod spec lint DatadogSDKObjc.podspec
-		pod trunk push DatadogSDKObjc.podspec
+		pod spec lint --allow-warnings DatadogSDKObjc.podspec
+		pod trunk push --allow-warnings DatadogSDKObjc.podspec
