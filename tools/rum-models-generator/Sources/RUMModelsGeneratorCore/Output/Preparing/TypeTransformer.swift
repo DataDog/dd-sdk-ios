@@ -27,6 +27,7 @@ internal class TypeTransformer<T> {
     let context = TransformationContext<T>()
 
     func transform(types: [T]) throws -> [T] {
-        preconditionFailure("Must be implemetned by subclasses.")
+        assertionFailure("Must be implemetned by subclasses.")
+        return types
     }
 }
