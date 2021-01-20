@@ -76,11 +76,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     var context: RUMContext {
         var context = parent.context
-        if isActiveView {
-            context.activeViewID = viewUUID
-            context.activeViewURI = viewURI
-            context.activeUserActionID = userActionScope?.actionUUID
-        }
+        context.activeViewID = viewUUID
+        context.activeViewURI = viewURI
+        context.activeUserActionID = userActionScope?.actionUUID
         return context
     }
 
