@@ -51,16 +51,34 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let visits = session.viewVisits
+
         XCTAssertEqual(session.viewVisits[0].path, "Screen A")
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertGreaterThan(session.viewVisits[0].actionEvents[0].action.loadingTime!, 0)
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen B1"
+
         XCTAssertEqual(session.viewVisits[1].path, "Screen B1")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1])// go to "Screen B2"
+
         XCTAssertEqual(session.viewVisits[2].path, "Screen B2")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2])// go to "Screen B1"
+
         XCTAssertEqual(session.viewVisits[3].path, "Screen B1")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3])// go to "Screen C1"
+
         XCTAssertEqual(session.viewVisits[4].path, "Screen C1")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4])// go to "Screen C2"
+
         XCTAssertEqual(session.viewVisits[5].path, "Screen C2")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5])// go to "Screen A"
+
         XCTAssertEqual(session.viewVisits[6].path, "Screen A")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6])// go to "Screen C2"
+
         XCTAssertEqual(session.viewVisits[7].path, "Screen C2")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[7])// go to "Screen C1"
+
         XCTAssertEqual(session.viewVisits[8].path, "Screen C1")
     }
 }

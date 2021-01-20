@@ -70,6 +70,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMContextProvider
 
     var context: RUMContext {
+        // Per `RUMCurrentContext.activeViewContext`, we currently only get the context from the parent scope (`RUMViewScope`) when it's still active (`viewScopes.last`).
+        // This might change at some point and the following context might then hold the wrong active view's properties at that point as this is not checked inside `RUMViewScope.context`.
         return parent.context
     }
 

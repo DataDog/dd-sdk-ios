@@ -76,6 +76,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
         XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .get)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
+        RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
         let contentReadyTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "content-ready"))
         let firstInteractionTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "first-interaction"))
@@ -91,6 +92,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
         XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
         XCTAssertEqual(view2.errorEvents[0].error.source, .source)
+        RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
 
         let view3 = session.viewVisits[2]
         XCTAssertEqual(view3.path, "SendRUMFixture3ViewController")

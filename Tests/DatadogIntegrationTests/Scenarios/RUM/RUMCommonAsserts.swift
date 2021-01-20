@@ -60,4 +60,8 @@ extension RUMSessionMatcher {
 
         return sessionMatchers.first
     }
+
+    class func assertViewWasEventuallyInactive(_ viewVisit: ViewVisit) {
+        XCTAssertFalse(try XCTUnwrap(viewVisit.viewEvents.last?.view.isActive))
+    }
 }
