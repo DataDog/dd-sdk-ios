@@ -63,38 +63,29 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(visits[0].path, "Screen")
         XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[0]) // start on "Screen"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to modal "Modal"
 
         XCTAssertEqual(visits[1].path, "Modal")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[1]) // go to modal "Modal"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1]) // dismiss to "Screen"
 
         XCTAssertEqual(visits[2].path, "Screen")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[2]) // dismiss to "Screen"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2]) // go to modal "Modal"
 
         XCTAssertEqual(visits[3].path, "Modal")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[3]) // go to modal "Modal"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3]) // interactive dismiss to "Screen"
 
         XCTAssertEqual(visits[4].path, "Screen")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[4]) // interactive dismiss to "Screen"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4]) // go to modal "Modal"
 
         XCTAssertEqual(visits[5].path, "Modal")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[5]) // go to modal "Modal"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5]) // interactive and cancelled dismiss, stay on "Modal"
 
         XCTAssertEqual(visits[6].path, "Screen")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[6])  // interactive and cancelled dismiss, stay on "Modal"
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6])
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6]) // interactive and cancelled dismiss, stay on "Modal"
 
         XCTAssertEqual(visits[7].path, "Modal")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[7]) // interactive and cancelled dismiss, stay on "Modal"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[7]) // dismiss to "Screen"
 
         XCTAssertEqual(visits[8].path, "Screen")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[8]) // dismiss to "Screen"
     }
 }

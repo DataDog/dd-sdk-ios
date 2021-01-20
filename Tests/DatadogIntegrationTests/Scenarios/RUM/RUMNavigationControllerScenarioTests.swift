@@ -61,34 +61,26 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(visits[0].path, "Screen1")
         XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[0]) // start on "Screen1"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen2"
 
         XCTAssertEqual(session.viewVisits[1].path, "Screen2")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[1]) // go to "Screen2"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1])// go to "Screen3"
 
         XCTAssertEqual(session.viewVisits[2].path, "Screen3")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[2]) // go to "Screen3"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2])// go to "Screen4"
 
         XCTAssertEqual(session.viewVisits[3].path, "Screen4")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[3]) // go to "Screen4"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3])// go to "Screen3"
 
         XCTAssertEqual(session.viewVisits[4].path, "Screen3")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[4]) // go to "Screen3"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4])// go to "Screen1"
 
         XCTAssertEqual(session.viewVisits[5].path, "Screen1")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[5]) // go to "Screen1"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5])// go to "Screen2"
 
         XCTAssertEqual(session.viewVisits[6].path, "Screen2")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[6]) // go to "Screen2"
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6])// swipe back to "Screen1"
 
         XCTAssertEqual(session.viewVisits[7].path, "Screen1")
-        RUMSessionMatcher.assertViewWasInitiallyActive(visits[7]) // swipe back to "Screen1"
     }
 }
