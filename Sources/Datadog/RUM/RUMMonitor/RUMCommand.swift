@@ -122,6 +122,8 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let httpMethod: RUMMethod
     /// A type of the Resource if it's possible to determine on start (when the response MIME is not yet known).
     let kind: RUMResourceType?
+    /// Whether or not the resource url targets a first party host, if that information is available.
+    let isFirstPartyRequest: Bool?
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     let spanContext: RUMSpanContext?
 }
