@@ -27,6 +27,8 @@ internal class RUMResourceScope: RUMScope {
     private let dateCorrection: DateCorrection
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
+    /// Whether or not the Resource is provided by a first party host, if that information is available.
+    private var isFirstPartyResource: Bool?
     /// The Resource kind captured when starting the `URLRequest`.
     /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
     private var resourceKindBasedOnRequest: RUMResourceType?
@@ -47,6 +49,7 @@ internal class RUMResourceScope: RUMScope {
         dateCorrection: DateCorrection,
         url: String,
         httpMethod: RUMMethod,
+        isFirstPartyResource: Bool?,
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?
     ) {
@@ -59,6 +62,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceLoadingStartTime = startTime
         self.dateCorrection = dateCorrection
         self.resourceHTTPMethod = httpMethod
+        self.isFirstPartyResource = isFirstPartyResource
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
     }

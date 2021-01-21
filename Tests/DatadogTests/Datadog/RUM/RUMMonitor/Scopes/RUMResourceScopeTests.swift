@@ -28,6 +28,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: .mockAny(),
             httpMethod: .mockAny(),
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -52,6 +53,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -112,6 +114,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -163,6 +166,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -271,6 +275,7 @@ class RUMResourceScopeTests: XCTestCase {
                 dateCorrection: .zero,
                 url: url,
                 httpMethod: .mockAny(),
+                isFirstPartyResource: nil,
                 resourceKindBasedOnRequest: nil,
                 spanContext: nil
             )
@@ -307,6 +312,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: .mockAny(),
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: kindBasedOnRequest,
             spanContext: nil
         )
