@@ -150,7 +150,7 @@ internal class RUMResourceScope: RUMScope {
                 },
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
-                provider: nil,
+                provider: resourceEventProvider,
                 redirect: resourceMetrics?.redirection.flatMap { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -198,7 +198,7 @@ internal class RUMResourceScope: RUMScope {
                 message: command.errorMessage,
                 resource: .init(
                     method: resourceHTTPMethod,
-                    provider: nil,
+                    provider: errorEventProvider,
                     statusCode: command.httpStatusCode?.toInt64 ?? 0,
                     url: resourceURL
                 ),
@@ -217,5 +217,35 @@ internal class RUMResourceScope: RUMScope {
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
+    }
+
+    // MARK: - Resource provider helpers
+
+    private var resourceEventProvider: RUMResourceEvent.Resource.Provider? {
+        // Only handle first party hosts at this point:
+        guard let isFirstPartyResource = isFirstPartyResource, isFirstPartyResource else {
+            return nil
+        }
+        return RUMResourceEvent.Resource.Provider(
+            domain: providerDomain(from: resourceURL),
+            name: nil,
+            type: .firstParty
+        )
+    }
+
+    private var errorEventProvider: RUMErrorEvent.Error.Resource.Provider? {
+        // Only handle first party hosts at this point:
+        guard let isFirstPartyResource = isFirstPartyResource, isFirstPartyResource else {
+            return nil
+        }
+        return RUMErrorEvent.Error.Resource.Provider(
+            domain: providerDomain(from: resourceURL),
+            name: nil,
+            type: .firstParty
+        )
+    }
+
+    private func providerDomain(from url: String) -> String? {
+        return URL(string: url)?.host ?? url
     }
 }
