@@ -12,9 +12,9 @@ internal struct FirstPartyURLsFilter {
     /// "example.com", "api.example.com", but not "foo.com".
     private let regex: String
 
-    init(configuration: FeaturesConfiguration.URLSessionAutoInstrumentation) {
+    init(hosts: Set<String>) {
         // pattern = "^(.*\\.)*tracedHost1|^(.*\\.)*tracedHost2|..."
-        self.regex = configuration.userDefinedFirstPartyHosts.map { host in
+        self.regex = hosts.map { host in
             let escaped = NSRegularExpression.escapedPattern(for: host)
             return "^(.*\\.)*\(escaped)$"
         }

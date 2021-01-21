@@ -54,8 +54,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         handler: URLSessionInterceptionHandler
     ) {
-        self.firstPartyURLsFilter = FirstPartyURLsFilter(configuration: configuration)
-        self.internalURLsFilter = InternalURLsFilter(configuration: configuration)
+        self.firstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
+        self.internalURLsFilter = InternalURLsFilter(internalURLs: configuration.sdkInternalURLs)
         self.handler = handler
 
         if configuration.instrumentTracing {

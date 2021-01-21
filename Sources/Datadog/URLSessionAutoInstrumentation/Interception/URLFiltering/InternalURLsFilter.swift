@@ -10,8 +10,8 @@ import Foundation
 internal struct InternalURLsFilter {
     private let internalURLPrefixes: Set<String>
 
-    init(configuration: FeaturesConfiguration.URLSessionAutoInstrumentation) {
-        self.internalURLPrefixes = configuration.sdkInternalURLs
+    init(internalURLs: Set<String>) {
+        self.internalURLPrefixes = internalURLs
     }
 
     /// Returns `true` if given `URL` is an internal `URL` used by the SDK; `false` otherwise.
