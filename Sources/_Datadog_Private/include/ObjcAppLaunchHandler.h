@@ -4,10 +4,6 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-#import <Foundation/Foundation.h>
+#import <CoreFoundation/CFDate.h>
 
-@interface ObjcAppLaunchHandler : NSObject
-
-+ (NSTimeInterval)launchTime;
-
-@end
+CFTimeInterval AppLaunchTime(void);

@@ -16,10 +16,7 @@ internal protocol LaunchTimeProviderType {
 
 internal class LaunchTimeProvider: LaunchTimeProviderType {
     var launchTime: TimeInterval? {
-        // Following dynamic dispatch synchronisation mutes TSAN issues when running tests from CLI.
-        objc_sync_enter(self)
-        let time = ObjcAppLaunchHandler.launchTime()
-        objc_sync_exit(self)
+        let time = AppLaunchTime()
         return time > 0 ? time : nil
     }
 }
