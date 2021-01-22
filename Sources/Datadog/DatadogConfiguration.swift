@@ -337,9 +337,14 @@ extension Datadog {
             }
 
             /// Configures network requests monitoring for Tracing and RUM features. **Must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
-            @available(*, deprecated, message: "This option is replaced by `track(firstPartyHosts:)`. Refer to the new API comment for important details.")
+            @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
             public func set(tracedHosts: Set<String>) -> Builder {
                 return track(firstPartyHosts: tracedHosts)
+            }
+
+            @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
+            public func track(firstPartyHosts: Set<String>) -> Builder {
+                return trackURLSession(firstPartyHosts: firstPartyHosts)
             }
 
             /// Configures network requests monitoring for Tracing and RUM features. **It must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
@@ -368,8 +373,8 @@ extension Datadog {
             ///
             /// **NOTE 2:** The `firstPartyHosts` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
-            /// - Parameter firstPartyHosts: not set by default
-            public func track(firstPartyHosts: Set<String>) -> Builder {
+            /// - Parameter firstPartyHosts: empty set by default
+            public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
                 configuration.firstPartyHosts = firstPartyHosts
                 return self
             }

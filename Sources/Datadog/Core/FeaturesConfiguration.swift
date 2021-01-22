@@ -196,7 +196,7 @@ extension FeaturesConfiguration {
             } else {
                 let error = ProgrammerError(
                     description: """
-                    To use `.track(firstPartyHosts:)` either RUM or Tracing should be enabled.
+                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
                     """
                 )
                 consolePrint("\(error)")

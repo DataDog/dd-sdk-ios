@@ -161,7 +161,7 @@ class DDURLSessionDelegateTests: XCTestCase {
             printFunction.printedMessage,
             """
             🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
-            first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+            first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
             to enable network requests tracking.
             """
         )
@@ -177,14 +177,14 @@ class DDURLSessionDelegateTests: XCTestCase {
         URLSessionAutoInstrumentation.instance = nil
 
         // when
-        _ = DDURLSessionDelegate(firstPartyHosts: ["foo.com"])
+        _ = DDURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
 
         // then
         XCTAssertEqual(
             printFunction.printedMessage,
             """
             🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
-            first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+            first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
             to enable network requests tracking.
             """
         )
@@ -217,7 +217,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         defer { URLSessionAutoInstrumentation.instance = nil }
 
         // when
-        let testDelegate = DDURLSessionDelegate(firstPartyHosts: ["foo.com"])
+        let testDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
 
         // then
         XCTAssert(

@@ -141,7 +141,7 @@ final class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
         _ = builder
             .trackUIKitRUMViews(using: DefaultUIKitRUMViewsPredicate())
 
-        super.configureSDK(builder: builder) // applies the `track(firstPartyHosts:)`
+        super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
     }
 }
 

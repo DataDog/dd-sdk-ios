@@ -1035,7 +1035,7 @@ class TracerTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: .mockAny(), environment: .mockAny())
-                .track(firstPartyHosts: [.mockAny()])
+                .trackURLSession(firstPartyHosts: [.mockAny()])
                 .build()
         )
 

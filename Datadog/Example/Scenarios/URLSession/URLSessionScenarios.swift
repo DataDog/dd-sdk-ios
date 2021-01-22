@@ -69,7 +69,8 @@ class URLSessionBaseScenario: NSObject {
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .track(firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!])
+        _ = builder.trackURLSession(
+            firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
+        )
     }
 }

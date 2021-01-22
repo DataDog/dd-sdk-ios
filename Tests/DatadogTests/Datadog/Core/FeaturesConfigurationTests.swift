@@ -476,7 +476,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             printFunction.printedMessage,
             """
-            🔥 Datadog SDK usage error: To use `.track(firstPartyHosts:)` either RUM or Tracing should be enabled.
+            🔥 Datadog SDK usage error: To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
             """
         )
     }

@@ -7,6 +7,12 @@
 import Foundation
 @testable import Datadog
 
+extension URLSession {
+    static func mockWith(_ delegate: URLSessionDelegate) -> URLSession {
+        return URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+    }
+}
+
 class URLSessionInterceptorMock: URLSessionInterceptorType {
     var modifiedRequest: URLRequest?
 
