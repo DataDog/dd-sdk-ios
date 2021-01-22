@@ -357,14 +357,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: "/resource/1",
-                    time: currentTime,
-                    attributes: ["foo": "bar"],
-                    kind: .image,
-                    httpStatusCode: 200,
-                    size: 1_024
-                )
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
 
@@ -376,7 +369,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(providerDomain, "foo.com")
     }
 
-    func testGivenStartedNonFirstPartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutFirstPartyProvider() throws {
+    func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -399,14 +392,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: "/resource/1",
-                    time: currentTime,
-                    attributes: ["foo": "bar"],
-                    kind: .image,
-                    httpStatusCode: 200,
-                    size: 1_024
-                )
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
 
@@ -438,14 +424,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: "/resource/1",
-                    time: currentTime,
-                    error: ErrorMock("network issue explanation"),
-                    source: .network,
-                    httpStatusCode: 500,
-                    attributes: ["foo": "bar"]
-                )
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
 
@@ -457,7 +436,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(providerDomain, "foo.com")
     }
 
-    func testGivenStartedNonFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutFirstPartyProvider() throws {
+    func testGivenStartedThirdPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutResourceProvider() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -480,14 +459,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: "/resource/1",
-                    time: currentTime,
-                    error: ErrorMock("network issue explanation"),
-                    source: .network,
-                    httpStatusCode: 500,
-                    attributes: ["foo": "bar"]
-                )
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
             )
         )
 

@@ -26,7 +26,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         var request = URLRequest(url: .mockRandom())
         request.httpMethod = ["GET", "POST", "PUT", "DELETE"].randomElement()!
-        let taskInterception = TaskInterception(request: request, isFirstParty: false)
+        let taskInterception = TaskInterception(request: request, isFirstParty: .random())
         XCTAssertNil(taskInterception.spanContext)
 
         // When
@@ -51,8 +51,6 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: true)
-        taskInterception.register(spanContext: .mockWith(traceID: 1, spanID: 2))
-        XCTAssertNotNil(taskInterception.spanContext)
 
         // When
         handler.notify_taskInterceptionStarted(interception: taskInterception)
@@ -62,6 +60,23 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
         XCTAssertTrue(resourceStartCommand.isFirstPartyRequest!)
+    }
+
+    func testGivenTaskInterceptionForThirdPartyHost_whenInterceptionStarts_itStartsRUMResourceForThirdPartyHost() throws {
+        let receiveCommand = expectation(description: "Receive RUM command")
+        commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
+
+        // Given
+        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: false)
+
+        // When
+        handler.notify_taskInterceptionStarted(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
+        XCTAssertFalse(resourceStartCommand.isFirstPartyRequest!)
     }
 
     func testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {

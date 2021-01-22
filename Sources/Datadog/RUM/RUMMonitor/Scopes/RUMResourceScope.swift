@@ -28,7 +28,7 @@ internal class RUMResourceScope: RUMScope {
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
     /// Whether or not the Resource is provided by a first party host, if that information is available.
-    private var isFirstPartyResource: Bool?
+    private let isFirstPartyResource: Bool?
     /// The Resource kind captured when starting the `URLRequest`.
     /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
     private var resourceKindBasedOnRequest: RUMResourceType?
@@ -222,27 +222,27 @@ internal class RUMResourceScope: RUMScope {
     // MARK: - Resource provider helpers
 
     private var resourceEventProvider: RUMResourceEvent.Resource.Provider? {
-        // Only handle first party hosts at this point:
-        guard let isFirstPartyResource = isFirstPartyResource, isFirstPartyResource else {
+        if isFirstPartyResource == true {
+            return RUMResourceEvent.Resource.Provider(
+                domain: providerDomain(from: resourceURL),
+                name: nil,
+                type: .firstParty
+            )
+        } else {
             return nil
         }
-        return RUMResourceEvent.Resource.Provider(
-            domain: providerDomain(from: resourceURL),
-            name: nil,
-            type: .firstParty
-        )
     }
 
     private var errorEventProvider: RUMErrorEvent.Error.Resource.Provider? {
-        // Only handle first party hosts at this point:
-        guard let isFirstPartyResource = isFirstPartyResource, isFirstPartyResource else {
+        if isFirstPartyResource == true {
+            return RUMErrorEvent.Error.Resource.Provider(
+                domain: providerDomain(from: resourceURL),
+                name: nil,
+                type: .firstParty
+            )
+        } else {
             return nil
         }
-        return RUMErrorEvent.Error.Resource.Provider(
-            domain: providerDomain(from: resourceURL),
-            name: nil,
-            type: .firstParty
-        )
     }
 
     private func providerDomain(from url: String) -> String? {

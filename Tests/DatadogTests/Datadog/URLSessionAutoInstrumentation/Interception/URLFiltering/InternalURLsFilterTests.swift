@@ -9,7 +9,7 @@ import XCTest
 
 class InternalURLsFilterTests: XCTestCase {
     private let filter = InternalURLsFilter(
-        internalURLs: [
+        urls: [
             "https://dd.internal.com/logs",
             "https://dd.internal.com/traces",
             "https://dd.internal.com/rum"
