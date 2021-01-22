@@ -337,6 +337,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMMethod(httpMethod: request.httpMethod),
                 kind: RUMResourceType(request: request),
+                isFirstPartyRequest: nil,
                 spanContext: nil
             )
         )
@@ -355,6 +356,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 url: url.absoluteString,
                 httpMethod: .get,
                 kind: nil,
+                isFirstPartyRequest: nil,
                 spanContext: nil
             )
         )
@@ -374,6 +376,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 url: urlString,
                 httpMethod: httpMethod,
                 kind: nil,
+                isFirstPartyRequest: nil,
                 spanContext: nil
             )
         )

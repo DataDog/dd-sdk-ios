@@ -36,6 +36,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
                 kind: RUMResourceType(request: interception.request),
+                isFirstPartyRequest: interception.isFirstPartyRequest,
                 spanContext: interception.spanContext.flatMap { spanContext in
                     .init(
                         traceID: String(spanContext.traceID.rawValue),

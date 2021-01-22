@@ -28,6 +28,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: .mockAny(),
             httpMethod: .mockAny(),
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -52,6 +53,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -83,6 +85,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertValidRumUUID(event.model.resource.id)
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.method, .post)
+        XCTAssertNil(event.model.resource.provider)
         XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(event.model.resource.statusCode, 200)
         XCTAssertEqual(event.model.resource.duration, 2_000_000_000)
@@ -112,6 +115,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -144,6 +148,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.source, .network)
         XCTAssertEqual(event.model.error.stack, "network issue explanation")
         XCTAssertEqual(event.model.error.resource?.method, .post)
+        XCTAssertNil(event.model.error.resource?.provider)
         XCTAssertEqual(event.model.error.resource?.statusCode, 500)
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
@@ -163,6 +168,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: nil
         )
@@ -271,6 +277,7 @@ class RUMResourceScopeTests: XCTestCase {
                 dateCorrection: .zero,
                 url: url,
                 httpMethod: .mockAny(),
+                isFirstPartyResource: nil,
                 resourceKindBasedOnRequest: nil,
                 spanContext: nil
             )
@@ -307,6 +314,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: .mockAny(),
             httpMethod: .post,
+            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: kindBasedOnRequest,
             spanContext: nil
         )
@@ -324,5 +332,139 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
         XCTAssertEqual(event.model.resource.type, kindBasedOnRequest)
+    }
+
+    func testGivenStartedFirstPartyResource_whenResourceLoadingEnds_itSendsResourceEventWithFirstPartyProvider() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: true,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200")
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
+        let providerType = try XCTUnwrap(event.model.resource.provider?.type)
+        let providerDomain = try XCTUnwrap(event.model.resource.provider?.domain)
+        XCTAssertEqual(providerType, .firstParty)
+        XCTAssertEqual(providerDomain, "foo.com")
+    }
+
+    func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: false,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200")
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
+        XCTAssertNil(event.model.resource.provider)
+    }
+
+    func testGivenStartedFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithFirstPartyProvider() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: true,
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
+        let providerType = try XCTUnwrap(event.model.error.resource?.provider?.type)
+        let providerDomain = try XCTUnwrap(event.model.error.resource?.provider?.domain)
+        XCTAssertEqual(providerType, .firstParty)
+        XCTAssertEqual(providerDomain, "foo.com")
+    }
+
+    func testGivenStartedThirdPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutResourceProvider() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: false,
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
+        XCTAssertNil(event.model.error.resource?.provider)
     }
 }

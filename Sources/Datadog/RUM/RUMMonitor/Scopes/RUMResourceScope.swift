@@ -27,6 +27,8 @@ internal class RUMResourceScope: RUMScope {
     private let dateCorrection: DateCorrection
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
+    /// Whether or not the Resource is provided by a first party host, if that information is available.
+    private let isFirstPartyResource: Bool?
     /// The Resource kind captured when starting the `URLRequest`.
     /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
     private var resourceKindBasedOnRequest: RUMResourceType?
@@ -47,6 +49,7 @@ internal class RUMResourceScope: RUMScope {
         dateCorrection: DateCorrection,
         url: String,
         httpMethod: RUMMethod,
+        isFirstPartyResource: Bool?,
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?
     ) {
@@ -59,6 +62,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceLoadingStartTime = startTime
         self.dateCorrection = dateCorrection
         self.resourceHTTPMethod = httpMethod
+        self.isFirstPartyResource = isFirstPartyResource
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
     }
@@ -146,7 +150,7 @@ internal class RUMResourceScope: RUMScope {
                 },
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
-                provider: nil,
+                provider: resourceEventProvider,
                 redirect: resourceMetrics?.redirection.flatMap { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -194,7 +198,7 @@ internal class RUMResourceScope: RUMScope {
                 message: command.errorMessage,
                 resource: .init(
                     method: resourceHTTPMethod,
-                    provider: nil,
+                    provider: errorEventProvider,
                     statusCode: command.httpStatusCode?.toInt64 ?? 0,
                     url: resourceURL
                 ),
@@ -213,5 +217,35 @@ internal class RUMResourceScope: RUMScope {
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
+    }
+
+    // MARK: - Resource provider helpers
+
+    private var resourceEventProvider: RUMResourceEvent.Resource.Provider? {
+        if isFirstPartyResource == true {
+            return RUMResourceEvent.Resource.Provider(
+                domain: providerDomain(from: resourceURL),
+                name: nil,
+                type: .firstParty
+            )
+        } else {
+            return nil
+        }
+    }
+
+    private var errorEventProvider: RUMErrorEvent.Error.Resource.Provider? {
+        if isFirstPartyResource == true {
+            return RUMErrorEvent.Error.Resource.Provider(
+                domain: providerDomain(from: resourceURL),
+                name: nil,
+                type: .firstParty
+            )
+        } else {
+            return nil
+        }
+    }
+
+    private func providerDomain(from url: String) -> String? {
+        return URL(string: url)?.host ?? url
     }
 }

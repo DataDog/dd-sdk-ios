@@ -9,13 +9,11 @@ import XCTest
 
 class InternalURLsFilterTests: XCTestCase {
     private let filter = InternalURLsFilter(
-        configuration: .mockWith(
-            sdkInternalURLs: [
-                "https://dd.internal.com/logs",
-                "https://dd.internal.com/traces",
-                "https://dd.internal.com/rum"
-            ]
-        )
+        urls: [
+            "https://dd.internal.com/logs",
+            "https://dd.internal.com/traces",
+            "https://dd.internal.com/rum"
+        ]
     )
 
     func testWhenURLBeginningMatchesAnySDKInternalURL_itIsConsideredInternal() {

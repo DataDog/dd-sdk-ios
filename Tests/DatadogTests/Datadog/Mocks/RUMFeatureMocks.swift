@@ -241,6 +241,7 @@ extension RUMStartResourceCommand {
         url: String = .mockAny(),
         httpMethod: RUMMethod = .mockAny(),
         kind: RUMResourceType = .mockAny(),
+        isFirstPartyRequest: Bool = .mockAny(),
         spanContext: RUMSpanContext? = nil
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
@@ -250,6 +251,7 @@ extension RUMStartResourceCommand {
             url: url,
             httpMethod: httpMethod,
             kind: kind,
+            isFirstPartyRequest: isFirstPartyRequest,
             spanContext: spanContext
         )
     }

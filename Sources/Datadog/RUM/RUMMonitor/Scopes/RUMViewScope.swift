@@ -190,6 +190,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dateCorrection: dateCorrection,
             url: command.url,
             httpMethod: command.httpMethod,
+            isFirstPartyResource: command.isFirstPartyRequest,
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext
         )

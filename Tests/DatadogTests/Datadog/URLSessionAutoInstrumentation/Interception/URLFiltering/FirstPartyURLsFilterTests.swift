@@ -9,9 +9,7 @@ import XCTest
 
 class FirstPartyURLsFilterTests: XCTestCase {
     private let filter = FirstPartyURLsFilter(
-        configuration: .mockWith(
-            userDefinedFirstPartyHosts: ["first-party.com", "eu"]
-        )
+        hosts: ["first-party.com", "eu"]
     )
 
     func testWhenURLHostEndingMatchesAnyUserDefinedHost_itIsConsideredFirstParty() {
