@@ -41,7 +41,6 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStartCommand.attributes.count, 0)
         XCTAssertEqual(resourceStartCommand.url, taskInterception.request.url?.absoluteString)
         XCTAssertEqual(resourceStartCommand.httpMethod, RUMMethod(httpMethod: request.httpMethod))
-        XCTAssertFalse(resourceStartCommand.isFirstPartyRequest!)
         XCTAssertNil(resourceStartCommand.spanContext)
     }
 

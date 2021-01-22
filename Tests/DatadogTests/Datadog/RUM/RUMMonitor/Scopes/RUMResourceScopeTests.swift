@@ -424,7 +424,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
             )
         )
 
@@ -459,7 +459,7 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
             )
         )
 
