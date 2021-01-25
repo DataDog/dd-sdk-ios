@@ -8,28 +8,21 @@ import Foundation
 
 /// Reads `ObjcInteropType` definitions from `SwiftType` definitions.
 internal class ObjcInteropTypeReader {
+    /// `SwiftTypes` passed on input.
     private var inputSwiftTypes: [SwiftType] = []
+    /// `ObjcInteropTypes` returned on output.
     private var outputObjcInteropTypes: [ObjcInteropType] = []
 
     func readObjcInteropTypes(from swiftTypes: [SwiftType]) throws -> [ObjcInteropType] {
         self.inputSwiftTypes = swiftTypes
         self.outputObjcInteropTypes = []
 
-        let referencedTypeNames = swiftTypes
-            .compactMap { $0 as? SwiftStruct }
-            .flatMap { $0.recursiveSwiftTypeReferences }
-            .map { $0.referencedTypeName }
-            .asSet()
-
-        let rootSwiftStructs = swiftTypes
-            .compactMap { $0 as? SwiftStruct }
-            .filter { !referencedTypeNames.contains($0.typeName!) } // swiftlint:disable:this force_unwrapping
-
-        try rootSwiftStructs.forEach { swiftStruct in
-            let rootClass = ObjcInteropRootClass(managedSwiftStruct: swiftStruct)
-            outputObjcInteropTypes.append(rootClass)
-            try generateTransitiveObjcInteropTypes(in: rootClass)
-        }
+        try takeRootSwiftStructs(from: swiftTypes)
+            .forEach { rootStruct in
+                let rootClass = ObjcInteropRootClass(managedSwiftStruct: rootStruct)
+                outputObjcInteropTypes.append(rootClass)
+                try generateTransitiveObjcInteropTypes(in: rootClass)
+            }
 
         return outputObjcInteropTypes
     }
@@ -150,6 +143,36 @@ internal class ObjcInteropTypeReader {
     }
 
     // MARK: - Helpers
+
+    /// Filters out given `SwiftTypes` by removing all types referenced using `SwiftReferenceType`.
+    ///
+    /// For example, given swift schema this Swift code:
+    ///
+    ///         struct Foo {
+    ///            let shared: SharedStruct
+    ///         }
+    ///
+    ///         struct Bar {
+    ///            let shared: SharedStruct
+    ///         }
+    ///
+    ///         struct SharedStruct {
+    ///            // ...
+    ///         }
+    ///
+    /// if both `Foo` and `Bar` use `SwiftReferenceType(referencedTypeName: "SharedStruct")`,
+    /// the returned array will contain only `Foo` and `Bar` schemas.
+    private func takeRootSwiftStructs(from swiftTypes: [SwiftType]) -> [SwiftStruct] {
+        let referencedTypeNames = swiftTypes
+            .compactMap { $0 as? SwiftStruct } // only `SwiftStructs` may contain `SwiftReferenceType`
+            .flatMap { $0.recursiveSwiftTypeReferences }
+            .map { $0.referencedTypeName }
+            .asSet()
+
+        return swiftTypes
+            .compactMap { $0 as? SwiftStruct }
+            .filter { !referencedTypeNames.contains($0.typeName!) } // swiftlint:disable:this force_unwrapping
+    }
 
     /// Searches `SwiftTypes` passed on input and returns the one described by given `SwiftTypeReference`.
     private func resolve(swiftTypeReference: SwiftTypeReference) throws -> SwiftType {

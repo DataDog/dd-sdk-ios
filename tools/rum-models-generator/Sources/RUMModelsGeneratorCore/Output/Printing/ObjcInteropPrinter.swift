@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Generates Swift code for Obj-c interoperability from `SwiftStructs`.
+/// Generates Swift code for Obj-c interoperability for given `SwiftStructs`.
 ///
 /// E.g. given `SwiftStruct` describing:
 ///
@@ -416,7 +416,7 @@ extension ObjcInteropEnum: ObjcInteropReflectable {
 
 private extension ObjcInteropPropertyWrapper {
     /// A key-path referencing this property, e.g. if this property is called `property` and belongs to class `Bar`,
-    /// stored on `bar` property in `Foo` class, then the `keyPath` is `bar.property`.
+    /// stored on property named `bar` in class `Foo`, then the `keyPath` is `bar.property`.
     var keyPath: String {
         let swiftPropertyName = swiftProperty.name
 
