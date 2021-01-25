@@ -26,6 +26,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
     /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     /// passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
     /// **NOTE:** If `trackURLSession(firstPartyHosts:)` is never called, automatic tracking will **not** take place
+    @objc
     public init(additionalFirstPartyHosts: Set<String>) {
         // NOTE: RUMM-954 copy&pasting `init()` is a conscious decision.
         // otherwise `DDURLSessionDelegateAsSuperclassTests` fails.

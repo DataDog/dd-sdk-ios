@@ -93,12 +93,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         guard !internalURLsFilter.isInternal(url: request.url) else {
             return request
         }
-        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
-        let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
-        let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
-        let isFirstParty = isFirstPartyForDelegate || isFirstPartyForInterceptor
-
-        if injectTracingHeadersToFirstPartyRequests && isFirstParty {
+        let isFirstPartyRequest = isFirstParty(request: request, for: session)
+        if injectTracingHeadersToFirstPartyRequests && isFirstPartyRequest {
             return injectSpanContext(into: request)
         }
         return request
@@ -112,13 +108,11 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
               !internalURLsFilter.isInternal(url: request.url) else {
             return
         }
-        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
         queue.async {
-            let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
-            let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+            let isFirstPartyRequest = self.isFirstParty(request: request, for: session)
             let interception = TaskInterception(
                 request: request,
-                isFirstParty: (isFirstPartyForDelegate || isFirstPartyForInterceptor)
+                isFirstParty: isFirstPartyRequest
             )
             self.interceptionByTask[task] = interception
 
@@ -180,6 +174,13 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     // MARK: - Private
+
+    private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
+        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
+        let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
+        let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+        return isFirstPartyForDelegate || isFirstPartyForInterceptor
+    }
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
         interceptionByTask[task] = nil

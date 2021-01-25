@@ -366,12 +366,12 @@ extension Datadog {
             ///
             /// If both RUM and Tracing features are enabled, the SDK will be sending RUM Resources for 1st- and 3rd-party requests and tracing Spans for 1st-parties.
             ///
-            /// Until `firstPartyHosts` is set, network requests monitoring is disabled.
+            /// Until `trackURLSession()` is called, network requests monitoring is disabled.
             ///
-            /// **NOTE 1:** Setting `firstPartyHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
+            /// **NOTE 1:** Enabling this option will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
             /// for implementation details.
             ///
-            /// **NOTE 2:** The `firstPartyHosts` instrumentation will NOT work without using `DDURLSessionDelegate`.
+            /// **NOTE 2:** The `URLSession` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
