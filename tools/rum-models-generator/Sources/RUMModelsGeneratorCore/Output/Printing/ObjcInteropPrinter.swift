@@ -171,7 +171,7 @@ internal class ObjcInteropPrinter: Printer {
     }
 
     private func printPropertyAccessingNestedClass(_ propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedStruct) throws {
-        let nestedObjcClass = propertyWrapper.objcNestedClass!
+        let nestedObjcClass = propertyWrapper.objcNestedClass! // swiftlint:disable:this force_unwrapping
 
         // Generate accessor to the referenced wrapper, e.g.:
         // ```
@@ -203,7 +203,7 @@ internal class ObjcInteropPrinter: Printer {
     }
 
     private func printPropertyAccessingNestedEnum(_ propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedEnum) throws {
-        let nestedObjcEnum = propertyWrapper.objcNestedEnum!
+        let nestedObjcEnum = propertyWrapper.objcNestedEnum! // swiftlint:disable:this force_unwrapping
 
         // Generate getter and setter for managed enum, e.g.:
         // ```
@@ -233,7 +233,7 @@ internal class ObjcInteropPrinter: Printer {
     }
 
     private func printPropertyAccessingNestedEnumArray(_ propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedEnumsArray) throws {
-        let nestedObjcEnumArray = propertyWrapper.objcNestedEnumsArray!
+        let nestedObjcEnumArray = propertyWrapper.objcNestedEnumsArray! // swiftlint:disable:this force_unwrapping
 
         // Generate getter for managed enum array.
         // Because `[Enum]` cannot be exposed to Objc directly, we map each value to its `.rawValue`
@@ -358,6 +358,8 @@ internal class ObjcInteropPrinter: Printer {
 
 // MARK: - Reflection Helpers
 
+// swiftlint:disable force_cast
+
 private protocol ObjcInteropReflectable {
     var objcRootClass: ObjcInteropRootClass { get }
     var objcTypeName: String { get }
@@ -427,3 +429,5 @@ private extension ObjcInteropPropertyWrapper {
         }
     }
 }
+
+// swiftlint:enable force_cast

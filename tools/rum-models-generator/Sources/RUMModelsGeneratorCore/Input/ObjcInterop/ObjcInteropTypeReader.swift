@@ -23,7 +23,7 @@ internal class ObjcInteropTypeReader {
 
         let rootSwiftStructs = swiftTypes
             .compactMap { $0 as? SwiftStruct }
-            .filter { !referencedTypeNames.contains($0.typeName!) }
+            .filter { !referencedTypeNames.contains($0.typeName!) } // swiftlint:disable:this force_unwrapping
 
         try rootSwiftStructs.forEach { swiftStruct in
             let rootClass = ObjcInteropRootClass(managedSwiftStruct: swiftStruct)
@@ -75,7 +75,7 @@ internal class ObjcInteropTypeReader {
                     )
                     propertyWrapper.objcNestedEnumsArray = ObjcInteropEnumArray(
                         owner: propertyWrapper,
-                        managedSwiftEnum: swiftArray.element as! SwiftEnum
+                        managedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
                     )
                     return propertyWrapper
                 case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitiveType:
@@ -154,7 +154,7 @@ internal class ObjcInteropTypeReader {
     /// Searches `SwiftTypes` passed on input and returns the one described by given `SwiftTypeReference`.
     private func resolve(swiftTypeReference: SwiftTypeReference) throws -> SwiftType {
         return try inputSwiftTypes
-            .first(where: { $0.typeName == swiftTypeReference.referencedTypeName })
+            .first { $0.typeName == swiftTypeReference.referencedTypeName }
             .unwrapOrThrow(.inconsistency("Cannot find referenced type \(swiftTypeReference.referencedTypeName)"))
     }
 }

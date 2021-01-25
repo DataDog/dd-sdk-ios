@@ -30,7 +30,7 @@ internal class ObjcInteropRootClass: ObjcInteropClass {
 /// Schema of an `@objc class` managing the access to a nested `SwiftStruct`.
 internal class ObjcInteropTransitiveClass: ObjcInteropClass {
     /// Property wrapper in the parent class, which stores the definition of this transitive class.
-    unowned private(set) var parentProperty: ObjcInteropPropertyWrapper
+    private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
 
     /// The nested `SwiftStruct` managed by this `@objc class`.
     let managedSwiftStruct: SwiftStruct
@@ -49,7 +49,7 @@ internal class ObjcInteropReferencedTransitiveClass: ObjcInteropTransitiveClass 
 /// Schema of an `@objc enum` exposing values of a `SwiftEnum`.
 internal class ObjcInteropEnum: ObjcInteropType {
     /// Property wrapper in the parent class, which stores the definition of this `ObjcInteropEnum`.
-    unowned private(set) var parentProperty: ObjcInteropPropertyWrapper
+    private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
     /// The `SwiftEnum` wrapped by this Obj-c enum.
     let managedSwiftEnum: SwiftEnum
 
@@ -70,7 +70,7 @@ internal class ObjcInteropEnumArray: ObjcInteropEnum {}
 /// Schema fo an `@objc` property which manages the access to a `SwiftStruct` property.
 internal class ObjcInteropPropertyWrapper: ObjcInteropType {
     /// The class owning this property.
-    unowned private(set) var owner: ObjcInteropClass
+    private(set) unowned var owner: ObjcInteropClass
     /// Corresponding Swift property in `SwiftStruct`.
     let swiftProperty: SwiftStruct.Property
 
@@ -86,32 +86,26 @@ internal protocol ObjcInteropPropertyWrapperForTransitiveType {
 }
 
 /// Schema for an `@objc` property managing the access to nested `SwiftStruct`.
-internal class ObjcInteropPropertyWrapperAccessingNestedStruct:
-    ObjcInteropPropertyWrapper,
-    ObjcInteropPropertyWrapperForTransitiveType {
-    var objcNestedClass: ObjcInteropTransitiveClass!
+internal class ObjcInteropPropertyWrapperAccessingNestedStruct: ObjcInteropPropertyWrapper, ObjcInteropPropertyWrapperForTransitiveType {
+    var objcNestedClass: ObjcInteropTransitiveClass! // swiftlint:disable:this implicitly_unwrapped_optional
     var objcTransitiveType: ObjcInteropType { objcNestedClass }
 }
 
 /// Schema for an `@objc` property managing the access to nested `SwiftEnum`.
-internal class ObjcInteropPropertyWrapperAccessingNestedEnum:
-    ObjcInteropPropertyWrapper,
-    ObjcInteropPropertyWrapperForTransitiveType {
-    var objcNestedEnum: ObjcInteropEnum!
+internal class ObjcInteropPropertyWrapperAccessingNestedEnum: ObjcInteropPropertyWrapper, ObjcInteropPropertyWrapperForTransitiveType {
+    var objcNestedEnum: ObjcInteropEnum! // swiftlint:disable:this implicitly_unwrapped_optional
     var objcTransitiveType: ObjcInteropType { objcNestedEnum }
 }
 
 /// Schema for an `@objc` property managing the access array of `SwiftEnums`.
-internal class ObjcInteropPropertyWrapperAccessingNestedEnumsArray:
-    ObjcInteropPropertyWrapper,
-    ObjcInteropPropertyWrapperForTransitiveType {
-    var objcNestedEnumsArray: ObjcInteropEnumArray!
+internal class ObjcInteropPropertyWrapperAccessingNestedEnumsArray: ObjcInteropPropertyWrapper, ObjcInteropPropertyWrapperForTransitiveType {
+    var objcNestedEnumsArray: ObjcInteropEnumArray! // swiftlint:disable:this implicitly_unwrapped_optional
     var objcTransitiveType: ObjcInteropType { objcNestedEnumsArray }
 }
 
 /// Schema for an `@objc` property managing the access to `SwiftStruct` property.
 internal class ObjcInteropPropertyWrapperManagingSwiftStructProperty: ObjcInteropPropertyWrapper {
-    var objcInteropType: ObjcInteropType!
+    var objcInteropType: ObjcInteropType! // swiftlint:disable:this implicitly_unwrapped_optional
 }
 
 // MARK: - Plaing type schemas

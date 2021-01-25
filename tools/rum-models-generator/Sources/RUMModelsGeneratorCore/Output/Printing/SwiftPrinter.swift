@@ -6,11 +6,16 @@
 
 import Foundation
 
+/// A type which prints Swift code.
+public protocol SwiftCodePrinter {
+    func print(swiftTypes: [SwiftType]) throws -> String
+}
+
 /// Generates Swift code from `SwiftTypes`.
-internal class SwiftPrinter: Printer {
+public class SwiftPrinter: Printer, SwiftCodePrinter {
     // MARK: - Printing
 
-    func print(swiftTypes: [SwiftType]) throws -> String {
+    public func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
 
         try swiftTypes.forEach { type in

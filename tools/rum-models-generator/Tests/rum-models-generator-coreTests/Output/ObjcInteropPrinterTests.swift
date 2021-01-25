@@ -14,7 +14,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
         // MARK: - Swift
         \(try SwiftPrinter().print(swiftTypes: types))
         // MARK: - ObjcInterop
-        \(try ObjcInteropPrinter().printObjcInterop(for: types))
+        \(try ObjcInteropPrinter().print(swiftTypes: types))
         """
     }
 
