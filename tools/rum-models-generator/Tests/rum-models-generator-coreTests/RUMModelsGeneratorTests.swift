@@ -9,17 +9,24 @@ import XCTest
 
 final class RUMModelsGeneratorTests: XCTestCase {
     /// Test made for debugging purpose.
-    /// Uncomment it and run it using real `rum-events-format/schemas` URL.
-    func testPrintDebugSchemas() throws {
-//        let schemasFolderURL = URL(
-//            fileURLWithPath: "..."
-//        )
+    /// Uncomment it to run with real `rum-events-format/schemas` URL.
+//    func testPrintDebugSchemas() throws {
+//        let rumEventsFormatSchemasFolder = URL(fileURLWithPath: #file)
+//            .deletingLastPathComponent()
+//            .deletingLastPathComponent()
+//            .deletingLastPathComponent()
+//            .appendingPathComponent("rum-events-format/schemas", isDirectory: true)
+//
+//        let schemasFolderURL = URL(fileURLWithPath: rumEventsFormatSchemasFolder.absoluteString)
 //
 //        let schemas = try RUMJSONSchemaFiles(folder: schemasFolderURL)
 //        let generator = RUMModelsGenerator()
 //
-//        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-//        print(try generator.printRUMModels(for: schemas))
-//        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-    }
+//        print(">>>>>>>>>>>>>>>>>> Swift >>>>>>>>>>>>>>>>>>>>>>")
+//        print(try generator.printRUMModels(for: schemas, using: SwiftPrinter()))
+//        print("<<<<<<<<<<<<<<<<<< Swift <<<<<<<<<<<<<<<<<<<<<<")
+//        print(">>>>>>>>>>>>>>>>>> ObjcInterop >>>>>>>>>>>>>>>>>>>>>>")
+//        print(try generator.printRUMModels(for: schemas, using: ObjcInteropPrinter()))
+//        print(">>>>>>>>>>>>>>>>>> ObjcInterop >>>>>>>>>>>>>>>>>>>>>>")
+//    }
 }

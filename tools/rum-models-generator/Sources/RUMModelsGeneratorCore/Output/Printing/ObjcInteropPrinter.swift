@@ -35,11 +35,11 @@ import Foundation
 ///         public var integer: NSNumber { foo.integer as NSNumber }
 ///     }
 ///
-internal class ObjcInteropPrinter: Printer {
+internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
     /// The prefix used for types exposed to Obj-c.
     private let objcTypeNamesPrefix: String = "DD"
 
-    func printObjcInterop(for swiftTypes: [SwiftType]) throws -> String {
+    func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
 
         try ObjcInteropTypeReader()

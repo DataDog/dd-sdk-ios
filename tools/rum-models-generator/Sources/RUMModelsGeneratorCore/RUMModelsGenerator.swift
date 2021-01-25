@@ -47,11 +47,13 @@ public class RUMModelsGenerator {
     private let jsonObjectReader = JSONTypeReader()
     private let swiftTypeReader = SwiftTypeReader()
     private let rumSwiftTransformer = RUMSwiftTypeTransformer()
-    private let swiftPrinter = SwiftPrinter()
 
     public init() {}
 
-    public func printRUMModels(for schemaFiles: RUMJSONSchemaFiles) throws -> String {
+    public func printRUMModels(
+        for schemaFiles: RUMJSONSchemaFiles,
+        using swiftCodePrinter: SwiftCodePrinter
+    ) throws -> String {
         var output = """
         /*
          * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
@@ -83,7 +85,7 @@ public class RUMModelsGenerator {
 
         let rumModels = try rumSwiftTransformer.transform(types: swiftModels)
 
-        output += try swiftPrinter.print(swiftTypes: rumModels)
+        output += try swiftCodePrinter.print(swiftTypes: rumModels)
 
         return output
     }

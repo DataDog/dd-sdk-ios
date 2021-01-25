@@ -30,7 +30,7 @@ private struct RootCommand: ParsableCommand {
                 let schemasFolderURL = URL(fileURLWithPath: path)
                 let schemas = try RUMJSONSchemaFiles(folder: schemasFolderURL)
                 let generator = RUMModelsGenerator()
-                print(try generator.printRUMModels(for: schemas))
+                print(try generator.printRUMModels(for: schemas, using: SwiftPrinter()))
             } catch {
                 print("Failed to generate Swift models: \(error)")
             }

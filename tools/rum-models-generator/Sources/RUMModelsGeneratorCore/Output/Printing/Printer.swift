@@ -7,8 +7,10 @@
 import Foundation
 
 /// Manages lines indentation for generating code.
-internal class Printer {
+public class Printer {
     var output = ""
+
+    public init() {}
 
     // MARK: - Indentation
 
