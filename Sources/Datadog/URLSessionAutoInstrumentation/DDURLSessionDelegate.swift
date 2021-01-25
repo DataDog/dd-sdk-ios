@@ -35,7 +35,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
         // host projects would need to change their `init()`s in subclasses.
         // we can fix this in v2.0
         Self.datadogInitializationCheck()
-        firstPartyURLsFilter = FirstPartyURLsFilter(firstPartyHosts: additionalFirstPartyHosts)
+        firstPartyURLsFilter = FirstPartyURLsFilter(hosts: additionalFirstPartyHosts)
         interceptor = URLSessionAutoInstrumentation.instance?.interceptor
     }
 

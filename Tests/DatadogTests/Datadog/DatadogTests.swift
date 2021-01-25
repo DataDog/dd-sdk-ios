@@ -221,7 +221,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
         }
         try verify(configuration: defaultBuilder.trackURLSession().build()) {
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
         }
     }
 

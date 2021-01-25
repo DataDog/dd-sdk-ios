@@ -181,7 +181,7 @@ extension FeaturesConfiguration {
             }
         }
 
-        if let firstPartyHosts = configuration.firstPartyHosts, !firstPartyHosts.isEmpty {
+        if let firstPartyHosts = configuration.firstPartyHosts {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                     userDefinedFirstPartyHosts: sanitized(firstPartyHosts: firstPartyHosts),
