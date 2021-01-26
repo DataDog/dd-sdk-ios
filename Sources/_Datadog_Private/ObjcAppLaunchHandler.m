@@ -14,49 +14,8 @@
 // Note that the following property will be set early enough in the App lifecycle to avoid any race conditions without any specific synchronization means.
 static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
 
-@interface AppLaunchHandler : NSObject
-@end
-
-@implementation AppLaunchHandler {
-    NSTimeInterval _processStartTime;
-    NSTimeInterval _frameworkLoadTime;
-}
-
-+ (void)load {
-    // This is called at the `_Datadog_Private` load time, keep the work minimal
-    [[self new] scheduleUIApplicationDidFinishLaunchingMarking];
-}
-
-- (instancetype)init
-{
-    if (self = [super init]) {
-        _frameworkLoadTime = CFAbsoluteTimeGetCurrent();
-    }
-    return self;
-}
-
-- (void)scheduleUIApplicationDidFinishLaunchingMarking {
-    id __block token = [NSNotificationCenter.defaultCenter
-                        addObserverForName:UIApplicationDidBecomeActiveNotification
-                        object:nil
-                        queue:NSOperationQueue.mainQueue
-                        usingBlock:^(NSNotification *_){
-        [self markUIApplicationDidBecomeActive];
-        [NSNotificationCenter.defaultCenter removeObserver:token];
-    }];
-}
-
-- (void)markUIApplicationDidBecomeActive {
-    if (TimeToApplicationDidBecomeActive > 0) {
-        return;
-    }
-
-    NSTimeInterval now = CFAbsoluteTimeGetCurrent();
-    [self queryProcessStartTime];
-    TimeToApplicationDidBecomeActive = now - _processStartTime;
-}
-
-- (void)queryProcessStartTime {
+NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallbackTime) {
+    NSTimeInterval processStartTime;
     // Query the current process' start time:
     // https://www.freebsd.org/cgi/man.cgi?sysctl(3)
     // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/sysctl.h#L681
@@ -70,13 +29,42 @@ static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
     if (res == 0) {
         // The process' start time is provided relative to 1 Jan 1970
         struct timeval startTime = kip.kp_proc.p_starttime;
-        _processStartTime = startTime.tv_sec + startTime.tv_usec / USEC_PER_SEC;
+        processStartTime = startTime.tv_sec + startTime.tv_usec / USEC_PER_SEC;
         // Convert to time since 1 Jan 2001 to align with CFAbsoluteTimeGetCurrent()
-        _processStartTime -= kCFAbsoluteTimeIntervalSince1970;
+        processStartTime -= kCFAbsoluteTimeIntervalSince1970;
     } else {
         // Fallback to less accurate delta with DD's framework load time
-        _processStartTime = _frameworkLoadTime;
+        processStartTime = fallbackTime;
     }
+    return processStartTime;
+}
+
+NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterval fallbackTime) {
+    if (TimeToApplicationDidBecomeActive > 0) {
+        return;
+    }
+
+    NSTimeInterval now = CFAbsoluteTimeGetCurrent();
+    NSTimeInterval processStartTime = QueryProcessStartTimeWithFallback(fallbackTime);
+    TimeToApplicationDidBecomeActive = now - processStartTime;
+}
+
+@interface AppLaunchHandler : NSObject
+@end
+
+@implementation AppLaunchHandler
+
++ (void)load {
+    // This is called at the `_Datadog_Private` load time, keep the work minimal
+    NSTimeInterval frameworkLoadTime = CFAbsoluteTimeGetCurrent();
+    id __block token = [NSNotificationCenter.defaultCenter
+                        addObserverForName:UIApplicationDidBecomeActiveNotification
+                        object:nil
+                        queue:NSOperationQueue.mainQueue
+                        usingBlock:^(NSNotification *_){
+        ComputeTimeToApplicationDidBecomeActiveWithFallback(frameworkLoadTime);
+        [NSNotificationCenter.defaultCenter removeObserver:token];
+    }];
 }
 
 @end
