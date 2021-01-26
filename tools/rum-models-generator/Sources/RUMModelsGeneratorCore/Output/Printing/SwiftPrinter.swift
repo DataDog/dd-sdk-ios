@@ -146,28 +146,3 @@ public class SwiftPrinter: BasePrinter {
         }
     }
 }
-
-// MARK: - Reflection Helpers
-
-private protocol SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool
-}
-
-extension SwiftProtocol: SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
-        return self == swiftProtocol
-            || conformance.contains { $0.conforms(to: swiftProtocol) }
-    }
-}
-
-extension SwiftStruct: SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
-        return conformance.contains { $0.conforms(to: swiftProtocol) }
-    }
-}
-
-extension SwiftEnum: SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
-        return conformance.contains { $0.conforms(to: swiftProtocol) }
-    }
-}
