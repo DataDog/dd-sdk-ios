@@ -337,9 +337,14 @@ extension Datadog {
             }
 
             /// Configures network requests monitoring for Tracing and RUM features. **Must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
-            @available(*, deprecated, message: "This option is replaced by `track(firstPartyHosts:)`. Refer to the new API comment for important details.")
+            @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
             public func set(tracedHosts: Set<String>) -> Builder {
                 return track(firstPartyHosts: tracedHosts)
+            }
+
+            @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
+            public func track(firstPartyHosts: Set<String>) -> Builder {
+                return trackURLSession(firstPartyHosts: firstPartyHosts)
             }
 
             /// Configures network requests monitoring for Tracing and RUM features. **It must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
@@ -361,15 +366,15 @@ extension Datadog {
             ///
             /// If both RUM and Tracing features are enabled, the SDK will be sending RUM Resources for 1st- and 3rd-party requests and tracing Spans for 1st-parties.
             ///
-            /// Until `firstPartyHosts` is set, network requests monitoring is disabled.
+            /// Until `trackURLSession()` is called, network requests monitoring is disabled.
             ///
-            /// **NOTE 1:** Setting `firstPartyHosts` will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
+            /// **NOTE 1:** Enabling this option will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
             /// for implementation details.
             ///
-            /// **NOTE 2:** The `firstPartyHosts` instrumentation will NOT work without using `DDURLSessionDelegate`.
+            /// **NOTE 2:** The `URLSession` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
-            /// - Parameter firstPartyHosts: not set by default
-            public func track(firstPartyHosts: Set<String>) -> Builder {
+            /// - Parameter firstPartyHosts: empty set by default
+            public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
                 configuration.firstPartyHosts = firstPartyHosts
                 return self
             }

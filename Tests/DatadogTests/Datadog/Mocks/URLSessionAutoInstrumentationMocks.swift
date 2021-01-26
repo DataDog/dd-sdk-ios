@@ -7,11 +7,17 @@
 import Foundation
 @testable import Datadog
 
+extension URLSession {
+    static func mockWith(_ delegate: URLSessionDelegate) -> URLSession {
+        return URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+    }
+}
+
 class URLSessionInterceptorMock: URLSessionInterceptorType {
     var modifiedRequest: URLRequest?
 
-    var onRequestModified: ((URLRequest) -> Void)?
-    var onTaskCreated: ((URLSessionTask) -> Void)?
+    var onRequestModified: ((URLRequest, URLSession?) -> Void)?
+    var onTaskCreated: ((URLSessionTask, URLSession?) -> Void)?
     var onTaskCompleted: ((URLSessionTask, Error?) -> Void)?
     var onTaskMetricsCollected: ((URLSessionTask, URLSessionTaskMetrics) -> Void)?
 
@@ -19,14 +25,14 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
     var tasksCompleted: [(task: URLSessionTask, error: Error?)] = []
     var taskMetrics: [(task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
 
-    func modify(request: URLRequest) -> URLRequest {
-        onRequestModified?(request)
+    func modify(request: URLRequest, session: URLSession?) -> URLRequest {
+        onRequestModified?(request, session)
         return modifiedRequest ?? request
     }
 
-    func taskCreated(task: URLSessionTask) {
+    func taskCreated(task: URLSessionTask, session: URLSession?) {
         tasksCreated.append(task)
-        onTaskCreated?(task)
+        onTaskCreated?(task, session)
     }
 
     func taskCompleted(task: URLSessionTask, error: Error?) {

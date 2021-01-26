@@ -408,9 +408,9 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: []
         )
-        XCTAssertNil(
+        XCTAssertNotNil(
             configuration.urlSessionAutoInstrumentation,
-            "When `firstPartyHosts` are set empty, the URLSession auto instrumentation config shuld be `nil`"
+            "When `firstPartyHosts` are set empty and non-nil, the URLSession auto instrumentation config should NOT be nil."
         )
     }
 
@@ -476,7 +476,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             printFunction.printedMessage,
             """
-            🔥 Datadog SDK usage error: To use `.track(firstPartyHosts:)` either RUM or Tracing should be enabled.
+            🔥 Datadog SDK usage error: To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
             """
         )
     }

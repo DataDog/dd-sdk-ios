@@ -19,9 +19,8 @@
     [super viewDidLoad];
 
     self.testScenario = SwiftGlobals.currentTestScenario;
-    self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
-                                                 delegate:[DDNSURLSessionDelegate new]
-                                            delegateQueue:nil];
+
+    self.session = [self.testScenario buildURLSession];
     assert(self.testScenario != nil);
 }
 

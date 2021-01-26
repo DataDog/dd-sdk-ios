@@ -7,8 +7,8 @@
 import Foundation
 
 internal protocol URLSessionInterceptorType: class {
-    func modify(request: URLRequest) -> URLRequest
-    func taskCreated(task: URLSessionTask)
+    func modify(request: URLRequest, session: URLSession?) -> URLRequest
+    func taskCreated(task: URLSessionTask, session: URLSession?)
     func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
     func taskCompleted(task: URLSessionTask, error: Error?)
 }
@@ -20,7 +20,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     /// Filters first party `URLs` defined by the user.
-    private let firstPartyURLsFilter: FirstPartyURLsFilter
+    private let defaultFirstPartyURLsFilter: FirstPartyURLsFilter
     /// Filters internal `URLs` used by the SDK.
     private let internalURLsFilter: InternalURLsFilter
     /// Handles resources interception.
@@ -54,7 +54,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         handler: URLSessionInterceptionHandler
     ) {
-        self.firstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
+        self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
         self.handler = handler
 
@@ -89,12 +89,12 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     /// from the client application to backend services instrumented with Datadog agents.
     /// - Parameter request: input request.
     /// - Returns: modified input requests. The modified request may contain additional Datadog headers.
-    public func modify(request: URLRequest) -> URLRequest {
+    public func modify(request: URLRequest, session: URLSession? = nil) -> URLRequest {
         guard !internalURLsFilter.isInternal(url: request.url) else {
             return request
         }
-        if injectTracingHeadersToFirstPartyRequests,
-           firstPartyURLsFilter.isFirstParty(url: request.url) {
+        let isFirstPartyRequest = isFirstParty(request: request, for: session)
+        if injectTracingHeadersToFirstPartyRequests && isFirstPartyRequest {
             return injectSpanContext(into: request)
         }
         return request
@@ -103,16 +103,16 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     /// Notifies the `URLSessionTask` creation.
     /// This method should be called as soon as the task was created.
     /// - Parameter task: the task object obtained from `URLSession`.
-    public func taskCreated(task: URLSessionTask) {
+    public func taskCreated(task: URLSessionTask, session: URLSession? = nil) {
         guard let request = task.originalRequest,
               !internalURLsFilter.isInternal(url: request.url) else {
             return
         }
-
         queue.async {
+            let isFirstPartyRequest = self.isFirstParty(request: request, for: session)
             let interception = TaskInterception(
                 request: request,
-                isFirstParty: self.firstPartyURLsFilter.isFirstParty(url: request.url)
+                isFirstParty: isFirstPartyRequest
             )
             self.interceptionByTask[task] = interception
 
@@ -174,6 +174,13 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     // MARK: - Private
+
+    private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
+        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
+        let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
+        let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+        return isFirstPartyForDelegate || isFirstPartyForInterceptor
+    }
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
         interceptionByTask[task] = nil

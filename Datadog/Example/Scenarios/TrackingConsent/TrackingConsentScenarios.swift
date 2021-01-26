@@ -17,7 +17,7 @@ internal class TrackingConsentBaseScenario {
         _ = builder
             .trackUIKitRUMViews(using: DefaultUIKitRUMViewsPredicate())
             .trackUIKitActions(true)
-            .track(firstPartyHosts: ["datadoghq.com"])
+            .trackURLSession(firstPartyHosts: ["datadoghq.com"])
     }
 }
 

@@ -71,7 +71,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .set(rumSessionsSamplingRate: 42.5)
-                .track(firstPartyHosts: ["example.com"])
+                .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(false)
                 .setRUMViewEventMapper { _ in mockRUMViewEvent }

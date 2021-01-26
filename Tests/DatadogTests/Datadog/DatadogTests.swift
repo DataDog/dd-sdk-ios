@@ -217,11 +217,11 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
 
-        try verify(configuration: defaultBuilder.track(firstPartyHosts: ["example.com"]).build()) {
+        try verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {
             XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
         }
-        try verify(configuration: defaultBuilder.track(firstPartyHosts: []).build()) {
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+        try verify(configuration: defaultBuilder.trackURLSession().build()) {
+            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
         }
     }
 

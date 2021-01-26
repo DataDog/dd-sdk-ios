@@ -83,7 +83,7 @@ internal class URLSessionSwizzler {
                             completionHandler?(data, response, error)
                         }
 
-                        let newRequest = interceptor.modify(request: urlRequest)
+                        let newRequest = interceptor.modify(request: urlRequest, session: session)
 
                         task = previousImplementation(session, Self.selector, newRequest, newCompletionHandler)
                         taskReference = task
@@ -95,7 +95,7 @@ internal class URLSessionSwizzler {
                         //   `nil` as the `completionHandler` (it produces a warning, but compiles).
                         task = previousImplementation(session, Self.selector, urlRequest, completionHandler)
                     }
-                    interceptor.taskCreated(task: task)
+                    interceptor.taskCreated(task: task, session: session)
                     return task
                 }
             }
@@ -149,7 +149,7 @@ internal class URLSessionSwizzler {
                         //   `nil` as the `completionHandler` (it produces a warning, but compiles).
                         task = previousImplementation(session, Self.selector, url, completionHandler)
                     }
-                    interceptor.taskCreated(task: task)
+                    interceptor.taskCreated(task: task, session: session)
                     return task
                 }
             }
@@ -186,13 +186,13 @@ internal class URLSessionSwizzler {
                     guard let interceptor = (session.delegate as? DDURLSessionDelegate)?.interceptor else {
                         return previousImplementation(session, Self.selector, urlRequest)
                     }
-                    let newRequest = interceptor.modify(request: urlRequest)
+                    let newRequest = interceptor.modify(request: urlRequest, session: session)
                     let task = previousImplementation(session, Self.selector, newRequest)
                     if #available(iOS 13.0, *) {
                         // Prior to iOS 13.0, `dataTask(with:)` (for `URLRequest`) calls the
                         // the `dataTask(with:completionHandler:)` (for `URLRequest`) internally,
                         // so the task creation will be notified from `dataTaskWithURLRequestAndCompletion` swizzling.
-                        interceptor.taskCreated(task: task)
+                        interceptor.taskCreated(task: task, session: session)
                     }
                     return task
                 }
@@ -231,7 +231,7 @@ internal class URLSessionSwizzler {
                         return previousImplementation(session, Self.selector, url)
                     }
                     let task = previousImplementation(session, Self.selector, url)
-                    interceptor.taskCreated(task: task)
+                    interceptor.taskCreated(task: task, session: session)
                     return task
                 }
             }

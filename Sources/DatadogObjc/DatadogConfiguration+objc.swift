@@ -194,7 +194,7 @@ public class DDConfigurationBuilder: NSObject {
 
     @objc
     public func track(firstPartyHosts: Set<String>) {
-        _ = sdkBuilder.track(firstPartyHosts: firstPartyHosts)
+        _ = sdkBuilder.trackURLSession(firstPartyHosts: firstPartyHosts)
     }
 
     @objc

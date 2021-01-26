@@ -1016,7 +1016,7 @@ class RUMMonitorTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
-                .track(firstPartyHosts: [.mockAny()])
+                .trackURLSession(firstPartyHosts: [.mockAny()])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(path: .mockAny())))
                 .trackUIKitActions(true)
                 .build()

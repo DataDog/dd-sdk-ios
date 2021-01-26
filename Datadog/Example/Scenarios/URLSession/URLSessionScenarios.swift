@@ -14,6 +14,10 @@ import Datadog
 /// calls third party endpoints.
 @objc
 class URLSessionBaseScenario: NSObject {
+    /// If yes, instrumented endpoints are passed to `DDURLSessionDelegate`; otherwise, they are passed to `DatadogConfiguration.trackURLSession` method
+    @objc
+    let feedAdditionalFirstyPartyHosts: Bool
+
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
     @objc
     let customGETResourceURL: URL
@@ -35,6 +39,7 @@ class URLSessionBaseScenario: NSObject {
     let thirdPartyURL: URL
 
     override init() {
+        feedAdditionalFirstyPartyHosts = Bool.random()
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let serverMockConfiguration = Environment.serverMockConfiguration()!
             customGETResourceURL = serverMockConfiguration.instrumentedEndpoints[0]
@@ -69,7 +74,33 @@ class URLSessionBaseScenario: NSObject {
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .track(firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!])
+        if feedAdditionalFirstyPartyHosts {
+            _ = builder.trackURLSession()
+        } else {
+            _ = builder.trackURLSession(
+                firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
+            )
+        }
+    }
+
+    @objc
+    func buildURLSession() -> URLSession {
+        let delegate: DDURLSessionDelegate
+        if feedAdditionalFirstyPartyHosts {
+            delegate = DDURLSessionDelegate(
+                additionalFirstPartyHosts: [
+                    customGETResourceURL.host!,
+                    customPOSTRequest.url!.host!,
+                    badResourceURL.host!
+                ]
+            )
+        } else {
+            delegate = DDURLSessionDelegate()
+        }
+        return URLSession(
+            configuration: .default,
+            delegate: delegate,
+            delegateQueue: nil
+        )
     }
 }

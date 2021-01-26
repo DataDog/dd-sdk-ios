@@ -161,7 +161,30 @@ class DDURLSessionDelegateTests: XCTestCase {
             printFunction.printedMessage,
             """
             🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
-            first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+            first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
+            to enable network requests tracking.
+            """
+        )
+    }
+
+    func testGivenAutoInstrumentationInstanceIsNil_whenInitializingDDURLSessionDelegateWithCustomFirstPartyHosts_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        let previousConsolePrint = consolePrint
+        consolePrint = printFunction.print
+        defer { consolePrint = previousConsolePrint }
+
+        // given
+        URLSessionAutoInstrumentation.instance = nil
+
+        // when
+        _ = DDURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
+            first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
             to enable network requests tracking.
             """
         )
@@ -177,6 +200,24 @@ class DDURLSessionDelegateTests: XCTestCase {
 
         // when
         let testDelegate = DDURLSessionDelegate()
+
+        // then
+        XCTAssert(
+            testDelegate.interceptor === URLSessionAutoInstrumentation.instance?.interceptor,
+            "\(String(describing: testDelegate.interceptor)) must be identical to \(String(describing: URLSessionAutoInstrumentation.instance?.interceptor))"
+        )
+    }
+
+    func testWhenDDURLSessionDelegateInitsWithCustomFirstPartyHosts_itPicksCorrectInterceptor() {
+        // given
+        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
+            configuration: .mockAny(),
+            dateProvider: SystemDateProvider()
+        )
+        defer { URLSessionAutoInstrumentation.instance = nil }
+
+        // when
+        let testDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
 
         // then
         XCTAssert(

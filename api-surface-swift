@@ -14,10 +14,10 @@ public class DDRUMMonitor
  public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
- public func startResourceLoading(resourceKey: String,httpMethod: String,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
  public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceKind,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func startUserAction(type: RUMUserActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
@@ -80,6 +80,10 @@ public class Datadog
    public func set(rumSessionsSamplingRate: Float) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
+   public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent?) -> Builder
+   public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder
+   public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder
+   public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder
    public func set(serviceName: String) -> Builder
    public func set(batchSize: BatchSize) -> Builder
    public func set(uploadFrequency: UploadFrequency) -> Builder
@@ -503,17 +507,7 @@ public enum RUMMethod: String, Codable
  case put = "PUT"
  case delete = "DELETE"
  case patch = "PATCH"
-public enum RUMResourceKind
- case image
- case xhr
- case beacon
- case css
- case document
- case fetch
- case font
- case js
- case media
- case other
+public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 public enum RUMUserActionType
  case tap
  case scroll
@@ -535,10 +529,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  override public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
  override public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
  override public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue])
- override public func startResourceLoading(resourceKey: String,httpMethod: String,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+ override public func startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
  override public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue])
  override public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceKind,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ override public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  override public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
  override public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
  override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
@@ -567,9 +561,10 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
  public func inject(spanContext: OTSpanContext)
  override public init()
+ public init(firstPartyHosts: Set<String>)
 public class URLSessionInterceptor: URLSessionInterceptorType
  public static var shared: URLSessionInterceptor?
- public func modify(request: URLRequest) -> URLRequest
- public func taskCreated(task: URLSessionTask)
+ public func modify(request: URLRequest, session: URLSession? = nil) -> URLRequest
+ public func taskCreated(task: URLSessionTask, session: URLSession? = nil)
  public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
  public func taskCompleted(task: URLSessionTask, error: Error?)
