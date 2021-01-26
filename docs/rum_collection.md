@@ -90,10 +90,10 @@ Datadog.initialize(
 
     - `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
     - `.granted` - the SDK starts collecting the data and sends it to Datadog.
-    - `.notGranted` - the SDK does not collect any data: logs, traces and RUM events will not be send to Datadog.
+    - `.notGranted` - the SDK does not collect any data: logs, traces, and RUM events are not sent to Datadog.
 
-    To change the tracking consent value after the SDK is initialized, use `Datadog.set(trackingConsent:)` API.
-    The SDK will change its behavior according to the new value, e.g. if the current tracking consent is `.pending`:
+    To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
+    The SDK changes its behavior according to the new value. For example, if the current tracking consent is `.pending`:
 
     - if changed to `.granted`, the SDK will send all current and future data to Datadog;
     - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
@@ -300,7 +300,7 @@ Datadog.Configuration
     }
     .build()
 ```
-Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it gets sent, for example to redact sensitive information in RUM Resource's `url` you may implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
+Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it gets sent. For example to redact sensitive information in RUM Resource's `url` you may implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
 ```swift
 .setRUMResourceEventMapper { resourceEvent in
     var resourceEvent = resourceEvent
