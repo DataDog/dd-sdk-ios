@@ -11,60 +11,49 @@
 // `AppLaunchHandler` aims to track some times as part of the sequence described in Apple's "About the App Launch Sequence"
 // https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 
-// Note that the following properties will be set early enough in the App lifecycle to avoid any race conditions without any specific synchronization means.
-static NSTimeInterval TimeToApplicationFinishedLaunching = 0.0;
-static NSTimeInterval TimeToLoadApplicationRootUI = 0.0;
+// Note that the following property will be set early enough in the App lifecycle to avoid any race conditions without any specific synchronization means.
+static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
 
 @interface AppLaunchHandler : NSObject
 @end
 
 @implementation AppLaunchHandler {
     NSTimeInterval _processStartTime;
-    NSTimeInterval _applicationMainEndTime;
     NSTimeInterval _frameworkLoadTime;
 }
 
 + (void)load {
     // This is called at the `_Datadog_Private` load time, keep the work minimal
-    NSTimeInterval now = CFAbsoluteTimeGetCurrent();
-    // Schedule a call for the first turn of run loop before the main nib/storyboard is loaded:
-    [NSRunLoop.mainRunLoop performInModes:@[NSRunLoopCommonModes] block:^{
-        AppLaunchHandler *handler = [[self alloc] initWithFrameworkLoadTime:now];
-        [handler markEndOfUIApplicationMain];
-        [handler scheduleUIApplicationDidFinishLaunchingMarking];
-    }];
+    [[self new] scheduleUIApplicationDidFinishLaunchingMarking];
 }
 
-- (instancetype)initWithFrameworkLoadTime:(NSTimeInterval)frameworkLoadTime
+- (instancetype)init
 {
     if (self = [super init]) {
-        _frameworkLoadTime = frameworkLoadTime;
+        _frameworkLoadTime = CFAbsoluteTimeGetCurrent();
     }
     return self;
 }
 
-- (void)markEndOfUIApplicationMain {
-    _applicationMainEndTime = CFAbsoluteTimeGetCurrent();
-}
-
 - (void)scheduleUIApplicationDidFinishLaunchingMarking {
     id __block token = [NSNotificationCenter.defaultCenter
-                        addObserverForName:UIApplicationDidFinishLaunchingNotification
+                        addObserverForName:UIApplicationDidBecomeActiveNotification
                         object:nil
                         queue:NSOperationQueue.mainQueue
                         usingBlock:^(NSNotification *_){
-        [self markUIApplicationDidFinishLaunching];
+        [self markUIApplicationDidBecomeActive];
         [NSNotificationCenter.defaultCenter removeObserver:token];
     }];
 }
 
-- (void)markUIApplicationDidFinishLaunching {
+- (void)markUIApplicationDidBecomeActive {
+    if (TimeToApplicationDidBecomeActive > 0) {
+        return;
+    }
+
     NSTimeInterval now = CFAbsoluteTimeGetCurrent();
-
     [self queryProcessStartTime];
-
-    TimeToApplicationFinishedLaunching = now - _processStartTime;
-    TimeToLoadApplicationRootUI = now - _applicationMainEndTime;
+    TimeToApplicationDidBecomeActive = now - _processStartTime;
 }
 
 - (void)queryProcessStartTime {
@@ -93,5 +82,5 @@ static NSTimeInterval TimeToLoadApplicationRootUI = 0.0;
 @end
 
 CFTimeInterval AppLaunchTime() {
-    return TimeToApplicationFinishedLaunching;
+    return TimeToApplicationDidBecomeActive;
 }
