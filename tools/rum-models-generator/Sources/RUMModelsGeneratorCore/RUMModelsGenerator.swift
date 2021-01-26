@@ -104,6 +104,27 @@ public class RUMModelsGenerator {
     }
 
     private func printObjcInteropCode(for rumModels: [ObjcInteropType]) throws -> String {
-        return ""
+        var output = """
+        /*
+         * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+         * This product includes software developed at Datadog (https://www.datadoghq.com/).
+         * Copyright 2019-2020 Datadog, Inc.
+         */
+
+        import Datadog
+        import Foundation
+
+        // This file was generated from JSON Schema. Do not modify it directly.
+
+        // swiftlint:disable force_unwrapping
+
+        """
+
+        output += try ObjcInteropPrinter(objcTypeNamesPrefix: "DD").print(objcInteropTypes: rumModels)
+        output += """
+
+        // swiftlint:enable force_unwrapping
+        """
+        return output
     }
 }

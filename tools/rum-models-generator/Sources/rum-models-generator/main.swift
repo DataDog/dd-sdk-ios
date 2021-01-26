@@ -12,7 +12,8 @@ private struct RootCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Generates rum models from `rum-events-format` schema files and pritns it to the standard output.",
         subcommands: [
-            GenerateSwift.self
+            GenerateSwift.self,
+            GenerateObjc.self
         ]
     )
 
@@ -33,6 +34,27 @@ private struct RootCommand: ParsableCommand {
                 print(try generator.printRUMModels(for: schemas, using: .swift))
             } catch {
                 print("Failed to generate Swift models: \(error)")
+            }
+        }
+    }
+
+    struct GenerateObjc: ParsableCommand {
+        static let configuration = CommandConfiguration(
+            commandName: "generate-objc",
+            abstract: "Generates models for Datadog Objc."
+        )
+
+        @Option(help: "The path to the folder containing `rum-events-format` schemas.")
+        var path: String
+
+        func run() {
+            do {
+                let schemasFolderURL = URL(fileURLWithPath: path)
+                let schemas = try RUMJSONSchemaFiles(folder: schemasFolderURL)
+                let generator = RUMModelsGenerator()
+                print(try generator.printRUMModels(for: schemas, using: .objcInterop))
+            } catch {
+                print("Failed to generate Objc models: \(error)")
             }
         }
     }
