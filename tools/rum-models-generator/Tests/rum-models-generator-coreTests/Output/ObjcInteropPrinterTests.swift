@@ -9,12 +9,18 @@ import XCTest
 
 final class ObjcInteropPrinterTests: XCTestCase {
     /// Prints Swift code along with its `@objc` interop code.
-    private func printSwiftWithObjcInterop(for types: [SwiftType]) throws -> String {
+    private func printSwiftWithObjcInterop(for swiftTypes: [SwiftType]) throws -> String {
+        let objcInteropTypes = try SwiftToObjcInteropTypeTransformer()
+            .transform(swiftTypes: swiftTypes)
+
+        let swiftPrinter = SwiftPrinter()
+        let objcInteropPrinter = ObjcInteropPrinter(objcTypeNamesPrefix: "DD")
+
         return """
         // MARK: - Swift
-        \(try SwiftPrinter().print(swiftTypes: types))
+        \(try swiftPrinter.print(swiftTypes: swiftTypes))
         // MARK: - ObjcInterop
-        \(try ObjcInteropPrinter().print(swiftTypes: types))
+        \(try objcInteropPrinter.print(objcInteropTypes: objcInteropTypes))
         """
     }
 

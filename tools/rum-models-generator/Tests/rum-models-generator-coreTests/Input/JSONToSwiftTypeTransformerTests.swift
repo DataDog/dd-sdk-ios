@@ -7,8 +7,8 @@
 import XCTest
 @testable import RUMModelsGeneratorCore
 
-final class SwiftTypeReaderTests: XCTestCase {
-    func testReadingSwiftStructFromJSONObject() throws {
+final class JSONToSwiftTypeTransformerTests: XCTestCase {
+    func testTransformingJSONObjectIntoSwiftStruct() throws {
         let object = JSONObject(
             name: "Foo",
             comment: "Description of Foo.",
@@ -70,8 +70,6 @@ final class SwiftTypeReaderTests: XCTestCase {
                 )
             ]
         )
-
-        let actual = try SwiftTypeReader().readSwiftStruct(from: object)
 
         let expected = SwiftStruct(
             name: "Foo",
@@ -154,6 +152,9 @@ final class SwiftTypeReaderTests: XCTestCase {
             conformance: []
         )
 
-        XCTAssertEqual(expected, actual)
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
     }
 }

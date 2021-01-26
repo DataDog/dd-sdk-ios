@@ -7,15 +7,8 @@
 import XCTest
 @testable import RUMModelsGeneratorCore
 
-final class JSONTypeReaderTests: XCTestCase {
-    private func read(file: File, referencedFiles: [File]) throws -> JSONObject {
-        let schemaReader = JSONSchemaReader()
-        let typeReader = JSONTypeReader()
-        let jsonSchema = try schemaReader.readJSONSchema(from: file, resolvingAgainst: referencedFiles)
-        return try typeReader.readJSONObject(from: jsonSchema)
-    }
-
-    func testReadingJSONObjectFromSchema() throws {
+final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
+    func testTransformingJSONSchemaIntoJSONObject() throws {
         let referencedSchema1 = """
         {
             "$id": "referenced-schema1.json",
@@ -89,14 +82,6 @@ final class JSONTypeReaderTests: XCTestCase {
         }
         """
 
-        let actual = try read(
-            file: File(name: "", content: mainSchema.data(using: .utf8)!),
-            referencedFiles: [
-                File(name: "", content: referencedSchema1.data(using: .utf8)!),
-                File(name: "", content: referencedSchema2.data(using: .utf8)!),
-            ]
-        )
-
         let expected = JSONObject(
             name: "Foo",
             comment: "Description of Foo.",
@@ -159,6 +144,18 @@ final class JSONTypeReaderTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(expected, actual)
+        let jsonSchema = try JSONSchemaReader()
+            .readJSONSchema(
+                from: File(content: mainSchema.data(using: .utf8)!),
+                resolvingAgainst: [
+                    File(content: referencedSchema1.data(using: .utf8)!),
+                    File(content: referencedSchema2.data(using: .utf8)!),
+                ]
+            )
+
+        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchemas: [jsonSchema])
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
     }
 }

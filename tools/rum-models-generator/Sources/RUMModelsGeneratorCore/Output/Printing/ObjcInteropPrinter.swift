@@ -6,9 +6,9 @@
 
 import Foundation
 
-/// Generates Swift code for Obj-c interoperability for given `SwiftStructs`.
+/// Generates Swift code for Obj-c interoperability for given `ObjcInteropType` schemas.
 ///
-/// E.g. given `SwiftStruct` describing:
+/// E.g. given `ObjcInteropType` describing Swift struc:
 ///
 ///     public struct Foo {
 ///         public var string = "foo"
@@ -35,17 +35,17 @@ import Foundation
 ///         public var integer: NSNumber { foo.integer as NSNumber }
 ///     }
 ///
-internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
+internal class ObjcInteropPrinter: BasePrinter {
     /// The prefix used for types exposed to Obj-c.
-    private let objcTypeNamesPrefix: String = "DD"
+    private let objcTypeNamesPrefix: String
 
-    func print(swiftTypes: [SwiftType]) throws -> String {
+    init(objcTypeNamesPrefix: String) {
+        self.objcTypeNamesPrefix = objcTypeNamesPrefix
+    }
+
+    func print(objcInteropTypes: [ObjcInteropType]) throws -> String {
         reset()
-
-        try ObjcInteropTypeReader()
-            .readObjcInteropTypes(from: swiftTypes)
-            .forEach { try print(objcInteropType: $0) }
-
+        try objcInteropTypes.forEach { try print(objcInteropType: $0) }
         return output
     }
 
