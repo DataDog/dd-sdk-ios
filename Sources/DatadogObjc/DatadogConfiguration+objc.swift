@@ -225,6 +225,38 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent?) {
+        _ = sdkBuilder.setRUMViewEventMapper { swiftEvent in
+            let objcEvent = DDRUMViewEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setRUMResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?) {
+        _ = sdkBuilder.setRUMResourceEventMapper { swiftEvent in
+            let objcEvent = DDRUMResourceEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setRUMActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?) {
+        _ = sdkBuilder.setRUMActionEventMapper { swiftEvent in
+            let objcEvent = DDRUMActionEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?) {
+        _ = sdkBuilder.setRUMErrorEventMapper { swiftEvent in
+            let objcEvent = DDRUMErrorEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
     public func set(batchSize: DDBatchSize) {
         _ = sdkBuilder.set(batchSize: batchSize.swiftType)
     }

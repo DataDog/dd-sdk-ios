@@ -58,6 +58,10 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
+            XCTAssertNil(configuration.rumViewEventMapper)
+            XCTAssertNil(configuration.rumResourceEventMapper)
+            XCTAssertNil(configuration.rumActionEventMapper)
+            XCTAssertNil(configuration.rumErrorEventMapper)
         }
     }
 
@@ -119,6 +123,18 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(rumSessionsSamplingRate: 42.5)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumSessionsSamplingRate, 42.5)
 
+        objcBuilder.setRUMViewEventMapper { _ in nil }
+        XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumViewEventMapper)
+
+        objcBuilder.setRUMResourceEventMapper { _ in nil }
+        XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumResourceEventMapper)
+
+        objcBuilder.setRUMActionEventMapper { _ in nil }
+        XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumActionEventMapper)
+
+        objcBuilder.setRUMErrorEventMapper { _ in nil }
+        XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumErrorEventMapper)
+
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
 
@@ -130,5 +146,82 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(uploadFrequency: .rare)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .rare)
+    }
+
+    func testScrubbingRUMEvents() {
+        let objcBuilder = DDConfiguration.builder(
+            rumApplicationID: "rum-app-id",
+            clientToken: "abc-123",
+            environment: "tests"
+        )
+
+        let swiftViewEvent: RUMViewEvent = .mockRandom()
+        let swiftResourceEvent: RUMResourceEvent = .mockRandom()
+        let swiftActionEvent: RUMActionEvent = .mockRandom()
+        let swiftErrorEvent: RUMErrorEvent = .mockRandom()
+
+        objcBuilder.setRUMViewEventMapper { objcViewEvent in
+            XCTAssertEqual(objcViewEvent.swiftModel, swiftViewEvent)
+            objcViewEvent.view.url = "redacted view.url"
+            return objcViewEvent
+        }
+
+        objcBuilder.setRUMResourceEventMapper { objcResourceEvent in
+            XCTAssertEqual(objcResourceEvent.swiftModel, swiftResourceEvent)
+            objcResourceEvent.view.url = "redacted view.url"
+            objcResourceEvent.resource.url = "redacted resource.url"
+            return objcResourceEvent
+        }
+
+        objcBuilder.setRUMActionEventMapper { objcActionEvent in
+            XCTAssertEqual(objcActionEvent.swiftModel, swiftActionEvent)
+            objcActionEvent.view.url = "redacted view.url"
+            objcActionEvent.action.target?.name = "redacted action.target.name"
+            return objcActionEvent
+        }
+
+        objcBuilder.setRUMErrorEventMapper { objcErrorEvent in
+            XCTAssertEqual(objcErrorEvent.swiftModel, swiftErrorEvent)
+            objcErrorEvent.view.url = "redacted view.url"
+            objcErrorEvent.error.message = "redacted error.message"
+            objcErrorEvent.error.resource?.url = "redacted error.resource.url"
+            return objcErrorEvent
+        }
+
+        let configuration = objcBuilder.build().sdkConfiguration
+
+        let redactedSwiftViewEvent = configuration.rumViewEventMapper?(swiftViewEvent)
+        let redactedSwiftResourceEvent = configuration.rumResourceEventMapper?(swiftResourceEvent)
+        let redactedSwiftActionEvent = configuration.rumActionEventMapper?(swiftActionEvent)
+        let redactedSwiftErrorEvent = configuration.rumErrorEventMapper?(swiftErrorEvent)
+
+        XCTAssertEqual(redactedSwiftViewEvent?.view.url, "redacted view.url")
+        XCTAssertEqual(redactedSwiftResourceEvent?.view.url, "redacted view.url")
+        XCTAssertEqual(redactedSwiftResourceEvent?.resource.url, "redacted resource.url")
+        XCTAssertEqual(redactedSwiftActionEvent?.view.url, "redacted view.url")
+        XCTAssertEqual(redactedSwiftActionEvent?.action.target?.name, "redacted action.target.name")
+        XCTAssertEqual(redactedSwiftErrorEvent?.view.url, "redacted view.url")
+        XCTAssertEqual(redactedSwiftErrorEvent?.error.message, "redacted error.message")
+        XCTAssertEqual(redactedSwiftErrorEvent?.error.resource?.url, "redacted error.resource.url")
+    }
+
+    func testDroppingRUMEvents() {
+        let objcBuilder = DDConfiguration.builder(
+            rumApplicationID: "rum-app-id",
+            clientToken: "abc-123",
+            environment: "tests"
+        )
+
+        objcBuilder.setRUMViewEventMapper { _ in nil }
+        objcBuilder.setRUMResourceEventMapper { _ in nil }
+        objcBuilder.setRUMActionEventMapper { _ in nil }
+        objcBuilder.setRUMErrorEventMapper { _ in nil }
+
+        let configuration = objcBuilder.build().sdkConfiguration
+
+        XCTAssertNil(configuration.rumViewEventMapper?(.mockRandom()))
+        XCTAssertNil(configuration.rumResourceEventMapper?(.mockRandom()))
+        XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
+        XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))
     }
 }
