@@ -11,19 +11,19 @@ internal protocol ObjcInteropType: AnyObject {}
 
 /// Any `@objc class` which manages Swift `struct`.
 internal protocol ObjcInteropClass: ObjcInteropType {
-    var managedSwiftStruct: SwiftStruct { get }
+    var bridgedSwiftStruct: SwiftStruct { get }
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] { set get }
 }
 
 /// Schema of a root `@objc class` storing the mutable value of a `SwiftStruct`.
 internal class ObjcInteropRootClass: ObjcInteropClass {
     /// The `SwiftStruct` managed by this `@objc class`.
-    let managedSwiftStruct: SwiftStruct
+    let bridgedSwiftStruct: SwiftStruct
     /// `managedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
 
     init(managedSwiftStruct: SwiftStruct) {
-        self.managedSwiftStruct = managedSwiftStruct
+        self.bridgedSwiftStruct = managedSwiftStruct
     }
 }
 
@@ -33,13 +33,13 @@ internal class ObjcInteropTransitiveClass: ObjcInteropClass {
     private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
 
     /// The nested `SwiftStruct` managed by this `@objc class`.
-    let managedSwiftStruct: SwiftStruct
+    let bridgedSwiftStruct: SwiftStruct
     /// `managedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
 
     init(owner: ObjcInteropPropertyWrapper, managedSwiftStruct: SwiftStruct) {
         self.parentProperty = owner
-        self.managedSwiftStruct = managedSwiftStruct
+        self.bridgedSwiftStruct = managedSwiftStruct
     }
 }
 
@@ -51,11 +51,11 @@ internal class ObjcInteropEnum: ObjcInteropType {
     /// Property wrapper in the parent class, which stores the definition of this enum.
     private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
     /// The `SwiftEnum` exposed by this Obj-c enum.
-    let managedSwiftEnum: SwiftEnum
+    let bridgedSwiftEnum: SwiftEnum
 
     init(owner: ObjcInteropPropertyWrapper, managedSwiftEnum: SwiftEnum) {
         self.parentProperty = owner
-        self.managedSwiftEnum = managedSwiftEnum
+        self.bridgedSwiftEnum = managedSwiftEnum
     }
 }
 
@@ -72,11 +72,11 @@ internal class ObjcInteropPropertyWrapper: ObjcInteropType {
     /// The `@objc class` owning this property.
     private(set) unowned var owner: ObjcInteropClass
     /// Corresponding Swift property in `SwiftStruct`.
-    let swiftProperty: SwiftStruct.Property
+    let bridgedSwiftProperty: SwiftStruct.Property
 
     init(owner: ObjcInteropClass, swiftProperty: SwiftStruct.Property) {
         self.owner = owner
-        self.swiftProperty = swiftProperty
+        self.bridgedSwiftProperty = swiftProperty
     }
 }
 
@@ -108,7 +108,7 @@ internal class ObjcInteropPropertyWrapperManagingSwiftStructProperty: ObjcIntero
     var objcInteropType: ObjcInteropType! // swiftlint:disable:this implicitly_unwrapped_optional
 }
 
-// MARK: - Plaing type schemas
+// MARK: - Plain type schemas
 
 internal class ObjcInteropNSNumber: ObjcInteropType {
     let swiftType: SwiftType

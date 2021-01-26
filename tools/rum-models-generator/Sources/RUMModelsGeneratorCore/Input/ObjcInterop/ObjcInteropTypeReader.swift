@@ -31,7 +31,7 @@ internal class ObjcInteropTypeReader {
 
     private func generateTransitiveObjcInteropTypes(in objcClass: ObjcInteropClass) throws {
         // Generate property wrappers
-        objcClass.objcPropertyWrappers = try objcClass.managedSwiftStruct.properties
+        objcClass.objcPropertyWrappers = try objcClass.bridgedSwiftStruct.properties
             .map { swiftProperty in
                 switch swiftProperty.type {
                 case let swiftPrimitive as SwiftPrimitiveType:

@@ -108,8 +108,8 @@ internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
 
     private func print(objcInteropEnum: ObjcInteropEnum) throws {
         let enumName = objcTypeNamesPrefix + objcInteropEnum.objcTypeName
-        let swiftEnum = objcInteropEnum.managedSwiftEnum
-        let managesOptionalEnum = objcInteropEnum.parentProperty.swiftProperty.isOptional
+        let swiftEnum = objcInteropEnum.bridgedSwiftEnum
+        let managesOptionalEnum = objcInteropEnum.parentProperty.bridgedSwiftProperty.isOptional
         let objcEnumOptionality = managesOptionalEnum ? "?" : ""
         writeEmptyLine()
         writeLine("@objc")
@@ -179,7 +179,7 @@ internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
         //     root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
         // }
         // ```
-        let swiftProperty = propertyWrapper.swiftProperty
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
@@ -212,7 +212,7 @@ internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
         //    get { .init(swift: root.swiftModel.enumeration) }
         // }
         // ```
-        let swiftProperty = propertyWrapper.swiftProperty
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
         let objcPropertyName = swiftProperty.name
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnum.objcTypeName
 
@@ -243,7 +243,7 @@ internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
         //     root.swiftModel.bar.options.map { DDFooOptions(swift: $0).rawValue }
         // }
         // ```
-        let swiftProperty = propertyWrapper.swiftProperty
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnumArray.objcTypeName
@@ -260,7 +260,7 @@ internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
     }
 
     private func printPrimitivePropertyWrapper(_ propertyWrapper: ObjcInteropPropertyWrapperManagingSwiftStructProperty) throws {
-        let swiftProperty = propertyWrapper.swiftProperty
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
@@ -368,8 +368,8 @@ private protocol ObjcInteropReflectable {
 
 extension ObjcInteropRootClass: ObjcInteropReflectable {
     var objcRootClass: ObjcInteropRootClass { self }
-    var objcTypeName: String { managedSwiftStruct.name }
-    var swiftTypeName: String { managedSwiftStruct.name }
+    var objcTypeName: String { bridgedSwiftStruct.name }
+    var swiftTypeName: String { bridgedSwiftStruct.name }
 }
 
 extension ObjcInteropTransitiveClass: ObjcInteropReflectable {
@@ -382,14 +382,14 @@ extension ObjcInteropTransitiveClass: ObjcInteropReflectable {
     }
 
     var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + managedSwiftStruct.name
+        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftStruct.name
     }
 
     var swiftTypeName: String {
         if self is ObjcInteropReferencedTransitiveClass {
-            return managedSwiftStruct.name
+            return bridgedSwiftStruct.name
         }
-        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + managedSwiftStruct.name
+        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftStruct.name
     }
 }
 
@@ -403,14 +403,14 @@ extension ObjcInteropEnum: ObjcInteropReflectable {
     }
 
     var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + managedSwiftEnum.name
+        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftEnum.name
     }
 
     var swiftTypeName: String {
         if self is ObjcInteropReferencedEnum {
-            return managedSwiftEnum.name
+            return bridgedSwiftEnum.name
         }
-        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + managedSwiftEnum.name
+        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftEnum.name
     }
 }
 
@@ -418,11 +418,11 @@ private extension ObjcInteropPropertyWrapper {
     /// A key-path referencing this property, e.g. if this property is called `property` and belongs to class `Bar`,
     /// stored on property named `bar` in class `Foo`, then the `keyPath` is `bar.property`.
     var keyPath: String {
-        let swiftPropertyName = swiftProperty.name
+        let swiftPropertyName = bridgedSwiftProperty.name
 
         if let parentNestedClass = owner as? ObjcInteropTransitiveClass {
             let parentProperty = parentNestedClass.parentProperty
-            let forceUnwrapping = parentProperty.swiftProperty.isOptional ? "!" : ""
+            let forceUnwrapping = parentProperty.bridgedSwiftProperty.isOptional ? "!" : ""
             return parentProperty.keyPath + forceUnwrapping + "." + swiftPropertyName
         } else {
             return swiftPropertyName
