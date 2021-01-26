@@ -147,7 +147,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .gov).logging?.uploadURLWithClientToken.absoluteString,
-            "https://mobile-http-intake.logs.ddog-gov.com/v1/input/" + clientToken
+            "https://logs.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
         XCTAssertEqual(
@@ -160,7 +160,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .gov).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://public-trace-http-intake.logs.ddog-gov.com/v1/input/" + clientToken
+            "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
         XCTAssertEqual(
@@ -173,7 +173,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .gov).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum-http-intake.logs.ddog-gov.com/v1/input/" + clientToken
+            "https://rum.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
         XCTAssertEqual(
