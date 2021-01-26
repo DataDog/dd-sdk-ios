@@ -13,9 +13,11 @@ internal struct FirstPartyURLsFilter {
     private let regex: String
 
     init(hosts: Set<String>) {
-        // pattern = "^(.*\\.)*tracedHost1|tracedHost2|...$"
-        let escapedHosts = hosts.map { NSRegularExpression.escapedPattern(for: $0) }.joined(separator: "|")
-        self.regex = "^(.*\\.)*\(escapedHosts)$"
+        // pattern = "^(.*\\.)*tracedHost1$|tracedHost2$|...$"
+        let escapedHosts = hosts
+            .map { "\(NSRegularExpression.escapedPattern(for: $0))$" }
+            .joined(separator: "|")
+        self.regex = "^(.*\\.)*\(escapedHosts)"
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
