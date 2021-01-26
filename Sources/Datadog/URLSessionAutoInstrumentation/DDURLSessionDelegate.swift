@@ -13,9 +13,32 @@ import Foundation
 @objc
 open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
     var interceptor: URLSessionInterceptorType?
+    let firstPartyURLsFilter: FirstPartyURLsFilter?
 
     @objc
     override public init() {
+        firstPartyURLsFilter = nil
+        interceptor = URLSessionAutoInstrumentation.instance?.interceptor
+        if interceptor == nil {
+            let error = ProgrammerError(
+                description: """
+                `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
+                first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+                to enable network requests tracking.
+                """
+            )
+            consolePrint("\(error)")
+        }
+    }
+
+    // NOTE: RUMM-954 copy&pasting `init()` is a conscious decision.
+    // otherwise `DDURLSessionDelegateAsSuperclassTests` fails.
+    // if `init()` was made convenience and call the designated `init` below,
+    // that would result in potential breaking changes.
+    // host projects would need to change their `init()`s in subclasses.
+    // we can fix this in v2.0
+    public init(firstPartyHosts: Set<String>) {
+        firstPartyURLsFilter = FirstPartyURLsFilter(firstPartyHosts: firstPartyHosts)
         interceptor = URLSessionAutoInstrumentation.instance?.interceptor
         if interceptor == nil {
             let error = ProgrammerError(

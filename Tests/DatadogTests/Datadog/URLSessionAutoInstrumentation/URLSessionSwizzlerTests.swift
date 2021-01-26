@@ -47,8 +47,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestModified = { _ in requestModified.fulfill() }
-        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onRequestModified = { _, session in
+            XCTAssertNotNil(session)
+            requestModified.fulfill()
+        }
+        interceptor.onTaskCreated = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskCreated.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -78,8 +84,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestModified = { _ in requestModified.fulfill() }
-        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onRequestModified = { _, session in
+            XCTAssertNotNil(session)
+            requestModified.fulfill()
+        }
+        interceptor.onTaskCreated = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskCreated.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -109,8 +121,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestModified = { _ in requestModified.fulfill() }
-        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onRequestModified = { _, session in
+            XCTAssertNotNil(session)
+            requestModified.fulfill()
+        }
+        interceptor.onTaskCreated = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskCreated.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -135,8 +153,11 @@ class URLSessionSwizzlerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestModified = { _ in requestNotModified.fulfill() }
-        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onRequestModified = { _, _ in requestNotModified.fulfill() }
+        interceptor.onTaskCreated = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskCreated.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -161,7 +182,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onTaskCreated = { _ in notifyTaskCreated.fulfill() }
+        interceptor.onTaskCreated = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskCreated.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -183,10 +207,10 @@ class URLSessionSwizzlerTests: XCTestCase {
     func testGivenNonInterceptedSession_itDoesntCallInterceptor() throws {
         let doNotModifyRequest = expectation(description: "Notify request modification")
         doNotModifyRequest.isInverted = true
-        interceptor.onRequestModified = { _ in doNotModifyRequest.fulfill() }
+        interceptor.onRequestModified = { _, _ in doNotModifyRequest.fulfill() }
         let doNotNotifyTaskCreated = expectation(description: "Notify task creation")
         doNotNotifyTaskCreated.isInverted = true
-        interceptor.onTaskCreated = { _ in doNotNotifyTaskCreated.fulfill() }
+        interceptor.onTaskCreated = { _, _ in doNotNotifyTaskCreated.fulfill() }
 
         // Given
         let session = URLSession(configuration: .default)

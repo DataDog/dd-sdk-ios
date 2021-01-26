@@ -144,7 +144,7 @@ public enum DDRUMUserActionType: Int
  case scroll
  case swipe
  case custom
-public enum DDRUMResourceKind: Int
+public enum DDRUMResourceType: Int
  case image
  case xhr
  case beacon
@@ -155,6 +155,13 @@ public enum DDRUMResourceKind: Int
  case js
  case media
  case other
+public enum DDRUMMethod: Int
+ case post
+ case get
+ case head
+ case put
+ case delete
+ case patch
 public class DDRUMMonitor: NSObject
  override public convenience init()
  public func startView(viewController: UIViewController,path: String?,attributes: [String: Any])
@@ -166,10 +173,10 @@ public class DDRUMMonitor: NSObject
  public func addError(error: Error,source: DDRUMErrorSource,attributes: [String: Any])
  public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [String: Any])
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [String: Any])
- public func startResourceLoading(resourceKey: String,httpMethod: String,urlString: String,attributes: [String: Any])
+ public func startResourceLoading(resourceKey: String,httpMethod: DDRUMMethod,urlString: String,attributes: [String: Any])
  public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
  public func stopResourceLoading(resourceKey: String,response: URLResponse,attributes: [String: Any])
- public func stopResourceLoading(resourceKey: String,statusCode: Int,kind: DDRUMResourceKind,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,statusCode: Int,kind: DDRUMResourceType,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [String: Any])
  public func startUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])

@@ -167,6 +167,29 @@ class DDURLSessionDelegateTests: XCTestCase {
         )
     }
 
+    func testGivenAutoInstrumentationInstanceIsNil_whenInitializingDDURLSessionDelegateWithCustomFirstPartyHosts_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        let previousConsolePrint = consolePrint
+        consolePrint = printFunction.print
+        defer { consolePrint = previousConsolePrint }
+
+        // given
+        URLSessionAutoInstrumentation.instance = nil
+
+        // when
+        _ = DDURLSessionDelegate(firstPartyHosts: ["foo.com"])
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
+            first party hosts must be specified in `Datadog.Configuration`: `track(firstPartyHosts:)`
+            to enable network requests tracking.
+            """
+        )
+    }
+
     func testWhenDDURLSessionDelegateInits_itPicksCorrectInterceptor() {
         // given
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
@@ -177,6 +200,24 @@ class DDURLSessionDelegateTests: XCTestCase {
 
         // when
         let testDelegate = DDURLSessionDelegate()
+
+        // then
+        XCTAssert(
+            testDelegate.interceptor === URLSessionAutoInstrumentation.instance?.interceptor,
+            "\(String(describing: testDelegate.interceptor)) must be identical to \(String(describing: URLSessionAutoInstrumentation.instance?.interceptor))"
+        )
+    }
+
+    func testWhenDDURLSessionDelegateInitsWithCustomFirstPartyHosts_itPicksCorrectInterceptor() {
+        // given
+        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
+            configuration: .mockAny(),
+            dateProvider: SystemDateProvider()
+        )
+        defer { URLSessionAutoInstrumentation.instance = nil }
+
+        // when
+        let testDelegate = DDURLSessionDelegate(firstPartyHosts: ["foo.com"])
 
         // then
         XCTAssert(
