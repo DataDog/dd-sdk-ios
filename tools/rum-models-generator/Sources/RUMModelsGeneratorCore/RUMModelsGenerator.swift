@@ -124,6 +124,7 @@ public class RUMModelsGenerator {
         output += """
 
         // swiftlint:enable force_unwrapping
+
         """
         return output
     }
