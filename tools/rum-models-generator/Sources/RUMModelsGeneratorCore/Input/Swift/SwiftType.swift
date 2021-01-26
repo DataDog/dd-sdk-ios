@@ -7,7 +7,7 @@
 import Foundation
 
 /// Type-safe Swift schema.
-internal protocol SwiftType {}
+public protocol SwiftType {}
 
 /// Swift primitive type.
 internal protocol SwiftPrimitiveType: SwiftType {}

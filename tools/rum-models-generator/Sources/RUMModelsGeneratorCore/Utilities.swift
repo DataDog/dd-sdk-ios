@@ -67,3 +67,9 @@ extension String {
     /// "UpperCamelCased" notation.
     var upperCamelCased: String { camelCased.uppercasingFirst }
 }
+
+extension Array where Element: Hashable {
+    func asSet() -> Set<Element> {
+        return Set(self)
+    }
+}
