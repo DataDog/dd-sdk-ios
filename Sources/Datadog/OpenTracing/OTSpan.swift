@@ -74,3 +74,52 @@ public extension OTSpan {
         self.finish(at: Date())
     }
 }
+
+/// Error conveniences
+public extension OTSpan {
+    /// Set or replace the error for the given span.
+    /// This is a convenience to set the proper tags with error details. Consider the `setError(message:stacktrace:file:line:)` variant for a better control over the error details.
+    ///
+    /// - parameter error: An object conforming to the `Error` protocol.
+    /// - parameter file: A string identifying the file where the `Error` was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
+    /// - parameter line: The line number in the file where the `Error` was caught.
+    func setError(
+        _ error: Error,
+        file: StaticString = #fileID,
+        line: UInt = #line
+    ) {
+        let dderror = DDError(error: error)
+        setError(
+            kind: dderror.title,
+            message: dderror.message,
+            stacktrace: dderror.details,
+            file: file,
+            line: line
+        )
+    }
+
+    /// Set or replace the error for the given span.
+    /// This is a convenience to set the proper tags with error details.
+    ///
+    /// - parameter kind: The type of error to be logged.
+    /// - parameter message: An error message to be logged.
+    /// - parameter stacktrace: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace.
+    /// - parameter file: A string identifying the file where the error was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
+    /// - parameter line: The line number in the file where the error was caught.
+    func setError(
+        kind: String,
+        message: String,
+        stacktrace: String = "",
+        file: StaticString = #fileID,
+        line: UInt = #line
+    ) {
+        log(
+            fields: [
+                OTLogFields.event: "error",
+                OTLogFields.errorKind: kind,
+                OTLogFields.message: message,
+                OTLogFields.stack: stacktrace + " \(file):\(line)"
+            ]
+        )
+    }
+}

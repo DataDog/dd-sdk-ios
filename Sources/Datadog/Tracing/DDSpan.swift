@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import os.activity
 import _Datadog_Private
 
 internal class DDSpan: OTSpan {

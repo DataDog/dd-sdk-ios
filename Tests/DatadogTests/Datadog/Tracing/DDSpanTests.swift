@@ -7,6 +7,20 @@
 import XCTest
 @testable import Datadog
 
+fileprivate extension Dictionary where Key == String, Value == Encodable {
+    func otEvent() throws -> String {
+        try XCTUnwrap(self[OTLogFields.event] as? String)
+    }
+
+    func otMessage() throws -> String {
+        try XCTUnwrap(self[OTLogFields.message] as? String)
+    }
+
+    func otStack() throws -> String {
+        try XCTUnwrap(self[OTLogFields.stack] as? String)
+    }
+}
+
 class DDSpanTests: XCTestCase {
     func testOverwritingOperationName() {
         let span: DDSpan = .mockWith(operationName: "initial")
@@ -44,6 +58,101 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(span.baggageItem(withKey: "foo"), "bar")
         XCTAssertEqual(span.baggageItem(withKey: "bizz"), "buzz")
         XCTAssertEqual(span.ddContext.baggageItems.all, ["foo": "bar", "bizz": "buzz"])
+    }
+
+    // MARK: - Errors
+
+    func testSettingErrorFromSwiftError() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.logFields.count, 0)
+
+        span.setError(ErrorMock())
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertNotEqual(logFields.count, 0)
+        try XCTAssertEqual(logFields.otEvent(), "error")
+        let spanErrorStack = try logFields.otStack()
+        let fileName = #fileID.components(separatedBy: "/").last!
+        XCTAssertTrue(spanErrorStack.contains(fileName))
+    }
+
+    func testSettingErrorFromSwiftErrorWithFileAndLine() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.logFields.count, 0)
+
+        span.setError(ErrorMock(), file: "File.swift", line: 42)
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let spanErrorStack = try span.logFields.first!.otStack()
+        XCTAssertTrue(spanErrorStack.contains("File.swift"))
+        XCTAssertTrue(spanErrorStack.contains("42"))
+    }
+
+    func testSettingErrorFromNSError() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.logFields.count, 0)
+
+        span.setError(
+            NSError(
+                domain: "DDSpan",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "some error description"]
+            )
+        )
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertNotEqual(logFields.count, 0)
+        try XCTAssertEqual(logFields.otEvent(), "error")
+        let spanErrorMessage = try logFields.otMessage()
+        let spanErrorStack = try logFields.otStack()
+        XCTAssertTrue(spanErrorMessage.contains("some error description"))
+        XCTAssertTrue(spanErrorStack.contains("DDSpan"))
+        let fileName = #fileID.components(separatedBy: "/").last!
+        XCTAssertTrue(spanErrorStack.contains(fileName))
+    }
+
+    func testSettingErrorFromArguments() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.logFields.count, 0)
+
+        span.setError(kind: .mockAny(), message: "DDSpan Error")
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertNotEqual(logFields.count, 0)
+        try XCTAssertEqual(logFields.otEvent(), "error")
+        let spanErrorMessage = try logFields.otMessage()
+        let spanErrorStack = try logFields.otStack()
+        XCTAssertTrue(spanErrorMessage.contains("DDSpan Error"))
+        let fileName = #fileID.components(separatedBy: "/").last!
+        XCTAssertTrue(spanErrorStack.contains(fileName))
+    }
+
+    func testSettingErrorFromArgumentsWithStack() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+
+        let stack = """
+        Thread 0 Crashed:
+        0   app                                 0x0000000102bc0d8c 0x102bb8000 + 36236
+        1   UIKitCore                           0x00000001b513d9ac 0x1b4739000 + 10504620
+        """
+        span.setError(kind: .mockAny(), message: .mockAny(), stacktrace: stack)
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let spanErrorStack = try span.logFields.first!.otStack()
+        XCTAssertTrue(spanErrorStack.contains(stack))
+    }
+
+    func testSettingErrorFromArgumentsWithFileAndLine() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        span.setError(kind: .mockAny(), message: .mockAny(), file: "File.swift", line: 42)
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let spanErrorStack = try span.logFields.first!.otStack()
+        XCTAssertTrue(spanErrorStack.contains("File.swift"))
+        XCTAssertTrue(spanErrorStack.contains("42"))
     }
 
     // MARK: - Usage
