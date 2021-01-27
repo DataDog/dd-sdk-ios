@@ -10,17 +10,24 @@ import Foundation
 internal struct FirstPartyURLsFilter {
     /// A regexp for matching hosts, e.g. when `hosts` is "example.com", it will match
     /// "example.com", "api.example.com", but not "foo.com".
-    private let regex: String
+    private let regex: String?
 
     init(hosts: Set<String>) {
-        // pattern = "^(.*\\.)*tracedHost1|tracedHost2|...$"
-        let escapedHosts = hosts.map { NSRegularExpression.escapedPattern(for: $0) }.joined(separator: "|")
-        self.regex = "^(.*\\.)*\(escapedHosts)$"
+        if hosts.isEmpty {
+            self.regex = nil
+        } else {
+            // pattern = "^(.*\\.)*tracedHost1$|tracedHost2$|...$"
+            let escapedHosts = hosts
+                .map { "\(NSRegularExpression.escapedPattern(for: $0))$" }
+                .joined(separator: "|")
+            self.regex = "^(.*\\.)*\(escapedHosts)"
+        }
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
     func isFirstParty(url: URL?) -> Bool {
-        guard let host = url?.host else {
+        guard let regex = self.regex,
+              let host = url?.host else {
             return false
         }
         return host.range(of: regex, options: .regularExpression) != nil
