@@ -8,27 +8,52 @@ import XCTest
 @testable import Datadog
 
 class FirstPartyURLsFilterTests: XCTestCase {
-    func testWhenURLHostEndingMatchesAnyUserDefinedHost_itIsConsideredFirstParty() {
-        let fixtures = [
-            "http://first-party.com/",
-            "https://first-party.com/",
-            "https://api.first-party.com/v2/users",
-            "https://www.first-party.com/",
-            "https://login:p4ssw0rd@first-party.com:999/",
-            "http://any-domain.eu/",
-            "https://any-domain.eu/",
-            "https://api.any-domain.eu/v2/users",
-            "https://www.any-domain.eu/",
-            "https://login:p4ssw0rd@www.any-domain.eu:999/",
-            "https://api.any-domain.org.eu/",
-        ]
+    let fixtures1stParty = [
+        "http://first-party.com/",
+        "https://first-party.com/",
+        "https://api.first-party.com/v2/users",
+        "https://www.first-party.com/",
+        "https://login:p4ssw0rd@first-party.com:999/",
+        "http://any-domain.eu/",
+        "https://any-domain.eu/",
+        "https://api.any-domain.eu/v2/users",
+        "https://www.any-domain.eu/",
+        "https://login:p4ssw0rd@www.any-domain.eu:999/",
+        "https://api.any-domain.org.eu/",
+    ]
 
+    let fixtures3rdParty = [
+        "http://third-party.com/",
+        "https://third-party.com/",
+        "https://api.third-party.com/v2/users",
+        "https://www.third-party.com/",
+        "https://login:p4ssw0rd@third-party.com:999/",
+        "http://any-domain.org/",
+        "https://any-domain.org/",
+        "https://api.any-domain.org/v2/users",
+        "https://www.any-domain.org/",
+        "https://login:p4ssw0rd@www.any-domain.org:999/",
+        "https://api.any-domain.eu.org/",
+    ]
+
+    func testWhenFilterIsInitializedWithEmptySet_itNeverReturnsFirstParty() {
+        let filter = FirstPartyURLsFilter(hosts: [])
+        (fixtures1stParty + fixtures3rdParty).forEach { fixture in
+            let url = URL(string: fixture)!
+            XCTAssertFalse(
+                filter.isFirstParty(url: url),
+                "The url: `\(url)` should NOT be matched as first party."
+            )
+        }
+    }
+
+    func testWhenURLHostEndingMatchesAnyUserDefinedHost_itIsConsideredFirstParty() {
         // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
         for _ in 0...5 {
             let filter = FirstPartyURLsFilter(
                 hosts: ["first-party.com", "eu"]
             )
-            fixtures.forEach { fixture in
+            fixtures1stParty.forEach { fixture in
                 let url = URL(string: fixture)!
                 XCTAssertTrue(
                     filter.isFirstParty(url: url),
@@ -39,26 +64,12 @@ class FirstPartyURLsFilterTests: XCTestCase {
     }
 
     func testWhenURLHostDoesNotMatchEndingOfAnyOfUserDefinedHosts_itIsNotConsideredFirstParty() {
-        let fixtures = [
-            "http://third-party.com/",
-            "https://third-party.com/",
-            "https://api.third-party.com/v2/users",
-            "https://www.third-party.com/",
-            "https://login:p4ssw0rd@third-party.com:999/",
-            "http://any-domain.org/",
-            "https://any-domain.org/",
-            "https://api.any-domain.org/v2/users",
-            "https://www.any-domain.org/",
-            "https://login:p4ssw0rd@www.any-domain.org:999/",
-            "https://api.any-domain.eu.org/",
-        ]
-
         // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
         for _ in 0...5 {
             let filter = FirstPartyURLsFilter(
                 hosts: ["first-party.com", "eu"]
             )
-            fixtures.forEach { fixture in
+            fixtures3rdParty.forEach { fixture in
                 let url = URL(string: fixture)!
                 XCTAssertFalse(
                     filter.isFirstParty(url: url),
