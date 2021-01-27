@@ -5,7 +5,31 @@
  */
 
 import Foundation
+import CrashReporter
 
 public class DDCrashReportingPlugin {
-    public init() {}
+    private static var sharedPLCrashReporter: PLCrashReporter?
+
+    public init?() {
+        DDCrashReportingPlugin.sharedPLCrashReporter = PLCrashReporter(
+            configuration: PLCrashReporterConfig(
+                signalHandlerType: .BSD,
+                symbolicationStrategy: .all
+            )
+        )
+    }
+
+    // TODO: RUMM-956 Revamp this by shaping the final API
+    public func testIfItWorks() {
+        do {
+            guard let plCrashReporter = DDCrashReportingPlugin.sharedPLCrashReporter else {
+                print("🔥 Failed to instantiate `PLCrashReporter`")
+                return
+            }
+            try plCrashReporter.enableAndReturnError()
+            print("✅ Succeded with enabling `PLCrashReporter`")
+        } catch {
+            print("🔥 Failed to enable `PLCrashReporter`: \(error)")
+        }
+    }
 }
