@@ -7,25 +7,15 @@
 import UIKit
 import Datadog
 
-let allRUMScenarios: [TestScenario.Type] = [
-    RUMManualInstrumentationScenario.self,
-    RUMNavigationControllerScenario.self,
-    RUMTabBarAutoInstrumentationScenario.self,
-    RUMModalViewsAutoInstrumentationScenario.self,
-    RUMTapActionScenario.self,
-    RUMResourcesScenario.self,
-    RUMScrubbingScenario.self,
-]
-
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
 /// uses the RUM manual instrumentation API to send RUM events to the server.
-struct RUMManualInstrumentationScenario: TestScenario {
+final class RUMManualInstrumentationScenario: TestScenario {
     static let storyboardName = "RUMManualInstrumentationScenario"
 }
 
 /// Scenario which starts a navigation controller and runs through 4 different view controllers by navigating
 /// back and forth. Tracks view controllers as RUM Views.
-struct RUMNavigationControllerScenario: TestScenario {
+final class RUMNavigationControllerScenario: TestScenario {
     static let storyboardName = "RUMNavigationControllerScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
@@ -55,7 +45,7 @@ struct RUMNavigationControllerScenario: TestScenario {
 
 /// Scenario which presents `UITabBarController`-based hierarchy and navigates through
 /// its view controllers. Tracks view controllers as RUM Views.
-struct RUMTabBarAutoInstrumentationScenario: TestScenario {
+final class RUMTabBarAutoInstrumentationScenario: TestScenario {
     static var storyboardName: String = "RUMTabBarAutoInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
@@ -78,7 +68,7 @@ struct RUMTabBarAutoInstrumentationScenario: TestScenario {
 
 /// Scenario based on `UINavigationController` hierarchy, which presents different VCs modally.
 /// Tracks view controllers as RUM Views.
-struct RUMModalViewsAutoInstrumentationScenario: TestScenario {
+final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
     static var storyboardName: String = "RUMModalViewsAutoInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
@@ -102,7 +92,7 @@ struct RUMModalViewsAutoInstrumentationScenario: TestScenario {
 /// Scenario which interacts with various interactive elements laid between different view controllers,
 /// including `UITableViewController` and `UICollectionViewController`. Tapped views
 /// and controls are tracked as RUM Actions.
-struct RUMTapActionScenario: TestScenario {
+final class RUMTapActionScenario: TestScenario {
     static var storyboardName: String = "RUMTapActionScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
@@ -135,7 +125,6 @@ struct RUMTapActionScenario: TestScenario {
 /// sent with `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
 final class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
-    static func envIdentifier() -> String { "RUMResourcesScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder

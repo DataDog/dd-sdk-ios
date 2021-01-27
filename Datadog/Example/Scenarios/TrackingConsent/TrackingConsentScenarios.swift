@@ -7,11 +7,6 @@
 import Foundation
 import Datadog
 
-let allTrackingConsentScenarios: [TestScenario.Type] = [
-    TrackingConsentStartPendingScenario.self,
-    TrackingConsentStartGrantedScenario.self,
-]
-
 internal class TrackingConsentBaseScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
@@ -24,7 +19,6 @@ internal class TrackingConsentBaseScenario {
 /// Tracking consent scenario, which launches the app with `.pending` consent value.
 final class TrackingConsentStartPendingScenario: TrackingConsentBaseScenario, TestScenario {
     static let storyboardName = "TrackingConsentScenario"
-    static func envIdentifier() -> String { "TrackingConsentStartPendingScenario" }
     let initialTrackingConsent: TrackingConsent = .pending
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
@@ -35,7 +29,6 @@ final class TrackingConsentStartPendingScenario: TrackingConsentBaseScenario, Te
 /// Tracking consent scenario, which launches the app with `.granted` consent value.
 final class TrackingConsentStartGrantedScenario: TrackingConsentBaseScenario, TestScenario {
     static let storyboardName = "TrackingConsentScenario"
-    static func envIdentifier() -> String { "TrackingConsentStartGrantedScenario" }
     let initialTrackingConsent: TrackingConsent = .granted
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {

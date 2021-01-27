@@ -4,13 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Datadog
-
-let allLoggingScenarios: [TestScenario.Type] = [
-    LoggingManualInstrumentationScenario.self,
-]
-
 /// Scenario which starts a view controller that sends bunch of logs to the server.
-struct LoggingManualInstrumentationScenario: TestScenario {
+final class LoggingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "LoggingManualInstrumentationScenario"
 }

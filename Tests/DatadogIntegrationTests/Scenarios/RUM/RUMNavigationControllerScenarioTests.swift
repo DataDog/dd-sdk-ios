@@ -34,7 +34,7 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: RUMNavigationControllerScenario.self,
+            testScenarioClassName: "RUMNavigationControllerScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )

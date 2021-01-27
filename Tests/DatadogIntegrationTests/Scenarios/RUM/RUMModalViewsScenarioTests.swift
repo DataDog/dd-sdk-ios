@@ -32,7 +32,7 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: RUMModalViewsAutoInstrumentationScenario.self,
+            testScenarioClassName: "RUMModalViewsAutoInstrumentationScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )

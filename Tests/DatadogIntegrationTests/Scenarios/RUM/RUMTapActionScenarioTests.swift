@@ -84,7 +84,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: RUMTapActionScenario.self,
+            testScenarioClassName: "RUMTapActionScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )
