@@ -28,7 +28,7 @@ class DDDatadogTests: XCTestCase {
 
     func testItFowardsInitializationToSwift() throws {
         let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
-        configBuilder.track(firstPartyHosts: ["example.com"])
+        configBuilder.trackURLSession(firstPartyHosts: ["example.com"])
 
         DDDatadog.initialize(
             appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
