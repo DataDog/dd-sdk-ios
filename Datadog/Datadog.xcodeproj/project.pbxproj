@@ -185,7 +185,6 @@
 		61569795256CF6D400C6AADA /* Kronos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; };
 		615697E3256CFB4700C6AADA /* Kronos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; };
 		615697E4256CFB4700C6AADA /* Kronos.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		615698AF256D101800C6AADA /* Kronos.framework in ⚙️ Embed 3rd Party Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
 		6156CB9024DDA8BE008CB2B2 /* RUMCurrentContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8F24DDA8BE008CB2B2 /* RUMCurrentContext.swift */; };
 		6156CB9324DDAA34008CB2B2 /* RUMCurrentContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9224DDAA34008CB2B2 /* RUMCurrentContextTests.swift */; };
@@ -449,17 +448,6 @@
 				615697E4256CFB4700C6AADA /* Kronos.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		615698AE256D100700C6AADA /* ⚙️ Embed 3rd Party Framework Dependencies */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				615698AF256D101800C6AADA /* Kronos.framework in ⚙️ Embed 3rd Party Framework Dependencies */,
-			);
-			name = "⚙️ Embed 3rd Party Framework Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -2604,7 +2592,6 @@
 				61441C2624616F1D003D8BB8 /* Sources */,
 				61441C2724616F1D003D8BB8 /* Frameworks */,
 				61441C2824616F1D003D8BB8 /* Resources */,
-				615698AE256D100700C6AADA /* ⚙️ Embed 3rd Party Framework Dependencies */,
 			);
 			buildRules = (
 			);
