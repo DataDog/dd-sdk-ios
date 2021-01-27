@@ -113,12 +113,16 @@ public extension OTSpan {
         file: StaticString = #fileID,
         line: UInt = #line
     ) {
+        var stackWithFile = "\(file):\(line)"
+        if stack.count > 0 {
+            stackWithFile += "\n" + stack
+        }
         log(
             fields: [
                 OTLogFields.event: "error",
                 OTLogFields.errorKind: kind,
                 OTLogFields.message: message,
-                OTLogFields.stack: stack + " \(file):\(line)"
+                OTLogFields.stack: stackWithFile
             ]
         )
     }
