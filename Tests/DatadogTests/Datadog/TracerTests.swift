@@ -634,6 +634,118 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
     }
 
+    func testSendingSpanLogsWithErrorFromArguments() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
+            loggingFeature: LoggingFeature.instance!
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+
+        let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
+        span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
+        span.setError(kind: "Swift error", message: "Ops!")
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        let errorLogMatcher = logMatchers[1]
+
+        errorLogMatcher.assertStatus(equals: "error")
+        errorLogMatcher.assertValue(forKey: "event", equals: "error")
+        errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
+        errorLogMatcher.assertMessage(equals: "Ops!")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+    }
+
+    func testSendingSpanLogsWithErrorFromNSError() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
+            loggingFeature: LoggingFeature.instance!
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+
+        let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
+        span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
+        let error = NSError(
+            domain: "Tracer",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "Ops!"]
+        )
+        span.setError(error)
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+
+        let errorLogMatcher = logMatchers[1]
+
+        errorLogMatcher.assertStatus(equals: "error")
+        errorLogMatcher.assertValue(forKey: "event", equals: "error")
+        errorLogMatcher.assertValue(forKey: "error.kind", equals: "Tracer - 1")
+        errorLogMatcher.assertMessage(equals: "Ops!")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+    }
+
+    func testSendingSpanLogsWithErrorFromSwiftError() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
+            loggingFeature: LoggingFeature.instance!
+        )
+        defer { TracingFeature.instance = nil }
+
+        let tracer = Tracer.initialize(configuration: .init())
+
+        let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
+        span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
+        span.setError(ErrorMock("Ops!"))
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+
+        let errorLogMatcher = logMatchers[1]
+
+        errorLogMatcher.assertStatus(equals: "error")
+        errorLogMatcher.assertValue(forKey: "event", equals: "error")
+        errorLogMatcher.assertValue(forKey: "error.kind", equals: "ErrorMock")
+        errorLogMatcher.assertMessage(equals: "Ops!")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+    }
+
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
