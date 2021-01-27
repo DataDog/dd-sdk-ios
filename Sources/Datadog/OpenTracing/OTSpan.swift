@@ -92,7 +92,7 @@ public extension OTSpan {
         setError(
             kind: dderror.title,
             message: dderror.message,
-            stacktrace: dderror.details,
+            stack: dderror.details,
             file: file,
             line: line
         )
@@ -103,13 +103,13 @@ public extension OTSpan {
     ///
     /// - parameter kind: The type of error to be logged.
     /// - parameter message: An error message to be logged.
-    /// - parameter stacktrace: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace.
+    /// - parameter stack: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace.
     /// - parameter file: A string identifying the file where the error was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
     /// - parameter line: The line number in the file where the error was caught.
     func setError(
         kind: String,
         message: String,
-        stacktrace: String = "",
+        stack: String = "",
         file: StaticString = #fileID,
         line: UInt = #line
     ) {
@@ -118,7 +118,7 @@ public extension OTSpan {
                 OTLogFields.event: "error",
                 OTLogFields.errorKind: kind,
                 OTLogFields.message: message,
-                OTLogFields.stack: stacktrace + " \(file):\(line)"
+                OTLogFields.stack: stack + " \(file):\(line)"
             ]
         )
     }

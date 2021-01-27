@@ -138,7 +138,7 @@ class DDSpanTests: XCTestCase {
         0   app                                 0x0000000102bc0d8c 0x102bb8000 + 36236
         1   UIKitCore                           0x00000001b513d9ac 0x1b4739000 + 10504620
         """
-        span.setError(kind: .mockAny(), message: .mockAny(), stacktrace: stack)
+        span.setError(kind: .mockAny(), message: .mockAny(), stack: stack)
 
         XCTAssertEqual(span.logFields.count, 1)
         let spanErrorStack = try span.logFields.first!.otStack()
