@@ -104,7 +104,7 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(serviceName: "service-name")
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.serviceName, "service-name")
 
-        objcBuilder.track(firstPartyHosts: ["example.com"])
+        objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
 
         objcBuilder.trackUIKitActions()

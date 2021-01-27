@@ -186,14 +186,20 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.set(tracesEndpoint: tracesEndpoint.sdkEndpoint)
     }
 
-    @available(*, deprecated, message: "This option is replaced by `track(firstPartyHosts:)`. Refer to the new API comment for important details.")
+    @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
     @objc
     public func set(tracedHosts: Set<String>) {
         track(firstPartyHosts: tracedHosts)
     }
 
+    @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
     @objc
     public func track(firstPartyHosts: Set<String>) {
+        trackURLSession(firstPartyHosts: firstPartyHosts)
+    }
+
+    @objc
+    public func trackURLSession(firstPartyHosts: Set<String>) {
         _ = sdkBuilder.trackURLSession(firstPartyHosts: firstPartyHosts)
     }
 
