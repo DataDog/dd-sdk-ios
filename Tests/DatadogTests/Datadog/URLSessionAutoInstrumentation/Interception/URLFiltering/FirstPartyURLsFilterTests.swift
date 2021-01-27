@@ -8,10 +8,6 @@ import XCTest
 @testable import Datadog
 
 class FirstPartyURLsFilterTests: XCTestCase {
-    private let filter = FirstPartyURLsFilter(
-        hosts: ["first-party.com", "eu"]
-    )
-
     func testWhenURLHostEndingMatchesAnyUserDefinedHost_itIsConsideredFirstParty() {
         let fixtures = [
             "http://first-party.com/",
@@ -27,12 +23,18 @@ class FirstPartyURLsFilterTests: XCTestCase {
             "https://api.any-domain.org.eu/",
         ]
 
-        fixtures.forEach { fixture in
-            let url = URL(string: fixture)!
-            XCTAssertTrue(
-                filter.isFirstParty(url: url),
-                "The url: `\(url)` should be matched as first party."
+        // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
+        for _ in 0...5 {
+            let filter = FirstPartyURLsFilter(
+                hosts: ["first-party.com", "eu"]
             )
+            fixtures.forEach { fixture in
+                let url = URL(string: fixture)!
+                XCTAssertTrue(
+                    filter.isFirstParty(url: url),
+                    "The url: `\(url)` should be matched as first party."
+                )
+            }
         }
     }
 
@@ -51,12 +53,18 @@ class FirstPartyURLsFilterTests: XCTestCase {
             "https://api.any-domain.eu.org/",
         ]
 
-        fixtures.forEach { fixture in
-            let url = URL(string: fixture)!
-            XCTAssertFalse(
-                filter.isFirstParty(url: url),
-                "The url: `\(url)` should NOT be matched as first party."
+        // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
+        for _ in 0...5 {
+            let filter = FirstPartyURLsFilter(
+                hosts: ["first-party.com", "eu"]
             )
+            fixtures.forEach { fixture in
+                let url = URL(string: fixture)!
+                XCTAssertFalse(
+                    filter.isFirstParty(url: url),
+                    "The url: `\(url)` should NOT be matched as first party."
+                )
+            }
         }
     }
 }
