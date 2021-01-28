@@ -66,15 +66,17 @@ class DDSpanTests: XCTestCase {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.logFields.count, 0)
 
+        #sourceLocation(file: "File.swift", line: 42)
         span.setError(ErrorMock())
+        #sourceLocation()
 
         XCTAssertEqual(span.logFields.count, 1)
         let logFields = span.logFields.first!
         XCTAssertNotEqual(logFields.count, 0)
         try XCTAssertEqual(logFields.otEvent(), "error")
         let spanErrorStack = try logFields.otStack()
-        let fileName = #fileID.components(separatedBy: "/").last!
-        XCTAssertTrue(spanErrorStack.contains(fileName))
+        XCTAssertTrue(spanErrorStack.contains("File.swift"))
+        XCTAssertTrue(spanErrorStack.contains("42"))
     }
 
     func testSettingErrorFromSwiftErrorWithFileAndLine() throws {
@@ -93,6 +95,7 @@ class DDSpanTests: XCTestCase {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.logFields.count, 0)
 
+        #sourceLocation(file: "File.swift", line: 42)
         span.setError(
             NSError(
                 domain: "DDSpan",
@@ -100,6 +103,7 @@ class DDSpanTests: XCTestCase {
                 userInfo: [NSLocalizedDescriptionKey: "some error description"]
             )
         )
+        #sourceLocation()
 
         XCTAssertEqual(span.logFields.count, 1)
         let logFields = span.logFields.first!
@@ -109,15 +113,17 @@ class DDSpanTests: XCTestCase {
         let spanErrorStack = try logFields.otStack()
         XCTAssertTrue(spanErrorMessage.contains("some error description"))
         XCTAssertTrue(spanErrorStack.contains("DDSpan"))
-        let fileName = #fileID.components(separatedBy: "/").last!
-        XCTAssertTrue(spanErrorStack.contains(fileName))
+        XCTAssertTrue(spanErrorStack.contains("File.swift"))
+        XCTAssertTrue(spanErrorStack.contains("42"))
     }
 
     func testSettingErrorFromArguments() throws {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.logFields.count, 0)
 
+        #sourceLocation(file: "File.swift", line: 42)
         span.setError(kind: .mockAny(), message: "DDSpan Error")
+        #sourceLocation()
 
         XCTAssertEqual(span.logFields.count, 1)
         let logFields = span.logFields.first!
@@ -126,8 +132,8 @@ class DDSpanTests: XCTestCase {
         let spanErrorMessage = try logFields.otMessage()
         let spanErrorStack = try logFields.otStack()
         XCTAssertTrue(spanErrorMessage.contains("DDSpan Error"))
-        let fileName = #fileID.components(separatedBy: "/").last!
-        XCTAssertTrue(spanErrorStack.contains(fileName))
+        XCTAssertTrue(spanErrorStack.contains("File.swift"))
+        XCTAssertTrue(spanErrorStack.contains("42"))
     }
 
     func testSettingErrorFromArgumentsWithStack() throws {
