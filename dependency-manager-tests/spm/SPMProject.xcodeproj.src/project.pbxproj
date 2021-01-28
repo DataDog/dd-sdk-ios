@@ -14,6 +14,8 @@
 		61C363E624374D6000C4D4E6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61C363E424374D6000C4D4E6 /* LaunchScreen.storyboard */; };
 		61C363F124374D6100C4D4E6 /* SPMProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363F024374D6100C4D4E6 /* SPMProjectTests.swift */; };
 		61C363FC24374D6100C4D4E6 /* SPMProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* SPMProjectUITests.swift */; };
+		61C4DBDE25C2FB0B0058DED4 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */; };
+		61C4DBDF25C2FB0B0058DED4 /* DatadogCrashReporting in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		9EC32C6224E596C20063BCCE /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = 9EC32C6124E596C20063BCCE /* DatadogObjc */; };
 		9EC32C6324E596C20063BCCE /* DatadogObjc in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 9EC32C6124E596C20063BCCE /* DatadogObjc */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -42,6 +44,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				61C4DBDF25C2FB0B0058DED4 /* DatadogCrashReporting in Embed Frameworks */,
 				9EC32C6324E596C20063BCCE /* DatadogObjc in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -72,6 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61C4DBDE25C2FB0B0058DED4 /* DatadogCrashReporting in Frameworks */,
 				9EC32C6224E596C20063BCCE /* DatadogObjc in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,6 +187,7 @@
 			name = SPMProject;
 			packageProductDependencies = (
 				9EC32C6124E596C20063BCCE /* DatadogObjc */,
+				61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */,
 			);
 			productName = SPMProject;
 			productReference = 61C363D624374D5F00C4D4E6 /* SPMProject.app */;
@@ -689,6 +694,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogCrashReporting;
+		};
 		9EC32C6124E596C20063BCCE /* DatadogObjc */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
