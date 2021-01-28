@@ -50,11 +50,16 @@ public class DDConfigurationBuilder: NSObject
  public func set(tracesEndpoint: DDTracesEndpoint)
  public func set(tracedHosts: Set<String>)
  public func track(firstPartyHosts: Set<String>)
+ public func trackURLSession(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
  public func set(rumSessionsSamplingRate: Float)
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()
+ public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent?)
+ public func setRUMResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?)
+ public func setRUMActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?)
+ public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?)
  public func set(batchSize: DDBatchSize)
  public func set(uploadFrequency: DDUploadFrequency)
  public func build() -> DDConfiguration
@@ -113,6 +118,8 @@ public class DDLoggerBuilder: NSObject
  func log(_ fields: [String: NSObject], timestamp: Date?)
  func setBaggageItem(_ key: String, value: String) -> OTSpan
  func getBaggageItem(_ key: String) -> String?
+ func setError(_ error: Error)
+ func setError(kind: String, message: String, stack: String?)
  func finish()
  func finishWithTime(_ finishTime: Date?)
  func setActive() -> OTSpan
@@ -128,6 +135,396 @@ public class OT: NSObject
  func startSpan(_ operationName: String, childOf parent: OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> OTSpan
  func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws
  func extractWithFormat(_ format: String, carrier: Any) throws
+public class DDRUMViewEvent: NSObject
+ @objc public var dd: DDRUMViewEventDD
+ @objc public var application: DDRUMViewEventApplication
+ @objc public var connectivity: DDRUMViewEventRUMConnectivity?
+ @objc public var date: NSNumber
+ @objc public var service: String?
+ @objc public var session: DDRUMViewEventSession
+ @objc public var type: String
+ @objc public var usr: DDRUMViewEventRUMUser?
+ @objc public var view: DDRUMViewEventView
+public class DDRUMViewEventDD: NSObject
+ @objc public var documentVersion: NSNumber
+ @objc public var formatVersion: NSNumber
+public class DDRUMViewEventApplication: NSObject
+ @objc public var id: String
+public class DDRUMViewEventRUMConnectivity: NSObject
+ @objc public var cellular: DDRUMViewEventRUMConnectivityCellular?
+ @objc public var interfaces: [Int]
+ @objc public var status: DDRUMViewEventRUMConnectivityStatus
+public class DDRUMViewEventRUMConnectivityCellular: NSObject
+ @objc public var carrierName: String?
+ @objc public var technology: String?
+public enum DDRUMViewEventRUMConnectivityInterfaces: Int
+ case bluetooth
+ case cellular
+ case ethernet
+ case wifi
+ case wimax
+ case mixed
+ case other
+ case unknown
+ case none
+public enum DDRUMViewEventRUMConnectivityStatus: Int
+ case connected
+ case notConnected
+ case maybe
+public class DDRUMViewEventSession: NSObject
+ @objc public var id: String
+ @objc public var type: DDRUMViewEventSessionSessionType
+public enum DDRUMViewEventSessionSessionType: Int
+ case user
+ case synthetics
+public class DDRUMViewEventRUMUser: NSObject
+ @objc public var email: String?
+ @objc public var id: String?
+ @objc public var name: String?
+public class DDRUMViewEventView: NSObject
+ @objc public var action: DDRUMViewEventViewAction
+ @objc public var crash: DDRUMViewEventViewCrash?
+ @objc public var cumulativeLayoutShift: NSNumber?
+ @objc public var domComplete: NSNumber?
+ @objc public var domContentLoaded: NSNumber?
+ @objc public var domInteractive: NSNumber?
+ @objc public var error: DDRUMViewEventViewError
+ @objc public var firstContentfulPaint: NSNumber?
+ @objc public var firstInputDelay: NSNumber?
+ @objc public var id: String
+ @objc public var isActive: NSNumber?
+ @objc public var largestContentfulPaint: NSNumber?
+ @objc public var loadEvent: NSNumber?
+ @objc public var loadingTime: NSNumber?
+ @objc public var loadingType: DDRUMViewEventViewLoadingType
+ @objc public var longTask: DDRUMViewEventViewLongTask?
+ @objc public var referrer: String?
+ @objc public var resource: DDRUMViewEventViewResource
+ @objc public var timeSpent: NSNumber
+ @objc public var url: String
+public class DDRUMViewEventViewAction: NSObject
+ @objc public var count: NSNumber
+public class DDRUMViewEventViewCrash: NSObject
+ @objc public var count: NSNumber
+public class DDRUMViewEventViewError: NSObject
+ @objc public var count: NSNumber
+public enum DDRUMViewEventViewLoadingType: Int
+ case none
+ case initialLoad
+ case routeChange
+ case activityDisplay
+ case activityRedisplay
+ case fragmentDisplay
+ case fragmentRedisplay
+ case viewControllerDisplay
+ case viewControllerRedisplay
+public class DDRUMViewEventViewLongTask: NSObject
+ @objc public var count: NSNumber
+public class DDRUMViewEventViewResource: NSObject
+ @objc public var count: NSNumber
+public class DDRUMResourceEvent: NSObject
+ @objc public var dd: DDRUMResourceEventDD
+ @objc public var action: DDRUMResourceEventAction?
+ @objc public var application: DDRUMResourceEventApplication
+ @objc public var connectivity: DDRUMResourceEventRUMConnectivity?
+ @objc public var date: NSNumber
+ @objc public var resource: DDRUMResourceEventResource
+ @objc public var service: String?
+ @objc public var session: DDRUMResourceEventSession
+ @objc public var type: String
+ @objc public var usr: DDRUMResourceEventRUMUser?
+ @objc public var view: DDRUMResourceEventView
+public class DDRUMResourceEventDD: NSObject
+ @objc public var formatVersion: NSNumber
+ @objc public var spanId: String?
+ @objc public var traceId: String?
+public class DDRUMResourceEventAction: NSObject
+ @objc public var id: String
+public class DDRUMResourceEventApplication: NSObject
+ @objc public var id: String
+public class DDRUMResourceEventRUMConnectivity: NSObject
+ @objc public var cellular: DDRUMResourceEventRUMConnectivityCellular?
+ @objc public var interfaces: [Int]
+ @objc public var status: DDRUMResourceEventRUMConnectivityStatus
+public class DDRUMResourceEventRUMConnectivityCellular: NSObject
+ @objc public var carrierName: String?
+ @objc public var technology: String?
+public enum DDRUMResourceEventRUMConnectivityInterfaces: Int
+ case bluetooth
+ case cellular
+ case ethernet
+ case wifi
+ case wimax
+ case mixed
+ case other
+ case unknown
+ case none
+public enum DDRUMResourceEventRUMConnectivityStatus: Int
+ case connected
+ case notConnected
+ case maybe
+public class DDRUMResourceEventResource: NSObject
+ @objc public var connect: DDRUMResourceEventResourceConnect?
+ @objc public var dns: DDRUMResourceEventResourceDNS?
+ @objc public var download: DDRUMResourceEventResourceDownload?
+ @objc public var duration: NSNumber
+ @objc public var firstByte: DDRUMResourceEventResourceFirstByte?
+ @objc public var id: String?
+ @objc public var method: DDRUMResourceEventResourceRUMMethod
+ @objc public var provider: DDRUMResourceEventResourceProvider?
+ @objc public var redirect: DDRUMResourceEventResourceRedirect?
+ @objc public var size: NSNumber?
+ @objc public var ssl: DDRUMResourceEventResourceSSL?
+ @objc public var statusCode: NSNumber?
+ @objc public var type: DDRUMResourceEventResourceResourceType
+ @objc public var url: String
+public class DDRUMResourceEventResourceConnect: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
+public class DDRUMResourceEventResourceDNS: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
+public class DDRUMResourceEventResourceDownload: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
+public class DDRUMResourceEventResourceFirstByte: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
+public enum DDRUMResourceEventResourceRUMMethod: Int
+ case none
+ case post
+ case get
+ case head
+ case put
+ case delete
+ case patch
+public class DDRUMResourceEventResourceProvider: NSObject
+ @objc public var domain: String?
+ @objc public var name: String?
+ @objc public var type: DDRUMResourceEventResourceProviderProviderType
+public enum DDRUMResourceEventResourceProviderProviderType: Int
+ case none
+ case ad
+ case advertising
+ case analytics
+ case cdn
+ case content
+ case customerSuccess
+ case firstParty
+ case hosting
+ case marketing
+ case other
+ case social
+ case tagManager
+ case utility
+ case video
+public class DDRUMResourceEventResourceRedirect: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
+public class DDRUMResourceEventResourceSSL: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
+public enum DDRUMResourceEventResourceResourceType: Int
+ case document
+ case xhr
+ case beacon
+ case fetch
+ case css
+ case js
+ case image
+ case font
+ case media
+ case other
+public class DDRUMResourceEventSession: NSObject
+ @objc public var id: String
+ @objc public var type: DDRUMResourceEventSessionSessionType
+public enum DDRUMResourceEventSessionSessionType: Int
+ case user
+ case synthetics
+public class DDRUMResourceEventRUMUser: NSObject
+ @objc public var email: String?
+ @objc public var id: String?
+ @objc public var name: String?
+public class DDRUMResourceEventView: NSObject
+ @objc public var id: String
+ @objc public var referrer: String?
+ @objc public var url: String
+public class DDRUMActionEvent: NSObject
+ @objc public var dd: DDRUMActionEventDD
+ @objc public var action: DDRUMActionEventAction
+ @objc public var application: DDRUMActionEventApplication
+ @objc public var connectivity: DDRUMActionEventRUMConnectivity?
+ @objc public var date: NSNumber
+ @objc public var service: String?
+ @objc public var session: DDRUMActionEventSession
+ @objc public var type: String
+ @objc public var usr: DDRUMActionEventRUMUser?
+ @objc public var view: DDRUMActionEventView
+public class DDRUMActionEventDD: NSObject
+ @objc public var formatVersion: NSNumber
+public class DDRUMActionEventAction: NSObject
+ @objc public var crash: DDRUMActionEventActionCrash?
+ @objc public var error: DDRUMActionEventActionError?
+ @objc public var id: String?
+ @objc public var loadingTime: NSNumber?
+ @objc public var longTask: DDRUMActionEventActionLongTask?
+ @objc public var resource: DDRUMActionEventActionResource?
+ @objc public var target: DDRUMActionEventActionTarget?
+ @objc public var type: DDRUMActionEventActionActionType
+public class DDRUMActionEventActionCrash: NSObject
+ @objc public var count: NSNumber
+public class DDRUMActionEventActionError: NSObject
+ @objc public var count: NSNumber
+public class DDRUMActionEventActionLongTask: NSObject
+ @objc public var count: NSNumber
+public class DDRUMActionEventActionResource: NSObject
+ @objc public var count: NSNumber
+public class DDRUMActionEventActionTarget: NSObject
+ @objc public var name: String
+public enum DDRUMActionEventActionActionType: Int
+ case custom
+ case click
+ case tap
+ case scroll
+ case swipe
+ case applicationStart
+ case back
+public class DDRUMActionEventApplication: NSObject
+ @objc public var id: String
+public class DDRUMActionEventRUMConnectivity: NSObject
+ @objc public var cellular: DDRUMActionEventRUMConnectivityCellular?
+ @objc public var interfaces: [Int]
+ @objc public var status: DDRUMActionEventRUMConnectivityStatus
+public class DDRUMActionEventRUMConnectivityCellular: NSObject
+ @objc public var carrierName: String?
+ @objc public var technology: String?
+public enum DDRUMActionEventRUMConnectivityInterfaces: Int
+ case bluetooth
+ case cellular
+ case ethernet
+ case wifi
+ case wimax
+ case mixed
+ case other
+ case unknown
+ case none
+public enum DDRUMActionEventRUMConnectivityStatus: Int
+ case connected
+ case notConnected
+ case maybe
+public class DDRUMActionEventSession: NSObject
+ @objc public var id: String
+ @objc public var type: DDRUMActionEventSessionSessionType
+public enum DDRUMActionEventSessionSessionType: Int
+ case user
+ case synthetics
+public class DDRUMActionEventRUMUser: NSObject
+ @objc public var email: String?
+ @objc public var id: String?
+ @objc public var name: String?
+public class DDRUMActionEventView: NSObject
+ @objc public var id: String
+ @objc public var referrer: String?
+ @objc public var url: String
+public class DDRUMErrorEvent: NSObject
+ @objc public var dd: DDRUMErrorEventDD
+ @objc public var action: DDRUMErrorEventAction?
+ @objc public var application: DDRUMErrorEventApplication
+ @objc public var connectivity: DDRUMErrorEventRUMConnectivity?
+ @objc public var date: NSNumber
+ @objc public var error: DDRUMErrorEventError
+ @objc public var service: String?
+ @objc public var session: DDRUMErrorEventSession
+ @objc public var type: String
+ @objc public var usr: DDRUMErrorEventRUMUser?
+ @objc public var view: DDRUMErrorEventView
+public class DDRUMErrorEventDD: NSObject
+ @objc public var formatVersion: NSNumber
+public class DDRUMErrorEventAction: NSObject
+ @objc public var id: String
+public class DDRUMErrorEventApplication: NSObject
+ @objc public var id: String
+public class DDRUMErrorEventRUMConnectivity: NSObject
+ @objc public var cellular: DDRUMErrorEventRUMConnectivityCellular?
+ @objc public var interfaces: [Int]
+ @objc public var status: DDRUMErrorEventRUMConnectivityStatus
+public class DDRUMErrorEventRUMConnectivityCellular: NSObject
+ @objc public var carrierName: String?
+ @objc public var technology: String?
+public enum DDRUMErrorEventRUMConnectivityInterfaces: Int
+ case bluetooth
+ case cellular
+ case ethernet
+ case wifi
+ case wimax
+ case mixed
+ case other
+ case unknown
+ case none
+public enum DDRUMErrorEventRUMConnectivityStatus: Int
+ case connected
+ case notConnected
+ case maybe
+public class DDRUMErrorEventError: NSObject
+ @objc public var isCrash: NSNumber?
+ @objc public var message: String
+ @objc public var resource: DDRUMErrorEventErrorResource?
+ @objc public var source: DDRUMErrorEventErrorSource
+ @objc public var stack: String?
+public class DDRUMErrorEventErrorResource: NSObject
+ @objc public var method: DDRUMErrorEventErrorResourceRUMMethod
+ @objc public var provider: DDRUMErrorEventErrorResourceProvider?
+ @objc public var statusCode: NSNumber
+ @objc public var url: String
+public enum DDRUMErrorEventErrorResourceRUMMethod: Int
+ case post
+ case get
+ case head
+ case put
+ case delete
+ case patch
+public class DDRUMErrorEventErrorResourceProvider: NSObject
+ @objc public var domain: String?
+ @objc public var name: String?
+ @objc public var type: DDRUMErrorEventErrorResourceProviderProviderType
+public enum DDRUMErrorEventErrorResourceProviderProviderType: Int
+ case none
+ case ad
+ case advertising
+ case analytics
+ case cdn
+ case content
+ case customerSuccess
+ case firstParty
+ case hosting
+ case marketing
+ case other
+ case social
+ case tagManager
+ case utility
+ case video
+public enum DDRUMErrorEventErrorSource: Int
+ case network
+ case source
+ case console
+ case logger
+ case agent
+ case webview
+ case custom
+public class DDRUMErrorEventSession: NSObject
+ @objc public var id: String
+ @objc public var type: DDRUMErrorEventSessionSessionType
+public enum DDRUMErrorEventSessionSessionType: Int
+ case user
+ case synthetics
+public class DDRUMErrorEventRUMUser: NSObject
+ @objc public var email: String?
+ @objc public var id: String?
+ @objc public var name: String?
+public class DDRUMErrorEventView: NSObject
+ @objc public var id: String
+ @objc public var referrer: String?
+ @objc public var url: String
 public class DDRUMView: NSObject
  @objc public var path: String
  @objc public var attributes: [String: Any]

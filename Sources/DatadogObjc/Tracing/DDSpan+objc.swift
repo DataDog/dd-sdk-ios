@@ -64,6 +64,14 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
         return swiftSpan.baggageItem(withKey: key)
     }
 
+    func setError(_ error: Error) {
+        swiftSpan.setError(error)
+    }
+
+    func setError(kind: String, message: String, stack: String?) {
+        swiftSpan.setError(kind: kind, message: message, stack: stack ?? "")
+    }
+
     func finish() {
         swiftSpan.finish()
     }
