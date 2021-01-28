@@ -7,11 +7,13 @@
 #import "ObjcAppLaunchHandler.h"
 #import <sys/sysctl.h>
 #import <UIKit/UIKit.h>
+#import <pthread.h>
 
 // `AppLaunchHandler` aims to track some times as part of the sequence described in Apple's "About the App Launch Sequence"
 // https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 
-// Note that the following property will be set early enough in the App lifecycle to avoid any race conditions without any specific synchronization means.
+// A Read-Write lock to allow concurrent reads of TimeToApplicationDidBecomeActive, unless the initial (and only) write is locking it.
+static pthread_rwlock_t rwLock;
 static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
 
 NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallbackTime) {
@@ -62,7 +64,12 @@ NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterva
                         object:nil
                         queue:NSOperationQueue.mainQueue
                         usingBlock:^(NSNotification *_){
+
+        pthread_rwlock_init(&rwLock, NULL);
+        pthread_rwlock_wrlock(&rwLock);
         ComputeTimeToApplicationDidBecomeActiveWithFallback(frameworkLoadTime);
+        pthread_rwlock_unlock(&rwLock);
+
         [NSNotificationCenter.defaultCenter removeObserver:token];
     }];
 }
@@ -70,5 +77,8 @@ NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterva
 @end
 
 CFTimeInterval AppLaunchTime() {
-    return TimeToApplicationDidBecomeActive;
+    pthread_rwlock_rdlock(&rwLock);
+    CFTimeInterval time = TimeToApplicationDidBecomeActive;
+    pthread_rwlock_unlock(&rwLock);
+    return time;
 }
