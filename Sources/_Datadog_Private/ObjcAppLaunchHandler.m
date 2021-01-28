@@ -4,60 +4,81 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-#import <UIKit/UIKit.h>
 #import "ObjcAppLaunchHandler.h"
+#import <sys/sysctl.h>
+#import <UIKit/UIKit.h>
+#import <pthread.h>
 
-@interface AppLaunchTimer : NSObject
-@property NSDate *frameworkLoadTime;
-// Knowing how this value is collected and that it is written only once, the use of
-// `atomic` property is enough for thread safety. It guarantees that neither partial
-// nor garbage value will be returned.
-@property (atomic) NSTimeInterval timeToApplicationBecomeActive;
-@end
+// `AppLaunchHandler` aims to track some times as part of the sequence described in Apple's "About the App Launch Sequence"
+// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 
-@implementation AppLaunchTimer
+// A Read-Write lock to allow concurrent reads of TimeToApplicationDidBecomeActive, unless the initial (and only) write is locking it.
+static pthread_rwlock_t rwLock;
+static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        NSDate *time = [NSDate new];
-        self.frameworkLoadTime = time;
-        self.timeToApplicationBecomeActive = -1;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleDidBecomeActiveNotification)
-                                                     name:UIApplicationDidBecomeActiveNotification
-                                                   object:nil
-         ];
+NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallbackTime) {
+    NSTimeInterval processStartTime;
+    // Query the current process' start time:
+    // https://www.freebsd.org/cgi/man.cgi?sysctl(3)
+    // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/sysctl.h#L681
+    // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/proc.h#L97
+
+    struct kinfo_proc kip;
+    size_t kipSize = sizeof(kip);
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
+    int res = sysctl(mib, 4, &kip, &kipSize, NULL, 0);
+
+    if (res == 0) {
+        // The process' start time is provided relative to 1 Jan 1970
+        struct timeval startTime = kip.kp_proc.p_starttime;
+        processStartTime = startTime.tv_sec + startTime.tv_usec / USEC_PER_SEC;
+        // Convert to time since 1 Jan 2001 to align with CFAbsoluteTimeGetCurrent()
+        processStartTime -= kCFAbsoluteTimeIntervalSince1970;
+    } else {
+        // Fallback to less accurate delta with DD's framework load time
+        processStartTime = fallbackTime;
     }
-    return self;
+    return processStartTime;
 }
 
-- (void)handleDidBecomeActiveNotification {
-    if (self.timeToApplicationBecomeActive > -1) { // sanity check & extra safety
+NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterval fallbackTime) {
+    if (TimeToApplicationDidBecomeActive > 0) {
         return;
     }
 
-    NSDate *time = [NSDate new];
-    NSTimeInterval duration = [time timeIntervalSinceDate:self.frameworkLoadTime];
-    self.timeToApplicationBecomeActive = duration;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    NSTimeInterval now = CFAbsoluteTimeGetCurrent();
+    NSTimeInterval processStartTime = QueryProcessStartTimeWithFallback(fallbackTime);
+    TimeToApplicationDidBecomeActive = now - processStartTime;
 }
 
+@interface AppLaunchHandler : NSObject
 @end
 
-
-@implementation ObjcAppLaunchHandler: NSObject
-
-static AppLaunchTimer *_timer;
+@implementation AppLaunchHandler
 
 + (void)load {
     // This is called at the `_Datadog_Private` load time, keep the work minimal
-    _timer = [AppLaunchTimer new];
-}
+    NSTimeInterval frameworkLoadTime = CFAbsoluteTimeGetCurrent();
+    id __block token = [NSNotificationCenter.defaultCenter
+                        addObserverForName:UIApplicationDidBecomeActiveNotification
+                        object:nil
+                        queue:NSOperationQueue.mainQueue
+                        usingBlock:^(NSNotification *_){
 
-+ (NSTimeInterval)launchTime {
-    return _timer.timeToApplicationBecomeActive;
+        pthread_rwlock_init(&rwLock, NULL);
+        pthread_rwlock_wrlock(&rwLock);
+        ComputeTimeToApplicationDidBecomeActiveWithFallback(frameworkLoadTime);
+        pthread_rwlock_unlock(&rwLock);
+
+        [NSNotificationCenter.defaultCenter removeObserver:token];
+    }];
 }
 
 @end
+
+CFTimeInterval AppLaunchTime() {
+    pthread_rwlock_rdlock(&rwLock);
+    CFTimeInterval time = TimeToApplicationDidBecomeActive;
+    pthread_rwlock_unlock(&rwLock);
+    return time;
+}
