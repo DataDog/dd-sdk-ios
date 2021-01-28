@@ -6,35 +6,39 @@
 
 import Foundation
 
-/// Reads `SwiftStruct` definition from `JSONObject`.
-internal class SwiftTypeReader {
-    func readSwiftStruct(from object: JSONObject) throws -> SwiftStruct {
-        var `struct` = try readStruct(from: object)
+/// Transforms `JSONObject` schema into `SwiftStruct` schema.
+internal class JSONToSwiftTypeTransformer {
+    func transform(jsonObjects: [JSONObject]) throws -> [SwiftStruct] {
+        return try jsonObjects.map { try transform(jsonObject: $0) }
+    }
+
+    private func transform(jsonObject: JSONObject) throws -> SwiftStruct {
+        var `struct` = try transformJSONToStruct(jsonObject)
         `struct` = resolveTransitiveMutableProperties(in: `struct`)
         return `struct`
     }
 
-    // MARK: - Reading ambiguous types
+    // MARK: - Transforming ambiguous types
 
-    private func readAnyType(from type: JSONType) throws -> SwiftType {
-        switch type {
-        case let primitive as JSONPrimitive:
-            return readPrimitive(from: primitive)
-        case let array as JSONArray:
-            return try readArray(from: array)
-        case let enumeration as JSONEnumeration:
-            return readEnum(from: enumeration)
-        case let object as JSONObject:
-            return try readSwiftStruct(from: object)
+    private func transformJSONToAnyType(_ json: JSONType) throws -> SwiftType {
+        switch json {
+        case let jsonPrimitive as JSONPrimitive:
+            return transformJSONtoPrimitive(jsonPrimitive)
+        case let jsonArray as JSONArray:
+            return try transformJSONToArray(jsonArray)
+        case let jsonEnumeration as JSONEnumeration:
+            return transformJSONToEnum(jsonEnumeration)
+        case let jsonObject as JSONObject:
+            return try transformJSONToStruct(jsonObject)
         default:
-            throw Exception.unimplemented("Transform \(type) into `SwiftType` is not supported.")
+            throw Exception.unimplemented("Transforming \(json) into `SwiftType` is not supported.")
         }
     }
 
-    // MARK: - Reading concrete types
+    // MARK: - Transforming concrete types
 
-    private func readPrimitive(from primitive: JSONPrimitive) -> SwiftPrimitiveType {
-        switch primitive {
+    private func transformJSONtoPrimitive(_ jsonPrimitive: JSONPrimitive) -> SwiftPrimitiveType {
+        switch jsonPrimitive {
         case .bool: return SwiftPrimitive<Bool>()
         case .double: return SwiftPrimitive<Double>()
         case .integer: return SwiftPrimitive<Int>()
@@ -42,22 +46,22 @@ internal class SwiftTypeReader {
         }
     }
 
-    private func readArray(from array: JSONArray) throws -> SwiftArray {
-        return SwiftArray(element: try readAnyType(from: array.element))
+    private func transformJSONToArray(_ jsonArray: JSONArray) throws -> SwiftArray {
+        return SwiftArray(element: try transformJSONToAnyType(jsonArray.element))
     }
 
-    private func readEnum(from enumeration: JSONEnumeration) -> SwiftEnum {
+    private func transformJSONToEnum(_ jsonEnumeration: JSONEnumeration) -> SwiftEnum {
         return SwiftEnum(
-            name: enumeration.name,
-            comment: enumeration.comment,
-            cases: enumeration.values.map { value in
+            name: jsonEnumeration.name,
+            comment: jsonEnumeration.comment,
+            cases: jsonEnumeration.values.map { value in
                 SwiftEnum.Case(label: value, rawValue: value)
             },
             conformance: []
         )
     }
 
-    private func readStruct(from object: JSONObject) throws -> SwiftStruct {
+    private func transformJSONToStruct(_ jsonObject: JSONObject) throws -> SwiftStruct {
         /// Reads Struct properties.
         func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
             /// Reads Struct property default value.
@@ -76,23 +80,23 @@ internal class SwiftTypeReader {
                 }
             }
 
-            return try objectProperties.map { property in
+            return try objectProperties.map { jsonProperty in
                 return SwiftStruct.Property(
-                    name: property.name,
-                    comment: property.comment,
-                    type: try readAnyType(from: property.type),
-                    isOptional: !property.isRequired,
-                    isMutable: !property.isReadOnly,
-                    defaultVaule: try readDefaultValue(for: property),
-                    codingKey: property.name
+                    name: jsonProperty.name,
+                    comment: jsonProperty.comment,
+                    type: try transformJSONToAnyType(jsonProperty.type),
+                    isOptional: !jsonProperty.isRequired,
+                    isMutable: !jsonProperty.isReadOnly,
+                    defaultVaule: try readDefaultValue(for: jsonProperty),
+                    codingKey: jsonProperty.name
                 )
             }
         }
 
         return SwiftStruct(
-            name: object.name,
-            comment: object.comment,
-            properties: try readProperties(from: object.properties),
+            name: jsonObject.name,
+            comment: jsonObject.comment,
+            properties: try readProperties(from: jsonObject.properties),
             conformance: []
         )
     }

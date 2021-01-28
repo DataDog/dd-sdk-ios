@@ -6,9 +6,9 @@
 
 import Foundation
 
-/// Generates Swift code for Obj-c interoperability for given `SwiftStructs`.
+/// Generates Swift code for Obj-c interoperability for given `ObjcInteropType` schemas.
 ///
-/// E.g. given `SwiftStruct` describing:
+/// E.g. given `ObjcInteropType` describing Swift struct:
 ///
 ///     public struct Foo {
 ///         public var string = "foo"
@@ -35,17 +35,17 @@ import Foundation
 ///         public var integer: NSNumber { foo.integer as NSNumber }
 ///     }
 ///
-internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
+internal class ObjcInteropPrinter: BasePrinter {
     /// The prefix used for types exposed to Obj-c.
-    private let objcTypeNamesPrefix: String = "DD"
+    private let objcTypeNamesPrefix: String
 
-    func print(swiftTypes: [SwiftType]) throws -> String {
+    init(objcTypeNamesPrefix: String) {
+        self.objcTypeNamesPrefix = objcTypeNamesPrefix
+    }
+
+    func print(objcInteropTypes: [ObjcInteropType]) throws -> String {
         reset()
-
-        try ObjcInteropTypeReader()
-            .readObjcInteropTypes(from: swiftTypes)
-            .forEach { try print(objcInteropType: $0) }
-
+        try objcInteropTypes.forEach { try print(objcInteropType: $0) }
         return output
     }
 
@@ -355,79 +355,3 @@ internal class ObjcInteropPrinter: Printer, SwiftCodePrinter {
         }
     }
 }
-
-// MARK: - Reflection Helpers
-
-// swiftlint:disable force_cast
-
-private protocol ObjcInteropReflectable {
-    var objcRootClass: ObjcInteropRootClass { get }
-    var objcTypeName: String { get }
-    var swiftTypeName: String { get }
-}
-
-extension ObjcInteropRootClass: ObjcInteropReflectable {
-    var objcRootClass: ObjcInteropRootClass { self }
-    var objcTypeName: String { bridgedSwiftStruct.name }
-    var swiftTypeName: String { bridgedSwiftStruct.name }
-}
-
-extension ObjcInteropTransitiveClass: ObjcInteropReflectable {
-    private var parentClass: ObjcInteropClass {
-        return parentProperty.owner
-    }
-
-    var objcRootClass: ObjcInteropRootClass {
-        return (parentClass as! ObjcInteropReflectable).objcRootClass
-    }
-
-    var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftStruct.name
-    }
-
-    var swiftTypeName: String {
-        if self is ObjcInteropReferencedTransitiveClass {
-            return bridgedSwiftStruct.name
-        }
-        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftStruct.name
-    }
-}
-
-extension ObjcInteropEnum: ObjcInteropReflectable {
-    private var parentClass: ObjcInteropClass {
-        return parentProperty.owner
-    }
-
-    var objcRootClass: ObjcInteropRootClass {
-        return (parentClass as! ObjcInteropReflectable).objcRootClass
-    }
-
-    var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftEnum.name
-    }
-
-    var swiftTypeName: String {
-        if self is ObjcInteropReferencedEnum {
-            return bridgedSwiftEnum.name
-        }
-        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftEnum.name
-    }
-}
-
-private extension ObjcInteropPropertyWrapper {
-    /// A key-path referencing this property, e.g. if this property is called `property` and belongs to class `Bar`,
-    /// stored on property named `bar` in class `Foo`, then the `keyPath` is `bar.property`.
-    var keyPath: String {
-        let swiftPropertyName = bridgedSwiftProperty.name
-
-        if let parentNestedClass = owner as? ObjcInteropTransitiveClass {
-            let parentProperty = parentNestedClass.parentProperty
-            let forceUnwrapping = parentProperty.bridgedSwiftProperty.isOptional ? "!" : ""
-            return parentProperty.keyPath + forceUnwrapping + "." + swiftPropertyName
-        } else {
-            return swiftPropertyName
-        }
-    }
-}
-
-// swiftlint:enable force_cast

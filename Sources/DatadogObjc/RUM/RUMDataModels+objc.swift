@@ -1937,3 +1937,5 @@ public class DDRUMErrorEventView: NSObject {
 }
 
 // swiftlint:enable force_unwrapping
+
+// Generated from https://github.com/DataDog/rum-events-format/tree/5c673c12f2fc464ec87dcb5e3a79b0f739a311b7

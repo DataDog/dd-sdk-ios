@@ -10,10 +10,13 @@ import Foundation
 internal class JSONSchemaReader {
     private let jsonDecoder = JSONDecoder()
 
-    func readJSONSchema(
-        from schemaFile: File,
-        resolvingAgainst referencedSchemaFiles: [File] = []
-    ) throws -> JSONSchema {
+    func readJSONSchemas(from schemaFiles: [File], resolvingAgainst referencedSchemaFiles: [File]) throws -> [JSONSchema] {
+        return try schemaFiles.map { schemaFile in
+            return try readJSONSchema(from: schemaFile, resolvingAgainst: referencedSchemaFiles)
+        }
+    }
+
+    func readJSONSchema(from schemaFile: File, resolvingAgainst referencedSchemaFiles: [File]) throws -> JSONSchema {
         let schema = try jsonDecoder.decode(JSONSchema.self, from: schemaFile.content)
         let referencedSchemas = try referencedSchemaFiles
             .map { try jsonDecoder.decode(JSONSchema.self, from: $0.content) }

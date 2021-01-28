@@ -6,14 +6,14 @@
 
 import Foundation
 
-/// Reads `ObjcInteropType` definitions from `SwiftType` definitions.
-internal class ObjcInteropTypeReader {
+/// Transforms `SwiftType` schemas into `ObjcInteropType` schemas.
+internal class SwiftToObjcInteropTypeTransformer {
     /// `SwiftTypes` passed on input.
     private var inputSwiftTypes: [SwiftType] = []
     /// `ObjcInteropTypes` returned on output.
     private var outputObjcInteropTypes: [ObjcInteropType] = []
 
-    func readObjcInteropTypes(from swiftTypes: [SwiftType]) throws -> [ObjcInteropType] {
+    func transform(swiftTypes: [SwiftType]) throws -> [ObjcInteropType] {
         self.inputSwiftTypes = swiftTypes
         self.outputObjcInteropTypes = []
 

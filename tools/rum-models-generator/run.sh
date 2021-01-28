@@ -9,7 +9,8 @@ MODE="$1"
 MODE_VERIFY="verify"
 MODE_GENERATE="generate"
 
-TARGET_FILE="$(pwd)/Sources/Datadog/RUM/DataModels/RUMDataModels.swift"
+TARGET_SWIFT_FILE="$(pwd)/Sources/Datadog/RUM/DataModels/RUMDataModels.swift"
+TARGET_OBJC_FILE="$(pwd)/Sources/DatadogObjc/RUM/RUMDataModels+objc.swift"
 
 if [[ "$MODE" != "$MODE_VERIFY" ]] && [[ "$MODE" != "$MODE_GENERATE" ]]; then
     echo "Invalid command.\n"
@@ -21,15 +22,32 @@ fi
 
 # Get $GIT_REF for current $MODE
 if [[ "$MODE" == "$MODE_VERIFY" ]]; then
-	LAST_LINE=$(tail -n 1 $TARGET_FILE)
-	SHA_REGEX='[0-9a-f]{5,40}'
+    SHA_REGEX='[0-9a-f]{5,40}'
 
-	if [[ $LAST_LINE =~ $SHA_REGEX ]]; then
-		GIT_REF="$MATCH"
-	else
-		echo "Cannot find SHA git reference in $TARGET_FILE";
-		exit 1
+    # Get SHA signature from Swift file
+	LAST_LINE_IN_SWIFT_FILE=$(tail -n 1 $TARGET_SWIFT_FILE)
+	if [[ $LAST_LINE_IN_SWIFT_FILE =~ $SHA_REGEX ]]; then
+		SWIFT_GIT_REF="$MATCH"
+    else
+        echo "❌ Cannot read git SHA signature in $TARGET_SWIFT_FILE"
+        exit 1;
 	fi
+
+    # Get SHA signature from Objc file
+    LAST_LINE_IN_OBJC_FILE=$(tail -n 1 $TARGET_OBJC_FILE)
+    if [[ $LAST_LINE_IN_OBJC_FILE =~ $SHA_REGEX ]]; then
+        OBJC_GIT_REF="$MATCH"
+    else
+        echo "❌ Cannot read git SHA signature in $TARGET_OBJC_FILE"
+        exit 1;
+    fi
+
+    if [[ "$SWIFT_GIT_REF" != "$OBJC_GIT_REF" ]]; then
+        echo "❌ Git SHA signatures are different in $TARGET_SWIFT_FILE ($SWIFT_GIT_REF) and $TARGET_OBJC_FILE ($OBJC_GIT_REF)"
+        exit 1;
+    fi
+
+    GIT_REF=$SWIFT_GIT_REF
 else
 	GIT_REF="master"
 fi
@@ -50,30 +68,49 @@ cd -
 swift build --configuration release
 GENERATOR=".build/x86_64-apple-macosx/release/rum-models-generator"
 
-# Generate file in temporary location
+# Generate RUM models (Swift) file in temporary location
 mkdir -p ".temp"
-GENERATED_FILE=".temp/RUMDataModels.swift"
-$GENERATOR generate-swift --path "rum-events-format/schemas" > $GENERATED_FILE
-echo "// Generated from https://github.com/DataDog/rum-events-format/tree/$SHA" >> $GENERATED_FILE
+GENERATED_SWIFT_FILE=".temp/RUMDataModels.swift"
+$GENERATOR generate-swift --path "rum-events-format/schemas" > $GENERATED_SWIFT_FILE
+echo "// Generated from https://github.com/DataDog/rum-events-format/tree/$SHA" >> $GENERATED_SWIFT_FILE
+
+# Generate RUM models (Objc) file in temporary location
+mkdir -p ".temp"
+GENERATED_OBJC_FILE=".temp/RUMDataModels+objc.swift"
+$GENERATOR generate-objc --path "rum-events-format/schemas" > $GENERATED_OBJC_FILE
+echo "// Generated from https://github.com/DataDog/rum-events-format/tree/$SHA" >> $GENERATED_OBJC_FILE
 
 if [[ $MODE == $MODE_VERIFY ]]; then
-	# When verifying, check if there is no difference between $TARGET_FILE and $GENERATED_FILE
-    DIFF=$(diff $GENERATED_FILE $TARGET_FILE)
-    if [[ ! -z $DIFF ]]; then 
-    	echo "🔥 $TARGET_FILE is out of sync with rum-events-format: $SHA"
+	# When verifying, check if there is no difference between TARGET_FILE and GENERATED_FILE
+    SWIFT_DIFF=$(diff $GENERATED_SWIFT_FILE $TARGET_SWIFT_FILE)
+    OBJC_DIFF=$(diff $GENERATED_OBJC_FILE $TARGET_OBJC_FILE)
+
+    if [[ ! -z $SWIFT_DIFF ]]; then
+    	echo "❌ $TARGET_SWIFT_FILE is out of sync with rum-events-format: $SHA"
     	echo "Difference was found when comparing it with template file:"
     	echo ">>>"
-        echo "$DIFF"
+        echo "$SWIFT_DIFF"
+        echo "<<<"
+        exit 1;
+    elif [[ ! -z $OBJC_DIFF ]]; then
+        echo "❌ $TARGET_OBJC_FILE is out of sync with rum-events-format: $SHA"
+        echo "Difference was found when comparing it with template file:"
+        echo ">>>"
+        echo "$OBJC_DIFF"
         echo "<<<"
         exit 1;
     else
-    	echo "✅ $TARGET_FILE is up to date with rum-events-format: $SHA"
+    	echo "✅ $TARGET_SWIFT_FILE is up to date with rum-events-format: $SHA"
+        echo "✅ $TARGET_OBJC_FILE is up to date with rum-events-format: $SHA"
 	    exit 0;
     fi
 else
-	# When generating, replace $TARGET_FILE with $GENERATED_FILE
-    cp $GENERATED_FILE $TARGET_FILE
-    echo "✅ $TARGET_FILE was updated to rum-events-format: $SHA"
+	# When generating, replace TARGET_FILE with GENERATED_FILE
+    cp $GENERATED_SWIFT_FILE $TARGET_SWIFT_FILE
+    echo "✅ $TARGET_SWIFT_FILE was updated to rum-events-format: $SHA"
+
+    cp $GENERATED_OBJC_FILE $TARGET_OBJC_FILE
+    echo "✅ $TARGET_OBJC_FILE was updated to rum-events-format: $SHA"
     exit 0;
 fi
 

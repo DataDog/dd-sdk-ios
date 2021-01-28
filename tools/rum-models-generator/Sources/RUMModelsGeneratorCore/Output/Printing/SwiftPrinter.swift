@@ -6,20 +6,12 @@
 
 import Foundation
 
-/// A type which prints Swift code.
-public protocol SwiftCodePrinter {
-    func print(swiftTypes: [SwiftType]) throws -> String
-}
-
 /// Generates Swift code from `SwiftTypes`.
-public class SwiftPrinter: Printer, SwiftCodePrinter {
-    // MARK: - Printing
-
+public class SwiftPrinter: BasePrinter {
     public func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
 
         try swiftTypes.forEach { type in
-            precondition(indentationLevel == 0)
             writeEmptyLine()
             if let `struct` = type as? SwiftStruct {
                 try printStruct(`struct`)
@@ -28,7 +20,6 @@ public class SwiftPrinter: Printer, SwiftCodePrinter {
             } else {
                 throw Exception.illegal("\(type) cannot be printed as root declaration.")
             }
-            precondition(indentationLevel == 0)
         }
 
         return output
@@ -153,30 +144,5 @@ public class SwiftPrinter: Printer, SwiftCodePrinter {
         default:
             throw Exception.unimplemented("Printing \(type) is not implemented.")
         }
-    }
-}
-
-// MARK: - Reflection Helpers
-
-private protocol SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool
-}
-
-extension SwiftProtocol: SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
-        return self == swiftProtocol
-            || conformance.contains { $0.conforms(to: swiftProtocol) }
-    }
-}
-
-extension SwiftStruct: SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
-        return conformance.contains { $0.conforms(to: swiftProtocol) }
-    }
-}
-
-extension SwiftEnum: SwiftReflectable {
-    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
-        return conformance.contains { $0.conforms(to: swiftProtocol) }
     }
 }
