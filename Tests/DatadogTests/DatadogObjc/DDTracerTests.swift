@@ -146,6 +146,83 @@ class DDTracerTests: XCTestCase {
         objcSpan.finish()
     }
 
+    func testSendingSpanLogsWithErrorFromArguments() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
+            loggingFeature: LoggingFeature.instance!
+        )
+        defer { TracingFeature.instance = nil }
+
+        let objcTracer = DDTracer(configuration: DDTracerConfiguration())
+
+        let objcSpan = objcTracer.startSpan("operation")
+        objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
+        objcSpan.setError(kind: "Swift error", message: "Ops!", stack: nil)
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+
+        logMatchers[0].assertValue(forKey: "foo", equals: "bar")
+
+        let errorLogMatcher = logMatchers[1]
+        errorLogMatcher.assertStatus(equals: "error")
+        errorLogMatcher.assertValue(forKey: "event", equals: "error")
+        errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
+        errorLogMatcher.assertMessage(equals: "Ops!")
+        objcSpan.finish()
+    }
+
+    func testSendingSpanLogsWithErrorFromNSError() throws {
+        LoggingFeature.instance = .mockByRecordingLogMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+            )
+        )
+        defer { LoggingFeature.instance = nil }
+
+        TracingFeature.instance = .mockByRecordingSpanMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
+            ),
+            loggingFeature: LoggingFeature.instance!
+        )
+        defer { TracingFeature.instance = nil }
+
+        let objcTracer = DDTracer(configuration: DDTracerConfiguration())
+
+        let objcSpan = objcTracer.startSpan("operation")
+        objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
+        let error = NSError(
+            domain: "Tracer",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "Ops!"]
+        )
+        objcSpan.setError(error)
+
+        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+
+        logMatchers[0].assertValue(forKey: "foo", equals: "bar")
+
+        let errorLogMatcher = logMatchers[1]
+        errorLogMatcher.assertStatus(equals: "error")
+        errorLogMatcher.assertValue(forKey: "event", equals: "error")
+        errorLogMatcher.assertValue(forKey: "error.kind", equals: "Tracer - 1")
+        errorLogMatcher.assertMessage(equals: "Ops!")
+        objcSpan.finish()
+    }
+
     func testInjectingSpanContextToValidCarrierAndFormat() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
         let objcSpanContext = DDSpanContextObjc(

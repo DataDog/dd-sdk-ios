@@ -23,6 +23,9 @@ import Foundation
     func setBaggageItem(_ key: String, value: String) -> OTSpan
     func getBaggageItem(_ key: String) -> String?
 
+    func setError(_ error: Error)
+    func setError(kind: String, message: String, stack: String?)
+
     func finish()
     func finishWithTime(_ finishTime: Date?)
 
