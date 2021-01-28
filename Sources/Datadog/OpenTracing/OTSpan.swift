@@ -80,6 +80,14 @@ public extension OTSpan {
     /// Set or replace the error for the given span.
     /// This is a convenience to set the proper tags with error details. Consider the `setError(message:stacktrace:file:line:)` variant for a better control over the error details.
     ///
+    /// Using this API requires to enable logging on `Datadog.Configuration` using its builder:
+    ///
+    ///       builder
+    ///         // ...
+    ///         .enableLogging(true)
+    ///         // ...
+    ///         .build()
+    ///
     /// - parameter error: An object conforming to the `Error` protocol.
     /// - parameter file: A string identifying the file where the `Error` was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
     /// - parameter line: The line number in the file where the `Error` was caught.
@@ -100,6 +108,14 @@ public extension OTSpan {
 
     /// Set or replace the error for the given span.
     /// This is a convenience to set the proper tags with error details.
+    ///
+    ///  Using this API requires to enable logging on `Datadog.Configuration` using its builder:
+    ///
+    ///       builder
+    ///         // ...
+    ///         .enableLogging(true)
+    ///         // ...
+    ///         .build()
     ///
     /// - parameter kind: The type of error to be logged.
     /// - parameter message: An error message to be logged.
