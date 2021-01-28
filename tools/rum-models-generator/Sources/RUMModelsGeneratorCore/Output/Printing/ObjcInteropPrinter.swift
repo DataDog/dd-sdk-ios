@@ -8,7 +8,7 @@ import Foundation
 
 /// Generates Swift code for Obj-c interoperability for given `ObjcInteropType` schemas.
 ///
-/// E.g. given `ObjcInteropType` describing Swift struc:
+/// E.g. given `ObjcInteropType` describing Swift struct:
 ///
 ///     public struct Foo {
 ///         public var string = "foo"
