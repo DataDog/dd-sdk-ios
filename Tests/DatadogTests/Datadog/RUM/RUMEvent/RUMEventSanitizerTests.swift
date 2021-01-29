@@ -141,18 +141,18 @@ class RUMEventSanitizerTests: XCTestCase {
             let sanitized = RUMEventSanitizer().sanitize(event: event)
 
             // Then
-            XCTAssertEqual(
-                sanitized.attributes.count + sanitized.userInfoAttributes.count + (sanitized.customViewTimings?.count ?? 0),
-                AttributesSanitizer.Constraints.maxNumberOfAttributes
-            )
-            XCTAssertTrue(
-                (sanitized.customViewTimings?.count ?? 0) >= sanitized.userInfoAttributes.count,
-                "If number of attributes needs to be limited, `userInfoAttributes` are removed prior to `customViewTimings`."
-            )
-            XCTAssertTrue(
-                sanitized.userInfoAttributes.count >= sanitized.attributes.count,
-                "If number of attributes needs to be limited, `attributes` are removed prior to `userInfoAttributes`."
-            )
+            var remaining = AttributesSanitizer.Constraints.maxNumberOfAttributes
+            let expectedSanitizedCustomTimings = min(sanitized.customViewTimings!.count, remaining)
+            remaining -= expectedSanitizedCustomTimings
+            let expectedSanitizedUserInfo = min(sanitized.userInfoAttributes.count, remaining)
+            remaining -= expectedSanitizedUserInfo
+            let expectedSanitizedAttrs = min(sanitized.attributes.count, remaining)
+            remaining -= expectedSanitizedAttrs
+
+            XCTAssertGreaterThanOrEqual(remaining, 0)
+            XCTAssertEqual(sanitized.customViewTimings!.count, expectedSanitizedCustomTimings, "If number of attributes needs to be limited, `customViewTimings` are removed last")
+            XCTAssertEqual(sanitized.userInfoAttributes.count, expectedSanitizedUserInfo, "If number of attributes needs to be limited, `userInfoAttributes` are removed second")
+            XCTAssertEqual(sanitized.attributes.count, expectedSanitizedAttrs, "If number of attributes needs to be limited, `attributes` are removed first.")
         }
 
         test(model: viewEvent)
