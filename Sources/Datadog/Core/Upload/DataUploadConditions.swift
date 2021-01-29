@@ -9,14 +9,14 @@ import Foundation
 /// Tells if data upload can be performed based on given system conditions.
 internal struct DataUploadConditions {
     enum Blocker {
-        case batteryLevel
+        case battery(level: Int, state: BatteryStatus.State)
         case lowPowerModeOn
-        case networkCondition
+        case networkReachability(description: String)
     }
 
     enum Report {
         case go
-        case noGo(blockers: Set<Blocker>)
+        case noGo(blockers: [Blocker])
 
         static func && (lhs: Report, rhs: Report) -> Report {
             switch (lhs, rhs) {
@@ -27,7 +27,7 @@ internal struct DataUploadConditions {
             case (.noGo, .go):
                 return lhs
             case (let .noGo(blockers: lbs), let .noGo(blockers: rbs)):
-                return .noGo(blockers: lbs.union(rbs))
+                return .noGo(blockers: lbs + rbs)
             }
         }
     }
@@ -43,7 +43,10 @@ internal struct DataUploadConditions {
     func canPerformUpload() -> Report {
         let batteryStatus = self.batteryStatus?.current
         guard let networkConnectionInfo = self.networkConnectionInfo.current else {
-            return .noGo(blockers: [.networkCondition]) // when `NetworkConnectionInfo` is not yet available
+            // when `NetworkConnectionInfo` is not yet available
+            return .noGo(
+                blockers: [.networkReachability(description: "unknown")]
+            )
         }
 
         if let batteryStatus = batteryStatus {
@@ -62,15 +65,20 @@ internal struct DataUploadConditions {
             return .go
         }
 
-        var blockers = Set<Blocker>()
+        var blockers = [Blocker]()
         let batteryFullOrCharging = state == .full || state == .charging
         let batteryLevelIsEnough = batteryStatus.level > Constants.minBatteryLevel
         if !(batteryFullOrCharging || batteryLevelIsEnough) {
-            blockers.insert(.batteryLevel)
+            blockers.append(
+                .battery(
+                    level: Int(batteryStatus.level * 100),
+                    state: batteryStatus.state
+                )
+            )
         }
 
         if batteryStatus.isLowPowerModeEnabled {
-            blockers.insert(.lowPowerModeOn)
+            blockers.append(.lowPowerModeOn)
         }
 
         return blockers.count == 0 ? .go : .noGo(blockers: blockers)
@@ -78,6 +86,6 @@ internal struct DataUploadConditions {
 
     private func canUploadWith(_ networkConnectionInfo: NetworkConnectionInfo) -> Report {
         let networkIsReachable = networkConnectionInfo.reachability == .yes || networkConnectionInfo.reachability == .maybe
-        return networkIsReachable ? .go : .noGo(blockers: [.networkCondition])
+        return networkIsReachable ? .go : .noGo(blockers: [.networkReachability(description: networkConnectionInfo.reachability.rawValue)])
     }
 }

@@ -86,7 +86,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                let systemLabel = isSystemReady ? "✅" : "❌"
+                let systemLabel = isSystemReady ? "✅" : uploadConditionsReport.description
                 developerLogger?.info("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
                 userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
 
@@ -94,6 +94,30 @@ internal class DataUploadWorker: DataUploadWorkerType {
             }
 
             self.scheduleNextUpload(after: self.delay.current)
+        }
+    }
+}
+
+extension DataUploadConditions.Blocker: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case let .battery(level: level, state: state):
+            return "🔋 Battery: \(state) \(level)%"
+        case .lowPowerModeOn:
+            return "🔌 Low Power Mode: on"
+        case let .networkReachability(description: description):
+            return "📡 Reachability: " + description
+        }
+    }
+}
+
+extension DataUploadConditions.Report: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .go:
+            return "✅"
+        case let .noGo(blockers: blockers):
+            return "❌ → " + blockers.map { $0.description }.joined(separator: "; ")
         }
     }
 }
