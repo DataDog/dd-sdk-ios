@@ -132,6 +132,24 @@ extension DDSpan {
             tags: tags
         )
     }
+
+    static func mockWith(
+        tracer: Tracer = .mockAny(),
+        context: DDSpanContext = .mockAny(),
+        operationName: String = .mockAny(),
+        startTime: Date = .mockAny(),
+        tags: [String: Encodable] = [:],
+        logFields: [String: Encodable] = [:]
+    ) -> DDSpan {
+        return DDSpan(
+            tracer: tracer,
+            context: context,
+            operationName: operationName,
+            startTime: startTime,
+            tags: tags,
+            logFields: logFields
+        )
+    }
 }
 
 extension TracingUUID {

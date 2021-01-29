@@ -59,6 +59,24 @@ internal class DDSpan: OTSpan {
         self.unsafeIsFinished = false
     }
 
+    internal convenience init(
+        tracer: Tracer,
+        context: DDSpanContext,
+        operationName: String,
+        startTime: Date,
+        tags: [String: Encodable],
+        logFields: [String: Encodable] = [:]
+    ) {
+        self.init(
+            tracer: tracer,
+            context: context,
+            operationName: operationName,
+            startTime: startTime,
+            tags: tags
+        )
+        unsafeLogFields.append(contentsOf: [logFields])
+    }
+
     // MARK: - Open Tracing interface
 
     var context: OTSpanContext {

@@ -28,9 +28,10 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
         integration.addError(
             for: .mockWith(
                 operationName: "operation name",
-                tags: [
-                    DDTags.errorMessage: "message",
-                    DDTags.errorType: "type"
+                logFields: [
+                    OTLogFields.event: "error",
+                    OTLogFields.errorKind: "type",
+                    OTLogFields.message: "message",
                 ]
             )
         )
@@ -44,7 +45,13 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
     func testWhenSpanErrorHasMessageButNoType() throws {
         let integration = TracingWithRUMErrorsIntegration()
         integration.addError(
-            for: .mockWith(operationName: "operation name", tags: [DDTags.errorMessage: "message"])
+            for: .mockWith(
+                operationName: "operation name",
+                logFields: [
+                    OTLogFields.event: "error",
+                    OTLogFields.message: "message"
+                ]
+            )
         )
 
         let rumError = try waitAndReturnRUMErrorSent()
@@ -56,7 +63,13 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
     func testWhenSpanErrorHasTypeButNoMessage() throws {
         let integration = TracingWithRUMErrorsIntegration()
         integration.addError(
-            for: .mockWith(operationName: "operation name", tags: [DDTags.errorType: "type"])
+            for: .mockWith(
+                operationName: "operation name",
+                logFields: [
+                    OTLogFields.event: "error",
+                    OTLogFields.errorKind: "type"
+                ]
+            )
         )
 
         let rumError = try waitAndReturnRUMErrorSent()
@@ -68,7 +81,7 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
     func testWhenSpanErrorHasTypeNoMessageAndNoType() throws {
         let integration = TracingWithRUMErrorsIntegration()
         integration.addError(
-            for: .mockWith(operationName: "operation name", tags: [:])
+            for: .mockWith(operationName: "operation name")
         )
 
         let rumError = try waitAndReturnRUMErrorSent()
