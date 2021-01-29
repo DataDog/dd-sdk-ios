@@ -74,7 +74,7 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
 
         // Assert logs requests
         let recordedLoggingRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try LogMatcher.from(requests: requests).count == 1
+            try LogMatcher.from(requests: requests).count == 2
         }
 
         assertLogging(requests: recordedLoggingRequests)
