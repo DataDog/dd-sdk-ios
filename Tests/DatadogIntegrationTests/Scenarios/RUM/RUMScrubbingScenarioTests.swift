@@ -13,7 +13,7 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: RUMScrubbingScenario.self,
+            testScenarioClassName: "RUMScrubbingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )

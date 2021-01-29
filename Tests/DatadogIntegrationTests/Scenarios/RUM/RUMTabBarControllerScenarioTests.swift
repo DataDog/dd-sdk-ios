@@ -28,7 +28,7 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: RUMTabBarAutoInstrumentationScenario.self,
+            testScenarioClassName: "RUMTabBarAutoInstrumentationScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )

@@ -24,7 +24,8 @@ protocol AppConfiguration {
 /// The configuration used when running the Example app (⌘+R).
 struct ExampleAppConfiguration: AppConfiguration {
     let serviceName = "ios-sdk-example-app"
-    let testScenario = Environment.testScenario()
+    let testScenario: TestScenario? = Environment.testScenarioClassName()
+        .flatMap { className in initializeTestScenario(with: className) }
 
     let initialTrackingConsent: TrackingConsent = .granted
 
@@ -57,7 +58,8 @@ struct ExampleAppConfiguration: AppConfiguration {
 
 /// The configuration used when launching the Example app for Datadog SDK integration tests (⌘+U).
 struct UITestsAppConfiguration: AppConfiguration {
-    let testScenario = Environment.testScenario()
+    let testScenario: TestScenario? = Environment.testScenarioClassName()
+        .flatMap { className in initializeTestScenario(with: className) }
 
     init() {
         if Environment.shouldClearPersistentData() {

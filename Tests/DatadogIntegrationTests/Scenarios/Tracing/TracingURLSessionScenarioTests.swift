@@ -15,16 +15,16 @@ private extension ExampleApplication {
 
 class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
     func testTracingURLSessionScenario() throws {
-        try runTest(for: TracingURLSessionScenario.self)
+        try runTest(for: "TracingURLSessionScenario")
     }
 
     func testTracingNSURLSessionScenario() throws {
-        try runTest(for: TracingNSURLSessionScenario.self)
+        try runTest(for: "TracingNSURLSessionScenario")
     }
 
     /// Both, `URLSession` (Swift) and `NSURLSession` (Objective-C) scenarios fetch exactly the same
     /// resources, so we can run the same test and assertions.
-    private func runTest(for scenario: TestScenario.Type) throws {
+    private func runTest(for testScenarioClassName: String) throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
         // Server session recording first party requests send to `HTTPServerMock`.
@@ -50,7 +50,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: scenario,
+            testScenarioClassName: testScenarioClassName,
             serverConfiguration: HTTPServerMockConfiguration(
                 tracesEndpoint: tracingServerSession.recordingURL,
                 instrumentedEndpoints: [

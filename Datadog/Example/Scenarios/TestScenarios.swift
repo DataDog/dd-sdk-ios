@@ -6,13 +6,9 @@
 
 import Datadog
 
-protocol TestScenario {
+protocol TestScenario: AnyObject {
     /// The name of the storyboard containing this scenario.
     static var storyboardName: String { get }
-
-    /// An identifier for this scenario used to pass its reference in environment variable.
-    /// Defaults to `storyboardName`.
-    static func envIdentifier() -> String
 
     /// The value of initial tracking consent for this scenario.
     /// Defaults to `.granted`
@@ -27,22 +23,16 @@ protocol TestScenario {
 
 /// Defaults.
 extension TestScenario {
-    static func envIdentifier() -> String { storyboardName }
     var initialTrackingConsent: TrackingConsent { .granted }
     func configureSDK(builder: Datadog.Configuration.Builder) { /* no-op */ }
 }
 
-/// Returns `TestScenario` for given env identifier.
-func createTestScenario(for envIdentifier: String) -> TestScenario {
-    let allScenarios = allLoggingScenarios
-        + allTracingScenarios
-        + allRUMScenarios
-        + allTrackingConsentScenarios
-
-    let scenarioClass = allScenarios.first { $0.envIdentifier() == envIdentifier }
+internal func initializeTestScenario(with className: String) -> TestScenario {
+    let canonicalClassName = "Example.\(className)"
+    let scenarioClass = NSClassFromString(canonicalClassName) as? TestScenario.Type
 
     guard let scenario = scenarioClass?.init() else {
-        fatalError("Cannot find `TestScenario` for `envIdentifier`: \(envIdentifier)")
+        fatalError("Cannot initialize `TestScenario` with class name: \(className)")
     }
 
     return scenario

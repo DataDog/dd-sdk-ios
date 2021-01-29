@@ -36,7 +36,7 @@ struct HTTPServerMockConfiguration: Codable {
 
 internal struct Environment {
     struct Variable {
-        static let testScenarioIdentifier = "DD_TEST_SCENARIO_IDENTIFIER"
+        static let testScenarioClassName = "DD_TEST_SCENARIO_CLASS_NAME"
         static let serverMockConfiguration = "DD_TEST_SERVER_MOCK_CONFIGURATION"
     }
     struct Argument {
@@ -65,12 +65,8 @@ internal struct Environment {
 
     // MARK: - Launch Variables
 
-    static func testScenario() -> TestScenario? {
-        guard let envIdentifier = ProcessInfo.processInfo.environment[Variable.testScenarioIdentifier] else {
-            return nil
-        }
-
-        return createTestScenario(for: envIdentifier)
+    static func testScenarioClassName() -> String? {
+        return ProcessInfo.processInfo.environment[Variable.testScenarioClassName]
     }
 
     static func serverMockConfiguration() -> HTTPServerMockConfiguration? {
