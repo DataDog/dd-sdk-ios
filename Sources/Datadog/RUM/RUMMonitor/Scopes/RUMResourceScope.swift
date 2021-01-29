@@ -203,7 +203,8 @@ internal class RUMResourceScope: RUMScope {
                     url: resourceURL
                 ),
                 source: command.errorSource.toRUMDataFormat,
-                stack: command.stack
+                stack: command.stack,
+                type: command.errorMessage
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),

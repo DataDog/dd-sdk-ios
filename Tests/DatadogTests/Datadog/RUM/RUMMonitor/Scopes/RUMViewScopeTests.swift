@@ -520,6 +520,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.connectivity)
         XCTAssertEqual(error.model.error.message, "view error")
         XCTAssertEqual(error.model.error.source, .source)
+        XCTAssertEqual(error.model.error.type, "view error")
         XCTAssertNil(error.model.error.stack)
         XCTAssertNil(error.model.error.isCrash)
         XCTAssertNil(error.model.error.resource)
