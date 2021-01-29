@@ -122,9 +122,16 @@ class DataUploadConditionsTests: XCTestCase {
         line: UInt = #line
     ) {
         let conditions = DataUploadConditions(batteryStatus: battery, networkConnectionInfo: network)
+        let canPerformUpload: Bool
+        switch conditions.canPerformUpload() {
+        case .go:
+            canPerformUpload = true
+        case .noGo:
+            canPerformUpload = false
+        }
         XCTAssertEqual(
             value,
-            conditions.canPerformUpload(),
+            canPerformUpload,
             "Expected `\(value)` but got `\(!value)` for:\n\(String(describing: battery?.current)) and\n\(String(describing: network.current))",
             file: file,
             line: line
