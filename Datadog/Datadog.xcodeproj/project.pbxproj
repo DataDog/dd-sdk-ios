@@ -298,6 +298,8 @@
 		61C3E63B24BF1A4B008053F2 /* RUMCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */; };
 		61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
 		61C4DBAD25C2E6570058DED4 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61C4DBAC25C2E6570058DED4 /* CrashReporter.framework */; };
+		61C4DC5925C41D130058DED4 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61C4DBAC25C2E6570058DED4 /* CrashReporter.framework */; };
+		61C4DC5A25C41D130058DED4 /* CrashReporter.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61C4DBAC25C2E6570058DED4 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C576C6256E65BD00295F7C /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C576C5256E65BD00295F7C /* DateCorrector.swift */; };
 		61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87824509A0C00DA608C /* DDSpan.swift */; };
 		61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
@@ -470,6 +472,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				61C4DC5A25C41D130058DED4 /* CrashReporter.framework in ⚙️ Embed Framework Dependencies */,
 				61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
 				61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
 				6170DC5125C18E57003AED5C /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
@@ -911,6 +914,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				615697E3256CFB4700C6AADA /* Kronos.framework in Frameworks */,
+				61C4DC5925C41D130058DED4 /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3762,7 +3766,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
+					"$(SRCROOT)/../Carthage/Build/iOS/**",
 				);
 				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3788,7 +3792,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
+					"$(SRCROOT)/../Carthage/Build/iOS/**",
 				);
 				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3812,7 +3816,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
+					"$(SRCROOT)/../Carthage/Build/iOS/**",
 				);
 				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3944,6 +3948,7 @@
 		};
 		61B7886525C180CB002675B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -3975,6 +3980,7 @@
 		};
 		61B7886625C180CB002675B5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -4004,6 +4010,7 @@
 		};
 		61B7886725C180CB002675B5 /* Integration */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
