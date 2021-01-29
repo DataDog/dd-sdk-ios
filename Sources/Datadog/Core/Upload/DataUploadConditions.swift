@@ -23,27 +23,28 @@ internal struct DataUploadConditions {
         }
 
         if let batteryStatus = batteryStatus {
-            return shouldUploadFor(networkConnectionInfo: networkConnectionInfo) && shouldUploadFor(batteryStatus: batteryStatus)
+            return canUploadWith(networkConnectionInfo: networkConnectionInfo) && canUploadWith(batteryStatus: batteryStatus)
         } else {
-            return shouldUploadFor(networkConnectionInfo: networkConnectionInfo)
+            return canUploadWith(networkConnectionInfo: networkConnectionInfo)
         }
     }
 
-    private func shouldUploadFor(batteryStatus: BatteryStatus) -> Bool {
-        if batteryStatus.state == .unknown {
+    private func canUploadWith(batteryStatus: BatteryStatus) -> Bool {
+        let state = batteryStatus.state
+        if state == .unknown {
             // Note: in RUMS-132 we got the report on `.unknown` battery state reporing `-1` battery level on iPad device
             // plugged to Mac through lightning cable. As `.unkown` may lead to other unreliable values,
             // it seems safer to arbitrary allow uploads in such case.
             return true
         }
 
-        let batteryFullOrCharging = batteryStatus.state == .full || batteryStatus.state == .charging
+        let batteryFullOrCharging = state == .full || state == .charging
         let batteryLevelIsEnough = batteryStatus.level > Constants.minBatteryLevel
         let isLowPowerModeEnabled = batteryStatus.isLowPowerModeEnabled
         return (batteryLevelIsEnough || batteryFullOrCharging) && !isLowPowerModeEnabled
     }
 
-    private func shouldUploadFor(networkConnectionInfo: NetworkConnectionInfo) -> Bool {
+    private func canUploadWith(networkConnectionInfo: NetworkConnectionInfo) -> Bool {
         return networkConnectionInfo.reachability == .yes || networkConnectionInfo.reachability == .maybe
     }
 }
