@@ -42,3 +42,13 @@ private func isNSErrorOrItsSubclass(_ error: Error) -> Bool {
     }
     return false
 }
+
+internal extension HTTPURLResponse {
+    func asError() -> Error? {
+        guard statusCode >= 400 && statusCode < 500 else {
+            return nil
+        }
+        let message = "\(statusCode) " + HTTPURLResponse.localizedString(forStatusCode: statusCode)
+        return NSError(domain: "HTTPURLResponse", code: statusCode, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+}

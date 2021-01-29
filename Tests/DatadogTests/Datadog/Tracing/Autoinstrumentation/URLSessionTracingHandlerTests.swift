@@ -116,17 +116,22 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let spanDuration = spanOutput.recorded?.finishTime.timeIntervalSince(span.startTime)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertEqual(spanDuration, 30)
+        XCTAssertEqual(span.tags.count, 3)
         XCTAssertEqual(span.tags[DDTags.resource] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpUrl] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod] as? String, "GET")
-        XCTAssertEqual(span.tags[OTTags.error] as? Bool, true)
-        XCTAssertEqual(span.tags[DDTags.errorType] as? String, "domain - 123")
-        XCTAssertEqual(span.tags[DDTags.errorMessage] as? String, "network error")
-        XCTAssertEqual(
-            span.tags[DDTags.errorStack] as? String,
-            #"Error Domain=domain Code=123 "network error" UserInfo={NSLocalizedDescription=network error}"#
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertEqual(logFields[OTLogFields.event] as? String, "error")
+        XCTAssertEqual(logFields[OTLogFields.errorKind] as? String, "domain - 123")
+        XCTAssertEqual(logFields[OTLogFields.message] as? String, "network error")
+        let stack = try XCTUnwrap(logFields[OTLogFields.stack] as? String)
+        XCTAssertTrue(
+            stack.contains(
+                #"Error Domain=domain Code=123 "network error" UserInfo={NSLocalizedDescription=network error}"#
+            )
         )
-        XCTAssertEqual(span.tags.count, 7)
     }
 
     func testGivenFirstPartyInterceptionWithServerError_whenInterceptionCompletes_itEncodesRequestInfoInSpan() throws {
@@ -160,8 +165,13 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpUrl] as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod] as? String, "GET")
         XCTAssertEqual(span.tags[OTTags.httpStatusCode] as? Int, 404)
-        XCTAssertEqual(span.tags[OTTags.error] as? Bool, true)
-        XCTAssertEqual(span.tags.count, 5)
+        XCTAssertEqual(span.tags.count, 4)
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertEqual(logFields[OTLogFields.event] as? String, "error")
+        XCTAssertEqual(logFields[OTLogFields.errorKind] as? String, "HTTPURLResponse - 404")
+        XCTAssertEqual(logFields[OTLogFields.message] as? String, "404 not found")
     }
 
     func testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
