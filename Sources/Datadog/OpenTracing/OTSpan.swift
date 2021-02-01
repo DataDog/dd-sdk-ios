@@ -91,10 +91,12 @@ public extension OTSpan {
     /// - parameter error: An object conforming to the `Error` protocol.
     /// - parameter file: A string identifying the file where the `Error` was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
     /// - parameter line: The line number in the file where the `Error` was caught.
+    /// - parameter includeFileInStack: Whether or not the `file` and `line` should be included in the stack, the default is `true` and can be overriden if the `file`/`line` are extraneous.
     func setError(
         _ error: Error,
         file: StaticString = #fileID,
-        line: UInt = #line
+        line: UInt = #line,
+        includeFileInStack: Bool = true
     ) {
         let dderror = DDError(error: error)
         setError(
@@ -102,7 +104,8 @@ public extension OTSpan {
             message: dderror.message,
             stack: dderror.details,
             file: file,
-            line: line
+            line: line,
+            includeFileInStack: includeFileInStack
         )
     }
 
@@ -122,24 +125,30 @@ public extension OTSpan {
     /// - parameter stack: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace.
     /// - parameter file: A string identifying the file where the error was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
     /// - parameter line: The line number in the file where the error was caught.
+    /// - parameter includeFileInStack: Whether or not the `file` and `line` should be included in the stack, the default is `true` and can be overriden if the `file`/`line` are extraneous.
     func setError(
         kind: String,
         message: String,
         stack: String = "",
         file: StaticString = #fileID,
-        line: UInt = #line
+        line: UInt = #line,
+        includeFileInStack: Bool = true
     ) {
-        var stackWithFile = "\(file):\(line)"
-        if stack.count > 0 {
-            stackWithFile += "\n" + stack
+        var fields = [
+            OTLogFields.event: "error",
+            OTLogFields.errorKind: kind,
+            OTLogFields.message: message
+        ]
+        var fileAndStack = [String]()
+        if includeFileInStack {
+            fileAndStack.append("\(file):\(line)")
         }
-        log(
-            fields: [
-                OTLogFields.event: "error",
-                OTLogFields.errorKind: kind,
-                OTLogFields.message: message,
-                OTLogFields.stack: stackWithFile
-            ]
-        )
+        if stack.count > 0 {
+            fileAndStack.append(stack)
+        }
+        if fileAndStack.count > 0 {
+            fields[OTLogFields.stack] = fileAndStack.joined(separator: "\n")
+        }
+        log(fields: fields)
     }
 }

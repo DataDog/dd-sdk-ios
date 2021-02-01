@@ -161,6 +161,37 @@ class DDSpanTests: XCTestCase {
         XCTAssertTrue(spanErrorStack.contains("42"))
     }
 
+    func testSettingErrorExcludingFileAndLineAndEmptyStack() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.logFields.count, 0)
+
+        #sourceLocation(file: "File.swift", line: 42)
+        span.setError(ErrorMock(), includeFileInStack: false)
+        #sourceLocation()
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertNotEqual(logFields.count, 0)
+        XCTAssertNil(logFields[OTLogFields.stack])
+    }
+
+    func testSettingErrorExcludingFileAndLineAndNonEmptyStack() throws {
+        let span: DDSpan = .mockWith(operationName: "operation")
+        XCTAssertEqual(span.logFields.count, 0)
+
+        #sourceLocation(file: "File.swift", line: 42)
+        span.setError(ErrorMock("the stack"), includeFileInStack: false)
+        #sourceLocation()
+
+        XCTAssertEqual(span.logFields.count, 1)
+        let logFields = span.logFields.first!
+        XCTAssertNotEqual(logFields.count, 0)
+        let spanErrorStack = try span.logFields.first!.otStack()
+        XCTAssertFalse(spanErrorStack.contains("File.swift"))
+        XCTAssertFalse(spanErrorStack.contains("42"))
+        XCTAssertTrue(spanErrorStack.contains("the stack"))
+    }
+
     // MARK: - Usage
 
     func testGivenFinishedSpan_whenCallingItsAPI_itPrintsErrors() {

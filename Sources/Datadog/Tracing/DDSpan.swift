@@ -29,7 +29,7 @@ internal class DDSpan: OTSpan {
     }
 
     /// Unsychronized span log fields. Use `self.logFields` setter & getter.
-    private var unsafeLogFields: [[String: Encodable]] = []
+    private var unsafeLogFields: [[String: Encodable]]
     /// A collection of all log fields send for this span.
     var logFields: [[String: Encodable]] {
         ddTracer.queue.sync { unsafeLogFields }
@@ -49,7 +49,8 @@ internal class DDSpan: OTSpan {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Encodable]
+        tags: [String: Encodable],
+        logFields: [[String: Encodable]] = []
     ) {
         self.ddTracer = tracer
         self.ddContext = context
@@ -57,24 +58,7 @@ internal class DDSpan: OTSpan {
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
         self.unsafeIsFinished = false
-    }
-
-    internal convenience init(
-        tracer: Tracer,
-        context: DDSpanContext,
-        operationName: String,
-        startTime: Date,
-        tags: [String: Encodable],
-        logFields: [String: Encodable] = [:]
-    ) {
-        self.init(
-            tracer: tracer,
-            context: context,
-            operationName: operationName,
-            startTime: startTime,
-            tags: tags
-        )
-        unsafeLogFields.append(contentsOf: [logFields])
+        self.unsafeLogFields = logFields
     }
 
     // MARK: - Open Tracing interface

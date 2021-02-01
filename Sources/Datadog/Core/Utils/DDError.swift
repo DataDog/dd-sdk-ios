@@ -44,7 +44,8 @@ private func isNSErrorOrItsSubclass(_ error: Error) -> Bool {
 }
 
 internal extension HTTPURLResponse {
-    func asError() -> Error? {
+    func asClientError() -> Error? {
+        // 4xx Client Errors
         guard statusCode >= 400 && statusCode < 500 else {
             return nil
         }

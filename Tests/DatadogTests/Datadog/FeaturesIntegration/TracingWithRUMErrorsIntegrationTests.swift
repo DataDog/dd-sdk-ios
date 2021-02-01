@@ -29,9 +29,11 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
             for: .mockWith(
                 operationName: "operation name",
                 logFields: [
-                    OTLogFields.event: "error",
-                    OTLogFields.errorKind: "type",
-                    OTLogFields.message: "message",
+                    [
+                        OTLogFields.event: "error",
+                        OTLogFields.errorKind: "type",
+                        OTLogFields.message: "message",
+                    ]
                 ]
             )
         )
@@ -48,8 +50,10 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
             for: .mockWith(
                 operationName: "operation name",
                 logFields: [
-                    OTLogFields.event: "error",
-                    OTLogFields.message: "message"
+                    [
+                        OTLogFields.event: "error",
+                        OTLogFields.message: "message"
+                    ]
                 ]
             )
         )
@@ -66,8 +70,10 @@ class TracingWithRUMErrorsIntegrationTests: XCTestCase {
             for: .mockWith(
                 operationName: "operation name",
                 logFields: [
-                    OTLogFields.event: "error",
-                    OTLogFields.errorKind: "type"
+                    [
+                        OTLogFields.event: "error",
+                        OTLogFields.errorKind: "type"
+                    ]
                 ]
             )
         )

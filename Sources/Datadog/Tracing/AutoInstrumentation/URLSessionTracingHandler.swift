@@ -55,16 +55,14 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
         span.setTag(key: OTTags.httpMethod, value: method)
 
         if let error = resourceCompletion.error {
-            span.setError(error)
+            span.setError(error, includeFileInStack: false)
         }
 
         if let httpResponse = resourceCompletion.httpResponse {
             let httpStatusCode = httpResponse.statusCode
             span.setTag(key: OTTags.httpStatusCode, value: httpStatusCode)
-            if httpStatusCode >= 400 && httpStatusCode < 500 {
-                if let error = httpResponse.asError() {
-                    span.setError(error)
-                }
+            if let error = httpResponse.asClientError() {
+                span.setError(error, includeFileInStack: false)
                 if httpStatusCode == 404 {
                     span.setTag(key: DDTags.resource, value: "404")
                 }
