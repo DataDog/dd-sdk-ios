@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogCrashReporting
 
 protocol AppConfiguration {
     /// The tracking consent value applied when initializing the SDK.
@@ -39,6 +40,7 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
+            .enableCrashReporting(using: DDCrashReportingPlugin())
 
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {

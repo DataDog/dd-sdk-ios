@@ -174,6 +174,7 @@ public class Datadog {
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
+        var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumAutoInstrumentation: RUMAutoInstrumentation?
@@ -223,6 +224,14 @@ public class Datadog {
             }
         }
 
+        if let crashReportingConfiguration = configuration.crashReporting {
+            crashReporting = CrashReportingFeature(
+                configuration: crashReportingConfiguration,
+                loggingIntegration: logging.flatMap { CrashReportingWithLoggingIntegration(loggingFeature: $0) },
+                rumIntegration: rum.flatMap { CrashReportingWithRUMIntegration(rumFeature: $0) }
+            )
+        }
+
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
@@ -233,6 +242,7 @@ public class Datadog {
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
+        CrashReportingFeature.instance = crashReporting
 
         RUMAutoInstrumentation.instance = rumAutoInstrumentation
         RUMAutoInstrumentation.instance?.enable()
@@ -246,6 +256,9 @@ public class Datadog {
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider
         )
+
+        // After everything is set up, send crash report if available
+        CrashReportingFeature.instance?.sendCrashReportIfFound()
     }
 
     internal init(
@@ -272,6 +285,7 @@ public class Datadog {
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
         RUMFeature.instance = nil
+        CrashReportingFeature.instance = nil
 
         RUMAutoInstrumentation.instance = nil
         URLSessionAutoInstrumentation.instance = nil

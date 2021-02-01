@@ -116,6 +116,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -126,6 +127,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -137,6 +139,7 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -147,6 +150,7 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -158,6 +162,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
@@ -166,6 +171,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
@@ -175,6 +181,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -185,6 +192,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -222,6 +230,49 @@ class DatadogTests: XCTestCase {
         }
         try verify(configuration: defaultBuilder.trackURLSession().build()) {
             XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+        }
+
+        try verify(
+            configuration: defaultBuilder
+                .enableLogging(true)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(CrashReportingFeature.instance?.loggingIntegration)
+            XCTAssertNil(CrashReportingFeature.instance?.rumIntegration)
+        }
+
+        let random = [true, false].shuffled()
+        try verify(
+            configuration: rumBuilder
+                .enableLogging(random[0])
+                .enableRUM(random[1])
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNotNil(CrashReportingFeature.instance)
+            let isLoggingIntegrationConfigured = CrashReportingFeature.instance?.loggingIntegration != nil
+            let isRUMIntegrationConfiured = CrashReportingFeature.instance?.rumIntegration != nil
+            XCTAssertTrue(
+                isLoggingIntegrationConfigured || isRUMIntegrationConfiured,
+                "When only RUM or only Logging are enabled, one of the integrations with Crash Reporting should be configured."
+            )
+            XCTAssertNotEqual(
+                isLoggingIntegrationConfigured,
+                isRUMIntegrationConfiured,
+                "When only RUM or only Logging are enabled, only one integration with Crash Reporting should be configured."
+            )
+        }
+
+        try verify(
+            configuration: rumBuilder
+                .enableLogging(false)
+                .enableRUM(false)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNil(CrashReportingFeature.instance)
         }
     }
 

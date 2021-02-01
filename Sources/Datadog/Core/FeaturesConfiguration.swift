@@ -57,6 +57,11 @@ internal struct FeaturesConfiguration {
         let instrumentRUM: Bool
     }
 
+    struct CrashReporting {
+        /// The `DDCrashReportingPluginType` implementation provided by `DatadogCrashReporting` library.
+        let crashReportingPlugin: DDCrashReportingPluginType
+    }
+
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
@@ -67,6 +72,8 @@ internal struct FeaturesConfiguration {
     let rum: RUM?
     /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+    /// Crsah Reporting feature configuration or `nil` if the feature was not enabled.
+    let crashReporting: CrashReporting?
 }
 
 extension FeaturesConfiguration {
@@ -82,6 +89,7 @@ extension FeaturesConfiguration {
         var tracing: Tracing?
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+        var crashReporting: CrashReporting?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
@@ -196,7 +204,22 @@ extension FeaturesConfiguration {
             } else {
                 let error = ProgrammerError(
                     description: """
-                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
+                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
+                    Use: `.enableTracing(true)` or `.enableRUM(true)`.
+                    """
+                )
+                consolePrint("\(error)")
+            }
+        }
+
+        if let crashReportingPlugin = configuration.crashReportingPlugin {
+            if configuration.loggingEnabled || configuration.rumEnabled {
+                crashReporting = CrashReporting(crashReportingPlugin: crashReportingPlugin)
+            } else {
+                let error = ProgrammerError(
+                    description: """
+                    To use `.enableCrashReporting(using:)` either RUM or Logging must be enabled.
+                    Use: `.enableLogging(true)` or `.enableRUM(true)`.
                     """
                 )
                 consolePrint("\(error)")
@@ -208,6 +231,7 @@ extension FeaturesConfiguration {
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
+        self.crashReporting = crashReporting
     }
 }
 

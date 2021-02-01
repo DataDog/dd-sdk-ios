@@ -9,7 +9,7 @@ import XCTest
 
 class DatadogCrashReportingTests: XCTestCase {
     func testDDCrashReportingPluginInitialization() throws {
-        let plugin = try XCTUnwrap(DDCrashReportingPlugin())
+        let plugin = try XCTUnwrap(DDCrashReporting())
         plugin.testIfItWorks()
     }
 }
