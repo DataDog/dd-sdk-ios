@@ -122,13 +122,7 @@ class DataUploadConditionsTests: XCTestCase {
         line: UInt = #line
     ) {
         let conditions = DataUploadConditions(batteryStatus: battery, networkConnectionInfo: network)
-        let canPerformUpload: Bool
-        switch conditions.canPerformUpload() {
-        case .go:
-            canPerformUpload = true
-        case .noGo:
-            canPerformUpload = false
-        }
+        let canPerformUpload = conditions.blockersForUpload().count == 0
         XCTAssertEqual(
             value,
             canPerformUpload,

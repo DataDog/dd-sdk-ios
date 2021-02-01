@@ -55,14 +55,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
             developerLogger?.info("⏳ (\(self.featureName)) Checking for next batch...")
 
-            let isSystemReady: Bool
-            let uploadConditionsReport = self.uploadConditions.canPerformUpload()
-            switch uploadConditionsReport {
-            case .go:
-                isSystemReady = true
-            case .noGo:
-                isSystemReady = false
-            }
+            let blockersForUpload = self.uploadConditions.blockersForUpload()
+            let isSystemReady = blockersForUpload.count == 0
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
 
             if let batch = nextBatch {
@@ -86,7 +80,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                let systemLabel = isSystemReady ? "✅" : uploadConditionsReport.description
+                let systemLabel = isSystemReady ? "✅" : blockersForUpload.description
                 developerLogger?.info("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
                 userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(systemLabel)")
 
@@ -102,22 +96,17 @@ extension DataUploadConditions.Blocker: CustomStringConvertible {
     var description: String {
         switch self {
         case let .battery(level: level, state: state):
-            return "🔋 Battery: \(state) \(level)%"
+            return "🔋 Battery state is: \(state) (\(level)%)"
         case .lowPowerModeOn:
-            return "🔌 Low Power Mode: on"
+            return "🔌 Low Power Mode is: enabled"
         case let .networkReachability(description: description):
-            return "📡 Reachability: " + description
+            return "📡 Network reachability is: " + description
         }
     }
 }
 
-extension DataUploadConditions.Report: CustomStringConvertible {
+extension Array where Element == DataUploadConditions.Blocker {
     var description: String {
-        switch self {
-        case .go:
-            return "✅"
-        case let .noGo(blockers: blockers):
-            return "❌ → " + blockers.map { $0.description }.joined(separator: "; ")
-        }
+        "❌ [upload was skipped because: " + self.map { $0.description }.joined(separator: " AND ") + "]"
     }
 }

@@ -14,24 +14,6 @@ internal struct DataUploadConditions {
         case networkReachability(description: String)
     }
 
-    enum Report {
-        case go
-        case noGo(blockers: [Blocker])
-
-        static func && (lhs: Report, rhs: Report) -> Report {
-            switch (lhs, rhs) {
-            case (.go, .go):
-                return .go
-            case (.go, .noGo):
-                return rhs
-            case (.noGo, .go):
-                return lhs
-            case (let .noGo(blockers: lbs), let .noGo(blockers: rbs)):
-                return .noGo(blockers: lbs + rbs)
-            }
-        }
-    }
-
     struct Constants {
         /// Battery level above which data upload can be performed.
         static let minBatteryLevel: Float = 0.1
@@ -40,29 +22,27 @@ internal struct DataUploadConditions {
     let batteryStatus: BatteryStatusProviderType?
     let networkConnectionInfo: NetworkConnectionInfoProviderType
 
-    func canPerformUpload() -> Report {
+    func blockersForUpload() -> [Blocker] {
         let batteryStatus = self.batteryStatus?.current
         guard let networkConnectionInfo = self.networkConnectionInfo.current else {
             // when `NetworkConnectionInfo` is not yet available
-            return .noGo(
-                blockers: [.networkReachability(description: "unknown")]
-            )
+            return [.networkReachability(description: "unknown")]
         }
 
         if let batteryStatus = batteryStatus {
-            return canUploadWith(networkConnectionInfo) && canUploadWith(batteryStatus)
+            return blockersForUploadWith(networkConnectionInfo) + blockersForUploadWith(batteryStatus)
         } else {
-            return canUploadWith(networkConnectionInfo)
+            return blockersForUploadWith(networkConnectionInfo)
         }
     }
 
-    private func canUploadWith(_ batteryStatus: BatteryStatus) -> Report {
+    private func blockersForUploadWith(_ batteryStatus: BatteryStatus) -> [Blocker] {
         let state = batteryStatus.state
         if state == .unknown {
             // Note: in RUMS-132 we got the report on `.unknown` battery state reporing `-1` battery level on iPad device
             // plugged to Mac through lightning cable. As `.unkown` may lead to other unreliable values,
             // it seems safer to arbitrary allow uploads in such case.
-            return .go
+            return []
         }
 
         var blockers = [Blocker]()
@@ -81,11 +61,11 @@ internal struct DataUploadConditions {
             blockers.append(.lowPowerModeOn)
         }
 
-        return blockers.count == 0 ? .go : .noGo(blockers: blockers)
+        return blockers
     }
 
-    private func canUploadWith(_ networkConnectionInfo: NetworkConnectionInfo) -> Report {
+    private func blockersForUploadWith(_ networkConnectionInfo: NetworkConnectionInfo) -> [Blocker] {
         let networkIsReachable = networkConnectionInfo.reachability == .yes || networkConnectionInfo.reachability == .maybe
-        return networkIsReachable ? .go : .noGo(blockers: [.networkReachability(description: networkConnectionInfo.reachability.rawValue)])
+        return networkIsReachable ? [] : [.networkReachability(description: networkConnectionInfo.reachability.rawValue)]
     }
 }
