@@ -270,8 +270,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: .init(count: actionsCount.toInt64),
                 crash: nil,
                 cumulativeLayoutShift: nil,
-                // TODO: RUMM-1000 should revisit this line
-                customTimings: nil,
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,

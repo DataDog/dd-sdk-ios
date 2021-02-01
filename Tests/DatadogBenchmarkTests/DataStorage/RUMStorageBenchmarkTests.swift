@@ -99,7 +99,6 @@ class RUMStorageBenchmarkTests: XCTestCase {
                     action: .init(count: .mockAny()),
                     crash: .init(count: .mockAny()),
                     cumulativeLayoutShift: nil,
-                    customTimings: nil,
                     domComplete: nil,
                     domContentLoaded: nil,
                     domInteractive: nil,

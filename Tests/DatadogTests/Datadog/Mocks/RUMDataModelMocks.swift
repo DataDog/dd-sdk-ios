@@ -60,8 +60,6 @@ extension RUMViewEvent {
                 action: .init(count: .mockRandom()),
                 crash: .init(count: .mockRandom()),
                 cumulativeLayoutShift: .mockRandom(),
-                // TODO: RUMM-1000 should revisit this line
-                customTimings: nil,
                 domComplete: .mockRandom(),
                 domContentLoaded: .mockRandom(),
                 domInteractive: .mockRandom(),

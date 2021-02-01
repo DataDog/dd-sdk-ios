@@ -108,9 +108,6 @@ public struct RUMViewEvent: RUMDataModel {
         /// Total layout shift score that occured on the view
         public let cumulativeLayoutShift: Double?
 
-        /// User custom timings of the view
-        public let customTimings: CustomTimings?
-
         /// Duration in ns to the complete parsing and loading of the document and its sub resources
         public let domComplete: Int64?
 
@@ -169,7 +166,6 @@ public struct RUMViewEvent: RUMDataModel {
             case action = "action"
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
-            case customTimings = "custom_timings"
             case domComplete = "dom_complete"
             case domContentLoaded = "dom_content_loaded"
             case domInteractive = "dom_interactive"
@@ -208,10 +204,6 @@ public struct RUMViewEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case count = "count"
             }
-        }
-
-        /// User custom timings of the view
-        public struct CustomTimings: Codable {
         }
 
         /// Properties of the errors of the view

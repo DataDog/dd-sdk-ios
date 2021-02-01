@@ -79,10 +79,6 @@ public class SwiftPrinter: BasePrinter {
     }
 
     private func printCodingKeys(for properties: [SwiftStruct.Property]) {
-        // TODO: RUMM-1000 should remove this early return clause
-        if properties.isEmpty {
-            return
-        }
         writeEmptyLine()
         writeLine("enum CodingKeys: String, CodingKey {")
         indentRight()
