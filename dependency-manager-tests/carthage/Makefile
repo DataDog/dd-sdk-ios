@@ -19,4 +19,5 @@ test:
 		@[ -e "Carthage/Build/iOS/Datadog.framework" ] && echo "Datadog.framework - OK" || { echo "Datadog.framework - missing"; false; }
 		@[ -e "Carthage/Build/iOS/DatadogObjc.framework" ] && echo "DatadogObjc.framework - OK" || { echo "DatadogObjc.framework - missing"; false; }
 		@[ -e "Carthage/Build/iOS/Kronos.framework" ] && echo "Kronos.framework - OK" || { echo "Kronos.framework - missing"; false; }
+		@[ -e "Carthage/Build/iOS/Static/CrashReporter.framework" ] && echo "CrashReporter.framework - OK" || { echo "CrashReporter.framework - missing"; false; }
 		@echo "🧪 SUCCEEDED"

@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogCrashReporting
 
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
@@ -32,6 +33,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             trackingConsent: appConfiguration.initialTrackingConsent,
             configuration: appConfiguration.sdkConfiguration()
         )
+
+        let plugin = DDCrashReportingPlugin()
+        plugin?.testIfItWorks()
 
         // Set user information
         Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])

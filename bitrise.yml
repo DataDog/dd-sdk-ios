@@ -85,7 +85,15 @@ workflows:
         - should_retry_test_on_fail: 'yes' # temporarily mutes flakiness until we collect more info (in RUMM-839) then fix it
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for DatadogCrashReporting - iOS Simulator
+        inputs:
+        - scheme: DatadogCrashReporting
+        - simulator_device: iPhone 11
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         inputs:
