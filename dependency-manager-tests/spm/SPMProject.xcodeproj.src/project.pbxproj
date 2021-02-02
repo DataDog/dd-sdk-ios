@@ -16,8 +16,6 @@
 		61C363FC24374D6100C4D4E6 /* SPMProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* SPMProjectUITests.swift */; };
 		61C4DBDE25C2FB0B0058DED4 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */; };
 		61C4DBDF25C2FB0B0058DED4 /* DatadogCrashReporting in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		9EC32C6224E596C20063BCCE /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = 9EC32C6124E596C20063BCCE /* DatadogObjc */; };
-		9EC32C6324E596C20063BCCE /* DatadogObjc in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 9EC32C6124E596C20063BCCE /* DatadogObjc */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +43,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				61C4DBDF25C2FB0B0058DED4 /* DatadogCrashReporting in Embed Frameworks */,
-				9EC32C6324E596C20063BCCE /* DatadogObjc in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -76,7 +73,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C4DBDE25C2FB0B0058DED4 /* DatadogCrashReporting in Frameworks */,
-				9EC32C6224E596C20063BCCE /* DatadogObjc in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,7 +182,6 @@
 			);
 			name = SPMProject;
 			packageProductDependencies = (
-				9EC32C6124E596C20063BCCE /* DatadogObjc */,
 				61C4DBDD25C2FB0B0058DED4 /* DatadogCrashReporting */,
 			);
 			productName = SPMProject;
@@ -698,11 +693,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogCrashReporting;
-		};
-		9EC32C6124E596C20063BCCE /* DatadogObjc */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogObjc;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

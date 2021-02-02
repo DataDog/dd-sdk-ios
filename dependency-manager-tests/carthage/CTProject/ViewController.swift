@@ -19,6 +19,7 @@ internal class ViewController: UIViewController {
             trackingConsent: .granted,
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: "abc", environment: "tests")
+                .enableCrashReporting(using: DDCrashReportingPlugin())
                 .build()
         )
 

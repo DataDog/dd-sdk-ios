@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
+
 /// Crash Report format supported by Datadog SDK.
 @objc
 public class DDCrashReport: NSObject {
