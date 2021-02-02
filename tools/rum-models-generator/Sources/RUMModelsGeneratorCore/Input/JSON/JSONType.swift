@@ -44,11 +44,13 @@ internal struct JSONObject: JSONType {
     let name: String
     let comment: String?
     let properties: [Property]
+    let additionalProperties: Property?
 
-    init(name: String, comment: String?, properties: [Property]) {
+    init(name: String, comment: String?, properties: [Property], additionalProperties: Property? = nil) {
         self.name = name
         self.comment = comment
         self.properties = properties.sorted { property1, property2 in property1.name < property2.name }
+        self.additionalProperties = additionalProperties
     }
 }
 

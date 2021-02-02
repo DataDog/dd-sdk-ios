@@ -112,6 +112,31 @@ internal class JSONSchemaToJSONTypeTransformer {
             properties.append(property)
         }
 
-        return JSONObject(name: name, comment: schema.description, properties: properties)
+        let additionalProperties: JSONObject.Property?
+        if let additionalPropertiesSchema = schema.additionalProperties {
+            let propName = JSONSchema.CodingKeys.additionalProperties.rawValue
+            additionalProperties = JSONObject.Property(
+                name: propName,
+                comment: additionalPropertiesSchema.description,
+                type: try transformSchemaToAnyType(additionalPropertiesSchema, named: propName),
+                defaultValue: additionalPropertiesSchema.const.flatMap { const in
+                    switch const.value {
+                    case .integer(let value): return .integer(value: value)
+                    case .string(let value): return .string(value: value)
+                    }
+                },
+                isRequired: false,
+                isReadOnly: additionalPropertiesSchema.readOnly ?? Defaults.isReadOnly
+            )
+        } else {
+            additionalProperties = nil
+        }
+
+        return JSONObject(
+            name: name,
+            comment: schema.description,
+            properties: properties,
+            additionalProperties: additionalProperties
+        )
     }
 }

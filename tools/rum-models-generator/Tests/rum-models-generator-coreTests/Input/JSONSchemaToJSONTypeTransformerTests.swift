@@ -74,9 +74,24 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                                 "enum": ["option1", "option2", "option3", "option4"]
                             },
                             "readOnly": false
+                        },
+                        "propertyWithAdditionalProperties": {
+                            "type": "object",
+                            "description": "Description of a property with nested additional properties.",
+                            "additionalProperties": {
+                                 "type": "integer",
+                                 "minimum": 0,
+                                 "readOnly": true
+                            },
+                            "readOnly": true
                         }
                     },
-                    "required": ["property1"]
+                    "additionalProperties": {
+                        "type": "string",
+                        "description": "Additional properties of Foo.",
+                        "readOnly": true
+                    },
+                    "required": ["property1"],
                 }
             ]
         }
@@ -140,8 +155,37 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                     defaultValue: nil,
                     isRequired: false,
                     isReadOnly: false
+                ),
+                JSONObject.Property(
+                    name: "propertyWithAdditionalProperties",
+                    comment: "Description of a property with nested additional properties.",
+                    type: JSONObject(
+                        name: "propertyWithAdditionalProperties",
+                        comment: "Description of a property with nested additional properties.",
+                        properties: [],
+                        additionalProperties:
+                            JSONObject.Property(
+                                name: "additionalProperties",
+                                comment: nil,
+                                type: JSONPrimitive.integer,
+                                defaultValue: nil,
+                                isRequired: false,
+                                isReadOnly: true
+                            )
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
                 )
-            ]
+            ],
+            additionalProperties: JSONObject.Property(
+                name: "additionalProperties",
+                comment: "Additional properties of Foo.",
+                type: JSONPrimitive.string,
+                defaultValue: nil,
+                isRequired: false,
+                isReadOnly: true
+            )
         )
 
         let jsonSchema = try JSONSchemaReader()
