@@ -97,7 +97,7 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                                 name: "property1",
                                 comment: "Description of Bar's `property1`.",
                                 type: JSONPrimitive.string,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 isRequired: false,
                                 isReadOnly: true
                             ),
@@ -105,13 +105,13 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                                 name: "property2",
                                 comment: "Description of Bar's `property2`.",
                                 type: JSONPrimitive.string,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 isRequired: true,
                                 isReadOnly: false
                             )
                         ]
                     ),
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     isRequired: false,
                     isReadOnly: true
                 ),
@@ -123,7 +123,7 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                         comment: "Description of Foo's `property1`.",
                         values: ["case1", "case2", "case3", "case4"]
                     ),
-                    defaultVaule: JSONObject.Property.DefaultValue.string(value: "case2"),
+                    defaultValue: JSONObject.Property.DefaultValue.string(value: "case2"),
                     isRequired: true,
                     isReadOnly: true
                 ),
@@ -137,7 +137,7 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                             values: ["option1", "option2", "option3", "option4"]
                         )
                     ),
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     isRequired: false,
                     isReadOnly: false
                 )

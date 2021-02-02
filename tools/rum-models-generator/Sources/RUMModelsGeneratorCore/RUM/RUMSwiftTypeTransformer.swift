@@ -88,7 +88,7 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             var structProperty = structProperty
             structProperty.name = format(propertyName: structProperty.name)
             structProperty.type = try transformAny(type: structProperty.type)
-            structProperty.defaultVaule = structProperty.defaultVaule.ifNotNil { transform(defaultValue: $0) }
+            structProperty.defaultValue = structProperty.defaultValue.ifNotNil { transform(defaultValue: $0) }
             return structProperty
         }
 

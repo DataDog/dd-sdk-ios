@@ -36,7 +36,7 @@ internal struct JSONObject: JSONType {
         let name: String
         let comment: String?
         let type: JSONType
-        let defaultVaule: DefaultValue?
+        let defaultValue: DefaultValue?
         let isRequired: Bool
         let isReadOnly: Bool
     }

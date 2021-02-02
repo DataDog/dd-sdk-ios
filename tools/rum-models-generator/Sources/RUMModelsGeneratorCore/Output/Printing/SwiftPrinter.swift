@@ -56,7 +56,7 @@ public class SwiftPrinter: BasePrinter {
             let name = property.name
             let type = try typeDeclaration(property.type)
             let optionality = property.isOptional ? "?" : ""
-            let defaultValue: String? = try property.defaultVaule.ifNotNil { value in
+            let defaultValue: String? = try property.defaultValue.ifNotNil { value in
                 switch value {
                 case let integerValue as Int:
                     return " = \(integerValue)"

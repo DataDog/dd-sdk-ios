@@ -24,7 +24,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "property1",
                                 comment: "Description of Bar's `property1`.",
                                 type: JSONPrimitive.string,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 isRequired: false,
                                 isReadOnly: true
                             ),
@@ -32,13 +32,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "property2",
                                 comment: "Description of Bar's `property2`.",
                                 type: JSONPrimitive.string,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 isRequired: true,
                                 isReadOnly: false
                             )
                         ]
                     ),
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     isRequired: false,
                     isReadOnly: true
                 ),
@@ -50,7 +50,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         comment: "Description of Foo's `property1`.",
                         values: ["case1", "case2", "case3", "case4"]
                     ),
-                    defaultVaule: JSONObject.Property.DefaultValue.string(value: "case2"),
+                    defaultValue: JSONObject.Property.DefaultValue.string(value: "case2"),
                     isRequired: true,
                     isReadOnly: true
                 ),
@@ -64,7 +64,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                             values: ["option1", "option2", "option3", "option4"]
                         )
                     ),
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     isRequired: false,
                     isReadOnly: false
                 )
@@ -88,7 +88,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
                                 isMutable: false,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 codingKey: "property1"
                             ),
                             SwiftStruct.Property(
@@ -97,7 +97,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
                                 isMutable: true,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 codingKey: "property2"
                             )
                         ],
@@ -105,7 +105,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     ),
                     isOptional: true,
                     isMutable: true, // should be mutable as at least one of the `Bar's` properties is mutable
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     codingKey: "bar"
                 ),
                 SwiftStruct.Property(
@@ -124,7 +124,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     ),
                     isOptional: false,
                     isMutable: false,
-                    defaultVaule: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
                     codingKey: "property1"
                 ),
                 SwiftStruct.Property(
@@ -145,7 +145,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     ),
                     isOptional: true,
                     isMutable: true,
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     codingKey: "property2"
                 )
             ],

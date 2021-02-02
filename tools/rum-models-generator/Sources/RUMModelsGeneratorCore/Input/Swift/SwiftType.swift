@@ -47,7 +47,7 @@ internal struct SwiftStruct: SwiftType {
         var type: SwiftType
         var isOptional: Bool
         var isMutable: Bool
-        var defaultVaule: SwiftPropertyDefaultValue?
+        var defaultValue: SwiftPropertyDefaultValue?
         var codingKey: String
     }
 

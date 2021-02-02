@@ -99,7 +99,7 @@ internal class JSONSchemaToJSONTypeTransformer {
                 name: propertyName,
                 comment: propertySchema.description,
                 type: try transformSchemaToAnyType(propertySchema, named: propertyName),
-                defaultVaule: propertySchema.const.flatMap { const in
+                defaultValue: propertySchema.const.flatMap { const in
                     switch const.value {
                     case .integer(let value): return .integer(value: value)
                     case .string(let value): return .string(value: value)

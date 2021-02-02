@@ -1575,7 +1575,7 @@ extension SwiftStruct.Property {
             type: type,
             isOptional: isOptional,
             isMutable: isMutable,
-            defaultVaule: nil,
+            defaultValue: nil,
             codingKey: propertyName
         )
     }

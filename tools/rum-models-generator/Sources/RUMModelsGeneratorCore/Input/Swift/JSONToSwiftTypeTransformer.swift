@@ -66,7 +66,7 @@ internal class JSONToSwiftTypeTransformer {
         func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
             /// Reads Struct property default value.
             func readDefaultValue(for objectProperty: JSONObject.Property) throws -> SwiftPropertyDefaultValue? {
-                return objectProperty.defaultVaule.ifNotNil { value in
+                return objectProperty.defaultValue.ifNotNil { value in
                     switch value {
                     case .integer(let intValue):
                         return intValue
@@ -87,7 +87,7 @@ internal class JSONToSwiftTypeTransformer {
                     type: try transformJSONToAnyType(jsonProperty.type),
                     isOptional: !jsonProperty.isRequired,
                     isMutable: !jsonProperty.isReadOnly,
-                    defaultVaule: try readDefaultValue(for: jsonProperty),
+                    defaultValue: try readDefaultValue(for: jsonProperty),
                     codingKey: jsonProperty.name
                 )
             }

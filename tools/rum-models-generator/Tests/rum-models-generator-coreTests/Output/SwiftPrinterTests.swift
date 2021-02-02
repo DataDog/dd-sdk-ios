@@ -25,7 +25,7 @@ final class SwiftPrinterTests: XCTestCase {
                             type: SwiftPrimitive<String>(),
                             isOptional: true,
                             isMutable: false,
-                            defaultVaule: nil,
+                            defaultValue: nil,
                             codingKey: "property1"
                         ),
                         SwiftStruct.Property(
@@ -34,7 +34,7 @@ final class SwiftPrinterTests: XCTestCase {
                             type: SwiftPrimitive<String>(),
                             isOptional: false,
                             isMutable: true,
-                            defaultVaule: nil,
+                            defaultValue: nil,
                             codingKey: "property2"
                         )
                     ],
@@ -42,7 +42,7 @@ final class SwiftPrinterTests: XCTestCase {
                 ),
                 isOptional: true,
                 isMutable: false,
-                defaultVaule: nil,
+                defaultValue: nil,
                 codingKey: "bar"
             ),
             SwiftStruct.Property(
@@ -61,7 +61,7 @@ final class SwiftPrinterTests: XCTestCase {
                 ),
                 isOptional: false,
                 isMutable: false,
-                defaultVaule: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
                 codingKey: "bizz"
             ),
             SwiftStruct.Property(
@@ -82,7 +82,7 @@ final class SwiftPrinterTests: XCTestCase {
                 ),
                 isOptional: true,
                 isMutable: true,
-                defaultVaule: nil,
+                defaultValue: nil,
                 codingKey: "buzz"
             )
         ],
