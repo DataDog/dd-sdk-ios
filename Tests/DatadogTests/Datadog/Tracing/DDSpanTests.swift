@@ -161,13 +161,11 @@ class DDSpanTests: XCTestCase {
         XCTAssertTrue(spanErrorStack.contains("42"))
     }
 
-    func testSettingErrorExcludingFileAndLineAndEmptyStack() throws {
+    func testSettingErrorWithEmptyFileLineAndStack() throws {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.logFields.count, 0)
 
-        #sourceLocation(file: "File.swift", line: 42)
-        span.setError(ErrorMock(), includeFileInStack: false)
-        #sourceLocation()
+        span.setError(ErrorMock(), file: "", line: 0)
 
         XCTAssertEqual(span.logFields.count, 1)
         let logFields = span.logFields.first!
@@ -175,13 +173,11 @@ class DDSpanTests: XCTestCase {
         XCTAssertNil(logFields[OTLogFields.stack])
     }
 
-    func testSettingErrorExcludingFileAndLineAndNonEmptyStack() throws {
+    func testSettingErrorWithEmptyFileLineAndNonEmptyStack() throws {
         let span: DDSpan = .mockWith(operationName: "operation")
         XCTAssertEqual(span.logFields.count, 0)
 
-        #sourceLocation(file: "File.swift", line: 42)
-        span.setError(ErrorMock("the stack"), includeFileInStack: false)
-        #sourceLocation()
+        span.setError(ErrorMock("the stack"), file: "", line: 0)
 
         XCTAssertEqual(span.logFields.count, 1)
         let logFields = span.logFields.first!
