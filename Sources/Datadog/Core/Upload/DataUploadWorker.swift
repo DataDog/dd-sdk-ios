@@ -103,7 +103,7 @@ extension DataUploadConditions.Blocker: CustomStringConvertible {
     }
 }
 
-extension Array where Element == DataUploadConditions.Blocker {
+fileprivate extension Array where Element == DataUploadConditions.Blocker {
     var description: String {
         if self.isEmpty {
             return "✅"
