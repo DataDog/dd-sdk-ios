@@ -9,13 +9,13 @@
 public class DDCrashReport: NSObject {
     /// The date of the crash occurrence.
     internal let crashDate: Date?
-    /// E.g. ... TODO - fill in
+    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
     internal let signalCode: String?
-    /// E.g. ... TODO - fill in
+    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
     internal let signalName: String?
-    /// E.g. ... TODO - fill in
+    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
     internal let signalDetails: String?
-    /// E.g. ... TODO - fill in
+    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
     internal let stackTrace: String?
 
     public init(

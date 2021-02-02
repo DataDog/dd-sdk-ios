@@ -4,88 +4,60 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import CrashReporter
 import Datadog
 
+/// The implementation of `Datadog.DDCrashReportingPluginType`.
+/// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
 @objc
 public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
-    private static var sharedPLCrashReporter: PLCrashReporter?
+    static var thirdPartyCrashReporter: ThirdPartyCrashReporter?
 
-    override public init() {
-        DDCrashReportingPlugin.enableOnce()
+    // MARK: - Initialization
+
+    override public convenience init() {
+        self.init { try PLCrashReporterIntegration() }
     }
 
-    private static func enableOnce() {
-        if sharedPLCrashReporter == nil {
-            sharedPLCrashReporter = PLCrashReporter(
-                configuration: PLCrashReporterConfig(
-                    signalHandlerType: .BSD,
-                    symbolicationStrategy: .all
-                )
-            )
+    internal init(thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
+        DDCrashReportingPlugin.enableOnce(using: thirdPartyCrashReporterFactory)
+    }
+
+    private static func enableOnce(using thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
+        if thirdPartyCrashReporter == nil {
             do {
-                try sharedPLCrashReporter?.enableAndReturnError()
+                thirdPartyCrashReporter = try thirdPartyCrashReporterFactory()
             } catch {
-                print("🔥 Failed to enable `PLCrashReporter`: \(error)")
+                consolePrint("🔥 DatadogCrashReporting error: failed to enable crash reporter: \(error)")
             }
         }
     }
 
-    // MARK: - DDCrashReportingPluginInterface
+    // MARK: - DDCrashReportingPluginType
 
     public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
-        guard let plCrashReporter = DDCrashReportingPlugin.sharedPLCrashReporter,
-              plCrashReporter.hasPendingCrashReport() else {
+        guard let crashReporter = DDCrashReportingPlugin.thirdPartyCrashReporter,
+              crashReporter.hasPendingCrashReport() else {
             _ = completion(nil)
             return
         }
 
         do {
-            let plCrashData = try plCrashReporter.loadPendingCrashReportDataAndReturnError()
-            let ddCrashReport = try crashReport(from: plCrashData)
-            let wasProcessed = completion(ddCrashReport)
+            let crashReport = try crashReporter.loadPendingCrashReport()
+            let wasProcessed = completion(crashReport)
 
             if wasProcessed {
-                try plCrashReporter.purgePendingCrashReportAndReturnError()
+                try? crashReporter.purgePendingCrashReport()
             }
         } catch {
-            print("🔥 Failed to load pending crash report data: \(error)")
+            _ = completion(nil)
+            consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)")
         }
     }
+}
 
-    private func crashReport(from crashData: Data) throws -> DDCrashReport {
-        let plCrashReport = try PLCrashReport(data: crashData)
+// MARK: - Utils
 
-        return DDCrashReport(
-            crashDate: plCrashReport.systemInfo.timestamp,
-            signalCode: plCrashReport.signalInfo.code,
-            signalName: plCrashReport.signalInfo.name,
-            signalDetails: signalDetails(for: plCrashReport.signalInfo.name),
-            stackTrace: PLCrashReportTextFormatter.stringValue(
-                for: plCrashReport,
-                with: PLCrashReportTextFormatiOS
-            )
-        )
-    }
-
-    private func signalDetails(for signalName: String?) -> String? {
-        guard let signalName = signalName else {
-            return nil
-        }
-
-        let signalNames = Mirror(reflecting: sys_signame)
-            .children
-            .map { $0.value as! UnsafePointer<Int8> } // swiftlint:disable:this force_cast
-            .map { String(cString: $0).uppercased() }
-        let signalDescription = Mirror(reflecting: sys_siglist)
-            .children
-            .map { $0.value as! UnsafePointer<Int8> } // swiftlint:disable:this force_cast
-            .map { String(cString: $0) }
-
-        if let index = signalNames.firstIndex(where: { signalName == ("SIG"+$0) }) {
-            return signalDescription[index]
-        }
-
-        return nil
-    }
+/// Function printing `String` content to console.
+internal var consolePrint: (String) -> Void = { content in
+    print(content)
 }
