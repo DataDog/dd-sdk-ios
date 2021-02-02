@@ -311,6 +311,7 @@
 				"$(SRCROOT)/Carthage/Build/iOS/Datadog.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/Kronos.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/Static/CrashReporter.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/DatadogCrashReporting.framework",
 			);
 			name = "⚙️ Carthage";
 			outputFileListPaths = (
