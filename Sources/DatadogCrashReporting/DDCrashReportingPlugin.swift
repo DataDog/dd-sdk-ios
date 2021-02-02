@@ -7,10 +7,11 @@
 import CrashReporter
 import Datadog
 
-public class DDCrashReportingPlugin: DDCrashReportingPluginType {
+@objc
+public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
     private static var sharedPLCrashReporter: PLCrashReporter?
 
-    public init() {
+    override public init() {
         DDCrashReportingPlugin.enableOnce()
     }
 

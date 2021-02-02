@@ -5,7 +5,8 @@
  */
 
 /// Crash Report format supported by Datadog SDK.
-public struct DDCrashReport {
+@objc
+public class DDCrashReport: NSObject {
     /// The date of the crash occurrence.
     internal let crashDate: Date?
     /// E.g. ... TODO - fill in
@@ -34,6 +35,7 @@ public struct DDCrashReport {
 
 /// An interface for enabling crash reporting feature in Datadog SDK.
 /// It is implemented by `DDCrashReportingPlugin` from `DatadogCrashReporting` framework.
+@objc
 public protocol DDCrashReportingPluginType: class {
     /// Reads unprocessed crash report if available.
     /// - Parameter completion: the completion block called with the value of `DDCrashReport` if a crash report is available

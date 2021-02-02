@@ -20,7 +20,7 @@ internal class CrashReportingPluginMock: DDCrashReportingPluginType {
 extension DDCrashReport: EquatableInTests {}
 
 internal extension DDCrashReport {
-    static func mockRandom() -> Self {
+    static func mockRandom() -> DDCrashReport {
         return mockWith(
             crashDate: .mockRandomInThePast(),
             signalCode: .mockRandom(),
@@ -36,8 +36,8 @@ internal extension DDCrashReport {
         signalName: String? = .mockAny(),
         signalDetails: String? = .mockAny(),
         stackTrace: String? = .mockAny()
-    ) -> Self {
-        return .init(
+    ) -> DDCrashReport {
+        return DDCrashReport(
             crashDate: crashDate,
             signalCode: signalCode,
             signalName: signalName,
