@@ -19,7 +19,7 @@ internal class SwiftToObjcInteropTypeTransformer {
 
         try takeRootSwiftStructs(from: swiftTypes)
             .forEach { rootStruct in
-                let rootClass = ObjcInteropRootClass(managedSwiftStruct: rootStruct)
+                let rootClass = ObjcInteropRootClass(bridgedSwiftStruct: rootStruct)
                 outputObjcInteropTypes.append(rootClass)
                 try generateTransitiveObjcInteropTypes(in: rootClass)
             }
@@ -48,7 +48,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcNestedClass = ObjcInteropTransitiveClass(
                         owner: propertyWrapper,
-                        managedSwiftStruct: swiftStruct
+                        bridgedSwiftStruct: swiftStruct
                     )
                     return propertyWrapper
                 case let swiftEnum as SwiftEnum:
@@ -58,7 +58,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcNestedEnum = ObjcInteropEnum(
                         owner: propertyWrapper,
-                        managedSwiftEnum: swiftEnum
+                        bridgedSwiftEnum: swiftEnum
                     )
                     return propertyWrapper
                 case let swiftArray as SwiftArray where swiftArray.element is SwiftEnum:
@@ -68,7 +68,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcNestedEnumsArray = ObjcInteropEnumArray(
                         owner: propertyWrapper,
-                        managedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
+                        bridgedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
                     )
                     return propertyWrapper
                 case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitiveType:
@@ -89,7 +89,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                         )
                         propertyWrapper.objcNestedClass = ObjcInteropReferencedTransitiveClass(
                             owner: propertyWrapper,
-                            managedSwiftStruct: swiftStruct
+                            bridgedSwiftStruct: swiftStruct
                         )
                         return propertyWrapper
                     case let swiftEnum as SwiftEnum:
@@ -99,7 +99,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                         )
                         propertyWrapper.objcNestedEnum = ObjcInteropReferencedEnum(
                             owner: propertyWrapper,
-                            managedSwiftEnum: swiftEnum
+                            bridgedSwiftEnum: swiftEnum
                         )
                         return propertyWrapper
                     default:
