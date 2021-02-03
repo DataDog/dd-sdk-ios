@@ -41,7 +41,7 @@ final class SwiftPrinterTests: XCTestCase {
                     additionalProperties: SwiftStruct.Property(
                         name: "additionalProperties",
                         comment: "Additional properties of Bar.",
-                        type: SwiftPrimitive<String>(),
+                        type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
                         isOptional: true,
                         isMutable: true,
                         defaultValue: nil,
@@ -98,7 +98,7 @@ final class SwiftPrinterTests: XCTestCase {
         additionalProperties: SwiftStruct.Property(
             name: "additionalProperties",
             comment: "Additional properties of FooBar.",
-            type: SwiftPrimitive<Int>(),
+            type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int>()),
             isOptional: true,
             isMutable: false,
             defaultValue: nil,

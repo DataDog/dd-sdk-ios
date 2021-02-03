@@ -8,11 +8,13 @@ import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
 public class SwiftPrinter: BasePrinter {
-    public func print(swiftTypes: [SwiftType]) throws -> String {
+    public func print(swiftTypes: [SwiftType], includeDynamicCodingKeys: Bool = true) throws -> String {
         reset()
 
-        writeEmptyLine()
-        printDynamicCodingKeys()
+        if includeDynamicCodingKeys {
+            writeEmptyLine()
+            printDynamicCodingKeys()
+        }
 
         try swiftTypes.forEach { type in
             writeEmptyLine()
@@ -97,10 +99,9 @@ public class SwiftPrinter: BasePrinter {
         let accessLevel = "public"
         let kind = props.isMutable ? "var" : "let"
         let type = try typeDeclaration(props.type)
-        let typeCollection = "[String: \(type)]"
         let optionality = props.isOptional ? "?" : ""
         let defaultValue = try defaultValueDeclaration(props)
-        let line = "\(accessLevel) \(kind) \(props.name): \(typeCollection)\(optionality)\(defaultValue ?? "")"
+        let line = "\(accessLevel) \(kind) \(props.name): \(type)\(optionality)\(defaultValue ?? "")"
 
         writeEmptyLine()
         printComment(props.comment)
@@ -151,15 +152,17 @@ public class SwiftPrinter: BasePrinter {
                 writeEmptyLine()
             }
 
-            let typeName = try typeDeclaration(additionalProperties.type)
-            writeLine("var addPropsContainer = decoder.container(keyedBy: DynamicCodingKey.self)")
-            writeLine("let allKeys = addPropsContainer.allKeys")
-            writeLine("try allKeys.forEach { key in")
-            try indent {
-                writeLine("let value = try addPropsContainer.decode(\(typeName).self, forKey: key)")
-                writeLine("additionalProperties[key] = value")
+            if let dictionary = additionalProperties.type as? SwiftDictionary {
+                let typeName = try typeDeclaration(dictionary.value)
+                writeLine("var addPropsContainer = decoder.container(keyedBy: DynamicCodingKey.self)")
+                writeLine("let allKeys = addPropsContainer.allKeys")
+                writeLine("try allKeys.forEach { key in")
+                try indent {
+                    writeLine("let value = try addPropsContainer.decode(\(typeName).self, forKey: key)")
+                    writeLine("additionalProperties[key] = value")
+                }
+                writeLine("}")
             }
-            writeLine("}")
         }
         writeLine("}")
     }
@@ -167,8 +170,8 @@ public class SwiftPrinter: BasePrinter {
     private func printNestedTypes(in swiftStruct: SwiftStruct) throws {
         let nestedTypes = swiftStruct.properties.map { $0.type }
         try nestedTypes.forEach { type in
-            let nestedStruct = (type as? SwiftStruct) ?? ((type as? SwiftArray)?.element as? SwiftStruct)
-            let nestedEnum = (type as? SwiftEnum) ?? ((type as? SwiftArray)?.element as? SwiftEnum)
+            let nestedStruct = (type as? SwiftStruct) ?? ((type as? SwiftArray)?.element as? SwiftStruct) ?? ((type as? SwiftDictionary)?.value as? SwiftStruct)
+            let nestedEnum = (type as? SwiftEnum) ?? ((type as? SwiftArray)?.element as? SwiftEnum) ?? ((type as? SwiftDictionary)?.value as? SwiftEnum)
 
             if let nestedStruct = nestedStruct {
                 writeEmptyLine()
@@ -210,6 +213,8 @@ public class SwiftPrinter: BasePrinter {
             return "String"
         case let swiftArray as SwiftArray:
             return "[\(try typeDeclaration(swiftArray.element))]"
+        case let swiftDictionary as SwiftDictionary:
+            return "[\(try typeDeclaration(swiftDictionary.key)): \(try typeDeclaration(swiftDictionary.value))]"
         case let swiftEnum as SwiftEnum:
             return swiftEnum.name
         case let swiftStruct as SwiftStruct:

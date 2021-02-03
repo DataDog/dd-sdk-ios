@@ -28,6 +28,11 @@ internal struct SwiftArray: SwiftType {
     var element: SwiftType
 }
 
+internal struct SwiftDictionary: SwiftType {
+    var key: SwiftType
+    var value: SwiftType
+}
+
 internal struct SwiftEnum: SwiftType {
     struct Case: SwiftType, SwiftPropertyDefaultValue {
         var label: String

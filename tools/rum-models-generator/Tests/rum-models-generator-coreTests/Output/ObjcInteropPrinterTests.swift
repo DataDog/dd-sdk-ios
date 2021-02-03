@@ -18,7 +18,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         return """
         // MARK: - Swift
-        \(try swiftPrinter.print(swiftTypes: swiftTypes))
+        \(try swiftPrinter.print(swiftTypes: swiftTypes, includeDynamicCodingKeys: false))
         // MARK: - ObjcInterop
         \(try objcInteropPrinter.print(objcInteropTypes: objcInteropTypes))
         """
@@ -1315,7 +1315,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
             ],
             additionalProperties: .mock(
                 propertyName: "additionalProperties",
-                type: SwiftPrimitive<String>(),
+                type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
                 isOptional: true,
                 isMutable: true
             ),

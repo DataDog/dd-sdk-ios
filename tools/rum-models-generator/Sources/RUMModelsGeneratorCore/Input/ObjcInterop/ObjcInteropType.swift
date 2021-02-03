@@ -138,3 +138,13 @@ internal class ObjcInteropNSArray: ObjcInteropType {
         self.element = element
     }
 }
+
+internal class ObjcInteropNSDictionary: ObjcInteropType {
+    let key: ObjcInteropType
+    let value: ObjcInteropType
+
+    init(key: ObjcInteropType, value: ObjcInteropType) {
+        self.key = key
+        self.value = value
+    }
+}

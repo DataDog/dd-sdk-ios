@@ -35,6 +35,8 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             return transform(primitive: primitive)
         case let array as SwiftArray:
             return try transform(array: array)
+        case let dictionary as SwiftDictionary:
+            return try transform(dictionary: dictionary)
         case let `enum` as SwiftEnum:
             let transformed = transform(enum: `enum`)
             return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
@@ -52,6 +54,12 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         } else {
             return primitive
         }
+    }
+
+    private func transform(dictionary: SwiftDictionary) throws -> SwiftDictionary {
+        var dictionary = dictionary
+        dictionary.value = try transformAny(type: dictionary.value)
+        return dictionary
     }
 
     private func transform(array: SwiftArray) throws -> SwiftArray {

@@ -65,6 +65,9 @@ internal class SwiftToObjcInteropTypeTransformer {
             return ObjcInteropNSString(swiftString: swiftString)
         case let swiftArray as SwiftArray:
             return ObjcInteropNSArray(element: try objcInteropType(for: swiftArray.element))
+        case let swiftDictionary as SwiftDictionary:
+            return ObjcInteropNSDictionary(key: try objcInteropType(for: swiftDictionary.key),
+                                           value: try objcInteropType(for: swiftDictionary.value))
         default:
             throw Exception.unimplemented(
                 "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."
@@ -117,6 +120,13 @@ internal class SwiftToObjcInteropTypeTransformer {
                 swiftProperty: swiftProperty
             )
             propertyWrapper.objcInteropType = try objcInteropType(for: swiftArray)
+            return propertyWrapper
+        case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitiveType:
+            let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
+                owner: objcClass,
+                swiftProperty: swiftProperty
+            )
+            propertyWrapper.objcInteropType = try objcInteropType(for: swiftDictionary)
             return propertyWrapper
         case let swifTypeReference as SwiftTypeReference:
             let referencedType = try resolve(swiftTypeReference: swifTypeReference)
