@@ -197,6 +197,10 @@ public class DDRUMViewEventSession: NSObject {
         self.root = root
     }
 
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
     @objc public var id: String {
         root.swiftModel.session.id
     }
@@ -289,6 +293,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var firstInputDelay: NSNumber? {
         root.swiftModel.view.firstInputDelay as NSNumber?
+    }
+
+    @objc public var firstInputTime: NSNumber? {
+        root.swiftModel.view.firstInputTime as NSNumber?
     }
 
     @objc public var id: String {
@@ -982,6 +990,10 @@ public class DDRUMResourceEventSession: NSObject {
         self.root = root
     }
 
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
     @objc public var id: String {
         root.swiftModel.session.id
     }
@@ -1383,6 +1395,10 @@ public class DDRUMActionEventSession: NSObject {
         self.root = root
     }
 
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
     @objc public var id: String {
         root.swiftModel.session.id
     }
@@ -1680,6 +1696,10 @@ public class DDRUMErrorEventError: NSObject {
         set { root.swiftModel.error.stack = newValue }
         get { root.swiftModel.error.stack }
     }
+
+    @objc public var type: String? {
+        root.swiftModel.error.type
+    }
 }
 
 @objc
@@ -1863,6 +1883,10 @@ public class DDRUMErrorEventSession: NSObject {
         self.root = root
     }
 
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
     @objc public var id: String {
         root.swiftModel.session.id
     }
@@ -1938,4 +1962,4 @@ public class DDRUMErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/5c673c12f2fc464ec87dcb5e3a79b0f739a311b7
+// Generated from https://github.com/DataDog/rum-events-format/tree/8b955a03d0fe0b2f032a02d6800c61ef3fc9fada

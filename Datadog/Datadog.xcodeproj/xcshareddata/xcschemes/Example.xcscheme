@@ -52,67 +52,67 @@
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
-            value = "LoggingScenario"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "LoggingManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "TracingManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "TracingURLSessionScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "TracingNSURLSessionScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMNavigationControllerScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMTapActionScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMTabBarAutoInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMModalViewsAutoInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMResourcesScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "TrackingConsentStartPendingScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "TrackingConsentStartGrantedScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_IDENTIFIER"
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMScrubbingScenario"
             isEnabled = "NO">
          </EnvironmentVariable>

@@ -6,15 +6,9 @@
 
 import Datadog
 
-let allTracingScenarios: [TestScenario.Type] = [
-    TracingManualInstrumentationScenario.self,
-    TracingURLSessionScenario.self,
-    TracingNSURLSessionScenario.self,
-]
-
 /// Scenario which starts a view controller that sends bunch of spans using manual API of `Tracer`.
 /// It also uses the `span.log()` to send logs.
-struct TracingManualInstrumentationScenario: TestScenario {
+final class TracingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "TracingManualInstrumentationScenario"
 }
 
@@ -22,7 +16,6 @@ struct TracingManualInstrumentationScenario: TestScenario {
 /// sent with `URLSession` (Swift) from the first VC and ignores other third party requests send from second VC.
 final class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
-    static func envIdentifier() -> String { "TracingURLSessionScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
@@ -37,7 +30,6 @@ final class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
 @objc
 final class TracingNSURLSessionScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
-    static func envIdentifier() -> String { "TracingNSURLSessionScenario" }
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder

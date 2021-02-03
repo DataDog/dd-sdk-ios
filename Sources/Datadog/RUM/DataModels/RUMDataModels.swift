@@ -75,6 +75,9 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// Session properties
     public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
@@ -82,6 +85,7 @@ public struct RUMViewEvent: RUMDataModel {
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
         }
@@ -121,6 +125,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns of the first input event delay
         public let firstInputDelay: Int64?
+
+        /// Duration in ns to the first input
+        public let firstInputTime: Int64?
 
         /// UUID of the view
         public let id: String
@@ -165,6 +172,7 @@ public struct RUMViewEvent: RUMDataModel {
             case error = "error"
             case firstContentfulPaint = "first_contentful_paint"
             case firstInputDelay = "first_input_delay"
+            case firstInputTime = "first_input_time"
             case id = "id"
             case isActive = "is_active"
             case largestContentfulPaint = "largest_contentful_paint"
@@ -527,6 +535,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
     /// Session properties
     public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
@@ -534,6 +545,7 @@ public struct RUMResourceEvent: RUMDataModel {
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
         }
@@ -730,6 +742,9 @@ public struct RUMActionEvent: RUMDataModel {
 
     /// Session properties
     public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
@@ -737,6 +752,7 @@ public struct RUMActionEvent: RUMDataModel {
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
         }
@@ -863,12 +879,16 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Stacktrace of the error
         public var stack: String?
 
+        /// The type of the error
+        public let type: String?
+
         enum CodingKeys: String, CodingKey {
             case isCrash = "is_crash"
             case message = "message"
             case resource = "resource"
             case source = "source"
             case stack = "stack"
+            case type = "type"
         }
 
         /// Resource properties of the error
@@ -943,6 +963,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Session properties
     public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
@@ -950,6 +973,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
         }
@@ -1059,4 +1083,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/5c673c12f2fc464ec87dcb5e3a79b0f739a311b7
+// Generated from https://github.com/DataDog/rum-events-format/tree/8b955a03d0fe0b2f032a02d6800c61ef3fc9fada

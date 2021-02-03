@@ -11,7 +11,7 @@ class ExampleApplication: XCUIApplication {
     /// Launches the app by providing mock server configuration.
     /// If `clearPeristentData` is set to `true`, the app will clear all SDK data persisted in previous session(s).
     func launchWith(
-        testScenario: TestScenario.Type,
+        testScenarioClassName: String,
         serverConfiguration: HTTPServerMockConfiguration,
         clearPeristentData: Bool = true
     ) {
@@ -27,7 +27,7 @@ class ExampleApplication: XCUIApplication {
         }
 
         var variables: [String: String] = [:]
-        variables[Environment.Variable.testScenarioIdentifier] = testScenario.envIdentifier()
+        variables[Environment.Variable.testScenarioClassName] = testScenarioClassName
         variables[Environment.Variable.serverMockConfiguration] = serverConfiguration.toEnvironmentValue
 
         launchEnvironment = variables

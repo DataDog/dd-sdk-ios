@@ -51,6 +51,7 @@ extension RUMViewEvent {
             date: .mockRandom(),
             service: .mockRandom(),
             session: .init(
+                hasReplay: nil,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -65,6 +66,7 @@ extension RUMViewEvent {
                 error: .init(count: .mockRandom()),
                 firstContentfulPaint: .mockRandom(),
                 firstInputDelay: .mockRandom(),
+                firstInputTime: .mockRandom(),
                 id: .mockRandom(),
                 isActive: .random(),
                 largestContentfulPaint: .mockRandom(),
@@ -114,6 +116,7 @@ extension RUMResourceEvent {
             ),
             service: .mockRandom(),
             session: .init(
+                hasReplay: nil,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -146,6 +149,7 @@ extension RUMActionEvent {
             date: .mockRandom(),
             service: .mockRandom(),
             session: .init(
+                hasReplay: nil,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -181,10 +185,12 @@ extension RUMErrorEvent {
                     url: .mockRandom()
                 ),
                 source: [.source, .network, .custom].randomElement()!,
-                stack: .mockRandom()
+                stack: .mockRandom(),
+                type: .mockRandom()
             ),
             service: .mockRandom(),
             session: .init(
+                hasReplay: nil,
                 id: .mockRandom(),
                 type: .user
             ),

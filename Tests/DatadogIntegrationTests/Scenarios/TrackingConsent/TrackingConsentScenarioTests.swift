@@ -61,7 +61,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: TrackingConsentStartPendingScenario.self,
+            testScenarioClassName: "TrackingConsentStartPendingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,
@@ -83,7 +83,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: TrackingConsentStartGrantedScenario.self,
+            testScenarioClassName: "TrackingConsentStartGrantedScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,
@@ -105,7 +105,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: TrackingConsentStartPendingScenario.self,
+            testScenarioClassName: "TrackingConsentStartPendingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,
@@ -132,7 +132,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: TrackingConsentStartGrantedScenario.self,
+            testScenarioClassName: "TrackingConsentStartGrantedScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,
@@ -145,7 +145,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
         app.terminate()
 
         app.launchWith(
-            testScenario: TrackingConsentStartPendingScenario.self,
+            testScenarioClassName: "TrackingConsentStartPendingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,
@@ -166,7 +166,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: TrackingConsentStartPendingScenario.self,
+            testScenarioClassName: "TrackingConsentStartPendingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,
@@ -179,7 +179,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
         app.terminate()
 
         app.launchWith(
-            testScenario: TrackingConsentStartGrantedScenario.self,
+            testScenarioClassName: "TrackingConsentStartGrantedScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL,

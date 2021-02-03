@@ -18,7 +18,7 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: TracingManualInstrumentationScenario.self,
+            testScenarioClassName: "TracingManualInstrumentationScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
                 tracesEndpoint: tracingServerSession.recordingURL

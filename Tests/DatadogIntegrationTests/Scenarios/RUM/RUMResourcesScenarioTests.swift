@@ -40,7 +40,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenario: RUMResourcesScenario.self,
+            testScenarioClassName: "RUMResourcesScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 tracesEndpoint: tracingServerSession.recordingURL,
                 rumEndpoint: rumServerSession.recordingURL,
