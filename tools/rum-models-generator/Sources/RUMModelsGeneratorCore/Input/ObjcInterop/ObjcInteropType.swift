@@ -13,6 +13,7 @@ internal protocol ObjcInteropType: AnyObject {}
 internal protocol ObjcInteropClass: ObjcInteropType {
     var bridgedSwiftStruct: SwiftStruct { get }
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] { set get }
+    var objcAdditionalPropertiesWrapper: ObjcInteropPropertyWrapper? { set get }
 }
 
 /// Schema of a root `@objc class` storing the mutable value of a `SwiftStruct`.
@@ -21,6 +22,8 @@ internal class ObjcInteropRootClass: ObjcInteropClass {
     let bridgedSwiftStruct: SwiftStruct
     /// `bridgedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
+    /// `bridgedSwiftStruct's` additionalProperties property wrapper exposed to Objc.
+    var objcAdditionalPropertiesWrapper: ObjcInteropPropertyWrapper?
 
     init(bridgedSwiftStruct: SwiftStruct) {
         self.bridgedSwiftStruct = bridgedSwiftStruct
@@ -36,6 +39,8 @@ internal class ObjcInteropTransitiveClass: ObjcInteropClass {
     let bridgedSwiftStruct: SwiftStruct
     /// `bridgedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
+    /// `bridgedSwiftStruct's` additionalProperties property wrapper exposed to Objc.
+    var objcAdditionalPropertiesWrapper: ObjcInteropPropertyWrapper?
 
     init(owner: ObjcInteropPropertyWrapper, bridgedSwiftStruct: SwiftStruct) {
         self.parentProperty = owner

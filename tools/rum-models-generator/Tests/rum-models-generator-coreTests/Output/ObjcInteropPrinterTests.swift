@@ -1294,6 +1294,83 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    // MARK: - Property wrappers for additional properties in Swift Structs
+
+    func testPrintingObjcInteropForSwiftStructsWithAdditionalProperties() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "bar",
+                    type: SwiftStruct(
+                        name: "Bar",
+                        comment: nil,
+                        properties: [],
+                        conformance: []
+                    ),
+                    isOptional: false,
+                    isMutable: true
+                )
+            ],
+            additionalProperties: .mock(
+                propertyName: "additionalProperties",
+                type: SwiftPrimitive<String>(),
+                isOptional: true,
+                isMutable: true
+            ),
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public var bar: Bar
+
+            public var additionalProperties: [String: String]?
+
+            public struct Bar {
+            }
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var bar: DDFooBar {
+                DDFooBar(root: root)
+            }
+
+            @objc public var additionalProperties: [String: String]? {
+                set { root.swiftModel.additionalProperties = newValue }
+                get { root.swiftModel.additionalProperties }
+            }
+        }
+
+        @objc
+        public class DDFooBar: NSObject {
+            internal let root: DDFoo
+
+            internal init(root: DDFoo) {
+                self.root = root
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
     // MARK: - Referenced Swift Structs and Enums
 
     func testPrintingObjcInteropForSwiftStructsWithReferencedStructAndEnum() throws {

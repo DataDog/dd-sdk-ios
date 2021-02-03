@@ -81,6 +81,9 @@ internal class ObjcInteropPrinter: BasePrinter {
             try objcInteropRootClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
+        if let additionalPropertiesWrapper = objcInteropRootClass.objcAdditionalPropertiesWrapper  {
+            try print(objcInteropPropertyWrapper: additionalPropertiesWrapper)
+        }
         indentLeft()
         writeLine("}")
     }
@@ -102,6 +105,9 @@ internal class ObjcInteropPrinter: BasePrinter {
             try objcInteropNestedClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
+        if let additionalPropertiesWrapper = objcInteropNestedClass.objcAdditionalPropertiesWrapper  {
+            try print(objcInteropPropertyWrapper: additionalPropertiesWrapper)
+        }
         indentLeft()
         writeLine("}")
     }
@@ -263,7 +269,11 @@ internal class ObjcInteropPrinter: BasePrinter {
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
-        let objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
+        var objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
+        // TODO: RUMM-1000 Add support for Dictionary upstream instead of dealing with it at print time.
+        if objcPropertyName == "additionalProperties" {
+            objcTypeName = "[String: " + objcTypeName + "]"
+        }
         let asObjcCast = try swiftToObjcCast(for: propertyWrapper.objcInteropType).ifNotNil { asObjcCast in
             asObjcCast + objcPropertyOptionality
         } ?? ""
