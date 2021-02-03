@@ -209,6 +209,7 @@
 		615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */; };
 		615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */; };
 		615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
+		6161247925CA9CA6009901BE /* CrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporter.swift */; };
 		6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6164AE88252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift */; };
 		6164AF06252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF05252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m */; };
 		6164AF0E252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6164AF0D252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m */; };
@@ -367,8 +368,8 @@
 		61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A6192498A51700075390 /* CoreMocks.swift */; };
 		61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A620249A45E400075390 /* DDSpanContextTests.swift */; };
 		61F1A623249B811200075390 /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A622249B811200075390 /* Encoding.swift */; };
-		61F2723F25C86DA400D54BF8 /* CrashReportingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2723E25C86DA400D54BF8 /* CrashReportingMocks.swift */; };
-		61F2724925C943C500D54BF8 /* CrashReportingFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2724825C943C500D54BF8 /* CrashReportingFeatureTests.swift */; };
+		61F2723F25C86DA400D54BF8 /* CrashReportingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2723E25C86DA400D54BF8 /* CrashReportingFeatureMocks.swift */; };
+		61F2724925C943C500D54BF8 /* CrashReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2724825C943C500D54BF8 /* CrashReporterTests.swift */; };
 		61F2727425C9509D00D54BF8 /* ThirdPartyCrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */; };
 		61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */; };
 		61F272B125C95ED800D54BF8 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2729A25C95EB200D54BF8 /* Mocks.swift */; };
@@ -707,6 +708,7 @@
 		615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASVariousUIControllsViewController.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandlerTests.swift; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
+		6161247825CA9CA6009901BE /* CrashReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporter.swift; sourceTree = "<group>"; };
 		6164AE88252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendThirdPartyRequestsViewController.swift; sourceTree = "<group>"; };
 		6164AF04252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcSendFirstPartyRequestsViewController.h; sourceTree = "<group>"; };
 		6164AF05252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcSendFirstPartyRequestsViewController.m; sourceTree = "<group>"; };
@@ -869,8 +871,8 @@
 		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
 		61F1A620249A45E400075390 /* DDSpanContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanContextTests.swift; sourceTree = "<group>"; };
 		61F1A622249B811200075390 /* Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
-		61F2723E25C86DA400D54BF8 /* CrashReportingMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingMocks.swift; sourceTree = "<group>"; };
-		61F2724825C943C500D54BF8 /* CrashReportingFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingFeatureTests.swift; sourceTree = "<group>"; };
+		61F2723E25C86DA400D54BF8 /* CrashReportingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingFeatureMocks.swift; sourceTree = "<group>"; };
+		61F2724825C943C500D54BF8 /* CrashReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporterTests.swift; sourceTree = "<group>"; };
 		61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdPartyCrashReporter.swift; sourceTree = "<group>"; };
 		61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReporterIntegration.swift; sourceTree = "<group>"; };
 		61F2729A25C95EB200D54BF8 /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
@@ -1336,7 +1338,7 @@
 				61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */,
 				61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */,
 				61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */,
-				61F2723E25C86DA400D54BF8 /* CrashReportingMocks.swift */,
+				61F2723E25C86DA400D54BF8 /* CrashReportingFeatureMocks.swift */,
 				613E820425A879AF0084B751 /* RUMDataModelMocks.swift */,
 				61B038B92527257B00518F3C /* URLSessionAutoInstrumentationMocks.swift */,
 				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
@@ -2353,6 +2355,7 @@
 			children = (
 				61DE332525C826E4008E3EC2 /* CrashReportingFeature.swift */,
 				61DE333525C8278A008E3EC2 /* DDCrashReportingPluginType.swift */,
+				6161247825CA9CA6009901BE /* CrashReporter.swift */,
 			);
 			path = CrashReporting;
 			sourceTree = "<group>";
@@ -2473,7 +2476,7 @@
 		61F2724725C9437C00D54BF8 /* CrashReporting */ = {
 			isa = PBXGroup;
 			children = (
-				61F2724825C943C500D54BF8 /* CrashReportingFeatureTests.swift */,
+				61F2724825C943C500D54BF8 /* CrashReporterTests.swift */,
 			);
 			path = CrashReporting;
 			sourceTree = "<group>";
@@ -3138,6 +3141,7 @@
 				6157FA5E252767CB009A8A3B /* URLSessionRUMResourcesHandler.swift in Sources */,
 				616CCE13250A1868009FED46 /* RUMCommandSubscriber.swift in Sources */,
 				6112B11425C84E7900B37771 /* CrashReportingIntegration.swift in Sources */,
+				6161247925CA9CA6009901BE /* CrashReporter.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */,
 				614D812C24E3EA15004C9C5D /* Feature.swift in Sources */,
@@ -3312,7 +3316,7 @@
 				61C5A89624509BF600DA608C /* TracerTests.swift in Sources */,
 				61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */,
 				61E45BD22450F65B00F2C652 /* SpanBuilderTests.swift in Sources */,
-				61F2723F25C86DA400D54BF8 /* CrashReportingMocks.swift in Sources */,
+				61F2723F25C86DA400D54BF8 /* CrashReportingFeatureMocks.swift in Sources */,
 				61A9238E256FCAA2009B9667 /* DateCorrectionTests.swift in Sources */,
 				61EF7890257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift in Sources */,
 				61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */,
@@ -3352,7 +3356,7 @@
 				61133C552423990D00786299 /* BatteryStatusProviderTests.swift in Sources */,
 				61F3CDAB25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift in Sources */,
 				617B954024BF4DB300E6F443 /* RUMApplicationScopeTests.swift in Sources */,
-				61F2724925C943C500D54BF8 /* CrashReportingFeatureTests.swift in Sources */,
+				61F2724925C943C500D54BF8 /* CrashReporterTests.swift in Sources */,
 				6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */,
 				61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */,
 				61FF282124B8981D000B3D9B /* RUMEventBuilderTests.swift in Sources */,

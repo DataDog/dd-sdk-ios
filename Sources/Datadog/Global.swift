@@ -10,9 +10,13 @@ public typealias DDGlobal = Global
 
 /// Namespace storing global Datadog components.
 public struct Global {
-    /// Shared tracer instance to use throughout the app.
+    /// Shared Tracer instance to use throughout the app.
     public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
 
-    /// Shared RUM monitor instance to use throughout the app.
+    /// Shared RUM Monitor instance to use throughout the app.
     public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
+
+    /// Shared Crash Reporter instance used internally by the SDK.
+    /// `nil` if the crash reporting feature is not enabled.
+    internal static var crashReporter: CrashReporter?
 }

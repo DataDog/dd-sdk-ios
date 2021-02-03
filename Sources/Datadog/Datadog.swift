@@ -226,9 +226,7 @@ public class Datadog {
 
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
-                configuration: crashReportingConfiguration,
-                loggingIntegration: logging.flatMap { CrashReportingWithLoggingIntegration(loggingFeature: $0) },
-                rumIntegration: rum.flatMap { CrashReportingWithRUMIntegration(rumFeature: $0) }
+                configuration: crashReportingConfiguration
             )
         }
 
@@ -257,8 +255,18 @@ public class Datadog {
             launchTimeProvider: launchTimeProvider
         )
 
-        // After everything is set up, send crash report if available
-        CrashReportingFeature.instance?.sendCrashReportIfFound()
+        // After everything is set up, if the Crash Reporting feature was enabled,
+        // register crash reporter and send crash report if available:
+        if let crashReportingFeature = CrashReportingFeature.instance {
+            Global.crashReporter = CrashReporter(
+                crashReportingFeature: crashReportingFeature,
+                loggingIntegration: LoggingFeature.instance
+                    .flatMap { CrashReportingWithLoggingIntegration(loggingFeature: $0) },
+                rumIntegration: RUMFeature.instance
+                    .flatMap { CrashReportingWithRUMIntegration(rumFeature: $0) }
+            )
+            Global.crashReporter?.sendCrashReportIfFound()
+        }
     }
 
     internal init(
@@ -289,6 +297,9 @@ public class Datadog {
 
         RUMAutoInstrumentation.instance = nil
         URLSessionAutoInstrumentation.instance = nil
+
+        // Deinitialize Crash Reporter managed internally by the SDK
+        Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil

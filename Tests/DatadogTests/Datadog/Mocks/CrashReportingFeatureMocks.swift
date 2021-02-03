@@ -6,6 +6,14 @@
 
 @testable import Datadog
 
+extension CrashReportingFeature {
+    static func mockWith(
+        configuration: FeaturesConfiguration.CrashReporting = .mockAny()
+    ) -> CrashReportingFeature {
+        return CrashReportingFeature(configuration: configuration)
+    }
+}
+
 internal class CrashReportingPluginMock: DDCrashReportingPluginType {
     /// The crash report loaded by this plugin.
     var pendingCrashReport: DDCrashReport?

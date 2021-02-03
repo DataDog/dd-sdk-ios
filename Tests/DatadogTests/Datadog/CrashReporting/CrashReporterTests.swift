@@ -15,17 +15,7 @@ private class CrashReportingIntegrationMock: CrashReportingIntegration {
     }
 }
 
-class CrashReportingFeatureTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        XCTAssertNil(CrashReportingFeature.instance)
-    }
-
-    override func tearDown() {
-        XCTAssertNil(CrashReportingFeature.instance)
-        super.tearDown()
-    }
-
+class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
     func testGivenPendingCrashReport_whenOnlyLoggingIntegrationIsEnabled_itSendsCrashReportThroughIntegration() {
@@ -37,14 +27,16 @@ class CrashReportingFeatureTests: XCTestCase {
 
         // When
         let loggingIntegration = CrashReportingIntegrationMock()
-        let feature = CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: plugin),
+        let crashReporter = CrashReporter(
+            crashReportingFeature: .mockWith(
+                configuration: .mockWith(crashReportingPlugin: plugin)
+            ),
             loggingIntegration: loggingIntegration,
             rumIntegration: nil
         )
 
         // Then
-        feature.sendCrashReportIfFound()
+        crashReporter.sendCrashReportIfFound()
 
         XCTAssertTrue(
             plugin.hasPurgedCrashReport == true,
@@ -62,14 +54,16 @@ class CrashReportingFeatureTests: XCTestCase {
 
         // When
         let rumIntegration = CrashReportingIntegrationMock()
-        let feature = CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: plugin),
+        let crashReporter = CrashReporter(
+            crashReportingFeature: .mockWith(
+                configuration: .mockWith(crashReportingPlugin: plugin)
+            ),
             loggingIntegration: nil,
             rumIntegration: rumIntegration
         )
 
         // Then
-        feature.sendCrashReportIfFound()
+        crashReporter.sendCrashReportIfFound()
 
         XCTAssertTrue(
             plugin.hasPurgedCrashReport == true,
@@ -88,14 +82,16 @@ class CrashReportingFeatureTests: XCTestCase {
         // When
         let loggingIntegration = CrashReportingIntegrationMock()
         let rumIntegration = CrashReportingIntegrationMock()
-        let feature = CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: plugin),
+        let crashReporter = CrashReporter(
+            crashReportingFeature: .mockWith(
+                configuration: .mockWith(crashReportingPlugin: plugin)
+            ),
             loggingIntegration: loggingIntegration,
             rumIntegration: rumIntegration
         )
 
         // Then
-        feature.sendCrashReportIfFound()
+        crashReporter.sendCrashReportIfFound()
 
         XCTAssertTrue(
             plugin.hasPurgedCrashReport == true,
@@ -119,14 +115,16 @@ class CrashReportingFeatureTests: XCTestCase {
         plugin.pendingCrashReport = crashReport
 
         // When
-        let feature = CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: plugin),
+        let crashReporter = CrashReporter(
+            crashReportingFeature: .mockWith(
+                configuration: .mockWith(crashReportingPlugin: plugin)
+            ),
             loggingIntegration: nil,
             rumIntegration: nil
         )
 
         // Then
-        feature.sendCrashReportIfFound()
+        crashReporter.sendCrashReportIfFound()
 
         XCTAssertTrue(
             plugin.hasPurgedCrashReport == false,
@@ -150,14 +148,16 @@ class CrashReportingFeatureTests: XCTestCase {
         plugin.pendingCrashReport = nil
 
         // When
-        let feature = CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: plugin),
+        let crashReporter = CrashReporter(
+            crashReportingFeature: .mockWith(
+                configuration: .mockWith(crashReportingPlugin: plugin)
+            ),
             loggingIntegration: CrashReportingIntegrationMock(),
             rumIntegration: CrashReportingIntegrationMock()
         )
 
         // Then
-        feature.sendCrashReportIfFound()
+        crashReporter.sendCrashReportIfFound()
 
         XCTAssertTrue(
             plugin.hasPurgedCrashReport == false,

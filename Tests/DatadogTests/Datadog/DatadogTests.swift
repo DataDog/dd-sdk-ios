@@ -239,8 +239,12 @@ class DatadogTests: XCTestCase {
                 .build()
         ) {
             XCTAssertNotNil(CrashReportingFeature.instance)
-            XCTAssertNotNil(CrashReportingFeature.instance?.loggingIntegration)
-            XCTAssertNil(CrashReportingFeature.instance?.rumIntegration)
+            XCTAssertNotNil(
+                Global.crashReporter,
+                "When Crash Reporting feature is enabled, `Global.crashReporter` should be registered."
+            )
+            XCTAssertNotNil(Global.crashReporter?.loggingIntegration)
+            XCTAssertNil(Global.crashReporter?.rumIntegration)
         }
 
         let random = [true, false].shuffled()
@@ -252,15 +256,19 @@ class DatadogTests: XCTestCase {
                 .build()
         ) {
             XCTAssertNotNil(CrashReportingFeature.instance)
-            let isLoggingIntegrationConfigured = CrashReportingFeature.instance?.loggingIntegration != nil
-            let isRUMIntegrationConfiured = CrashReportingFeature.instance?.rumIntegration != nil
+            XCTAssertNotNil(
+                Global.crashReporter,
+                "When Crash Reporting feature is enabled, `Global.crashReporter` should be registered."
+            )
+            let isLoggingIntegrationConfigured = Global.crashReporter?.loggingIntegration != nil
+            let isRUMIntegrationConfigured = Global.crashReporter?.rumIntegration != nil
             XCTAssertTrue(
-                isLoggingIntegrationConfigured || isRUMIntegrationConfiured,
+                isLoggingIntegrationConfigured || isRUMIntegrationConfigured,
                 "When only RUM or only Logging are enabled, one of the integrations with Crash Reporting should be configured."
             )
             XCTAssertNotEqual(
                 isLoggingIntegrationConfigured,
-                isRUMIntegrationConfiured,
+                isRUMIntegrationConfigured,
                 "When only RUM or only Logging are enabled, only one integration with Crash Reporting should be configured."
             )
         }
@@ -273,6 +281,10 @@ class DatadogTests: XCTestCase {
                 .build()
         ) {
             XCTAssertNil(CrashReportingFeature.instance)
+            XCTAssertNil(
+                Global.crashReporter,
+                "When Crash Reporting feature is disabled, `Global.crashReporter` should not be registered."
+            )
         }
     }
 
