@@ -11,6 +11,9 @@ public class SwiftPrinter: BasePrinter {
     public func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
 
+        writeEmptyLine()
+        printDynamicCodingKeys()
+
         try swiftTypes.forEach { type in
             writeEmptyLine()
             if let `struct` = type as? SwiftStruct {
@@ -27,6 +30,19 @@ public class SwiftPrinter: BasePrinter {
 
     // MARK: - Private
 
+    private func printDynamicCodingKeys() {
+        let code = """
+        fileprivate struct DynamicCodingKey: CodingKey {
+            var stringValue: String
+            var intValue: Int?
+            init?(stringValue: String) { self.stringValue = stringValue }
+            init?(intValue: Int) { return nil }
+            init(_ string: String) { self.stringValue = string }
+        }
+        """
+        writeLine(code)
+    }
+
     private func printStruct(_ swiftStruct: SwiftStruct) throws {
         let implementedProtocols = swiftStruct.conformance.map { $0.name }
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
@@ -38,6 +54,12 @@ public class SwiftPrinter: BasePrinter {
         try printAdditionalProperties(swiftStruct.additionalProperties)
         if swiftStruct.conforms(to: codableProtocol) {
             printCodingKeys(for: swiftStruct.properties)
+            if let additionalProperties = swiftStruct.additionalProperties {
+                try printCodableMethods(
+                    for: swiftStruct.properties,
+                    additionalProperties: additionalProperties
+                )
+            }
         }
         try printNestedTypes(in: swiftStruct)
         indentLeft()
@@ -93,6 +115,52 @@ public class SwiftPrinter: BasePrinter {
             writeLine("case \(property.name) = \"\(property.codingKey)\"")
         }
         indentLeft()
+        writeLine("}")
+    }
+
+    private func printCodableMethods(for properties: [SwiftStruct.Property], additionalProperties: SwiftStruct.Property) throws {
+        writeEmptyLine()
+        writeLine("func encode(to encoder: Encoder) throws {")
+        try indent {
+            if properties.count > 0 {
+                writeLine("var propsContainer = encoder.container(keyedBy: CodingKeys.self)")
+                properties.forEach { property in
+                    writeLine("try propsContainer.encode(\(property.name), forKey: .\(property.codingKey))")
+                }
+                writeEmptyLine()
+            }
+
+            writeLine("var addPropsContainer = encoder.container(keyedBy: DynamicCodingKey.self)")
+            writeLine("try additionalProperties.forEach { key, value in")
+            try indent {
+                writeLine("try addPropsContainer.encode(value, forKey: DynamicCodingKey(key))")
+            }
+            writeLine("}")
+        }
+        writeLine("}")
+
+        writeEmptyLine()
+        writeLine("init(from decoder: Decoder) throws {")
+        try indent {
+            if properties.count > 0 {
+                writeLine("var propsContainer = decoder.container(keyedBy: CodingKeys.self)")
+                try properties.forEach { property in
+                    let typeName = try typeDeclaration(property.type)
+                    writeLine("\(property.name) = try propsContainer.decode(\(typeName).self, forKey: .\(property.codingKey))")
+                }
+                writeEmptyLine()
+            }
+
+            let typeName = try typeDeclaration(additionalProperties.type)
+            writeLine("var addPropsContainer = decoder.container(keyedBy: DynamicCodingKey.self)")
+            writeLine("let allKeys = addPropsContainer.allKeys")
+            writeLine("try allKeys.forEach { key in")
+            try indent {
+                writeLine("let value = try addPropsContainer.decode(\(typeName).self, forKey: key)")
+                writeLine("additionalProperties[key] = value")
+            }
+            writeLine("}")
+        }
         writeLine("}")
     }
 
