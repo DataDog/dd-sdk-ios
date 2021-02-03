@@ -35,6 +35,7 @@ public class SwiftPrinter: BasePrinter {
         writeLine("public struct \(swiftStruct.name)\(conformance) {")
         indentRight()
         try printPropertiesList(swiftStruct.properties)
+        try printAdditionalProperties(swiftStruct.additionalProperties)
         if swiftStruct.conforms(to: codableProtocol) {
             printCodingKeys(for: swiftStruct.properties)
         }
@@ -56,26 +57,32 @@ public class SwiftPrinter: BasePrinter {
             let name = property.name
             let type = try typeDeclaration(property.type)
             let optionality = property.isOptional ? "?" : ""
-            let defaultValue: String? = try property.defaultValue.ifNotNil { value in
-                switch value {
-                case let integerValue as Int:
-                    return " = \(integerValue)"
-                case let stringValue as String:
-                    return " = \"\(stringValue)\""
-                case let enumValue as SwiftEnum.Case:
-                    return " = .\(enumValue.label)"
-                default:
-                    throw Exception.unimplemented("Failed to print prooperty default value: \(value)")
-                }
-            }
+            let defaultValue = try defaultValueDeclaration(property)
+            let line = "\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")"
 
             printComment(property.comment)
-            writeLine("\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")")
+            writeLine(line)
 
             if index < properties.count - 1 {
                 writeEmptyLine()
             }
         }
+    }
+
+    private func printAdditionalProperties(_ additionalProperties: SwiftStruct.Property?) throws {
+        guard let props = additionalProperties else { return }
+
+        let accessLevel = "public"
+        let kind = props.isMutable ? "var" : "let"
+        let type = try typeDeclaration(props.type)
+        let typeCollection = "[String: \(type)]"
+        let optionality = props.isOptional ? "?" : ""
+        let defaultValue = try defaultValueDeclaration(props)
+        let line = "\(accessLevel) \(kind) \(props.name): \(typeCollection)\(optionality)\(defaultValue ?? "")"
+
+        writeEmptyLine()
+        printComment(props.comment)
+        writeLine(line)
     }
 
     private func printCodingKeys(for properties: [SwiftStruct.Property]) {
@@ -143,6 +150,21 @@ public class SwiftPrinter: BasePrinter {
             return swiftTypeReference.referencedTypeName
         default:
             throw Exception.unimplemented("Printing \(type) is not implemented.")
+        }
+    }
+
+    private func defaultValueDeclaration(_ property: SwiftStruct.Property) throws -> String? {
+        try property.defaultValue.ifNotNil { value in
+            switch value {
+            case let integerValue as Int:
+                return " = \(integerValue)"
+            case let stringValue as String:
+                return " = \"\(stringValue)\""
+            case let enumValue as SwiftEnum.Case:
+                return " = .\(enumValue.label)"
+            default:
+                throw Exception.unimplemented("Failed to print property default value: \(value)")
+            }
         }
     }
 }

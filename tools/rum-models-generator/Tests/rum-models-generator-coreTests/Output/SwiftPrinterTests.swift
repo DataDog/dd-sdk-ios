@@ -38,6 +38,15 @@ final class SwiftPrinterTests: XCTestCase {
                             codingKey: "property2"
                         )
                     ],
+                    additionalProperties: SwiftStruct.Property(
+                        name: "additionalProperties",
+                        comment: "Additional properties of Bar.",
+                        type: SwiftPrimitive<String>(),
+                        isOptional: true,
+                        isMutable: true,
+                        defaultValue: nil,
+                        codingKey: "additionalProperties"
+                    ),
                     conformance: [codableProtocol]
                 ),
                 isOptional: true,
@@ -86,6 +95,15 @@ final class SwiftPrinterTests: XCTestCase {
                 codingKey: "buzz"
             )
         ],
+        additionalProperties: SwiftStruct.Property(
+            name: "additionalProperties",
+            comment: "Additional properties of FooBar.",
+            type: SwiftPrimitive<Int>(),
+            isOptional: true,
+            isMutable: false,
+            defaultValue: nil,
+            codingKey: "additionalProperties"
+        ),
         conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
     )
 
@@ -117,6 +135,9 @@ final class SwiftPrinterTests: XCTestCase {
             /// Description of FooBar's `buzz`.
             public var buzz: [Buzz]?
 
+            /// Additional properties of FooBar.
+            public let additionalProperties: [String: Int]?
+
             enum CodingKeys: String, CodingKey {
                 case bar = "bar"
                 case bizz = "bizz"
@@ -130,6 +151,9 @@ final class SwiftPrinterTests: XCTestCase {
 
                 /// Description of Bar's `property2`.
                 public var property2: String
+
+                /// Additional properties of Bar.
+                public var additionalProperties: [String: String]?
 
                 enum CodingKeys: String, CodingKey {
                     case property1 = "property1"
