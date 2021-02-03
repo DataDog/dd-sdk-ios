@@ -104,8 +104,6 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         `struct`.name = format(structName: `struct`.name)
         `struct`.properties = try `struct`.properties
             .map { try transform(structProperty: $0) }
-            // TODO: RUMM-1000 should remove this filter
-            .filter { property in property.name != "customTimings" }
         if let additionalProperties = `struct`.additionalProperties {
             `struct`.additionalProperties = try transform(structProperty: additionalProperties)
         }
