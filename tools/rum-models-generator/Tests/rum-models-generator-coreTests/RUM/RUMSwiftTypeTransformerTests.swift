@@ -87,6 +87,15 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     codingKey: "property2"
                 )
             ],
+            additionalProperties: SwiftStruct.Property(
+                name: "additionalProperties",
+                comment: "Additional properties of FooBar.",
+                type: SwiftPrimitive<Int>(),
+                isOptional: true,
+                isMutable: false,
+                defaultValue: nil,
+                codingKey: "additionalProperties"
+            ),
             conformance: []
         )
 
@@ -171,6 +180,15 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         codingKey: "property2"
                     )
                 ],
+                additionalProperties: SwiftStruct.Property(
+                    name: "additionalProperties",
+                    comment: "Additional properties of FooBar.",
+                    type: SwiftPrimitive<Int64>(),
+                    isOptional: true,
+                    isMutable: false,
+                    defaultValue: nil,
+                    codingKey: "additionalProperties"
+                ),
                 conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
             )
         ]
