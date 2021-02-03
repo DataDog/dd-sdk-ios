@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Creates and owns componetns enabling Crash Reporting feature.
+/// Creates and owns components enabling Crash Reporting feature.
 internal final class CrashReportingFeature {
     /// Single, shared instance of `CrashReportingFeature`.
     static var instance: CrashReportingFeature?

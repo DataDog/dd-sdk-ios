@@ -72,7 +72,7 @@ internal struct FeaturesConfiguration {
     let rum: RUM?
     /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-    /// Crsah Reporting feature configuration or `nil` if the feature was not enabled.
+    /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
     let crashReporting: CrashReporting?
 }
 
