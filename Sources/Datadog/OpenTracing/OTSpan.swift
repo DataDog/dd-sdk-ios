@@ -89,7 +89,7 @@ public extension OTSpan {
     ///         .build()
     ///
     /// - parameter error: An object conforming to the `Error` protocol.
-    /// - parameter file: A string identifying the file where the `Error` was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
+    /// - parameter file: A string identifying the file where the `Error` was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default. Note that an empty string means skipping the `file` and `line` parameters.
     /// - parameter line: The line number in the file where the `Error` was caught.
     func setError(
         _ error: Error,
@@ -119,9 +119,10 @@ public extension OTSpan {
     ///
     /// - parameter kind: The type of error to be logged.
     /// - parameter message: An error message to be logged.
-    /// - parameter stack: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace.
-    /// - parameter file: A string identifying the file where the error was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default.
+    /// - parameter stack: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace. Also note that an empty string means skipping the `stack` parameter.
+    /// - parameter file: A string identifying the file where the error was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default. Note that an empty string means skipping the `file` and `line` parameters.
     /// - parameter line: The line number in the file where the error was caught.
+    /// - parameter includeFileInStack: Whether or not the `file` and `line` should be included in the stack, the default is `true` and can be overriden if the `file`/`line` are extraneous.
     func setError(
         kind: String,
         message: String,
@@ -129,17 +130,21 @@ public extension OTSpan {
         file: StaticString = #fileID,
         line: UInt = #line
     ) {
-        var stackWithFile = "\(file):\(line)"
-        if stack.count > 0 {
-            stackWithFile += "\n" + stack
+        var fields = [
+            OTLogFields.event: "error",
+            OTLogFields.errorKind: kind,
+            OTLogFields.message: message
+        ]
+        var fileAndStack = [String]()
+        if file.utf8CodeUnitCount > 0 {
+            fileAndStack.append("\(file):\(line)")
         }
-        log(
-            fields: [
-                OTLogFields.event: "error",
-                OTLogFields.errorKind: kind,
-                OTLogFields.message: message,
-                OTLogFields.stack: stackWithFile
-            ]
-        )
+        if stack.count > 0 {
+            fileAndStack.append(stack)
+        }
+        if fileAndStack.count > 0 {
+            fields[OTLogFields.stack] = fileAndStack.joined(separator: "\n")
+        }
+        log(fields: fields)
     }
 }

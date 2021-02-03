@@ -39,6 +39,7 @@ internal class SendTracesFixtureViewController: UIViewController {
             let dataPresentationSpan = tracer.startSpan(operationName: "data presentation")
             Thread.sleep(forTimeInterval: 0.06)
             dataPresentationSpan.setTag(key: OTTags.error, value: true)
+            dataPresentationSpan.setError(NSError(domain: "SendTracesFixtureViewController", code: 1, userInfo: nil))
             dataPresentationSpan.finish()
 
             viewLoadingSpan.finish()
