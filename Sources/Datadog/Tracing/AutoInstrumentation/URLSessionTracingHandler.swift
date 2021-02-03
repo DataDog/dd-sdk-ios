@@ -54,7 +54,7 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
         span.setTag(key: OTTags.httpUrl, value: url)
         span.setTag(key: OTTags.httpMethod, value: method)
 
-        if let error = resourceCompletion.error {
+        if let error = resourceCompletion.error as NSError?, !(error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled) {
             span.setTag(key: OTTags.error, value: true)
 
             let dderror = DDError(error: error)
