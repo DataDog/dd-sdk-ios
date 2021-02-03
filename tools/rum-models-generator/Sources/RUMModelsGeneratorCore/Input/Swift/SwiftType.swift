@@ -54,6 +54,7 @@ internal struct SwiftStruct: SwiftType {
     var name: String
     var comment: String?
     var properties: [Property]
+    var additionalProperties: Property?
     var conformance: [SwiftProtocol]
 }
 
