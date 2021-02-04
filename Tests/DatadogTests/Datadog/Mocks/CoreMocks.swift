@@ -24,6 +24,7 @@ extension Datadog.Configuration {
         loggingEnabled: Bool = false,
         tracingEnabled: Bool = false,
         rumEnabled: Bool = false,
+        crashReportingPlugin: DDCrashReportingPluginType? = nil,
         datadogEndpoint: DatadogEndpoint? = nil,
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
@@ -46,6 +47,7 @@ extension Datadog.Configuration {
             loggingEnabled: loggingEnabled,
             tracingEnabled: tracingEnabled,
             rumEnabled: rumEnabled,
+            crashReportingPlugin: crashReportingPlugin,
             datadogEndpoint: datadogEndpoint,
             customLogsEndpoint: customLogsEndpoint,
             customTracesEndpoint: customTracesEndpoint,
@@ -120,6 +122,7 @@ extension FeaturesConfiguration {
         logging: Logging? = .mockAny(),
         tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
+        crashReporting: CrashReporting = .mockAny(),
         urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
     ) -> Self {
         return .init(
@@ -127,7 +130,8 @@ extension FeaturesConfiguration {
             logging: logging,
             tracing: tracing,
             rum: rum,
-            urlSessionAutoInstrumentation: urlSessionAutoInstrumentation
+            urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
+            crashReporting: crashReporting
         )
     }
 }
@@ -197,6 +201,20 @@ extension FeaturesConfiguration.RUM {
             sessionSamplingRate: sessionSamplingRate,
             eventMapper: eventMapper,
             autoInstrumentation: autoInstrumentation
+        )
+    }
+}
+
+extension FeaturesConfiguration.CrashReporting {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        crashReportingPlugin: DDCrashReportingPluginType = CrashReportingPluginMock()
+    ) -> Self {
+        return .init(
+            crashReportingPlugin: crashReportingPlugin
         )
     }
 }

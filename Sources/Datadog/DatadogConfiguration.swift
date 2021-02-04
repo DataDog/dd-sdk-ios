@@ -151,6 +151,7 @@ extension Datadog {
         private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
+        private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
         /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
         private(set) var datadogEndpoint: DatadogEndpoint?
@@ -223,6 +224,7 @@ extension Datadog {
                     loggingEnabled: true,
                     tracingEnabled: true,
                     rumEnabled: rumApplicationID != nil,
+                    crashReportingPlugin: nil,
                     // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
                     // so we know the clear user's intent to override deprecated values.
                     datadogEndpoint: nil,
@@ -486,6 +488,23 @@ extension Datadog {
             /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
             public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
                 configuration.rumErrorEventMapper = mapper
+                return self
+            }
+
+            // MARK: - Crash Reporting Configuration
+
+            /// Enables the crash reporting feature.
+            ///
+            /// To enable Datadog crash reporting, configure this option by passing the `crashReportingPlugin`.
+            /// The plugin must be obtained from `DatadogCrashReporting` library:
+            ///
+            ///         import DatadogCrashReporting
+            ///
+            ///         .enableCrashReporting(using: DDCrashReportingPlugin())
+            ///
+            /// - Parameter crashReportingPlugin: `nil` by default (Datadog crash reporting is disabled by default)
+            public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder {
+                configuration.crashReportingPlugin = crashReportingPlugin
                 return self
             }
 

@@ -4,32 +4,61 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Datadog
 import Foundation
-import CrashReporter
 
-public class DDCrashReportingPlugin {
-    private static var sharedPLCrashReporter: PLCrashReporter?
+/// The implementation of `Datadog.DDCrashReportingPluginType`.
+/// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
+@objc
+public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
+    static var thirdPartyCrashReporter: ThirdPartyCrashReporter?
 
-    public init?() {
-        DDCrashReportingPlugin.sharedPLCrashReporter = PLCrashReporter(
-            configuration: PLCrashReporterConfig(
-                signalHandlerType: .BSD,
-                symbolicationStrategy: .all
-            )
-        )
+    // MARK: - Initialization
+
+    override public convenience init() {
+        self.init { try PLCrashReporterIntegration() }
     }
 
-    // TODO: RUMM-956 Revamp this by shaping the final API
-    public func testIfItWorks() {
-        do {
-            guard let plCrashReporter = DDCrashReportingPlugin.sharedPLCrashReporter else {
-                print("🔥 Failed to instantiate `PLCrashReporter`")
-                return
+    internal init(thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
+        DDCrashReportingPlugin.enableOnce(using: thirdPartyCrashReporterFactory)
+    }
+
+    private static func enableOnce(using thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
+        if thirdPartyCrashReporter == nil {
+            do {
+                thirdPartyCrashReporter = try thirdPartyCrashReporterFactory()
+            } catch {
+                consolePrint("🔥 DatadogCrashReporting error: failed to enable crash reporter: \(error)")
             }
-            try plCrashReporter.enableAndReturnError()
-            print("✅ Succeded with enabling `PLCrashReporter`")
-        } catch {
-            print("🔥 Failed to enable `PLCrashReporter`: \(error)")
         }
     }
+
+    // MARK: - DDCrashReportingPluginType
+
+    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
+        guard let crashReporter = DDCrashReportingPlugin.thirdPartyCrashReporter,
+              crashReporter.hasPendingCrashReport() else {
+            _ = completion(nil)
+            return
+        }
+
+        do {
+            let crashReport = try crashReporter.loadPendingCrashReport()
+            let wasProcessed = completion(crashReport)
+
+            if wasProcessed {
+                try? crashReporter.purgePendingCrashReport()
+            }
+        } catch {
+            _ = completion(nil)
+            consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)")
+        }
+    }
+}
+
+// MARK: - Utils
+
+/// Function printing `String` content to console.
+internal var consolePrint: (String) -> Void = { content in
+    print(content)
 }
