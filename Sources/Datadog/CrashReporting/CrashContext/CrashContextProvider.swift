@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// An interface for writing  the `CrashContext`
+/// An interface for writing and reading  the `CrashContext`
 internal protocol CrashContextProviderType: class {
     /// Returns current `CrashContext` value.
     var currentCrashContext: CrashContext { get }

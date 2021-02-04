@@ -8,6 +8,8 @@ import Foundation
 
 /// Updates `CrashContext` passed to crash reporter with the last `RUMViewEvent`.
 /// When the app restarts after crash, this event is used to create and send `RUMErrorEvent` describing the crash.
+///
+/// This integration isolates the direct link between RUM and Crash Reporting.
 internal struct RUMWithCrashContextIntegration {
     private weak var crashContextProvider: CrashContextProviderType?
 

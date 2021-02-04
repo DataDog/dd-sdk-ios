@@ -295,7 +295,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        Global.crashReporter?.crashContextProvider.update(lastRUMViewEvent: eventData)
+        crashContextIntegration?.update(lastRUMViewEvent: eventData)
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
         dependencies.eventOutput.write(rumEvent: event)
