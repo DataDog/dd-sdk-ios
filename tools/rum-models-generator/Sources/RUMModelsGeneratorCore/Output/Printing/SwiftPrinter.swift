@@ -33,6 +33,7 @@ public class SwiftPrinter: BasePrinter {
     // MARK: - Private
 
     private func printDynamicCodingKeys() {
+        // DynamicCodingKey is used to wrap String based keys of additional properties.
         let code = """
         fileprivate struct DynamicCodingKey: CodingKey {
             var stringValue: String
@@ -57,6 +58,8 @@ public class SwiftPrinter: BasePrinter {
         if swiftStruct.conforms(to: codableProtocol) {
             printCodingKeys(for: swiftStruct.properties)
             if let additionalProperties = swiftStruct.additionalProperties {
+                // Additional properties need to be flattened up at the root level, instead of being under a dedicated key.
+                // Thus the need for some ad hoc encode/decode implementation of *all* properties.
                 try printCodableMethods(
                     for: swiftStruct.properties,
                     additionalProperties: additionalProperties
@@ -74,19 +77,33 @@ public class SwiftPrinter: BasePrinter {
         }
     }
 
+    private func printProperty(_ property: SwiftStruct.Property) throws {
+        let accessLevel = "public"
+        let kind = property.isMutable ? "var" : "let"
+        let name = property.name
+        let type = try typeDeclaration(property.type)
+        let optionality = property.isOptional ? "?" : ""
+        let defaultValue: String? = try property.defaultValue.ifNotNil { value in
+            switch value {
+            case let integerValue as Int:
+                return " = \(integerValue)"
+            case let stringValue as String:
+                return " = \"\(stringValue)\""
+            case let enumValue as SwiftEnum.Case:
+                return " = .\(enumValue.label)"
+            default:
+                throw Exception.unimplemented("Failed to print property default value: \(value)")
+            }
+        }
+        let line = "\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")"
+
+        printComment(property.comment)
+        writeLine(line)
+    }
+
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
-            let accessLevel = "public"
-            let kind = property.isMutable ? "var" : "let"
-            let name = property.name
-            let type = try typeDeclaration(property.type)
-            let optionality = property.isOptional ? "?" : ""
-            let defaultValue = try defaultValueDeclaration(property)
-            let line = "\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")"
-
-            printComment(property.comment)
-            writeLine(line)
-
+            try printProperty(property)
             if index < properties.count - 1 {
                 writeEmptyLine()
             }
@@ -94,18 +111,10 @@ public class SwiftPrinter: BasePrinter {
     }
 
     private func printAdditionalProperties(_ additionalProperties: SwiftStruct.Property?) throws {
-        guard let props = additionalProperties else { return }
-
-        let accessLevel = "public"
-        let kind = props.isMutable ? "var" : "let"
-        let type = try typeDeclaration(props.type)
-        let optionality = props.isOptional ? "?" : ""
-        let defaultValue = try defaultValueDeclaration(props)
-        let line = "\(accessLevel) \(kind) \(props.name): \(type)\(optionality)\(defaultValue ?? "")"
-
-        writeEmptyLine()
-        printComment(props.comment)
-        writeLine(line)
+        if let additionalProperties = additionalProperties {
+            writeEmptyLine()
+            try printProperty(additionalProperties)
+        }
     }
 
     private func printCodingKeys(for properties: [SwiftStruct.Property]) {
@@ -223,21 +232,6 @@ public class SwiftPrinter: BasePrinter {
             return swiftTypeReference.referencedTypeName
         default:
             throw Exception.unimplemented("Printing \(type) is not implemented.")
-        }
-    }
-
-    private func defaultValueDeclaration(_ property: SwiftStruct.Property) throws -> String? {
-        try property.defaultValue.ifNotNil { value in
-            switch value {
-            case let integerValue as Int:
-                return " = \(integerValue)"
-            case let stringValue as String:
-                return " = \"\(stringValue)\""
-            case let enumValue as SwiftEnum.Case:
-                return " = .\(enumValue.label)"
-            default:
-                throw Exception.unimplemented("Failed to print property default value: \(value)")
-            }
         }
     }
 }

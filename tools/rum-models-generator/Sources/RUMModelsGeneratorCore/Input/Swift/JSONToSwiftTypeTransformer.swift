@@ -78,33 +78,31 @@ internal class JSONToSwiftTypeTransformer {
             }
         }
 
-        /// Reads Struct properties.
-        func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
-            return try objectProperties.map { jsonProperty in
-                return SwiftStruct.Property(
-                    name: jsonProperty.name,
-                    comment: jsonProperty.comment,
-                    type: try transformJSONToAnyType(jsonProperty.type),
-                    isOptional: !jsonProperty.isRequired,
-                    isMutable: !jsonProperty.isReadOnly,
-                    defaultValue: try readDefaultValue(for: jsonProperty),
-                    codingKey: jsonProperty.name
-                )
-            }
+        func property(from objectProperty: JSONObject.Property) throws -> SwiftStruct.Property {
+            return SwiftStruct.Property(
+                name: objectProperty.name,
+                comment: objectProperty.comment,
+                type: try transformJSONToAnyType(objectProperty.type),
+                isOptional: !objectProperty.isRequired,
+                isMutable: !objectProperty.isReadOnly,
+                defaultValue: try readDefaultValue(for: objectProperty),
+                codingKey: objectProperty.name
+            )
         }
 
         /// Reads Struct properties.
+        func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
+            return try objectProperties.map { try property(from: $0) }
+        }
+
+        /// Reads Struct additional properties.
         func readAdditionalProperties(from objectAdditionalProperties: JSONObject.Property?) throws -> SwiftStruct.Property? {
-            guard let additionalProperties = objectAdditionalProperties else { return nil }
-            return SwiftStruct.Property(
-                    name: additionalProperties.name,
-                    comment: additionalProperties.comment,
-                    type: try transformJSONToAnyType(additionalProperties.type),
-                    isOptional: !additionalProperties.isRequired,
-                    isMutable: !additionalProperties.isReadOnly,
-                    defaultValue: try readDefaultValue(for: additionalProperties),
-                    codingKey: additionalProperties.name
-                )
+            if let additionalProperties = objectAdditionalProperties {
+                return try property(from: additionalProperties)
+            }
+            else {
+                return nil
+            }
         }
 
         return SwiftStruct(
