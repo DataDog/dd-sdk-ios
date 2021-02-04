@@ -18,6 +18,9 @@ internal protocol ThirdPartyCrashReporter {
     /// Loads pending crash report.
     func loadPendingCrashReport() throws -> DDCrashReport
 
+    /// Injects custom `context` to the crash reporter so it will be attached to the `DDCrashReport`.
+    func inject(context: Data)
+
     /// Deletes the available crash report.
     func purgePendingCrashReport() throws
 }

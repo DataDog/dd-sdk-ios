@@ -73,7 +73,7 @@ class FeatureStorageTests: XCTestCase {
     /// Returns random consent value other than the given one.
     private func randomConsent(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
         while true {
-            let randomConsent: TrackingConsent = [.granted, .pending, .notGranted].randomElement()!
+            let randomConsent: TrackingConsent = .mockRandom()
             if randomConsent != consent {
                 return randomConsent
             }

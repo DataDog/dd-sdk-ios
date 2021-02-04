@@ -54,6 +54,10 @@ public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
             consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)")
         }
     }
+
+    public func inject(context: Data) {
+        DDCrashReportingPlugin.thirdPartyCrashReporter?.inject(context: context)
+    }
 }
 
 // MARK: - Utils

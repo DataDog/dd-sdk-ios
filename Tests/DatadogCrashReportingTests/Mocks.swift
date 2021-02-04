@@ -13,6 +13,8 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
     var pendingCrashReport: DDCrashReport?
     var pendingCrashReportError: Error?
 
+    var injectedContext: Data?
+
     var hasPurgedPendingCrashReport = false
     var hasPurgedPendingCrashReportError: Error?
 
@@ -33,6 +35,10 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
         return pendingCrashReport!
     }
 
+    func inject(context: Data) {
+        injectedContext = context
+    }
+
     func purgePendingCrashReport() throws {
         if let error = hasPurgedPendingCrashReportError {
             throw error
@@ -48,7 +54,8 @@ internal extension DDCrashReport {
             signalCode: "any signal",
             signalName: "any name",
             signalDetails: "any details",
-            stackTrace: "any stack trace"
+            stackTrace: "any stack trace",
+            context: "any context".data(using: .utf8)
         )
     }
 }
