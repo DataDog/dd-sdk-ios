@@ -104,7 +104,10 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         `struct`.name = format(structName: `struct`.name)
         `struct`.properties = try `struct`.properties
             .map { try transform(structProperty: $0) }
-        if let additionalProperties = `struct`.additionalProperties {
+        if var additionalProperties = `struct`.additionalProperties {
+            // Store additional/runtime declared properties in a Dictionary indexed by their names:
+            additionalProperties.type = SwiftDictionary(key: SwiftPrimitive<String>(),
+                                                        value: additionalProperties.type)
             `struct`.additionalProperties = try transform(structProperty: additionalProperties)
         }
         if context.parent == nil {

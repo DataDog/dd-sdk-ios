@@ -96,13 +96,10 @@ internal class JSONToSwiftTypeTransformer {
         /// Reads Struct properties.
         func readAdditionalProperties(from objectAdditionalProperties: JSONObject.Property?) throws -> SwiftStruct.Property? {
             guard let additionalProperties = objectAdditionalProperties else { return nil }
-            let type = SwiftDictionary(key: SwiftPrimitive<String>(), value:
-                try transformJSONToAnyType(additionalProperties.type)
-            )
             return SwiftStruct.Property(
                     name: additionalProperties.name,
                     comment: additionalProperties.comment,
-                    type: type,
+                    type: try transformJSONToAnyType(additionalProperties.type),
                     isOptional: !additionalProperties.isRequired,
                     isMutable: !additionalProperties.isReadOnly,
                     defaultValue: try readDefaultValue(for: additionalProperties),

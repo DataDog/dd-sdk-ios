@@ -183,7 +183,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                 additionalProperties: SwiftStruct.Property(
                     name: "additionalProperties",
                     comment: "Additional properties of FooBar.",
-                    type: SwiftPrimitive<Int64>(),
+                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int64>()),
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,

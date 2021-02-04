@@ -187,7 +187,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         additionalProperties: SwiftStruct.Property(
                             name: "additionalProperties",
                             comment: nil,
-                            type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int>()),
+                            type: SwiftPrimitive<Int>(),
                             isOptional: true,
                             isMutable: false,
                             defaultValue: nil,
@@ -204,7 +204,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             additionalProperties: SwiftStruct.Property(
                 name: "additionalProperties",
                 comment: "Additional properties of Foo.",
-                type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                type: SwiftPrimitive<String>(),
                 isOptional: true,
                 isMutable: false,
                 defaultValue: nil,
