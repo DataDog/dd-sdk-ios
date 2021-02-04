@@ -120,7 +120,7 @@ final class SwiftPrinterTests: XCTestCase {
 
     func testPrintingSwiftStruct() throws {
         let printer = SwiftPrinter()
-        let actual = try printer.print(swiftTypes: [`struct`, `enum`])
+        let actual = try printer.print(swiftTypes: [`struct`, `enum`], includeDynamicCodingKeys: true)
 
         let expected = """
 

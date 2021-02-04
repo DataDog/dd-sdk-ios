@@ -8,7 +8,8 @@ import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
 public class SwiftPrinter: BasePrinter {
-    public func print(swiftTypes: [SwiftType], includeDynamicCodingKeys: Bool = true) throws -> String {
+    // TODO: RUMM-1000 include DynamicCodingKeys by default for additional properties
+    public func print(swiftTypes: [SwiftType], includeDynamicCodingKeys: Bool = false) throws -> String {
         reset()
 
         if includeDynamicCodingKeys {
