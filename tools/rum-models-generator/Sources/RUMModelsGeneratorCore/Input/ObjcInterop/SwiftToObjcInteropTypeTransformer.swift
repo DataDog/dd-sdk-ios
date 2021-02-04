@@ -66,8 +66,10 @@ internal class SwiftToObjcInteropTypeTransformer {
         case let swiftArray as SwiftArray:
             return ObjcInteropNSArray(element: try objcInteropType(for: swiftArray.element))
         case let swiftDictionary as SwiftDictionary:
-            return ObjcInteropNSDictionary(key: try objcInteropType(for: swiftDictionary.key),
-                                           value: try objcInteropType(for: swiftDictionary.value))
+            return ObjcInteropNSDictionary(
+                key: try objcInteropType(for: swiftDictionary.key),
+                value: try objcInteropType(for: swiftDictionary.value)
+            )
         default:
             throw Exception.unimplemented(
                 "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."

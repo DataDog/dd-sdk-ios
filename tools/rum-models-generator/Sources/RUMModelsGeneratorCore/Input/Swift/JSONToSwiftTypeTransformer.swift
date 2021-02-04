@@ -99,8 +99,7 @@ internal class JSONToSwiftTypeTransformer {
         func readAdditionalProperties(from objectAdditionalProperties: JSONObject.Property?) throws -> SwiftStruct.Property? {
             if let additionalProperties = objectAdditionalProperties {
                 return try property(from: additionalProperties)
-            }
-            else {
+            } else {
                 return nil
             }
         }

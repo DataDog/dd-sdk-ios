@@ -108,8 +108,10 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             .filter { property in property.name != "customTimings" }
         if var additionalProperties = `struct`.additionalProperties {
             // Store additional/runtime declared properties in a Dictionary indexed by their names:
-            additionalProperties.type = SwiftDictionary(key: SwiftPrimitive<String>(),
-                                                        value: additionalProperties.type)
+            additionalProperties.type = SwiftDictionary(
+                key: SwiftPrimitive<String>(),
+                value: additionalProperties.type
+            )
             `struct`.additionalProperties = try transform(structProperty: additionalProperties)
         }
         if context.parent == nil {

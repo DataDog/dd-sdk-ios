@@ -81,7 +81,7 @@ internal class ObjcInteropPrinter: BasePrinter {
             try objcInteropRootClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
-        if let additionalPropertiesWrapper = objcInteropRootClass.objcAdditionalPropertiesWrapper  {
+        if let additionalPropertiesWrapper = objcInteropRootClass.objcAdditionalPropertiesWrapper {
             try print(objcInteropPropertyWrapper: additionalPropertiesWrapper)
         }
         indentLeft()
@@ -105,7 +105,7 @@ internal class ObjcInteropPrinter: BasePrinter {
             try objcInteropNestedClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
-        if let additionalPropertiesWrapper = objcInteropNestedClass.objcAdditionalPropertiesWrapper  {
+        if let additionalPropertiesWrapper = objcInteropNestedClass.objcAdditionalPropertiesWrapper {
             try print(objcInteropPropertyWrapper: additionalPropertiesWrapper)
         }
         indentLeft()
