@@ -14,6 +14,12 @@ extension TrackingConsent {
     }
 }
 
+extension ConsentProvider {
+    static func mockAny() -> ConsentProvider {
+        return ConsentProvider(initialConsent: .mockRandom())
+    }
+}
+
 extension Datadog.Configuration {
     static func mockAny() -> Datadog.Configuration { .mockWith() }
 

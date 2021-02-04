@@ -69,7 +69,10 @@ internal class CrashReporter {
         self.inject(currentCrashContext: crashContextProvider.currentCrashContext)
 
         // Register for future `CrashContext` changes
-        self.crashContextProvider.onCrashContextChange = { [unowned self] newCrashContext in
+        self.crashContextProvider.onCrashContextChange = { [weak self] newCrashContext in
+            guard let self = self else {
+                return
+            }
             self.inject(currentCrashContext: newCrashContext)
         }
     }
@@ -78,8 +81,8 @@ internal class CrashReporter {
 
     func sendCrashReportIfFound() {
         queue.async {
-            self.plugin.readPendingCrashReport { [unowned self] crashReport in
-                guard let availableCrashReport = crashReport else {
+            self.plugin.readPendingCrashReport { [weak self] crashReport in
+                guard let self = self, let availableCrashReport = crashReport else {
                     return false
                 }
 

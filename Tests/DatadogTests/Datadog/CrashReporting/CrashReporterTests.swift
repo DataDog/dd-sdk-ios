@@ -7,19 +7,6 @@
 import XCTest
 @testable import Datadog
 
-private class CrashReportingIntegrationMock: CrashReportingIntegration {
-    var sentCrashReport: DDCrashReport?
-    var sentCrashContext: CrashContext?
-
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext?) {
-        sentCrashReport = crashReport
-        sentCrashContext = crashContext
-        didSendCrashReport?()
-    }
-
-    var didSendCrashReport: (() -> Void)?
-}
-
 class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
@@ -37,7 +24,7 @@ class CrashReporterTests: XCTestCase {
         let integration = CrashReportingIntegrationMock()
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
-            crashContextProvider: CrashContextProviderMock(initialCrashContext: .mockAny()),
+            crashContextProvider: CrashContextProviderMock(),
             loggingOrRUMIntegration: integration
         )
 
@@ -63,7 +50,7 @@ class CrashReporterTests: XCTestCase {
         let integration = CrashReportingIntegrationMock()
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
-            crashContextProvider: CrashContextProviderMock(initialCrashContext: .mockAny()),
+            crashContextProvider: CrashContextProviderMock(),
             loggingOrRUMIntegration: integration
         )
 
@@ -86,15 +73,17 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let initialCrashContext: CrashContext = .mockRandom()
-        _ = CrashReporter(
+        let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
             loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(plugin.injectedContextData, initialCrashContext.data)
+        withExtendedLifetime(crashReporter) {
+            // Then
+            waitForExpectations(timeout: 0.5, handler: nil)
+            XCTAssertEqual(plugin.injectedContextData, initialCrashContext.data)
+        }
     }
 
     func testWhenCrashContextChanges_itInjectsNewCrashContextToThePlugin() {
@@ -104,19 +93,21 @@ class CrashReporterTests: XCTestCase {
         plugin.didInjectContext = { expectation.fulfill() }
 
         let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        _ = CrashReporter(
+        let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
-        // When
-        let updatedCrashContext: CrashContext = .mockRandom()
-        crashContextProvider.onCrashContextChange?(updatedCrashContext)
+        withExtendedLifetime(crashReporter) {
+            // When
+            let updatedCrashContext: CrashContext = .mockRandom()
+            crashContextProvider.onCrashContextChange?(updatedCrashContext)
 
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(plugin.injectedContextData, updatedCrashContext.data)
+            // Then
+            waitForExpectations(timeout: 2, handler: nil)
+            XCTAssertEqual(plugin.injectedContextData, updatedCrashContext.data)
+        }
     }
 
     // MARK: - Thread safety

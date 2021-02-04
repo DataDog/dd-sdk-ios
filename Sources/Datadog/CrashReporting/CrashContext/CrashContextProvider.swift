@@ -21,7 +21,7 @@ internal protocol CrashContextProviderType: class {
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
-internal class CrashContextProvider: CrashContextProviderType {
+internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber {
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
     /// Unsychronized `CrashContext`. The `queue` must be used to synchronize its mutation.
@@ -37,9 +37,13 @@ internal class CrashContextProvider: CrashContextProviderType {
             target: .global(qos: .utility)
         )
         self.unsafeCrashContext = CrashContext(
+            // Set initial `TrackingConsent`
             lastTrackingConsent: .init(trackingConsent: consentProvider.currentValue),
             lastRUMViewEvent: nil
         )
+
+        // Subscribe for `TrackingConsent` updates
+        consentProvider.subscribe(consentSubscriber: self)
     }
 
     // MARK: - CrashContextProviderType
@@ -51,7 +55,11 @@ internal class CrashContextProvider: CrashContextProviderType {
     var onCrashContextChange: ((CrashContext) -> Void)? = nil
 
     func update(lastRUMViewEvent: RUMViewEvent) {
-        queue.async { [unowned self] in
+        queue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+
             var context = self.unsafeCrashContext
             context.lastRUMViewEvent = lastRUMViewEvent
             self.unsafeCrashContext = context
@@ -60,10 +68,20 @@ internal class CrashContextProvider: CrashContextProviderType {
 
     /// Updates `CrashContext` with last `TarckingConsent` information.
     func update(lastTrackingConsent: TrackingConsent) {
-        queue.async { [unowned self] in
+        queue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+
             var context = self.unsafeCrashContext
             context.lastTrackingConsent = .init(trackingConsent: lastTrackingConsent)
             self.unsafeCrashContext = context
         }
+    }
+
+    // MARK: - ConsentSubscriber
+
+    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
+        update(lastTrackingConsent: newValue)
     }
 }

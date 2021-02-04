@@ -874,6 +874,36 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
     }
 
+    // MARK: - Integration with Crash Reporting
+
+    func testGivenRegisteredCrashReporer_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        defer { RUMFeature.instance = nil }
+
+        let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
+
+        // Given
+        Global.crashReporter = CrashReporter(
+            crashReportingPlugin: CrashReportingPluginMock(),
+            crashContextProvider: crashContextProvider,
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
+        )
+        defer { Global.crashReporter = nil }
+
+        // When
+        let monitor = RUMMonitor.initialize()
+        monitor.startView(viewController: mockView)
+
+        // Then
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
+        let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
+
+        XCTAssertEqual(
+            crashContextProvider.currentCrashContext.lastRUMViewEvent,
+            lastRUMViewEventSent
+        )
+    }
+
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {

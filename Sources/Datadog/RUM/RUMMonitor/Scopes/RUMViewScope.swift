@@ -52,6 +52,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
 
+    /// Integration with Crash Reporting. It updates the context of crash reporter with last `RUMViewEvent` information.
+    /// `nil` if Crash Reporting feature is not enabled.
+    private let crashContextIntegration: RUMWithCrashContextIntegration?
+
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
@@ -70,6 +74,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewURI = uri
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
+        self.crashContextIntegration = RUMWithCrashContextIntegration()
     }
 
     // MARK: - RUMContextProvider
@@ -289,6 +294,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 url: viewURI
             )
         )
+
+        Global.crashReporter?.crashContextProvider.update(lastRUMViewEvent: eventData)
 
         let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
         dependencies.eventOutput.write(rumEvent: event)

@@ -60,13 +60,25 @@ internal class CrashContextProviderMock: CrashContextProviderType {
     private(set) var currentCrashContext: CrashContext
     var onCrashContextChange: ((CrashContext) -> Void)?
 
-    init(initialCrashContext: CrashContext) {
+    init(initialCrashContext: CrashContext = .mockAny()) {
         self.currentCrashContext = initialCrashContext
     }
 
     func update(lastRUMViewEvent: RUMViewEvent) {}
-
     func update(lastTrackingConsent: TrackingConsent) {}
+}
+
+class CrashReportingIntegrationMock: CrashReportingIntegration {
+    var sentCrashReport: DDCrashReport?
+    var sentCrashContext: CrashContext?
+
+    func send(crashReport: DDCrashReport, with crashContext: CrashContext?) {
+        sentCrashReport = crashReport
+        sentCrashContext = crashContext
+        didSendCrashReport?()
+    }
+
+    var didSendCrashReport: (() -> Void)?
 }
 
 extension CrashContext: EquatableInTests {}

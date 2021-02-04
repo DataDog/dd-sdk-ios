@@ -7,61 +7,79 @@
 import XCTest
 @testable import Datadog
 
+/// This suite tests if `CrashContextProvider` gets updated by different SDK componetns, each delivering
+/// separate part of the `CrashContext` information.
+///
+/// Individual tests should not rely directly on `update(_:)` methods of the `CrashContextProvider`.
+/// Instead, they should instantiate and mock the `update(_:)` caller to test and document the integration.
 class CrashContextProviderTests: XCTestCase {
-    func testWhenInitialized_itProvidesInitialContext() {
+    // MARK: - `TrackingConsent` Integration
+
+    func testWhenTrackingConsentValueChangesInConsentProvider_thenCrashContextProviderNotifiesNewContext() {
+        let expectation = self.expectation(description: "Notify new crash context")
         let initialTrackingConsent: TrackingConsent = .mockRandom()
-
-        // When
-        let provider = CrashContextProvider(
-            consentProvider: .init(initialConsent: initialTrackingConsent)
-        )
-
-        // Then
-        XCTAssertEqual(
-            provider.currentCrashContext.lastTrackingConsent,
-            .init(trackingConsent: initialTrackingConsent)
-        )
-        XCTAssertNil(provider.currentCrashContext.lastRUMViewEvent)
-    }
-
-    func testWhenRUMViewChanges_itNotifiesNewContext() {
-        let expectation = self.expectation(description: "Notify new crash context value")
-        let randomRUMView: RUMViewEvent = .mockRandom()
-        let provider = CrashContextProvider(
-            consentProvider: .init(initialConsent: .mockRandom())
-        )
-        provider.onCrashContextChange = { newContext in
-            XCTAssertEqual(newContext.lastRUMViewEvent, randomRUMView)
-            expectation.fulfill()
-        }
-
-        // When
-        provider.update(lastRUMViewEvent: randomRUMView)
-
-        // Then
-        waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(provider.currentCrashContext.lastRUMViewEvent, randomRUMView)
-    }
-
-    func testWhenTrackingConsentChanges_itNotifiesNewContext() {
-        let expectation = self.expectation(description: "Notify new crash context value")
         let randomTrackingConsent: TrackingConsent = .mockRandom()
-        let provider = CrashContextProvider(
-            consentProvider: .init(initialConsent: .mockRandom())
-        )
-        provider.onCrashContextChange = { newContext in
-            XCTAssertEqual(newContext.lastTrackingConsent, .init(trackingConsent: randomTrackingConsent))
-            expectation.fulfill()
-        }
+
+        let trackingConsentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
+        let crashContextProvider = CrashContextProvider(consentProvider: trackingConsentProvider)
+
+        let initialContext = crashContextProvider.currentCrashContext
+        var updatedContext: CrashContext?
 
         // When
-        provider.update(lastTrackingConsent: randomTrackingConsent)
+        crashContextProvider.onCrashContextChange = { newContext in
+            updatedContext = newContext
+            expectation.fulfill()
+        }
+        trackingConsentProvider.changeConsent(to: randomTrackingConsent)
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(
-            provider.currentCrashContext.lastTrackingConsent,
-            .init(trackingConsent: randomTrackingConsent)
-        )
+        XCTAssertEqual(initialContext.lastTrackingConsent, .init(trackingConsent: initialTrackingConsent))
+        XCTAssertEqual(updatedContext?.lastTrackingConsent, .init(trackingConsent: randomTrackingConsent))
+    }
+
+    // MARK: - `RUMViewEvent` Integration
+
+    func testWhenRUMWithCrashContextIntegrationIsUpdated_thenCrashContextProviderNotifiesNewContext() {
+        let expectation = self.expectation(description: "Notify new crash context")
+        let randomRUMView: RUMViewEvent = .mockRandom()
+
+        let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
+        let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(crashContextProvider: crashContextProvider)
+
+        let initialContext = crashContextProvider.currentCrashContext
+        var updatedContext: CrashContext?
+
+        // When
+        crashContextProvider.onCrashContextChange = { newContext in
+            updatedContext = newContext
+            expectation.fulfill()
+        }
+        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMView)
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertNil(initialContext.lastRUMViewEvent)
+        XCTAssertEqual(updatedContext?.lastRUMViewEvent, randomRUMView)
+    }
+
+    // MARK: - Thread safety
+
+    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
+        let provider = CrashContextProvider(consentProvider: .mockAny())
+
+        withExtendedLifetime(provider) {
+            // swiftlint:disable opening_brace
+            callConcurrently(
+                closures: [
+                    { _ = provider.currentCrashContext },
+                    { provider.update(lastTrackingConsent: .mockRandom()) },
+                    { provider.update(lastRUMViewEvent: .mockRandom()) },
+                ],
+                iterations: 50
+            )
+            // swiftlint:enable opening_brace
+        }
     }
 }
