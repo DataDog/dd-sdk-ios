@@ -8,14 +8,8 @@ import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
 public class SwiftPrinter: BasePrinter {
-    // TODO: RUMM-1000 include DynamicCodingKeys by default for additional properties
-    public func print(swiftTypes: [SwiftType], includeDynamicCodingKeys: Bool = false) throws -> String {
+    public func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
-
-        if includeDynamicCodingKeys {
-            writeEmptyLine()
-            printDynamicCodingKeys()
-        }
 
         try swiftTypes.forEach { type in
             writeEmptyLine()
@@ -33,20 +27,6 @@ public class SwiftPrinter: BasePrinter {
 
     // MARK: - Private
 
-    private func printDynamicCodingKeys() {
-        // DynamicCodingKey is used to wrap String based keys of additional properties.
-        let code = """
-        fileprivate struct DynamicCodingKey: CodingKey {
-            var stringValue: String
-            var intValue: Int?
-            init?(stringValue: String) { self.stringValue = stringValue }
-            init?(intValue: Int) { return nil }
-            init(_ string: String) { self.stringValue = string }
-        }
-        """
-        writeLine(code)
-    }
-
     private func printStruct(_ swiftStruct: SwiftStruct) throws {
         let implementedProtocols = swiftStruct.conformance.map { $0.name }
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
@@ -55,17 +35,8 @@ public class SwiftPrinter: BasePrinter {
         writeLine("public struct \(swiftStruct.name)\(conformance) {")
         indentRight()
         try printPropertiesList(swiftStruct.properties)
-        try printAdditionalProperties(swiftStruct.additionalProperties)
         if swiftStruct.conforms(to: codableProtocol) {
             printCodingKeys(for: swiftStruct.properties)
-            if let additionalProperties = swiftStruct.additionalProperties {
-                // Additional properties need to be flattened up at the root level, instead of being under a dedicated key.
-                // Thus the need for some ad hoc encode/decode implementation of *all* properties.
-                try printCodableMethods(
-                    for: swiftStruct.properties,
-                    additionalProperties: additionalProperties
-                )
-            }
         }
         try printNestedTypes(in: swiftStruct)
         indentLeft()
@@ -78,43 +49,32 @@ public class SwiftPrinter: BasePrinter {
         }
     }
 
-    private func printProperty(_ property: SwiftStruct.Property) throws {
-        let accessLevel = "public"
-        let kind = property.isMutable ? "var" : "let"
-        let name = property.name
-        let type = try typeDeclaration(property.type)
-        let optionality = property.isOptional ? "?" : ""
-        let defaultValue: String? = try property.defaultValue.ifNotNil { value in
-            switch value {
-            case let integerValue as Int:
-                return " = \(integerValue)"
-            case let stringValue as String:
-                return " = \"\(stringValue)\""
-            case let enumValue as SwiftEnum.Case:
-                return " = .\(enumValue.label)"
-            default:
-                throw Exception.unimplemented("Failed to print property default value: \(value)")
-            }
-        }
-        let line = "\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")"
-
-        printComment(property.comment)
-        writeLine(line)
-    }
-
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
-            try printProperty(property)
+            let accessLevel = "public"
+            let kind = property.isMutable ? "var" : "let"
+            let name = property.name
+            let type = try typeDeclaration(property.type)
+            let optionality = property.isOptional ? "?" : ""
+            let defaultValue: String? = try property.defaultValue.ifNotNil { value in
+                switch value {
+                case let integerValue as Int:
+                    return " = \(integerValue)"
+                case let stringValue as String:
+                    return " = \"\(stringValue)\""
+                case let enumValue as SwiftEnum.Case:
+                    return " = .\(enumValue.label)"
+                default:
+                    throw Exception.unimplemented("Failed to print prooperty default value: \(value)")
+                }
+            }
+
+            printComment(property.comment)
+            writeLine("\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")")
+
             if index < properties.count - 1 {
                 writeEmptyLine()
             }
-        }
-    }
-
-    private func printAdditionalProperties(_ additionalProperties: SwiftStruct.Property?) throws {
-        if let additionalProperties = additionalProperties {
-            writeEmptyLine()
-            try printProperty(additionalProperties)
         }
     }
 
@@ -126,54 +86,6 @@ public class SwiftPrinter: BasePrinter {
             writeLine("case \(property.name) = \"\(property.codingKey)\"")
         }
         indentLeft()
-        writeLine("}")
-    }
-
-    private func printCodableMethods(for properties: [SwiftStruct.Property], additionalProperties: SwiftStruct.Property) throws {
-        writeEmptyLine()
-        writeLine("func encode(to encoder: Encoder) throws {")
-        try indent {
-            if properties.count > 0 {
-                writeLine("var propsContainer = encoder.container(keyedBy: CodingKeys.self)")
-                properties.forEach { property in
-                    writeLine("try propsContainer.encode(\(property.name), forKey: .\(property.codingKey))")
-                }
-                writeEmptyLine()
-            }
-
-            writeLine("var addPropsContainer = encoder.container(keyedBy: DynamicCodingKey.self)")
-            writeLine("try additionalProperties.forEach { key, value in")
-            try indent {
-                writeLine("try addPropsContainer.encode(value, forKey: DynamicCodingKey(key))")
-            }
-            writeLine("}")
-        }
-        writeLine("}")
-
-        writeEmptyLine()
-        writeLine("init(from decoder: Decoder) throws {")
-        try indent {
-            if properties.count > 0 {
-                writeLine("var propsContainer = decoder.container(keyedBy: CodingKeys.self)")
-                try properties.forEach { property in
-                    let typeName = try typeDeclaration(property.type)
-                    writeLine("\(property.name) = try propsContainer.decode(\(typeName).self, forKey: .\(property.codingKey))")
-                }
-                writeEmptyLine()
-            }
-
-            if let dictionary = additionalProperties.type as? SwiftDictionary {
-                let typeName = try typeDeclaration(dictionary.value)
-                writeLine("var addPropsContainer = decoder.container(keyedBy: DynamicCodingKey.self)")
-                writeLine("let allKeys = addPropsContainer.allKeys")
-                writeLine("try allKeys.forEach { key in")
-                try indent {
-                    writeLine("let value = try addPropsContainer.decode(\(typeName).self, forKey: key)")
-                    writeLine("additionalProperties[key] = value")
-                }
-                writeLine("}")
-            }
-        }
         writeLine("}")
     }
 

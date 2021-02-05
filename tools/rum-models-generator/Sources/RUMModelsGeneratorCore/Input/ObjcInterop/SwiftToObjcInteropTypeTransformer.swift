@@ -32,17 +32,98 @@ internal class SwiftToObjcInteropTypeTransformer {
     private func generateTransitiveObjcInteropTypes(in objcClass: ObjcInteropClass) throws {
         // Generate property wrappers
         objcClass.objcPropertyWrappers = try objcClass.bridgedSwiftStruct.properties
-            .map { try objcInteropPropertyWrapper(for: $0, in: objcClass) }
-        if let additionalProperties = objcClass.bridgedSwiftStruct.additionalProperties {
-            objcClass.objcAdditionalPropertiesWrapper = try objcInteropPropertyWrapper(for: additionalProperties, in: objcClass)
-        }
+            .map { swiftProperty in
+                switch swiftProperty.type {
+                case let swiftPrimitive as SwiftPrimitiveType:
+                    let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcInteropType = try objcInteropType(for: swiftPrimitive)
+                    return propertyWrapper
+                case let swiftStruct as SwiftStruct:
+                    let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedStruct(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcNestedClass = ObjcInteropTransitiveClass(
+                        owner: propertyWrapper,
+                        bridgedSwiftStruct: swiftStruct
+                    )
+                    return propertyWrapper
+                case let swiftEnum as SwiftEnum:
+                    let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnum(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcNestedEnum = ObjcInteropEnum(
+                        owner: propertyWrapper,
+                        bridgedSwiftEnum: swiftEnum
+                    )
+                    return propertyWrapper
+                case let swiftArray as SwiftArray where swiftArray.element is SwiftEnum:
+                    let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnumsArray(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcNestedEnumsArray = ObjcInteropEnumArray(
+                        owner: propertyWrapper,
+                        bridgedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
+                    )
+                    return propertyWrapper
+                case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitiveType:
+                    let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcInteropType = try objcInteropType(for: swiftArray)
+                    return propertyWrapper
+                case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitiveType:
+                    let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcInteropType = try objcInteropType(for: swiftDictionary)
+                    return propertyWrapper
+                case let swiftDictionary as SwiftDictionary where swiftDictionary.key is SwiftEnum || swiftDictionary.value is SwiftEnum:
+                    throw Exception.unimplemented(
+                        "Objc Interop for `SwiftDictionary`s with an Enum as key or value is not supported."
+                    )
+                case let swifTypeReference as SwiftTypeReference:
+                    let referencedType = try resolve(swiftTypeReference: swifTypeReference)
 
-        var allPropertyWrappers = objcClass.objcPropertyWrappers
-        if let additionalPropertiesWrapper = objcClass.objcAdditionalPropertiesWrapper {
-            allPropertyWrappers.append(additionalPropertiesWrapper)
-        }
+                    switch referencedType {
+                    case let swiftStruct as SwiftStruct:
+                        let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedStruct(
+                            owner: objcClass,
+                            swiftProperty: swiftProperty
+                        )
+                        propertyWrapper.objcNestedClass = ObjcInteropReferencedTransitiveClass(
+                            owner: propertyWrapper,
+                            bridgedSwiftStruct: swiftStruct
+                        )
+                        return propertyWrapper
+                    case let swiftEnum as SwiftEnum:
+                        let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnum(
+                            owner: objcClass,
+                            swiftProperty: swiftProperty
+                        )
+                        propertyWrapper.objcNestedEnum = ObjcInteropReferencedEnum(
+                            owner: propertyWrapper,
+                            bridgedSwiftEnum: swiftEnum
+                        )
+                        return propertyWrapper
+                    default:
+                        throw Exception.illegal("Illegal reference type: \(swifTypeReference)")
+                    }
+                default:
+                    throw Exception.unimplemented(
+                        "Cannot generate @objc property wrapper for: \(type(of: swiftProperty.type))"
+                    )
+                }
+            }
 
-        try allPropertyWrappers
+        try objcClass.objcPropertyWrappers
             .compactMap { $0 as? ObjcInteropPropertyWrapperForTransitiveType }
             .forEach { propertyWrapper in
                 // Store `ObjcInteropTypes` created for property wrappers
@@ -73,93 +154,6 @@ internal class SwiftToObjcInteropTypeTransformer {
         default:
             throw Exception.unimplemented(
                 "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."
-            )
-        }
-    }
-
-    private func objcInteropPropertyWrapper(for swiftProperty: SwiftStruct.Property, in objcClass: ObjcInteropClass) throws -> ObjcInteropPropertyWrapper {
-        switch swiftProperty.type {
-        case let swiftPrimitive as SwiftPrimitiveType:
-            let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
-                owner: objcClass,
-                swiftProperty: swiftProperty
-            )
-            propertyWrapper.objcInteropType = try objcInteropType(for: swiftPrimitive)
-            return propertyWrapper
-        case let swiftStruct as SwiftStruct:
-            let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedStruct(
-                owner: objcClass,
-                swiftProperty: swiftProperty
-            )
-            propertyWrapper.objcNestedClass = ObjcInteropTransitiveClass(
-                owner: propertyWrapper,
-                bridgedSwiftStruct: swiftStruct
-            )
-            return propertyWrapper
-        case let swiftEnum as SwiftEnum:
-            let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnum(
-                owner: objcClass,
-                swiftProperty: swiftProperty
-            )
-            propertyWrapper.objcNestedEnum = ObjcInteropEnum(
-                owner: propertyWrapper,
-                bridgedSwiftEnum: swiftEnum
-            )
-            return propertyWrapper
-        case let swiftArray as SwiftArray where swiftArray.element is SwiftEnum:
-            let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnumsArray(
-                owner: objcClass,
-                swiftProperty: swiftProperty
-            )
-            propertyWrapper.objcNestedEnumsArray = ObjcInteropEnumArray(
-                owner: propertyWrapper,
-                bridgedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
-            )
-            return propertyWrapper
-        case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitiveType:
-            let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
-                owner: objcClass,
-                swiftProperty: swiftProperty
-            )
-            propertyWrapper.objcInteropType = try objcInteropType(for: swiftArray)
-            return propertyWrapper
-        case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitiveType:
-            let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
-                owner: objcClass,
-                swiftProperty: swiftProperty
-            )
-            propertyWrapper.objcInteropType = try objcInteropType(for: swiftDictionary)
-            return propertyWrapper
-        case let swifTypeReference as SwiftTypeReference:
-            let referencedType = try resolve(swiftTypeReference: swifTypeReference)
-
-            switch referencedType {
-            case let swiftStruct as SwiftStruct:
-                let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedStruct(
-                    owner: objcClass,
-                    swiftProperty: swiftProperty
-                )
-                propertyWrapper.objcNestedClass = ObjcInteropReferencedTransitiveClass(
-                    owner: propertyWrapper,
-                    bridgedSwiftStruct: swiftStruct
-                )
-                return propertyWrapper
-            case let swiftEnum as SwiftEnum:
-                let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnum(
-                    owner: objcClass,
-                    swiftProperty: swiftProperty
-                )
-                propertyWrapper.objcNestedEnum = ObjcInteropReferencedEnum(
-                    owner: propertyWrapper,
-                    bridgedSwiftEnum: swiftEnum
-                )
-                return propertyWrapper
-            default:
-                throw Exception.illegal("Illegal reference type: \(swifTypeReference)")
-            }
-        default:
-            throw Exception.unimplemented(
-                "Cannot generate @objc property wrapper for: \(type(of: swiftProperty.type))"
             )
         }
     }

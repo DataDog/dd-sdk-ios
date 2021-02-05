@@ -36,12 +36,6 @@ public class BasePrinter {
         output += "\n"
     }
 
-    func indent(_ codeBlock: () throws -> Void) throws {
-        indentRight()
-        try codeBlock()
-        indentLeft()
-    }
-
     func indentRight() {
         indentationLevel += 1
     }

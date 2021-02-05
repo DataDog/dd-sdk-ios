@@ -81,9 +81,6 @@ internal class ObjcInteropPrinter: BasePrinter {
             try objcInteropRootClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
-        if let additionalPropertiesWrapper = objcInteropRootClass.objcAdditionalPropertiesWrapper {
-            try print(objcInteropPropertyWrapper: additionalPropertiesWrapper)
-        }
         indentLeft()
         writeLine("}")
     }
@@ -105,9 +102,6 @@ internal class ObjcInteropPrinter: BasePrinter {
             try objcInteropNestedClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
-        if let additionalPropertiesWrapper = objcInteropNestedClass.objcAdditionalPropertiesWrapper {
-            try print(objcInteropPropertyWrapper: additionalPropertiesWrapper)
-        }
         indentLeft()
         writeLine("}")
     }
@@ -363,9 +357,11 @@ internal class ObjcInteropPrinter: BasePrinter {
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftArray` with elements of type: \(type(of: swiftArray.element))"))
             return ".map { $0\(elementCast) }"
         case let swiftDictionary as SwiftDictionary:
+            let keyCast = try objcToSwiftCast(for: swiftDictionary.key)
+                .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with keys of type: \(type(of: swiftDictionary.key))"))
             let valueCast = try objcToSwiftCast(for: swiftDictionary.value)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with values of type: \(type(of: swiftDictionary.value))"))
-            return ".map { $0\(valueCast) }"
+            return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast)"
         case _ as SwiftPrimitive<String>:
             return nil // `String` <> `NSString` interoperability doesn't require casting
         default:

@@ -13,6 +13,9 @@ internal class JSONToSwiftTypeTransformer {
     }
 
     private func transform(jsonObject: JSONObject) throws -> SwiftStruct {
+        if jsonObject.additionalProperties != nil {
+            throw Exception.unimplemented("Transforming root object \(jsonObject) with `additionalProperties` is not supported.")
+        }
         var `struct` = try transformJSONToStruct(jsonObject)
         `struct` = resolveTransitiveMutableProperties(in: `struct`)
         return `struct`
@@ -29,7 +32,7 @@ internal class JSONToSwiftTypeTransformer {
         case let jsonEnumeration as JSONEnumeration:
             return transformJSONToEnum(jsonEnumeration)
         case let jsonObject as JSONObject:
-            return try transformJSONToStruct(jsonObject)
+            return try transformJSONObject(jsonObject)
         default:
             throw Exception.unimplemented("Transforming \(json) into `SwiftType` is not supported.")
         }
@@ -61,46 +64,49 @@ internal class JSONToSwiftTypeTransformer {
         )
     }
 
+    private func transformJSONObject(_ jsonObject: JSONObject) throws -> SwiftType {
+        if let additionalProperties = jsonObject.additionalProperties {
+            if jsonObject.properties.count > 0 {
+                throw Exception.unimplemented("Transforming \(jsonObject) with both `properties` and `additionalProperties` is not supported.")
+            }
+            return SwiftDictionary(
+                key: SwiftPrimitive<String>(),
+                value: try transformJSONToAnyType(additionalProperties.type)
+            )
+        } else {
+            return try transformJSONToStruct(jsonObject)
+        }
+    }
+
     private func transformJSONToStruct(_ jsonObject: JSONObject) throws -> SwiftStruct {
-        /// Reads Struct property default value.
-        func readDefaultValue(for objectProperty: JSONObject.Property) throws -> SwiftPropertyDefaultValue? {
-            return objectProperty.defaultValue.ifNotNil { value in
-                switch value {
-                case .integer(let intValue):
-                    return intValue
-                case .string(let stringValue):
-                    if objectProperty.type is JSONEnumeration {
-                        return SwiftEnum.Case(label: stringValue, rawValue: stringValue)
-                    } else {
-                        return stringValue
+        /// Reads Struct properties.
+        func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
+            /// Reads Struct property default value.
+            func readDefaultValue(for objectProperty: JSONObject.Property) throws -> SwiftPropertyDefaultValue? {
+                return objectProperty.defaultValue.ifNotNil { value in
+                    switch value {
+                    case .integer(let intValue):
+                        return intValue
+                    case .string(let stringValue):
+                        if objectProperty.type is JSONEnumeration {
+                            return SwiftEnum.Case(label: stringValue, rawValue: stringValue)
+                        } else {
+                            return stringValue
+                        }
                     }
                 }
             }
-        }
 
-        func property(from objectProperty: JSONObject.Property) throws -> SwiftStruct.Property {
-            return SwiftStruct.Property(
-                name: objectProperty.name,
-                comment: objectProperty.comment,
-                type: try transformJSONToAnyType(objectProperty.type),
-                isOptional: !objectProperty.isRequired,
-                isMutable: !objectProperty.isReadOnly,
-                defaultValue: try readDefaultValue(for: objectProperty),
-                codingKey: objectProperty.name
-            )
-        }
-
-        /// Reads Struct properties.
-        func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
-            return try objectProperties.map { try property(from: $0) }
-        }
-
-        /// Reads Struct additional properties.
-        func readAdditionalProperties(from objectAdditionalProperties: JSONObject.Property?) throws -> SwiftStruct.Property? {
-            if let additionalProperties = objectAdditionalProperties {
-                return try property(from: additionalProperties)
-            } else {
-                return nil
+            return try objectProperties.map { jsonProperty in
+                return SwiftStruct.Property(
+                    name: jsonProperty.name,
+                    comment: jsonProperty.comment,
+                    type: try transformJSONToAnyType(jsonProperty.type),
+                    isOptional: !jsonProperty.isRequired,
+                    isMutable: !jsonProperty.isReadOnly,
+                    defaultValue: try readDefaultValue(for: jsonProperty),
+                    codingKey: jsonProperty.name
+                )
             }
         }
 
@@ -108,7 +114,6 @@ internal class JSONToSwiftTypeTransformer {
             name: jsonObject.name,
             comment: jsonObject.comment,
             properties: try readProperties(from: jsonObject.properties),
-            additionalProperties: try readAdditionalProperties(from: jsonObject.additionalProperties),
             conformance: []
         )
     }

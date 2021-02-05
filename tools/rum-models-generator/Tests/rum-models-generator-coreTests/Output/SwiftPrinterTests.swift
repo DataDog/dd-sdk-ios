@@ -38,15 +38,6 @@ final class SwiftPrinterTests: XCTestCase {
                             codingKey: "property2"
                         )
                     ],
-                    additionalProperties: SwiftStruct.Property(
-                        name: "additionalProperties",
-                        comment: "Additional properties of Bar.",
-                        type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
-                        isOptional: true,
-                        isMutable: true,
-                        defaultValue: nil,
-                        codingKey: "additionalProperties"
-                    ),
                     conformance: [codableProtocol]
                 ),
                 isOptional: true,
@@ -93,17 +84,17 @@ final class SwiftPrinterTests: XCTestCase {
                 isMutable: true,
                 defaultValue: nil,
                 codingKey: "buzz"
+            ),
+            SwiftStruct.Property(
+                name: "propertiesByNames",
+                comment: "Description of FooBar's `propertiesByNames`.",
+                type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                isOptional: true,
+                isMutable: false,
+                defaultValue: nil,
+                codingKey: "propertiesByNames"
             )
         ],
-        additionalProperties: SwiftStruct.Property(
-            name: "additionalProperties",
-            comment: "Additional properties of FooBar.",
-            type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int>()),
-            isOptional: true,
-            isMutable: false,
-            defaultValue: nil,
-            codingKey: "additionalProperties"
-        ),
         conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
     )
 
@@ -120,17 +111,9 @@ final class SwiftPrinterTests: XCTestCase {
 
     func testPrintingSwiftStruct() throws {
         let printer = SwiftPrinter()
-        let actual = try printer.print(swiftTypes: [`struct`, `enum`], includeDynamicCodingKeys: true)
+        let actual = try printer.print(swiftTypes: [`struct`, `enum`])
 
         let expected = """
-
-        fileprivate struct DynamicCodingKey: CodingKey {
-            var stringValue: String
-            var intValue: Int?
-            init?(stringValue: String) { self.stringValue = stringValue }
-            init?(intValue: Int) { return nil }
-            init(_ string: String) { self.stringValue = string }
-        }
 
         /// Description of FooBar.
         public struct FooBar: RUMDataModel {
@@ -143,39 +126,14 @@ final class SwiftPrinterTests: XCTestCase {
             /// Description of FooBar's `buzz`.
             public var buzz: [Buzz]?
 
-            /// Additional properties of FooBar.
-            public let additionalProperties: [String: Int]?
+            /// Description of FooBar's `propertiesByNames`.
+            public let propertiesByNames: [String: String]?
 
             enum CodingKeys: String, CodingKey {
                 case bar = "bar"
                 case bizz = "bizz"
                 case buzz = "buzz"
-            }
-
-            func encode(to encoder: Encoder) throws {
-                var propsContainer = encoder.container(keyedBy: CodingKeys.self)
-                try propsContainer.encode(bar, forKey: .bar)
-                try propsContainer.encode(bizz, forKey: .bizz)
-                try propsContainer.encode(buzz, forKey: .buzz)
-
-                var addPropsContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                try additionalProperties.forEach { key, value in
-                    try addPropsContainer.encode(value, forKey: DynamicCodingKey(key))
-                }
-            }
-
-            init(from decoder: Decoder) throws {
-                var propsContainer = decoder.container(keyedBy: CodingKeys.self)
-                bar = try propsContainer.decode(BAR.self, forKey: .bar)
-                bizz = try propsContainer.decode(Bizz.self, forKey: .bizz)
-                buzz = try propsContainer.decode([Buzz].self, forKey: .buzz)
-
-                var addPropsContainer = decoder.container(keyedBy: DynamicCodingKey.self)
-                let allKeys = addPropsContainer.allKeys
-                try allKeys.forEach { key in
-                    let value = try addPropsContainer.decode(Int.self, forKey: key)
-                    additionalProperties[key] = value
-                }
+                case propertiesByNames = "propertiesByNames"
             }
 
             /// Description of Bar.
@@ -186,36 +144,9 @@ final class SwiftPrinterTests: XCTestCase {
                 /// Description of Bar's `property2`.
                 public var property2: String
 
-                /// Additional properties of Bar.
-                public var additionalProperties: [String: String]?
-
                 enum CodingKeys: String, CodingKey {
                     case property1 = "property1"
                     case property2 = "property2"
-                }
-
-                func encode(to encoder: Encoder) throws {
-                    var propsContainer = encoder.container(keyedBy: CodingKeys.self)
-                    try propsContainer.encode(property1, forKey: .property1)
-                    try propsContainer.encode(property2, forKey: .property2)
-
-                    var addPropsContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                    try additionalProperties.forEach { key, value in
-                        try addPropsContainer.encode(value, forKey: DynamicCodingKey(key))
-                    }
-                }
-
-                init(from decoder: Decoder) throws {
-                    var propsContainer = decoder.container(keyedBy: CodingKeys.self)
-                    property1 = try propsContainer.decode(String.self, forKey: .property1)
-                    property2 = try propsContainer.decode(String.self, forKey: .property2)
-
-                    var addPropsContainer = decoder.container(keyedBy: DynamicCodingKey.self)
-                    let allKeys = addPropsContainer.allKeys
-                    try allKeys.forEach { key in
-                        let value = try addPropsContainer.decode(String.self, forKey: key)
-                        additionalProperties[key] = value
-                    }
                 }
             }
 

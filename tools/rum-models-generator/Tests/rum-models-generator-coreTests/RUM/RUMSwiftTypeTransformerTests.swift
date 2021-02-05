@@ -85,17 +85,17 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isMutable: true,
                     defaultValue: nil,
                     codingKey: "property2"
+                ),
+                SwiftStruct.Property(
+                    name: "propertiesByNames",
+                    comment: "Description of Foobar's `propertiesByNames`",
+                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int>()),
+                    isOptional: true,
+                    isMutable: true,
+                    defaultValue: nil,
+                    codingKey: "propertiesByNames"
                 )
             ],
-            additionalProperties: SwiftStruct.Property(
-                name: "additionalProperties",
-                comment: "Additional properties of FooBar.",
-                type: SwiftPrimitive<Int>(),
-                isOptional: true,
-                isMutable: false,
-                defaultValue: nil,
-                codingKey: "additionalProperties"
-            ),
             conformance: []
         )
 
@@ -178,17 +178,17 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isMutable: true,
                         defaultValue: nil,
                         codingKey: "property2"
+                    ),
+                    SwiftStruct.Property(
+                        name: "propertiesByNames",
+                        comment: "Description of Foobar's `propertiesByNames`",
+                        type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int64>()),
+                        isOptional: true,
+                        isMutable: true,
+                        defaultValue: nil,
+                        codingKey: "propertiesByNames"
                     )
                 ],
-                additionalProperties: SwiftStruct.Property(
-                    name: "additionalProperties",
-                    comment: "Additional properties of FooBar.",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int64>()),
-                    isOptional: true,
-                    isMutable: false,
-                    defaultValue: nil,
-                    codingKey: "additionalProperties"
-                ),
                 conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
             )
         ]
