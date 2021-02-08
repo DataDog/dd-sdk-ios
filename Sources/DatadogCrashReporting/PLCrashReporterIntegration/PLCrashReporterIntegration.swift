@@ -29,6 +29,10 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
         return try ddCrashReport(from: plCrashReportData)
     }
 
+    func inject(context: Data) {
+        crashReporter.customData = context
+    }
+
     func purgePendingCrashReport() throws {
         try crashReporter.purgePendingCrashReportAndReturnError()
     }
@@ -47,7 +51,8 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
             stackTrace: PLCrashReportTextFormatter.stringValue(
                 for: plCrashReport,
                 with: PLCrashReportTextFormatiOS
-            )
+            ),
+            context: plCrashReport.customData
         )
     }
 

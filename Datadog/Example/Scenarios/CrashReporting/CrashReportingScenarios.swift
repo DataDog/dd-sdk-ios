@@ -26,6 +26,8 @@ final class CrashReportingCollectOrSendScenario: TestScenario {
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder.enableCrashReporting(using: DDCrashReportingPlugin())
+        _ = builder
+            .trackUIKitRUMViews()
+            .enableCrashReporting(using: DDCrashReportingPlugin())
     }
 }

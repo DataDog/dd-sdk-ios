@@ -82,6 +82,19 @@ class DDCrashReportingPluginTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
+    // MARK: - Injecting Crash Context
+
+    func testItForwardsCrashContextToCrashReporter() throws {
+        let crashReporter = try ThirdPartyCrashReporterMock()
+        let plugin = DDCrashReportingPlugin { crashReporter }
+        defer { DDCrashReportingPlugin.thirdPartyCrashReporter = nil }
+
+        let context = "some context".data(using: .utf8)!
+        plugin.inject(context: context)
+
+        XCTAssertEqual(crashReporter.injectedContext, context)
+    }
+
     // MARK: - Handling Errors
 
     func testGivenPendingCrashReport_whenItsLoadingFails_itPrintsError() throws {

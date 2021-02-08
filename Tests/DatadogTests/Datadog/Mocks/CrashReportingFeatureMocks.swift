@@ -7,10 +7,22 @@
 @testable import Datadog
 
 extension CrashReportingFeature {
+    /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
+    static func mockNoOp() -> CrashReportingFeature {
+        return CrashReportingFeature(
+            configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin()),
+            commonDependencies: .mockAny()
+        )
+    }
+
     static func mockWith(
-        configuration: FeaturesConfiguration.CrashReporting = .mockAny()
+        configuration: FeaturesConfiguration.CrashReporting = .mockAny(),
+        dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> CrashReportingFeature {
-        return CrashReportingFeature(configuration: configuration)
+        return CrashReportingFeature(
+            configuration: configuration,
+            commonDependencies: dependencies
+        )
     }
 }
 
@@ -19,23 +31,87 @@ internal class CrashReportingPluginMock: DDCrashReportingPluginType {
     var pendingCrashReport: DDCrashReport?
     /// If the plugin was asked to delete the crash report.
     var hasPurgedCrashReport: Bool?
+    /// Custom app state data injected to the plugin.
+    var injectedContextData: Data?
 
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
         hasPurgedCrashReport = completion(pendingCrashReport)
+        didReadPendingCrashReport?()
+    }
+
+    /// Notifies the `readPendingCrashReport(completion:)` return.
+    var didReadPendingCrashReport: (() -> Void)?
+
+    func inject(context: Data) {
+        injectedContextData = context
+        didInjectContext?()
+    }
+
+    /// Notifies the `inject(context:)` return.
+    var didInjectContext: (() -> Void)?
+}
+
+internal class NoopCrashReportingPlugin: DDCrashReportingPluginType {
+    func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
+    func inject(context: Data) {}
+}
+
+internal class CrashContextProviderMock: CrashContextProviderType {
+    private(set) var currentCrashContext: CrashContext
+    var onCrashContextChange: ((CrashContext) -> Void)?
+
+    init(initialCrashContext: CrashContext = .mockAny()) {
+        self.currentCrashContext = initialCrashContext
+    }
+
+    func update(lastRUMViewEvent: RUMViewEvent) {}
+    func update(lastTrackingConsent: TrackingConsent) {}
+}
+
+class CrashReportingIntegrationMock: CrashReportingIntegration {
+    var sentCrashReport: DDCrashReport?
+    var sentCrashContext: CrashContext?
+
+    func send(crashReport: DDCrashReport, with crashContext: CrashContext?) {
+        sentCrashReport = crashReport
+        sentCrashContext = crashContext
+        didSendCrashReport?()
+    }
+
+    var didSendCrashReport: (() -> Void)?
+}
+
+extension CrashContext: EquatableInTests {}
+
+extension CrashContext {
+    static func mockAny() -> CrashContext {
+        return CrashContext(
+            lastTrackingConsent: .granted,
+            lastRUMViewEvent: nil
+        )
+    }
+
+    static func mockRandom() -> CrashContext {
+        return CrashContext(
+            lastTrackingConsent: .mockRandom(),
+            lastRUMViewEvent: .mockRandom()
+        )
+    }
+
+    var data: Data { try! JSONEncoder().encode(self) }
+}
+
+internal extension CrashContext.TrackingConsent {
+    static func mockRandom() -> CrashContext.TrackingConsent {
+        return CrashContext.TrackingConsent(trackingConsent: .mockRandom())
     }
 }
 
 extension DDCrashReport: EquatableInTests {}
 
 internal extension DDCrashReport {
-    static func mockRandom() -> DDCrashReport {
-        return mockWith(
-            crashDate: .mockRandomInThePast(),
-            signalCode: .mockRandom(),
-            signalName: .mockRandom(),
-            signalDetails: .mockRandom(),
-            stackTrace: .mockRandom()
-        )
+    static func mockAny() -> DDCrashReport {
+        return .mockWith()
     }
 
     static func mockWith(
@@ -43,14 +119,27 @@ internal extension DDCrashReport {
         signalCode: String? = .mockAny(),
         signalName: String? = .mockAny(),
         signalDetails: String? = .mockAny(),
-        stackTrace: String? = .mockAny()
+        stackTrace: String? = .mockAny(),
+        context: Data? = .mockAny()
     ) -> DDCrashReport {
         return DDCrashReport(
             crashDate: crashDate,
             signalCode: signalCode,
             signalName: signalName,
             signalDetails: signalDetails,
-            stackTrace: stackTrace
+            stackTrace: stackTrace,
+            context: context
+        )
+    }
+
+    static func mockRandomWith(context: CrashContext) -> DDCrashReport {
+        return mockWith(
+            crashDate: .mockRandomInThePast(),
+            signalCode: .mockRandom(),
+            signalName: .mockRandom(),
+            signalDetails: .mockRandom(),
+            stackTrace: .mockRandom(),
+            context: context.data
         )
     }
 }

@@ -83,6 +83,7 @@ class DDConfigurationTests: XCTestCase {
 
         class CrashReportingPluginMock: NSObject, DDCrashReportingPluginType {
             func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
+            func inject(context: Data) {}
         }
 
         let crashReportingPlugin = CrashReportingPluginMock()

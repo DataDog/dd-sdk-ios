@@ -233,43 +233,44 @@ class DatadogTests: XCTestCase {
         }
 
         try verify(
-            configuration: defaultBuilder
+            configuration: rumBuilder
                 .enableLogging(true)
+                .enableRUM(false)
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
             XCTAssertNotNil(CrashReportingFeature.instance)
-            XCTAssertNotNil(
-                Global.crashReporter,
-                "When Crash Reporting feature is enabled, `Global.crashReporter` should be registered."
+            XCTAssertTrue(
+                Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithLoggingIntegration,
+                "When only Logging feature is enabled, the Crash Reporter should send crash reports as Logs"
             )
-            XCTAssertNotNil(Global.crashReporter?.loggingIntegration)
-            XCTAssertNil(Global.crashReporter?.rumIntegration)
         }
 
-        let random = [true, false].shuffled()
         try verify(
             configuration: rumBuilder
-                .enableLogging(random[0])
-                .enableRUM(random[1])
+                .enableLogging(false)
+                .enableRUM(true)
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
             XCTAssertNotNil(CrashReportingFeature.instance)
-            XCTAssertNotNil(
-                Global.crashReporter,
-                "When Crash Reporting feature is enabled, `Global.crashReporter` should be registered."
-            )
-            let isLoggingIntegrationConfigured = Global.crashReporter?.loggingIntegration != nil
-            let isRUMIntegrationConfigured = Global.crashReporter?.rumIntegration != nil
             XCTAssertTrue(
-                isLoggingIntegrationConfigured || isRUMIntegrationConfigured,
-                "When only RUM or only Logging are enabled, one of the integrations with Crash Reporting should be configured."
+                Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
+                "When only RUM feature is enabled, the Crash Reporter should send crash reports as RUM Events"
             )
-            XCTAssertNotEqual(
-                isLoggingIntegrationConfigured,
-                isRUMIntegrationConfigured,
-                "When only RUM or only Logging are enabled, only one integration with Crash Reporting should be configured."
+        }
+
+        try verify(
+            configuration: rumBuilder
+                .enableLogging(true)
+                .enableRUM(true)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertTrue(
+                Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
+                "When both Logging and RUM features are enabled, the Crash Reporter should send crash reports as RUM Events"
             )
         }
 
@@ -283,7 +284,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(CrashReportingFeature.instance)
             XCTAssertNil(
                 Global.crashReporter,
-                "When Crash Reporting feature is disabled, `Global.crashReporter` should not be registered."
+                "When both Logging and RUM are disabled, Crash Reporter should not be registered"
             )
         }
     }

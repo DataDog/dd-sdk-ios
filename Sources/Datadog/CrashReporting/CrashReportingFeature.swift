@@ -18,9 +18,18 @@ internal final class CrashReportingFeature {
 
     let configuration: FeaturesConfiguration.CrashReporting
 
-    // TODO: RUMM-960 / RUMM-1050 Bundle dependencies required for sending Crash Reports to Datadog
+    // MARK: - Dependencies
 
-    init(configuration: FeaturesConfiguration.CrashReporting) {
+    let consentProvider: ConsentProvider
+
+    // TODO: RUMM-1049 Bundle `UserInfoProvider`, `NetworkInfoProvider` and `CarrierInfoProvider`
+    // for enriching the `CrashContext`
+
+    init(
+        configuration: FeaturesConfiguration.CrashReporting,
+        commonDependencies: FeaturesCommonDependencies
+    ) {
         self.configuration = configuration
+        self.consentProvider = commonDependencies.consentProvider
     }
 }

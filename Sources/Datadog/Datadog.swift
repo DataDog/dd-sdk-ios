@@ -226,7 +226,8 @@ public class Datadog {
 
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
-                configuration: crashReportingConfiguration
+                configuration: crashReportingConfiguration,
+                commonDependencies: commonDependencies
             )
         }
 
@@ -258,13 +259,7 @@ public class Datadog {
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
         if let crashReportingFeature = CrashReportingFeature.instance {
-            Global.crashReporter = CrashReporter(
-                crashReportingFeature: crashReportingFeature,
-                loggingIntegration: LoggingFeature.instance
-                    .flatMap { CrashReportingWithLoggingIntegration(loggingFeature: $0) },
-                rumIntegration: RUMFeature.instance
-                    .flatMap { CrashReportingWithRUMIntegration(rumFeature: $0) }
-            )
+            Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
             Global.crashReporter?.sendCrashReportIfFound()
         }
     }
