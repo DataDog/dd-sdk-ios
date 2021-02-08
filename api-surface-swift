@@ -223,6 +223,7 @@ public struct RUMViewEvent: RUMDataModel
  public struct Application: Codable
   public let id: String
  public struct Session: Codable
+  public let hasReplay: Bool?
   public let id: String
   public let type: SessionType
   public enum SessionType: String, Codable
@@ -238,6 +239,7 @@ public struct RUMViewEvent: RUMDataModel
   public let error: Error
   public let firstContentfulPaint: Int64?
   public let firstInputDelay: Int64?
+  public let firstInputTime: Int64?
   public let id: String
   public let isActive: Bool?
   public let largestContentfulPaint: Int64?
@@ -352,6 +354,7 @@ public struct RUMResourceEvent: RUMDataModel
    case media = "media"
    case other = "other"
  public struct Session: Codable
+  public let hasReplay: Bool?
   public let id: String
   public let type: SessionType
   public enum SessionType: String, Codable
@@ -404,6 +407,7 @@ public struct RUMActionEvent: RUMDataModel
  public struct Application: Codable
   public let id: String
  public struct Session: Codable
+  public let hasReplay: Bool?
   public let id: String
   public let type: SessionType
   public enum SessionType: String, Codable
@@ -437,6 +441,7 @@ public struct RUMErrorEvent: RUMDataModel
   public var resource: Resource?
   public let source: Source
   public var stack: String?
+  public let type: String?
   public struct Resource: Codable
    public let method: RUMMethod
    public let provider: Provider?
@@ -470,6 +475,7 @@ public struct RUMErrorEvent: RUMDataModel
    case webview = "webview"
    case custom = "custom"
  public struct Session: Codable
+  public let hasReplay: Bool?
   public let id: String
   public let type: SessionType
   public enum SessionType: String, Codable

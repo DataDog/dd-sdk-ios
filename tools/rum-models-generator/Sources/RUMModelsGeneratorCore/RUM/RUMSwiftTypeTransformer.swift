@@ -35,6 +35,8 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             return transform(primitive: primitive)
         case let array as SwiftArray:
             return try transform(array: array)
+        case let dictionary as SwiftDictionary:
+            return transform(dictionary: dictionary)
         case let `enum` as SwiftEnum:
             let transformed = transform(enum: `enum`)
             return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
@@ -52,6 +54,12 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
         } else {
             return primitive
         }
+    }
+
+    private func transform(dictionary: SwiftDictionary) -> SwiftDictionary {
+        var dictionary = dictionary
+        dictionary.value = transform(primitive: dictionary.value)
+        return dictionary
     }
 
     private func transform(array: SwiftArray) throws -> SwiftArray {
@@ -88,13 +96,16 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             var structProperty = structProperty
             structProperty.name = format(propertyName: structProperty.name)
             structProperty.type = try transformAny(type: structProperty.type)
-            structProperty.defaultVaule = structProperty.defaultVaule.ifNotNil { transform(defaultValue: $0) }
+            structProperty.defaultValue = structProperty.defaultValue.ifNotNil { transform(defaultValue: $0) }
             return structProperty
         }
 
         var `struct` = `struct`
         `struct`.name = format(structName: `struct`.name)
-        `struct`.properties = try `struct`.properties.map { try transform(structProperty: $0) }
+        `struct`.properties = try `struct`.properties
+            .map { try transform(structProperty: $0) }
+            // TODO: RUMM-1000 should remove this filter
+            .filter { property in property.name != "customTimings" }
         if context.parent == nil {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
         } else {

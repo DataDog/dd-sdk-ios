@@ -122,14 +122,16 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:]
+        tags: [String: Encodable] = [:],
+        logFields: [[String: Encodable]] = []
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: tags
+            tags: tags,
+            logFields: logFields
         )
     }
 }

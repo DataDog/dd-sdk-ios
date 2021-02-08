@@ -99,7 +99,7 @@ internal class JSONSchemaToJSONTypeTransformer {
                 name: propertyName,
                 comment: propertySchema.description,
                 type: try transformSchemaToAnyType(propertySchema, named: propertyName),
-                defaultVaule: propertySchema.const.flatMap { const in
+                defaultValue: propertySchema.const.flatMap { const in
                     switch const.value {
                     case .integer(let value): return .integer(value: value)
                     case .string(let value): return .string(value: value)
@@ -108,10 +108,26 @@ internal class JSONSchemaToJSONTypeTransformer {
                 isRequired: schema.required?.contains(propertyName) ?? Defaults.isRequired,
                 isReadOnly: propertySchema.readOnly ?? Defaults.isReadOnly
             )
-
             properties.append(property)
         }
 
-        return JSONObject(name: name, comment: schema.description, properties: properties)
+        let additionalProperties: JSONObject.AdditionalProperties?
+        if let additionalPropertiesSchema = schema.additionalProperties {
+            let type = try transformSchemaToPrimitive(additionalPropertiesSchema)
+            additionalProperties = JSONObject.AdditionalProperties(
+                comment: additionalPropertiesSchema.description,
+                type: type,
+                isReadOnly: additionalPropertiesSchema.readOnly ?? Defaults.isReadOnly
+            )
+        } else {
+            additionalProperties = nil
+        }
+
+        return JSONObject(
+            name: name,
+            comment: schema.description,
+            properties: properties,
+            additionalProperties: additionalProperties
+        )
     }
 }

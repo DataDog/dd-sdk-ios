@@ -310,6 +310,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return "String"
         case let objcArray as ObjcInteropNSArray:
             return "[\(try objcInteropTypeName(for: objcArray.element))]"
+        case let objcDictionary as ObjcInteropNSDictionary:
+            return "[\(try objcInteropTypeName(for: objcDictionary.key)): \(try objcInteropTypeName(for: objcDictionary.value))]"
         default:
             throw Exception.unimplemented(
                 "Cannot print `ObjcInteropType` name for \(type(of: objcType))."
@@ -323,10 +325,14 @@ internal class ObjcInteropPrinter: BasePrinter {
             return " as NSNumber"
         case let nsArray as ObjcInteropNSArray where nsArray.element is ObjcInteropNSNumber:
             return " as [NSNumber]"
+        case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropNSNumber:
+            return " as [\(try objcInteropTypeName(for: nsDictionary.key)): NSNumber]"
         case _ as ObjcInteropNSString:
             return nil // `String` <> `NSString` interoperability doesn't require casting
         case let nsArray as ObjcInteropNSArray where nsArray.element is ObjcInteropNSString:
             return nil // `[String]` <> `[NSString]` interoperability doesn't require casting
+        case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropNSString:
+            return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
         }
@@ -344,10 +350,17 @@ internal class ObjcInteropPrinter: BasePrinter {
             return ".int64Value"
         case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitive<String>:
             return nil // `[String]` <> `[NSString]` interoperability doesn't require casting
+        case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitive<String>:
+            return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
         case let swiftArray as SwiftArray:
             let elementCast = try objcToSwiftCast(for: swiftArray.element)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftArray` with elements of type: \(type(of: swiftArray.element))"))
             return ".map { $0\(elementCast) }"
+        case let swiftDictionary as SwiftDictionary:
+            let keyCast = try objcToSwiftCast(for: swiftDictionary.key) ?? ""
+            let valueCast = try objcToSwiftCast(for: swiftDictionary.value)
+                .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with values of type: \(type(of: swiftDictionary.value))"))
+            return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast)"
         case _ as SwiftPrimitive<String>:
             return nil // `String` <> `NSString` interoperability doesn't require casting
         default:

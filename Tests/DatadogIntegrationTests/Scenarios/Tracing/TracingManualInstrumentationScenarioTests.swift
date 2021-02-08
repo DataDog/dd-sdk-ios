@@ -74,7 +74,7 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
 
         // Assert logs requests
         let recordedLoggingRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try LogMatcher.from(requests: requests).count == 1
+            try LogMatcher.from(requests: requests).count == 2
         }
 
         assertLogging(requests: recordedLoggingRequests)
@@ -84,9 +84,16 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
         logMatchers[0].assertStatus(equals: "info")
         logMatchers[0].assertMessage(equals: "download progress")
         logMatchers[0].assertValue(forKey: "progress", equals: 0.99)
+        logMatchers[1].assertStatus(equals: "error")
+        let matcher = { (str: String) in str.contains("SendTracesFixtureViewController") }
+        logMatchers[1].assertValue(forKeyPath: "message", matches: matcher)
+        logMatchers[1].assertValue(forKeyPath: "error.kind", matches: matcher)
+        logMatchers[1].assertValue(forKeyPath: "stack", matches: matcher)
 
         // Assert logs are linked to "data downloading" span
         logMatchers[0].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[0].traceID().hexadecimalNumberToDecimal)
         logMatchers[0].assertValue(forKey: "dd.span_id", equals: try spanMatchers[0].spanID().hexadecimalNumberToDecimal)
+        logMatchers[1].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[1].traceID().hexadecimalNumberToDecimal)
+        logMatchers[1].assertValue(forKey: "dd.span_id", equals: try spanMatchers[1].spanID().hexadecimalNumberToDecimal)
     }
 }

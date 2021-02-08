@@ -172,6 +172,7 @@ public enum DDRUMViewEventRUMConnectivityStatus: Int
  case notConnected
  case maybe
 public class DDRUMViewEventSession: NSObject
+ @objc public var hasReplay: NSNumber?
  @objc public var id: String
  @objc public var type: DDRUMViewEventSessionSessionType
 public enum DDRUMViewEventSessionSessionType: Int
@@ -191,6 +192,7 @@ public class DDRUMViewEventView: NSObject
  @objc public var error: DDRUMViewEventViewError
  @objc public var firstContentfulPaint: NSNumber?
  @objc public var firstInputDelay: NSNumber?
+ @objc public var firstInputTime: NSNumber?
  @objc public var id: String
  @objc public var isActive: NSNumber?
  @objc public var largestContentfulPaint: NSNumber?
@@ -336,6 +338,7 @@ public enum DDRUMResourceEventResourceResourceType: Int
  case media
  case other
 public class DDRUMResourceEventSession: NSObject
+ @objc public var hasReplay: NSNumber?
  @objc public var id: String
  @objc public var type: DDRUMResourceEventSessionSessionType
 public enum DDRUMResourceEventSessionSessionType: Int
@@ -413,6 +416,7 @@ public enum DDRUMActionEventRUMConnectivityStatus: Int
  case notConnected
  case maybe
 public class DDRUMActionEventSession: NSObject
+ @objc public var hasReplay: NSNumber?
  @objc public var id: String
  @objc public var type: DDRUMActionEventSessionSessionType
 public enum DDRUMActionEventSessionSessionType: Int
@@ -471,6 +475,7 @@ public class DDRUMErrorEventError: NSObject
  @objc public var resource: DDRUMErrorEventErrorResource?
  @objc public var source: DDRUMErrorEventErrorSource
  @objc public var stack: String?
+ @objc public var type: String?
 public class DDRUMErrorEventErrorResource: NSObject
  @objc public var method: DDRUMErrorEventErrorResourceRUMMethod
  @objc public var provider: DDRUMErrorEventErrorResourceProvider?
@@ -512,6 +517,7 @@ public enum DDRUMErrorEventErrorSource: Int
  case webview
  case custom
 public class DDRUMErrorEventSession: NSObject
+ @objc public var hasReplay: NSNumber?
  @objc public var id: String
  @objc public var type: DDRUMErrorEventSessionSessionType
 public enum DDRUMErrorEventSessionSessionType: Int

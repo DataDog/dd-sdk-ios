@@ -89,7 +89,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 connectivity: nil,
                 date: Int64.random(in: Int64.min..<Int64.max),
                 service: .mockRandom(length: 20),
-                session: .init(id: UUID().uuidString, type: .user),
+                session: .init(hasReplay: nil, id: UUID().uuidString, type: .user),
                 usr: .init(
                     email: .mockRandom(length: 10),
                     id: .mockRandom(length: 10),
@@ -105,6 +105,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
                     error: .init(count: .mockAny()),
                     firstContentfulPaint: nil,
                     firstInputDelay: nil,
+                    firstInputTime: nil,
                     id: UUID().uuidString,
                     isActive: nil,
                     largestContentfulPaint: nil,

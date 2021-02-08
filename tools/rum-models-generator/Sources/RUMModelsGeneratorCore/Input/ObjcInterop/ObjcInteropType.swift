@@ -19,11 +19,11 @@ internal protocol ObjcInteropClass: ObjcInteropType {
 internal class ObjcInteropRootClass: ObjcInteropClass {
     /// The `SwiftStruct` managed by this `@objc class`.
     let bridgedSwiftStruct: SwiftStruct
-    /// `managedSwiftStruct's` property wrappers exposed to Objc.
+    /// `bridgedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
 
-    init(managedSwiftStruct: SwiftStruct) {
-        self.bridgedSwiftStruct = managedSwiftStruct
+    init(bridgedSwiftStruct: SwiftStruct) {
+        self.bridgedSwiftStruct = bridgedSwiftStruct
     }
 }
 
@@ -34,12 +34,12 @@ internal class ObjcInteropTransitiveClass: ObjcInteropClass {
 
     /// The nested `SwiftStruct` managed by this `@objc class`.
     let bridgedSwiftStruct: SwiftStruct
-    /// `managedSwiftStruct's` property wrappers exposed to Objc.
+    /// `bridgedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
 
-    init(owner: ObjcInteropPropertyWrapper, managedSwiftStruct: SwiftStruct) {
+    init(owner: ObjcInteropPropertyWrapper, bridgedSwiftStruct: SwiftStruct) {
         self.parentProperty = owner
-        self.bridgedSwiftStruct = managedSwiftStruct
+        self.bridgedSwiftStruct = bridgedSwiftStruct
     }
 }
 
@@ -53,9 +53,9 @@ internal class ObjcInteropEnum: ObjcInteropType {
     /// The `SwiftEnum` exposed by this Obj-c enum.
     let bridgedSwiftEnum: SwiftEnum
 
-    init(owner: ObjcInteropPropertyWrapper, managedSwiftEnum: SwiftEnum) {
+    init(owner: ObjcInteropPropertyWrapper, bridgedSwiftEnum: SwiftEnum) {
         self.parentProperty = owner
-        self.bridgedSwiftEnum = managedSwiftEnum
+        self.bridgedSwiftEnum = bridgedSwiftEnum
     }
 }
 
@@ -131,5 +131,15 @@ internal class ObjcInteropNSArray: ObjcInteropType {
 
     init(element: ObjcInteropType) {
         self.element = element
+    }
+}
+
+internal class ObjcInteropNSDictionary: ObjcInteropType {
+    let key: ObjcInteropType
+    let value: ObjcInteropType
+
+    init(key: ObjcInteropType, value: ObjcInteropType) {
+        self.key = key
+        self.value = value
     }
 }

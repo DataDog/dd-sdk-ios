@@ -246,7 +246,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
-            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
@@ -269,7 +269,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
-            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
@@ -281,6 +281,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 error: .init(count: errorsCount.toInt64),
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
+                firstInputTime: nil,
                 id: viewUUID.toRUMDataFormat,
                 isActive: isActiveView,
                 largestContentfulPaint: nil,
@@ -317,10 +318,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
-                stack: command.stack
+                stack: command.stack,
+                type: command.message
             ),
             service: nil,
-            session: .init(id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,

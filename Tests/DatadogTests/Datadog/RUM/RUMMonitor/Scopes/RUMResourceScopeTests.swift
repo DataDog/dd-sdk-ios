@@ -148,6 +148,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.source, .network)
         XCTAssertEqual(event.model.error.stack, "network issue explanation")
         XCTAssertEqual(event.model.error.resource?.method, .post)
+        XCTAssertEqual(event.model.error.type, "ErrorMock")
         XCTAssertNil(event.model.error.resource?.provider)
         XCTAssertEqual(event.model.error.resource?.statusCode, 500)
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
