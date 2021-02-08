@@ -357,8 +357,7 @@ internal class ObjcInteropPrinter: BasePrinter {
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftArray` with elements of type: \(type(of: swiftArray.element))"))
             return ".map { $0\(elementCast) }"
         case let swiftDictionary as SwiftDictionary:
-            let keyCast = try objcToSwiftCast(for: swiftDictionary.key)
-                .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with keys of type: \(type(of: swiftDictionary.key))"))
+            let keyCast = try objcToSwiftCast(for: swiftDictionary.key) ?? ""
             let valueCast = try objcToSwiftCast(for: swiftDictionary.value)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with values of type: \(type(of: swiftDictionary.value))"))
             return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast)"

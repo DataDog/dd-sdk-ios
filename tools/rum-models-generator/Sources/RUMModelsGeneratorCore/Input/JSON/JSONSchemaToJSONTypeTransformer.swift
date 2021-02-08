@@ -94,8 +94,8 @@ internal class JSONSchemaToJSONTypeTransformer {
         let propertiesByName = schema.properties ?? [:]
         var properties: [JSONObject.Property] = []
 
-        func property(from propertySchema: JSONSchema, _ propertyName: String, _ isRequired: Bool? = nil) throws -> JSONObject.Property {
-            return JSONObject.Property(
+        try propertiesByName.forEach { propertyName, propertySchema in
+            let property = JSONObject.Property(
                 name: propertyName,
                 comment: propertySchema.description,
                 type: try transformSchemaToAnyType(propertySchema, named: propertyName),
@@ -105,17 +105,20 @@ internal class JSONSchemaToJSONTypeTransformer {
                     case .string(let value): return .string(value: value)
                     }
                 },
-                isRequired: isRequired ?? schema.required?.contains(propertyName) ?? Defaults.isRequired,
+                isRequired: schema.required?.contains(propertyName) ?? Defaults.isRequired,
                 isReadOnly: propertySchema.readOnly ?? Defaults.isReadOnly
             )
+            properties.append(property)
         }
 
-        try propertiesByName.forEach { properties.append(try property(from: $1, $0)) }
-
-        let additionalProperties: JSONObject.Property?
+        let additionalProperties: JSONObject.AdditionalProperties?
         if let additionalPropertiesSchema = schema.additionalProperties {
-            let propName = JSONSchema.CodingKeys.additionalProperties.rawValue
-            additionalProperties = try property(from: additionalPropertiesSchema, propName, false)
+            let type = try transformSchemaToPrimitive(additionalPropertiesSchema)
+            additionalProperties = JSONObject.AdditionalProperties(
+                comment: additionalPropertiesSchema.description,
+                type: type,
+                isReadOnly: additionalPropertiesSchema.readOnly ?? Defaults.isReadOnly
+            )
         } else {
             additionalProperties = nil
         }

@@ -70,8 +70,7 @@ internal class JSONToSwiftTypeTransformer {
                 throw Exception.unimplemented("Transforming \(jsonObject) with both `properties` and `additionalProperties` is not supported.")
             }
             return SwiftDictionary(
-                key: SwiftPrimitive<String>(),
-                value: try transformJSONToAnyType(additionalProperties.type)
+                value: transformJSONtoPrimitive(additionalProperties.type)
             )
         } else {
             return try transformJSONToStruct(jsonObject)

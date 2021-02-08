@@ -171,18 +171,15 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         comment: "Description of a property with nested additional properties.",
                         properties: [],
                         additionalProperties:
-                            JSONObject.Property(
-                                name: "additionalProperties",
+                            JSONObject.AdditionalProperties(
                                 comment: nil,
                                 type: JSONPrimitive.integer,
-                                defaultValue: nil,
-                                isRequired: false,
-                                isReadOnly: true // how to reconcile with additionalProperties's required/readOnly?
+                                isReadOnly: true
                             )
                     ),
                     defaultValue: nil,
                     isRequired: false,
-                    isReadOnly: true // how to reconcile with additionalProperties's required/readOnly?
+                    isReadOnly: true
                 )
             ]
         )
@@ -194,10 +191,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                 SwiftStruct.Property(
                     name: "propertyWithAdditionalProperties",
                     comment: "Description of a property with nested additional properties.",
-                    type: SwiftDictionary(
-                        key: SwiftPrimitive<String>(),
-                        value: SwiftPrimitive<Int>()
-                    ),
+                    type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
@@ -234,12 +228,9 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     isReadOnly: true
                                 )
                         ],
-                        additionalProperties: JSONObject.Property(
-                            name: "additionalProperties",
+                        additionalProperties: JSONObject.AdditionalProperties(
                             comment: "Additional properties of property1.",
                             type: JSONPrimitive.string,
-                            defaultValue: nil,
-                            isRequired: false,
                             isReadOnly: true
                         )
                     ),
@@ -283,12 +274,9 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     isReadOnly: true
                 )
             ],
-            additionalProperties: JSONObject.Property(
-                name: "additionalProperties",
+            additionalProperties: JSONObject.AdditionalProperties(
                 comment: "Additional properties of Foo.",
                 type: JSONPrimitive.string,
-                defaultValue: nil,
-                isRequired: false,
                 isReadOnly: true
             )
         )
@@ -312,12 +300,9 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         comment: "Description of a property with nested additional properties.",
                         properties: [],
                         additionalProperties:
-                            JSONObject.Property(
-                                name: "additionalProperties",
+                            JSONObject.AdditionalProperties(
                                 comment: nil,
                                 type: JSONPrimitive.integer,
-                                defaultValue: nil,
-                                isRequired: false,
                                 isReadOnly: false
                             )
                     ),
@@ -336,7 +321,6 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     name: "propertyWithAdditionalProperties",
                     comment: "Description of a property with nested additional properties.",
                     type: SwiftDictionary(
-                        key: SwiftPrimitive<String>(),
                         value: SwiftPrimitive<Int>()
                     ),
                     isOptional: false,

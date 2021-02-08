@@ -88,7 +88,7 @@ final class SwiftPrinterTests: XCTestCase {
             SwiftStruct.Property(
                 name: "propertiesByNames",
                 comment: "Description of FooBar's `propertiesByNames`.",
-                type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                type: SwiftDictionary(value: SwiftPrimitive<String>()),
                 isOptional: true,
                 isMutable: false,
                 defaultValue: nil,

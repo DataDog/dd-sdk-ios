@@ -89,7 +89,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                 SwiftStruct.Property(
                     name: "propertiesByNames",
                     comment: "Description of Foobar's `propertiesByNames`",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                     isOptional: true,
                     isMutable: true,
                     defaultValue: nil,
@@ -182,7 +182,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     SwiftStruct.Property(
                         name: "propertiesByNames",
                         comment: "Description of Foobar's `propertiesByNames`",
-                        type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<Int64>()),
+                        type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                         isOptional: true,
                         isMutable: true,
                         defaultValue: nil,

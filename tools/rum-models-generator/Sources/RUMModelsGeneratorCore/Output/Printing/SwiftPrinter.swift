@@ -92,8 +92,8 @@ public class SwiftPrinter: BasePrinter {
     private func printNestedTypes(in swiftStruct: SwiftStruct) throws {
         let nestedTypes = swiftStruct.properties.map { $0.type }
         try nestedTypes.forEach { type in
-            let nestedStruct = (type as? SwiftStruct) ?? ((type as? SwiftArray)?.element as? SwiftStruct) ?? ((type as? SwiftDictionary)?.value as? SwiftStruct)
-            let nestedEnum = (type as? SwiftEnum) ?? ((type as? SwiftArray)?.element as? SwiftEnum) ?? ((type as? SwiftDictionary)?.value as? SwiftEnum)
+            let nestedStruct = (type as? SwiftStruct) ?? ((type as? SwiftArray)?.element as? SwiftStruct)
+            let nestedEnum = (type as? SwiftEnum) ?? ((type as? SwiftArray)?.element as? SwiftEnum)
 
             if let nestedStruct = nestedStruct {
                 writeEmptyLine()

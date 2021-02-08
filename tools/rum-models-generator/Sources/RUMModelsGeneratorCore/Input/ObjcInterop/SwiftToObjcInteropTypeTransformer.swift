@@ -78,17 +78,13 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcInteropType = try objcInteropType(for: swiftArray)
                     return propertyWrapper
-                case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitiveType:
+                case let swiftDictionary as SwiftDictionary:
                     let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
                         owner: objcClass,
                         swiftProperty: swiftProperty
                     )
                     propertyWrapper.objcInteropType = try objcInteropType(for: swiftDictionary)
                     return propertyWrapper
-                case let swiftDictionary as SwiftDictionary where swiftDictionary.key is SwiftEnum || swiftDictionary.value is SwiftEnum:
-                    throw Exception.unimplemented(
-                        "Objc Interop for `SwiftDictionary`s with an Enum as key or value is not supported."
-                    )
                 case let swifTypeReference as SwiftTypeReference:
                     let referencedType = try resolve(swiftTypeReference: swifTypeReference)
 

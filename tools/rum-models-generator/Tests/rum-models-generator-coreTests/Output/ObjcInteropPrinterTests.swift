@@ -967,25 +967,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
             properties: [
                 .mock(
                     propertyName: "immutableStrings",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: false,
                     isMutable: false
                 ),
                 .mock(
                     propertyName: "optionalImmutableStrings",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: true,
                     isMutable: false
                 ),
                 .mock(
                     propertyName: "mutableStrings",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: false,
                     isMutable: true
                 ),
                 .mock(
                     propertyName: "optionalMutableStrings",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(), value: SwiftPrimitive<String>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: true,
                     isMutable: true
                 ),
@@ -1050,25 +1050,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
             properties: [
                 .mock(
                     propertyName: "immutableInt64s",
-                    type: SwiftDictionary(key: SwiftPrimitive<Int64>(), value: SwiftPrimitive<Int64>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: false,
                     isMutable: false
                 ),
                 .mock(
                     propertyName: "optionalImmutableInt64s",
-                    type: SwiftDictionary(key: SwiftPrimitive<Int64>(), value: SwiftPrimitive<Int64>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: true,
                     isMutable: false
                 ),
                 .mock(
                     propertyName: "mutableInt64s",
-                    type: SwiftDictionary(key: SwiftPrimitive<Int64>(), value: SwiftPrimitive<Int64>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: false,
                     isMutable: true
                 ),
                 .mock(
                     propertyName: "optionalMutableInt64s",
-                    type: SwiftDictionary(key: SwiftPrimitive<Int64>(), value: SwiftPrimitive<Int64>()),
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: true,
                     isMutable: true
                 ),
@@ -1080,13 +1080,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
         // MARK: - Swift
 
         public struct Foo {
-            public let immutableInt64s: [Int64: Int64]
+            public let immutableInt64s: [String: Int64]
 
-            public let optionalImmutableInt64s: [Int64: Int64]?
+            public let optionalImmutableInt64s: [String: Int64]?
 
-            public var mutableInt64s: [Int64: Int64]
+            public var mutableInt64s: [String: Int64]
 
-            public var optionalMutableInt64s: [Int64: Int64]?
+            public var optionalMutableInt64s: [String: Int64]?
         }
 
         // MARK: - ObjcInterop
@@ -1100,22 +1100,22 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableInt64s: [NSNumber: NSNumber] {
-                root.swiftModel.immutableInt64s as [NSNumber: NSNumber]
+            @objc public var immutableInt64s: [String: NSNumber] {
+                root.swiftModel.immutableInt64s as [String: NSNumber]
             }
 
-            @objc public var optionalImmutableInt64s: [NSNumber: NSNumber]? {
-                root.swiftModel.optionalImmutableInt64s as [NSNumber: NSNumber]?
+            @objc public var optionalImmutableInt64s: [String: NSNumber]? {
+                root.swiftModel.optionalImmutableInt64s as [String: NSNumber]?
             }
 
-            @objc public var mutableInt64s: [NSNumber: NSNumber] {
-                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0.int64Value] = $1.1.int64Value }
-                get { root.swiftModel.mutableInt64s as [NSNumber: NSNumber] }
+            @objc public var mutableInt64s: [String: NSNumber] {
+                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+                get { root.swiftModel.mutableInt64s as [String: NSNumber] }
             }
 
-            @objc public var optionalMutableInt64s: [NSNumber: NSNumber]? {
-                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0.int64Value] = $1.1.int64Value }
-                get { root.swiftModel.optionalMutableInt64s as [NSNumber: NSNumber]? }
+            @objc public var optionalMutableInt64s: [String: NSNumber]? {
+                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+                get { root.swiftModel.optionalMutableInt64s as [String: NSNumber]? }
             }
         }
 
@@ -1124,58 +1124,6 @@ final class ObjcInteropPrinterTests: XCTestCase {
         let actual = try printSwiftWithObjcInterop(for: [fooStruct])
 
         XCTAssertEqual(expected, actual)
-    }
-
-    func testPrintingObjcInteropForSwiftStructWithEnumDictionaryProperties() throws {
-        func mockEnumeration(named name: String) -> SwiftEnum {
-            return SwiftEnum(
-                name: name,
-                comment: nil,
-                cases: [
-                    SwiftEnum.Case(label: "option1", rawValue: "option1"),
-                    SwiftEnum.Case(label: "option2", rawValue: "option2"),
-                    SwiftEnum.Case(label: "option3", rawValue: "option3"),
-                ],
-                conformance: []
-            )
-        }
-
-        let fooStruct = SwiftStruct(
-            name: "Foo",
-            comment: nil,
-            properties: [
-                .mock(
-                    propertyName: "immutableEnums",
-                    type: SwiftDictionary(key: SwiftPrimitive<Int64>(), value: mockEnumeration(named: "Options1")),
-                    isOptional: false,
-                    isMutable: false
-                ),
-                .mock(
-                    propertyName: "optionalImmutableEnums",
-                    type:SwiftDictionary(key: SwiftPrimitive<Int64>(), value: mockEnumeration(named: "Options2")),
-                    isOptional: true,
-                    isMutable: false
-                ),
-                .mock(
-                    propertyName: "immutableEnumKeys",
-                    type: SwiftDictionary(key: mockEnumeration(named: "Options1"), value: SwiftPrimitive<Int64>()),
-                    isOptional: false,
-                    isMutable: false
-                ),
-                .mock(
-                    propertyName: "optionalImmutableEnumKeys",
-                    type: SwiftDictionary(key: mockEnumeration(named: "Options1"), value: SwiftPrimitive<Int64>()),
-                    isOptional: true,
-                    isMutable: false
-                ),
-            ],
-            conformance: []
-        )
-
-        var error: Error? = nil
-        XCTAssertThrowsError(try printSwiftWithObjcInterop(for: [fooStruct])) { error = $0 }
-        let exception = try XCTUnwrap(error as? Exception)
-        XCTAssertTrue(exception.description.contains("not supported"))
     }
 
     // MARK: - Nested Swift Structs and Enums

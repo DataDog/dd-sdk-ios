@@ -29,8 +29,8 @@ internal struct SwiftArray: SwiftType {
 }
 
 internal struct SwiftDictionary: SwiftType {
-    var key: SwiftType
-    var value: SwiftType
+    let key = SwiftPrimitive<String>()
+    var value: SwiftPrimitiveType
 }
 
 internal struct SwiftEnum: SwiftType {

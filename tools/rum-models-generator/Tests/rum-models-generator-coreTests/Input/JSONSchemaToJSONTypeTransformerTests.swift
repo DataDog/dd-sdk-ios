@@ -164,12 +164,9 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                         comment: "Description of a property with nested additional properties.",
                         properties: [],
                         additionalProperties:
-                            JSONObject.Property(
-                                name: "additionalProperties",
+                            JSONObject.AdditionalProperties(
                                 comment: nil,
                                 type: JSONPrimitive.integer,
-                                defaultValue: nil,
-                                isRequired: false,
                                 isReadOnly: true
                             )
                     ),
@@ -178,12 +175,9 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                     isReadOnly: true
                 )
             ],
-            additionalProperties: JSONObject.Property(
-                name: "additionalProperties",
+            additionalProperties: JSONObject.AdditionalProperties(
                 comment: "Additional properties of Foo.",
                 type: JSONPrimitive.string,
-                defaultValue: nil,
-                isRequired: false,
                 isReadOnly: true
             )
         )
