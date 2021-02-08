@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */; };
+		6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */; };
+		6111543625C993C2007C84C9 /* CrashReportingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6111543525C993C2007C84C9 /* CrashReportingScenario.storyboard */; };
+		6111543F25C996A5007C84C9 /* CrashReportingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111543E25C996A5007C84C9 /* CrashReportingViewController.swift */; };
+		6111544825C9A88B007C84C9 /* PersistenceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111544725C9A88B007C84C9 /* PersistenceHelper.swift */; };
 		6111C58225C0081F00F5C4A2 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111C58125C0081F00F5C4A2 /* RUMDataModels+objc.swift */; };
 		61122ECE25B1B74500F9C7F5 /* SpanSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */; };
 		61122ED425B1B84D00F9C7F5 /* RUMEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */; };
@@ -504,6 +508,10 @@
 
 /* Begin PBXFileReference section */
 		6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingWithActiveSpanIntegration.swift; sourceTree = "<group>"; };
+		6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingScenarios.swift; sourceTree = "<group>"; };
+		6111543525C993C2007C84C9 /* CrashReportingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrashReportingScenario.storyboard; sourceTree = "<group>"; };
+		6111543E25C996A5007C84C9 /* CrashReportingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingViewController.swift; sourceTree = "<group>"; };
+		6111544725C9A88B007C84C9 /* PersistenceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceHelper.swift; sourceTree = "<group>"; };
 		6111C58125C0081F00F5C4A2 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSanitizer.swift; sourceTree = "<group>"; };
 		61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventSanitizer.swift; sourceTree = "<group>"; };
@@ -994,6 +1002,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6111542325C992D9007C84C9 /* CrashReporting */ = {
+			isa = PBXGroup;
+			children = (
+				6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */,
+				6111543425C993AC007C84C9 /* CrashReporting */,
+			);
+			path = CrashReporting;
+			sourceTree = "<group>";
+		};
+		6111543425C993AC007C84C9 /* CrashReporting */ = {
+			isa = PBXGroup;
+			children = (
+				6111543525C993C2007C84C9 /* CrashReportingScenario.storyboard */,
+				6111543E25C996A5007C84C9 /* CrashReportingViewController.swift */,
+			);
+			path = CrashReporting;
+			sourceTree = "<group>";
+		};
 		6111C58025C0080C00F5C4A2 /* RUM */ = {
 			isa = PBXGroup;
 			children = (
@@ -1606,6 +1632,7 @@
 				61337030250F829E00236D58 /* Logging */,
 				61337033250F847500236D58 /* Tracing */,
 				61337036250F84F100236D58 /* RUM */,
+				6111542325C992D9007C84C9 /* CrashReporting */,
 				611EA12B2580F40E00BC0E56 /* TrackingConsent */,
 				6164AE7D252B4CE2000D78C4 /* URLSession */,
 			);
@@ -1865,6 +1892,7 @@
 				61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */,
 				61441C912461A648003D8BB8 /* UIButton+Disabling.swift */,
 				61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */,
+				6111544725C9A88B007C84C9 /* PersistenceHelper.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2951,6 +2979,7 @@
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
 				6193DCA4251B5691009B8011 /* RUMTapActionScenario.storyboard in Resources */,
 				6167ACC7251A0BCE0012B4D0 /* NSURLSessionScenario.storyboard in Resources */,
+				6111543625C993C2007C84C9 /* CrashReportingScenario.storyboard in Resources */,
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
 				6137E649252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard in Resources */,
 				61441C0C24616DE9003D8BB8 /* Main.storyboard in Resources */,
@@ -3403,8 +3432,10 @@
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,
+				6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */,
 				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
 				61B9ED1C2461E12000C0DCFF /* SendLogsFixtureViewController.swift in Sources */,
+				6111543F25C996A5007C84C9 /* CrashReportingViewController.swift in Sources */,
 				61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */,
 				61D50C542580EF41006038A3 /* RUMScenarios.swift in Sources */,
 				61C2C20B24C1045300C0321C /* SendRUMFixture1ViewController.swift in Sources */,
@@ -3422,6 +3453,7 @@
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
 				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,
+				6111544825C9A88B007C84C9 /* PersistenceHelper.swift in Sources */,
 				61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */,
 				618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */,
 				61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */,

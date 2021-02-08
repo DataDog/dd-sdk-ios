@@ -6,7 +6,6 @@
 
 import UIKit
 import Datadog
-import DatadogCrashReporting
 
 protocol AppConfiguration {
     /// The tracking consent value applied when initializing the SDK.
@@ -40,7 +39,6 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
-            .enableCrashReporting(using: DDCrashReportingPlugin())
 
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {
@@ -65,7 +63,7 @@ struct UITestsAppConfiguration: AppConfiguration {
 
     init() {
         if Environment.shouldClearPersistentData() {
-            deletePersistedSDKData()
+            PersistenceHelpers.deleteAllSDKData()
         }
     }
 
@@ -115,24 +113,5 @@ struct UITestsAppConfiguration: AppConfiguration {
 
     func initialStoryboard() -> UIStoryboard? {
         return UIStoryboard(name: type(of: testScenario!).storyboardName, bundle: nil)
-    }
-
-    private func deletePersistedSDKData() {
-        guard let cachesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-            return
-        }
-
-        do {
-            let dataDirectories = try FileManager.default
-                .contentsOfDirectory(at: cachesDirectoryURL, includingPropertiesForKeys: [.isDirectoryKey, .canonicalPathKey])
-                .filter { $0.absoluteString.contains("com.datadoghq") }
-
-            try dataDirectories.forEach { url in
-                try FileManager.default.removeItem(at: url)
-                print("🧹 Deleted SDK data directory: \(url)")
-            }
-        } catch {
-            print("🔥 Failed to delete SDK data directory: \(error)")
-        }
     }
 }
