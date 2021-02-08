@@ -108,6 +108,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Total layout shift score that occured on the view
         public let cumulativeLayoutShift: Double?
 
+        /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+        public let customTimings: [String: Int64]?
+
         /// Duration in ns to the complete parsing and loading of the document and its sub resources
         public let domComplete: Int64?
 
@@ -150,6 +153,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the long tasks of the view
         public let longTask: LongTask?
 
+        /// User defined name of the view
+        public var name: String?
+
         /// URL that linked to the initial view of the page
         public var referrer: String?
 
@@ -166,6 +172,7 @@ public struct RUMViewEvent: RUMDataModel {
             case action = "action"
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
+            case customTimings = "custom_timings"
             case domComplete = "dom_complete"
             case domContentLoaded = "dom_content_loaded"
             case domInteractive = "dom_interactive"
@@ -180,6 +187,7 @@ public struct RUMViewEvent: RUMDataModel {
             case loadingTime = "loading_time"
             case loadingType = "loading_type"
             case longTask = "long_task"
+            case name = "name"
             case referrer = "referrer"
             case resource = "resource"
             case timeSpent = "time_spent"
@@ -562,6 +570,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
+        /// User defined name of the view
+        public var name: String?
+
         /// URL that linked to the initial view of the page
         public var referrer: String?
 
@@ -570,6 +581,7 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+            case name = "name"
             case referrer = "referrer"
             case url = "url"
         }
@@ -769,6 +781,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
+        /// User defined name of the view
+        public var name: String?
+
         /// URL that linked to the initial view of the page
         public var referrer: String?
 
@@ -777,6 +792,7 @@ public struct RUMActionEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+            case name = "name"
             case referrer = "referrer"
             case url = "url"
         }
@@ -990,6 +1006,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
+        /// User defined name of the view
+        public var name: String?
+
         /// URL that linked to the initial view of the page
         public var referrer: String?
 
@@ -998,6 +1017,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+            case name = "name"
             case referrer = "referrer"
             case url = "url"
         }
@@ -1083,4 +1103,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/8b955a03d0fe0b2f032a02d6800c61ef3fc9fada
+// Generated from https://github.com/DataDog/rum-events-format/tree/a37c41a4ac1aa3bfdc8d1fcecb35e4d1e07adddc

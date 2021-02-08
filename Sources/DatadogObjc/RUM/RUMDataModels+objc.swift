@@ -271,6 +271,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShift as NSNumber?
     }
 
+    @objc public var customTimings: [String: NSNumber]? {
+        root.swiftModel.view.customTimings as [String: NSNumber]?
+    }
+
     @objc public var domComplete: NSNumber? {
         root.swiftModel.view.domComplete as NSNumber?
     }
@@ -325,6 +329,11 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var longTask: DDRUMViewEventViewLongTask? {
         root.swiftModel.view.longTask != nil ? DDRUMViewEventViewLongTask(root: root) : nil
+    }
+
+    @objc public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
     }
 
     @objc public var referrer: String? {
@@ -1056,6 +1065,11 @@ public class DDRUMResourceEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    @objc public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
     @objc public var referrer: String? {
         set { root.swiftModel.view.referrer = newValue }
         get { root.swiftModel.view.referrer }
@@ -1459,6 +1473,11 @@ public class DDRUMActionEventView: NSObject {
 
     @objc public var id: String {
         root.swiftModel.view.id
+    }
+
+    @objc public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
     }
 
     @objc public var referrer: String? {
@@ -1949,6 +1968,11 @@ public class DDRUMErrorEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    @objc public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
     @objc public var referrer: String? {
         set { root.swiftModel.view.referrer = newValue }
         get { root.swiftModel.view.referrer }
@@ -1962,4 +1986,4 @@ public class DDRUMErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/8b955a03d0fe0b2f032a02d6800c61ef3fc9fada
+// Generated from https://github.com/DataDog/rum-events-format/tree/a37c41a4ac1aa3bfdc8d1fcecb35e4d1e07adddc
