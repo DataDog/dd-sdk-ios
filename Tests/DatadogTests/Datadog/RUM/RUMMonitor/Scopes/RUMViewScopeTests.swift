@@ -607,13 +607,13 @@ class RUMViewScopeTests: XCTestCase {
         let events = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self))
 
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
-        XCTAssertEqual(events[0].customViewTimings, [:])
+        XCTAssertEqual(events[0].model.view.customTimings, [:])
         XCTAssertEqual(
-            events[1].customViewTimings,
+            events[1].model.view.customTimings,
             ["timing-after-500000000ns": 500_000_000]
         )
         XCTAssertEqual(
-            events[2].customViewTimings,
+            events[2].model.view.customTimings,
             ["timing-after-500000000ns": 500_000_000, "timing-after-1000000000ns": 1_000_000_000]
         )
     }
@@ -648,7 +648,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let lastEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(lastEvent.customViewTimings, [:])
+        XCTAssertEqual(lastEvent.model.view.customTimings, [:])
     }
 
     // MARK: - Dates Correction
