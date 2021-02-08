@@ -194,13 +194,16 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                 SwiftStruct.Property(
                     name: "propertyWithAdditionalProperties",
                     comment: "Description of a property with nested additional properties.",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(),
-                                          value: SwiftPrimitive<Int>()),
+                    type: SwiftDictionary(
+                        key: SwiftPrimitive<String>(),
+                        value: SwiftPrimitive<Int>()
+                    ),
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
                     codingKey: "propertyWithAdditionalProperties"
-                )],
+                )
+            ],
             conformance: []
         )
 
@@ -214,7 +217,8 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let object = JSONObject(
             name: "Foo",
             comment: "Description of Foo.",
-            properties: [JSONObject.Property(
+            properties: [
+                JSONObject.Property(
                     name: "bar",
                     comment: "Description of Foo's `bar`.",
                     type: JSONObject(
@@ -256,7 +260,8 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let object = JSONObject(
             name: "Foo",
             comment: "Description of Foo.",
-            properties: [JSONObject.Property(
+            properties: [
+                JSONObject.Property(
                     name: "bar",
                     comment: "Description of Foo's `bar`.",
                     type: JSONObject(
@@ -330,13 +335,16 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                 SwiftStruct.Property(
                     name: "propertyWithAdditionalProperties",
                     comment: "Description of a property with nested additional properties.",
-                    type: SwiftDictionary(key: SwiftPrimitive<String>(),
-                                          value: SwiftPrimitive<Int>()),
+                    type: SwiftDictionary(
+                        key: SwiftPrimitive<String>(),
+                        value: SwiftPrimitive<Int>()
+                    ),
                     isOptional: false,
                     isMutable: false,
                     defaultValue: nil,
                     codingKey: "propertyWithAdditionalProperties"
-                )],
+                )
+            ],
             conformance: []
         )
 
