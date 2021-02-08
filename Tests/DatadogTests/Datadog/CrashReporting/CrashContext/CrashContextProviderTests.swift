@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-/// This suite tests if `CrashContextProvider` gets updated by different SDK componetns, each delivering
+/// This suite tests if `CrashContextProvider` gets updated by different SDK components, each delivering
 /// separate part of the `CrashContext` information.
 ///
 /// Individual tests should not rely directly on `update(_:)` methods of the `CrashContextProvider`.

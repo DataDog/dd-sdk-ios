@@ -876,7 +876,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Integration with Crash Reporting
 
-    func testGivenRegisteredCrashReporer_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
+    func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance = nil }
 
