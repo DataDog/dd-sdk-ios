@@ -36,19 +36,27 @@ internal struct JSONObject: JSONType {
         let name: String
         let comment: String?
         let type: JSONType
-        let defaultVaule: DefaultValue?
+        let defaultValue: DefaultValue?
         let isRequired: Bool
+        let isReadOnly: Bool
+    }
+
+    struct AdditionalProperties: JSONType {
+        let comment: String?
+        let type: JSONPrimitive
         let isReadOnly: Bool
     }
 
     let name: String
     let comment: String?
     let properties: [Property]
+    let additionalProperties: AdditionalProperties?
 
-    init(name: String, comment: String?, properties: [Property]) {
+    init(name: String, comment: String?, properties: [Property], additionalProperties: AdditionalProperties? = nil) {
         self.name = name
         self.comment = comment
         self.properties = properties.sorted { property1, property2 in property1.name < property2.name }
+        self.additionalProperties = additionalProperties
     }
 }
 

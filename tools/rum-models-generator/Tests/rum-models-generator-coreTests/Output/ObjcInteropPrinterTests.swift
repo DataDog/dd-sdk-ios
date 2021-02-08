@@ -958,6 +958,174 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    // MARK: - Property wrappers for Swift Dictionaries
+
+    func testPrintingObjcInteropForSwiftStructWithStringDictionaryProperties() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "immutableStrings",
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
+                    isOptional: false,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "optionalImmutableStrings",
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
+                    isOptional: true,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "mutableStrings",
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
+                    isOptional: false,
+                    isMutable: true
+                ),
+                .mock(
+                    propertyName: "optionalMutableStrings",
+                    type: SwiftDictionary(value: SwiftPrimitive<String>()),
+                    isOptional: true,
+                    isMutable: true
+                ),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let immutableStrings: [String: String]
+
+            public let optionalImmutableStrings: [String: String]?
+
+            public var mutableStrings: [String: String]
+
+            public var optionalMutableStrings: [String: String]?
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var immutableStrings: [String: String] {
+                root.swiftModel.immutableStrings
+            }
+
+            @objc public var optionalImmutableStrings: [String: String]? {
+                root.swiftModel.optionalImmutableStrings
+            }
+
+            @objc public var mutableStrings: [String: String] {
+                set { root.swiftModel.mutableStrings = newValue }
+                get { root.swiftModel.mutableStrings }
+            }
+
+            @objc public var optionalMutableStrings: [String: String]? {
+                set { root.swiftModel.optionalMutableStrings = newValue }
+                get { root.swiftModel.optionalMutableStrings }
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testPrintingObjcInteropForSwiftStructWithInt64DictionaryProperties() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "immutableInt64s",
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
+                    isOptional: false,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "optionalImmutableInt64s",
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
+                    isOptional: true,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "mutableInt64s",
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
+                    isOptional: false,
+                    isMutable: true
+                ),
+                .mock(
+                    propertyName: "optionalMutableInt64s",
+                    type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
+                    isOptional: true,
+                    isMutable: true
+                ),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let immutableInt64s: [String: Int64]
+
+            public let optionalImmutableInt64s: [String: Int64]?
+
+            public var mutableInt64s: [String: Int64]
+
+            public var optionalMutableInt64s: [String: Int64]?
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var immutableInt64s: [String: NSNumber] {
+                root.swiftModel.immutableInt64s as [String: NSNumber]
+            }
+
+            @objc public var optionalImmutableInt64s: [String: NSNumber]? {
+                root.swiftModel.optionalImmutableInt64s as [String: NSNumber]?
+            }
+
+            @objc public var mutableInt64s: [String: NSNumber] {
+                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+                get { root.swiftModel.mutableInt64s as [String: NSNumber] }
+            }
+
+            @objc public var optionalMutableInt64s: [String: NSNumber]? {
+                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+                get { root.swiftModel.optionalMutableInt64s as [String: NSNumber]? }
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
     // MARK: - Nested Swift Structs and Enums
 
     func testPrintingObjcInteropForSwiftStructWithNestedStructs() throws {
@@ -1575,7 +1743,7 @@ extension SwiftStruct.Property {
             type: type,
             isOptional: isOptional,
             isMutable: isMutable,
-            defaultVaule: nil,
+            defaultValue: nil,
             codingKey: propertyName
         )
     }
