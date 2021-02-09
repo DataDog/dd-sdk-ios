@@ -72,7 +72,7 @@ class CrashReportingIntegrationMock: CrashReportingIntegration {
     var sentCrashReport: DDCrashReport?
     var sentCrashContext: CrashContext?
 
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext?) {
+    func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
         sentCrashReport = crashReport
         sentCrashContext = crashContext
         didSendCrashReport?()

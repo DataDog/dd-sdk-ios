@@ -10,7 +10,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         // TODO: RUMM-960 Create `RUMEventOutput`
     }
 
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext?) {
+    func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
         // TODO: RUMM-960 Send crash report as RUM Errors (followed by RUM View update)
         // by writting it to the `RUMEventOutput`
         print(

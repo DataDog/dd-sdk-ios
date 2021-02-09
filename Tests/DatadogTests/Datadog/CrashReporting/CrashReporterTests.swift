@@ -64,6 +64,34 @@ class CrashReporterTests: XCTestCase {
         XCTAssertTrue(plugin.hasPurgedCrashReport == false, "It should not purge the crash report")
     }
 
+    func testGivenPendingCrashReportWithUnavailableCrashContext_whenLoggingOrRUMIntegrationIsEnabled_itPurgesTheCrashReportWithNoSending() {
+        let expectation = self.expectation(description: "`LoggingOrRUMIntegration` does not send the crash report")
+        expectation.isInverted = true
+        let plugin = CrashReportingPluginMock()
+
+        // Given
+        plugin.pendingCrashReport = .mockWith(context: nil)
+        plugin.injectedContextData = nil
+
+        // When
+        let integration = CrashReportingIntegrationMock()
+        let crashReporter = CrashReporter(
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            loggingOrRUMIntegration: integration
+        )
+
+        // Then
+        integration.didSendCrashReport = { expectation.fulfill() }
+        crashReporter.sendCrashReportIfFound()
+
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(
+            plugin.hasPurgedCrashReport == true,
+            "It should ask to purge the crash report as the crash context is unavailable"
+        )
+    }
+
     // MARK: - Crash Context Injection
 
     func testWhenInitialized_itInjectsInitialCrashContextToThePlugin() {
