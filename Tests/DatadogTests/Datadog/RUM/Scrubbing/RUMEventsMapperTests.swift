@@ -76,19 +76,15 @@ class RUMEventsMapperTests: XCTestCase {
         // Then
         XCTAssertEqual(rumEvent1.attributes as! [String: String], mappedRUMEvent1.attributes as! [String: String])
         XCTAssertEqual(rumEvent1.userInfoAttributes as! [String: String], mappedRUMEvent1.userInfoAttributes as! [String: String])
-        XCTAssertEqual(rumEvent1.customViewTimings, mappedRUMEvent1.customViewTimings)
 
         XCTAssertEqual(rumEvent2.attributes as! [String: String], mappedRUMEvent2.attributes as! [String: String])
         XCTAssertEqual(rumEvent2.userInfoAttributes as! [String: String], mappedRUMEvent2.userInfoAttributes as! [String: String])
-        XCTAssertEqual(rumEvent2.customViewTimings, mappedRUMEvent2.customViewTimings)
 
         XCTAssertEqual(rumEvent3.attributes as! [String: String], mappedRUMEvent3.attributes as! [String: String])
         XCTAssertEqual(rumEvent3.userInfoAttributes as! [String: String], mappedRUMEvent3.userInfoAttributes as! [String: String])
-        XCTAssertEqual(rumEvent3.customViewTimings, mappedRUMEvent3.customViewTimings)
 
         XCTAssertEqual(rumEvent4.attributes as! [String: String], mappedRUMEvent4.attributes as! [String: String])
         XCTAssertEqual(rumEvent4.userInfoAttributes as! [String: String], mappedRUMEvent4.userInfoAttributes as! [String: String])
-        XCTAssertEqual(rumEvent4.customViewTimings, mappedRUMEvent4.customViewTimings)
     }
 
     func testGivenMappersEnabled_whenDroppingEvents_itReturnsNil() {

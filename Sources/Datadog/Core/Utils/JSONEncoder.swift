@@ -15,25 +15,7 @@ extension JSONEncoder {
             try container.encode(formatted)
         }
         if #available(iOS 13.0, OSX 10.15, *) {
-            // NOTE: The `.sortedKeys` option was added in RUMM-776 after discovering an issue
-            // with backend processing of the RUM View payloads. The custom timings encoding for
-            // RUM views requires following structure:
-            //
-            //  ```
-            //  {
-            //     view: { /* serialized, auto-generated RUM view event */ },
-            //     view.custom_timings.<custom-timing-1-name>: <custom-timing-value>,
-            //     view.custom_timings.<custom-timing-2-name>: <custom-timing-value>
-            //     ...
-            //  }
-            //  ```
-            //
-            // To guarantee proper backend-side processing, the `view.custom_timings` keys must be
-            // encoded after the `view` object. Using `.sortedKeys` enforces this order.
-            //
-            encoder.outputFormatting = [.withoutEscapingSlashes, .sortedKeys]
-        } else {
-            encoder.outputFormatting = [.sortedKeys]
+            encoder.outputFormatting = [.withoutEscapingSlashes]
         }
         return encoder
     }
