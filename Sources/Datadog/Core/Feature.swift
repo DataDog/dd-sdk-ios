@@ -32,10 +32,16 @@ internal struct FeaturesCommonDependencies {
 }
 
 internal struct FeatureStorage {
-    /// Writes data to files.
+    /// Writes data to files. This `Writer` takes current value of the `TrackingConsent` into consideration
+    /// to decided if the data should be written to authorized or unauthorized folder.
     let writer: Writer
-    /// Reads data from files.
+    /// Reads data from files in authorized folder.
     let reader: Reader
+
+    /// An arbitrary `Writer` which always writes data to authorized folder.
+    /// Should be only used by components which implement their own consideration of the `TrackingConsent` value
+    /// associated with data written.
+    let arbitraryAuthorizedWriter: Writer
 
     init(
         featureName: String,
@@ -59,18 +65,22 @@ internal struct FeatureStorage {
             dateProvider: commonDependencies.dateProvider
         )
 
+        let unauthorizedFileWriter = FileWriter(
+            dataFormat: dataFormat,
+            orchestrator: unauthorizedFilesOrchestrator
+        )
+
+        let authorizedFileWriter = FileWriter(
+            dataFormat: dataFormat,
+            orchestrator: authorizedFilesOrchestrator
+        )
+
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: commonDependencies.consentProvider,
             readWriteQueue: readWriteQueue,
             dataProcessorFactory: DataProcessorFactory(
-                unauthorizedFileWriter: FileWriter(
-                    dataFormat: dataFormat,
-                    orchestrator: unauthorizedFilesOrchestrator
-                ),
-                authorizedFileWriter: FileWriter(
-                    dataFormat: dataFormat,
-                    orchestrator: authorizedFilesOrchestrator
-                ),
+                unauthorizedFileWriter: unauthorizedFileWriter,
+                authorizedFileWriter: authorizedFileWriter,
                 eventMapper: eventMapper
             ),
             dataMigratorFactory: DataMigratorFactory(
@@ -78,20 +88,30 @@ internal struct FeatureStorage {
             )
         )
 
-        let dataReader = DataReader(
+        let arbitraryDataWriter = ArbitraryDataWriter(
+            readWriteQueue: readWriteQueue,
+            dataProcessor: DataProcessor(
+                fileWriter: authorizedFileWriter,
+                eventMapper: eventMapper
+            )
+        )
+
+        let authorisedDataReader = DataReader(
             readWriteQueue: readWriteQueue,
             fileReader: FileReader(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator)
         )
 
         self.init(
             writer: consentAwareDataWriter,
-            reader: dataReader
+            reader: authorisedDataReader,
+            arbitraryAuthorizedWriter: arbitraryDataWriter
         )
     }
 
-    init(writer: Writer, reader: Reader) {
+    init(writer: Writer, reader: Reader, arbitraryAuthorizedWriter: Writer) {
         self.writer = writer
         self.reader = reader
+        self.arbitraryAuthorizedWriter = arbitraryAuthorizedWriter
     }
 }
 

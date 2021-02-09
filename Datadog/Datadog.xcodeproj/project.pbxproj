@@ -103,6 +103,7 @@
 		61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C36252DDD60007DD5BF /* RUMMVSViewController.swift */; };
 		61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */; };
 		61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */; };
+		6116563B25D2A6C90070EC03 /* ArbitraryDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6116563A25D2A6C90070EC03 /* ArbitraryDataWriter.swift */; };
 		611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */; };
 		611EA12D2580F42600BC0E56 /* TrackingConsentScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA12C2580F42600BC0E56 /* TrackingConsentScenarios.swift */; };
 		611EA13C2580F77400BC0E56 /* TrackingConsentScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 611EA13B2580F77400BC0E56 /* TrackingConsentScenario.storyboard */; };
@@ -611,6 +612,7 @@
 		61163C36252DDD60007DD5BF /* RUMMVSViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMVSViewController.swift; sourceTree = "<group>"; };
 		61163C3D252E0015007DD5BF /* RUMMVSModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMVSModalViewController.swift; sourceTree = "<group>"; };
 		61163C49252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMModalViewsScenarioTests.swift; sourceTree = "<group>"; };
+		6116563A25D2A6C90070EC03 /* ArbitraryDataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArbitraryDataWriter.swift; sourceTree = "<group>"; };
 		611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionDelegate+objc.swift"; sourceTree = "<group>"; };
 		611EA12C2580F42600BC0E56 /* TrackingConsentScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentScenarios.swift; sourceTree = "<group>"; };
 		611EA13B2580F77400BC0E56 /* TrackingConsentScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = TrackingConsentScenario.storyboard; sourceTree = "<group>"; };
@@ -1737,6 +1739,7 @@
 			children = (
 				613E79272577B0EE00DFCC17 /* Writer.swift */,
 				6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */,
+				6116563A25D2A6C90070EC03 /* ArbitraryDataWriter.swift */,
 				61133BA72423979B00786299 /* FileWriter.swift */,
 				619E16D62577C19F00B2516B /* Processing */,
 			);
@@ -3145,6 +3148,7 @@
 				61E909F324A24DD3005EA2DE /* OTSpanContext.swift in Sources */,
 				61E909F024A24DD3005EA2DE /* OTTracer.swift in Sources */,
 				61E909F124A24DD3005EA2DE /* OTReference.swift in Sources */,
+				6116563B25D2A6C90070EC03 /* ArbitraryDataWriter.swift in Sources */,
 				61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */,
 				61E909EF24A24DD3005EA2DE /* Global.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,

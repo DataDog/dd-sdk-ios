@@ -11,7 +11,7 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
