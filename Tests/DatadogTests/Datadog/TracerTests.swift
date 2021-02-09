@@ -583,7 +583,7 @@ class TracerTests: XCTestCase {
         )
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.person"),
-            #"{"age":30,"name":"Adam","nationality":"Polish"}"#
+            #"{"name":"Adam","age":30,"nationality":"Polish"}"#
         )
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.nested.string"), "hello")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.url"), "https://example.com/image.png")
