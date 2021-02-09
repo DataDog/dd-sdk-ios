@@ -85,9 +85,16 @@ extension CrashContext: EquatableInTests {}
 
 extension CrashContext {
     static func mockAny() -> CrashContext {
+        return mockWith()
+    }
+
+    static func mockWith(
+        lastTrackingConsent: TrackingConsent = .granted,
+        lastRUMViewEvent: RUMViewEvent? = nil
+    ) -> CrashContext {
         return CrashContext(
-            lastTrackingConsent: .granted,
-            lastRUMViewEvent: nil
+            lastTrackingConsent: lastTrackingConsent,
+            lastRUMViewEvent: lastRUMViewEvent
         )
     }
 

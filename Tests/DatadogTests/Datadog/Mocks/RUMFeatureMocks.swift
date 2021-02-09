@@ -119,7 +119,7 @@ extension RUMEventBuilder {
 }
 
 class RUMEventOutputMock: RUMEventOutput {
-    private var recordedEvents: [Any] = []
+    private(set) var recordedEvents: [Any] = []
 
     func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
         return recordedEvents.compactMap { event in event as? E }
