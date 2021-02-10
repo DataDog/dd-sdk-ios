@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
+
 /// An integration sending crash reports as RUM Errors.
 internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     struct Constants {
