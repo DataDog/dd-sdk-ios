@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import os
+import subprocess
 from argparse import ArgumentParser, Namespace
 from tempfile import TemporaryDirectory
 from typing import Tuple
@@ -52,39 +53,48 @@ def github_create_pr(repository: str, branch_name: str, base_name: str, version:
         return 1
 
 
-def generate_target_code(target: str, temp_dir_path: str, version: str):
+def generate_target_code(target: str, temp_dir_path: str, version: str) -> int:
     print("… Generating code with version " + version)
 
     if target == TARGET_APP:
-        target_file = os.path.join(temp_dir_path, "Podfile")
+        print("… Updating app's Podfile")
+        target_file_path = os.path.join(temp_dir_path, "Podfile")
         content = ""
-        with open(target_file, 'r') as target:
-            lines = target.readlines()
+        with open(target_file_path, 'r') as target_file:
+            lines = target_file.readlines()
             for line in lines:
                 if "pod 'DatadogSDK'" in line:
                     content = content + "    pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => '" + version + "'\n"
                 else:
                     content = content + line
 
-        with open(target_file, 'w') as target:
-            target.write(content)
+        with open(target_file_path, 'w') as target_file:
+            target_file.write(content)
 
-        target_file = os.path.join(temp_dir_path, "Podfile.lock")
-        content = ""
-        with open(target_file, 'r') as target:
-            lines = target.readlines()
-            for line in lines:
-                if "  - DatadogSDK (from " in line:
-                    content = content + "  - DatadogSDK (from `https://github.com/DataDog/dd-sdk-ios.git`, tag `" + version + "`)\n"
-                elif "  - DatadogSDK (" in line:
-                    content = content + "  - DatadogSDK (" + version + ")\n"
-                else:
-                    content = content + line
 
-        with open(target_file, 'w') as target:
-            target.write(content)
+        print("… Running `bundle exec pod install`") 
+        os.chdir(temp_dir_path)
+        cmd_args = ['bundle', 'exec', 'pod', 'install']
+        process = subprocess.Popen(cmd_args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        try:
+            output, errlog = process.communicate(timeout=120)
+        except subprocess.TimeoutExpired:
+            print("✘ generation timeout for " + target + ", version: " + version)
+            return 1
 
+        if process.returncode is None:
+            print("✘ generation status unknown for " + target + ", version: " + version)
+            return 1
+        elif process.returncode > 0:
+            print("✘ generation failed for " + target + ", version: " + version)
+            print(output.decode("utf-8"))
+            print(errlog.decode("utf-8"))
+            return 1
+        else:
+            return 0
     # TODO RUMM-1063 elif target == TARGET_DEMO: …
+    else:
+        print("? unknown generation target: " + target + ", version: " + version)
 
 
 def git_clone_repository(repo_name: str, gh_token: str, temp_dir_path: str) -> Tuple[Repo, str]:
@@ -116,7 +126,13 @@ def update_dependant(version: str, target: str, gh_token: str) -> int:
     print("… Creating branch " + branch_name)
     repo.git.checkout('HEAD', b=branch_name)
 
-    generate_target_code(target, temp_dir_path, version)
+
+    cwd = os.getcwd()
+    result = generate_target_code(target, temp_dir_path, version)
+    os.chdir(cwd)
+
+    if result > 0:
+        return result
 
     if not repo.is_dirty():
         print("∅ Nothing to commit, all is in order…")
