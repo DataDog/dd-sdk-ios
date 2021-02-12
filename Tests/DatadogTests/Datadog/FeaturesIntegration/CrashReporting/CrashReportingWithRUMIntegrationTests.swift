@@ -22,7 +22,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(crashDate: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: .mockRandom()
+            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
         )
 
         // When
@@ -49,7 +49,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(crashDate: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: .mockRandom()
+            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
         )
 
         // When
@@ -70,7 +70,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(crashDate: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: [.pending, .notGranted].randomElement()!,
-            lastRUMViewEvent: .mockRandom()
+            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
         )
 
         // When
@@ -115,7 +115,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(crashDate: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: lastRUMViewEvent
+            lastRUMViewEvent: .mockRandomWith(model: lastRUMViewEvent)
         )
 
         // When
@@ -172,7 +172,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: lastRUMViewEvent
+            lastRUMViewEvent: .mockRandomWith(model: lastRUMViewEvent)
         )
 
         // When

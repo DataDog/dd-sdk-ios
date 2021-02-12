@@ -80,17 +80,19 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     // MARK: - Building RUM events
 
     /// Creates the `RUMEvent<RUMErrorEvent>` based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
-    private func createRUMError(from crashReport: DDCrashReport, and lastRUMViewEvent: RUMViewEvent, crashDate: Date) -> RUMEvent<RUMErrorEvent> {
+    private func createRUMError(from crashReport: DDCrashReport, and lastRUMViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMErrorEvent> {
+        let lastRUMView = lastRUMViewEvent.model
+
         // TODO: RUMM-1053 come up with better formatting of following values
         let errorMessage = crashReport.signalDetails ?? "<unkown>"
         let errorStackTrace = crashReport.stackTrace ?? "<unkown>"
         let errorType = (crashReport.signalName ?? "<unknown>") + " - " + (crashReport.signalCode ?? "<unknown>")
 
-        let eventData = RUMErrorEvent(
+        let rumError = RUMErrorEvent(
             dd: .init(),
             action: nil,
-            application: .init(id: lastRUMViewEvent.application.id),
-            connectivity: lastRUMViewEvent.connectivity,
+            application: .init(id: lastRUMView.application.id),
+            connectivity: lastRUMView.connectivity,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
                 isCrash: true,
@@ -100,29 +102,31 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 stack: errorStackTrace,
                 type: errorType
             ),
-            service: lastRUMViewEvent.service,
+            service: lastRUMView.service,
             session: .init(
-                hasReplay: lastRUMViewEvent.session.hasReplay,
-                id: lastRUMViewEvent.session.id,
+                hasReplay: lastRUMView.session.hasReplay,
+                id: lastRUMView.session.id,
                 type: .user
             ),
-            usr: lastRUMViewEvent.usr,
+            usr: lastRUMView.usr,
             view: .init(
-                id: lastRUMViewEvent.view.id,
-                referrer: lastRUMViewEvent.view.referrer,
-                url: lastRUMViewEvent.view.url
+                id: lastRUMView.view.id,
+                referrer: lastRUMView.view.referrer,
+                url: lastRUMView.view.url
             )
         )
 
-        // TODO: RUMM-1070 - `attributes` and `userInfoAttributes` recorded in `lastRUMViewEvent` should also be included there.
-        // This requires encoding the entire `RUMEvent<RUMViewEvent>` in `CrashContext`, not only `RUMViewEvent` as it's done now.
-        return RUMEvent(model: eventData, attributes: [:], userInfoAttributes: [:])
+        return RUMEvent(
+            model: rumError,
+            attributes: lastRUMViewEvent.attributes,
+            userInfoAttributes: lastRUMViewEvent.userInfoAttributes
+        )
     }
 
-    /// Creates the `RUMEvent<RUMViewEvent>` updating given `lastRUMViewEvent` with crash information.
-    private func updateRUMViewWithNewError(_ rumViewEvent: RUMViewEvent, crashDate: Date) -> RUMEvent<RUMViewEvent> {
-        let original = rumViewEvent
-        let eventData = RUMViewEvent(
+    /// Creates RUM View event which updates given `lastRUMViewEvent` with crash information.
+    private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
+        let original = rumViewEvent.model
+        let rumView = RUMViewEvent(
             dd: .init(documentVersion: original.dd.documentVersion + 1),
             application: original.application,
             connectivity: original.connectivity,
@@ -156,8 +160,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             )
         )
 
-        // TODO: RUMM-1070 - `attributes` and `userInfoAttributes` recorded in `lastRUMViewEvent` should also be included there.
-        // This requires encoding the entire `RUMEvent<RUMViewEvent>` in `CrashContext`, not only `RUMViewEvent` as it's done now.
-        return RUMEvent(model: eventData, attributes: [:], userInfoAttributes: [:])
+        return RUMEvent(
+            model: rumView,
+            attributes: rumViewEvent.attributes,
+            userInfoAttributes: rumViewEvent.userInfoAttributes
+        )
     }
 }

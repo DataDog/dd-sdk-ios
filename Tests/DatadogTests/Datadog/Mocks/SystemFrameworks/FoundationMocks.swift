@@ -79,9 +79,21 @@ extension Array {
     }
 }
 
+extension Array: RandomMockable where Element: RandomMockable {
+    static func mockRandom() -> [Element] {
+        return Array(repeating: .mockRandom(), count: 10)
+    }
+}
+
 extension Dictionary: AnyMockable where Key: AnyMockable, Value: AnyMockable {
     static func mockAny() -> Dictionary {
         return [Key.mockAny(): Value.mockAny()]
+    }
+}
+
+extension Dictionary: RandomMockable where Key: RandomMockable, Value: RandomMockable {
+    static func mockRandom() -> Dictionary {
+        return [Key.mockRandom(): Value.mockRandom()]
     }
 }
 
@@ -145,12 +157,16 @@ extension URL: AnyMockable, RandomMockable {
     }
 }
 
-extension String: AnyMockable {
+extension String: AnyMockable, RandomMockable {
     static func mockAny() -> String {
         return "abc"
     }
 
-    static func mockRandom(length: Int = 10) -> String {
+    static func mockRandom() -> String {
+        return mockRandom(length: 10)
+    }
+
+    static func mockRandom(length: Int) -> String {
         return mockRandom(
             among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
             length: length
@@ -167,9 +183,13 @@ extension String: AnyMockable {
     }
 }
 
-extension Int: AnyMockable {
+extension Int: AnyMockable, RandomMockable {
     static func mockAny() -> Int {
         return 0
+    }
+
+    static func mockRandom() -> Int {
+        return .random(in: Int.min...Int.max)
     }
 }
 
@@ -178,9 +198,13 @@ extension Int64: AnyMockable, RandomMockable {
     static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }
 }
 
-extension UInt64: AnyMockable {
+extension UInt64: AnyMockable, RandomMockable {
     static func mockAny() -> UInt64 {
         return 0
+    }
+
+    static func mockRandom() -> UInt64 {
+        return .random(in: UInt64.min...UInt64.max)
     }
 }
 

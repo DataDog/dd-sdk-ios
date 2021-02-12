@@ -108,7 +108,12 @@ internal class CrashReporter {
 
     // MARK: - CrashContext Encoding and Decoding
 
-    private let crashContextEncoder = JSONEncoder()
+    /// JSON encoder used for writing `CrashContext` into JSON `Data` injected to crash report.
+    /// Note: this `JSONEncoder` must have the same configuration as the `JSONEncoder` used later for writting payloads to uploadable files.
+    /// Otherwise the format of data read and uploaded from crash report context will be different than the format of data retrieved from the user
+    /// and written directly to uploadable file.
+    private let crashContextEncoder: JSONEncoder = .default()
+    /// JSON decoder used for reading `CrashContext` from JSON `Data` injected to crash report. 
     private let crashContextDecoder = JSONDecoder()
 
     private func encode(crashContext: CrashContext) -> Data? {
