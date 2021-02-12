@@ -65,7 +65,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).count, 1)
     }
 
-    func testWhenCrashReportHasUnauthorizedTrackingConsent_itIsNotSend() throws {
+    func testWhenCrashReportHasUnauthorizedTrackingConsent_itIsNotSent() throws {
         // Given
         let crashReport: DDCrashReport = .mockWith(crashDate: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
@@ -85,7 +85,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(rumEventOutput.recordedEvents.count, 0)
     }
 
-    func testWhenCrashReportHasNoAssociatedLastRUMViewEvent_itIsNotSend() throws {
+    func testWhenCrashReportHasNoAssociatedLastRUMViewEvent_itIsNotSent() throws {
         // Given
         let crashReport: DDCrashReport = .mockWith(crashDate: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(

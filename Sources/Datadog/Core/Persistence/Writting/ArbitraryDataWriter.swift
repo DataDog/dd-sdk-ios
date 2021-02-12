@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Writes data to single folder, no matter of the value of `TrackingConsent`.
+/// Writes data to single folder, regardless of the value of `TrackingConsent`.
 /// It synchronizes the work of underlying `FileWriter` on given read/write queue.
 internal class ArbitraryDataWriter: Writer {
     /// Queue used to synchronize reads and writes for the feature.
