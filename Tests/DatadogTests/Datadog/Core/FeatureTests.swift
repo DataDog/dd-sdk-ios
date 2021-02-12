@@ -42,7 +42,7 @@ class FeatureStorageTests: XCTestCase {
         }
 
         // Then
-        let authorizedValues = readAllAuthorizedDataWritten(to: storage)
+        let authorizedValues = readAllAuthorizedDataWritten(to: storage, limit: 100)
             .map { $0.utf8String }
 
         let expectedAuthorizedValues = [
@@ -81,7 +81,7 @@ class FeatureStorageTests: XCTestCase {
         // swiftlint:enable opening_brace
 
         // Then
-        let dataWritten = readAllAuthorizedDataWritten(to: storage)
+        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: 50)
             .map { $0.utf8String }
         XCTAssertEqual(dataWritten.filter { $0 == "\"regular write\"" }.count, 25)
         XCTAssertEqual(dataWritten.filter { $0 == "\"arbitrary write\"" }.count, 25)
@@ -114,22 +114,25 @@ class FeatureStorageTests: XCTestCase {
         }
 
         // Then
-        let dataWritten = readAllAuthorizedDataWritten(to: storage)
+        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: 4)
             .map { $0.utf8String }
         XCTAssertEqual(dataWritten, ["\"value\"", "\"value\"", "\"redact\"", "\"redact\""])
     }
 
     // MARK: - Helpers
 
-    private func readAllAuthorizedDataWritten(to storage: FeatureStorage) -> [Data] {
+    private func readAllAuthorizedDataWritten(
+        to storage: FeatureStorage,
+        limit: Int,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> [Data] {
         var dataAuthorizedForUpload: [Data] = []
 
-        while true {
+        (0..<limit).forEach { _ in
             if let nextBatch = storage.reader.readNextBatch() {
                 dataAuthorizedForUpload.append(nextBatch.data)
                 storage.reader.markBatchAsRead(nextBatch)
-            } else {
-                break
             }
         }
 
