@@ -42,8 +42,13 @@ class DataUploadWorkerMock: DataUploadWorkerType {
             self?.readNextBatch()
         }
         let originalReader = featureStorage.reader
+        let originalArbitraryWriter = featureStorage.arbitraryAuthorizedWriter
         reader = originalReader
-        return FeatureStorage(writer: observedWriter, reader: originalReader)
+        return FeatureStorage(
+            writer: observedWriter,
+            reader: originalReader,
+            arbitraryAuthorizedWriter: originalArbitraryWriter
+        )
     }
 
     private func readNextBatch() {

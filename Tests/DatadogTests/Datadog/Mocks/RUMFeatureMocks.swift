@@ -11,7 +11,7 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
@@ -119,7 +119,7 @@ extension RUMEventBuilder {
 }
 
 class RUMEventOutputMock: RUMEventOutput {
-    private var recordedEvents: [Any] = []
+    private(set) var recordedEvents: [Any] = []
 
     func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
         return recordedEvents.compactMap { event in event as? E }

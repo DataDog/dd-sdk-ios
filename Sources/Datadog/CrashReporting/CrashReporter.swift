@@ -86,7 +86,12 @@ internal class CrashReporter {
                     return false
                 }
 
-                let crashContext = crashReport?.context.flatMap { self.decode(crashContextData: $0) }
+                guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
+                    // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
+                    // purge this crash report as we are not able to process it respectively.
+                    return true
+                }
+
                 self.loggingOrRUMIntegration.send(crashReport: availableCrashReport, with: crashContext)
                 return true
             }

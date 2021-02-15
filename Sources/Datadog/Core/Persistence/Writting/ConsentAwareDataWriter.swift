@@ -6,7 +6,8 @@
 
 import Foundation
 
-/// Writes data to different folders depending on the tracking consent value.
+/// Writes data to different folders depending on current the value of the `TrackingConsent`.
+/// When the value of `TrackingConsent` changes, it may move data from unauthorized folder to the authorized one or wipe it out entirely.
 /// It synchronizes the work of underlying `FileWriters` on given read/write queue.
 internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
     /// Queue used to synchronize reads and writes for the feature.

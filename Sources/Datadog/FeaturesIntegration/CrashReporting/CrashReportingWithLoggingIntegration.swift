@@ -10,7 +10,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         // TODO: RUMM-1050 Create `LogOutput`
     }
 
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext?) {
+    func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
         // TODO: RUMM-1050 Send crash report as Log
         // by writting it to the `LogOutput`
         print(
