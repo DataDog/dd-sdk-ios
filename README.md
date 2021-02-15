@@ -1,6 +1,6 @@
 # Datadog SDK for iOS
 
-> Swift and Objective-C libraries to interact with Datadog on iOS.
+> Swift and Objective-C libraries to interact with Datadog on iOS
 
 ## Getting Started
 
