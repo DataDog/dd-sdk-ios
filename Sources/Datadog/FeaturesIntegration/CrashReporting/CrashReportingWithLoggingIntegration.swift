@@ -16,7 +16,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         print(
             """
             🍿 Sending Crash Report using Logging integration
-            🔥 \(crashReport.signalName ?? "") [\(crashReport.signalDetails ?? "")]
+            🔥 \(crashReport.type) [\(crashReport.message)]
             🔎 crash context: \(String(describing: crashContext))
             """
         )
