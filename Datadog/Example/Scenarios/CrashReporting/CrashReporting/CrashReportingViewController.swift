@@ -34,6 +34,7 @@ internal class CrashReportingViewController: UIViewController {
 
         addButton(titled: "Call fatalError()", action: #selector(callFatalError))
         addButton(titled: "Throw uncaught NSException", action: #selector(throwUncaughtNSException))
+        addButton(titled: "Force try! Swift Error", action: #selector(forceTrySwiftError))
         addButton(titled: "Explicitly unwrap `nil` optional", action: #selector(explicitlyUnwrapOptionalNil))
         addButton(titled: "Implicitly unwrap `nil` optional", action: #selector(implicitlyUnwrapOptionalNil))
         addButton(titled: "Access array outside its bounds", action: #selector(accessArrayOutsideItsBounds))
@@ -46,6 +47,15 @@ internal class CrashReportingViewController: UIViewController {
 
     @objc func throwUncaughtNSException() {
         objc.throwUncaughtNSException() // `[NSObject objectForKey:]: unrecognized selector sent to instance 0x...`
+    }
+
+    @objc func forceTrySwiftError() {
+        struct Exception: Error, CustomDebugStringConvertible {
+            let debugDescription = "Exception description."
+        }
+
+        func throwException() throws { throw Exception() }
+        try! throwException()
     }
 
     @objc func explicitlyUnwrapOptionalNil() {
