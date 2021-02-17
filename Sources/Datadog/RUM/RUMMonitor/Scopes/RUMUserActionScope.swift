@@ -136,6 +136,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
                 url: context.activeViewURI ?? ""
             )

@@ -95,6 +95,7 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
                 identity: viewController,
+                name: rumView.name,
                 path: rumView.path,
                 attributes: rumView.attributes
             )

@@ -22,13 +22,13 @@ final class RUMNavigationControllerScenario: TestScenario {
         func rumView(for viewController: UIViewController) -> RUMView? {
             switch viewController.accessibilityLabel {
             case "Screen 1":
-                return .init(path: "Screen1")
+                return .init(name: "Screen1")
             case "Screen 2":
-                return .init(path: "Screen2")
+                return .init(name: "Screen2")
             case "Screen 3":
-                return .init(path: "Screen3")
+                return .init(name: "Screen3")
             case "Screen 4":
-                return .init(path: "Screen4")
+                return .init(name: "Screen4")
             default:
                 return nil
             }
@@ -51,7 +51,7 @@ final class RUMTabBarAutoInstrumentationScenario: TestScenario {
     private class Predicate: UIKitRUMViewsPredicate {
         func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
-                return .init(path: viewName)
+                return .init(name: viewName)
             } else {
                 return nil
             }
@@ -74,7 +74,7 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
     private class Predicate: UIKitRUMViewsPredicate {
         func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
-                return .init(path: viewName)
+                return .init(name: viewName)
             } else {
                 return nil
             }
@@ -99,13 +99,13 @@ final class RUMTapActionScenario: TestScenario {
         func rumView(for viewController: UIViewController) -> RUMView? {
             switch NSStringFromClass(type(of: viewController)) {
             case "Example.RUMTASScreen1ViewController":
-                return .init(path: "MenuViewController")
+                return .init(name: "MenuView")
             case "Example.RUMTASTableViewController":
-                return .init(path: "TableViewController")
+                return .init(name: "TableView")
             case "Example.RUMTASCollectionViewController":
-                return .init(path: "CollectionViewController")
+                return .init(name: "CollectionView")
             case "Example.RUMTASVariousUIControllsViewController":
-                return .init(path: "UIControlsViewController")
+                return .init(name: "UIControlsView")
             default:
                 return nil
             }

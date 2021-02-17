@@ -23,6 +23,7 @@ class RUMCurrentContextTests: XCTestCase {
                 sessionID: RUMUUID.nullUUID,
                 activeViewID: nil,
                 activeViewURI: nil,
+                activeViewName: nil,
                 activeUserActionID: nil
             )
         )
@@ -41,6 +42,7 @@ class RUMCurrentContextTests: XCTestCase {
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
                 activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: nil
             )
         )
@@ -60,6 +62,7 @@ class RUMCurrentContextTests: XCTestCase {
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
                 activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.userActionScope?.actionUUID)
             )
         )
@@ -86,6 +89,7 @@ class RUMCurrentContextTests: XCTestCase {
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
                 activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: nil
             )
         )
@@ -124,6 +128,7 @@ class RUMCurrentContextTests: XCTestCase {
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
                 activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: nil
             )
         )
@@ -142,6 +147,7 @@ class RUMCurrentContextTests: XCTestCase {
                 sessionID: .nullUUID,
                 activeViewID: nil,
                 activeViewURI: nil,
+                activeViewName: nil,
                 activeUserActionID: nil
             )
         )

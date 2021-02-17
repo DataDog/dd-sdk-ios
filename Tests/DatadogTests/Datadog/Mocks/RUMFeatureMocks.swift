@@ -157,12 +157,14 @@ extension RUMStartViewCommand {
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: RUMViewIdentifiable = mockView,
+        name: String = .mockAny(),
         path: String? = nil,
         isInitialView: Bool = false
     ) -> RUMStartViewCommand {
         var command = RUMStartViewCommand(
             time: time,
             identity: identity,
+            name: name,
             path: path,
             attributes: attributes
         )
@@ -356,6 +358,7 @@ extension RUMContext {
         sessionID: RUMUUID = .mockRandom(),
         activeViewID: RUMUUID? = nil,
         activeViewURI: String? = nil,
+        activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
     ) -> RUMContext {
         return RUMContext(
@@ -363,6 +366,7 @@ extension RUMContext {
             sessionID: sessionID,
             activeViewID: activeViewID,
             activeViewURI: activeViewURI,
+            activeViewName: activeViewName,
             activeUserActionID: activeUserActionID
         )
     }
@@ -504,6 +508,7 @@ extension RUMViewScope {
         dependencies: RUMScopeDependencies = .mockAny(),
         identity: RUMViewIdentifiable = mockView,
         uri: String = .mockAny(),
+        name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny()
@@ -513,6 +518,7 @@ extension RUMViewScope {
             dependencies: dependencies,
             identity: identity,
             uri: uri,
+            name: name,
             attributes: attributes,
             customTimings: customTimings,
             startTime: startTime

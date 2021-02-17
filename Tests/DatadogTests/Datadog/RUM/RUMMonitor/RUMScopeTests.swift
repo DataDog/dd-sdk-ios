@@ -16,7 +16,7 @@ class RUMScopeTests: XCTestCase {
             self.isCompleted = isCompleted
         }
 
-        let context = RUMContext(rumApplicationID: .mockAny(), sessionID: .nullUUID)
+        let context = RUMContext.mockWith(rumApplicationID: .mockAny(), sessionID: .nullUUID)
         func process(command: RUMCommand) -> Bool { !isCompleted }
     }
 

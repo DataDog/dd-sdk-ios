@@ -19,7 +19,7 @@ internal class SendRUMFixture1ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        rumMonitor.startView(viewController: self)
+        rumMonitor.startView(viewController: self, name: "SendRUMFixture1View")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             rumMonitor.addTiming(name: "content-ready")

@@ -10,7 +10,7 @@ internal class SendRUMFixture2ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        rumMonitor.startView(viewController: self)
+        rumMonitor.startView(viewController: self, name: "SendRUMFixture2View")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             rumMonitor.addError(message: "Simulated view error", source: .source)

@@ -214,7 +214,24 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
                 identity: viewController,
+                name: path,
                 path: path,
+                attributes: attributes
+            )
+        )
+    }
+
+    override public func startView(
+        viewController: UIViewController,
+        name: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        process(
+            command: RUMStartViewCommand(
+                time: dateProvider.currentDate(),
+                identity: viewController,
+                name: name,
+                path: nil,
                 attributes: attributes
             )
         )
@@ -235,14 +252,15 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     override public func startView(
         key: String,
-        path: String?,
+        name: String?,
         attributes: [AttributeKey: AttributeValue]
     ) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
                 identity: key,
-                path: path,
+                name: name ?? key,
+                path: name ?? key,
                 attributes: attributes
             )
         )
