@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent?
+internal typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
 internal typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
 internal typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
 internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
