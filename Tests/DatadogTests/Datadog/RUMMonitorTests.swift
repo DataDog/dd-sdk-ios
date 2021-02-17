@@ -879,7 +879,22 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Integration with Crash Reporting
 
     func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let randomUserInfoAttributes: [String: String] = .mockRandom()
+        let randomViewEventAttributes: [String: String] = .mockRandom()
+
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                userInfoProvider: .mockWith(
+                    userInfo: .init(
+                        id: .mockRandom(),
+                        name: .mockRandom(),
+                        email: .mockRandom(),
+                        extraInfo: randomUserInfoAttributes
+                    )
+                )
+            )
+        )
         defer { RUMFeature.instance = nil }
 
         let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
@@ -894,15 +909,23 @@ class RUMMonitorTests: XCTestCase {
 
         // When
         let monitor = RUMMonitor.initialize()
-        monitor.startView(viewController: mockView)
+        monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
 
         // Then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
         XCTAssertEqual(
-            crashContextProvider.currentCrashContext.lastRUMViewEvent,
+            crashContextProvider.currentCrashContext.lastRUMViewEvent?.model,
             lastRUMViewEventSent
+        )
+        XCTAssertEqual(
+            crashContextProvider.currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
+            randomViewEventAttributes
+        )
+        XCTAssertEqual(
+            crashContextProvider.currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
+            randomUserInfoAttributes
         )
     }
 

@@ -34,7 +34,7 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(integration.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
-        XCTAssertEqual(integration.sentCrashContext, crashContext, "It should send the crash context retrieved from the `plugin`")
+        XCTAssertEqual(integration.sentCrashContext?.data, crashContext.data, "It should send the crash context retrieved from the `plugin`")
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 

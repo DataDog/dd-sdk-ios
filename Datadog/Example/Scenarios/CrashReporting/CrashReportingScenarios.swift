@@ -6,6 +6,7 @@
 
 import Datadog
 import DatadogCrashReporting
+import UIKit
 
 /// Scenario that launches single-view app which conditionally causes the a crash or uploads the crash report to Datadog.
 /// The condition is determined by crash report file presence:
@@ -26,8 +27,22 @@ final class CrashReportingCollectOrSendScenario: TestScenario {
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
+        class CustomPredicate: UIKitRUMViewsPredicate {
+            private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
+
+            func rumView(for viewController: UIViewController) -> RUMView? {
+                let defaultRUMView = defaultPredicate.rumView(for: viewController)
+                return .init(
+                    path: defaultRUMView!.path,
+                    attributes: [
+                        "custom-attribute": "This attribute will be attached to crash report."
+                    ]
+                )
+            }
+        }
+
         _ = builder
-            .trackUIKitRUMViews()
+            .trackUIKitRUMViews(using: CustomPredicate())
             .enableCrashReporting(using: DDCrashReportingPlugin())
     }
 }

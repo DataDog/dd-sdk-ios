@@ -23,10 +23,10 @@ class RUMWithCrashContextIntegrationTests: XCTestCase {
 
         // Then
         let rumWithCrashContextIntegration = try XCTUnwrap(RUMWithCrashContextIntegration())
-        let randomRUMView: RUMViewEvent = .mockRandom()
-        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMView)
+        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
+        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMViewEvent)
 
-        XCTAssertEqual(crashContextProvider.currentCrashContext.lastRUMViewEvent, randomRUMView)
+        XCTAssertEqual(crashContextProvider.currentCrashContext.lastRUMViewEvent, randomRUMViewEvent)
     }
 
     func testWhenCrashReporterIsNotRegistered_itCannotBeInitialized() {

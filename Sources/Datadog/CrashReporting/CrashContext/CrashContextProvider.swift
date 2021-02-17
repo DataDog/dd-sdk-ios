@@ -13,8 +13,8 @@ internal protocol CrashContextProviderType: class {
     /// Notifies on current `CrashContext` change.
     var onCrashContextChange: ((CrashContext) -> Void)? { set get }
 
-    /// Updates the `CrashContext` with last `RUMViewEvent` information.
-    func update(lastRUMViewEvent: RUMViewEvent)
+    /// Updates the `CrashContext` with last `RUMEvent<RUMViewEvent>` information.
+    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>)
 
     /// Updates the `CrashContext` with last `TarckingConsent` information.
     func update(lastTrackingConsent: TrackingConsent)
@@ -38,7 +38,7 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
         )
         self.unsafeCrashContext = CrashContext(
             // Set initial `TrackingConsent`
-            lastTrackingConsent: .init(trackingConsent: consentProvider.currentValue),
+            lastTrackingConsent: consentProvider.currentValue,
             lastRUMViewEvent: nil
         )
 
@@ -54,7 +54,7 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
 
     var onCrashContextChange: ((CrashContext) -> Void)? = nil
 
-    func update(lastRUMViewEvent: RUMViewEvent) {
+    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {
         queue.async { [weak self] in
             guard let self = self else {
                 return
@@ -66,7 +66,6 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
         }
     }
 
-    /// Updates `CrashContext` with last `TarckingConsent` information.
     func update(lastTrackingConsent: TrackingConsent) {
         queue.async { [weak self] in
             guard let self = self else {
@@ -74,7 +73,7 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
             }
 
             var context = self.unsafeCrashContext
-            context.lastTrackingConsent = .init(trackingConsent: lastTrackingConsent)
+            context.lastTrackingConsent = lastTrackingConsent
             self.unsafeCrashContext = context
         }
     }

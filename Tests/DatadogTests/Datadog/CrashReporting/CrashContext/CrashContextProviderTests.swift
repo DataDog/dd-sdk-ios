@@ -35,15 +35,15 @@ class CrashContextProviderTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(initialContext.lastTrackingConsent, .init(trackingConsent: initialTrackingConsent))
-        XCTAssertEqual(updatedContext?.lastTrackingConsent, .init(trackingConsent: randomTrackingConsent))
+        XCTAssertEqual(initialContext.lastTrackingConsent, initialTrackingConsent)
+        XCTAssertEqual(updatedContext?.lastTrackingConsent, randomTrackingConsent)
     }
 
     // MARK: - `RUMViewEvent` Integration
 
     func testWhenRUMWithCrashContextIntegrationIsUpdated_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
-        let randomRUMView: RUMViewEvent = .mockRandom()
+        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
 
         let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
         let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(crashContextProvider: crashContextProvider)
@@ -56,12 +56,12 @@ class CrashContextProviderTests: XCTestCase {
             updatedContext = newContext
             expectation.fulfill()
         }
-        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMView)
+        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMViewEvent)
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
         XCTAssertNil(initialContext.lastRUMViewEvent)
-        XCTAssertEqual(updatedContext?.lastRUMViewEvent, randomRUMView)
+        XCTAssertEqual(updatedContext?.lastRUMViewEvent, randomRUMViewEvent)
     }
 
     // MARK: - Thread safety
@@ -75,7 +75,7 @@ class CrashContextProviderTests: XCTestCase {
                 closures: [
                     { _ = provider.currentCrashContext },
                     { provider.update(lastTrackingConsent: .mockRandom()) },
-                    { provider.update(lastRUMViewEvent: .mockRandom()) },
+                    { provider.update(lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())) },
                 ],
                 iterations: 50
             )

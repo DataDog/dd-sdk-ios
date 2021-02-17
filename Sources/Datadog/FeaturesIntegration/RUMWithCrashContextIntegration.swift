@@ -25,7 +25,7 @@ internal struct RUMWithCrashContextIntegration {
         self.crashContextProvider = crashContextProvider
     }
 
-    func update(lastRUMViewEvent: RUMViewEvent) {
+    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {
         crashContextProvider?.update(lastRUMViewEvent: lastRUMViewEvent)
     }
 }

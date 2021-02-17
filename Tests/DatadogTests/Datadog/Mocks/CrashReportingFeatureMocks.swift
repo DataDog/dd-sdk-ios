@@ -64,7 +64,7 @@ internal class CrashContextProviderMock: CrashContextProviderType {
         self.currentCrashContext = initialCrashContext
     }
 
-    func update(lastRUMViewEvent: RUMViewEvent) {}
+    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {}
     func update(lastTrackingConsent: TrackingConsent) {}
 }
 
@@ -90,7 +90,7 @@ extension CrashContext {
 
     static func mockWith(
         lastTrackingConsent: TrackingConsent = .granted,
-        lastRUMViewEvent: RUMViewEvent? = nil
+        lastRUMViewEvent: RUMEvent<RUMViewEvent>? = nil
     ) -> CrashContext {
         return CrashContext(
             lastTrackingConsent: lastTrackingConsent,
@@ -101,17 +101,11 @@ extension CrashContext {
     static func mockRandom() -> CrashContext {
         return CrashContext(
             lastTrackingConsent: .mockRandom(),
-            lastRUMViewEvent: .mockRandom()
+            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
         )
     }
 
     var data: Data { try! JSONEncoder().encode(self) }
-}
-
-internal extension CrashContext.TrackingConsent {
-    static func mockRandom() -> CrashContext.TrackingConsent {
-        return CrashContext.TrackingConsent(trackingConsent: .mockRandom())
-    }
 }
 
 extension DDCrashReport: EquatableInTests {}
