@@ -150,12 +150,18 @@ final class RUMScrubbingScenario: TestScenario {
             .setRUMViewEventMapper { viewEvent in
                 var viewEvent = viewEvent
                 viewEvent.view.url = redacted(viewEvent.view.url)
+                if let viewName = viewEvent.view.name {
+                    viewEvent.view.name = redacted(viewName)
+                }
                 return viewEvent
             }
             .setRUMErrorEventMapper { errorEvent in
                 var errorEvent = errorEvent
                 errorEvent.error.message = redacted(errorEvent.error.message)
                 errorEvent.view.url = redacted(errorEvent.view.url)
+                if let viewName = errorEvent.view.name {
+                    errorEvent.view.name = redacted(viewName)
+                }
                 if let resourceURL = errorEvent.error.resource?.url {
                     errorEvent.error.resource?.url = redacted(resourceURL)
                 }
@@ -167,12 +173,18 @@ final class RUMScrubbingScenario: TestScenario {
             .setRUMResourceEventMapper { resourceEvent in
                 var resourceEvent = resourceEvent
                 resourceEvent.resource.url = redacted(resourceEvent.resource.url)
+                if let viewName = resourceEvent.view.name {
+                    resourceEvent.view.name = redacted(viewName)
+                }
                 return resourceEvent
             }
             .setRUMActionEventMapper { actionEvent in
                 var actionEvent = actionEvent
                 if let targetName = actionEvent.action.target?.name {
                     actionEvent.action.target?.name = redacted(targetName)
+                }
+                if let viewName = actionEvent.view.name {
+                    actionEvent.view.name = redacted(viewName)
                 }
                 return actionEvent
             }
