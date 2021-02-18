@@ -81,7 +81,7 @@ public class Datadog
    public func set(rumSessionsSamplingRate: Float) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
-   public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent?) -> Builder
+   public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder
    public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder
    public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder
    public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder
@@ -233,6 +233,7 @@ public struct RUMViewEvent: RUMDataModel
   public let action: Action
   public let crash: Crash?
   public let cumulativeLayoutShift: Double?
+  public let customTimings: [String: Int64]?
   public let domComplete: Int64?
   public let domContentLoaded: Int64?
   public let domInteractive: Int64?
@@ -247,6 +248,7 @@ public struct RUMViewEvent: RUMDataModel
   public let loadingTime: Int64?
   public let loadingType: LoadingType?
   public let longTask: LongTask?
+  public var name: String?
   public var referrer: String?
   public let resource: Resource
   public let timeSpent: Int64
@@ -362,6 +364,7 @@ public struct RUMResourceEvent: RUMDataModel
    case synthetics = "synthetics"
  public struct View: Codable
   public let id: String
+  public var name: String?
   public var referrer: String?
   public var url: String
 public struct RUMActionEvent: RUMDataModel
@@ -415,6 +418,7 @@ public struct RUMActionEvent: RUMDataModel
    case synthetics = "synthetics"
  public struct View: Codable
   public let id: String
+  public var name: String?
   public var referrer: String?
   public var url: String
 public struct RUMErrorEvent: RUMDataModel
@@ -483,6 +487,7 @@ public struct RUMErrorEvent: RUMDataModel
    case synthetics = "synthetics"
  public struct View: Codable
   public let id: String
+  public var name: String?
   public var referrer: String?
   public var url: String
 public struct RUMConnectivity: Codable
