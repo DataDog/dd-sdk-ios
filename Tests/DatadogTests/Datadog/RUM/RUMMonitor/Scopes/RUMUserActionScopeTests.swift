@@ -15,7 +15,7 @@ class RUMUserActionScopeTests: XCTestCase {
             rumApplicationID: "rum-123",
             sessionID: .mockRandom(),
             activeViewID: .mockRandom(),
-            activeViewURI: "FooViewController",
+            activeViewPath: "FooViewController",
             activeViewName: "FooViewName",
             activeUserActionID: .mockRandom()
         )
@@ -36,7 +36,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, parent.context.rumApplicationID)
         XCTAssertEqual(scope.context.sessionID, parent.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(parent.context.activeViewID))
-        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(parent.context.activeViewURI))
+        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(parent.context.activeViewPath))
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
     }
 

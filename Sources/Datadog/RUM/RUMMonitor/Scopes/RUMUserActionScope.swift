@@ -138,7 +138,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 

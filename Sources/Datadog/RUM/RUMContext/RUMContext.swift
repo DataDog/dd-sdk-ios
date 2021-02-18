@@ -14,8 +14,8 @@ internal struct RUMContext {
 
     /// The ID of currently displayed view.
     var activeViewID: RUMUUID?
-    /// The URI of currently displayed view.
-    var activeViewURI: String?
+    /// The path of currently displayed view.
+    var activeViewPath: String?
     /// The name of currently displayed view.
     var activeViewName: String?
     /// The ID of active user action.

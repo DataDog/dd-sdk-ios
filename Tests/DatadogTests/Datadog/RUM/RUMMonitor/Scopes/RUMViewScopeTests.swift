@@ -20,7 +20,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
-            uri: .mockRandom(),
+            path: .mockRandom(),
             name: .mockRandom(),
             attributes: [:],
             customTimings: [:],
@@ -30,7 +30,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
-        XCTAssertEqual(scope.context.activeViewURI, scope.viewURI)
+        XCTAssertEqual(scope.context.activeViewPath, scope.viewPath)
         XCTAssertEqual(scope.context.activeViewName, scope.viewName)
         XCTAssertNil(scope.context.activeUserActionID)
     }
@@ -42,7 +42,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
-            uri: .mockRandom(),
+            path: .mockRandom(),
             name: .mockRandom(),
             attributes: [:],
             customTimings: [:],
@@ -54,7 +54,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
-        XCTAssertEqual(scope.context.activeViewURI, scope.viewURI)
+        XCTAssertEqual(scope.context.activeViewPath, scope.viewPath)
         XCTAssertEqual(scope.context.activeViewName, scope.viewName)
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
     }
@@ -68,7 +68,7 @@ class RUMViewScopeTests: XCTestCase {
                 eventOutput: output
             ),
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
@@ -100,7 +100,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
@@ -137,7 +137,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
             name: "ViewName",
             attributes: ["foo": "bar", "fizz": "buzz"],
             customTimings: [:],
@@ -174,7 +174,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
@@ -226,7 +226,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: view1,
-            uri: "FirstViewController",
+            path: "FirstViewController",
             name: "FirstViewName",
             attributes: [:],
             customTimings: [:],
@@ -261,7 +261,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "FirstViewController",
+            path: "FirstViewController",
             name: "FirstViewName",
             attributes: [:],
             customTimings: [:],
@@ -296,7 +296,7 @@ class RUMViewScopeTests: XCTestCase {
                 parent: parent,
                 dependencies: dependencies,
                 identity: mockView,
-                uri: uri,
+                path: uri,
                 name: name,
                 attributes: [:],
                 customTimings: [:],
@@ -332,7 +332,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -381,7 +381,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -427,7 +427,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -468,7 +468,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -510,7 +510,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
@@ -559,7 +559,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -597,7 +597,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -649,7 +649,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
@@ -691,7 +691,7 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies.replacing(dateCorrector: dateCorrectorMock),
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],

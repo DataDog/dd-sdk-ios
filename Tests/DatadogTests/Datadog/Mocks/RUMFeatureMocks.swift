@@ -357,7 +357,7 @@ extension RUMContext {
         rumApplicationID: String = .mockAny(),
         sessionID: RUMUUID = .mockRandom(),
         activeViewID: RUMUUID? = nil,
-        activeViewURI: String? = nil,
+        activeViewPath: String? = nil,
         activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
     ) -> RUMContext {
@@ -365,7 +365,7 @@ extension RUMContext {
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,
             activeViewID: activeViewID,
-            activeViewURI: activeViewURI,
+            activeViewPath: activeViewPath,
             activeViewName: activeViewName,
             activeUserActionID: activeUserActionID
         )
@@ -507,7 +507,7 @@ extension RUMViewScope {
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
         identity: RUMViewIdentifiable = mockView,
-        uri: String = .mockAny(),
+        path: String = .mockAny(),
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
@@ -517,7 +517,7 @@ extension RUMViewScope {
             parent: parent,
             dependencies: dependencies,
             identity: identity,
-            uri: uri,
+            path: path,
             name: name,
             attributes: attributes,
             customTimings: customTimings,
