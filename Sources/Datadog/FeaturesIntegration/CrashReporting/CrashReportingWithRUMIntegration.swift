@@ -62,7 +62,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         // approximation we can get.
         let currentTimeCorrection = dateCorrector.currentCorrection
 
-        let crashDate = crashReport.crashDate ?? dateProvider.currentDate()
+        let crashDate = crashReport.date ?? dateProvider.currentDate()
         let realCrashDate = currentTimeCorrection.applying(to: crashDate)
         let realDateNow = currentTimeCorrection.applying(to: dateProvider.currentDate())
 
@@ -83,10 +83,9 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private func createRUMError(from crashReport: DDCrashReport, and lastRUMViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMErrorEvent> {
         let lastRUMView = lastRUMViewEvent.model
 
-        // TODO: RUMM-1053 come up with better formatting of following values
-        let errorMessage = crashReport.signalDetails ?? "<unkown>"
-        let errorStackTrace = crashReport.stackTrace ?? "<unkown>"
-        let errorType = (crashReport.signalName ?? "<unknown>") + " - " + (crashReport.signalCode ?? "<unknown>")
+        let errorType = crashReport.type
+        let errorMessage = crashReport.message
+        let errorStackTrace = crashReport.stackTrace
 
         let rumError = RUMErrorEvent(
             dd: .init(),

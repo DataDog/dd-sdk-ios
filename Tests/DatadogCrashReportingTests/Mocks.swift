@@ -50,10 +50,9 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
 internal extension DDCrashReport {
     static func mockAny() -> DDCrashReport {
         return DDCrashReport(
-            crashDate: Date(),
-            signalCode: "any signal",
-            signalName: "any name",
-            signalDetails: "any details",
+            date: Date(),
+            type: "any type",
+            message: "any message",
             stackTrace: "any stack trace",
             context: "any context".data(using: .utf8)
         )

@@ -9,12 +9,16 @@ import Datadog
 
 internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let crashReporter: PLCrashReporter
+    private let formatter = PLCrashReportFormatter()
 
     init() throws {
         self.crashReporter = PLCrashReporter(
             configuration: PLCrashReporterConfig(
+                // The choice of `.BSD` over `.mach` is well discussed here:
+                // https://github.com/ChatSecure/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
                 signalHandlerType: .BSD,
-                symbolicationStrategy: .all
+                // We don't symbolicate on device. All symbolication will happen backend-side.
+                symbolicationStrategy: []
             )
         )
         try crashReporter.enableAndReturnError()
@@ -25,8 +29,9 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     }
 
     func loadPendingCrashReport() throws -> DDCrashReport {
-        let plCrashReportData = try crashReporter.loadPendingCrashReportDataAndReturnError()
-        return try ddCrashReport(from: plCrashReportData)
+        let crashReportData = try crashReporter.loadPendingCrashReportDataAndReturnError()
+        let crashReport = try PLCrashReport(data: crashReportData)
+        return formatter.ddCrashReport(from: crashReport)
     }
 
     func inject(context: Data) {
@@ -35,46 +40,5 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
 
     func purgePendingCrashReport() throws {
         try crashReporter.purgePendingCrashReportAndReturnError()
-    }
-
-    // MARK: - Private
-
-    private func ddCrashReport(from crashData: Data) throws -> DDCrashReport {
-        let plCrashReport = try PLCrashReport(data: crashData)
-
-        // TODO: RUMM-1053 - add / remove information form this crash report
-        return DDCrashReport(
-            crashDate: plCrashReport.systemInfo.timestamp,
-            signalCode: plCrashReport.signalInfo.code,
-            signalName: plCrashReport.signalInfo.name,
-            signalDetails: signalDetails(for: plCrashReport.signalInfo.name),
-            stackTrace: PLCrashReportTextFormatter.stringValue(
-                for: plCrashReport,
-                with: PLCrashReportTextFormatiOS
-            ),
-            context: plCrashReport.customData
-        )
-    }
-
-    // TODO: RUMM-1053 - improve / remove this formatting of the signal details
-    private func signalDetails(for signalName: String?) -> String? {
-        guard let signalName = signalName else {
-            return nil
-        }
-
-        let signalNames = Mirror(reflecting: sys_signame)
-            .children
-            .map { $0.value as! UnsafePointer<Int8> } // swiftlint:disable:this force_cast
-            .map { String(cString: $0).uppercased() }
-        let signalDescription = Mirror(reflecting: sys_siglist)
-            .children
-            .map { $0.value as! UnsafePointer<Int8> } // swiftlint:disable:this force_cast
-            .map { String(cString: $0) }
-
-        if let index = signalNames.firstIndex(where: { signalName == ("SIG"+$0) }) {
-            return signalDescription[index]
-        }
-
-        return nil
     }
 }

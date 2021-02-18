@@ -10,30 +10,26 @@ import Foundation
 @objc
 public class DDCrashReport: NSObject {
     /// The date of the crash occurrence.
-    internal let crashDate: Date?
-    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
-    internal let signalCode: String?
-    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
-    internal let signalName: String?
-    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
-    internal let signalDetails: String?
-    // TODO: RUMM-1053 - consider providing / formatting this characteristic of the crash report
-    internal let stackTrace: String?
+    internal let date: Date?
+    /// Crash report type - used to group similar crash reports.
+    internal let type: String
+    /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
+    internal let message: String
+    /// Unsymbolicated stack trace of the crash.
+    internal let stackTrace: String
     /// The last context injected through `inject(context:)`
     internal let context: Data?
 
     public init(
-        crashDate: Date?,
-        signalCode: String?,
-        signalName: String?,
-        signalDetails: String?,
-        stackTrace: String?,
+        date: Date?,
+        type: String,
+        message: String,
+        stackTrace: String,
         context: Data?
     ) {
-        self.crashDate = crashDate
-        self.signalCode = signalCode
-        self.signalName = signalName
-        self.signalDetails = signalDetails
+        self.date = date
+        self.type = type
+        self.message = message
         self.stackTrace = stackTrace
         self.context = context
     }

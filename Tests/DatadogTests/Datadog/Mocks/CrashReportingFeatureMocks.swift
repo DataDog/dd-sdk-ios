@@ -116,18 +116,16 @@ internal extension DDCrashReport {
     }
 
     static func mockWith(
-        crashDate: Date? = .mockAny(),
-        signalCode: String? = .mockAny(),
-        signalName: String? = .mockAny(),
-        signalDetails: String? = .mockAny(),
-        stackTrace: String? = .mockAny(),
+        date: Date? = .mockAny(),
+        type: String = .mockAny(),
+        message: String = .mockAny(),
+        stackTrace: String = .mockAny(),
         context: Data? = .mockAny()
     ) -> DDCrashReport {
         return DDCrashReport(
-            crashDate: crashDate,
-            signalCode: signalCode,
-            signalName: signalName,
-            signalDetails: signalDetails,
+            date: date,
+            type: type,
+            message: message,
             stackTrace: stackTrace,
             context: context
         )
@@ -135,10 +133,9 @@ internal extension DDCrashReport {
 
     static func mockRandomWith(context: CrashContext) -> DDCrashReport {
         return mockWith(
-            crashDate: .mockRandomInThePast(),
-            signalCode: .mockRandom(),
-            signalName: .mockRandom(),
-            signalDetails: .mockRandom(),
+            date: .mockRandomInThePast(),
+            type: .mockRandom(),
+            message: .mockRandom(),
             stackTrace: .mockRandom(),
             context: context.data
         )

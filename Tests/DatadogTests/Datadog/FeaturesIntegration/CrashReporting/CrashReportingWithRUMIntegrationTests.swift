@@ -19,7 +19,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
 
-        let crashReport: DDCrashReport = .mockWith(crashDate: crashDate)
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
             lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
@@ -46,7 +46,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: secondsIn4Hours..<TimeInterval.greatestFiniteMagnitude))
 
-        let crashReport: DDCrashReport = .mockWith(crashDate: crashDate)
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
             lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
@@ -67,7 +67,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
     func testWhenCrashReportHasUnauthorizedTrackingConsent_itIsNotSent() throws {
         // Given
-        let crashReport: DDCrashReport = .mockWith(crashDate: .mockDecember15th2019At10AMUTC())
+        let crashReport: DDCrashReport = .mockWith(date: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: [.pending, .notGranted].randomElement()!,
             lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
@@ -87,7 +87,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
     func testWhenCrashReportHasNoAssociatedLastRUMViewEvent_itIsNotSent() throws {
         // Given
-        let crashReport: DDCrashReport = .mockWith(crashDate: .mockDecember15th2019At10AMUTC())
+        let crashReport: DDCrashReport = .mockWith(date: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
             lastRUMViewEvent: nil
@@ -112,7 +112,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
-        let crashReport: DDCrashReport = .mockWith(crashDate: crashDate)
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
             lastRUMViewEvent: .mockRandomWith(model: lastRUMViewEvent)
@@ -160,10 +160,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
         let crashReport: DDCrashReport = .mockWith(
-            crashDate: crashDate,
-            signalCode: "SIG_CODE",
-            signalName: "SIG_NAME",
-            signalDetails: "Signal details",
+            date: crashDate,
+            type: "SIG_CODE (SIG_NAME)",
+            message: "Signal details",
             stackTrace: """
             0: stack-trace line 0
             1: stack-trace line 1
@@ -203,7 +202,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
         XCTAssertEqual(
             sendRUMErrorEvent.error.type,
-            "SIG_NAME - SIG_CODE"
+            "SIG_CODE (SIG_NAME)"
         )
         XCTAssertEqual(
             sendRUMErrorEvent.error.message,

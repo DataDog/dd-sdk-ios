@@ -233,6 +233,8 @@
 		6170DC1C25C18729003AED5C /* DDCrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170DC1B25C18729003AED5C /* DDCrashReportingPlugin.swift */; };
 		6170DC5125C18E57003AED5C /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6172472625D673D7007085B3 /* CrashContextTests.swift */; };
+		617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 617247AE25DA9BEA007085B3 /* CrashReportingObjcHelpers.m */; };
+		617247B825DAB0E2007085B3 /* PLCrashReportFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617247B725DAB0E2007085B3 /* PLCrashReportFormatter.swift */; };
 		61786F7724FCDE05009E6BAB /* RUMDebuggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */; };
 		6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */; };
 		6179FFDE254ADBEF00556A0B /* ObjcAppLaunchHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -400,6 +402,7 @@
 		61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */; };
 		61FC5F4525CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */; };
 		61FC5F4E25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */; };
+		61FCBFE725DBBE8700CCF864 /* PLCrashReportFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FCBFE625DBBE8700CCF864 /* PLCrashReportFormatterTests.swift */; };
 		61FF281E24B8968D000B3D9B /* RUMEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */; };
 		61FF282124B8981D000B3D9B /* RUMEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */; };
 		61FF282424B8A1C3000B3D9B /* RUMEventFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282324B8A1C3000B3D9B /* RUMEventFileOutput.swift */; };
@@ -746,6 +749,9 @@
 		6170DC1B25C18729003AED5C /* DDCrashReportingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportingPlugin.swift; sourceTree = "<group>"; };
 		6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReportingTests.xcconfig; sourceTree = "<group>"; };
 		6172472625D673D7007085B3 /* CrashContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextTests.swift; sourceTree = "<group>"; };
+		617247AD25DA9BEA007085B3 /* CrashReportingObjcHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashReportingObjcHelpers.h; sourceTree = "<group>"; };
+		617247AE25DA9BEA007085B3 /* CrashReportingObjcHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashReportingObjcHelpers.m; sourceTree = "<group>"; };
+		617247B725DAB0E2007085B3 /* PLCrashReportFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReportFormatter.swift; sourceTree = "<group>"; };
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
 		6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcAppLaunchHandler.h; sourceTree = "<group>"; };
 		6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcAppLaunchHandler.m; sourceTree = "<group>"; };
@@ -912,6 +918,7 @@
 		61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextProviderTests.swift; sourceTree = "<group>"; };
 		61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWithCrashContextIntegration.swift; sourceTree = "<group>"; };
 		61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWithCrashContextIntegrationTests.swift; sourceTree = "<group>"; };
+		61FCBFE625DBBE8700CCF864 /* PLCrashReportFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReportFormatterTests.swift; sourceTree = "<group>"; };
 		61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventBuilder.swift; sourceTree = "<group>"; };
 		61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventBuilderTests.swift; sourceTree = "<group>"; };
 		61FF282324B8A1C3000B3D9B /* RUMEventFileOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutput.swift; sourceTree = "<group>"; };
@@ -1030,6 +1037,8 @@
 			children = (
 				6111543525C993C2007C84C9 /* CrashReportingScenario.storyboard */,
 				6111543E25C996A5007C84C9 /* CrashReportingViewController.swift */,
+				617247AD25DA9BEA007085B3 /* CrashReportingObjcHelpers.h */,
+				617247AE25DA9BEA007085B3 /* CrashReportingObjcHelpers.m */,
 			);
 			path = CrashReporting;
 			sourceTree = "<group>";
@@ -2085,6 +2094,7 @@
 			children = (
 				61F2729A25C95EB200D54BF8 /* Mocks.swift */,
 				61B7886125C180CB002675B5 /* DDCrashReportingPluginTests.swift */,
+				61FCBFE525DBBE7D00CCF864 /* PLCrashReporterIntegration */,
 			);
 			name = DatadogCrashReportingTests;
 			path = ../Tests/DatadogCrashReportingTests;
@@ -2549,6 +2559,7 @@
 			isa = PBXGroup;
 			children = (
 				61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */,
+				617247B725DAB0E2007085B3 /* PLCrashReportFormatter.swift */,
 			);
 			path = PLCrashReporterIntegration;
 			sourceTree = "<group>";
@@ -2655,6 +2666,14 @@
 				6172472625D673D7007085B3 /* CrashContextTests.swift */,
 			);
 			path = CrashContext;
+			sourceTree = "<group>";
+		};
+		61FCBFE525DBBE7D00CCF864 /* PLCrashReporterIntegration */ = {
+			isa = PBXGroup;
+			children = (
+				61FCBFE625DBBE8700CCF864 /* PLCrashReportFormatterTests.swift */,
+			);
+			path = PLCrashReporterIntegration;
 			sourceTree = "<group>";
 		};
 		61FF281F24B89807000B3D9B /* RUMEvent */ = {
@@ -3504,6 +3523,7 @@
 				6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */,
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
+				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
 				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,
 				6111544825C9A88B007C84C9 /* PersistenceHelper.swift in Sources */,
 				61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */,
@@ -3568,6 +3588,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				617247B825DAB0E2007085B3 /* PLCrashReportFormatter.swift in Sources */,
 				61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */,
 				6170DC1C25C18729003AED5C /* DDCrashReportingPlugin.swift in Sources */,
 				61F2727425C9509D00D54BF8 /* ThirdPartyCrashReporter.swift in Sources */,
@@ -3579,6 +3600,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61B7886225C180CB002675B5 /* DDCrashReportingPluginTests.swift in Sources */,
+				61FCBFE725DBBE8700CCF864 /* PLCrashReportFormatterTests.swift in Sources */,
 				61F272B125C95ED800D54BF8 /* Mocks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

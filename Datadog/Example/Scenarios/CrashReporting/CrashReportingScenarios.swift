@@ -8,13 +8,13 @@ import Datadog
 import DatadogCrashReporting
 import UIKit
 
-/// Scenario that launches single-view app which conditionally causes the a crash or uploads the crash report to Datadog.
-/// The condition is determined by crash report file presence:
+/// Scenario that launches single-view app which can cause a crash and/or upload the crash report to Datadog.
+/// It includes the condition determined by crash report file presence:
 /// * if the file is not there, the UI for crashing the app is presented,
-/// * if the file is there, the UI for uploading the crash repot is shown.
+/// * if the file is there, the UI for crashing the app is presented and _"Sending crash report..."_ label is shown.
 ///
 /// To test this scenario manually:
-///  → disconnect debugger → run the Example app so it presents "Crash The App" button → crash  → run again.
+///  → disconnect debugger → run the Example app → tap the crash button  → run again to have the crash report uploaded.
 final class CrashReportingCollectOrSendScenario: TestScenario {
     static let storyboardName = "CrashReportingScenario"
 
