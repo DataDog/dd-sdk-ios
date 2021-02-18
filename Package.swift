@@ -19,6 +19,16 @@ let package = Package(
             targets: ["DatadogObjc"]
         ),
         .library(
+            name: "DatadogStatic",
+            type: .static,
+            targets: ["Datadog"]
+        ),
+        .library(
+            name: "DatadogStaticObjc",
+            type: .static,
+            targets: ["DatadogObjc"]
+        ),
+        .library(
             name: "DatadogCrashReporting",
             type: .dynamic,
             targets: ["DatadogCrashReporting"]
