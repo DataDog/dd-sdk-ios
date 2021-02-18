@@ -58,15 +58,20 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     public init () {}
 
     public func rumView(for viewController: UIViewController) -> RUMView? {
-        let canonicalClassName = viewController.canonicalClassName
-        let isCustomClass = canonicalClassName.contains(".") // custom class contains module prefix
-
-        if isCustomClass {
-            var view = RUMView(name: canonicalClassName)
-            view.path = canonicalClassName
-            return view
-        } else {
+        guard !isUIKit(class: type(of: viewController)) else {
+            // do not track bare UIKit's view controllers (UINavigationController, UITabBarController, ...)
             return nil
         }
+
+        let canonicalClassName = viewController.canonicalClassName
+        var view = RUMView(name: canonicalClassName)
+        view.path = canonicalClassName
+        return view
+    }
+
+    /// If given `class` comes from UIKit framework.
+    private func isUIKit(`class`: AnyClass) -> Bool {
+        let bundle = Bundle(for: `class`)
+        return bundle.bundleURL.lastPathComponent == "UIKitCore.framework"
     }
 }

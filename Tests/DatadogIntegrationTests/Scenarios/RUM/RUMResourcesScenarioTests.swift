@@ -14,7 +14,34 @@ private extension ExampleApplication {
 }
 
 class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
-    func testRUMResourcesScenario() throws {
+    private struct Expectations {
+        let expectedFirstPartyRequestsViewControllerName: String
+        let expectedThirdPartyRequestsViewControllerName: String
+    }
+
+    func testRUMURLSessionResourcesScenario() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Example.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Example.SendThirdPartyRequestsViewController"
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            )
+        )
+    }
+
+    /// Both, `URLSession` (Swift) and `NSURLSession` (Objective-C) scenarios use different storyboards
+    /// and different view controllers to run this test, but the the logic and the instrumentation is the same.
+    private func runTest(for testScenarioClassName: String, expectations: Expectations) throws {
         // Server session recording first party requests send to `HTTPServerMock`.
         // Used to assert that trace propagation headers are send for first party requests.
         let customFirstPartyServerSession = server.obtainUniqueRecordingSession()
@@ -40,7 +67,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenarioClassName: "RUMResourcesScenario",
+            testScenarioClassName: testScenarioClassName,
             serverConfiguration: HTTPServerMockConfiguration(
                 tracesEndpoint: tracingServerSession.recordingURL,
                 rumEndpoint: rumServerSession.recordingURL,
@@ -88,7 +115,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(session.viewVisits.count, 2)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
-        XCTAssertEqual(session.viewVisits[0].path, "Example.SendFirstPartyRequestsViewController")
+        XCTAssertEqual(session.viewVisits[0].name, expectations.expectedFirstPartyRequestsViewControllerName)
+        XCTAssertEqual(session.viewVisits[0].path, expectations.expectedFirstPartyRequestsViewControllerName)
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 2, "1st screen should track 2 RUM Resources")
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1, "1st screen should track 1 RUM Errors")
 
@@ -126,7 +154,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(firstPartyResourceError1.error.resource?.method, .get)
 
         // Asserts in `SendThirdPartyRequestsVC` RUM View
-        XCTAssertEqual(session.viewVisits[1].path, "Example.SendThirdPartyRequestsViewController")
+        XCTAssertEqual(session.viewVisits[1].name, expectations.expectedThirdPartyRequestsViewControllerName)
+        XCTAssertEqual(session.viewVisits[1].path, expectations.expectedThirdPartyRequestsViewControllerName)
         XCTAssertEqual(session.viewVisits[1].resourceEvents.count, 2, "2nd screen should track 2 RUM Resources")
         XCTAssertEqual(session.viewVisits[1].errorEvents.count, 0, "2nd screen should track no RUM Errors")
 

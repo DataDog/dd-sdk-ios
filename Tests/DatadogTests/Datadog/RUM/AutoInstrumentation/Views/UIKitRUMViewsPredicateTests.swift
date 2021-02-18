@@ -17,6 +17,7 @@ class UIKitRUMViewsPredicateTests: XCTestCase {
         let rumView = predicate.rumView(for: customViewController)
 
         // Then
+        XCTAssertEqual(rumView?.name, "Module.CustomViewController")
         XCTAssertEqual(rumView?.path, "Module.CustomViewController")
         XCTAssertTrue(rumView!.attributes.isEmpty)
     }
