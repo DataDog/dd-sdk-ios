@@ -4,5 +4,16 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#import "NSURLSessionBridge.h"
 #import "CustomObjcViewController.h"
+
+@interface CustomObjcViewController ()
+
+@end
+
+@implementation CustomObjcViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+}
+
+@end
