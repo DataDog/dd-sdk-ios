@@ -17,11 +17,13 @@ internal struct CrashContext: Codable {
     init(
         lastTrackingConsent: TrackingConsent,
         lastRUMViewEvent: RUMEvent<RUMViewEvent>?,
-        lastUserInfo: UserInfo?
+        lastUserInfo: UserInfo?,
+        lastNetworkConnectionInfo: NetworkConnectionInfo?
     ) {
         self.codableTrackingConsent = .init(from: lastTrackingConsent)
         self.codableLastRUMViewEvent = lastRUMViewEvent.flatMap { .init(from: $0) }
         self.codableLastUserInfo = lastUserInfo.flatMap { .init(from: $0) }
+        self.codableLastNetworkConnectionInfo = lastNetworkConnectionInfo.flatMap { .init(from: $0) }
     }
 
     // MARK: - Codable values
@@ -29,6 +31,7 @@ internal struct CrashContext: Codable {
     private var codableTrackingConsent: CodableTrackingConsent
     private var codableLastRUMViewEvent: CodableRUMViewEvent?
     private var codableLastUserInfo: CodableUserInfo?
+    private var codableLastNetworkConnectionInfo: CodableNetworkConnectionInfo?
 
     // TODO: RUMM-1049 Add Codable version of `UserInfo?`, `NetworkInfo?` and `CarrierInfo?`
 
@@ -36,6 +39,7 @@ internal struct CrashContext: Codable {
         case codableTrackingConsent = "ctc"
         case codableLastRUMViewEvent = "lre"
         case codableLastUserInfo = "lui"
+        case codableLastNetworkConnectionInfo = "lni"
     }
 
     // MARK: - Setters & Getters using managed types
@@ -53,6 +57,11 @@ internal struct CrashContext: Codable {
     var lastUserInfo: UserInfo? {
         set { codableLastUserInfo = newValue.flatMap { CodableUserInfo(from: $0) } }
         get { codableLastUserInfo?.managedValue }
+    }
+
+    var lastNetworkConnectionInfo: NetworkConnectionInfo? {
+        set { codableLastNetworkConnectionInfo = newValue.flatMap { CodableNetworkConnectionInfo(from: $0) } }
+        get { codableLastNetworkConnectionInfo?.managedValue }
     }
 }
 
@@ -82,9 +91,9 @@ private enum CodableTrackingConsent: Int8, Codable {
 }
 
 private struct CodableRUMViewEvent: Codable {
-    let model: RUMViewEvent
-    let attributes: [String: Encodable]
-    let userInfoAttributes: [String: Encodable]
+    private let model: RUMViewEvent
+    private let attributes: [String: Encodable]
+    private let userInfoAttributes: [String: Encodable]
 
     init(from managedValue: RUMEvent<RUMViewEvent>) {
         self.model = managedValue.model
@@ -128,10 +137,10 @@ private struct CodableRUMViewEvent: Codable {
 }
 
 private struct CodableUserInfo: Codable {
-    let id: String?
-    let name: String?
-    let email: String?
-    let extraInfo: [AttributeKey: AttributeValue]
+    private let id: String?
+    private let name: String?
+    private let email: String?
+    private let extraInfo: [AttributeKey: AttributeValue]
 
     init(from managedValue: UserInfo) {
         self.id = managedValue.id
@@ -175,6 +184,46 @@ private struct CodableUserInfo: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(email, forKey: .email)
         try container.encode(encodedExtraInfo, forKey: .extraInfo)
+    }
+}
+
+private struct CodableNetworkConnectionInfo: Codable {
+    private let reachability: NetworkConnectionInfo.Reachability
+    private let availableInterfaces: [NetworkConnectionInfo.Interface]?
+    private let supportsIPv4: Bool?
+    private let supportsIPv6: Bool?
+    private let isExpensive: Bool?
+    private let isConstrained: Bool?
+
+    init(from managedValue: NetworkConnectionInfo) {
+        self.reachability = managedValue.reachability
+        self.availableInterfaces = managedValue.availableInterfaces
+        self.supportsIPv4 = managedValue.supportsIPv4
+        self.supportsIPv6 = managedValue.supportsIPv6
+        self.isExpensive = managedValue.isExpensive
+        self.isConstrained = managedValue.isConstrained
+    }
+
+    var managedValue: NetworkConnectionInfo {
+        return .init(
+            reachability: reachability,
+            availableInterfaces: availableInterfaces,
+            supportsIPv4: supportsIPv4,
+            supportsIPv6: supportsIPv6,
+            isExpensive: isExpensive,
+            isConstrained: isConstrained
+        )
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case reachability = "rcb"
+        case availableInterfaces = "abi"
+        case supportsIPv4 = "si4"
+        case supportsIPv6 = "si6"
+        case isExpensive = "ise"
+        case isConstrained = "isc"
     }
 }
 

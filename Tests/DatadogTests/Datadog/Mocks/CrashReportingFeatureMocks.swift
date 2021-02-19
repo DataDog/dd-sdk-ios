@@ -91,12 +91,14 @@ extension CrashContext {
     static func mockWith(
         lastTrackingConsent: TrackingConsent = .granted,
         lastRUMViewEvent: RUMEvent<RUMViewEvent>? = nil,
-        lastUserInfo: UserInfo = .mockAny()
+        lastUserInfo: UserInfo = .mockAny(),
+        lastNetworkConnectionInfo: NetworkConnectionInfo? = .mockAny()
     ) -> CrashContext {
         return CrashContext(
             lastTrackingConsent: lastTrackingConsent,
             lastRUMViewEvent: lastRUMViewEvent,
-            lastUserInfo: lastUserInfo
+            lastUserInfo: lastUserInfo,
+            lastNetworkConnectionInfo: lastNetworkConnectionInfo
         )
     }
 
@@ -104,7 +106,8 @@ extension CrashContext {
         return CrashContext(
             lastTrackingConsent: .mockRandom(),
             lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom()),
-            lastUserInfo: .mockRandom()
+            lastUserInfo: .mockRandom(),
+            lastNetworkConnectionInfo: .mockRandom()
         )
     }
 

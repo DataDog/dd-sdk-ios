@@ -49,12 +49,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithUserInfoSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomUserInfo = UserInfo(
-            id: .mockRandom(),
-            name: .mockRandom(),
-            email: .mockRandom(),
-            extraInfo: mockRandomAttributes()
-        )
+        let randomUserInfo: UserInfo = .mockRandom()
 
         // Given
         var context: CrashContext = .mockRandom()
@@ -72,6 +67,21 @@ class CrashContextTests: XCTestCase {
             dictionary1: deserializedContext.lastUserInfo!.extraInfo,
             dictionary2: randomUserInfo.extraInfo
         )
+    }
+
+    func testGivenContextWithNetworkConnectionInfoSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomNetworkConnectionInfo: NetworkConnectionInfo = .mockRandom()
+
+        // Given
+        var context: CrashContext = .mockRandom()
+        context.lastNetworkConnectionInfo = randomNetworkConnectionInfo
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(deserializedContext.lastNetworkConnectionInfo, randomNetworkConnectionInfo)
     }
 
     // MARK: - Helpers

@@ -40,7 +40,8 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
             // Set initial `TrackingConsent`
             lastTrackingConsent: consentProvider.currentValue,
             lastRUMViewEvent: nil,
-            lastUserInfo: nil
+            lastUserInfo: nil, // TODO: RUMM-1049 provide default value
+            lastNetworkConnectionInfo: nil // TODO: RUMM-1049 provide default value
         )
 
         // Subscribe for `TrackingConsent` updates

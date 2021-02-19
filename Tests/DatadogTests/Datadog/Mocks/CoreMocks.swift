@@ -548,7 +548,7 @@ extension UserInfo: AnyMockable, RandomMockable {
             id: .mockRandom(),
             name: .mockRandom(),
             email: .mockRandom(),
-            extraInfo: [String: String].mockRandom()
+            extraInfo: mockRandomAttributes()
         )
     }
 }
@@ -652,7 +652,13 @@ extension NetworkConnectionInfo.Reachability {
     }
 }
 
-extension NetworkConnectionInfo {
+extension NetworkConnectionInfo.Interface: RandomMockable {
+    static func mockRandom() -> NetworkConnectionInfo.Interface {
+        return allCases.randomElement()!
+    }
+}
+
+extension NetworkConnectionInfo: RandomMockable {
     static func mockAny() -> NetworkConnectionInfo {
         return mockWith()
     }
@@ -672,6 +678,17 @@ extension NetworkConnectionInfo {
             supportsIPv6: supportsIPv6,
             isExpensive: isExpensive,
             isConstrained: isConstrained
+        )
+    }
+
+    static func mockRandom() -> NetworkConnectionInfo {
+        return NetworkConnectionInfo(
+            reachability: .mockRandom(),
+            availableInterfaces: .mockRandom(),
+            supportsIPv4: .random(),
+            supportsIPv6: .random(),
+            isExpensive: .random(),
+            isConstrained: .random()
         )
     }
 }
