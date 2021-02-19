@@ -534,13 +534,22 @@ struct LaunchTimeProviderMock: LaunchTimeProviderType {
     var launchTime: TimeInterval? = nil
 }
 
-extension UserInfo {
+extension UserInfo: AnyMockable, RandomMockable {
     static func mockAny() -> UserInfo {
         return mockEmpty()
     }
 
     static func mockEmpty() -> UserInfo {
         return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+    }
+
+    static func mockRandom() -> UserInfo {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: [String: String].mockRandom()
+        )
     }
 }
 
@@ -761,6 +770,35 @@ extension EncodableValue {
     static func mockAny() -> EncodableValue {
         return EncodableValue(String.mockAny())
     }
+}
+
+// MARK: - Attributes Mock
+
+private let mockAttributesEncoder = JSONEncoder()
+
+/// Creates randomized `[String: Encodable]` attributes
+func mockRandomAttributes() -> [String: Encodable] {
+    struct Foo: Encodable {
+        let bar: String = .mockRandom()
+        let bizz = Bizz()
+
+        struct Bizz: Encodable {
+            let buzz: String = .mockRandom()
+        }
+    }
+
+    return [
+        "string-attribute": String.mockRandom(),
+        "int-attribute": Int.mockRandom(),
+        "uint64-attribute": UInt64.mockRandom(),
+        "double-attribute": Double.mockRandom(),
+        "bool-attribute": Bool.random(),
+        "int-array-attribute": [Int].mockRandom(),
+        "dictionary-attribute": [String: Int].mockRandom(),
+        "url-attribute": URL.mockRandom(),
+        "encodable-struct-attribute": Foo(),
+        "custom-encodable-attribute": JSONStringEncodableValue(Foo(), encodedUsing: mockAttributesEncoder)
+    ]
 }
 
 // MARK: - Global Dependencies Mocks

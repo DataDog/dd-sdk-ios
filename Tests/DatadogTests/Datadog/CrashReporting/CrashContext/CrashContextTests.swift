@@ -27,34 +27,10 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMViewEventSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        func createRandomAttributes() -> [String: Encodable] {
-            struct Foo: Encodable {
-                let bar: String = .mockRandom()
-                let bizz = Bizz()
-
-                struct Bizz: Encodable {
-                    let buzz: String = .mockRandom()
-                }
-            }
-
-            return [
-                "string-attribute": String.mockRandom(),
-                "int-attribute": Int.mockRandom(),
-                "uint64-attribute": UInt64.mockRandom(),
-                "double-attribute": Double.mockRandom(),
-                "bool-attribute": Bool.random(),
-                "int-array-attribute": [Int].mockRandom(),
-                "dictionary-attribute": [String: Int].mockRandom(),
-                "url-attribute": URL.mockRandom(),
-                "encodable-struct-attribute": Foo(),
-                "custom-encodable-attribute": JSONStringEncodableValue(Foo(), encodedUsing: encoder)
-            ]
-        }
-
         let randomRUMViewEvent = RUMEvent(
             model: RUMViewEvent.mockRandom(),
-            attributes: createRandomAttributes(),
-            userInfoAttributes: createRandomAttributes()
+            attributes: mockRandomAttributes(),
+            userInfoAttributes: mockRandomAttributes()
         )
 
         // Given
@@ -66,7 +42,36 @@ class CrashContextTests: XCTestCase {
 
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
-        try AssertEncodedRepresentationsEqual(deserializedContext.lastRUMViewEvent, randomRUMViewEvent)
+        try AssertEncodedRepresentationsEqual(
+            value1: deserializedContext.lastRUMViewEvent,
+            value2: randomRUMViewEvent
+        )
+    }
+
+    func testGivenContextWithUserInfoSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomUserInfo = UserInfo(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
+
+        // Given
+        var context: CrashContext = .mockRandom()
+        context.lastUserInfo = randomUserInfo
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(deserializedContext.lastUserInfo?.id, randomUserInfo.id)
+        XCTAssertEqual(deserializedContext.lastUserInfo?.name, randomUserInfo.name)
+        XCTAssertEqual(deserializedContext.lastUserInfo?.email, randomUserInfo.email)
+        try AssertEncodedRepresentationsEqual(
+            dictionary1: deserializedContext.lastUserInfo!.extraInfo,
+            dictionary2: randomUserInfo.extraInfo
+        )
     }
 
     // MARK: - Helpers
@@ -74,8 +79,8 @@ class CrashContextTests: XCTestCase {
     /// Asserts that JSON representations of two `Encodable` values are equal.
     /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
     private func AssertEncodedRepresentationsEqual<V: Encodable>(
-        _ value1: V,
-        _ value2: V,
+        value1: V,
+        value2: V,
         file: StaticString = #filePath,
         line: UInt = #line
     ) throws {
@@ -85,5 +90,19 @@ class CrashContextTests: XCTestCase {
         let encodedValue2 = try prettyEncoder.encode(value2)
 
         XCTAssertEqual(encodedValue1.utf8String, encodedValue2.utf8String, file: file, line: line)
+    }
+
+    /// Asserts that JSON representations of two `[String: Encodable]` dictionaries are equal.
+    /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
+    private func AssertEncodedRepresentationsEqual(
+        dictionary1: [String: Encodable],
+        dictionary2: [String: Encodable],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        try AssertEncodedRepresentationsEqual(
+            value1: dictionary1.mapValues { EncodableValue($0) },
+            value2: dictionary2.mapValues { EncodableValue($0) }
+        )
     }
 }

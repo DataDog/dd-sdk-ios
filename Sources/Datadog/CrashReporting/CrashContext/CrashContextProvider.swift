@@ -16,7 +16,7 @@ internal protocol CrashContextProviderType: class {
     /// Updates the `CrashContext` with last `RUMEvent<RUMViewEvent>` information.
     func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>)
 
-    /// Updates the `CrashContext` with last `TarckingConsent` information.
+    /// Updates the `CrashContext` with last `TrackingConsent` information.
     func update(lastTrackingConsent: TrackingConsent)
 }
 
@@ -39,7 +39,8 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
         self.unsafeCrashContext = CrashContext(
             // Set initial `TrackingConsent`
             lastTrackingConsent: consentProvider.currentValue,
-            lastRUMViewEvent: nil
+            lastRUMViewEvent: nil,
+            lastUserInfo: nil
         )
 
         // Subscribe for `TrackingConsent` updates

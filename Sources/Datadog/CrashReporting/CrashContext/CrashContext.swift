@@ -16,22 +16,26 @@ internal struct CrashContext: Codable {
 
     init(
         lastTrackingConsent: TrackingConsent,
-        lastRUMViewEvent: RUMEvent<RUMViewEvent>?
+        lastRUMViewEvent: RUMEvent<RUMViewEvent>?,
+        lastUserInfo: UserInfo?
     ) {
         self.codableTrackingConsent = .init(from: lastTrackingConsent)
         self.codableLastRUMViewEvent = lastRUMViewEvent.flatMap { .init(from: $0) }
+        self.codableLastUserInfo = lastUserInfo.flatMap { .init(from: $0) }
     }
 
     // MARK: - Codable values
 
     private var codableTrackingConsent: CodableTrackingConsent
     private var codableLastRUMViewEvent: CodableRUMViewEvent?
+    private var codableLastUserInfo: CodableUserInfo?
 
     // TODO: RUMM-1049 Add Codable version of `UserInfo?`, `NetworkInfo?` and `CarrierInfo?`
 
     enum CodingKeys: String, CodingKey {
         case codableTrackingConsent = "ctc"
         case codableLastRUMViewEvent = "lre"
+        case codableLastUserInfo = "lui"
     }
 
     // MARK: - Setters & Getters using managed types
@@ -44,6 +48,11 @@ internal struct CrashContext: Codable {
     var lastRUMViewEvent: RUMEvent<RUMViewEvent>? {
         set { codableLastRUMViewEvent = newValue.flatMap { CodableRUMViewEvent(from: $0) } }
         get { codableLastRUMViewEvent?.managedValue }
+    }
+
+    var lastUserInfo: UserInfo? {
+        set { codableLastUserInfo = newValue.flatMap { CodableUserInfo(from: $0) } }
+        get { codableLastUserInfo?.managedValue }
     }
 }
 
@@ -101,12 +110,10 @@ private struct CodableRUMViewEvent: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let decodedAttributes = try container.decode([String: CodableValue].self, forKey: .attributes)
-        let decodedUserInfoAttributes = try container.decode([String: CodableValue].self, forKey: .userInfoAttributes)
 
         self.model = try container.decode(RUMViewEvent.self, forKey: .model)
-        self.attributes = decodedAttributes.compactMapValues { $0 }
-        self.userInfoAttributes = decodedUserInfoAttributes.compactMapValues { $0 }
+        self.attributes = try container.decode([String: CodableValue].self, forKey: .attributes)
+        self.userInfoAttributes = try container.decode([String: CodableValue].self, forKey: .userInfoAttributes)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -117,6 +124,57 @@ private struct CodableRUMViewEvent: Codable {
         try container.encode(model, forKey: .model)
         try container.encode(encodedAttributes, forKey: .attributes)
         try container.encode(encodedUserInfoAttributes, forKey: .userInfoAttributes)
+    }
+}
+
+private struct CodableUserInfo: Codable {
+    let id: String?
+    let name: String?
+    let email: String?
+    let extraInfo: [AttributeKey: AttributeValue]
+
+    init(from managedValue: UserInfo) {
+        self.id = managedValue.id
+        self.name = managedValue.name
+        self.email = managedValue.email
+        self.extraInfo = managedValue.extraInfo
+    }
+
+    var managedValue: UserInfo {
+        return .init(
+            id: id,
+            name: name,
+            email: email,
+            extraInfo: extraInfo
+        )
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case id = "id"
+        case name = "nm"
+        case email = "em"
+        case extraInfo = "ei"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.name = try container.decodeIfPresent(String.self, forKey: .name)
+        self.email = try container.decodeIfPresent(String.self, forKey: .email)
+        self.extraInfo = try container.decode([String: CodableValue].self, forKey: .extraInfo)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        let encodedExtraInfo = extraInfo.mapValues { EncodableValue($0) }
+
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(email, forKey: .email)
+        try container.encode(encodedExtraInfo, forKey: .extraInfo)
     }
 }
 
