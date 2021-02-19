@@ -308,13 +308,14 @@ Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a c
     return resourceEvent
 }
 ```
-Returning `nil` from the mapper will drop the event entirely (it won't be sent to Datadog).
+Returning `nil` from the error, resource or action mapper will drop the event entirely (it won't be sent to Datadog). The value returned from the view event mapper must be not `nil`.
 
 Depending on a given event's type, only some specific properties can be mutated:
 
 | Event Type        | Attribute key                     | Description                                     |
 |-------------------|-----------------------------------|-------------------------------------------------|
-| RUMViewEvent      | `viewEvent.view.url`              | URL of the view                                 |
+| RUMViewEvent      | `viewEvent.view.name`             | Name of the view                                 |
+|                   | `viewEvent.view.url`              | URL of the view                                 |
 | RUMActionEvent    | `actionEvent.action.target?.name` | Name of the action                              |
 |                   | `actionEvent.view.url`            | URL of the view linked to this action           |
 | RUMErrorEvent     | `errorEvent.error.message`        | Error message                                   |
