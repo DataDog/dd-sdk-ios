@@ -59,7 +59,9 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
 
     public func rumView(for viewController: UIViewController) -> RUMView? {
         guard !isUIKit(class: type(of: viewController)) else {
-            // do not track bare UIKit's view controllers (UINavigationController, UITabBarController, ...)
+            // Part of our heuristic for (auto) tracking view controllers is to ignore
+            // container view controllers coming from `UIKit` if they are not subclassed.
+            // This condition is wider and it ignores all view controllers defined in `UIKit` bundle.
             return nil
         }
 
@@ -71,7 +73,6 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
 
     /// If given `class` comes from UIKit framework.
     private func isUIKit(`class`: AnyClass) -> Bool {
-        let bundle = Bundle(for: `class`)
-        return bundle.bundleURL.lastPathComponent == "UIKitCore.framework"
+        return Bundle(for: `class`).isUIKit
     }
 }
