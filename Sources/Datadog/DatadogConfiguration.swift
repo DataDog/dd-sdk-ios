@@ -454,10 +454,13 @@ extension Datadog {
             }
 
             /// Sets the custom mapper for `RUMViewEvent`. This can be used to modify RUM View events before they are send to Datadog.
-            /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` or `nil` as output.
-            /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return. Returning `nil` will result
-            /// with dropping the RUM View event entirely, so it won't be send to Datadog.
-            public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent?) -> Builder {
+            /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` as output.
+            /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return it.
+            ///
+            /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `RUMViewEvent` entirely, this ensures that all `RUMViewEvent` are sent to Datadog.
+            ///
+            /// Use the `UIKitRUMViewsPredicate` API to ensure upstream consideration or filtering out of `UIViewController`/`RUMView`s.
+            public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder {
                 configuration.rumViewEventMapper = mapper
                 return self
             }
