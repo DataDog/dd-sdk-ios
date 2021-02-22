@@ -23,7 +23,10 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// The value holding stable identity of the RUM View.
     let identity: RUMViewIdentifiable
 
-    /// The path of this View, rendered in RUM Explorer.
+    /// The name of this View, rendered in RUM Explorer as `VIEW NAME`.
+    let name: String
+
+    /// The path of this View, rendered in RUM Explorer as `VIEW URL`.
     let path: String
 
     /// Used to indicate if this command starts the very first View in the app.
@@ -31,10 +34,17 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// * it can be set to `true` by the `RUMApplicationScope` which tracks this state.
     var isInitialView = false
 
-    init(time: Date, identity: RUMViewIdentifiable, path: String?, attributes: [AttributeKey: AttributeValue]) {
+    init(
+        time: Date,
+        identity: RUMViewIdentifiable,
+        name: String?,
+        path: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         self.time = time
         self.attributes = attributes
         self.identity = identity
+        self.name = name ?? identity.defaultViewPath
         self.path = path ?? identity.defaultViewPath
     }
 }

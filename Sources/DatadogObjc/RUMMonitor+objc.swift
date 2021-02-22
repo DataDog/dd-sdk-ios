@@ -27,17 +27,16 @@ internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
 public class DDRUMView: NSObject {
     let swiftView: RUMView
 
-    @objc public var path: String { swiftView.path }
+    @objc public var name: String { swiftView.name }
     @objc public var attributes: [String: Any] { swiftView.attributes }
 
     /// Initializes the RUM View description.
     /// - Parameters:
-    ///   - path: the RUM View path, appearing as "PATH" in RUM Explorer.
+    ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM View.
-    @objc
-    public init(path: String, attributes: [String: Any]) {
+    public init(name: String, attributes: [String: Any]) {
         swiftView = RUMView(
-            path: path,
+            name: name,
             attributes: castAttributesToSwift(attributes)
         )
     }
@@ -162,10 +161,10 @@ public class DDRUMMonitor: NSObject {
     @objc
     public func startView(
         viewController: UIViewController,
-        path: String?,
+        name: String?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.startView(viewController: viewController, path: path, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.startView(viewController: viewController, name: name, attributes: castAttributesToSwift(attributes))
     }
 
     @objc
@@ -179,10 +178,10 @@ public class DDRUMMonitor: NSObject {
     @objc
     public func startView(
         key: String,
-        path: String?,
+        name: String?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.startView(key: key, path: path, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.startView(key: key, name: name, attributes: castAttributesToSwift(attributes))
     }
 
     @objc

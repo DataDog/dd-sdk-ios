@@ -72,16 +72,18 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize()
         setGlobalAttributes(of: monitor)
 
-        monitor.startView(key: "view1", path: "View1")
+        monitor.startView(key: "view1", name: "View1")
         monitor.stopView(key: "view1")
-        monitor.startView(key: "view2", path: "View2")
+        monitor.startView(key: "view2", name: "View2")
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         XCTAssertEqual(session.viewVisits.count, 2)
+        XCTAssertEqual(session.viewVisits[0].name, "View1")
         XCTAssertEqual(session.viewVisits[0].path, "View1")
+        XCTAssertEqual(session.viewVisits[1].name, "View2")
         XCTAssertEqual(session.viewVisits[1].path, "View2")
     }
 
@@ -384,6 +386,7 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController")
                 XCTAssertEqual(rumModel.view.action.count, 1, "First View should track only the 'applicationStart' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 0)
             }
@@ -391,6 +394,7 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController")
                 XCTAssertEqual(rumModel.view.action.count, 1, "Second View should track the 'tap' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "Second View should track the Resource")
             }
@@ -398,12 +402,14 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMActionEvent.self)
             .model(ofType: RUMActionEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Action should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Action should be associated with the second View")
                 XCTAssertEqual(rumModel.action.type, .tap)
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self)
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
             }
     }
 
@@ -437,6 +443,7 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "First View should track 1 Resource")
                 XCTAssertEqual(rumModel.view.error.count, 1, "First View should track 1 Resource Error")
             }
@@ -444,27 +451,32 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController")
                 XCTAssertEqual(rumModel.view.resource.count, 2, "Second View should track 2 Resources")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/1") }
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController", "Resource should be associated with the first View")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMErrorEvent.self) { rumModel in rumModel.error.resource?.url.contains("/resource/2") ?? false }
             .model(ofType: RUMErrorEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController", "Resource should be associated with the first View")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/3") }
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/4") }
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
             }
     }
 
@@ -787,19 +799,19 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize()
 
         // When
-        monitor.startView(viewController: mockView, path: "view in `.pending` consent changed to `.granted`")
+        monitor.startView(viewController: mockView, name: "view in `.pending` consent changed to `.granted`")
         monitor.stopView(viewController: mockView)
         monitor.dd.queue.sync {} // wait for processing the event in `RUMMonitor`
         consentProvider.changeConsent(to: .granted)
-        monitor.startView(viewController: mockView, path: "view in `.granted` consent")
+        monitor.startView(viewController: mockView, name: "view in `.granted` consent")
         monitor.stopView(viewController: mockView)
         monitor.dd.queue.sync {}
         consentProvider.changeConsent(to: .notGranted)
-        monitor.startView(viewController: mockView, path: "view in `.notGranted` consent")
+        monitor.startView(viewController: mockView, name: "view in `.notGranted` consent")
         monitor.stopView(viewController: mockView)
         monitor.dd.queue.sync {}
         consentProvider.changeConsent(to: .granted)
-        monitor.startView(viewController: mockView, path: "another view in `.granted` consent")
+        monitor.startView(viewController: mockView, name: "another view in `.granted` consent")
         monitor.stopView(viewController: mockView)
 
         // Then
@@ -807,9 +819,9 @@ class RUMMonitorTests: XCTestCase {
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
 
         XCTAssertEqual(session.viewVisits.count, 3, "Only 3 RUM Views were visited in authorized consent.")
-        XCTAssertEqual(session.viewVisits[0].path, "view in `.pending` consent changed to `.granted`")
-        XCTAssertEqual(session.viewVisits[1].path, "view in `.granted` consent")
-        XCTAssertEqual(session.viewVisits[2].path, "another view in `.granted` consent")
+        XCTAssertEqual(session.viewVisits[0].name, "view in `.pending` consent changed to `.granted`")
+        XCTAssertEqual(session.viewVisits[1].name, "view in `.granted` consent")
+        XCTAssertEqual(session.viewVisits[2].name, "another view in `.granted` consent")
     }
 
     // MARK: - Data Scrubbing
@@ -821,7 +833,8 @@ class RUMMonitorTests: XCTestCase {
                 eventMapper: RUMEventsMapper(
                     viewEventMapper: { viewEvent in
                         var viewEvent = viewEvent
-                        viewEvent.view.url = "ModifiedViewName"
+                        viewEvent.view.url = "ModifiedViewURL"
+                        viewEvent.view.name = "ModifiedViewName"
                         return viewEvent
                     },
                     errorEventMapper: { errorEvent in
@@ -853,7 +866,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize()
 
-        monitor.startView(viewController: mockView, path: "OriginalViewName")
+        monitor.startView(viewController: mockView, name: "OriginalViewName")
         monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: "Original tap action name")
@@ -866,7 +879,8 @@ class RUMMonitorTests: XCTestCase {
         let session = sessions[0]
 
         session.viewVisits[0].viewEvents.forEach { viewEvent in
-            XCTAssertEqual(viewEvent.view.url, "ModifiedViewName")
+            XCTAssertEqual(viewEvent.view.url, "ModifiedViewURL")
+            XCTAssertEqual(viewEvent.view.name, "ModifiedViewName")
         }
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].resourceEvents[0].resource.url, "https://foo.com?q=modified-resource-url")
@@ -1019,7 +1033,7 @@ class RUMMonitorTests: XCTestCase {
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
                 .trackURLSession(firstPartyHosts: [.mockAny()])
-                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(path: .mockAny())))
+                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(name: .mockAny())))
                 .trackUIKitActions(true)
                 .build()
         )

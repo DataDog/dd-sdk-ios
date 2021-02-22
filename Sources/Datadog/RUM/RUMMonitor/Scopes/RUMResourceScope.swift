@@ -173,8 +173,9 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 
@@ -211,8 +212,9 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 

@@ -22,7 +22,8 @@ class RUMCurrentContextTests: XCTestCase {
                 rumApplicationID: "rum-123",
                 sessionID: RUMUUID.nullUUID,
                 activeViewID: nil,
-                activeViewURI: nil,
+                activeViewPath: nil,
+                activeViewName: nil,
                 activeUserActionID: nil
             )
         )
@@ -40,7 +41,8 @@ class RUMCurrentContextTests: XCTestCase {
                 rumApplicationID: "rum-123",
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
-                activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewPath: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewPath),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: nil
             )
         )
@@ -59,7 +61,8 @@ class RUMCurrentContextTests: XCTestCase {
                 rumApplicationID: "rum-123",
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
-                activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewPath: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewPath),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.userActionScope?.actionUUID)
             )
         )
@@ -85,7 +88,8 @@ class RUMCurrentContextTests: XCTestCase {
                 rumApplicationID: "rum-123",
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
-                activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewPath: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewPath),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: nil
             )
         )
@@ -112,9 +116,14 @@ class RUMCurrentContextTests: XCTestCase {
             "A new View should be started on session renewal."
         )
         XCTAssertEqual(
-            firstContext.activeViewURI,
-            secondContext.activeViewURI,
-            "The View URI should be the same as in previous session."
+            firstContext.activeViewName,
+            secondContext.activeViewName,
+            "The View name should be the same as in previous session."
+        )
+        XCTAssertEqual(
+            firstContext.activeViewPath,
+            secondContext.activeViewPath,
+            "The View path should be the same as in previous session."
         )
 
         try XCTAssertEqual(
@@ -123,7 +132,8 @@ class RUMCurrentContextTests: XCTestCase {
                 rumApplicationID: "rum-123",
                 sessionID: XCTUnwrap(applicationScope.sessionScope?.sessionUUID),
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
-                activeViewURI: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewURI),
+                activeViewPath: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewPath),
+                activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
                 activeUserActionID: nil
             )
         )
@@ -141,7 +151,8 @@ class RUMCurrentContextTests: XCTestCase {
                 rumApplicationID: "rum-123",
                 sessionID: .nullUUID,
                 activeViewID: nil,
-                activeViewURI: nil,
+                activeViewPath: nil,
+                activeViewName: nil,
                 activeUserActionID: nil
             )
         )

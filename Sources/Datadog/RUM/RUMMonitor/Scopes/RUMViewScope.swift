@@ -28,8 +28,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// This View's UUID.
     let viewUUID: RUMUUID
-    /// The URI of this View, used as the `view.url` in RUM Explorer.
-    let viewURI: String
+    /// The path of this View, used as the `VIEW URL` in RUM Explorer.
+    let viewPath: String
+    /// The name of this View, used as the `VIEW NAME` in RUM Explorer.
+    let viewName: String
     /// The start time of this View.
     private let viewStartTime: Date
     /// Date correction to server time.
@@ -56,7 +58,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: RUMViewIdentifiable,
-        uri: String,
+        path: String,
+        name: String,
         attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
         startTime: Date
@@ -67,7 +70,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.attributes = attributes
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
-        self.viewURI = uri
+        self.viewPath = path
+        self.viewName = name
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
     }
@@ -77,8 +81,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     var context: RUMContext {
         var context = parent.context
         context.activeViewID = viewUUID
-        context.activeViewURI = viewURI
+        context.activeViewPath = viewPath
         context.activeUserActionID = userActionScope?.actionUUID
+        context.activeViewName = viewName
         return context
     }
 
@@ -245,8 +250,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
+                name: viewName,
                 referrer: nil,
-                url: viewURI
+                url: viewPath
             )
         )
 
@@ -285,10 +291,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 loadingTime: nil,
                 loadingType: nil,
                 longTask: nil,
+                name: viewName,
                 referrer: nil,
                 resource: .init(count: resourcesCount.toInt64),
                 timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
-                url: viewURI
+                url: viewPath
             )
         )
 
@@ -320,8 +327,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 

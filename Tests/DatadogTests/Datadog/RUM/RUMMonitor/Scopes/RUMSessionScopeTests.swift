@@ -15,7 +15,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertNotEqual(scope.context.sessionID, .nullUUID)
         XCTAssertNil(scope.context.activeViewID)
-        XCTAssertNil(scope.context.activeViewURI)
+        XCTAssertNil(scope.context.activeViewPath)
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
@@ -26,7 +26,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, .nullUUID)
         XCTAssertNil(scope.context.activeViewID)
-        XCTAssertNil(scope.context.activeViewURI)
+        XCTAssertNil(scope.context.activeViewPath)
         XCTAssertNil(scope.context.activeUserActionID)
     }
 

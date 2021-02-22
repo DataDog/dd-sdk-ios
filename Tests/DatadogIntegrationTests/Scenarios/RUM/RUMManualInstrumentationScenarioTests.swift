@@ -53,7 +53,8 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
 
         let view1 = session.viewVisits[0]
-        XCTAssertEqual(view1.path, "SendRUMFixture1ViewController")
+        XCTAssertEqual(view1.name, "SendRUMFixture1View")
+        XCTAssertEqual(view1.path, "Example.SendRUMFixture1ViewController")
         XCTAssertEqual(view1.viewEvents.count, 6, "First view should receive 6 updates")
         XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
         XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
@@ -86,7 +87,8 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertLessThan(firstInteractionTiming, 5_000_000_000)
 
         let view2 = session.viewVisits[1]
-        XCTAssertEqual(view2.path, "SendRUMFixture2ViewController")
+        XCTAssertEqual(view2.name, "SendRUMFixture2View")
+        XCTAssertEqual(view2.path, "Example.SendRUMFixture2ViewController")
         XCTAssertEqual(view2.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
@@ -95,7 +97,8 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
 
         let view3 = session.viewVisits[2]
-        XCTAssertEqual(view3.path, "SendRUMFixture3ViewController")
+        XCTAssertEqual(view3.name, "SendRUMFixture3View")
+        XCTAssertEqual(view3.path, "SendRUMFixture3View")
         XCTAssertEqual(view3.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.error.count, 0)

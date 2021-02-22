@@ -157,12 +157,14 @@ extension RUMStartViewCommand {
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: RUMViewIdentifiable = mockView,
+        name: String = .mockAny(),
         path: String? = nil,
         isInitialView: Bool = false
     ) -> RUMStartViewCommand {
         var command = RUMStartViewCommand(
             time: time,
             identity: identity,
+            name: name,
             path: path,
             attributes: attributes
         )
@@ -355,14 +357,16 @@ extension RUMContext {
         rumApplicationID: String = .mockAny(),
         sessionID: RUMUUID = .mockRandom(),
         activeViewID: RUMUUID? = nil,
-        activeViewURI: String? = nil,
+        activeViewPath: String? = nil,
+        activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
     ) -> RUMContext {
         return RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,
             activeViewID: activeViewID,
-            activeViewURI: activeViewURI,
+            activeViewPath: activeViewPath,
+            activeViewName: activeViewName,
             activeUserActionID: activeUserActionID
         )
     }
@@ -503,7 +507,8 @@ extension RUMViewScope {
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
         identity: RUMViewIdentifiable = mockView,
-        uri: String = .mockAny(),
+        path: String = .mockAny(),
+        name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny()
@@ -512,7 +517,8 @@ extension RUMViewScope {
             parent: parent,
             dependencies: dependencies,
             identity: identity,
-            uri: uri,
+            path: path,
+            name: name,
             attributes: attributes,
             customTimings: customTimings,
             startTime: startTime

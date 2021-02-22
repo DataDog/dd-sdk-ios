@@ -34,12 +34,14 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(viewVisit.viewEvents.count, 0)
         viewVisit.viewEvents.forEach { event in
             XCTAssertTrue(event.view.url.isRedacted)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
         }
 
         XCTAssertGreaterThan(viewVisit.errorEvents.count, 0)
         viewVisit.errorEvents.forEach { event in
             XCTAssertTrue(event.error.message.isRedacted)
             XCTAssertTrue(event.view.url.isRedacted)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
             XCTAssertTrue(event.error.resource?.url.isRedacted ?? true)
             XCTAssertTrue(event.error.stack?.isRedacted ?? true)
         }
@@ -47,11 +49,13 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(viewVisit.resourceEvents.count, 0)
         viewVisit.resourceEvents.forEach { event in
             XCTAssertTrue(event.resource.url.isRedacted)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
         }
 
         XCTAssertGreaterThan(viewVisit.actionEvents.count, 0)
         viewVisit.actionEvents.forEach { event in
             XCTAssertTrue(event.action.target?.name.isRedacted ?? true)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
         }
     }
 }

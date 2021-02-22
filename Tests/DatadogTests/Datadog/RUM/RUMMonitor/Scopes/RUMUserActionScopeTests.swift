@@ -15,7 +15,8 @@ class RUMUserActionScopeTests: XCTestCase {
             rumApplicationID: "rum-123",
             sessionID: .mockRandom(),
             activeViewID: .mockRandom(),
-            activeViewURI: "FooViewController",
+            activeViewPath: "FooViewController",
+            activeViewName: "FooViewName",
             activeUserActionID: .mockRandom()
         )
     )
@@ -35,7 +36,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, parent.context.rumApplicationID)
         XCTAssertEqual(scope.context.sessionID, parent.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(parent.context.activeViewID))
-        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(parent.context.activeViewURI))
+        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(parent.context.activeViewPath))
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
     }
 
@@ -93,6 +94,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertEqual(event.model.view.name, "FooViewName")
         XCTAssertEqual(event.model.action.id, scope.actionUUID.toRUMDataFormat)
         XCTAssertEqual(event.model.action.type, .swipe)
         XCTAssertEqual(event.model.action.loadingTime, 1_000_000_000)
