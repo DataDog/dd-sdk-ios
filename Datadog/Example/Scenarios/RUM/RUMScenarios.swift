@@ -123,12 +123,25 @@ final class RUMTapActionScenario: TestScenario {
 
 /// Scenario which uses RUM and Tracing auto instrumentation features to track bunch of network requests
 /// sent with `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
-final class RUMResourcesScenario: URLSessionBaseScenario, TestScenario {
+final class RUMURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: DefaultUIKitRUMViewsPredicate())
+            .trackUIKitRUMViews()
+
+        super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
+    }
+}
+
+/// Scenario which uses RUM and Tracing auto instrumentation features to track bunch of network requests
+/// sent with `NSURLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
+final class RUMNSURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {
+    static let storyboardName = "NSURLSessionScenario"
+
+    override func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews()
 
         super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
     }

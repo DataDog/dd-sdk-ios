@@ -4,5 +4,12 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#import "NSURLSessionBridge.h"
-#import "CustomObjcViewController.h"
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface CustomObjcViewController : UIViewController
+
+@end
+
+NS_ASSUME_NONNULL_END
