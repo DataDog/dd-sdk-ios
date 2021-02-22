@@ -789,6 +789,22 @@ extension EncodableValue {
     }
 }
 
+internal class ValueObserverMock<Value>: ValueObserver {
+    typealias ObservedValue = Value
+
+    private(set) var onValueChange: ((Value, Value) -> Void)?
+    private(set) var lastChange: (oldValue: Value, newValue: Value)?
+
+    init(onValueChange: ((Value, Value) -> Void)? = nil) {
+        self.onValueChange = onValueChange
+    }
+
+    func onValueChanged(oldValue: Value, newValue: Value) {
+        lastChange = (oldValue, newValue)
+        onValueChange?(oldValue, newValue)
+    }
+}
+
 // MARK: - Attributes Mock
 
 private let mockAttributesEncoder = JSONEncoder()
