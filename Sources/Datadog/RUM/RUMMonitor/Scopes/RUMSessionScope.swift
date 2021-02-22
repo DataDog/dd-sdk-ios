@@ -15,6 +15,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
     }
 
+    var state: RUMScopeState
+
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
@@ -42,6 +44,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         samplingRate: Float,
         startTime: Date
     ) {
+        self.state = .open
         self.parent = parent
         self.dependencies = dependencies
         self.samplingRate = samplingRate
@@ -91,14 +94,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
+    func process(command: RUMCommand) -> RUMScopeState {
         if timedOutOrExpired(currentTime: command.time) {
-            return false // no longer keep this session
+            return .closed // no longer keep this session
         }
         lastInteractionTime = command.time
 
         if shouldBeSampledOut {
-            return true
+            return .open
         }
 
         // Apply side effects
@@ -110,9 +113,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate command
-        viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
+        viewScopes.manage(byPropagatingCommand: command)
 
-        return true
+        return .open
     }
 
     // MARK: - RUMCommands Processing

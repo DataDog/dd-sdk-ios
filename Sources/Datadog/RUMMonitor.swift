@@ -155,6 +155,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 )
             }
             let monitor = RUMMonitor(rumFeature: rumFeature)
+            rumFeature.eventsMapper.commandSubscriber = monitor
             RUMAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
             URLSessionAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
             return monitor

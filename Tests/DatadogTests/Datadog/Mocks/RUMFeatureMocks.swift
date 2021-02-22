@@ -13,6 +13,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),
+            eventsMapper: .mockNoOp(dateProvider: SystemDateProvider()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
@@ -39,9 +40,7 @@ extension RUMFeature {
         let fullFeature: RUMFeature = .mockWith(
             directories: directories,
             configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+            dependencies: dependencies
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
@@ -50,6 +49,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: observedStorage,
             upload: mockedUpload,
+            eventsMapper: fullFeature.eventsMapper,
             configuration: configuration,
             commonDependencies: dependencies
         )
@@ -133,12 +133,23 @@ class RUMEventOutputMock: RUMEventOutput {
 }
 
 extension RUMEventsMapper {
-    static func mockNoOp() -> RUMEventsMapper {
+    static func mockNoOp(dateProvider: DateProvider) -> RUMEventsMapper {
+        return mockWith(dateProvider: dateProvider)
+    }
+
+    static func mockWith(
+        dateProvider: DateProvider,
+        viewEventMapper: RUMViewEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil
+    ) -> RUMEventsMapper {
         return RUMEventsMapper(
-            viewEventMapper: nil,
-            errorEventMapper: nil,
-            resourceEventMapper: nil,
-            actionEventMapper: nil
+            dateProvider: dateProvider,
+            viewEventMapper: viewEventMapper,
+            errorEventMapper: errorEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper
         )
     }
 }
@@ -338,6 +349,52 @@ extension RUMAddUserActionCommand {
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
             time: time, attributes: attributes, actionType: actionType, name: name
+        )
+    }
+}
+
+extension RUMEventsMappingCompletionCommand {
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        change: RUMEventsMappingCompletionCommand<RUMViewEvent>.Change = .none,
+        model: RUMViewEvent = .mockRandom()
+    ) -> RUMEventsMappingCompletionCommand<RUMViewEvent> {
+        return .init(
+            time: time, attributes: attributes, change: change, model: model
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        change: RUMEventsMappingCompletionCommand<RUMResourceEvent>.Change = .none,
+        model: RUMResourceEvent = .mockRandom()
+    ) -> RUMEventsMappingCompletionCommand<RUMResourceEvent> {
+        return .init(
+            time: time, attributes: attributes, change: change, model: model
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        change: RUMEventsMappingCompletionCommand<RUMActionEvent>.Change = .none,
+        model: RUMActionEvent = .mockRandom()
+    ) -> RUMEventsMappingCompletionCommand<RUMActionEvent> {
+        return .init(
+            time: time, attributes: attributes, change: change, model: model
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        change: RUMEventsMappingCompletionCommand<RUMErrorEvent>.Change = .none,
+        model: RUMErrorEvent = .mockRandom()
+    ) -> RUMEventsMappingCompletionCommand<RUMErrorEvent> {
+        return .init(
+            time: time, attributes: attributes, change: change, model: model
         )
     }
 }

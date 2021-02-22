@@ -26,7 +26,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100)
 
         XCTAssertNil(scope.sessionScope)
-        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockAny()))
+        XCTAssertEqual(scope.process(command: RUMStartViewCommand.mockAny()), .open)
         XCTAssertNotNil(scope.sessionScope)
     }
 
@@ -55,9 +55,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
         let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100)
 
-        XCTAssertTrue(scope.process(command: RUMStopViewCommand.mockAny()))
-        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand.mockAny()))
-        XCTAssertTrue(scope.process(command: RUMStopResourceCommand.mockAny()))
+        XCTAssertEqual(scope.process(command: RUMStopViewCommand.mockAny()), .open)
+        XCTAssertEqual(scope.process(command: RUMAddUserActionCommand.mockAny()), .open)
+        XCTAssertEqual(scope.process(command: RUMStopResourceCommand.mockAny()), .open)
         XCTAssertNil(scope.sessionScope)
     }
 

@@ -48,7 +48,23 @@ internal final class RUMFeature {
     /// RUM upload worker.
     let upload: FeatureUpload
 
+    /// RUM events mapper.
+    let eventsMapper: RUMEventsMapper
+
     // MARK: - Initialization
+
+    static func createEventsMapper(
+        configuration: FeaturesConfiguration.RUM,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> RUMEventsMapper {
+        return RUMEventsMapper(
+            dateProvider: commonDependencies.dateProvider,
+            viewEventMapper: configuration.eventMapper.viewEventMapper,
+            errorEventMapper: configuration.eventMapper.errorEventMapper,
+            resourceEventMapper: configuration.eventMapper.resourceEventMapper,
+            actionEventMapper: configuration.eventMapper.actionEventMapper
+        )
+    }
 
     static func createStorage(
         directories: FeatureDirectories,
@@ -105,15 +121,20 @@ internal final class RUMFeature {
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
+        let eventsMapper = RUMFeature.createEventsMapper(
+            configuration: configuration,
+            commonDependencies: commonDependencies
+        )
         let storage = RUMFeature.createStorage(
             directories: directories,
-            eventMapper: configuration.eventMapper,
+            eventMapper: eventsMapper,
             commonDependencies: commonDependencies
         )
         let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
             storage: storage,
             upload: upload,
+            eventsMapper: eventsMapper,
             configuration: configuration,
             commonDependencies: commonDependencies
         )
@@ -122,6 +143,7 @@ internal final class RUMFeature {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
+        eventsMapper: RUMEventsMapper,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
@@ -139,5 +161,6 @@ internal final class RUMFeature {
         // Initialize stacks
         self.storage = storage
         self.upload = upload
+        self.eventsMapper = eventsMapper
     }
 }

@@ -10,31 +10,34 @@ import XCTest
 class RUMScopeTests: XCTestCase {
     /// A mock `RUMScope` that completes or not based on the configuration.
     private class CompletableScope: RUMScope {
+        var state: RUMScopeState
         let isCompleted: Bool
 
         init(isCompleted: Bool) {
+            self.state = .open
             self.isCompleted = isCompleted
         }
 
         let context = RUMContext.mockWith(rumApplicationID: .mockAny(), sessionID: .nullUUID)
-        func process(command: RUMCommand) -> Bool { !isCompleted }
+        func process(command: RUMCommand) -> RUMScopeState { !isCompleted ? .open : .closed }
     }
 
     private class AnyScope: RUMScope {
-        func process(command: RUMCommand) -> Bool { .mockAny() }
+        var state: RUMScopeState = .open
+        func process(command: RUMCommand) -> RUMScopeState { state }
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: true)
-        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
+        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock()).scope
         XCTAssertNil(scope)
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: false)
-        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
+        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock()).scope
         XCTAssertNotNil(scope)
     }
 
@@ -46,7 +49,7 @@ class RUMScopeTests: XCTestCase {
             CompletableScope(isCompleted: false)
         ]
 
-        scopes = AnyScope().manage(childScopes: scopes, byPropagatingCommand: RUMCommandMock())
+        scopes.manage(byPropagatingCommand: RUMCommandMock())
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { !$0.isCompleted }.count, 2)

@@ -256,3 +256,17 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let actionType: RUMUserActionType
     let name: String
 }
+
+/// Signals the completion of mapping a RUM event (aka Data Scrubbing)
+internal struct RUMEventsMappingCompletionCommand<DM: RUMDataModel>: RUMCommand {
+    enum Change {
+        case none
+        case discarded
+        case mapped
+    }
+
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+    let change: Change
+    let model: DM
+}

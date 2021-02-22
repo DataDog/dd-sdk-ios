@@ -15,6 +15,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         static let continuousActionMaxDuration: TimeInterval = 10 // 10 seconds
     }
 
+    var state: RUMScopeState
+
     // MARK: - Initialization
 
     private unowned let parent: RUMContextProvider
@@ -23,7 +25,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// The type of this User Action.
     internal let actionType: RUMUserActionType
     /// The name of this User Action.
-    private(set) var name: String
+    fileprivate(set) var name: String
     /// User Action attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
 
@@ -36,14 +38,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// Tells if this action is continuous over time, like "scroll" (or discrete, like "tap").
     internal let isContinuous: Bool
     /// Time of the last RUM activity noticed by this User Action (i.e. Resource loading).
-    private var lastActivityTime: Date
+    fileprivate var lastActivityTime: Date
 
     /// Number of Resources started during this User Action's lifespan.
-    private var resourcesCount: UInt = 0
+    fileprivate var resourcesCount: Int = 0
     /// Number of Errors occured during this User Action's lifespan.
-    private var errorsCount: UInt = 0
+    fileprivate var errorsCount: Int = 0
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
-    private var activeResourcesCount: Int = 0
+    fileprivate var activeResourcesCount: Int = 0
 
     init(
         parent: RUMContextProvider,
@@ -55,6 +57,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         dateCorrection: DateCorrection,
         isContinuous: Bool
     ) {
+        self.state = .open
         self.parent = parent
         self.dependencies = dependencies
         self.name = name
@@ -77,41 +80,38 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
-        if let expirationTime = possibleExpirationTime(currentTime: command.time),
-           allResourcesCompletedLoading() {
-            sendActionEvent(completionTime: expirationTime)
-            return false
+    func process(command: RUMCommand) -> RUMScopeState {
+        if let state = command.apply(to: self) {
+            return state
         }
 
-        lastActivityTime = command.time
         switch command {
-        case is RUMStopViewCommand:
-            sendActionEvent(completionTime: command.time)
-            return false
+        case let command as RUMStopViewCommand:
+            return command.apply(to: self)
         case let command as RUMStopUserActionCommand:
-            name = command.name ?? name
-            sendActionEvent(completionTime: command.time, on: command)
-            return false
-        case is RUMStartResourceCommand:
-            activeResourcesCount += 1
-        case is RUMStopResourceCommand:
-            activeResourcesCount -= 1
-            resourcesCount += 1
-        case is RUMStopResourceWithErrorCommand:
-            activeResourcesCount -= 1
-            errorsCount += 1
-        case is RUMAddCurrentViewErrorCommand:
-            errorsCount += 1
+            return command.apply(to: self)
+        case let command as RUMStartResourceCommand:
+            return command.apply(to: self)
+        case let command as RUMStopResourceCommand:
+            return command.apply(to: self)
+        case let command as RUMStopResourceWithErrorCommand:
+            return command.apply(to: self)
+        case let command as RUMAddCurrentViewErrorCommand:
+            return command.apply(to: self)
+        case let command as RUMEventsMappingCompletionCommand<RUMResourceEvent>:
+            return command.apply(to: self)
+        case let command as RUMEventsMappingCompletionCommand<RUMErrorEvent>:
+            return command.apply(to: self)
+        case let command as RUMEventsMappingCompletionCommand<RUMActionEvent>:
+            return command.apply(to: self)
         default:
-            break
+            return state
         }
-        return true
     }
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand? = nil) {
+    fileprivate func sendActionEvent(completionTime: Date, on command: RUMCommand? = nil) {
         if let commandAttributes = command?.attributes {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
@@ -120,11 +120,11 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             dd: .init(),
             action: .init(
                 crash: nil,
-                error: .init(count: errorsCount.toInt64),
+                error: .init(count: max(0, errorsCount).toInt64),
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
                 longTask: nil,
-                resource: .init(count: resourcesCount.toInt64),
+                resource: .init(count: max(0, resourcesCount).toInt64),
                 target: .init(name: name),
                 type: actionType.toRUMDataFormat
             ),
@@ -148,7 +148,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Private
 
-    private func possibleExpirationTime(currentTime: Date) -> Date? {
+    fileprivate func possibleExpirationTime(currentTime: Date) -> Date? {
         var expirationDate: Date? = nil
         let elapsedTime = currentTime.timeIntervalSince(actionStartTime)
         let maxInterval = isContinuous ? Constants.continuousActionMaxDuration : Constants.discreteActionTimeoutDuration
@@ -158,7 +158,110 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         return expirationDate
     }
 
-    private func allResourcesCompletedLoading() -> Bool {
+    fileprivate func allResourcesCompletedLoading() -> Bool {
         return activeResourcesCount <= 0
+    }
+}
+
+extension RUMCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState? {
+        if let expirationTime = scope.possibleExpirationTime(currentTime: time),
+           scope.allResourcesCompletedLoading(),
+           scope.state == .open {
+            scope.sendActionEvent(completionTime: expirationTime)
+            return .closing
+        }
+        return nil
+    }
+}
+
+extension RUMStopViewCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open {
+            scope.lastActivityTime = time
+            scope.sendActionEvent(completionTime: time)
+            return .closing
+        }
+        return scope.state
+    }
+}
+
+extension RUMStopUserActionCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open {
+            scope.lastActivityTime = time
+            scope.name = name ?? scope.name
+            scope.sendActionEvent(completionTime: time, on: self)
+            return .closing
+        }
+        return scope.state
+    }
+}
+
+extension RUMStartResourceCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open {
+            scope.lastActivityTime = time
+            scope.activeResourcesCount += 1
+        }
+        return scope.state
+    }
+}
+
+extension RUMStopResourceCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open {
+            scope.lastActivityTime = time
+            scope.activeResourcesCount -= 1
+            scope.resourcesCount += 1
+        }
+        return scope.state
+    }
+}
+
+extension RUMStopResourceWithErrorCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open {
+            scope.lastActivityTime = time
+            scope.activeResourcesCount -= 1
+            scope.errorsCount += 1
+        }
+        return scope.state
+    }
+}
+
+extension RUMAddCurrentViewErrorCommand {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open {
+            scope.lastActivityTime = time
+            scope.errorsCount += 1
+        }
+        return scope.state
+    }
+}
+extension RUMEventsMappingCompletionCommand where DM == RUMResourceEvent {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open && change == .discarded {
+            scope.resourcesCount -= 1
+        }
+        return scope.state
+    }
+}
+
+extension RUMEventsMappingCompletionCommand where DM == RUMErrorEvent {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if scope.state == .open && change == .discarded {
+            scope.errorsCount -= 1
+        }
+        return scope.state
+    }
+}
+
+extension RUMEventsMappingCompletionCommand where DM == RUMActionEvent {
+    func apply(to scope: RUMUserActionScope) -> RUMScopeState {
+        if model.action.id == scope.actionUUID.toRUMDataFormat {
+            return change == .discarded ? .discarded : .closed
+        }
+        return scope.state
     }
 }

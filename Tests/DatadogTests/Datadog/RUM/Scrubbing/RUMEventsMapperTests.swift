@@ -8,6 +8,14 @@ import XCTest
 @testable import Datadog
 
 class RUMEventsMapperTests: XCTestCase {
+    class CommandSubscriberRecorder: RUMCommandSubscriber {
+        var command: RUMCommand? = nil
+
+        func process(command: RUMCommand) {
+            self.command = command
+        }
+    }
+
     func testGivenMappersEnabled_whenModifyingEvents_itReturnsTheirNewRepresentation() throws {
         let originalViewEvent: RUMViewEvent = .mockRandom()
         let modifiedViewEvent: RUMViewEvent = .mockRandom()
@@ -22,7 +30,8 @@ class RUMEventsMapperTests: XCTestCase {
         let modifiedActionEvent: RUMActionEvent = .mockRandom()
 
         // Given
-        let mapper = RUMEventsMapper(
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
             viewEventMapper: { viewEvent in
                 XCTAssertEqual(viewEvent, originalViewEvent, "Mapper should be called with the original event.")
                 return modifiedViewEvent
@@ -56,7 +65,8 @@ class RUMEventsMapperTests: XCTestCase {
 
     func testGivenMappersEnabled_whenModifyingEvents_itDoesNotModifyCustomAttributes() throws {
         // Given
-        let mapper = RUMEventsMapper(
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
             viewEventMapper: { _ in .mockRandom() },
             errorEventMapper: { _ in .mockRandom() },
             resourceEventMapper: { _ in .mockRandom() },
@@ -93,8 +103,12 @@ class RUMEventsMapperTests: XCTestCase {
         let originalActionEvent: RUMActionEvent = .mockRandom()
 
         // Given
-        let mapper = RUMEventsMapper(
-            viewEventMapper: nil,
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
+            viewEventMapper: { viewEvent in
+                XCTAssertEqual(viewEvent, originalViewEvent, "Mapper should be called with the original event.")
+                return nil
+            },
             errorEventMapper: { errorEvent in
                 XCTAssertEqual(errorEvent, originalErrorEvent, "Mapper should be called with the original event.")
                 return nil
@@ -127,7 +141,8 @@ class RUMEventsMapperTests: XCTestCase {
         let originalActionEvent: RUMActionEvent = .mockRandom()
 
         // Given
-        let mapper = RUMEventsMapper(
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
             viewEventMapper: nil,
             errorEventMapper: nil,
             resourceEventMapper: nil,
@@ -156,8 +171,9 @@ class RUMEventsMapperTests: XCTestCase {
         let originalEvent = UnrecognizedEvent(value: .mockRandom())
 
         // When
-        let mapper = RUMEventsMapper(
-            viewEventMapper: nil,
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
+            viewEventMapper: { _ in nil },
             errorEventMapper: { _ in nil },
             resourceEventMapper: { _ in nil },
             actionEventMapper: { _ in nil }
@@ -167,5 +183,82 @@ class RUMEventsMapperTests: XCTestCase {
 
         // Then
         XCTAssertEqual(mappedEvent.value, originalEvent.value)
+    }
+
+    func testGivenCommandSubscriberAndPassthroughMappers_whenMapping_itCallsSubscriberToProcessCommand() throws {
+        // Given
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
+            viewEventMapper: { $0 },
+            errorEventMapper: { $0 },
+            resourceEventMapper: { $0 },
+            actionEventMapper: { $0 }
+        )
+        let commandSubscriber = CommandSubscriberRecorder()
+        mapper.commandSubscriber = commandSubscriber
+        let originalEvent: RUMViewEvent = .mockRandom()
+
+        // When
+        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalEvent))?.model)
+
+        // Then
+        XCTAssertEqual(mappedEvent, originalEvent)
+        XCTAssertNotNil(commandSubscriber.command)
+    }
+
+    func testGivenCommandSubscriberAndNoMappers_whenMapping_itCallsSubscriberToProcessCommand() throws {
+        // Given
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
+            viewEventMapper: nil,
+            errorEventMapper: nil,
+            resourceEventMapper: nil,
+            actionEventMapper: nil
+        )
+        let commandSubscriber = CommandSubscriberRecorder()
+        mapper.commandSubscriber = commandSubscriber
+        let originalEvent: RUMViewEvent = .mockRandom()
+
+        // When
+        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalEvent))?.model)
+
+        // Then
+        XCTAssertEqual(mappedEvent, originalEvent)
+        XCTAssertNotNil(commandSubscriber.command)
+    }
+
+    func testGivenCommandSubscriberAndDroppingMappers_whenMapping_itCallsSubscriberToProcessCommand() throws {
+        // Given
+        let mapper = RUMEventsMapper.mockWith(
+            dateProvider: SystemDateProvider(),
+            viewEventMapper: { _ in nil },
+            errorEventMapper: { _ in nil },
+            resourceEventMapper: { _ in nil },
+            actionEventMapper: { _ in nil }
+        )
+        let commandSubscriber = CommandSubscriberRecorder()
+        mapper.commandSubscriber = commandSubscriber
+
+        // When
+        let mappedEvent = mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: RUMViewEvent.mockRandom()))
+
+        // Then
+        XCTAssertNil(mappedEvent)
+        XCTAssertNotNil(commandSubscriber.command)
+    }
+
+    func testGivenCommandSubscriberAndDefaultMappers_whenMapping_itCallsSubscriberToProcessCommand() throws {
+        // Given
+        let mapper = RUMEventsMapper.mockNoOp(dateProvider: SystemDateProvider())
+        let commandSubscriber = CommandSubscriberRecorder()
+        mapper.commandSubscriber = commandSubscriber
+        let originalEvent: RUMViewEvent = .mockRandom()
+
+        // When
+        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalEvent))?.model)
+
+        // Then
+        XCTAssertEqual(mappedEvent, originalEvent)
+        XCTAssertNotNil(commandSubscriber.command)
     }
 }

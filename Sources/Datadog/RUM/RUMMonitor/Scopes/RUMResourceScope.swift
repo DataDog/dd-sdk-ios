@@ -9,18 +9,20 @@ import Foundation
 internal class RUMResourceScope: RUMScope {
     // MARK: - Initialization
 
+    var state: RUMScopeState
+
     let context: RUMContext
     private let dependencies: RUMScopeDependencies
 
     /// This Resource's UUID.
-    private let resourceUUID: RUMUUID
+    let resourceUUID: RUMUUID
+    /// The Resource url.
+    let resourceURL: String
     /// The name used to identify this Resource.
-    private let resourceKey: String
+    fileprivate let resourceKey: String
     /// Resource attributes.
     private var attributes: [AttributeKey: AttributeValue]
 
-    /// The Resource url.
-    private var resourceURL: String
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
     /// Date correction to server time.
@@ -53,6 +55,7 @@ internal class RUMResourceScope: RUMScope {
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?
     ) {
+        self.state = .open
         self.context = context
         self.dependencies = dependencies
         self.resourceUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -69,30 +72,31 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
+    func process(command: RUMCommand) -> RUMScopeState {
         switch command {
-        case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
-            sendResourceEvent(on: command)
-            return false
-        case let command as RUMStopResourceWithErrorCommand where command.resourceKey == resourceKey:
-            sendErrorEvent(on: command)
-            return false
-        case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
-            addMetrics(from: command)
+        case let command as RUMStopResourceCommand:
+            return command.apply(to: self)
+        case let command as RUMStopResourceWithErrorCommand:
+            return command.apply(to: self)
+        case let command as RUMAddResourceMetricsCommand:
+            return command.apply(to: self)
+        case let command as RUMEventsMappingCompletionCommand<RUMResourceEvent>:
+            return command.apply(to: self)
+        case let command as RUMEventsMappingCompletionCommand<RUMErrorEvent>:
+            return command.apply(to: self)
         default:
-            break
+            return state
         }
-        return true
     }
 
-    private func addMetrics(from command: RUMAddResourceMetricsCommand) {
+    fileprivate func addMetrics(from command: RUMAddResourceMetricsCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
         resourceMetrics = command.metrics
     }
 
     // MARK: - Sending RUM Events
 
-    private func sendResourceEvent(on command: RUMStopResourceCommand) {
+    fileprivate func sendResourceEvent(on command: RUMStopResourceCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let resourceStartTime: Date
@@ -183,7 +187,7 @@ internal class RUMResourceScope: RUMScope {
         dependencies.eventOutput.write(rumEvent: event)
     }
 
-    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
+    fileprivate func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMErrorEvent(
@@ -250,5 +254,52 @@ internal class RUMResourceScope: RUMScope {
 
     private func providerDomain(from url: String) -> String? {
         return URL(string: url)?.host ?? url
+    }
+}
+
+extension RUMStopResourceCommand {
+    func apply(to scope: RUMResourceScope) -> RUMScopeState {
+        if scope.state == .open && scope.resourceKey == resourceKey {
+            scope.sendResourceEvent(on: self)
+            return .closing
+        }
+        return scope.state
+    }
+}
+
+extension RUMStopResourceWithErrorCommand {
+    func apply(to scope: RUMResourceScope) -> RUMScopeState {
+        if scope.state == .open && scope.resourceKey == resourceKey {
+            scope.sendErrorEvent(on: self)
+            return .closing
+        }
+        return scope.state
+    }
+}
+
+extension RUMAddResourceMetricsCommand {
+    func apply(to scope: RUMResourceScope) -> RUMScopeState {
+        if scope.state == .open && scope.resourceKey == resourceKey {
+            scope.addMetrics(from: self)
+        }
+        return scope.state
+    }
+}
+
+extension RUMEventsMappingCompletionCommand where DM == RUMResourceEvent {
+    func apply(to scope: RUMResourceScope) -> RUMScopeState {
+        if model.resource.id == scope.resourceUUID.toRUMDataFormat {
+            return change == .discarded ? .discarded : .closed
+        }
+        return scope.state
+    }
+}
+
+extension RUMEventsMappingCompletionCommand where DM == RUMErrorEvent {
+    func apply(to scope: RUMResourceScope) -> RUMScopeState {
+        if model.error.resource?.url == scope.resourceURL {
+            return change == .discarded ? .discarded : .closed
+        }
+        return scope.state
     }
 }

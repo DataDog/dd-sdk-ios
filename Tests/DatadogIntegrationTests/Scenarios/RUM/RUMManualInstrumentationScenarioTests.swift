@@ -53,9 +53,9 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
 
         let view1 = session.viewVisits[0]
-        XCTAssertEqual(view1.name, "SendRUMFixture1View")
+        XCTAssertEqual(view1.path, "SendRUMFixture1ViewController")
         XCTAssertEqual(view1.path, "Example.SendRUMFixture1ViewController")
-        XCTAssertEqual(view1.viewEvents.count, 6, "First view should receive 6 updates")
+        XCTAssertEqual(view1.viewEvents.count, 7, "First view should receive 7 updates")
         XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
         XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
         XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)

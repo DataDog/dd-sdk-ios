@@ -19,6 +19,8 @@ internal struct RUMScopeDependencies {
 }
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
+    var state: RUMScopeState
+
     // MARK: - Child Scopes
 
     /// Session scope. It gets created with the first `.startView` event.
@@ -36,6 +38,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         dependencies: RUMScopeDependencies,
         samplingRate: Float
     ) {
+        self.state = .open
         self.dependencies = dependencies
         self.samplingRate = samplingRate
         self.context = RUMContext(
@@ -54,9 +57,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
+    func process(command: RUMCommand) -> RUMScopeState {
         if let currentSession = sessionScope {
-            sessionScope = manage(childScope: sessionScope, byPropagatingCommand: command)
+            sessionScope = manage(childScope: sessionScope, byPropagatingCommand: command).scope
 
             if sessionScope == nil { // if session expired
                 refresh(expiredSession: currentSession, on: command)
@@ -70,7 +73,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             }
         }
 
-        return true
+        return .open
     }
 
     // MARK: - Private

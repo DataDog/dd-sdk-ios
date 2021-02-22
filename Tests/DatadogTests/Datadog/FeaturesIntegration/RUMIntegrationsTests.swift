@@ -35,6 +35,7 @@ class RUMIntegrationsTests: XCTestCase {
         RUMFeature.instance = RUMFeature(
             storage: FeatureStorage(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: FeatureUpload(uploader: NoOpDataUploadWorker()),
+            eventsMapper: .mockNoOp(dateProvider: SystemDateProvider()),
             configuration: .mockWith(sessionSamplingRate: 0.0),
             commonDependencies: .mockAny()
         )

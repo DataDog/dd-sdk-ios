@@ -179,6 +179,26 @@ extension FeaturesConfiguration.Tracing {
     }
 }
 
+extension FeaturesConfiguration.RUM.EventsMapper {
+    static func mockNoOp() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        viewEventMapper: RUMViewEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil
+    ) -> Self {
+        return .init(
+            viewEventMapper: viewEventMapper,
+            errorEventMapper: errorEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper
+        )
+    }
+}
+
 extension FeaturesConfiguration.RUM {
     static func mockAny() -> Self { mockWith() }
 
@@ -187,7 +207,7 @@ extension FeaturesConfiguration.RUM {
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
-        eventMapper: RUMEventsMapper = .mockNoOp(),
+        eventMapper: EventsMapper = .mockNoOp(),
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(

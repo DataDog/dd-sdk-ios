@@ -12,11 +12,28 @@ internal typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEve
 internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
 
 /// The `EventMapper` for RUM events.
-internal struct RUMEventsMapper: EventMapper {
+internal class RUMEventsMapper: EventMapper {
+    weak var commandSubscriber: RUMCommandSubscriber?
+
+    let dateProvider: DateProvider
     let viewEventMapper: RUMViewEventMapper?
     let errorEventMapper: RUMErrorEventMapper?
     let resourceEventMapper: RUMResourceEventMapper?
     let actionEventMapper: RUMActionEventMapper?
+
+    init(
+        dateProvider: DateProvider,
+        viewEventMapper: RUMViewEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil
+    ) {
+        self.dateProvider = dateProvider
+        self.viewEventMapper = viewEventMapper
+        self.errorEventMapper = errorEventMapper
+        self.resourceEventMapper = resourceEventMapper
+        self.actionEventMapper = actionEventMapper
+    }
 
     // MARK: - EventMapper
 
@@ -37,15 +54,30 @@ internal struct RUMEventsMapper: EventMapper {
     }
 
     private func map<DM: RUMDataModel>(rumEvent: RUMEvent<DM>, using mapper: ((DM) -> DM?)?) -> RUMEvent<DM>? {
+        let change: RUMEventsMappingCompletionCommand<DM>.Change
+        defer {
+            commandSubscriber?.process(
+                command: RUMEventsMappingCompletionCommand(
+                    time: dateProvider.currentDate(),
+                    attributes: [:],
+                    change: change,
+                    model: rumEvent.model
+                )
+            )
+        }
+
         guard let mapper = mapper else {
+            change = .none
             return rumEvent // if no mapper is provided, do not modify the `rumEvent`
         }
 
         if let mappedModel = mapper(rumEvent.model) {
             var mutableRUMEvent = rumEvent
             mutableRUMEvent.model = mappedModel
+            change = .mapped
             return mutableRUMEvent
         } else {
+            change = .discarded
             return nil
         }
     }

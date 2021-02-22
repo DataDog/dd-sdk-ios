@@ -31,6 +31,13 @@ internal struct FeaturesConfiguration {
     }
 
     struct RUM {
+        struct EventsMapper {
+            let viewEventMapper: RUMViewEventMapper?
+            let errorEventMapper: RUMErrorEventMapper?
+            let resourceEventMapper: RUMResourceEventMapper?
+            let actionEventMapper: RUMActionEventMapper?
+        }
+
         struct AutoInstrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
             let uiKitActionsTrackingEnabled: Bool
@@ -40,7 +47,7 @@ internal struct FeaturesConfiguration {
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
-        let eventMapper: RUMEventsMapper
+        let eventMapper: EventsMapper
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
     }
@@ -162,7 +169,7 @@ extension FeaturesConfiguration {
                     ),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
-                    eventMapper: RUMEventsMapper(
+                    eventMapper: RUM.EventsMapper(
                         viewEventMapper: configuration.rumViewEventMapper,
                         errorEventMapper: configuration.rumErrorEventMapper,
                         resourceEventMapper: configuration.rumResourceEventMapper,

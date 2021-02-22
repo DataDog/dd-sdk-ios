@@ -75,10 +75,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
-            )
+            ),
+            .open
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
@@ -107,10 +108,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
-            )
+            ),
+            .open
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).first)
@@ -144,10 +146,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar 2"], identity: mockView)
-            )
+            ),
+            .open
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).first)
@@ -181,12 +184,14 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView)),
+            .open
         )
         currentTime.addTimeInterval(2)
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView)),
+            .closed,
             "The scope should end."
         )
 
@@ -233,14 +238,16 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(
-             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view1))
+        XCTAssertEqual(
+             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view1)),
+            .open
          )
 
         currentTime.addTimeInterval(1)
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view2)),
+            .closed,
             "The scope should end as another View is started."
         )
 
@@ -270,12 +277,14 @@ class RUMViewScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(1)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView)),
+            .open,
             "The scope should be kept as the View was started for the first time."
         )
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView)),
+            .closed,
             "The scope should end as the View was started for another time."
         )
 
@@ -338,39 +347,76 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: Date()
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            .open
         )
 
         XCTAssertEqual(scope.resourceScopes.count, 0)
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")
-            )
+            ),
+            .open
         )
         XCTAssertEqual(scope.resourceScopes.count, 1)
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2")
-            )
+            ),
+            .open
         )
         XCTAssertEqual(scope.resourceScopes.count, 2)
-        XCTAssertTrue(
+        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
+        let resourceScope2 = try XCTUnwrap(scope.resourceScopes["/resource/2"])
+
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
-            )
+            ),
+            .open
         )
-        XCTAssertEqual(scope.resourceScopes.count, 1)
-        XCTAssertTrue(
+        XCTAssertEqual(scope.openResourceScopes.count, 1)
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")
-            )
+            ),
+            .open
+        )
+        XCTAssertEqual(scope.openResourceScopes.count, 0)
+
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMResourceEvent>.mockWith(
+                    model: RUMResourceEvent.mockWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceID: resourceScope1.resourceUUID.toRUMDataFormat,
+                        resourceURL: resourceScope1.resourceURL
+                    )
+                )
+            ),
+            .open
+        )
+        XCTAssertEqual(scope.resourceScopes.count, 1)
+
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMErrorEvent>.mockWith(
+                    model: RUMErrorEvent.mockForResourceWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceURL: resourceScope2.resourceURL
+                    )
+                )
+            ),
+            .open
         )
         XCTAssertEqual(scope.resourceScopes.count, 0)
 
-        XCTAssertFalse(
-            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
+            .closed
         )
+
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
         XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
@@ -389,31 +435,68 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // given
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            .open
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1"))
+        XCTAssertEqual(
+            scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")),
+            .open
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2"))
+        XCTAssertEqual(
+            scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2")),
+            .open
         )
 
         // when
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
+            .open,
             "The View should be kept alive as its Resources havent yet finished loading"
         )
 
         // then
-        XCTAssertTrue(
+        XCTAssertEqual(scope.resourceScopes.count, 2)
+        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
+        let resourceScope2 = try XCTUnwrap(scope.resourceScopes["/resource/2"])
+
+        XCTAssertEqual(
             scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")),
+            .open,
             "The View should be kept alive as all its Resources havent yet finished loading"
         )
-        XCTAssertFalse(
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMResourceEvent>.mockWith(
+                    model: RUMResourceEvent.mockWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceID: resourceScope1.resourceUUID.toRUMDataFormat,
+                        resourceURL: resourceScope1.resourceURL
+                    )
+                )
+            ),
+            .open
+        )
+        XCTAssertEqual(scope.resourceScopes.count, 1)
+
+        XCTAssertEqual(
             scope.process(command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")),
+            .open,
             "The View should stop as all its Resources finished loading"
         )
+
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMErrorEvent>.mockWith(
+                    model: RUMErrorEvent.mockForResourceWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceURL: resourceScope2.resourceURL
+                    )
+                )
+            ),
+            .closed
+        )
+        XCTAssertEqual(scope.resourceScopes.count, 0)
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
@@ -433,30 +516,46 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: Date()
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            .open
         )
 
         XCTAssertNil(scope.userActionScope)
         let actionName = String.mockRandom()
-        XCTAssertTrue(
-            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: actionName))
+        XCTAssertEqual(
+            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: actionName)),
+            .open
         )
         XCTAssertNotNil(scope.userActionScope)
         XCTAssertEqual(scope.userActionScope?.name, actionName)
 
-        XCTAssertTrue(
-            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom()))
+        XCTAssertEqual(
+            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom())),
+            .open
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
 
-        XCTAssertTrue(
-            scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe))
+        XCTAssertEqual(
+            scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe)),
+            .open
+        )
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
+                    model: RUMActionEvent.mockWith(
+                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat,
+                        viewID: scope.viewUUID.toRUMDataFormat
+                    )
+                )
+            ),
+            .open
         )
         XCTAssertNil(scope.userActionScope)
 
-        XCTAssertFalse(
-            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
+            .closed
         )
         let viewEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewEvent.model.view.action.count, 1, "View should record 1 action")
@@ -474,30 +573,47 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView)),
+            .open
         )
 
         currentTime.addTimeInterval(0.5)
 
         XCTAssertNil(scope.userActionScope)
         let actionName = String.mockRandom()
-        XCTAssertTrue(
-            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: actionName))
+        XCTAssertEqual(
+            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: actionName)),
+            .open
         )
         XCTAssertNotNil(scope.userActionScope)
         XCTAssertEqual(scope.userActionScope?.name, actionName)
 
-        XCTAssertTrue(
-            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom()))
+        XCTAssertEqual(
+            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom())),
+            .open
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
-        XCTAssertFalse(
-            scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
+                    model: RUMActionEvent.mockWith(
+                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat,
+                        viewID: scope.viewUUID.toRUMDataFormat
+                    )
+                )
+            ),
+            .open
         )
+
+        XCTAssertEqual(
+            scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView)),
+            .closed
+        )
+
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
     }
@@ -517,18 +633,31 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
-            )
+            ),
+            .open
         )
 
         currentTime.addTimeInterval(1)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: "view error", source: .source, stack: nil)
-            )
+            ),
+            .open
+        )
+
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMErrorEvent>.mockWith(
+                    model: RUMErrorEvent.mockForViewWith(
+                        viewID: scope.viewUUID.toRUMDataFormat
+                    )
+                )
+            ),
+            .open
         )
 
         let error = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).last)
@@ -566,22 +695,38 @@ class RUMViewScopeTests: XCTestCase {
             startTime: Date()
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartViewCommand.mockWith(attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
-            )
+            ),
+            .open
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")
-            )
+            ),
+            .open
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "/resource/1")
-            )
+            ),
+            .open
+        )
+
+        let resourceScope = scope.resourceScopes["/resource/1"]!
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMErrorEvent>.mockWith(
+                    model: RUMErrorEvent.mockForResourceWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceURL: resourceScope.resourceURL
+                    )
+                )
+            ),
+            .open
         )
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
@@ -603,8 +748,9 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            .open
         )
 
         // Given
@@ -613,18 +759,20 @@ class RUMViewScopeTests: XCTestCase {
 
         // When
         currentTime.addTimeInterval(0.5)
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns")
-            )
+            ),
+            .open
         )
         XCTAssertEqual(scope.customTimings.count, 1)
 
         currentTime.addTimeInterval(0.5)
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-1000000000ns")
-            )
+            ),
+            .open
         )
         XCTAssertEqual(scope.customTimings.count, 2)
 
@@ -655,11 +803,13 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime
         )
-        XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            .open
         )
-        XCTAssertFalse(
-            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        XCTAssertEqual(
+            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
+            .closed
         )
 
         // Given
@@ -747,5 +897,139 @@ class RUMViewScopeTests: XCTestCase {
         actionEvents.forEach { view in
             XCTAssertEqual(view.model.date, expectedOtherEventsDate)
         }
+    }
+
+    // MARK: ViewScope counts Correction
+
+    func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() throws {
+        // Given
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            uri: "UIViewController",
+            attributes: [:],
+            customTimings: [:],
+            startTime: Date()
+        )
+        XCTAssertEqual(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView, isInitialView: true)),
+            .open
+        )
+
+        XCTAssertEqual(
+            scope.process(
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")
+            ),
+            .open
+        )
+        XCTAssertEqual(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith()
+            ),
+            .open
+        )
+        XCTAssertEqual(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage()
+            ),
+            .open
+        )
+        XCTAssertEqual(
+            scope.process(
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2")
+            ),
+            .open
+        )
+        XCTAssertEqual(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/2")
+            ),
+            .open
+        )
+        XCTAssertEqual(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+            ),
+            .open
+        )
+
+        // When:
+        // Discarding `RUMActionEvent` for `RUMAddUserActionCommand`
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
+                    change: .discarded,
+                    model: RUMActionEvent.mockWith(
+                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat
+                    )
+                )
+            ),
+            .open
+        )
+
+        // Discarding `RUMErrorEvent` for `RUMAddCurrentViewErrorCommand`
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMErrorEvent>.mockWith(
+                    change: .discarded,
+                    model: RUMErrorEvent.mockForViewWith(
+                        viewID: scope.viewUUID.toRUMDataFormat
+                    )
+                )
+            ),
+            .open
+        )
+
+        XCTAssertEqual(scope.resourceScopes.count, 2)
+        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
+        let resourceScope2 = try XCTUnwrap(scope.resourceScopes["/resource/2"])
+
+        // Discarding `RUMResourceEvent` from `RUMStartResourceCommand` /resource/1
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMResourceEvent>.mockWith(
+                    change: .discarded,
+                    model: RUMResourceEvent.mockWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceID: resourceScope1.resourceUUID.toRUMDataFormat,
+                        resourceURL: resourceScope1.resourceURL
+                    )
+                )
+            ),
+            .open
+        )
+
+        // Finalizing `RUMResourceEvent` for `RUMStartResourceCommand` /resource/2
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMResourceEvent>.mockWith(
+                    model: RUMResourceEvent.mockWith(
+                        viewID: scope.viewUUID.toRUMDataFormat,
+                        resourceID: resourceScope2.resourceUUID.toRUMDataFormat,
+                        resourceURL: resourceScope2.resourceURL
+                    )
+                )
+            ),
+            .open
+        )
+
+        XCTAssertEqual(
+            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
+            .closed
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+
+        // Then
+        XCTAssertEqual(event.model.view.resource.count, 1, "After dropping 1 Resource event (of 2), View should record 1 Resource")
+        XCTAssertEqual(event.model.view.action.count, 1, "After dropping a User Action event, View should record only ApplicationStart Action")
+        XCTAssertEqual(event.model.view.error.count, 0, "After dropping an Error event, View should record 0 Errors")
+    }
+}
+
+extension RUMViewScope {
+    var openResourceScopes: [RUMResourceScope] {
+        self.resourceScopes.values.filter { $0.state == .open }
     }
 }

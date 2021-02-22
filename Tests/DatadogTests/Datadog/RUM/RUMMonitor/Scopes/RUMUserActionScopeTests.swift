@@ -48,10 +48,21 @@ class RUMUserActionScopeTests: XCTestCase {
             attributes: [:],
             startTime: Date()
         )
-        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)))
+        XCTAssertNotEqual(scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)), .closed)
         let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
-        XCTAssertTrue(scope.process(command: mockUserActionCmd))
-        XCTAssertFalse(scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)))
+        XCTAssertEqual(scope.process(command: mockUserActionCmd), .open)
+        XCTAssertEqual(scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)), .open)
+
+        XCTAssertEqual(
+            scope.process(
+                command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
+                    model: RUMActionEvent.mockWith(
+                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat
+                    )
+                )
+            ),
+            .closed
+        )
 
         let recordedActionEvents = try output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self)
         XCTAssertEqual(recordedActionEvents.count, 1)
@@ -76,7 +87,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(1)
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
@@ -84,7 +95,8 @@ class RUMUserActionScopeTests: XCTestCase {
                     actionType: .swipe,
                     name: nil
                 )
-            )
+            ),
+            .closing
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
@@ -119,10 +131,10 @@ class RUMUserActionScopeTests: XCTestCase {
         let expirationInterval = RUMUserActionScope.Constants.continuousActionMaxDuration
 
         currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: expirationInterval * 0.5)
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)), "Continuous User Action should not expire after \(expirationInterval * 0.5)s")
+        XCTAssertEqual(scope.process(command: RUMCommandMock(time: currentTime)), .open, "Continuous User Action should not expire after \(expirationInterval * 0.5)s")
 
         currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: expirationInterval * 2.0)
-        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)), "Continuous User Action should expire after \(expirationInterval)s")
+        XCTAssertEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closing, "Continuous User Action should expire after \(expirationInterval)s")
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
         XCTAssertEqual(event.model.action.loadingTime, 10_000_000_000, "Loading time should not exceed expirationInterval")
@@ -143,36 +155,41 @@ class RUMUserActionScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(0.5)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
-            )
+            ),
+            .open
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentTime)
-            )
+            ),
+            .open
         )
 
         currentTime.addTimeInterval(0.5)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
-            )
+            ),
+            .open
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "/resource/2", time: currentTime)
-            )
+            ),
+            .open
         )
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .scroll)
-            )
+            ),
+            .closing
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
@@ -195,18 +212,20 @@ class RUMUserActionScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(0.5)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime)
-            )
+            ),
+            .open
         )
 
         currentTime.addTimeInterval(1)
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .scroll)
-            )
+            ),
+            .closing
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
@@ -228,14 +247,15 @@ class RUMUserActionScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(0.5)
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock()))
+        XCTAssertEqual(scope.process(command: RUMCommandMock()), .open)
 
         currentTime.addTimeInterval(1)
         let differentName = String.mockRandom()
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .scroll, name: differentName)
-            )
+            ),
+            .closing
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
@@ -260,10 +280,10 @@ class RUMUserActionScopeTests: XCTestCase {
         let timeOutInterval = RUMUserActionScope.Constants.discreteActionTimeoutDuration
 
         currentTime = .mockDecember15th2019At10AMUTC(addingTimeInterval: timeOutInterval * 0.5)
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)), "Discrete User Action should not time out after \(timeOutInterval * 0.5)s")
+        XCTAssertEqual(scope.process(command: RUMCommandMock(time: currentTime)), .open, "Discrete User Action should not time out after \(timeOutInterval * 0.5)s")
 
         currentTime.addTimeInterval(timeOutInterval)
-        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)), "Discrete User Action should time out after \(timeOutInterval)s")
+        XCTAssertEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closing, "Discrete User Action should time out after \(timeOutInterval)s")
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
         let nanosecondsInSecond: Double = 1_000_000_000
@@ -286,38 +306,43 @@ class RUMUserActionScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(0.05)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
-            )
+            ),
+            .open
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentTime)
-            )
+            ),
+            .open
         )
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime)
             ),
+            .open,
             "Discrete User Action should not yet complete as it still has 1 pending Resource"
         )
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "/resource/2", time: currentTime)
             ),
+            .open,
             "Discrete User Action should not yet complete as it haven't reached the time out duration"
         )
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(command: RUMCommandMock(time: currentTime)),
+            .closing,
             "Discrete User Action should complete as it has no more pending Resources and it reached the timeout duration"
         )
 
@@ -341,16 +366,18 @@ class RUMUserActionScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(0.05)
 
-        XCTAssertTrue(
+        XCTAssertEqual(
             scope.process(
                 command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime)
-            )
+            ),
+            .open
         )
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(command: RUMCommandMock(time: currentTime)),
+            .closing,
             "Discrete User Action should complete as it reached the timeout duration"
         )
 

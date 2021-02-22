@@ -35,12 +35,12 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMContextProviderMock()
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime)
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertNotEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closed)
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closed)
     }
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
@@ -48,17 +48,17 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMContextProviderMock()
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime)
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertNotEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closed)
 
         // Push time forward by less than the session timeout duration:
         currentTime.addTimeInterval(0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertNotEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closed)
 
         // Push time forward by the session timeout duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertEqual(scope.process(command: RUMCommandMock(time: currentTime)), .closed)
     }
 
     func testItManagesViewScopeLifecycle() {
@@ -82,8 +82,9 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
-        XCTAssertTrue(
+        XCTAssertNotEqual(
             scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            .closed,
             "Sampled session should be kept until it expires or reaches the timeout."
         )
         XCTAssertEqual(scope.viewScopes.count, 0)

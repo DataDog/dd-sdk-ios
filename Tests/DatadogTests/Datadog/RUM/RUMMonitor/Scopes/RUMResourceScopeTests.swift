@@ -62,7 +62,7 @@ class RUMResourceScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand(
                     resourceKey: "/resource/1",
@@ -72,7 +72,8 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 )
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -125,7 +126,7 @@ class RUMResourceScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand(
                     resourceKey: "/resource/1",
@@ -135,7 +136,8 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 500,
                     attributes: ["foo": "bar"]
                 )
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -219,11 +221,11 @@ class RUMResourceScopeTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(scope.process(command: metricsCommand))
+        XCTAssertEqual(scope.process(command: metricsCommand), .open)
 
         currentTime.addTimeInterval(1)
 
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand(
                     resourceKey: "/resource/1",
@@ -233,7 +235,8 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 )
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -326,13 +329,14 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(
                     resourceKey: "/resource/1",
                     kind: kindBasedOnResponse
                 )
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -361,10 +365,11 @@ class RUMResourceScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -396,10 +401,11 @@ class RUMResourceScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -428,10 +434,11 @@ class RUMResourceScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
-            )
+            ),
+            .closing
         )
 
         // Then
@@ -463,10 +470,11 @@ class RUMResourceScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
 
         // When
-        XCTAssertFalse(
+        XCTAssertEqual(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
-            )
+            ),
+            .closing
         )
 
         // Then

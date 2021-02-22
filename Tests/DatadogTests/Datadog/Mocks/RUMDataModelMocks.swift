@@ -86,6 +86,10 @@ extension RUMViewEvent {
 
 extension RUMResourceEvent {
     static func mockRandom() -> RUMResourceEvent {
+        return mockWith()
+    }
+
+    static func mockWith(viewID: String = .mockRandom(), resourceID: String = .mockRandom(), resourceURL: String = .mockRandom()) -> RUMResourceEvent {
         return RUMResourceEvent(
             dd: .init(
                 spanId: .mockRandom(),
@@ -101,7 +105,7 @@ extension RUMResourceEvent {
                 download: .init(duration: .mockRandom(), start: .mockRandom()),
                 duration: .mockRandom(),
                 firstByte: .init(duration: .mockRandom(), start: .mockRandom()),
-                id: .mockRandom(),
+                id: resourceID,
                 method: .mockRandom(),
                 provider: .init(
                     domain: .mockRandom(),
@@ -113,7 +117,7 @@ extension RUMResourceEvent {
                 ssl: .init(duration: .mockRandom(), start: .mockRandom()),
                 statusCode: .mockRandom(),
                 type: [.xhr, .fetch, .image].randomElement()!,
-                url: .mockRandom()
+                url: resourceURL
             ),
             service: .mockRandom(),
             session: .init(
@@ -123,7 +127,7 @@ extension RUMResourceEvent {
             ),
             usr: .mockRandom(),
             view: .init(
-                id: .mockRandom(),
+                id: viewID,
                 referrer: .mockRandom(),
                 url: .mockRandom()
             )
@@ -133,12 +137,16 @@ extension RUMResourceEvent {
 
 extension RUMActionEvent {
     static func mockRandom() -> RUMActionEvent {
+        return mockWith()
+    }
+
+    static func mockWith(actionID: String = .mockRandom(), viewID: String = .mockRandom()) -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(),
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
-                id: .mockRandom(),
+                id: actionID,
                 loadingTime: .mockRandom(),
                 longTask: .init(count: .mockRandom()),
                 resource: .init(count: .mockRandom()),
@@ -156,7 +164,7 @@ extension RUMActionEvent {
             ),
             usr: .mockRandom(),
             view: .init(
-                id: .mockRandom(),
+                id: viewID,
                 referrer: .mockRandom(),
                 url: .mockRandom()
             )
@@ -166,6 +174,40 @@ extension RUMActionEvent {
 
 extension RUMErrorEvent {
     static func mockRandom() -> RUMErrorEvent {
+        return mockForResourceWith()
+    }
+
+    static func mockForViewWith(viewID: String = .mockRandom()) -> RUMErrorEvent {
+        return RUMErrorEvent(
+            dd: .init(),
+            action: .init(id: .mockRandom()),
+            application: .init(id: .mockRandom()),
+            connectivity: .mockRandom(),
+            date: .mockRandom(),
+            error: .init(
+                isCrash: .random(),
+                message: .mockRandom(),
+                resource: nil,
+                source: [.source, .network, .custom].randomElement()!,
+                stack: .mockRandom(),
+                type: .mockRandom()
+            ),
+            service: .mockRandom(),
+            session: .init(
+                hasReplay: nil,
+                id: .mockRandom(),
+                type: .user
+            ),
+            usr: .mockRandom(),
+            view: .init(
+                id: viewID,
+                referrer: .mockRandom(),
+                url: .mockRandom()
+            )
+        )
+    }
+
+    static func mockForResourceWith(viewID: String = .mockRandom(), resourceURL: String = .mockRandom()) -> RUMErrorEvent {
         return RUMErrorEvent(
             dd: .init(),
             action: .init(id: .mockRandom()),
@@ -183,7 +225,7 @@ extension RUMErrorEvent {
                         type: Bool.random() ? .firstParty : nil
                     ),
                     statusCode: .mockRandom(),
-                    url: .mockRandom()
+                    url: resourceURL
                 ),
                 source: [.source, .network, .custom].randomElement()!,
                 stack: .mockRandom(),
@@ -197,7 +239,7 @@ extension RUMErrorEvent {
             ),
             usr: .mockRandom(),
             view: .init(
-                id: .mockRandom(),
+                id: viewID,
                 referrer: .mockRandom(),
                 url: .mockRandom()
             )
