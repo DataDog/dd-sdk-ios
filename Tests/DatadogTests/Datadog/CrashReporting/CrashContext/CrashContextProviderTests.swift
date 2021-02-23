@@ -21,7 +21,10 @@ class CrashContextProviderTests: XCTestCase {
         let randomTrackingConsent: TrackingConsent = .mockRandom()
 
         let trackingConsentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
-        let crashContextProvider = CrashContextProvider(consentProvider: trackingConsentProvider)
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: trackingConsentProvider,
+            userInfoProvider: .mockAny()
+        )
 
         let initialContext = crashContextProvider.currentCrashContext
         var updatedContext: CrashContext?
@@ -45,7 +48,10 @@ class CrashContextProviderTests: XCTestCase {
         let expectation = self.expectation(description: "Notify new crash context")
         let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
 
-        let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: .mockAny(),
+            userInfoProvider: .mockAny()
+        )
         let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(crashContextProvider: crashContextProvider)
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -66,15 +72,22 @@ class CrashContextProviderTests: XCTestCase {
 
     // MARK: - Thread safety
 
-    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        let provider = CrashContextProvider(consentProvider: .mockAny())
+    func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
+        let consentProvider: ConsentProvider = .mockAny()
+        let userInfoProvider: UserInfoProvider = .mockAny()
+
+        let provider = CrashContextProvider(
+            consentProvider: consentProvider,
+            userInfoProvider: userInfoProvider
+        )
 
         withExtendedLifetime(provider) {
             // swiftlint:disable opening_brace
             callConcurrently(
                 closures: [
                     { _ = provider.currentCrashContext },
-                    { provider.update(lastTrackingConsent: .mockRandom()) },
+                    { consentProvider.changeConsent(to: .mockRandom()) },
+                    { userInfoProvider.value = .mockRandom() },
                     { provider.update(lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())) },
                 ],
                 iterations: 50

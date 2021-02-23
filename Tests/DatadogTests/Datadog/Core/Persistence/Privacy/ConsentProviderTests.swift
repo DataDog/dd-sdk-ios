@@ -7,14 +7,6 @@
 import XCTest
 @testable import Datadog
 
-private class ConsentSubscriberMock: ConsentSubscriber {
-    var consentChange: (oldValue: TrackingConsent, newValue: TrackingConsent)?
-
-    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
-        consentChange = (oldValue: oldValue, newValue: newValue)
-    }
-}
-
 class ConsentProviderTests: XCTestCase {
     func testGivenInitialConsentSet_whenTheValueChanges_itCanBeRetrieved() {
         let initialConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
@@ -34,21 +26,25 @@ class ConsentProviderTests: XCTestCase {
     func testGivenInitialConsentSet_whenTheValueChanges_itNotifiesAllSubscribers() {
         let initialConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
         let newConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
-        let subscribers = (0..<5).map { _ in ConsentSubscriberMock() }
+
+        let expectation = self.expectation(description: "Notify all 5 observers")
+        expectation.expectedFulfillmentCount = 5
+        let subscribers = (0..<5).map { _ in
+            ValueObserverMock<TrackingConsent> { _, _ in expectation.fulfill() }
+        }
 
         // Given
         let provider = ConsentProvider(initialConsent: initialConsent)
-        subscribers.forEach { subscriber in
-            provider.subscribe(consentSubscriber: subscriber)
-        }
+        subscribers.forEach { subscriber in provider.subscribe(subscriber) }
 
         // When
         provider.changeConsent(to: newConsent)
 
         // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
         subscribers.forEach { subscriber in
-            XCTAssertEqual(subscriber.consentChange?.oldValue, initialConsent)
-            XCTAssertEqual(subscriber.consentChange?.newValue, newConsent)
+            XCTAssertEqual(subscriber.lastChange?.oldValue, initialConsent)
+            XCTAssertEqual(subscriber.lastChange?.newValue, newConsent)
         }
     }
 }

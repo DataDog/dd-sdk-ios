@@ -21,7 +21,7 @@ internal protocol CrashContextProviderType: class {
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
-internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber {
+internal class CrashContextProvider: CrashContextProviderType, TrackingConsentObserver {
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
     /// Unsychronized `CrashContext`. The `queue` must be used to synchronize its mutation.
@@ -45,7 +45,7 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
         )
 
         // Subscribe for `TrackingConsent` updates
-        consentProvider.subscribe(consentSubscriber: self)
+        consentProvider.subscribe(self)
     }
 
     // MARK: - CrashContextProviderType
@@ -80,9 +80,9 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
         }
     }
 
-    // MARK: - ConsentSubscriber
+    // MARK: - TrackingConsentObserver
 
-    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
+    func onValueChanged(oldValue: TrackingConsent, newValue: TrackingConsent) {
         update(lastTrackingConsent: newValue)
     }
 }
