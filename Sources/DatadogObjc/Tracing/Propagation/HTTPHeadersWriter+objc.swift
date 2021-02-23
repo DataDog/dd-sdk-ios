@@ -11,6 +11,10 @@ import class Datadog.HTTPHeadersWriter
 public class DDHTTPHeadersWriter: NSObject {
     let swiftHTTPHeadersWriter = HTTPHeadersWriter()
 
+    @objc public var tracePropagationHTTPHeaders: [String: String] {
+        swiftHTTPHeadersWriter.tracePropagationHTTPHeaders
+    }
+
     @objc
     override public init() {}
 }
