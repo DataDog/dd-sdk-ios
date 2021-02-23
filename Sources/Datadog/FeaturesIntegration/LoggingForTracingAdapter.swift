@@ -77,6 +77,8 @@ internal struct LoggingForTracingAdapter {
             loggingOutput.writeLogWith(
                 level: level,
                 message: message,
+                // TODO: RUMM-1112
+                error: nil,
                 date: date,
                 attributes: LogAttributes(
                     userAttributes: userAttributes,

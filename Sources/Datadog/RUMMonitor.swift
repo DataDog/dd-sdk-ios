@@ -307,11 +307,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
             return nil
         }()
-        addError(message: message, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
+        // Note for CR: should `type` be nil?
+        addError(message: message, type: nil, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
     }
 
     internal func addError(
         message: String,
+        type: String?,
         stack: String?,
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
@@ -320,6 +322,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.currentDate(),
                 message: message,
+                type: type,
                 stack: stack,
                 source: source,
                 attributes: attributes
@@ -491,6 +494,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
+                // Note for CR: should we leave it nil?
+                type: nil,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes

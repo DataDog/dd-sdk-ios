@@ -25,11 +25,12 @@ internal struct LogBuilder {
     /// Adjusts log's time (device time) to server time.
     let dateCorrector: DateCorrectorType?
 
-    func createLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
+    func createLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
         return Log(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
             status: logStatus(for: level),
             message: message,
+            error: error.flatMap { DDError(error: $0) },
             serviceName: serviceName,
             environment: environment,
             loggerName: loggerName,

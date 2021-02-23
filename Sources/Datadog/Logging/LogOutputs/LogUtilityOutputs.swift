@@ -8,7 +8,7 @@ import Foundation
 
 /// `LogOutput` which does nothing.
 internal struct NoOpLogOutput: LogOutput {
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {}
+    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {}
 }
 
 /// Combines one or more `LogOutputs` into one.
@@ -19,8 +19,8 @@ internal struct CombinedLogOutput: LogOutput {
         self.combinedOutputs = outputs
     }
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        combinedOutputs.forEach { $0.writeLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags) }
+    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {
+        combinedOutputs.forEach { $0.writeLogWith(level: level, message: message, error: error, date: date, attributes: attributes, tags: tags) }
     }
 }
 
@@ -28,9 +28,9 @@ internal struct ConditionalLogOutput: LogOutput {
     let conditionedOutput: LogOutput
     let condition: (LogLevel) -> Bool
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
+    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {
         if condition(level) {
-            conditionedOutput.writeLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags)
+            conditionedOutput.writeLogWith(level: level, message: message, error: error, date: date, attributes: attributes, tags: tags)
         }
     }
 }

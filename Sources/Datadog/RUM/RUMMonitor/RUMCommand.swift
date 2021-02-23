@@ -63,14 +63,17 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 
     /// The error message.
     let message: String
-    /// The origin of this error.
-    let source: RUMInternalErrorSource
+    /// Error type.
+    let type: String?
     /// Error stacktrace.
     let stack: String?
+    /// The origin of this error.
+    let source: RUMInternalErrorSource
 
     init(
         time: Date,
         message: String,
+        type: String?,
         stack: String?,
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
@@ -79,6 +82,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.source = source
         self.attributes = attributes
         self.message = message
+        self.type = type
         self.stack = stack
     }
 
@@ -93,7 +97,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.attributes = attributes
 
         let dderror = DDError(error: error)
-        self.message = dderror.title
+        self.message = dderror.message
+        self.type = dderror.title
         self.stack = dderror.details
     }
 }
@@ -167,6 +172,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
 
     /// The error message.
     let errorMessage: String
+    /// Error type.
+    let errorType: String?
     /// The origin of the error (network, webview, ...)
     let errorSource: RUMInternalErrorSource
     /// Error stacktrace.
@@ -178,6 +185,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         resourceKey: String,
         time: Date,
         message: String,
+        type: String?,
         source: RUMInternalErrorSource,
         httpStatusCode: Int?,
         attributes: [AttributeKey: AttributeValue]
@@ -185,6 +193,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.resourceKey = resourceKey
         self.time = time
         self.errorMessage = message
+        self.errorType = type
         self.errorSource = source
         self.attributes = attributes
         self.httpStatusCode = httpStatusCode
@@ -207,7 +216,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.httpStatusCode = httpStatusCode
 
         let dderror = DDError(error: error)
-        self.errorMessage = dderror.title
+        self.errorMessage = dderror.message
+        self.errorType = dderror.title
         // The stack will give the networking error (`NSError`) description in most cases:
         self.stack = dderror.details
     }
