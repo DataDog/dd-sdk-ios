@@ -7,7 +7,7 @@
 import CoreTelephony
 
 /// Network connection details specific to cellular radio access.
-internal struct CarrierInfo {
+internal struct CarrierInfo: Equatable {
     // swiftlint:disable identifier_name
     enum RadioAccessTechnology: String, Codable, CaseIterable {
         case GPRS

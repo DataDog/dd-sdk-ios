@@ -12,6 +12,15 @@ extension TrackingConsent {
     static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }
+
+    static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
+        while true {
+            let randomConsent: TrackingConsent = .mockRandom()
+            if randomConsent != consent {
+                return randomConsent
+            }
+        }
+    }
 }
 
 extension ConsentProvider {
@@ -693,8 +702,6 @@ extension NetworkConnectionInfo: RandomMockable {
     }
 }
 
-extension NetworkConnectionInfo: EquatableInTests {}
-
 class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
     private var _current: NetworkConnectionInfo?
@@ -765,8 +772,6 @@ extension CarrierInfo: RandomMockable {
         )
     }
 }
-
-extension CarrierInfo: EquatableInTests {}
 
 class CarrierInfoProviderMock: CarrierInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")

@@ -6,9 +6,18 @@
 
 import Foundation
 
+/// An observer subscribing to a `ValuePublisher`.
+internal protocol ValueObserver {
+    associatedtype ObservedValue
+
+    /// Notifies this observer on the value change. Called on the publisher's queue.
+    /// If the `ObservedValue` conforms to `Equatable`, only distinct changes will be notified.
+    func onValueChanged(oldValue: ObservedValue, newValue: ObservedValue)
+}
+
 /// Manages the `Value` in a thread safe manner and notifies subscribed `ValueObservers` on its change.
 internal class ValuePublisher<Value> {
-    /// Type erasure for `ValueObserver` types.
+    /// Type erasure for `ValueObserver` type.
     private struct AnyObserver<ObservedValue> {
         let notifyValueChanged: (ObservedValue, ObservedValue) -> Void
 
@@ -26,7 +35,13 @@ internal class ValuePublisher<Value> {
     /// The array of value observers - must be accessed from the `queue`.
     private var unsafeObservers: [AnyObserver<Value>]
     /// The managed `Value` - must be accessed from the `queue`.
-    private var unsafeValue: Value
+    private var unsafeValue: Value {
+        didSet {
+            unsafeObservers.forEach { observer in
+                observer.notifyValueChanged(oldValue, unsafeValue)
+            }
+        }
+    }
 
     /// The model used for synchronizing `currentValue` updates.
     enum UpdatesModel {
@@ -45,11 +60,20 @@ internal class ValuePublisher<Value> {
         self.updatesModel = updatesModel
     }
 
-    /// Registers an observer that will be notified on the value changes.
+    /// Registers an observer that will be notified on all value changes.
     /// All calls to the `observer` will be synchronised using internal concurrent queue.
     func subscribe<Observer: ValueObserver>(_ observer: Observer) where Observer.ObservedValue == Value {
         concurrentQueue.async(flags: .barrier) {
             self.unsafeObservers.append(AnyObserver(wrapped: observer))
+        }
+    }
+
+    /// Registers an observer that will be notified on dictinct value changes.
+    /// All calls to the `observer` will be synchronised using internal concurrent queue.
+    func subscribe<Observer: ValueObserver>(_ observer: Observer) where Observer.ObservedValue == Value, Value: Equatable {
+        concurrentQueue.async(flags: .barrier) {
+            let distinctObserver = DistinctValueObserver(wrapped: observer)
+            self.unsafeObservers.append(AnyObserver(wrapped: distinctObserver))
         }
     }
 
@@ -60,26 +84,27 @@ internal class ValuePublisher<Value> {
         set {
             switch updatesModel {
             case .synchronous:
-                concurrentQueue.sync(flags: .barrier) { updateAndNotifyObservers(newValue: newValue) }
+                concurrentQueue.sync(flags: .barrier) { unsafeValue = newValue }
             case .asynchronous:
-                concurrentQueue.async(flags: .barrier) { self.updateAndNotifyObservers(newValue: newValue) }
+                concurrentQueue.async(flags: .barrier) { self.unsafeValue = newValue }
             }
-        }
-    }
-
-    private func updateAndNotifyObservers(newValue: Value) {
-        let oldValue = self.unsafeValue
-        self.unsafeValue = newValue
-        self.unsafeObservers.forEach { observer in
-            observer.notifyValueChanged(oldValue, newValue)
         }
     }
 }
 
-/// An observer subscribing to a `ValuePublisher`.
-internal protocol ValueObserver {
-    associatedtype ObservedValue
+// MARK: - Helpers
 
-    /// Notifies this observer on the value change. Called on the publisher's queue.
-    func onValueChanged(oldValue: ObservedValue, newValue: ObservedValue)
+/// `ValueObserver` wrapper which notifies the wrapped observer only on distinct changes of the `Equatable` value.
+private struct DistinctValueObserver<EquatableValue: Equatable>: ValueObserver {
+    private let wrappedOnValueChanged: (EquatableValue, EquatableValue) -> Void
+
+    init<WrappedObserver: ValueObserver>(wrapped: WrappedObserver) where WrappedObserver.ObservedValue == EquatableValue {
+        self.wrappedOnValueChanged = wrapped.onValueChanged
+    }
+
+    func onValueChanged(oldValue: EquatableValue, newValue: EquatableValue) {
+        if newValue != oldValue {
+            wrappedOnValueChanged(oldValue, newValue)
+        }
+    }
 }

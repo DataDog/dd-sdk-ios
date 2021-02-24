@@ -7,7 +7,7 @@
 import Network
 
 /// Network connection details.
-internal struct NetworkConnectionInfo {
+internal struct NetworkConnectionInfo: Equatable {
     /// Tells if network is reachable.
     enum Reachability: String, Codable, CaseIterable {
         /// The network is reachable.

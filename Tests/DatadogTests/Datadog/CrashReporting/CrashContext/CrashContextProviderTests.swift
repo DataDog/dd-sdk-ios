@@ -18,7 +18,7 @@ class CrashContextProviderTests: XCTestCase {
     func testWhenTrackingConsentValueChangesInConsentProvider_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
         let initialTrackingConsent: TrackingConsent = .mockRandom()
-        let randomTrackingConsent: TrackingConsent = .mockRandom()
+        let randomTrackingConsent: TrackingConsent = .mockRandom(otherThan: initialTrackingConsent)
 
         let trackingConsentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let crashContextProvider = CrashContextProvider(

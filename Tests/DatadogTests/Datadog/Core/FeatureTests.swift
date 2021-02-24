@@ -19,7 +19,7 @@ class FeatureStorageTests: XCTestCase {
     }
 
     func testWhenWrittingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
-        let consentProvider = ConsentProvider(initialConsent: randomConsent())
+        let consentProvider = ConsentProvider(initialConsent: .mockRandom())
 
         // Given
         let storage = FeatureStorage(
@@ -33,7 +33,7 @@ class FeatureStorageTests: XCTestCase {
         // When
         (0..<100).forEach { _ in
             let currentConsent = consentProvider.currentValue
-            let nextConsent = randomConsent(otherThan: currentConsent)
+            let nextConsent: TrackingConsent = .mockRandom(otherThan: currentConsent)
 
             let stringValue = "current consent: \(currentConsent), next consent: \(nextConsent)"
             storage.writer.write(value: stringValue)
@@ -137,15 +137,5 @@ class FeatureStorageTests: XCTestCase {
         }
 
         return dataAuthorizedForUpload
-    }
-
-    /// Returns random consent value other than the given one.
-    private func randomConsent(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
-        while true {
-            let randomConsent: TrackingConsent = .mockRandom()
-            if randomConsent != consent {
-                return randomConsent
-            }
-        }
     }
 }

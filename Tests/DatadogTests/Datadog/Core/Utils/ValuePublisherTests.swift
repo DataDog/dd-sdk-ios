@@ -61,6 +61,57 @@ class ValuePublisherTests: XCTestCase {
         waitForExpectations(timeout: 1, handler: nil)
     }
 
+    func testWhenNonEquatableValueChanges_itNotifiesObserversOnAllChanges() {
+        struct NonEquatableValue {
+            let value: Int
+        }
+
+        let expectation = self.expectation(description: "Notify observer on 6 changes")
+        expectation.expectedFulfillmentCount = 6
+
+        let publisher = ValuePublisher<NonEquatableValue>(
+            initialValue: NonEquatableValue(value: .mockRandom()),
+            updatesModel: .synchronous
+        )
+        let observer = ValueObserverMock<NonEquatableValue> { old, new in
+            expectation.fulfill()
+        }
+        publisher.subscribe(observer)
+
+        // When
+        let changes = [1, 1, 2, 2, 3, 3].map { NonEquatableValue(value: $0) }
+        changes.forEach { nextChange in publisher.currentValue = nextChange }
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+    }
+
+    func testWhenEquatableValueChanges_itNotifiesObserversOnDistinctChanges() {
+        struct EquatableValue: Equatable {
+            let value: Int
+        }
+
+        let expectation = self.expectation(description: "Notify observer on 3 distinct changes")
+        expectation.expectedFulfillmentCount = 3
+
+        let publisher = ValuePublisher<EquatableValue>(
+            initialValue: EquatableValue(value: .mockRandom()),
+            updatesModel: .synchronous
+        )
+        let observer = ValueObserverMock<EquatableValue> { old, new in
+            XCTAssertNotEqual(old, new)
+            expectation.fulfill()
+        }
+        publisher.subscribe(observer)
+
+        // When
+        let changes = [1, 1, 2, 2, 3, 3].map { EquatableValue(value: $0) }
+        changes.forEach { nextChange in publisher.currentValue = nextChange }
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+    }
+
     // MARK: - Thread safety
 
     func testValueCanBeWrittenAndReadOnAnyThread() {
@@ -81,7 +132,7 @@ class ValuePublisherTests: XCTestCase {
     func testSubscribersAreNotifiedOnSingleThread() {
         let publisher = ValuePublisher<Int>(initialValue: .mockRandom(), updatesModel: .random())
 
-        // State mutated by the `IntObserverMock` - the `ValuePublisher` ensures its thread safety
+        // State mutated by the `ValueObserverMock<Int>` - the `ValuePublisher` ensures its thread safety
         var mutableState: Bool = .random()
 
         let observer = ValueObserverMock<Int> { _, _ in

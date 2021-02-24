@@ -36,8 +36,6 @@ internal struct CrashContext: Codable {
     private var codableLastNetworkConnectionInfo: CodableNetworkConnectionInfo?
     private var codableLastCarrierInfo: CodableCarrierInfo?
 
-    // TODO: RUMM-1049 Add Codable version of `UserInfo?`, `NetworkInfo?` and `CarrierInfo?`
-
     enum CodingKeys: String, CodingKey {
         case codableTrackingConsent = "ctc"
         case codableLastRUMViewEvent = "lre"
