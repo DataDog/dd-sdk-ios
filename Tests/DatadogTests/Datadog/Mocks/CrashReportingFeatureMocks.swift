@@ -65,7 +65,6 @@ internal class CrashContextProviderMock: CrashContextProviderType {
     }
 
     func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {}
-    func update(lastTrackingConsent: TrackingConsent) {}
 }
 
 class CrashReportingIntegrationMock: CrashReportingIntegration {
@@ -90,14 +89,14 @@ extension CrashContext {
 
     static func mockWith(
         lastTrackingConsent: TrackingConsent = .granted,
-        lastRUMViewEvent: RUMEvent<RUMViewEvent>? = nil,
         lastUserInfo: UserInfo = .mockAny(),
+        lastRUMViewEvent: RUMEvent<RUMViewEvent>? = nil,
         lastNetworkConnectionInfo: NetworkConnectionInfo? = .mockAny()
     ) -> CrashContext {
         return CrashContext(
             lastTrackingConsent: lastTrackingConsent,
-            lastRUMViewEvent: lastRUMViewEvent,
             lastUserInfo: lastUserInfo,
+            lastRUMViewEvent: lastRUMViewEvent,
             lastNetworkConnectionInfo: lastNetworkConnectionInfo
         )
     }
@@ -105,8 +104,8 @@ extension CrashContext {
     static func mockRandom() -> CrashContext {
         return CrashContext(
             lastTrackingConsent: .mockRandom(),
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom()),
             lastUserInfo: .mockRandom(),
+            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom()),
             lastNetworkConnectionInfo: .mockRandom()
         )
     }

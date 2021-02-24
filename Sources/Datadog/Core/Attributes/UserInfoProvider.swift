@@ -6,17 +6,32 @@
 
 import Foundation
 
-/// Shared user info provider.
+/// An observer for `UserInfo` value.
+internal typealias UserInfoObserver = ValueObserver
+
+/// Provides the current `UserInfo` value and notifies all subscribers on its change.
 internal class UserInfoProvider {
-    /// Ensures thread-safe access to `UserInfo`.
-    /// `UserInfo` can be mutated by any user thread with `Datadog.setUserInfo(id:name:email:)` - at the same
-    /// time it might be accessed by different queues running in the SDK.
-    private let queue = DispatchQueue(label: "com.datadoghq.user-info-provider", qos: .userInteractive)
-    private var _value = UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+    private let publisher: ValuePublisher<UserInfo>
+
+    init() {
+        let emptyUserInfo = UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+        // Synchronous `updatesModel` makes the `value` setter a blocking call.
+        // This ensures that the new value of the `UserInfo`` will be applied immediately
+        // to all data sent from the the same thread.
+        self.publisher = ValuePublisher(initialValue: emptyUserInfo, updatesModel: .synchronous)
+    }
+
+    // MARK: - `UserInfo` Value
 
     var value: UserInfo {
-        set { queue.async { self._value = newValue } }
-        get { queue.sync { self._value } }
+        set { publisher.currentValue = newValue }
+        get { publisher.currentValue }
+    }
+
+    // MARK: - Managing Subscribers
+
+    func subscribe<Observer: UserInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == UserInfo {
+        publisher.subscribe(subscriber)
     }
 }
 

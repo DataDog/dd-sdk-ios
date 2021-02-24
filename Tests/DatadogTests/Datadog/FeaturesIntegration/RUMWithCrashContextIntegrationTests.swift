@@ -10,7 +10,8 @@ import XCTest
 class RUMWithCrashContextIntegrationTests: XCTestCase {
     func testWhenCrashReporterIsRegistered_itUpdatesCrashContextWithLastRUMView() throws {
         let crashContextProvider = CrashContextProvider(
-            consentProvider: .mockAny()
+            consentProvider: .mockAny(),
+            userInfoProvider: .mockAny()
         )
 
         // When

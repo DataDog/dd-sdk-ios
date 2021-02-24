@@ -70,6 +70,37 @@ class CrashContextProviderTests: XCTestCase {
         XCTAssertEqual(updatedContext?.lastRUMViewEvent, randomRUMViewEvent)
     }
 
+    // MARK: - `UserInfo` Integration
+
+    func testWhenUserInfoValueChangesInUserInfoProvider_thenCrashContextProviderNotifiesNewContext() {
+        let expectation = self.expectation(description: "Notify new crash context")
+        let initialUserInfo: UserInfo = .mockRandom()
+        let randomUserInfo: UserInfo = .mockRandom()
+
+        let userInfoProvider = UserInfoProvider()
+        userInfoProvider.value = initialUserInfo
+
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: .mockAny(),
+            userInfoProvider: userInfoProvider
+        )
+
+        let initialContext = crashContextProvider.currentCrashContext
+        var updatedContext: CrashContext?
+
+        // When
+        crashContextProvider.onCrashContextChange = { newContext in
+            updatedContext = newContext
+            expectation.fulfill()
+        }
+        userInfoProvider.value = randomUserInfo
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertEqual(initialContext.lastUserInfo, initialUserInfo)
+        XCTAssertEqual(updatedContext?.lastUserInfo, randomUserInfo)
+    }
+
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {

@@ -911,7 +911,10 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: .mockAny(),
+            userInfoProvider: .mockAny()
+        )
 
         // Given
         Global.crashReporter = CrashReporter(

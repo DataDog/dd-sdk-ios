@@ -16,21 +16,21 @@ internal struct CrashContext: Codable {
 
     init(
         lastTrackingConsent: TrackingConsent,
+        lastUserInfo: UserInfo,
         lastRUMViewEvent: RUMEvent<RUMViewEvent>?,
-        lastUserInfo: UserInfo?,
         lastNetworkConnectionInfo: NetworkConnectionInfo?
     ) {
         self.codableTrackingConsent = .init(from: lastTrackingConsent)
+        self.codableLastUserInfo = .init(from: lastUserInfo)
         self.codableLastRUMViewEvent = lastRUMViewEvent.flatMap { .init(from: $0) }
-        self.codableLastUserInfo = lastUserInfo.flatMap { .init(from: $0) }
         self.codableLastNetworkConnectionInfo = lastNetworkConnectionInfo.flatMap { .init(from: $0) }
     }
 
     // MARK: - Codable values
 
     private var codableTrackingConsent: CodableTrackingConsent
-    private var codableLastRUMViewEvent: CodableRUMViewEvent?
     private var codableLastUserInfo: CodableUserInfo?
+    private var codableLastRUMViewEvent: CodableRUMViewEvent?
     private var codableLastNetworkConnectionInfo: CodableNetworkConnectionInfo?
 
     // TODO: RUMM-1049 Add Codable version of `UserInfo?`, `NetworkInfo?` and `CarrierInfo?`
@@ -49,14 +49,14 @@ internal struct CrashContext: Codable {
         get { codableTrackingConsent.managedValue }
     }
 
-    var lastRUMViewEvent: RUMEvent<RUMViewEvent>? {
-        set { codableLastRUMViewEvent = newValue.flatMap { CodableRUMViewEvent(from: $0) } }
-        get { codableLastRUMViewEvent?.managedValue }
-    }
-
     var lastUserInfo: UserInfo? {
         set { codableLastUserInfo = newValue.flatMap { CodableUserInfo(from: $0) } }
         get { codableLastUserInfo?.managedValue }
+    }
+
+    var lastRUMViewEvent: RUMEvent<RUMViewEvent>? {
+        set { codableLastRUMViewEvent = newValue.flatMap { CodableRUMViewEvent(from: $0) } }
+        get { codableLastRUMViewEvent?.managedValue }
     }
 
     var lastNetworkConnectionInfo: NetworkConnectionInfo? {
@@ -87,52 +87,6 @@ private enum CodableTrackingConsent: Int8, Codable {
         case .granted: return .granted
         case .notGranted: return .notGranted
         }
-    }
-}
-
-private struct CodableRUMViewEvent: Codable {
-    private let model: RUMViewEvent
-    private let attributes: [String: Encodable]
-    private let userInfoAttributes: [String: Encodable]
-
-    init(from managedValue: RUMEvent<RUMViewEvent>) {
-        self.model = managedValue.model
-        self.attributes = managedValue.attributes
-        self.userInfoAttributes = managedValue.userInfoAttributes
-    }
-
-    var managedValue: RUMEvent<RUMViewEvent> {
-        return .init(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoAttributes
-        )
-    }
-
-    // MARK: - Codable
-
-    enum CodingKeys: String, CodingKey {
-        case model = "mdl"
-        case attributes = "att"
-        case userInfoAttributes = "uia"
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        self.model = try container.decode(RUMViewEvent.self, forKey: .model)
-        self.attributes = try container.decode([String: CodableValue].self, forKey: .attributes)
-        self.userInfoAttributes = try container.decode([String: CodableValue].self, forKey: .userInfoAttributes)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        let encodedAttributes = attributes.mapValues { EncodableValue($0) }
-        let encodedUserInfoAttributes = userInfoAttributes.mapValues { EncodableValue($0) }
-
-        try container.encode(model, forKey: .model)
-        try container.encode(encodedAttributes, forKey: .attributes)
-        try container.encode(encodedUserInfoAttributes, forKey: .userInfoAttributes)
     }
 }
 
@@ -184,6 +138,52 @@ private struct CodableUserInfo: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(email, forKey: .email)
         try container.encode(encodedExtraInfo, forKey: .extraInfo)
+    }
+}
+
+private struct CodableRUMViewEvent: Codable {
+    private let model: RUMViewEvent
+    private let attributes: [String: Encodable]
+    private let userInfoAttributes: [String: Encodable]
+
+    init(from managedValue: RUMEvent<RUMViewEvent>) {
+        self.model = managedValue.model
+        self.attributes = managedValue.attributes
+        self.userInfoAttributes = managedValue.userInfoAttributes
+    }
+
+    var managedValue: RUMEvent<RUMViewEvent> {
+        return .init(
+            model: model,
+            attributes: attributes,
+            userInfoAttributes: userInfoAttributes
+        )
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case model = "mdl"
+        case attributes = "att"
+        case userInfoAttributes = "uia"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.model = try container.decode(RUMViewEvent.self, forKey: .model)
+        self.attributes = try container.decode([String: CodableValue].self, forKey: .attributes)
+        self.userInfoAttributes = try container.decode([String: CodableValue].self, forKey: .userInfoAttributes)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        let encodedAttributes = attributes.mapValues { EncodableValue($0) }
+        let encodedUserInfoAttributes = userInfoAttributes.mapValues { EncodableValue($0) }
+
+        try container.encode(model, forKey: .model)
+        try container.encode(encodedAttributes, forKey: .attributes)
+        try container.encode(encodedUserInfoAttributes, forKey: .userInfoAttributes)
     }
 }
 

@@ -46,7 +46,8 @@ internal class CrashReporter {
         self.init(
             crashReportingPlugin: crashReportingFeature.configuration.crashReportingPlugin,
             crashContextProvider: CrashContextProvider(
-                consentProvider: crashReportingFeature.consentProvider
+                consentProvider: crashReportingFeature.consentProvider,
+                userInfoProvider: crashReportingFeature.userInfoProvider
             ),
             loggingOrRUMIntegration: availableLoggingOrRUMIntegration
         )

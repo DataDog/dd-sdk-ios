@@ -10,42 +10,63 @@ import Foundation
 internal protocol CrashContextProviderType: class {
     /// Returns current `CrashContext` value.
     var currentCrashContext: CrashContext { get }
-    /// Notifies on current `CrashContext` change.
+    /// Notifies on `CrashContext` change.
     var onCrashContextChange: ((CrashContext) -> Void)? { set get }
 
     /// Updates the `CrashContext` with last `RUMEvent<RUMViewEvent>` information.
     func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>)
-
-    /// Updates the `CrashContext` with last `TrackingConsent` information.
-    func update(lastTrackingConsent: TrackingConsent)
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
-internal class CrashContextProvider: CrashContextProviderType, TrackingConsentObserver {
-    /// Queue for synchronizing internal operations.
+internal class CrashContextProvider: CrashContextProviderType {
+    /// Queue for synchronizing `unsafeCrashContext` updates.
     private let queue: DispatchQueue
     /// Unsychronized `CrashContext`. The `queue` must be used to synchronize its mutation.
     private var unsafeCrashContext: CrashContext {
         willSet { onCrashContextChange?(newValue) }
     }
 
+    /// Observes changes to a particular `Value` in the `CrashContext` and manages its updates.
+    private struct ContextValueUpdater<Value>: ValueObserver {
+        let queue: DispatchQueue
+        let update: (Value) -> Void
+
+        func onValueChanged(oldValue: Value, newValue: Value) {
+            queue.async { update(newValue) }
+        }
+    }
+
+    /// Updates `CrashContext` with last `TrackingConsent` information.
+    private lazy var trackingConsentUpdater = ContextValueUpdater<TrackingConsent>(queue: queue) { newTrackingConsent in
+        self.unsafeCrashContext.lastTrackingConsent = newTrackingConsent
+    }
+
+    /// Updates `CrashContext` with last `UserInfo` information.
+    private lazy var userInfoUpdater = ContextValueUpdater<UserInfo>(queue: queue) { newUserInfo in
+        self.unsafeCrashContext.lastUserInfo = newUserInfo
+    }
+
     // MARK: - Initializer
 
-    init(consentProvider: ConsentProvider) {
+    init(
+        consentProvider: ConsentProvider,
+        userInfoProvider: UserInfoProvider
+    ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-context",
             target: .global(qos: .utility)
         )
+        // Set initial context
         self.unsafeCrashContext = CrashContext(
-            // Set initial `TrackingConsent`
             lastTrackingConsent: consentProvider.currentValue,
+            lastUserInfo: userInfoProvider.value,
             lastRUMViewEvent: nil,
-            lastUserInfo: nil, // TODO: RUMM-1049 provide default value
             lastNetworkConnectionInfo: nil // TODO: RUMM-1049 provide default value
         )
 
-        // Subscribe for `TrackingConsent` updates
-        consentProvider.subscribe(self)
+        // Subscribe for context updates
+        consentProvider.subscribe(trackingConsentUpdater)
+        userInfoProvider.subscribe(userInfoUpdater)
     }
 
     // MARK: - CrashContextProviderType
@@ -66,23 +87,5 @@ internal class CrashContextProvider: CrashContextProviderType, TrackingConsentOb
             context.lastRUMViewEvent = lastRUMViewEvent
             self.unsafeCrashContext = context
         }
-    }
-
-    func update(lastTrackingConsent: TrackingConsent) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            var context = self.unsafeCrashContext
-            context.lastTrackingConsent = lastTrackingConsent
-            self.unsafeCrashContext = context
-        }
-    }
-
-    // MARK: - TrackingConsentObserver
-
-    func onValueChanged(oldValue: TrackingConsent, newValue: TrackingConsent) {
-        update(lastTrackingConsent: newValue)
     }
 }

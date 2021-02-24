@@ -21,6 +21,7 @@ internal final class CrashReportingFeature {
     // MARK: - Dependencies
 
     let consentProvider: ConsentProvider
+    let userInfoProvider: UserInfoProvider
 
     // TODO: RUMM-1049 Bundle `UserInfoProvider`, `NetworkInfoProvider` and `CarrierInfoProvider`
     // for enriching the `CrashContext`
@@ -31,5 +32,6 @@ internal final class CrashReportingFeature {
     ) {
         self.configuration = configuration
         self.consentProvider = commonDependencies.consentProvider
+        self.userInfoProvider = commonDependencies.userInfoProvider
     }
 }
