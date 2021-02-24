@@ -84,6 +84,21 @@ class CrashContextTests: XCTestCase {
         XCTAssertEqual(deserializedContext.lastNetworkConnectionInfo, randomNetworkConnectionInfo)
     }
 
+    func testGivenContextWithCarrierInfoSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomCarrierInfo: CarrierInfo = .mockRandom()
+
+        // Given
+        var context: CrashContext = .mockRandom()
+        context.lastCarrierInfo = randomCarrierInfo
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(deserializedContext.lastCarrierInfo, randomCarrierInfo)
+    }
+
     // MARK: - Helpers
 
     /// Asserts that JSON representations of two `Encodable` values are equal.

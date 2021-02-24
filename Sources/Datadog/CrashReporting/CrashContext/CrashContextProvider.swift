@@ -67,7 +67,8 @@ internal class CrashContextProvider: CrashContextProviderType {
             lastTrackingConsent: consentProvider.currentValue,
             lastUserInfo: userInfoProvider.value,
             lastRUMViewEvent: nil,
-            lastNetworkConnectionInfo: networkConnectionInfoProvider.current
+            lastNetworkConnectionInfo: networkConnectionInfoProvider.current,
+            lastCarrierInfo: nil // TODO: RUMM-1049 set default and subscribe for updates
         )
 
         // Subscribe for context updates

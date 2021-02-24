@@ -729,11 +729,15 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     }
 }
 
-extension CarrierInfo.RadioAccessTechnology {
+extension CarrierInfo.RadioAccessTechnology: RandomMockable {
     static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
+
+    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
+        return allCases.randomElement()!
+    }
 }
 
-extension CarrierInfo {
+extension CarrierInfo: RandomMockable {
     static func mockAny() -> CarrierInfo {
         return mockWith()
     }
@@ -749,6 +753,15 @@ extension CarrierInfo {
             carrierISOCountryCode: carrierISOCountryCode,
             carrierAllowsVOIP: carrierAllowsVOIP,
             radioAccessTechnology: radioAccessTechnology
+        )
+    }
+
+    static func mockRandom() -> CarrierInfo {
+        return CarrierInfo(
+            carrierName: .mockRandom(),
+            carrierISOCountryCode: .mockRandom(),
+            carrierAllowsVOIP: .random(),
+            radioAccessTechnology: .mockRandom()
         )
     }
 }

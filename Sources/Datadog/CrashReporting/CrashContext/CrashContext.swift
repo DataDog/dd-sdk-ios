@@ -18,12 +18,14 @@ internal struct CrashContext: Codable {
         lastTrackingConsent: TrackingConsent,
         lastUserInfo: UserInfo,
         lastRUMViewEvent: RUMEvent<RUMViewEvent>?,
-        lastNetworkConnectionInfo: NetworkConnectionInfo?
+        lastNetworkConnectionInfo: NetworkConnectionInfo?,
+        lastCarrierInfo: CarrierInfo?
     ) {
         self.codableTrackingConsent = .init(from: lastTrackingConsent)
         self.codableLastUserInfo = .init(from: lastUserInfo)
         self.codableLastRUMViewEvent = lastRUMViewEvent.flatMap { .init(from: $0) }
         self.codableLastNetworkConnectionInfo = lastNetworkConnectionInfo.flatMap { .init(from: $0) }
+        self.codableLastCarrierInfo = lastCarrierInfo.flatMap { .init(from: $0) }
     }
 
     // MARK: - Codable values
@@ -32,6 +34,7 @@ internal struct CrashContext: Codable {
     private var codableLastUserInfo: CodableUserInfo?
     private var codableLastRUMViewEvent: CodableRUMViewEvent?
     private var codableLastNetworkConnectionInfo: CodableNetworkConnectionInfo?
+    private var codableLastCarrierInfo: CodableCarrierInfo?
 
     // TODO: RUMM-1049 Add Codable version of `UserInfo?`, `NetworkInfo?` and `CarrierInfo?`
 
@@ -40,6 +43,7 @@ internal struct CrashContext: Codable {
         case codableLastRUMViewEvent = "lre"
         case codableLastUserInfo = "lui"
         case codableLastNetworkConnectionInfo = "lni"
+        case codableLastCarrierInfo = "lci"
     }
 
     // MARK: - Setters & Getters using managed types
@@ -62,6 +66,11 @@ internal struct CrashContext: Codable {
     var lastNetworkConnectionInfo: NetworkConnectionInfo? {
         set { codableLastNetworkConnectionInfo = newValue.flatMap { CodableNetworkConnectionInfo(from: $0) } }
         get { codableLastNetworkConnectionInfo?.managedValue }
+    }
+
+    var lastCarrierInfo: CarrierInfo? {
+        set { codableLastCarrierInfo = newValue.flatMap { CodableCarrierInfo(from: $0) } }
+        get { codableLastCarrierInfo?.managedValue }
     }
 }
 
@@ -224,6 +233,38 @@ private struct CodableNetworkConnectionInfo: Codable {
         case supportsIPv6 = "si6"
         case isExpensive = "ise"
         case isConstrained = "isc"
+    }
+}
+
+private struct CodableCarrierInfo: Codable {
+    private let carrierName: String?
+    private let carrierISOCountryCode: String?
+    private let carrierAllowsVOIP: Bool
+    private let radioAccessTechnology: CarrierInfo.RadioAccessTechnology
+
+    init(from managedValue: CarrierInfo) {
+        self.carrierName = managedValue.carrierName
+        self.carrierISOCountryCode = managedValue.carrierISOCountryCode
+        self.carrierAllowsVOIP = managedValue.carrierAllowsVOIP
+        self.radioAccessTechnology = managedValue.radioAccessTechnology
+    }
+
+    var managedValue: CarrierInfo {
+        return .init(
+            carrierName: carrierName,
+            carrierISOCountryCode: carrierISOCountryCode,
+            carrierAllowsVOIP: carrierAllowsVOIP,
+            radioAccessTechnology: radioAccessTechnology
+        )
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case carrierName = "crn"
+        case carrierISOCountryCode = "cri"
+        case carrierAllowsVOIP = "cra"
+        case radioAccessTechnology = "rdt"
     }
 }
 
