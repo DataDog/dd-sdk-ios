@@ -10,9 +10,9 @@ import SystemConfiguration
 @testable import Datadog
 
 class NetworkConnectionInfoProviderTests: XCTestCase {
-    /// Constantly pulls the `NetworkConnectionInfo` from given provider and fulfills the expectation if value is received.
+    /// Constantly pulls the `NetworkConnectionInfo` from given provider and fulfils the expectation if value is received.
     private func pullNetworkConnectionInfo(
-        from provider: NetworkConnectionInfoProviderType,
+        from provider: iOSSpecificNetworkConnectionInfoProvider,
         on queue: DispatchQueue,
         thenFulfill expectation: XCTestExpectation
     ) {

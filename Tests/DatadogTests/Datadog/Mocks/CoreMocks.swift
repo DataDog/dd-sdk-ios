@@ -713,6 +713,9 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
         queue.sync { _current }
     }
 
+    func subscribe<Observer: ValueObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
+    }
+
     // MARK: - Mocking
 
     static func mockAny() -> NetworkConnectionInfoProviderMock {

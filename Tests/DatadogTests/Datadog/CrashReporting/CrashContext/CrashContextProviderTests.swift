@@ -23,7 +23,8 @@ class CrashContextProviderTests: XCTestCase {
         let trackingConsentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let crashContextProvider = CrashContextProvider(
             consentProvider: trackingConsentProvider,
-            userInfoProvider: .mockAny()
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -50,7 +51,8 @@ class CrashContextProviderTests: XCTestCase {
 
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
-            userInfoProvider: .mockAny()
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny()
         )
         let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(crashContextProvider: crashContextProvider)
 
@@ -82,7 +84,8 @@ class CrashContextProviderTests: XCTestCase {
 
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -101,15 +104,45 @@ class CrashContextProviderTests: XCTestCase {
         XCTAssertEqual(updatedContext?.lastUserInfo, randomUserInfo)
     }
 
+    // MARK: - `NetworkConnectionInfo` Integration
+
+    func testWhenCurrentValueIsObtainedFromNetworkConnectionInfoProvider_thenCrashContextProviderNotifiesNewContext() {
+        let expectation = self.expectation(description: "Notify new crash context")
+        let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
+
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: .mockAny(),
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: networkConnectionInfoProvider
+        )
+
+        let initialContext = crashContextProvider.currentCrashContext
+        var updatedContext: CrashContext?
+
+        // When
+        crashContextProvider.onCrashContextChange = { newContext in
+            updatedContext = newContext
+            expectation.fulfill()
+        }
+        let currentNetworkConnectionInfo = networkConnectionInfoProvider.current
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertEqual(initialContext.lastNetworkConnectionInfo, currentNetworkConnectionInfo)
+        XCTAssertEqual(updatedContext?.lastNetworkConnectionInfo, currentNetworkConnectionInfo)
+    }
+
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
         let consentProvider: ConsentProvider = .mockAny()
         let userInfoProvider: UserInfoProvider = .mockAny()
+        let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
 
         let provider = CrashContextProvider(
             consentProvider: consentProvider,
-            userInfoProvider: userInfoProvider
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider
         )
 
         withExtendedLifetime(provider) {
@@ -119,6 +152,7 @@ class CrashContextProviderTests: XCTestCase {
                     { _ = provider.currentCrashContext },
                     { consentProvider.changeConsent(to: .mockRandom()) },
                     { userInfoProvider.value = .mockRandom() },
+                    { _ = networkConnectionInfoProvider.current },
                     { provider.update(lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())) },
                 ],
                 iterations: 50

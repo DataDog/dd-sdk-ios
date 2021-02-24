@@ -47,7 +47,8 @@ internal class CrashReporter {
             crashReportingPlugin: crashReportingFeature.configuration.crashReportingPlugin,
             crashContextProvider: CrashContextProvider(
                 consentProvider: crashReportingFeature.consentProvider,
-                userInfoProvider: crashReportingFeature.userInfoProvider
+                userInfoProvider: crashReportingFeature.userInfoProvider,
+                networkConnectionInfoProvider: crashReportingFeature.networkConnectionInfoProvider
             ),
             loggingOrRUMIntegration: availableLoggingOrRUMIntegration
         )

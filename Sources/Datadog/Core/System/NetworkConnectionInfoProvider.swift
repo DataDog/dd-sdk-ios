@@ -35,16 +35,28 @@ internal struct NetworkConnectionInfo {
     let isConstrained: Bool?
 }
 
+/// An observer for `NetworkConnectionInfo` value.
+internal typealias NetworkConnectionInfoObserver = ValueObserver
+
 /// Provides the current `NetworkConnectionInfo`.
 internal protocol NetworkConnectionInfoProviderType {
     /// Current `NetworkConnectionInfo`. It might return `nil` for the first attempt(s),
     /// shortly after provider's initialization, until underlying monitor does not warm up.
     var current: NetworkConnectionInfo? { get }
+
+    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo?
+}
+
+/// An interface for the iOS-version specific network info provider.
+internal protocol iOSSpecificNetworkConnectionInfoProvider {
+    var current: NetworkConnectionInfo? { get }
 }
 
 internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
-    /// The `NetworkConnectionInfoProviderType` for current iOS version.
-    private let wrappedProvider: NetworkConnectionInfoProviderType
+    /// The `NetworkConnectionInfo` provider for the current iOS version.
+    private let wrappedProvider: iOSSpecificNetworkConnectionInfoProvider
+    /// Publisher for notifying observers on `NetworkConnectionInfo` change.
+    private let publisher: ValuePublisher<NetworkConnectionInfo?>
 
     init() {
         if #available(iOS 12, *) {
@@ -52,9 +64,26 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
         } else {
             self.wrappedProvider = iOS11NetworkConnectionInfoProvider()
         }
+
+        // Asynchronous `updatesModel` makes the `current` getter a non-blocking call.
+        // This ensures that the value form `NetworkConnectionInfoProvider` can be obtained
+        // as fast as possible and the eventual observers will be notified asynchronously.
+        self.publisher = ValuePublisher(initialValue: nil, updatesModel: .asynchronous)
     }
 
-    var current: NetworkConnectionInfo? { wrappedProvider.current }
+    var current: NetworkConnectionInfo? {
+        let nextValue = wrappedProvider.current
+        // `NetworkConnectionInfo` are notified as a side-effect of retrieving the
+        // current `NetworkConnectionInfo` value.
+        publisher.currentValue = nextValue
+        return nextValue
+    }
+
+    // MARK: - Managing Subscribers
+
+    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
+        publisher.subscribe(subscriber)
+    }
 }
 
 // MARK: - iOS 12+
@@ -69,7 +98,7 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
 /// The `ThreadSafeNWPathMonitor` listens to path updates and synchonizes the values on `.current` property.
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
 @available(iOS 12, *)
-internal class NWPathNetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
+internal class NWPathNetworkConnectionInfoProvider: iOSSpecificNetworkConnectionInfoProvider {
     /// Queue synchronizing the reads and updates to `NWPath`.
     private let queue = DispatchQueue(
         label: "com.datadoghq.thread-safe-nw-path-monitor",
@@ -114,7 +143,7 @@ internal class NWPathNetworkConnectionInfoProvider: NetworkConnectionInfoProvide
 
 import SystemConfiguration
 
-internal class iOS11NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
+internal class iOS11NetworkConnectionInfoProvider: iOSSpecificNetworkConnectionInfoProvider {
     private let reachability: SCNetworkReachability = {
         var zero = sockaddr()
         zero.sa_len = UInt8(MemoryLayout<sockaddr>.size)

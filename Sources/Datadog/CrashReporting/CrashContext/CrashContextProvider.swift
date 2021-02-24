@@ -37,20 +37,26 @@ internal class CrashContextProvider: CrashContextProviderType {
     }
 
     /// Updates `CrashContext` with last `TrackingConsent` information.
-    private lazy var trackingConsentUpdater = ContextValueUpdater<TrackingConsent>(queue: queue) { newTrackingConsent in
-        self.unsafeCrashContext.lastTrackingConsent = newTrackingConsent
+    private lazy var trackingConsentUpdater = ContextValueUpdater<TrackingConsent>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastTrackingConsent = newValue
     }
 
     /// Updates `CrashContext` with last `UserInfo` information.
-    private lazy var userInfoUpdater = ContextValueUpdater<UserInfo>(queue: queue) { newUserInfo in
-        self.unsafeCrashContext.lastUserInfo = newUserInfo
+    private lazy var userInfoUpdater = ContextValueUpdater<UserInfo>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastUserInfo = newValue
+    }
+
+    /// Updates `CrashContext` with last `NetworkConnectionInfo` information.
+    private lazy var networkConnectionInfoUpdater = ContextValueUpdater<NetworkConnectionInfo?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastNetworkConnectionInfo = newValue
     }
 
     // MARK: - Initializer
 
     init(
         consentProvider: ConsentProvider,
-        userInfoProvider: UserInfoProvider
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-context",
@@ -61,12 +67,13 @@ internal class CrashContextProvider: CrashContextProviderType {
             lastTrackingConsent: consentProvider.currentValue,
             lastUserInfo: userInfoProvider.value,
             lastRUMViewEvent: nil,
-            lastNetworkConnectionInfo: nil // TODO: RUMM-1049 provide default value
+            lastNetworkConnectionInfo: networkConnectionInfoProvider.current
         )
 
         // Subscribe for context updates
         consentProvider.subscribe(trackingConsentUpdater)
         userInfoProvider.subscribe(userInfoUpdater)
+        networkConnectionInfoProvider.subscribe(networkConnectionInfoUpdater)
     }
 
     // MARK: - CrashContextProviderType

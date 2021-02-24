@@ -11,7 +11,8 @@ class RUMWithCrashContextIntegrationTests: XCTestCase {
     func testWhenCrashReporterIsRegistered_itUpdatesCrashContextWithLastRUMView() throws {
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
-            userInfoProvider: .mockAny()
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny()
         )
 
         // When

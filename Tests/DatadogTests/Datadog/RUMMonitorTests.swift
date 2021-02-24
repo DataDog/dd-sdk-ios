@@ -913,7 +913,8 @@ class RUMMonitorTests: XCTestCase {
 
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
-            userInfoProvider: .mockAny()
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny()
         )
 
         // Given
