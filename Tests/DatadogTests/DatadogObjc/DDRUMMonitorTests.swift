@@ -234,7 +234,8 @@ class DDRUMMonitorTests: XCTestCase {
         let event1Matcher = errorEvents[0]
         let event1: RUMErrorEvent = try event1Matcher.model()
         XCTAssertEqual(event1.error.resource?.url, request.url!.absoluteString)
-        XCTAssertEqual(event1.error.message, "ErrorMock")
+        XCTAssertEqual(event1.error.type, "ErrorMock")
+        XCTAssertEqual(event1.error.message, "error details")
         XCTAssertEqual(event1.error.source, .network)
         XCTAssertEqual(event1.error.stack, "error details")
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
@@ -252,7 +253,8 @@ class DDRUMMonitorTests: XCTestCase {
         let event3Matcher = errorEvents[2]
         let event3: RUMErrorEvent = try event3Matcher.model()
         XCTAssertNil(event3.error.resource)
-        XCTAssertEqual(event3.error.message, "ErrorMock")
+        XCTAssertEqual(event3.error.type, "ErrorMock")
+        XCTAssertEqual(event3.error.message, "error details")
         XCTAssertEqual(event3.error.source, .custom)
         XCTAssertEqual(event3.error.stack, "error details")
         XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")

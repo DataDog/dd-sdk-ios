@@ -72,6 +72,7 @@ extension Log {
         date: Date = .mockAny(),
         status: Log.Status = .mockAny(),
         message: String = .mockAny(),
+        error: DDError? = nil,
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         loggerName: String = .mockAny(),
@@ -88,6 +89,7 @@ extension Log {
             date: date,
             status: status,
             message: message,
+            error: error,
             serviceName: serviceName,
             environment: environment,
             loggerName: loggerName,
@@ -189,6 +191,7 @@ class LogOutputMock: LogOutput {
     struct RecordedLog: Equatable {
         var level: LogLevel
         var message: String
+        var error: DDError?
         var date: Date
         var attributes = LogAttributes(userAttributes: [:], internalAttributes: [:])
         var tags: Set<String> = []
@@ -196,7 +199,14 @@ class LogOutputMock: LogOutput {
 
     var recordedLog: RecordedLog? = nil
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        recordedLog = RecordedLog(level: level, message: message, date: date, attributes: attributes, tags: tags)
+    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {
+        recordedLog = RecordedLog(
+            level: level,
+            message: message,
+            error: error.flatMap { DDError(error: $0) },
+            date: date,
+            attributes: attributes,
+            tags: tags
+        )
     }
 }
