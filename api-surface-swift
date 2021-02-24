@@ -5,9 +5,10 @@ public enum TrackingConsent
  case notGranted
  case pending
 public class DDRUMMonitor
- public func startView(viewController: UIViewController,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
- public func startView(key: String,path: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+ public func startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  public func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
  public func addTiming(name: String)
  public func addError(message: String,source: RUMErrorSource = .custom,stack: String? = nil,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
@@ -199,9 +200,11 @@ public extension OTTracer
  func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
  func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
 public struct RUMView
- public var path: String
+ public var name: String
+ public var path: String?
  public var attributes: [AttributeKey: AttributeValue]
  public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
+ public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
 public protocol UIKitRUMViewsPredicate
  func rumView(for viewController: UIViewController) -> RUMView?
 public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
@@ -536,8 +539,9 @@ public enum RUMErrorSource
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
  override public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue])
+ override public func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
  override public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
- override public func startView(key: String,path: String?,attributes: [AttributeKey: AttributeValue])
+ override public func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
  override public func stopView(key: String,attributes: [AttributeKey: AttributeValue])
  override public func addTiming(name: String)
  override public func addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
