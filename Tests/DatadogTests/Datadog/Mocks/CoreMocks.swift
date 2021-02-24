@@ -713,7 +713,7 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
         queue.sync { _current }
     }
 
-    func subscribe<Observer: ValueObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
+    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
     }
 
     // MARK: - Mocking
@@ -784,6 +784,9 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
 
     var current: CarrierInfo? {
         queue.sync { _current }
+    }
+
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
     }
 
     // MARK: - Mocking

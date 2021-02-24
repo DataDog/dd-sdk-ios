@@ -31,8 +31,14 @@ internal struct CarrierInfo {
     let radioAccessTechnology: RadioAccessTechnology
 }
 
+/// An observer for `CarrierInfo` value.
+internal typealias CarrierInfoObserver = ValueObserver
+
 internal protocol CarrierInfoProviderType {
     var current: CarrierInfo? { get }
+
+    /// Subscribes for `CarrierInfo` updates.
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo?
 }
 
 extension CarrierInfo.RadioAccessTechnology {
@@ -59,11 +65,18 @@ extension CarrierInfo.RadioAccessTechnology {
 internal class CarrierInfoProvider: CarrierInfoProviderType {
     #if targetEnvironment(macCatalyst)
     let current: CarrierInfo? = nil
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {}
     #else
     private let networkInfo: CTTelephonyNetworkInfo
+    /// Publisher for notifying observers on `CarrierInfo` change.
+    private let publisher: ValuePublisher<CarrierInfo?>
 
     init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
         self.networkInfo = networkInfo
+        // Asynchronous `updatesModel` makes the `current` getter a non-blocking call.
+        // This ensures that the value form `CarrierInfoProvider` can be obtained
+        // as fast as possible and the eventual observers will be notified asynchronously.
+        self.publisher = ValuePublisher(initialValue: nil, updatesModel: .asynchronous)
     }
 
     var current: CarrierInfo? {
@@ -72,6 +85,7 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
 
         if #available(iOS 12, *) {
             guard let cellularProviderKey = networkInfo.serviceCurrentRadioAccessTechnology?.keys.first else {
+                publisher.currentValue = nil
                 return nil
             }
             radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey]
@@ -83,15 +97,26 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
 
         guard let radioAccessTechnology = radioTechnology,
             let currentCTCarrier = carrier else {
+                publisher.currentValue = nil
                 return nil
         }
 
-        return CarrierInfo(
+        let nextValue = CarrierInfo(
             carrierName: currentCTCarrier.carrierName,
             carrierISOCountryCode: currentCTCarrier.isoCountryCode,
             carrierAllowsVOIP: currentCTCarrier.allowsVOIP,
             radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
         )
+
+        // `CarrierInfo` subscribers are notified as a side-effect of retrieving the
+        // current `CarrierInfo` value.
+        publisher.currentValue = nextValue
+
+        return nextValue
+    }
+
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
+        publisher.subscribe(subscriber)
     }
     #endif
 }

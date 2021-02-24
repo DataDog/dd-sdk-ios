@@ -43,7 +43,7 @@ internal protocol NetworkConnectionInfoProviderType {
     /// Current `NetworkConnectionInfo`. It might return `nil` for the first attempt(s),
     /// shortly after provider's initialization, until underlying monitor does not warm up.
     var current: NetworkConnectionInfo? { get }
-
+    /// Subscribes for `NetworkConnectionInfo` updates.
     func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo?
 }
 
@@ -73,7 +73,7 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
 
     var current: NetworkConnectionInfo? {
         let nextValue = wrappedProvider.current
-        // `NetworkConnectionInfo` are notified as a side-effect of retrieving the
+        // `NetworkConnectionInfo` subscribers are notified as a side-effect of retrieving the
         // current `NetworkConnectionInfo` value.
         publisher.currentValue = nextValue
         return nextValue

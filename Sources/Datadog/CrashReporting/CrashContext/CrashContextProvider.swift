@@ -51,12 +51,18 @@ internal class CrashContextProvider: CrashContextProviderType {
         self.unsafeCrashContext.lastNetworkConnectionInfo = newValue
     }
 
+    /// Updates `CrashContext` with last `CarrierInfo` information.
+    private lazy var carrierInfoUpdater = ContextValueUpdater<CarrierInfo?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastCarrierInfo = newValue
+    }
+
     // MARK: - Initializer
 
     init(
         consentProvider: ConsentProvider,
         userInfoProvider: UserInfoProvider,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-context",
@@ -68,13 +74,14 @@ internal class CrashContextProvider: CrashContextProviderType {
             lastUserInfo: userInfoProvider.value,
             lastRUMViewEvent: nil,
             lastNetworkConnectionInfo: networkConnectionInfoProvider.current,
-            lastCarrierInfo: nil // TODO: RUMM-1049 set default and subscribe for updates
+            lastCarrierInfo: carrierInfoProvider.current
         )
 
         // Subscribe for context updates
         consentProvider.subscribe(trackingConsentUpdater)
         userInfoProvider.subscribe(userInfoUpdater)
         networkConnectionInfoProvider.subscribe(networkConnectionInfoUpdater)
+        carrierInfoProvider.subscribe(carrierInfoUpdater)
     }
 
     // MARK: - CrashContextProviderType

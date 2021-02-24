@@ -12,7 +12,8 @@ class RUMWithCrashContextIntegrationTests: XCTestCase {
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny()
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
+            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
         )
 
         // When
