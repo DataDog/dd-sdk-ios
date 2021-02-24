@@ -7,11 +7,8 @@
 import XCTest
 @testable import Datadog
 
-/// This suite tests if `CrashContextProvider` gets updated by different SDK components, each delivering
+/// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating
 /// separate part of the `CrashContext` information.
-///
-/// Individual tests should not rely directly on `update(_:)` methods of the `CrashContextProvider`.
-/// Instead, they should instantiate and mock the `update(_:)` caller to test and document the integration.
 class CrashContextProviderTests: XCTestCase {
     // MARK: - `TrackingConsent` Integration
 
@@ -111,12 +108,14 @@ class CrashContextProviderTests: XCTestCase {
 
     func testWhenCurrentValueIsObtainedFromNetworkConnectionInfoProvider_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
-        let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
+        let initialNetworkConnectionInfo: NetworkConnectionInfo = .mockRandom()
+        let wrappedProvider = NetworkConnectionInfoProviderMock(networkConnectionInfo: initialNetworkConnectionInfo)
+        let mainProvider = NetworkConnectionInfoProvider(wrappedProvider: wrappedProvider)
 
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            networkConnectionInfoProvider: mainProvider,
             carrierInfoProvider: CarrierInfoProviderMock.mockAny()
         )
 
@@ -128,11 +127,12 @@ class CrashContextProviderTests: XCTestCase {
             updatedContext = newContext
             expectation.fulfill()
         }
-        let currentNetworkConnectionInfo = networkConnectionInfoProvider.current
+        wrappedProvider.set(current: .mockRandom()) // change `NetworkConnectionInfo` in wrapped provider
+        let currentNetworkConnectionInfo = mainProvider.current // obtain new info through the main provider
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(initialContext.lastNetworkConnectionInfo, currentNetworkConnectionInfo)
+        XCTAssertEqual(initialContext.lastNetworkConnectionInfo, initialNetworkConnectionInfo)
         XCTAssertEqual(updatedContext?.lastNetworkConnectionInfo, currentNetworkConnectionInfo)
     }
 
@@ -140,13 +140,15 @@ class CrashContextProviderTests: XCTestCase {
 
     func testWhenCurrentValueIsObtainedFromCarrierInfoProvider_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
-        let carrierInfoProvider = CarrierInfoProvider()
+        let initialCarrierInfo: CarrierInfo = .mockRandom()
+        let wrappedProvider = CarrierInfoProviderMock(carrierInfo: initialCarrierInfo)
+        let mainProvider = CarrierInfoProvider(wrappedProvider: wrappedProvider)
 
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfoProvider: mainProvider
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -157,11 +159,12 @@ class CrashContextProviderTests: XCTestCase {
             updatedContext = newContext
             expectation.fulfill()
         }
-        let currentCarrierInfo = carrierInfoProvider.current
+        wrappedProvider.set(current: .mockRandom()) // change `CarrierInfo` in wrapped provider
+        let currentCarrierInfo = mainProvider.current // obtain new info through the main provider
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(initialContext.lastCarrierInfo, currentCarrierInfo)
+        XCTAssertEqual(initialContext.lastCarrierInfo, initialCarrierInfo)
         XCTAssertEqual(updatedContext?.lastCarrierInfo, currentCarrierInfo)
     }
 
@@ -170,14 +173,16 @@ class CrashContextProviderTests: XCTestCase {
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
         let consentProvider: ConsentProvider = .mockAny()
         let userInfoProvider: UserInfoProvider = .mockAny()
-        let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-        let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
+        let networkInfoWrappedProvider = NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockRandom())
+        let networkInfoMainProvider = NetworkConnectionInfoProvider(wrappedProvider: networkInfoWrappedProvider)
+        let carrierInfoWrappedProvider = CarrierInfoProviderMock(carrierInfo: .mockRandom())
+        let carrierInfoMainProvider = CarrierInfoProvider(wrappedProvider: carrierInfoWrappedProvider)
 
         let provider = CrashContextProvider(
             consentProvider: consentProvider,
             userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
+            networkConnectionInfoProvider: networkInfoMainProvider,
+            carrierInfoProvider: carrierInfoMainProvider
         )
 
         withExtendedLifetime(provider) {
@@ -187,8 +192,14 @@ class CrashContextProviderTests: XCTestCase {
                     { _ = provider.currentCrashContext },
                     { consentProvider.changeConsent(to: .mockRandom()) },
                     { userInfoProvider.value = .mockRandom() },
-                    { _ = networkConnectionInfoProvider.current },
-                    { _ = carrierInfoProvider.current },
+                    {
+                        networkInfoWrappedProvider.set(current: .mockRandom())
+                        _ = networkInfoMainProvider.current
+                    },
+                    {
+                        carrierInfoWrappedProvider.set(current: .mockRandom())
+                        _ = carrierInfoMainProvider.current
+                    },
                     { provider.update(lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())) },
                 ],
                 iterations: 50

@@ -702,7 +702,7 @@ extension NetworkConnectionInfo: RandomMockable {
     }
 }
 
-class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
+class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType, WrappedNetworkConnectionInfoProvider {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
     private var _current: NetworkConnectionInfo?
 
@@ -773,7 +773,7 @@ extension CarrierInfo: RandomMockable {
     }
 }
 
-class CarrierInfoProviderMock: CarrierInfoProviderType {
+class CarrierInfoProviderMock: CarrierInfoProviderType, WrappedCarrierInfoProvider {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
     private var _current: CarrierInfo?
 

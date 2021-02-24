@@ -20,7 +20,9 @@ class CarrierInfoProviderTests: XCTestCase {
             serviceSubscriberCellularProviders: [serviceID: CTCarrierMock(carrierName: "Carrier", isoCountryCode: "US", allowsVOIP: true)]
         )
 
-        let provider = CarrierInfoProvider(networkInfo: telephonyNetworkInfo)
+        let provider = CarrierInfoProvider(
+            wrappedProvider: iOSCarrierInfoProvider(networkInfo: telephonyNetworkInfo)
+        )
 
         XCTAssertEqual(provider.current?.carrierName, "Carrier")
         XCTAssertEqual(provider.current?.carrierISOCountryCode, "US")
@@ -33,7 +35,9 @@ class CarrierInfoProviderTests: XCTestCase {
             serviceSubscriberCellularProviders: [:]
         )
 
-        let provider = CarrierInfoProvider(networkInfo: telephonyNetworkInfo)
+        let provider = CarrierInfoProvider(
+            wrappedProvider: iOSCarrierInfoProvider(networkInfo: telephonyNetworkInfo)
+        )
 
         XCTAssertNil(provider.current)
     }

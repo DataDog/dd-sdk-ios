@@ -9,8 +9,8 @@ import XCTest
 
 class ConsentProviderTests: XCTestCase {
     func testGivenInitialConsentSet_whenTheValueChanges_itCanBeRetrieved() {
-        let initialConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
-        let newConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
+        let initialConsent: TrackingConsent = .mockRandom()
+        let newConsent: TrackingConsent = .mockRandom(otherThan: initialConsent)
 
         // Given
         let provider = ConsentProvider(initialConsent: initialConsent)
@@ -24,8 +24,8 @@ class ConsentProviderTests: XCTestCase {
     }
 
     func testGivenInitialConsentSet_whenTheValueChanges_itNotifiesAllSubscribers() {
-        let initialConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
-        let newConsent: TrackingConsent = [.granted, .notGranted, .pending].randomElement()!
+        let initialConsent: TrackingConsent = .mockRandom()
+        let newConsent: TrackingConsent = .mockRandom(otherThan: initialConsent)
 
         let expectation = self.expectation(description: "Notify all 5 observers")
         expectation.expectedFulfillmentCount = 5

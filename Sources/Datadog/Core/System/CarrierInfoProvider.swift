@@ -62,22 +62,63 @@ extension CarrierInfo.RadioAccessTechnology {
     }
 }
 
+/// An interface for the target-specific carrier info provider.
+internal protocol WrappedCarrierInfoProvider {
+    var current: CarrierInfo? { get }
+}
+
 internal class CarrierInfoProvider: CarrierInfoProviderType {
-    #if targetEnvironment(macCatalyst)
-    let current: CarrierInfo? = nil
-    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {}
-    #else
-    private let networkInfo: CTTelephonyNetworkInfo
+    /// The `CarrierInfo` provider for the current platform.
+    private let wrappedProvider: WrappedCarrierInfoProvider
     /// Publisher for notifying observers on `CarrierInfo` change.
     private let publisher: ValuePublisher<CarrierInfo?>
 
-    init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
-        self.networkInfo = networkInfo
+    convenience init() {
+        #if targetEnvironment(macCatalyst)
+            self.init(
+                wrappedProvider: MacCatalystCarrierInfoProvider()
+            )
+        #else
+            self.init(
+                wrappedProvider: iOSCarrierInfoProvider(
+                    networkInfo: CTTelephonyNetworkInfo()
+                )
+            )
+        #endif
+    }
+
+    init(wrappedProvider: WrappedCarrierInfoProvider) {
+        self.wrappedProvider = wrappedProvider
         // Asynchronous `updatesModel` makes the `current` getter a non-blocking call.
-        // This ensures that the value form `CarrierInfoProvider` can be obtained
+        // This ensures that the value form `NetworkConnectionInfoProvider` can be obtained
         // as fast as possible and the eventual observers will be notified asynchronously.
         self.publisher = ValuePublisher(initialValue: nil, updatesModel: .asynchronous)
     }
+
+    var current: CarrierInfo? {
+        let nextValue = wrappedProvider.current
+        // `CarrierInfo` subscribers are notified as a side-effect of retrieving the
+        // current `CarrierInfo` value.
+        publisher.currentValue = nextValue
+        return nextValue
+    }
+
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
+        publisher.subscribe(subscriber)
+    }
+}
+
+#if targetEnvironment(macCatalyst)
+
+internal struct MacCatalystCarrierInfoProvider: WrappedCarrierInfoProvider {
+    /// Carrier info is not supported on macCatalyst
+    var current: CarrierInfo? { return nil }
+}
+
+#else
+
+internal struct iOSCarrierInfoProvider: WrappedCarrierInfoProvider {
+    let networkInfo: CTTelephonyNetworkInfo
 
     var current: CarrierInfo? {
         let carrier: CTCarrier?
@@ -85,7 +126,6 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
 
         if #available(iOS 12, *) {
             guard let cellularProviderKey = networkInfo.serviceCurrentRadioAccessTechnology?.keys.first else {
-                publisher.currentValue = nil
                 return nil
             }
             radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey]
@@ -97,26 +137,16 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
 
         guard let radioAccessTechnology = radioTechnology,
             let currentCTCarrier = carrier else {
-                publisher.currentValue = nil
                 return nil
         }
 
-        let nextValue = CarrierInfo(
+        return CarrierInfo(
             carrierName: currentCTCarrier.carrierName,
             carrierISOCountryCode: currentCTCarrier.isoCountryCode,
             carrierAllowsVOIP: currentCTCarrier.allowsVOIP,
             radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
         )
-
-        // `CarrierInfo` subscribers are notified as a side-effect of retrieving the
-        // current `CarrierInfo` value.
-        publisher.currentValue = nextValue
-
-        return nextValue
     }
-
-    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
-        publisher.subscribe(subscriber)
-    }
-    #endif
 }
+
+#endif

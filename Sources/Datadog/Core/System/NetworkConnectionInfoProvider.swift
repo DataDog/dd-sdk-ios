@@ -48,23 +48,26 @@ internal protocol NetworkConnectionInfoProviderType {
 }
 
 /// An interface for the iOS-version specific network info provider.
-internal protocol iOSSpecificNetworkConnectionInfoProvider {
+internal protocol WrappedNetworkConnectionInfoProvider {
     var current: NetworkConnectionInfo? { get }
 }
 
 internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType {
     /// The `NetworkConnectionInfo` provider for the current iOS version.
-    private let wrappedProvider: iOSSpecificNetworkConnectionInfoProvider
+    private let wrappedProvider: WrappedNetworkConnectionInfoProvider
     /// Publisher for notifying observers on `NetworkConnectionInfo` change.
     private let publisher: ValuePublisher<NetworkConnectionInfo?>
 
-    init() {
+    convenience init() {
         if #available(iOS 12, *) {
-            self.wrappedProvider = NWPathNetworkConnectionInfoProvider()
+            self.init(wrappedProvider: NWPathNetworkConnectionInfoProvider())
         } else {
-            self.wrappedProvider = iOS11NetworkConnectionInfoProvider()
+            self.init(wrappedProvider: iOS11NetworkConnectionInfoProvider())
         }
+    }
 
+    init(wrappedProvider: WrappedNetworkConnectionInfoProvider) {
+        self.wrappedProvider = wrappedProvider
         // Asynchronous `updatesModel` makes the `current` getter a non-blocking call.
         // This ensures that the value form `NetworkConnectionInfoProvider` can be obtained
         // as fast as possible and the eventual observers will be notified asynchronously.
@@ -98,7 +101,7 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
 /// The `ThreadSafeNWPathMonitor` listens to path updates and synchonizes the values on `.current` property.
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
 @available(iOS 12, *)
-internal class NWPathNetworkConnectionInfoProvider: iOSSpecificNetworkConnectionInfoProvider {
+internal class NWPathNetworkConnectionInfoProvider: WrappedNetworkConnectionInfoProvider {
     /// Queue synchronizing the reads and updates to `NWPath`.
     private let queue = DispatchQueue(
         label: "com.datadoghq.thread-safe-nw-path-monitor",
@@ -143,7 +146,7 @@ internal class NWPathNetworkConnectionInfoProvider: iOSSpecificNetworkConnection
 
 import SystemConfiguration
 
-internal class iOS11NetworkConnectionInfoProvider: iOSSpecificNetworkConnectionInfoProvider {
+internal class iOS11NetworkConnectionInfoProvider: WrappedNetworkConnectionInfoProvider {
     private let reachability: SCNetworkReachability = {
         var zero = sockaddr()
         zero.sa_len = UInt8(MemoryLayout<sockaddr>.size)
