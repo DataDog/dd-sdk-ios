@@ -15,5 +15,5 @@ internal struct LogAttributes {
 
 /// Type writting logs to some destination.
 internal protocol LogOutput {
-    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>)
+    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>)
 }

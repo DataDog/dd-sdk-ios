@@ -168,10 +168,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
-        XCTAssertEqual(resourceStopCommand.errorType, DDError(error: taskError).title)
+        XCTAssertEqual(resourceStopCommand.errorType, DDError(error: taskError).type)
         XCTAssertEqual(resourceStopCommand.errorMessage, DDError(error: taskError).message)
         XCTAssertEqual(resourceStopCommand.errorSource, .network)
-        XCTAssertEqual(resourceStopCommand.stack, DDError(error: taskError).details)
+        XCTAssertEqual(resourceStopCommand.stack, DDError(error: taskError).stack)
         XCTAssertNil(resourceStopCommand.httpStatusCode)
     }
 }

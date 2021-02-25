@@ -243,7 +243,7 @@ public class Logger {
         logOutput.writeLogWith(
             level: level,
             message: message,
-            error: error,
+            error: error.flatMap { DDError(error: $0) },
             date: date,
             attributes: LogAttributes(
                 userAttributes: combinedUserAttributes,

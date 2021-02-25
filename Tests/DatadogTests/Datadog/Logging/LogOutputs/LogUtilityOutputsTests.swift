@@ -13,14 +13,13 @@ class CombinedLogOutputTests: XCTestCase {
         let output2 = LogOutputMock()
         let output3 = LogOutputMock()
 
-        let error = ErrorMock("desc")
-        let ddError = DDError(error: error)
+        let error = DDError(error: ErrorMock("desc"))
         let combinedOutput = CombinedLogOutput(combine: [output1, output2, output3])
         combinedOutput.writeLogWith(level: .info, message: "info message", error: error, date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
 
-        XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message", error: ddError, date: .mockDecember15th2019At10AMUTC()))
-        XCTAssertEqual(output2.recordedLog, .init(level: .info, message: "info message", error: ddError, date: .mockDecember15th2019At10AMUTC()))
-        XCTAssertEqual(output3.recordedLog, .init(level: .info, message: "info message", error: ddError, date: .mockDecember15th2019At10AMUTC()))
+        XCTAssertEqual(output1.recordedLog, .init(level: .info, message: "info message", error: error, date: .mockDecember15th2019At10AMUTC()))
+        XCTAssertEqual(output2.recordedLog, .init(level: .info, message: "info message", error: error, date: .mockDecember15th2019At10AMUTC()))
+        XCTAssertEqual(output3.recordedLog, .init(level: .info, message: "info message", error: error, date: .mockDecember15th2019At10AMUTC()))
     }
 
     func testConditionalLogOutput_writesLogToCombinedOutputOnlyIfConditionIsMet() {

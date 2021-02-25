@@ -199,11 +199,11 @@ class LogOutputMock: LogOutput {
 
     var recordedLog: RecordedLog? = nil
 
-    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {
+    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) {
         recordedLog = RecordedLog(
             level: level,
             message: message,
-            error: error.flatMap { DDError(error: $0) },
+            error: error,
             date: date,
             attributes: attributes,
             tags: tags

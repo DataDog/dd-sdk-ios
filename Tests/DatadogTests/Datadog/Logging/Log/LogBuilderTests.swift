@@ -14,7 +14,7 @@ class LogBuilderTests: XCTestCase {
             serviceName: "test-service-name",
             loggerName: "test-logger-name"
         )
-        let error = ErrorMock("description")
+        let error = DDError(error: ErrorMock("description"))
         let log = builder.createLogWith(
             level: .debug,
             message: "debug message",
@@ -28,7 +28,7 @@ class LogBuilderTests: XCTestCase {
         XCTAssertEqual(log.applicationVersion, "1.2.3")
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
-        XCTAssertEqual(log.error, DDError(error: error))
+        XCTAssertEqual(log.error, error)
         XCTAssertEqual(log.serviceName, "test-service-name")
         XCTAssertEqual(log.loggerName, "test-logger-name")
         XCTAssertEqual(log.tags, ["tag"])

@@ -13,7 +13,7 @@ internal struct LogFileOutput: LogOutput {
     /// Integration with RUM Errors.
     let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
-    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {
+    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) {
         let log = logBuilder.createLogWith(level: level, message: message, error: error, date: date, attributes: attributes, tags: tags)
         fileWriter.write(value: log)
 

@@ -37,7 +37,7 @@ internal struct LogConsoleOutput: LogOutput {
         self.printingFunction = printingFunction
     }
 
-    func writeLogWith(level: LogLevel, message: String, error: Error?, date: Date, attributes: LogAttributes, tags: Set<String>) {
+    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) {
         let log = logBuilder.createLogWith(level: level, message: message, error: error, date: date, attributes: attributes, tags: tags)
         printingFunction(formatter.format(log: log))
     }

@@ -9,7 +9,7 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets trailing_closure
 class LogConsoleOutputTests: XCTestCase {
-    private let error = ErrorMock("description")
+    private let error = DDError(error: ErrorMock("description"))
 
     func testItPrintsLogsUsingShortFormat() {
         var messagePrinted: String = ""

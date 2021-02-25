@@ -16,9 +16,9 @@ class DDErrorTests: XCTestCase {
         let error = SwiftError()
         let dderror = DDError(error: error)
 
-        XCTAssertEqual(dderror.title, "SwiftError")
+        XCTAssertEqual(dderror.type, "SwiftError")
         XCTAssertEqual(dderror.message, #"SwiftError(description: "error description")"#)
-        XCTAssertEqual(dderror.details, #"SwiftError(description: "error description")"#)
+        XCTAssertEqual(dderror.stack, #"SwiftError(description: "error description")"#)
     }
 
     func testFormattingStringConvertibleSwiftError() {
@@ -29,9 +29,9 @@ class DDErrorTests: XCTestCase {
         let error = SwiftError()
         let dderror = DDError(error: error)
 
-        XCTAssertEqual(dderror.title, "SwiftError")
+        XCTAssertEqual(dderror.type, "SwiftError")
         XCTAssertEqual(dderror.message, "error description")
-        XCTAssertEqual(dderror.details, "error description")
+        XCTAssertEqual(dderror.stack, "error description")
     }
 
     func testFormattingNSError() {
@@ -44,10 +44,10 @@ class DDErrorTests: XCTestCase {
         )
         let dderror = DDError(error: error)
 
-        XCTAssertEqual(dderror.title, "custom-domain - 10")
+        XCTAssertEqual(dderror.type, "custom-domain - 10")
         XCTAssertEqual(dderror.message, "error description")
         XCTAssertEqual(
-            dderror.details,
+            dderror.stack,
             """
             Error Domain=custom-domain Code=10 "error description" UserInfo={NSLocalizedDescription=error description}
             """
@@ -65,10 +65,10 @@ class DDErrorTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(dderrorWithDescription.title, "custom-domain - 10")
+        XCTAssertEqual(dderrorWithDescription.type, "custom-domain - 10")
         XCTAssertEqual(dderrorWithDescription.message, "localized description")
         XCTAssertEqual(
-            dderrorWithDescription.details,
+            dderrorWithDescription.stack,
             """
             Error Domain=custom-domain Code=10 "localized description" UserInfo={NSLocalizedDescription=localized description}
             """
@@ -82,13 +82,13 @@ class DDErrorTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(dderrorNoDescription.title, "custom-domain - 10")
+        XCTAssertEqual(dderrorNoDescription.type, "custom-domain - 10")
         XCTAssertEqual(
             dderrorNoDescription.message,
             #"Error Domain=custom-domain Code=10 "(null)""#
         )
         XCTAssertEqual(
-            dderrorNoDescription.details,
+            dderrorNoDescription.stack,
             #"Error Domain=custom-domain Code=10 "(null)""#
         )
     }

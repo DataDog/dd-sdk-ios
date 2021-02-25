@@ -8,25 +8,25 @@ import Foundation
 
 /// Common representation of Swift `Error` used by different features.
 internal struct DDError: Equatable {
-    let title: String
+    let type: String
     let message: String
-    let details: String
+    let stack: String
 
     init(error: Error) {
         if isNSErrorOrItsSubclass(error) {
             let nsError = error as NSError
-            self.title = "\(nsError.domain) - \(nsError.code)"
+            self.type = "\(nsError.domain) - \(nsError.code)"
             if nsError.userInfo[NSLocalizedDescriptionKey] != nil {
                 self.message = nsError.localizedDescription
             } else {
                 self.message = nsError.description
             }
-            self.details = "\(nsError)"
+            self.stack = "\(nsError)"
         } else {
             let swiftError = error
-            self.title = "\(type(of: swiftError))"
+            self.type = "\(Swift.type(of: swiftError))"
             self.message = "\(swiftError)"
-            self.details = "\(swiftError)"
+            self.stack = "\(swiftError)"
         }
     }
 }

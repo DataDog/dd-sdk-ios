@@ -107,9 +107,9 @@ internal struct LogEncoder {
 
         // Encode log.error properties
         if let someError = log.error {
-            try container.encode(someError.title, forKey: .errorKind)
+            try container.encode(someError.type, forKey: .errorKind)
             try container.encode(someError.message, forKey: .errorMessage)
-            try container.encode(someError.details, forKey: .errorStack)
+            try container.encode(someError.stack, forKey: .errorStack)
         }
 
         // Encode logger info
