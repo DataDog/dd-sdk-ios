@@ -17,12 +17,6 @@ public enum LogLevel: Int, Codable {
     case critical
 }
 
-internal enum ErrorAttributes {
-    static let kind = "error.kind"
-    static let message = "error.message"
-    static let stack = "error.stack"
-}
-
 /// Because `Logger` is a common name widely used across different projects, the `Datadog.Logger` may conflict when
 /// using `Logger.builder`. In such case, following `DDLogger` typealias can be used to avoid compiler ambiguity.
 ///
@@ -226,17 +220,6 @@ public class Logger {
         let date = dateProvider.currentDate()
 
         var combinedUserAttributes = messageAttributes ?? [:]
-        if let someError = error {
-            let ddError = DDError(error: someError)
-            let errorAttributes = [
-                ErrorAttributes.kind: ddError.title,
-                ErrorAttributes.message: ddError.message,
-                ErrorAttributes.stack: ddError.details
-            ]
-            combinedUserAttributes.merge(errorAttributes) { userAttribute, _ in
-                return userAttribute
-            }
-        }
         combinedUserAttributes = queue.sync {
             return self.loggerAttributes.merging(combinedUserAttributes) { _, userAttributeValue in
                 return userAttributeValue // use message attribute when the same key appears also in logger attributes
@@ -260,6 +243,7 @@ public class Logger {
         logOutput.writeLogWith(
             level: level,
             message: message,
+            error: error.flatMap { DDError(error: $0) },
             date: date,
             attributes: LogAttributes(
                 userAttributes: combinedUserAttributes,

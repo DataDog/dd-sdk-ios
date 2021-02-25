@@ -320,7 +320,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 resource: nil,
                 source: command.source.toRUMDataFormat,
                 stack: command.stack,
-                type: command.message
+                type: command.type
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),

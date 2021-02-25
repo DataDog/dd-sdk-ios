@@ -98,9 +98,9 @@ public extension OTSpan {
     ) {
         let dderror = DDError(error: error)
         setError(
-            kind: dderror.title,
+            kind: dderror.type,
             message: dderror.message,
-            stack: dderror.details,
+            stack: dderror.stack,
             file: file,
             line: line
         )

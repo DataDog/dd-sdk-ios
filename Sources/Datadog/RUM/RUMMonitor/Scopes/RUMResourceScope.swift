@@ -205,7 +205,7 @@ internal class RUMResourceScope: RUMScope {
                 ),
                 source: command.errorSource.toRUMDataFormat,
                 stack: command.stack,
-                type: command.errorMessage
+                type: command.errorType
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),

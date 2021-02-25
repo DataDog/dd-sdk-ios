@@ -36,11 +36,11 @@ class LogFileOutputTests: XCTestCase {
             rumErrorsIntegration: nil
         )
 
-        output.writeLogWith(level: .info, message: "log message 1", date: .mockAny(), attributes: .mockAny(), tags: [])
+        output.writeLogWith(level: .info, message: "log message 1", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
-        output.writeLogWith(level: .info, message: "log message 2", date: .mockAny(), attributes: .mockAny(), tags: [])
+        output.writeLogWith(level: .info, message: "log message 2", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let log1Data = try temporaryDirectory.file(named: log1FileName).read()

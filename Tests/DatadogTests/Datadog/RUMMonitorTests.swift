@@ -326,7 +326,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.error.message, "View error message")
             XCTAssertEqual(rumModel.error.stack, "Foo.swift:100")
             XCTAssertEqual(rumModel.error.source, .source)
-            XCTAssertEqual(rumModel.error.type, "View error message")
+            XCTAssertNil(rumModel.error.type)
         }
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
@@ -337,7 +337,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.error.message, "Another error message")
             XCTAssertEqual(rumModel.error.stack, "Error stack")
             XCTAssertEqual(rumModel.error.source, .webview)
-            XCTAssertEqual(rumModel.error.type, "Another error message")
+            XCTAssertNil(rumModel.error.type)
         }
         try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)

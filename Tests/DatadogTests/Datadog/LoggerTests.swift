@@ -145,20 +145,19 @@ class LoggerTests: XCTestCase {
             var description = "Test description"
         }
         let error = TestError()
-        let customAttributes = [ErrorAttributes.message: "custom message"]
 
         let logger = Logger.builder.build()
-        logger.debug("message", error: error, attributes: customAttributes)
-        logger.info("message", error: error, attributes: customAttributes)
-        logger.notice("message", error: error, attributes: customAttributes)
-        logger.warn("message", error: error, attributes: customAttributes)
-        logger.error("message", error: error, attributes: customAttributes)
-        logger.critical("message", error: error, attributes: customAttributes)
+        logger.debug("message", error: error)
+        logger.info("message", error: error)
+        logger.notice("message", error: error)
+        logger.warn("message", error: error)
+        logger.error("message", error: error)
+        logger.critical("message", error: error)
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 6)
         for matcher in logMatchers {
             matcher.assertValue(forKeyPath: "error.stack", equals: "TestError(description: \"Test description\")")
-            matcher.assertValue(forKeyPath: "error.message", equals: "custom message")
+            matcher.assertValue(forKeyPath: "error.message", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.kind", equals: "TestError")
         }
     }

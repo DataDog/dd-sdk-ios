@@ -14,9 +14,11 @@ class LogBuilderTests: XCTestCase {
             serviceName: "test-service-name",
             loggerName: "test-logger-name"
         )
+        let error = DDError(error: ErrorMock("description"))
         let log = builder.createLogWith(
             level: .debug,
             message: "debug message",
+            error: error,
             date: .mockDecember15th2019At10AMUTC(),
             attributes: .mockWith(userAttributes: ["attribute": "value"]),
             tags: ["tag"]
@@ -26,24 +28,26 @@ class LogBuilderTests: XCTestCase {
         XCTAssertEqual(log.applicationVersion, "1.2.3")
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
+        XCTAssertEqual(log.error, error)
         XCTAssertEqual(log.serviceName, "test-service-name")
         XCTAssertEqual(log.loggerName, "test-logger-name")
         XCTAssertEqual(log.tags, ["tag"])
         XCTAssertEqual(log.attributes.userAttributes as? [String: String], ["attribute": "value"])
+
         XCTAssertEqual(
-            builder.createLogWith(level: .info, message: "", date: .mockAny(), attributes: .mockAny(), tags: []).status, .info
+            builder.createLogWith(level: .info, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .info
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .notice, message: "", date: .mockAny(), attributes: .mockAny(), tags: []).status, .notice
+            builder.createLogWith(level: .notice, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .notice
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .warn, message: "", date: .mockAny(), attributes: .mockAny(), tags: []).status, .warn
+            builder.createLogWith(level: .warn, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .warn
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .error, message: "", date: .mockAny(), attributes: .mockAny(), tags: []).status, .error
+            builder.createLogWith(level: .error, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .error
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .critical, message: "", date: .mockAny(), attributes: .mockAny(), tags: []).status, .critical
+            builder.createLogWith(level: .critical, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .critical
         )
     }
 
@@ -53,13 +57,13 @@ class LogBuilderTests: XCTestCase {
         expectation.expectedFulfillmentCount = 3
 
         DispatchQueue.main.async {
-            let log = builder.createLogWith(level: .debug, message: "", date: .mockAny(), attributes: .mockAny(), tags: [])
+            let log = builder.createLogWith(level: .debug, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
             XCTAssertEqual(log.threadName, "main")
             expectation.fulfill()
         }
 
         DispatchQueue.global(qos: .default).async {
-            let log = builder.createLogWith(level: .debug, message: "", date: .mockAny(), attributes: .mockAny(), tags: [])
+            let log = builder.createLogWith(level: .debug, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
             XCTAssertEqual(log.threadName, "background")
             expectation.fulfill()
         }
@@ -69,7 +73,7 @@ class LogBuilderTests: XCTestCase {
             defer { Thread.current.name = previousName } // reset it as this thread might be picked by `.global(qos: .default)`
 
             Thread.current.name = "custom-thread-name"
-            let log = builder.createLogWith(level: .debug, message: "", date: .mockAny(), attributes: .mockAny(), tags: [])
+            let log = builder.createLogWith(level: .debug, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
             XCTAssertEqual(log.threadName, "custom-thread-name")
             expectation.fulfill()
         }
