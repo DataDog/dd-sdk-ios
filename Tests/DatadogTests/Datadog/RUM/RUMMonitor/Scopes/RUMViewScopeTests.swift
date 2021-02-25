@@ -20,7 +20,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockRandom(),
+            name: .mockRandom(),
             attributes: [:],
             customTimings: [:],
             startTime: .mockAny()
@@ -29,7 +30,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
-        XCTAssertEqual(scope.context.activeViewURI, scope.viewURI)
+        XCTAssertEqual(scope.context.activeViewPath, scope.viewPath)
+        XCTAssertEqual(scope.context.activeViewName, scope.viewName)
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
@@ -40,7 +42,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockRandom(),
+            name: .mockRandom(),
             attributes: [:],
             customTimings: [:],
             startTime: .mockAny()
@@ -51,7 +54,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, sessionScope.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
-        XCTAssertEqual(scope.context.activeViewURI, scope.viewURI)
+        XCTAssertEqual(scope.context.activeViewPath, scope.viewPath)
+        XCTAssertEqual(scope.context.activeViewName, scope.viewName)
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
     }
 
@@ -64,7 +68,8 @@ class RUMViewScopeTests: XCTestCase {
                 eventOutput: output
             ),
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
+            name: "ViewName",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -83,6 +88,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        XCTAssertEqual(event.model.view.name, "ViewName")
         XCTAssertValidRumUUID(event.model.action.id)
         XCTAssertEqual(event.model.action.type, .applicationStart)
         XCTAssertEqual(event.model.action.loadingTime, 2_000_000_000) // 2e+9 ns
@@ -94,7 +100,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
+            name: "ViewName",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -113,6 +120,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        XCTAssertEqual(event.model.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.model.view.isActive)
         XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, 0)
@@ -129,7 +137,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
+            name: "ViewName",
             attributes: ["foo": "bar", "fizz": "buzz"],
             customTimings: [:],
             startTime: currentTime
@@ -148,6 +157,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        XCTAssertEqual(event.model.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.model.view.isActive)
         XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, 0)
@@ -164,7 +174,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
+            name: "ViewName",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -196,6 +207,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertValidRumUUID(event.model.view.id)
         XCTAssertEqual(event.model.view.url, "UIViewController")
+        XCTAssertEqual(event.model.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.model.view.isActive)
         XCTAssertFalse(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
@@ -214,7 +226,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: view1,
-            uri: "FirstViewController",
+            path: "FirstViewController",
+            name: "FirstViewName",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -236,6 +249,7 @@ class RUMViewScopeTests: XCTestCase {
         let view1WasActive = try XCTUnwrap(viewEvents[0].model.view.isActive)
         XCTAssertTrue(view1WasActive)
         XCTAssertEqual(viewEvents[1].model.view.url, "FirstViewController")
+        XCTAssertEqual(viewEvents[1].model.view.name, "FirstViewName")
         let view2IsActive = try XCTUnwrap(viewEvents[1].model.view.isActive)
         XCTAssertFalse(view2IsActive)
         XCTAssertEqual(viewEvents[1].model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
@@ -247,7 +261,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "FirstViewController",
+            path: "FirstViewController",
+            name: "FirstViewName",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -269,18 +284,20 @@ class RUMViewScopeTests: XCTestCase {
         let viewWasActive = try XCTUnwrap(viewEvents[0].model.view.isActive)
         XCTAssertTrue(viewWasActive)
         XCTAssertEqual(viewEvents[0].model.view.url, "FirstViewController")
+        XCTAssertEqual(viewEvents[0].model.view.name, "FirstViewName")
         let viewIsActive = try XCTUnwrap(viewEvents[1].model.view.isActive)
         XCTAssertFalse(viewIsActive)
         XCTAssertEqual(viewEvents[0].model.view.timeSpent, TimeInterval(1).toInt64Nanoseconds, "The View should last for 1 second")
     }
 
     func testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID() throws {
-        func createScope(uri: String) -> RUMViewScope {
+        func createScope(uri: String, name: String) -> RUMViewScope {
             RUMViewScope(
                 parent: parent,
                 dependencies: dependencies,
                 identity: mockView,
-                uri: uri,
+                path: uri,
+                name: name,
                 attributes: [:],
                 customTimings: [:],
                 startTime: .mockAny()
@@ -288,8 +305,8 @@ class RUMViewScopeTests: XCTestCase {
         }
 
         // Given
-        let scope1 = createScope(uri: "View1")
-        let scope2 = createScope(uri: "View2")
+        let scope1 = createScope(uri: "View1URL", name: "View1Name")
+        let scope2 = createScope(uri: "View2URL", name: "View2Name")
 
         // When
         [scope1, scope2].forEach { scope in
@@ -299,8 +316,8 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let viewEvents = try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self)
-        let view1Events = viewEvents.filter { $0.model.view.url == "View1" }
-        let view2Events = viewEvents.filter { $0.model.view.url == "View2" }
+        let view1Events = viewEvents.filter { $0.model.view.url == "View1URL" && $0.model.view.name == "View1Name" }
+        let view2Events = viewEvents.filter { $0.model.view.url == "View2URL" && $0.model.view.name == "View2Name" }
         XCTAssertEqual(view1Events.count, 2)
         XCTAssertEqual(view2Events.count, 2)
         XCTAssertEqual(view1Events[0].model.view.id, view1Events[1].model.view.id)
@@ -315,7 +332,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: Date()
@@ -363,7 +381,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: Date()
@@ -408,7 +427,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: Date()
@@ -448,7 +468,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -489,7 +510,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
+            name: "ViewName",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -516,11 +538,12 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.model.session.type, .user)
         XCTAssertValidRumUUID(error.model.view.id)
         XCTAssertEqual(error.model.view.url, "UIViewController")
+        XCTAssertEqual(error.model.view.name, "ViewName")
         XCTAssertNil(error.model.usr)
         XCTAssertNil(error.model.connectivity)
+        XCTAssertEqual(error.model.error.type, "abc")
         XCTAssertEqual(error.model.error.message, "view error")
         XCTAssertEqual(error.model.error.source, .source)
-        XCTAssertEqual(error.model.error.type, "view error")
         XCTAssertNil(error.model.error.stack)
         XCTAssertNil(error.model.error.isCrash)
         XCTAssertNil(error.model.error.resource)
@@ -536,7 +559,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: Date()
@@ -573,7 +597,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -624,7 +649,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: currentTime
@@ -665,7 +691,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies.replacing(dateCorrector: dateCorrectorMock),
             identity: mockView,
-            uri: .mockAny(),
+            path: .mockAny(),
+            name: .mockAny(),
             attributes: [:],
             customTimings: [:],
             startTime: initialDeviceTime

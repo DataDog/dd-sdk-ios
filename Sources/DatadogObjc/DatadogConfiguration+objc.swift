@@ -236,10 +236,10 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent?) {
+    public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent) {
         _ = sdkBuilder.setRUMViewEventMapper { swiftEvent in
             let objcEvent = DDRUMViewEvent(swiftModel: swiftEvent)
-            return mapper(objcEvent)?.swiftModel
+            return mapper(objcEvent).swiftModel
         }
     }
 

@@ -46,8 +46,12 @@ internal class RUMSessionMatcher {
             self.viewID = viewID
         }
 
+        /// The `name` of the visited RUM View.
+        /// Corresponds to the "VIEW NAME" in RUM Explorer.
+        fileprivate(set) var name: String = ""
+
         /// The `path` of the visited RUM View.
-        /// Corresponds to the "PATH GROUP" in RUM Explorer.
+        /// Corresponds to the "VIEW URL" in RUM Explorer.
         fileprivate(set) var path: String = ""
 
         /// `RUMView` events tracked during this visit.
@@ -111,6 +115,13 @@ internal class RUMSessionMatcher {
             if let visit = visitsByViewID[rumEvent.view.id] {
                 visit.viewEvents.append(rumEvent)
                 visit.viewEventMatchers.append(matcher)
+                if visit.name.isEmpty {
+                    visit.name = rumEvent.view.name!
+                } else if visit.name != rumEvent.view.name {
+                    throw RUMSessionConsistencyException(
+                        description: "The RUM View name: \(rumEvent) is different than other RUM View names for the same `view.id`."
+                    )
+                }
                 if visit.path.isEmpty {
                     visit.path = rumEvent.view.url
                 } else if visit.path != rumEvent.view.url {

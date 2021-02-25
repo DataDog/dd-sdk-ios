@@ -21,6 +21,7 @@ internal struct Log: Encodable {
     let date: Date
     let status: Status
     let message: String
+    let error: DDError?
     let serviceName: String
     let environment: String
     let loggerName: String
@@ -48,6 +49,12 @@ internal struct LogEncoder {
         case message
         case serviceName = "service"
         case tags = "ddtags"
+
+        // MARK: - Error
+
+        case errorKind = "error.kind"
+        case errorMessage = "error.message"
+        case errorStack = "error.stack"
 
         // MARK: - Application info
 
@@ -97,6 +104,13 @@ internal struct LogEncoder {
         try container.encode(log.status, forKey: .status)
         try container.encode(log.message, forKey: .message)
         try container.encode(log.serviceName, forKey: .serviceName)
+
+        // Encode log.error properties
+        if let someError = log.error {
+            try container.encode(someError.type, forKey: .errorKind)
+            try container.encode(someError.message, forKey: .errorMessage)
+            try container.encode(someError.stack, forKey: .errorStack)
+        }
 
         // Encode logger info
         try container.encode(log.loggerName, forKey: .loggerName)

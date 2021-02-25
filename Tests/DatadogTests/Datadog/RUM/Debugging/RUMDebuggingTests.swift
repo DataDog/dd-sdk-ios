@@ -19,7 +19,7 @@ class RUMDebuggingTests: XCTestCase {
             samplingRate: 100
         )
         _ = applicationScope.process(
-            command: RUMStartViewCommand.mockWith(identity: mockView, path: "FirstViewController")
+            command: RUMStartViewCommand.mockWith(identity: mockView, name: "FirstView")
         )
 
         let debugging = RUMDebugging()
@@ -37,7 +37,7 @@ class RUMDebuggingTests: XCTestCase {
         XCTAssertEqual(canvas.subviews.count, 1)
         let viewOutline = try XCTUnwrap(canvas.subviews.first)
         let viewOutlineLabel = try XCTUnwrap(viewOutline.subviews.first as? UILabel)
-        XCTAssertEqual(viewOutlineLabel.text, "FirstViewController # ACTIVE")
+        XCTAssertEqual(viewOutlineLabel.text, "FirstView # ACTIVE")
     }
 
     func testWhenOneRUMViewIsInactive_andSecondIsActive_itDisplaysTwoRUMViewOutlines() throws {
@@ -50,13 +50,13 @@ class RUMDebuggingTests: XCTestCase {
             samplingRate: 100
         )
         _ = applicationScope.process(
-            command: RUMStartViewCommand.mockWith(identity: mockView, path: "FirstViewController")
+            command: RUMStartViewCommand.mockWith(identity: mockView, name: "FirstView")
         )
         _ = applicationScope.process(
             command: RUMStartResourceCommand.mockAny()
         )
         _ = applicationScope.process(
-            command: RUMStartViewCommand.mockWith(identity: mockView, path: "SecondViewController")
+            command: RUMStartViewCommand.mockWith(identity: mockView, name: "SecondView")
         )
 
         let debugging = RUMDebugging()
@@ -74,10 +74,10 @@ class RUMDebuggingTests: XCTestCase {
         XCTAssertEqual(canvas.subviews.count, 2)
         let firstViewOutline = try XCTUnwrap(canvas.subviews.first)
         let firstViewOutlineLabel = try XCTUnwrap(firstViewOutline.subviews.first as? UILabel)
-        XCTAssertEqual(firstViewOutlineLabel.text, "FirstViewController # INACTIVE")
+        XCTAssertEqual(firstViewOutlineLabel.text, "FirstView # INACTIVE")
         let secondViewOutline = try XCTUnwrap(canvas.subviews.dropFirst().first)
         let secondViewOutlineLabel = try XCTUnwrap(secondViewOutline.subviews.first as? UILabel)
-        XCTAssertEqual(secondViewOutlineLabel.text, "SecondViewController # ACTIVE")
+        XCTAssertEqual(secondViewOutlineLabel.text, "SecondView # ACTIVE")
         XCTAssertLessThan(firstViewOutlineLabel.alpha, secondViewOutlineLabel.alpha)
     }
 }

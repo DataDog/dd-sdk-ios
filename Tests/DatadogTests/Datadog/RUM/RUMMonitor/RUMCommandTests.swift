@@ -14,7 +14,8 @@ class RUMCommandTests: XCTestCase {
         }
         var command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: SwiftError(), source: .source, attributes: [:])
 
-        XCTAssertEqual(command.message, "SwiftError")
+        XCTAssertEqual(command.type, "SwiftError")
+        XCTAssertEqual(command.message, "error description")
         XCTAssertEqual(command.stack, "error description")
 
         enum SwiftEnumeratedError: Error {
@@ -22,7 +23,8 @@ class RUMCommandTests: XCTestCase {
         }
         command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: SwiftEnumeratedError.errorLabel, source: .source, attributes: [:])
 
-        XCTAssertEqual(command.message, "SwiftEnumeratedError")
+        XCTAssertEqual(command.type, "SwiftEnumeratedError")
+        XCTAssertEqual(command.message, "errorLabel")
         XCTAssertEqual(command.stack, "errorLabel")
 
         let nsError = NSError(
@@ -32,7 +34,8 @@ class RUMCommandTests: XCTestCase {
         )
         command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: nsError, source: .source, attributes: [:])
 
-        XCTAssertEqual(command.message, "custom-domain - 10")
+        XCTAssertEqual(command.type, "custom-domain - 10")
+        XCTAssertEqual(command.message, "error description")
         XCTAssertEqual(
             command.stack,
             """

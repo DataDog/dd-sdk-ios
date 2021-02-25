@@ -32,10 +32,12 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
     // MARK: - Handling `viewDidAppear`
 
     func testGivenAcceptingPredicate_whenViewDidAppear_itStartsRUMView() throws {
-        let view = createMockViewInWindow()
+        let viewName: String = .mockRandom()
+        let viewControllerClassName: String = .mockRandom()
+        let view = createMockView(viewControllerClassName: viewControllerClassName)
 
         // Given
-        predicate.result = .init(path: "Foo", attributes: ["foo": "bar"])
+        predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
 
         // When
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
@@ -45,7 +47,8 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertTrue(command.identity.equals(view))
-        XCTAssertEqual(command.path, "Foo")
+        XCTAssertEqual(command.path, viewControllerClassName)
+        XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
@@ -56,8 +59,8 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
         // Given
         predicate.resultByViewController = [
-            view1: .init(path: "First"),
-            view2: .init(path: "Second"),
+            view1: .init(name: .mockRandom()),
+            view2: .init(name: .mockRandom()),
         ]
 
         // When
@@ -79,7 +82,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         let view = createMockViewInWindow()
 
         // Given
-        predicate.result = .init(path: "Foo")
+        predicate.result = .init(name: .mockRandom())
 
         // When
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
@@ -107,12 +110,14 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
     func testGivenAcceptingPredicate_whenViewDidDisappear_itStartsRUMViewForTopViewController() throws {
         let view = createMockViewInWindow()
-        let topViewController = createMockViewInWindow()
+        let topViewName: String = .mockRandom()
+        let topViewControllerClassName: String = .mockRandom()
+        let topViewController = createMockView(viewControllerClassName: topViewControllerClassName)
         uiKitHierarchyInspector.mockTopViewController = topViewController
 
         // Given
         predicate.resultByViewController = [
-            topViewController: .init(path: "Top")
+            topViewController: .init(name: topViewName)
         ]
 
         // When
@@ -123,7 +128,8 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
 
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertTrue(command.identity.equals(topViewController))
-        XCTAssertEqual(command.path, "Top")
+        XCTAssertEqual(command.name, topViewName)
+        XCTAssertEqual(command.path, topViewControllerClassName)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
@@ -132,7 +138,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         uiKitHierarchyInspector.mockTopViewController = nil
 
         // Given
-        predicate.result = .init(path: "Foo")
+        predicate.result = .init(name: .mockRandom())
 
         // When
         handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())

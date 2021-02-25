@@ -88,17 +88,13 @@ class RUMEventsMapperTests: XCTestCase {
     }
 
     func testGivenMappersEnabled_whenDroppingEvents_itReturnsNil() {
-        let originalViewEvent: RUMViewEvent = .mockRandom()
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
         let originalActionEvent: RUMActionEvent = .mockRandom()
 
         // Given
         let mapper = RUMEventsMapper(
-            viewEventMapper: { viewEvent in
-                XCTAssertEqual(viewEvent, originalViewEvent, "Mapper should be called with the original event.")
-                return nil
-            },
+            viewEventMapper: nil,
             errorEventMapper: { errorEvent in
                 XCTAssertEqual(errorEvent, originalErrorEvent, "Mapper should be called with the original event.")
                 return nil
@@ -114,13 +110,11 @@ class RUMEventsMapperTests: XCTestCase {
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalViewEvent))?.model
         let mappedErrorEvent = mapper.map(event: RUMEvent<RUMErrorEvent>.mockWith(model: originalErrorEvent))?.model
         let mappedResourceEvent = mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalResourceEvent))?.model
         let mappedActionEvent = mapper.map(event: RUMEvent<RUMActionEvent>.mockWith(model: originalActionEvent))?.model
 
         // Then
-        XCTAssertNil(mappedViewEvent, "Mapper should return nil.")
         XCTAssertNil(mappedErrorEvent, "Mapper should return nil.")
         XCTAssertNil(mappedResourceEvent, "Mapper should return nil.")
         XCTAssertNil(mappedActionEvent, "Mapper should return nil.")
@@ -163,7 +157,7 @@ class RUMEventsMapperTests: XCTestCase {
 
         // When
         let mapper = RUMEventsMapper(
-            viewEventMapper: { _ in nil },
+            viewEventMapper: nil,
             errorEventMapper: { _ in nil },
             resourceEventMapper: { _ in nil },
             actionEventMapper: { _ in nil }

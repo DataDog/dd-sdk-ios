@@ -133,7 +133,7 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(rumSessionsSamplingRate: 42.5)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumSessionsSamplingRate, 42.5)
 
-        objcBuilder.setRUMViewEventMapper { _ in nil }
+        objcBuilder.setRUMViewEventMapper { $0 }
         XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumViewEventMapper)
 
         objcBuilder.setRUMResourceEventMapper { _ in nil }
@@ -222,14 +222,12 @@ class DDConfigurationTests: XCTestCase {
             environment: "tests"
         )
 
-        objcBuilder.setRUMViewEventMapper { _ in nil }
         objcBuilder.setRUMResourceEventMapper { _ in nil }
         objcBuilder.setRUMActionEventMapper { _ in nil }
         objcBuilder.setRUMErrorEventMapper { _ in nil }
 
         let configuration = objcBuilder.build().sdkConfiguration
 
-        XCTAssertNil(configuration.rumViewEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumResourceEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))

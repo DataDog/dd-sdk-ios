@@ -56,7 +56,7 @@ public class DDConfigurationBuilder: NSObject
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()
- public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent?)
+ public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent)
  public func setRUMResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?)
  public func setRUMActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?)
  public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?)
@@ -186,6 +186,7 @@ public class DDRUMViewEventView: NSObject
  @objc public var action: DDRUMViewEventViewAction
  @objc public var crash: DDRUMViewEventViewCrash?
  @objc public var cumulativeLayoutShift: NSNumber?
+ @objc public var customTimings: [String: NSNumber]?
  @objc public var domComplete: NSNumber?
  @objc public var domContentLoaded: NSNumber?
  @objc public var domInteractive: NSNumber?
@@ -200,6 +201,7 @@ public class DDRUMViewEventView: NSObject
  @objc public var loadingTime: NSNumber?
  @objc public var loadingType: DDRUMViewEventViewLoadingType
  @objc public var longTask: DDRUMViewEventViewLongTask?
+ @objc public var name: String?
  @objc public var referrer: String?
  @objc public var resource: DDRUMViewEventViewResource
  @objc public var timeSpent: NSNumber
@@ -350,6 +352,7 @@ public class DDRUMResourceEventRUMUser: NSObject
  @objc public var name: String?
 public class DDRUMResourceEventView: NSObject
  @objc public var id: String
+ @objc public var name: String?
  @objc public var referrer: String?
  @objc public var url: String
 public class DDRUMActionEvent: NSObject
@@ -428,6 +431,7 @@ public class DDRUMActionEventRUMUser: NSObject
  @objc public var name: String?
 public class DDRUMActionEventView: NSObject
  @objc public var id: String
+ @objc public var name: String?
  @objc public var referrer: String?
  @objc public var url: String
 public class DDRUMErrorEvent: NSObject
@@ -529,12 +533,13 @@ public class DDRUMErrorEventRUMUser: NSObject
  @objc public var name: String?
 public class DDRUMErrorEventView: NSObject
  @objc public var id: String
+ @objc public var name: String?
  @objc public var referrer: String?
  @objc public var url: String
 public class DDRUMView: NSObject
- @objc public var path: String
+ @objc public var name: String
  @objc public var attributes: [String: Any]
- public init(path: String, attributes: [String: Any])
+ public init(name: String, attributes: [String: Any])
 public protocol DDUIKitRUMViewsPredicate: AnyObject
  func rumView(for viewController: UIViewController) -> DDRUMView?
 public enum DDRUMErrorSource: Int
@@ -567,9 +572,9 @@ public enum DDRUMMethod: Int
  case patch
 public class DDRUMMonitor: NSObject
  override public convenience init()
- public func startView(viewController: UIViewController,path: String?,attributes: [String: Any])
+ public func startView(viewController: UIViewController,name: String?,attributes: [String: Any])
  public func stopView(viewController: UIViewController,attributes: [String: Any])
- public func startView(key: String,path: String?,attributes: [String: Any])
+ public func startView(key: String,name: String?,attributes: [String: Any])
  public func stopView(key: String,attributes: [String: Any])
  public func addTiming(name: String)
  public func addError(message: String,source: DDRUMErrorSource,stack: String?,attributes: [String: Any])
@@ -602,4 +607,5 @@ public class DDTracerConfiguration: NSObject
  public func set(serviceName: String)
  public func sendNetworkInfo(_ enabled: Bool)
 public class DDHTTPHeadersWriter: NSObject
+ @objc public var tracePropagationHTTPHeaders: [String: String]
  override public init()

@@ -14,7 +14,8 @@ class RUMResourceScopeTests: XCTestCase {
         rumApplicationID: "rum-123",
         sessionID: .mockRandom(),
         activeViewID: .mockRandom(),
-        activeViewURI: "FooViewController",
+        activeViewPath: "FooViewController",
+        activeViewName: "FooViewName",
         activeUserActionID: .mockRandom()
     )
 
@@ -36,7 +37,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, context.rumApplicationID)
         XCTAssertEqual(scope.context.sessionID, context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(context.activeViewID))
-        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(context.activeViewURI))
+        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(context.activeViewPath))
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(context.activeUserActionID))
     }
 
@@ -82,6 +83,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertEqual(event.model.view.name, "FooViewName")
         XCTAssertValidRumUUID(event.model.resource.id)
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.method, .post)
@@ -144,7 +146,9 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.error.message, "ErrorMock")
+        XCTAssertEqual(event.model.view.name, "FooViewName")
+        XCTAssertEqual(event.model.error.type, "ErrorMock")
+        XCTAssertEqual(event.model.error.message, "network issue explanation")
         XCTAssertEqual(event.model.error.source, .network)
         XCTAssertEqual(event.model.error.stack, "network issue explanation")
         XCTAssertEqual(event.model.error.resource?.method, .post)
@@ -241,6 +245,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertEqual(event.model.view.name, "FooViewName")
         XCTAssertValidRumUUID(event.model.resource.id)
         XCTAssertEqual(event.model.resource.type, .image)
         XCTAssertEqual(event.model.resource.method, .post)

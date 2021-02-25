@@ -33,7 +33,7 @@ final class CrashReportingCollectOrSendScenario: TestScenario {
             func rumView(for viewController: UIViewController) -> RUMView? {
                 let defaultRUMView = defaultPredicate.rumView(for: viewController)
                 return .init(
-                    path: defaultRUMView!.path,
+                    name: defaultRUMView!.name,
                     attributes: [
                         "custom-attribute": "This attribute will be attached to crash report."
                     ]

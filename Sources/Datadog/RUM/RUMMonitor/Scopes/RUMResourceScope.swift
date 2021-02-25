@@ -173,8 +173,9 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 
@@ -204,15 +205,16 @@ internal class RUMResourceScope: RUMScope {
                 ),
                 source: command.errorSource.toRUMDataFormat,
                 stack: command.stack,
-                type: command.errorMessage
+                type: command.errorType
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 

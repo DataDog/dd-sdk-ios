@@ -80,6 +80,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             date: Date(),
             status: .info,
             message: "message \(Int.random(in: 0..<100))",
+            error: DDError(error: ErrorMock("description")),
             serviceName: "service-name",
             environment: "benchmarks",
             loggerName: "logger-name",
