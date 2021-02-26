@@ -25,6 +25,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 authorized: directory
             ),
             eventMapper: RUMEventsMapper(
+                dateProvider: SystemDateProvider(),
                 viewEventMapper: nil,
                 errorEventMapper: nil,
                 resourceEventMapper: nil,
