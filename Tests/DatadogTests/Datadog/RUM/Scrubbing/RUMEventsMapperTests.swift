@@ -193,10 +193,10 @@ class RUMEventsMapperTests: XCTestCase {
         )
         let commandSubscriber = CommandSubscriberRecorder()
         mapper.commandSubscriber = commandSubscriber
-        let originalEvent: RUMViewEvent = .mockRandom()
+        let originalEvent = RUMResourceEvent.mockRandom()
 
         // When
-        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalEvent))?.model)
+        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalEvent))?.model)
 
         // Then
         XCTAssertEqual(mappedEvent, originalEvent)
@@ -214,10 +214,10 @@ class RUMEventsMapperTests: XCTestCase {
         )
         let commandSubscriber = CommandSubscriberRecorder()
         mapper.commandSubscriber = commandSubscriber
-        let originalEvent: RUMViewEvent = .mockRandom()
+        let originalEvent = RUMResourceEvent.mockRandom()
 
         // When
-        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalEvent))?.model)
+        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalEvent))?.model)
 
         // Then
         XCTAssertEqual(mappedEvent, originalEvent)
@@ -237,7 +237,7 @@ class RUMEventsMapperTests: XCTestCase {
         mapper.commandSubscriber = commandSubscriber
 
         // When
-        let mappedEvent = mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: RUMViewEvent.mockRandom()))
+        let mappedEvent = mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: RUMResourceEvent.mockRandom()))
 
         // Then
         XCTAssertNil(mappedEvent)
@@ -249,10 +249,10 @@ class RUMEventsMapperTests: XCTestCase {
         let mapper = RUMEventsMapper.mockNoOp(dateProvider: SystemDateProvider())
         let commandSubscriber = CommandSubscriberRecorder()
         mapper.commandSubscriber = commandSubscriber
-        let originalEvent: RUMViewEvent = .mockRandom()
+        let originalEvent = RUMResourceEvent.mockRandom()
 
         // When
-        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalEvent))?.model)
+        let mappedEvent = try XCTUnwrap(mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalEvent))?.model)
 
         // Then
         XCTAssertEqual(mappedEvent, originalEvent)
