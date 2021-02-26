@@ -905,7 +905,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize()
 
-        monitor.startView(viewController: mockView, path: .mockAny())
+        monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: .mockAny())

@@ -907,7 +907,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
-            uri: "UIViewController",
+            path: "UIViewController",
+            name: "ViewController",
             attributes: [:],
             customTimings: [:],
             startTime: Date()

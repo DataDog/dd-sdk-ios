@@ -105,10 +105,7 @@ class RUMEventsMapperTests: XCTestCase {
         // Given
         let mapper = RUMEventsMapper.mockWith(
             dateProvider: SystemDateProvider(),
-            viewEventMapper: { viewEvent in
-                XCTAssertEqual(viewEvent, originalViewEvent, "Mapper should be called with the original event.")
-                return nil
-            },
+            viewEventMapper: nil,
             errorEventMapper: { errorEvent in
                 XCTAssertEqual(errorEvent, originalErrorEvent, "Mapper should be called with the original event.")
                 return nil
@@ -173,7 +170,7 @@ class RUMEventsMapperTests: XCTestCase {
         // When
         let mapper = RUMEventsMapper.mockWith(
             dateProvider: SystemDateProvider(),
-            viewEventMapper: { _ in nil },
+            viewEventMapper: nil,
             errorEventMapper: { _ in nil },
             resourceEventMapper: { _ in nil },
             actionEventMapper: { _ in nil }
@@ -231,7 +228,7 @@ class RUMEventsMapperTests: XCTestCase {
         // Given
         let mapper = RUMEventsMapper.mockWith(
             dateProvider: SystemDateProvider(),
-            viewEventMapper: { _ in nil },
+            viewEventMapper: nil,
             errorEventMapper: { _ in nil },
             resourceEventMapper: { _ in nil },
             actionEventMapper: { _ in nil }
