@@ -67,7 +67,9 @@ extension LoggingFeature {
 
 // MARK: - Log Mocks
 
-extension Log {
+extension Log: EquatableInTests {}
+
+extension Log: RandomMockable {
     static func mockWith(
         date: Date = .mockAny(),
         status: Log.Status = .mockAny(),
@@ -103,11 +105,35 @@ extension Log {
             tags: tags
         )
     }
+
+    static func mockRandom() -> Log {
+        return Log(
+            date: .mockRandomInThePast(),
+            status: .mockRandom(),
+            message: .mockRandom(),
+            error: .mockRandom(),
+            serviceName: .mockRandom(),
+            environment: .mockRandom(),
+            loggerName: .mockRandom(),
+            loggerVersion: .mockRandom(),
+            threadName: .mockRandom(),
+            applicationVersion: .mockRandom(),
+            userInfo: .init(id: .mockRandom(), name: .mockRandom(), email: .mockRandom(), extraInfo: [:]), // TODO: RUMM-1050 use `.mockRandom()`
+            networkConnectionInfo: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
+            mobileCarrierInfo: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
+            attributes: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
+            tags: nil // TODO: RUMM-1050 use `.mockRandom()`
+        )
+    }
 }
 
-extension Log.Status {
+extension Log.Status: RandomMockable {
     static func mockAny() -> Log.Status {
         return .info
+    }
+
+    static func mockRandom() -> Log.Status {
+        return [.debug, .info, .notice, .warn, .error, .critical].randomElement()!
     }
 }
 
@@ -115,6 +141,7 @@ extension Log.Status {
 
 extension Logger {
     static func mockWith(
+        logBuilder: LogBuilder = .mockAny(),
         logOutput: LogOutput = LogOutputMock(),
         dateProvider: DateProvider = SystemDateProvider(),
         identifier: String = .mockAny(),
@@ -122,6 +149,7 @@ extension Logger {
         activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil
     ) -> Logger {
         return Logger(
+            logBuilder: logBuilder,
             logOutput: logOutput,
             dateProvider: dateProvider,
             identifier: identifier,
@@ -188,25 +216,9 @@ extension LogAttributes: Equatable {
 
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
-    struct RecordedLog: Equatable {
-        var level: LogLevel
-        var message: String
-        var error: DDError?
-        var date: Date
-        var attributes = LogAttributes(userAttributes: [:], internalAttributes: [:])
-        var tags: Set<String> = []
-    }
+    var recordedLog: Log?
 
-    var recordedLog: RecordedLog? = nil
-
-    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        recordedLog = RecordedLog(
-            level: level,
-            message: message,
-            error: error,
-            date: date,
-            attributes: attributes,
-            tags: tags
-        )
+    func write(log: Log) {
+        recordedLog = log
     }
 }

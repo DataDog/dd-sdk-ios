@@ -42,24 +42,24 @@ internal func createSDKDeveloperLogger(
     if CompilationConditions.isSDKCompiledForDevelopment == false {
         return nil
     }
-
+    let logBuilder = LogBuilder(
+        applicationVersion: configuration.applicationVersion,
+        environment: configuration.environment,
+        serviceName: "sdk-developer",
+        loggerName: "sdk-developer",
+        userInfoProvider: configuration.userInfoProvider,
+        networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
+        carrierInfoProvider: configuration.carrierInfoProvider,
+        dateCorrector: nil
+    )
     let consoleOutput = LogConsoleOutput(
-        logBuilder: LogBuilder(
-            applicationVersion: configuration.applicationVersion,
-            environment: configuration.environment,
-            serviceName: "sdk-developer",
-            loggerName: "sdk-developer",
-            userInfoProvider: configuration.userInfoProvider,
-            networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
-            carrierInfoProvider: configuration.carrierInfoProvider,
-            dateCorrector: nil
-        ),
         format: .shortWith(prefix: "🐶 → "),
         timeZone: timeZone,
         printingFunction: consolePrintFunction
     )
 
     return Logger(
+        logBuilder: logBuilder,
         logOutput: consoleOutput,
         dateProvider: dateProvider,
         identifier: "sdk-developer",
@@ -70,7 +70,8 @@ internal func createSDKDeveloperLogger(
 
 internal func createNoOpSDKUserLogger() -> Logger {
     return Logger(
-        logOutput: NoOpLogOutput(),
+        logBuilder: nil,
+        logOutput: nil,
         dateProvider: SystemDateProvider(),
         identifier: "no-op",
         rumContextIntegration: nil,
@@ -84,25 +85,28 @@ internal func createSDKUserLogger(
     dateProvider: DateProvider = SystemDateProvider(),
     timeZone: TimeZone = .current
 ) -> Logger {
+    let logBuilder = LogBuilder(
+        applicationVersion: configuration.applicationVersion,
+        environment: configuration.environment,
+        serviceName: "sdk-user",
+        loggerName: "sdk-user",
+        userInfoProvider: configuration.userInfoProvider,
+        networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
+        carrierInfoProvider: configuration.carrierInfoProvider,
+        dateCorrector: nil
+    )
     let consoleOutput = LogConsoleOutput(
-        logBuilder: LogBuilder(
-            applicationVersion: configuration.applicationVersion,
-            environment: configuration.environment,
-            serviceName: "sdk-user",
-            loggerName: "sdk-user",
-            userInfoProvider: configuration.userInfoProvider,
-            networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
-            carrierInfoProvider: configuration.carrierInfoProvider,
-            dateCorrector: nil
-        ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
         timeZone: timeZone,
         printingFunction: consolePrintFunction
     )
 
     return Logger(
-        logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { logLevel in
-            logLevel.rawValue >= (Datadog.verbosityLevel?.rawValue ?? .max)
+        logBuilder: logBuilder,
+        logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { log in
+            let logSeverity = LogLevel(from: log.status).rawValue
+            let threshold = Datadog.verbosityLevel?.rawValue ?? .max
+            return logSeverity >= threshold
         },
         dateProvider: dateProvider,
         identifier: "sdk-user",

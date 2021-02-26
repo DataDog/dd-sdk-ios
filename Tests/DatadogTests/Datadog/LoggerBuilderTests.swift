@@ -41,12 +41,16 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
 
-        guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
-            XCTFail()
-            return
-        }
-
         let feature = LoggingFeature.instance!
+        XCTAssertTrue(
+            logger.logOutput is LogFileOutput,
+            "When Logging feature is enabled the Logger should use `LogFileOutput`."
+        )
+        let logBuilder = try XCTUnwrap(
+            logger.logBuilder,
+            "When Logging feature is enabled the Logger should use `LogBuilder`."
+        )
+
         XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(logBuilder.serviceName, "service-name")
         XCTAssertEqual(logBuilder.environment, "tests")
@@ -96,12 +100,16 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
 
-        guard let logBuilder = (logger.logOutput as? LogFileOutput)?.logBuilder else {
-            XCTFail()
-            return
-        }
-
         let feature = LoggingFeature.instance!
+        XCTAssertTrue(
+            logger.logOutput is LogFileOutput,
+            "When Logging feature is enabled the Logger should use `LogFileOutput`."
+        )
+        let logBuilder = try XCTUnwrap(
+            logger.logBuilder,
+            "When Logging feature is enabled the Logger should use `LogBuilder`."
+        )
+
         XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(logBuilder.serviceName, "custom-service-name")
         XCTAssertEqual(logBuilder.environment, "tests")
@@ -112,58 +120,48 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testUsingDifferentOutputs() throws {
-        assertThat(
-            logger: Logger.builder.build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).build(),
-            usesOutput: NoOpLogOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.printLogsToConsole(true).build(),
-            usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
-        )
-        assertThat(
-            logger: Logger.builder.printLogsToConsole(false).build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build(),
-            usesCombinedOutputs: [LogFileOutput.self, LogConsoleOutput.self]
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build(),
-            usesOutput: LogConsoleOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build(),
-            usesOutput: LogFileOutput.self
-        )
-        assertThat(
-            logger: Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(),
-            usesOutput: NoOpLogOutput.self
-        )
-    }
-}
+        var logger: Logger
 
-// MARK: - Helpers
+        logger = Logger.builder.build()
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertTrue(logger.logOutput is LogFileOutput)
 
-private func assertThat(logger: Logger, usesOutput outputType: LogOutput.Type, file: StaticString = #file, line: UInt = #line) {
-    XCTAssertTrue(type(of: logger.logOutput) == outputType, file: file, line: line)
-}
+        logger = Logger.builder.sendLogsToDatadog(true).build()
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertTrue(logger.logOutput is LogFileOutput)
 
-private func assertThat(logger: Logger, usesCombinedOutputs outputTypes: [LogOutput.Type], file: StaticString = #file, line: UInt = #line) {
-    if let combinedOutputs = (logger.logOutput as? CombinedLogOutput)?.combinedOutputs {
-        XCTAssertEqual(outputTypes.count, combinedOutputs.count, file: file, line: line)
-        outputTypes.forEach { outputType in
-            XCTAssertTrue(combinedOutputs.contains { type(of: $0) == outputType }, file: file, line: line)
-        }
-    } else {
-        XCTFail(file: file, line: line)
+        logger = Logger.builder.sendLogsToDatadog(false).build()
+        XCTAssertNil(logger.logBuilder)
+        XCTAssertNil(logger.logOutput)
+
+        logger = Logger.builder.printLogsToConsole(true).build()
+        var combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertEqual(combinedOutputs.count, 2)
+        XCTAssertTrue(combinedOutputs[0] is LogFileOutput)
+        XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
+
+        logger = Logger.builder.printLogsToConsole(false).build()
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertTrue(logger.logOutput is LogFileOutput)
+
+        logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build()
+        combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertEqual(combinedOutputs.count, 2)
+        XCTAssertTrue(combinedOutputs[0] is LogFileOutput)
+        XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
+
+        logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build()
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertTrue(logger.logOutput is LogConsoleOutput)
+
+        logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build()
+        XCTAssertNotNil(logger.logBuilder)
+        XCTAssertTrue(logger.logOutput is LogFileOutput)
+
+        logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build()
+        XCTAssertNil(logger.logBuilder)
+        XCTAssertNil(logger.logOutput)
     }
 }

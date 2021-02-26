@@ -229,7 +229,10 @@ extension Tracer {
 
     static func mockWith(
         spanOutput: SpanOutput = SpanOutputMock(),
-        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
+        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(
+            logBuilder: .mockAny(),
+            loggingOutput: LogOutputMock()
+        ),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         globalTags: [String: Encodable]? = nil,

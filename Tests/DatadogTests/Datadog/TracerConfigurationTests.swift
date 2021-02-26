@@ -35,7 +35,7 @@ class TracerConfigurationTests: XCTestCase {
         super.tearDown()
     }
 
-    func testDefaultTracer() {
+    func testDefaultTracer() throws {
         let tracer = Tracer.initialize(
             configuration: .init()
         ).dd
@@ -55,11 +55,11 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNil(spanBuilder.networkConnectionInfoProvider)
         XCTAssertNil(spanBuilder.carrierInfoProvider)
 
-        guard let tracingLogBuilder = (tracer.logOutput?.loggingOutput as? LogFileOutput)?.logBuilder else {
-            XCTFail()
-            return
-        }
-
+        XCTAssertTrue(
+            tracer.logOutput?.loggingOutput is LogFileOutput,
+            "When Logging feature is enabled Tracer should use logger pointing to `LogFileOutput`."
+        )
+        let tracingLogBuilder = try XCTUnwrap(tracer.logOutput?.logBuilder)
         XCTAssertEqual(tracingLogBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracingLogBuilder.environment, "tests")
         XCTAssertEqual(tracingLogBuilder.serviceName, "service-name")
@@ -80,7 +80,7 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNil(tracer2.rumContextIntegration)
     }
 
-    func testCustomizedTracer() {
+    func testCustomizedTracer() throws {
         let tracer = Tracer.initialize(
             configuration: .init(
                 serviceName: "custom-service-name",
@@ -104,11 +104,11 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertTrue(spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
 
-        guard let tracingLogBuilder = (tracer.logOutput?.loggingOutput as? LogFileOutput)?.logBuilder else {
-            XCTFail()
-            return
-        }
-
+        XCTAssertTrue(
+            tracer.logOutput?.loggingOutput is LogFileOutput,
+            "When Logging feature is enabled Tracer should use logger pointing to `LogFileOutput`."
+        )
+        let tracingLogBuilder = try XCTUnwrap(tracer.logOutput?.logBuilder)
         XCTAssertEqual(tracingLogBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracingLogBuilder.environment, "tests")
         XCTAssertEqual(tracingLogBuilder.serviceName, "custom-service-name")

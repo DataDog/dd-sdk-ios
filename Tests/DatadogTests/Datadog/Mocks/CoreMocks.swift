@@ -739,6 +739,16 @@ extension EncodableValue {
     }
 }
 
+extension DDError: RandomMockable {
+    static func mockRandom() -> DDError {
+        return DDError(
+            type: .mockRandom(),
+            message: .mockRandom(),
+            stack: .mockRandom()
+        )
+    }
+}
+
 // MARK: - Global Dependencies Mocks
 
 /// Mock which can be used to intercept messages printed by `developerLogger` or

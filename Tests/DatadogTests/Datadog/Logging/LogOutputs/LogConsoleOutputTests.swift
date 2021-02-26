@@ -9,27 +9,25 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets trailing_closure
 class LogConsoleOutputTests: XCTestCase {
-    private let error = DDError(error: ErrorMock("description"))
+    private let log: Log = .mockWith(date: .mockDecember15th2019At10AMUTC(), status: .info, message: "Info message.")
 
     func testItPrintsLogsUsingShortFormat() {
         var messagePrinted: String = ""
 
         let output1 = LogConsoleOutput(
-            logBuilder: .mockAny(),
             format: .short,
             timeZone: .UTC,
             printingFunction: { messagePrinted = $0 }
         )
-        output1.writeLogWith(level: .info, message: "Info message.", error: error, date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
+        output1.write(log: log)
         XCTAssertEqual(messagePrinted, "10:00:00.000 [INFO] Info message.")
 
         let output2 = LogConsoleOutput(
-            logBuilder: .mockAny(),
             format: .shortWith(prefix: "🐶 "),
             timeZone: .UTC,
             printingFunction: { messagePrinted = $0 }
         )
-        output2.writeLogWith(level: .info, message: "Info message.", error: error, date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
+        output2.write(log: log)
         XCTAssertEqual(messagePrinted, "🐶 10:00:00.000 [INFO] Info message.")
     }
 
@@ -37,12 +35,11 @@ class LogConsoleOutputTests: XCTestCase {
         var messagePrinted: String = ""
 
         let output = LogConsoleOutput(
-            logBuilder: .mockAny(),
             format: .short,
             timeZone: .EET,
             printingFunction: { messagePrinted = $0 }
         )
-        output.writeLogWith(level: .info, message: "Info message.", error: error, date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
+        output.write(log: log)
         XCTAssertEqual(messagePrinted, "12:00:00.000 [INFO] Info message.")
     }
 
@@ -50,22 +47,20 @@ class LogConsoleOutputTests: XCTestCase {
         var messagePrinted: String = ""
 
         let output1 = LogConsoleOutput(
-            logBuilder: .mockAny(),
             format: .json,
             timeZone: .mockAny(),
             printingFunction: { messagePrinted = $0 }
         )
-        output1.writeLogWith(level: .info, message: "Info message.", error: error, date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
+        output1.write(log: log)
         try LogMatcher.fromJSONObjectData(messagePrinted.utf8Data)
             .assertMessage(equals: "Info message.")
 
         let output2 = LogConsoleOutput(
-            logBuilder: .mockAny(),
             format: .jsonWith(prefix: "🐶 → "),
             timeZone: .mockAny(),
             printingFunction: { messagePrinted = $0 }
         )
-        output2.writeLogWith(level: .info, message: "Info message.", error: error, date: .mockDecember15th2019At10AMUTC(), attributes: .mockAny(), tags: [])
+        output2.write(log: log)
         XCTAssertTrue(messagePrinted.hasPrefix("🐶 → "))
         try LogMatcher.fromJSONObjectData(messagePrinted.removingPrefix("🐶 → ").utf8Data)
             .assertMessage(equals: "Info message.")

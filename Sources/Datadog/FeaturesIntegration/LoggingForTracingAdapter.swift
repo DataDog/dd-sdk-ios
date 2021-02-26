@@ -18,17 +18,17 @@ internal struct LoggingForTracingAdapter {
 
     func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration) -> AdaptedLogOutput {
         return AdaptedLogOutput(
+            logBuilder: LogBuilder(
+                applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                environment: tracingFeature.configuration.common.environment,
+                serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
+                loggerName: "trace",
+                userInfoProvider: tracingFeature.userInfoProvider,
+                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
+                dateCorrector: loggingFeature.dateCorrector
+            ),
             loggingOutput: LogFileOutput(
-                logBuilder: LogBuilder(
-                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
-                    environment: tracingFeature.configuration.common.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
-                    loggerName: "trace",
-                    userInfoProvider: tracingFeature.userInfoProvider,
-                    networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                    dateCorrector: loggingFeature.dateCorrector
-                ),
                 fileWriter: loggingFeature.storage.writer,
 
                 // The RUM Errors integration is not set for this instance of the `LogFileOutput`, as RUM Errors for
@@ -50,6 +50,8 @@ internal struct LoggingForTracingAdapter {
             static let defaultLogMessage = "Span event"
         }
 
+        /// Log builder using Tracing configuration.
+        let logBuilder: LogBuilder
         /// Actual `LogOutput` bridged to `LoggingFeature`.
         let loggingOutput: LogOutput
 
@@ -74,11 +76,10 @@ internal struct LoggingForTracingAdapter {
                 internalAttributes[OTLogFields.errorKind] = errorKind
             }
 
-            loggingOutput.writeLogWith(
+            let log = logBuilder.createLogWith(
                 level: level,
                 message: message,
-                // TODO: RUMM-1112
-                error: nil,
+                error: nil, // TODO: RUMM-1112
                 date: date,
                 attributes: LogAttributes(
                     userAttributes: userAttributes,
@@ -86,6 +87,7 @@ internal struct LoggingForTracingAdapter {
                 ),
                 tags: []
             )
+            loggingOutput.write(log: log)
         }
     }
 }

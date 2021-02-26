@@ -6,18 +6,16 @@
 
 import Foundation
 
-/// `LogOutput` which saves logs to file.
+/// `LogOutput` writing logs to file.
 internal struct LogFileOutput: LogOutput {
-    let logBuilder: LogBuilder
     let fileWriter: Writer
     /// Integration with RUM Errors.
     let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
-    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        let log = logBuilder.createLogWith(level: level, message: message, error: error, date: date, attributes: attributes, tags: tags)
+    func write(log: Log) {
         fileWriter.write(value: log)
 
-        if level.rawValue >= LogLevel.error.rawValue {
+        if log.status == .error || log.status == .critical {
             rumErrorsIntegration?.addError(for: log)
         }
     }
