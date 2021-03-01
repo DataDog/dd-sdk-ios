@@ -177,8 +177,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             sendViewUpdateEvent(on: command)
         }
 
-        let hasNoPendingResources = resourceScopes.isEmpty && userActionScopes.isEmpty
-        let shouldComplete = !isActiveView && hasNoPendingResources
+        let hasNoPendingChildScopes = resourceScopes.isEmpty && userActionScopes.isEmpty
+        let shouldComplete = !isActiveView && hasNoPendingChildScopes
 
         return shouldComplete ? .closed : .open
     }
