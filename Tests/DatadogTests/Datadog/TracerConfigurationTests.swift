@@ -42,18 +42,13 @@ class TracerConfigurationTests: XCTestCase {
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
-            XCTFail()
-            return
-        }
-
         let feature = TracingFeature.instance!
-        XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(spanBuilder.environment, "tests")
-        XCTAssertEqual(spanBuilder.serviceName, "service-name")
-        XCTAssertTrue(spanBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertNil(spanBuilder.networkConnectionInfoProvider)
-        XCTAssertNil(spanBuilder.carrierInfoProvider)
+        XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
+        XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(tracer.spanBuilder.serviceName, "service-name")
+        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertNil(tracer.spanBuilder.networkConnectionInfoProvider)
+        XCTAssertNil(tracer.spanBuilder.carrierInfoProvider)
 
         XCTAssertTrue(
             tracer.logOutput?.loggingOutput is LogFileOutput,
@@ -91,18 +86,13 @@ class TracerConfigurationTests: XCTestCase {
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        guard let spanBuilder = (tracer.spanOutput as? SpanFileOutput)?.spanBuilder else {
-            XCTFail()
-            return
-        }
-
         let feature = TracingFeature.instance!
-        XCTAssertEqual(spanBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(spanBuilder.serviceName, "custom-service-name")
-        XCTAssertEqual(spanBuilder.environment, "tests")
-        XCTAssertTrue(spanBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
+        XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
+        XCTAssertEqual(tracer.spanBuilder.serviceName, "custom-service-name")
+        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(tracer.spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(tracer.spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
 
         XCTAssertTrue(
             tracer.logOutput?.loggingOutput is LogFileOutput,
