@@ -57,7 +57,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
                     model: RUMActionEvent.mockWith(
-                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat
+                        actionID: scope.openUserActionScope!.actionUUID.toRUMDataFormat
                     )
                 )
             ),

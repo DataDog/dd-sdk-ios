@@ -63,7 +63,7 @@ class RUMCurrentContextTests: XCTestCase {
                 activeViewID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewUUID),
                 activeViewPath: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewPath),
                 activeViewName: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.viewName),
-                activeUserActionID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.userActionScope?.actionUUID)
+                activeUserActionID: XCTUnwrap(applicationScope.sessionScope?.viewScopes.last?.openUserActionScope?.actionUUID)
             )
         )
     }

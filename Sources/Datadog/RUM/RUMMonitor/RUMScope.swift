@@ -59,23 +59,6 @@ extension Array where Element: RUMScope {
     }
 }
 
-extension Dictionary where Value: RUMScope {
-    /// Propagates given `command` through a dictionary of scopes and manages their lifecycle by
-    /// removing scopes that get closed or discarded.
-    /// Also provides a callback with scopes to be removed to help keep external state consistent.
-    mutating func manage(byPropagatingCommand command: RUMCommand, callback: ((Value) -> Void)? = nil) {
-        filter { _, scope in
-            let managedScope = scope.manage(childScope: scope, byPropagatingCommand: command).scope
-            let shouldBeRemove = managedScope == nil
-            if shouldBeRemove {
-                callback?(scope)
-            }
-            return shouldBeRemove
-        }
-        .forEach { removeValue(forKey: $0.key) }
-    }
-}
-
 extension Dictionary where Key == AttributeKey, Value == AttributeValue {
     /// Merges given `rumCommandAttributes` to current dictionary, by overwriting values.
     mutating func merge(rumCommandAttributes: [AttributeKey: AttributeValue]?) {

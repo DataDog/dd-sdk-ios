@@ -11,14 +11,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Child Scopes
 
-    /// Active Resource scopes, keyed by .resourceKey.
-    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
-    /// Active User Action scope. There can be only one active user action at a time.
+    /// Resource scopes, includes closing and open scopes.
+    private(set) var resourceScopes: [RUMResourceScope] = []
+    /// User Action scopes, includes closing and open scopes.
     private(set) var userActionScopes: [RUMUserActionScope] = []
-    private(set) var userActionScope: RUMUserActionScope?
-    private var openUserActionScopes: [RUMUserActionScope] {
-        userActionScopes.filter { $0.state == .open }
-    }
+    /// The open User Action scope, there can only be one at a time among `userActionScopes`.
+    private(set) var openUserActionScope: RUMUserActionScope?
 
     // MARK: - Initialization
 
@@ -89,7 +87,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var context = parent.context
         context.activeViewID = viewUUID
         context.activeViewPath = viewPath
-        context.activeUserActionID = userActionScope?.actionUUID
+        context.activeUserActionID = openUserActionScope?.actionUUID
         context.activeViewName = viewName
         return context
     }
@@ -107,7 +105,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
             needsViewUpdate = true
         }
-        userActionScope = userActionScopes.last
+        openUserActionScope = (userActionScopes.last != nil && userActionScopes.last?.state == .open) ? userActionScopes.last : nil
 
         // Apply side effects
         switch command {
@@ -141,11 +139,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // User Action commands
         case let command as RUMStartUserActionCommand where isActiveView:
-            if openUserActionScopes.isEmpty {
+            if openUserActionScope == nil {
                 startContinuousUserAction(on: command)
             }
         case let command as RUMAddUserActionCommand where isActiveView:
-            if openUserActionScopes.isEmpty {
+            if openUserActionScope == nil {
                 addDiscreteUserAction(on: command)
             }
 
@@ -188,18 +186,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - RUMCommands Processing
 
     private func startResource(on command: RUMStartResourceCommand) {
-        resourceScopes[command.resourceKey] = RUMResourceScope(
-            context: context,
-            dependencies: dependencies,
-            resourceKey: command.resourceKey,
-            attributes: command.attributes,
-            startTime: command.time,
-            dateCorrection: dateCorrection,
-            url: command.url,
-            httpMethod: command.httpMethod,
-            isFirstPartyResource: command.isFirstPartyRequest,
-            resourceKindBasedOnRequest: command.kind,
-            spanContext: command.spanContext
+        resourceScopes.append(
+            RUMResourceScope(
+                context: context,
+                dependencies: dependencies,
+                resourceKey: command.resourceKey,
+                attributes: command.attributes,
+                startTime: command.time,
+                dateCorrection: dateCorrection,
+                url: command.url,
+                httpMethod: command.httpMethod,
+                isFirstPartyResource: command.isFirstPartyRequest,
+                resourceKindBasedOnRequest: command.kind,
+                spanContext: command.spanContext
+            )
         )
     }
 
@@ -216,7 +216,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 isContinuous: true
             )
         )
-        userActionScope = userActionScopes.last
+        openUserActionScope = userActionScopes.last
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
@@ -232,7 +232,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 isContinuous: false
             )
         )
-        userActionScope = userActionScopes.last
+        openUserActionScope = userActionScopes.last
     }
 
     // MARK: - Sending RUM Events

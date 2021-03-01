@@ -56,7 +56,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeViewID, scope.viewUUID)
         XCTAssertEqual(scope.context.activeViewPath, scope.viewPath)
         XCTAssertEqual(scope.context.activeViewName, scope.viewName)
-        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
+        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.openUserActionScope?.actionUUID))
     }
 
     func testWhenInitialViewIsStarted_itSendsApplicationStartAction() throws {
@@ -367,8 +367,8 @@ class RUMViewScopeTests: XCTestCase {
             .open
         )
         XCTAssertEqual(scope.resourceScopes.count, 2)
-        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
-        let resourceScope2 = try XCTUnwrap(scope.resourceScopes["/resource/2"])
+        let resourceScope1 = try XCTUnwrap(scope["/resource/1"])
+        let resourceScope2 = try XCTUnwrap(scope["/resource/2"])
 
         XCTAssertEqual(
             scope.process(
@@ -457,8 +457,8 @@ class RUMViewScopeTests: XCTestCase {
 
         // then
         XCTAssertEqual(scope.resourceScopes.count, 2)
-        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
-        let resourceScope2 = try XCTUnwrap(scope.resourceScopes["/resource/2"])
+        let resourceScope1 = try XCTUnwrap(scope["/resource/1"])
+        let resourceScope2 = try XCTUnwrap(scope["/resource/2"])
 
         XCTAssertEqual(
             scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")),
@@ -521,21 +521,22 @@ class RUMViewScopeTests: XCTestCase {
             .open
         )
 
-        XCTAssertNil(scope.userActionScope)
+        XCTAssertNil(scope.openUserActionScope)
         let actionName = String.mockRandom()
         XCTAssertEqual(
             scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: actionName)),
             .open
         )
-        XCTAssertNotNil(scope.userActionScope)
-        XCTAssertEqual(scope.userActionScope?.name, actionName)
+        XCTAssertNotNil(scope.openUserActionScope)
+        XCTAssertEqual(scope.openUserActionScope?.name, actionName)
 
         XCTAssertEqual(
             scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom())),
             .open
         )
-        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+        XCTAssertEqual(scope.openUserActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
 
+        let actionID = scope.openUserActionScope!.actionUUID.toRUMDataFormat
         XCTAssertEqual(
             scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe)),
             .open
@@ -544,14 +545,14 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(
                 command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
                     model: RUMActionEvent.mockWith(
-                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat,
+                        actionID: actionID,
                         viewID: scope.viewUUID.toRUMDataFormat
                     )
                 )
             ),
             .open
         )
-        XCTAssertNil(scope.userActionScope)
+        XCTAssertNil(scope.openUserActionScope)
 
         XCTAssertEqual(
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
@@ -580,20 +581,20 @@ class RUMViewScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(0.5)
 
-        XCTAssertNil(scope.userActionScope)
+        XCTAssertNil(scope.openUserActionScope)
         let actionName = String.mockRandom()
         XCTAssertEqual(
             scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: actionName)),
             .open
         )
-        XCTAssertNotNil(scope.userActionScope)
-        XCTAssertEqual(scope.userActionScope?.name, actionName)
+        XCTAssertNotNil(scope.openUserActionScope)
+        XCTAssertEqual(scope.openUserActionScope?.name, actionName)
 
         XCTAssertEqual(
             scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom())),
             .open
         )
-        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+        XCTAssertEqual(scope.openUserActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
@@ -601,7 +602,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(
                 command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
                     model: RUMActionEvent.mockWith(
-                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat,
+                        actionID: scope.openUserActionScope!.actionUUID.toRUMDataFormat,
                         viewID: scope.viewUUID.toRUMDataFormat
                     )
                 )
@@ -716,7 +717,7 @@ class RUMViewScopeTests: XCTestCase {
             .open
         )
 
-        let resourceScope = scope.resourceScopes["/resource/1"]!
+        let resourceScope = scope["/resource/1"]!
         XCTAssertEqual(
             scope.process(
                 command: RUMEventsMappingCompletionCommand<RUMErrorEvent>.mockWith(
@@ -962,7 +963,7 @@ class RUMViewScopeTests: XCTestCase {
                 command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
                     change: .discarded,
                     model: RUMActionEvent.mockWith(
-                        actionID: scope.userActionScope!.actionUUID.toRUMDataFormat
+                        actionID: scope.openUserActionScope!.actionUUID.toRUMDataFormat
                     )
                 )
             ),
@@ -983,8 +984,8 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         XCTAssertEqual(scope.resourceScopes.count, 2)
-        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
-        let resourceScope2 = try XCTUnwrap(scope.resourceScopes["/resource/2"])
+        let resourceScope1 = try XCTUnwrap(scope["/resource/1"])
+        let resourceScope2 = try XCTUnwrap(scope["/resource/2"])
 
         // Discarding `RUMResourceEvent` from `RUMStartResourceCommand` /resource/1
         XCTAssertEqual(
@@ -1031,6 +1032,12 @@ class RUMViewScopeTests: XCTestCase {
 
 extension RUMViewScope {
     var openResourceScopes: [RUMResourceScope] {
-        self.resourceScopes.values.filter { $0.state == .open }
+        self.resourceScopes.filter { $0.state == .open }
+    }
+
+    subscript(resourceKey: String) -> RUMResourceScope? {
+        get {
+            self.resourceScopes.first { $0.resourceKey == resourceKey }
+        }
     }
 }

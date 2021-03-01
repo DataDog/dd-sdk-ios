@@ -19,7 +19,7 @@ internal class RUMResourceScope: RUMScope {
     /// The Resource url.
     let resourceURL: String
     /// The name used to identify this Resource.
-    fileprivate let resourceKey: String
+    let resourceKey: String
     /// Resource attributes.
     private var attributes: [AttributeKey: AttributeValue]
 
