@@ -228,14 +228,19 @@ extension Tracer {
     }
 
     static func mockWith(
+        spanBuilder: SpanBuilder = .mockAny(),
         spanOutput: SpanOutput = SpanOutputMock(),
-        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(loggingOutput: LogOutputMock()),
+        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(
+            logBuilder: .mockAny(),
+            loggingOutput: LogOutputMock()
+        ),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         globalTags: [String: Encodable]? = nil,
         rumContextIntegration: TracingWithRUMContextIntegration? = nil
     ) -> Tracer {
         return Tracer(
+            spanBuilder: spanBuilder,
             spanOutput: spanOutput,
             logOutput: logOutput,
             dateProvider: dateProvider,
@@ -253,7 +258,6 @@ extension SpanBuilder {
 
     static func mockWith(
         applicationVersion: String = .mockAny(),
-        environment: String = .mockAny(),
         serviceName: String = .mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
@@ -262,7 +266,6 @@ extension SpanBuilder {
     ) -> SpanBuilder {
         return SpanBuilder(
             applicationVersion: applicationVersion,
-            environment: environment,
             serviceName: serviceName,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
@@ -274,17 +277,12 @@ extension SpanBuilder {
 
 /// `SpanOutput` recording received spans.
 class SpanOutputMock: SpanOutput {
-    struct Recorded {
-        let span: DDSpan
-        let finishTime: Date
+    var onSpanRecorded: ((Span?) -> Void)?
+    var recordedSpan: Span? = nil {
+        didSet { onSpanRecorded?(recordedSpan) }
     }
 
-    var onSpanRecorded: ((Recorded?) -> Void)?
-    var recorded: Recorded? = nil {
-        didSet { onSpanRecorded?(recorded) }
-    }
-
-    func write(ddspan: DDSpan, finishTime: Date) {
-        recorded = Recorded(span: ddspan, finishTime: finishTime)
+    func write(span: Span) {
+        recordedSpan = span
     }
 }

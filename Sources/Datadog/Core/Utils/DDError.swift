@@ -11,7 +11,9 @@ internal struct DDError: Equatable {
     let type: String
     let message: String
     let stack: String
+}
 
+extension DDError {
     init(error: Error) {
         if isNSErrorOrItsSubclass(error) {
             let nsError = error as NSError

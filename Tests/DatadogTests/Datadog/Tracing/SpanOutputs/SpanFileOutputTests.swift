@@ -20,7 +20,6 @@ class SpanFileOutputTests: XCTestCase {
 
     func testItWritesSpanToFileAsJSON() throws {
         let output = SpanFileOutput(
-            spanBuilder: .mockAny(),
             fileWriter: FileWriter(
                 dataFormat: TracingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
@@ -28,23 +27,17 @@ class SpanFileOutputTests: XCTestCase {
                     performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
                     dateProvider: SystemDateProvider()
                 )
-            )
-        )
-
-        let ddspan: DDSpan = .mockWith(
-            context: .mockWith(
-                traceID: 29,
-                spanID: 1,
-                parentSpanID: nil
             ),
-            operationName: "operation",
-            startTime: .mockDecember15th2019At10AMUTC()
+            environment: .mockRandom()
         )
 
-        output.write(ddspan: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
+        let span: Span = .mockWith(operationName: .mockRandom(), duration: 2)
+        output.write(span: span)
 
         let fileData = try temporaryDirectory.files()[0].read()
         let matcher = try SpanMatcher.fromJSONObjectData(fileData)
-        XCTAssertEqual(try matcher.operationName(), "operation")
+        XCTAssertEqual(try matcher.operationName(), span.operationName)
+        XCTAssertEqual(try matcher.environment(), output.environment)
+        XCTAssertEqual(try matcher.duration(), 2_000_000_000)
     }
 }

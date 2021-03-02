@@ -13,12 +13,10 @@ internal protocol ConsoleLogFormatter {
 
 /// `LogOutput` which prints logs to console.
 internal struct LogConsoleOutput: LogOutput {
-    private let logBuilder: LogBuilder
     private let formatter: ConsoleLogFormatter
     private let printingFunction: (String) -> Void
 
     init(
-        logBuilder: LogBuilder,
         format: Logger.Builder.ConsoleLogFormat,
         timeZone: TimeZone,
         printingFunction: @escaping (String) -> Void = { consolePrint($0) }
@@ -33,12 +31,10 @@ internal struct LogConsoleOutput: LogOutput {
         case .jsonWith(let prefix):
             self.formatter = JSONLogFormatter(prefix: prefix)
         }
-        self.logBuilder = logBuilder
         self.printingFunction = printingFunction
     }
 
-    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        let log = logBuilder.createLogWith(level: level, message: message, error: error, date: date, attributes: attributes, tags: tags)
+    func write(log: Log) {
         printingFunction(formatter.format(log: log))
     }
 }

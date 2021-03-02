@@ -6,6 +6,13 @@
 
 import Foundation
 
+internal struct LogAttributes {
+    /// Log attributes received from the user. They are subject for sanitization.
+    let userAttributes: [String: Encodable]
+    /// Log attributes added internally by the SDK. They are not a subject for sanitization.
+    let internalAttributes: [String: Encodable]?
+}
+
 /// Builds `Log` representation (for later serialization) from data received from user.
 internal struct LogBuilder {
     /// Application version to write in log.
@@ -28,7 +35,7 @@ internal struct LogBuilder {
     func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
         return Log(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
-            status: logStatus(for: level),
+            status: level.asLogStatus,
             message: message,
             error: error,
             serviceName: serviceName,
@@ -43,17 +50,6 @@ internal struct LogBuilder {
             attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
-    }
-
-    private func logStatus(for level: LogLevel) -> Log.Status {
-        switch level {
-        case .debug:    return .debug
-        case .info:     return .info
-        case .notice:   return .notice
-        case .warn:     return .warn
-        case .error:    return .error
-        case .critical: return .critical
-        }
     }
 
     private func getCurrentThreadName() -> String {

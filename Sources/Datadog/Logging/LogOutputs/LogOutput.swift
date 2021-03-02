@@ -6,14 +6,7 @@
 
 import Foundation
 
-internal struct LogAttributes {
-    /// Log attributes received from the user. They are subject for sanitization.
-    let userAttributes: [String: Encodable]
-    /// Log attributes added internally by the SDK. They are not a subject for sanitization.
-    let internalAttributes: [String: Encodable]?
-}
-
-/// Type writting logs to some destination.
+/// An interface for writing logs to some destination.
 internal protocol LogOutput {
-    func writeLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>)
+    func write(log: Log)
 }

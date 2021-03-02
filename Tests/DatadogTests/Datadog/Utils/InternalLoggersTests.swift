@@ -19,7 +19,8 @@ class InternalLoggersTests: XCTestCase {
     // MARK: - User Logger
 
     func testWhenSDKIsNotInitialized_itUsesNoOpUserLogger() {
-        XCTAssertTrue(userLogger.logOutput is NoOpLogOutput)
+        XCTAssertNil(userLogger.logBuilder)
+        XCTAssertNil(userLogger.logOutput)
     }
 
     func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() throws {
