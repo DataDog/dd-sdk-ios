@@ -210,7 +210,7 @@ class CrashReporterTests: XCTestCase {
 
         // Then
         XCTAssertNil(crashReporter)
-        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(output.recordedLog?.status, .error)
         XCTAssertEqual(
             output.recordedLog?.message,
             """

@@ -553,7 +553,7 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
@@ -658,7 +658,7 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
                 .contains("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
@@ -823,7 +823,8 @@ class LoggerTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
         )
-        XCTAssertTrue(logger.logOutput is NoOpLogOutput)
+        XCTAssertNil(logger.logBuilder)
+        XCTAssertNil(logger.logOutput)
     }
 
     func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() throws {
@@ -848,7 +849,8 @@ class LoggerTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
         )
-        XCTAssertTrue(logger.logOutput is NoOpLogOutput)
+        XCTAssertNil(logger.logBuilder)
+        XCTAssertNil(logger.logOutput)
 
         try Datadog.deinitializeOrThrow()
     }

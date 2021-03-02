@@ -875,10 +875,20 @@ func mockRandomAttributes() -> [String: Encodable] {
     ]
 }
 
+extension DDError: RandomMockable {
+    static func mockRandom() -> DDError {
+        return DDError(
+            type: .mockRandom(),
+            message: .mockRandom(),
+            stack: .mockRandom()
+        )
+    }
+}
+
 // MARK: - Global Dependencies Mocks
 
 /// Mock which can be used to intercept messages printed by `developerLogger` or
-/// `userLogger` by overwritting `Datadog.consolePrint` function:
+/// `userLogger` by overwriting `Datadog.consolePrint` function:
 ///
 ///     let printFunction = PrintFunctionMock()
 ///     consolePrint = printFunction.print

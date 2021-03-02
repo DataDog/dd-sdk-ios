@@ -10,9 +10,12 @@ import XCTest
 class LoggingForTracingAdapterTests: XCTestCase {
     // MARK: - LoggingForTracingAdapter.AdaptedLogOutput
 
-    func testWritingLogWithOTMessageField() {
+    func testWritingLogWithOTMessageField() throws {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(loggingOutput: loggingOutput)
+        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(
+            logBuilder: .mockAny(),
+            loggingOutput: loggingOutput
+        )
 
         tracingOutput.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
@@ -23,27 +26,29 @@ class LoggingForTracingAdapterTests: XCTestCase {
             date: .mockDecember15th2019At10AMUTC()
         )
 
-        let expectedLog = LogOutputMock.RecordedLog(
-            level: .info,
-            message: "hello",
-            date: .mockDecember15th2019At10AMUTC(),
-            attributes: LogAttributes(
-                userAttributes: [
-                    "custom field": 123,
-                ],
-                internalAttributes: [
-                    "dd.span_id": "2",
-                    "dd.trace_id": "1"
-                ]
-            )
+        let recordedLog = try XCTUnwrap(loggingOutput.recordedLog)
+        XCTAssertEqual(recordedLog.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(recordedLog.status, .info)
+        XCTAssertEqual(recordedLog.message, "hello")
+        XCTAssertEqual(
+            recordedLog.attributes.userAttributes as? [String: Int],
+            ["custom field": 123]
         )
-
-        XCTAssertEqual(loggingOutput.recordedLog, expectedLog)
+        XCTAssertEqual(
+            recordedLog.attributes.internalAttributes as? [String: String],
+            [
+                "dd.span_id": "2",
+                "dd.trace_id": "1"
+            ]
+        )
     }
 
-    func testWritingLogWithOTErrorField() {
+    func testWritingLogWithOTErrorField() throws {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(loggingOutput: loggingOutput)
+        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(
+            logBuilder: .mockAny(),
+            loggingOutput: loggingOutput
+        )
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
@@ -51,7 +56,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
             date: .mockAny()
         )
 
-        let recordedLog1 = loggingOutput.recordedLog
+        let recordedLog1 = try XCTUnwrap(loggingOutput.recordedLog)
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
@@ -59,7 +64,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
             date: .mockAny()
         )
 
-        let recordedLog2 = loggingOutput.recordedLog
+        let recordedLog2 = try XCTUnwrap(loggingOutput.recordedLog)
 
         tracingOutput.writeLog(
             withSpanContext: .mockAny(),
@@ -67,17 +72,20 @@ class LoggingForTracingAdapterTests: XCTestCase {
             date: .mockAny()
         )
 
-        let recordedLog3 = loggingOutput.recordedLog
+        let recordedLog3 = try XCTUnwrap(loggingOutput.recordedLog)
 
         [recordedLog1, recordedLog2, recordedLog3].forEach { log in
-            XCTAssertEqual(log?.level, .error)
-            XCTAssertEqual(log?.message, "Span event")
+            XCTAssertEqual(log.status, .error)
+            XCTAssertEqual(log.message, "Span event")
         }
     }
 
-    func testWritingCustomLogWithoutAnyOTFields() {
+    func testWritingCustomLogWithoutAnyOTFields() throws {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(loggingOutput: loggingOutput)
+        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(
+            logBuilder: .mockAny(),
+            loggingOutput: loggingOutput
+        )
 
         tracingOutput.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
@@ -85,21 +93,20 @@ class LoggingForTracingAdapterTests: XCTestCase {
             date: .mockDecember15th2019At10AMUTC()
         )
 
-        let expectedLog = LogOutputMock.RecordedLog(
-            level: .info,
-            message: "Span event", // default message is used.
-            date: .mockDecember15th2019At10AMUTC(),
-            attributes: LogAttributes(
-                userAttributes: [
-                    "custom field": 123,
-                ],
-                internalAttributes: [
-                    "dd.span_id": "2",
-                    "dd.trace_id": "1"
-                ]
-            )
+        let recordedLog = try XCTUnwrap(loggingOutput.recordedLog)
+        XCTAssertEqual(recordedLog.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(recordedLog.status, .info)
+        XCTAssertEqual(recordedLog.message, "Span event", "It should use default message.")
+        XCTAssertEqual(
+            recordedLog.attributes.userAttributes as? [String: Int],
+            ["custom field": 123]
         )
-
-        XCTAssertEqual(loggingOutput.recordedLog, expectedLog)
+        XCTAssertEqual(
+            recordedLog.attributes.internalAttributes as? [String: String],
+            [
+                "dd.span_id": "2",
+                "dd.trace_id": "1"
+            ]
+        )
     }
 }

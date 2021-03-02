@@ -47,7 +47,7 @@ internal struct JSONStringEncodableValue: Encodable {
     /// Encoder used to encode `encodable` as JSON String value.
     /// It is invoked lazily at `encoder.encode(jsonStringEncodableValue)` so its encoding errors can be propagated in master-type encoding.
     private let jsonEncoder: JSONEncoder
-    private let encodable: EncodableValue
+    internal let encodable: EncodableValue
 
     init(_ value: Encodable, encodedUsing jsonEncoder: JSONEncoder) {
         self.jsonEncoder = jsonEncoder

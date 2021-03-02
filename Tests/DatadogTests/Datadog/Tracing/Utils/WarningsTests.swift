@@ -16,7 +16,9 @@ class WarningsTests: XCTestCase {
         userLogger = .mockWith(logOutput: output, dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()))
 
         XCTAssertTrue(warn(if: true, message: "message"))
-        XCTAssertEqual(output.recordedLog, .init(level: .warn, message: "message", date: .mockDecember15th2019At10AMUTC()))
+        XCTAssertEqual(output.recordedLog?.status, .warn)
+        XCTAssertEqual(output.recordedLog?.message, "message")
+        XCTAssertEqual(output.recordedLog?.date, .mockDecember15th2019At10AMUTC())
 
         output.recordedLog = nil
 
@@ -27,10 +29,9 @@ class WarningsTests: XCTestCase {
 
         let failingCast: () -> DDSpan? = { warnIfCannotCast(value: DDNoopSpan()) }
         XCTAssertNil(failingCast())
-        XCTAssertEqual(
-            output.recordedLog,
-            .init(level: .warn, message: "🔥 Using DDNoopSpan while DDSpan was expected.", date: .mockDecember15th2019At10AMUTC())
-        )
+        XCTAssertEqual(output.recordedLog?.status, .warn)
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
+        XCTAssertEqual(output.recordedLog?.date, .mockDecember15th2019At10AMUTC())
 
         output.recordedLog = nil
 
