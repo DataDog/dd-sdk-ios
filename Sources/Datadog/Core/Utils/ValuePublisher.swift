@@ -43,21 +43,24 @@ internal class ValuePublisher<Value> {
         }
     }
 
-    /// The model used for synchronizing `currentValue` updates.
-    enum UpdatesModel {
-        /// The `currentValue` will be updated synchronously, blocking the caller thread.
-        case synchronous
-        /// The `currentValue` will be updated asynchronously, without blocking the caller thread.
-        case asynchronous
-    }
-
-    /// The synchronization model for updating the `unsafeValue`.
-    private let updatesModel: UpdatesModel
-
-    init(initialValue: Value, updatesModel: UpdatesModel) {
+    init(initialValue: Value) {
         self.unsafeValue = initialValue
         self.unsafeObservers = []
-        self.updatesModel = updatesModel
+    }
+
+    /// Returns the last published value or initial value if none was published yet.
+    var currentValue: Value {
+        concurrentQueue.sync { unsafeValue }
+    }
+
+    /// Updates the `currentValue` synchronously, with blocking the caller thread.
+    func publishSync(_ newValue: Value) {
+        concurrentQueue.sync(flags: .barrier) { unsafeValue = newValue }
+    }
+
+    /// Updates the `currentValue` asynchronously, without blocking the caller thread.
+    func publishAsync(_ newValue: Value) {
+        concurrentQueue.async(flags: .barrier) { self.unsafeValue = newValue }
     }
 
     /// Registers an observer that will be notified on all value changes.
@@ -74,20 +77,6 @@ internal class ValuePublisher<Value> {
         concurrentQueue.async(flags: .barrier) {
             let distinctObserver = DistinctValueObserver(wrapped: observer)
             self.unsafeObservers.append(AnyObserver(wrapped: distinctObserver))
-        }
-    }
-
-    var currentValue: Value {
-        get {
-            concurrentQueue.sync { unsafeValue }
-        }
-        set {
-            switch updatesModel {
-            case .synchronous:
-                concurrentQueue.sync(flags: .barrier) { unsafeValue = newValue }
-            case .asynchronous:
-                concurrentQueue.async(flags: .barrier) { self.unsafeValue = newValue }
-            }
         }
     }
 }

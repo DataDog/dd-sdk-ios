@@ -40,6 +40,6 @@ internal final class CrashReportingFeature {
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
-        self.rumViewEventProvider = ValuePublisher(initialValue: nil, updatesModel: .asynchronous)
+        self.rumViewEventProvider = ValuePublisher(initialValue: nil)
     }
 }

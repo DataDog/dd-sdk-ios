@@ -68,17 +68,14 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
 
     init(wrappedProvider: WrappedNetworkConnectionInfoProvider) {
         self.wrappedProvider = wrappedProvider
-        // Asynchronous `updatesModel` makes the `current` getter a non-blocking call.
-        // This ensures that the value form `NetworkConnectionInfoProvider` can be obtained
-        // as fast as possible and the eventual observers will be notified asynchronously.
-        self.publisher = ValuePublisher(initialValue: nil, updatesModel: .asynchronous)
+        self.publisher = ValuePublisher(initialValue: nil)
     }
 
     var current: NetworkConnectionInfo? {
         let nextValue = wrappedProvider.current
         // `NetworkConnectionInfo` subscribers are notified as a side-effect of retrieving the
         // current `NetworkConnectionInfo` value.
-        publisher.currentValue = nextValue
+        publisher.publishAsync(nextValue)
         return nextValue
     }
 

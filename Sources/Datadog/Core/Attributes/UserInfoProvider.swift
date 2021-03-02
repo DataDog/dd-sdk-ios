@@ -15,16 +15,17 @@ internal class UserInfoProvider {
 
     init() {
         let emptyUserInfo = UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-        // Synchronous `updatesModel` makes the `value` setter a blocking call.
-        // This ensures that the new value of the `UserInfo`` will be applied immediately
-        // to all data sent from the the same thread.
-        self.publisher = ValuePublisher(initialValue: emptyUserInfo, updatesModel: .synchronous)
+        self.publisher = ValuePublisher(initialValue: emptyUserInfo)
     }
 
     // MARK: - `UserInfo` Value
 
     var value: UserInfo {
-        set { publisher.currentValue = newValue }
+        set {
+            // Synchronous update ensures that the new value of the consent will be applied immediately
+            // to all data sent from the the same thread.
+            publisher.publishSync(newValue)
+        }
         get { publisher.currentValue }
     }
 

@@ -48,10 +48,7 @@ class CrashContextProviderTests: XCTestCase {
         let expectation = self.expectation(description: "Notify new crash context")
         let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
 
-        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(
-            initialValue: randomRUMViewEvent,
-            updatesModel: .synchronous
-        )
+        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: randomRUMViewEvent)
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
@@ -211,7 +208,7 @@ class CrashContextProviderTests: XCTestCase {
                         carrierInfoWrappedProvider.set(current: .mockRandom())
                         _ = carrierInfoMainProvider.current
                     },
-                    { rumViewEventProvider.currentValue = .mockRandomWith(model: RUMViewEvent.mockRandom()) },
+                    { rumViewEventProvider.publishSyncOrAsync(.mockRandomWith(model: RUMViewEvent.mockRandom())) },
                 ],
                 iterations: 50
             )

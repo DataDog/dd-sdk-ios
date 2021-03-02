@@ -815,7 +815,18 @@ extension EncodableValue {
 
 extension ValuePublisher where Value: AnyMockable {
     static func mockAny() -> ValuePublisher {
-        return .init(initialValue: .mockAny(), updatesModel: .synchronous)
+        return .init(initialValue: .mockAny())
+    }
+}
+
+extension ValuePublisher {
+    /// Publishes `newValue` using `publishSync(:_)` or `publishAsync(:_)`.
+    func publishSyncOrAsync(_ newValue: Value) {
+        if Bool.random() {
+            publishSync(newValue)
+        } else {
+            publishAsync(newValue)
+        }
     }
 }
 

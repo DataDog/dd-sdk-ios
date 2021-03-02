@@ -7,29 +7,23 @@
 import XCTest
 @testable import Datadog
 
-private extension ValuePublisher.UpdatesModel {
-    static func random() -> ValuePublisher.UpdatesModel {
-        return [.synchronous, .asynchronous].randomElement()!
-    }
-}
-
 class ValuePublisherTests: XCTestCase {
     func testWhenInitialized_itStoresInitialValue() {
         let randomInt: Int = .mockRandom()
 
         // When
-        let publisher = ValuePublisher<Int>(initialValue: randomInt, updatesModel: .random())
+        let publisher = ValuePublisher<Int>(initialValue: randomInt)
 
         // Then
         XCTAssertEqual(publisher.currentValue, randomInt)
     }
 
     func testWhenValueChanges_itStoresUpdatedValue() {
-        let publisher = ValuePublisher<Int>(initialValue: .mockRandom(), updatesModel: .random())
+        let publisher = ValuePublisher<Int>(initialValue: .mockRandom())
 
         // When
         let randomInt: Int = .mockRandom()
-        publisher.currentValue = randomInt
+        publisher.publishSyncOrAsync(randomInt)
 
         // Then
         XCTAssertEqual(publisher.currentValue, randomInt)
@@ -51,11 +45,11 @@ class ValuePublisherTests: XCTestCase {
             }
         }
 
-        let publisher = ValuePublisher<Int>(initialValue: initialValue, updatesModel: .random())
+        let publisher = ValuePublisher<Int>(initialValue: initialValue)
         observers.forEach { publisher.subscribe($0) }
 
         // When
-        publisher.currentValue = newValue
+        publisher.publishSyncOrAsync(newValue)
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
@@ -70,8 +64,7 @@ class ValuePublisherTests: XCTestCase {
         expectation.expectedFulfillmentCount = 6
 
         let publisher = ValuePublisher<NonEquatableValue>(
-            initialValue: NonEquatableValue(value: .mockRandom()),
-            updatesModel: .synchronous
+            initialValue: NonEquatableValue(value: .mockRandom())
         )
         let observer = ValueObserverMock<NonEquatableValue> { old, new in
             expectation.fulfill()
@@ -80,7 +73,7 @@ class ValuePublisherTests: XCTestCase {
 
         // When
         let changes = [1, 1, 2, 2, 3, 3].map { NonEquatableValue(value: $0) }
-        changes.forEach { nextChange in publisher.currentValue = nextChange }
+        changes.forEach { nextChange in publisher.publishSyncOrAsync(nextChange) }
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
@@ -95,8 +88,7 @@ class ValuePublisherTests: XCTestCase {
         expectation.expectedFulfillmentCount = 3
 
         let publisher = ValuePublisher<EquatableValue>(
-            initialValue: EquatableValue(value: .mockRandom()),
-            updatesModel: .synchronous
+            initialValue: EquatableValue(value: .mockRandom())
         )
         let observer = ValueObserverMock<EquatableValue> { old, new in
             XCTAssertNotEqual(old, new)
@@ -106,7 +98,7 @@ class ValuePublisherTests: XCTestCase {
 
         // When
         let changes = [1, 1, 2, 2, 3, 3].map { EquatableValue(value: $0) }
-        changes.forEach { nextChange in publisher.currentValue = nextChange }
+        changes.forEach { nextChange in publisher.publishSyncOrAsync(nextChange) }
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
@@ -115,12 +107,13 @@ class ValuePublisherTests: XCTestCase {
     // MARK: - Thread safety
 
     func testValueCanBeWrittenAndReadOnAnyThread() {
-        let publisher = ValuePublisher<Int>(initialValue: .mockRandom(), updatesModel: .random())
+        let publisher = ValuePublisher<Int>(initialValue: .mockRandom())
 
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { publisher.currentValue = .mockRandom() },
+                { publisher.publishSyncOrAsync(.mockRandom()) },
+                { publisher.publishSyncOrAsync(publisher.currentValue % 2) },
                 { _ = publisher.currentValue },
                 { publisher.subscribe(ValueObserverMock<Int>()) }
             ],
@@ -130,7 +123,7 @@ class ValuePublisherTests: XCTestCase {
     }
 
     func testSubscribersAreNotifiedOnSingleThread() {
-        let publisher = ValuePublisher<Int>(initialValue: .mockRandom(), updatesModel: .random())
+        let publisher = ValuePublisher<Int>(initialValue: .mockRandom())
 
         // State mutated by the `ValueObserverMock<Int>` - the `ValuePublisher` ensures its thread safety
         var mutableState: Bool = .random()
@@ -141,7 +134,7 @@ class ValuePublisherTests: XCTestCase {
         publisher.subscribe(observer)
 
         DispatchQueue.concurrentPerform(iterations: 100) { _ in
-            publisher.currentValue = .mockRandom()
+            publisher.publishSyncOrAsync(.mockRandom())
         }
     }
 }

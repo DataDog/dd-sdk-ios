@@ -14,10 +14,7 @@ internal class ConsentProvider {
     private let publisher: ValuePublisher<TrackingConsent>
 
     init(initialConsent: TrackingConsent) {
-        // Synchronous `updatesModel` makes the `changeConsent(to:)` a blocking call.
-        // This ensures that the new value of the consent will be applied immediately
-        // to all data sent from the the same thread.
-        self.publisher = ValuePublisher(initialValue: initialConsent, updatesModel: .synchronous)
+        self.publisher = ValuePublisher(initialValue: initialConsent)
     }
 
     // MARK: - Consent Value
@@ -27,7 +24,9 @@ internal class ConsentProvider {
 
     /// Sets the new value of `TrackingConsent` and notifies all subscribers.
     func changeConsent(to newValue: TrackingConsent) {
-        publisher.currentValue = newValue
+        // Synchronous update ensures that the new value of the consent will be applied immediately
+        // to all data sent from the the same thread.
+        publisher.publishSync(newValue)
     }
 
     // MARK: - Managing Subscribers

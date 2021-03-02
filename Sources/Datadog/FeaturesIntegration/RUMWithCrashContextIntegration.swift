@@ -26,6 +26,6 @@ internal struct RUMWithCrashContextIntegration {
     }
 
     func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {
-        rumViewEventProvider?.currentValue = lastRUMViewEvent
+        rumViewEventProvider?.publishAsync(lastRUMViewEvent)
     }
 }
