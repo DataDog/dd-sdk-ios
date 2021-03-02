@@ -51,13 +51,14 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertNotEqual(scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)), .closed)
         let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
         XCTAssertEqual(scope.process(command: mockUserActionCmd), .open)
+        let actionID = scope.openUserActionScope!.actionUUID.toRUMDataFormat
         XCTAssertEqual(scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)), .open)
 
         XCTAssertEqual(
             scope.process(
                 command: RUMEventsMappingCompletionCommand<RUMActionEvent>.mockWith(
                     model: RUMActionEvent.mockWith(
-                        actionID: scope.openUserActionScope!.actionUUID.toRUMDataFormat
+                        actionID: actionID
                     )
                 )
             ),

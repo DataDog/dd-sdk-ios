@@ -927,7 +927,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertEqual(
             scope.process(
-                command: RUMAddUserActionCommand.mockWith()
+                command: RUMAddUserActionCommand.mockAny()
             ),
             .open
         )

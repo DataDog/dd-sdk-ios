@@ -7,9 +7,13 @@
 import Foundation
 
 internal enum RUMScopeState {
+    /// The scope is active, consuming commands and sending events.
     case open
+    /// The scope is expecting Scrubbing API's commands exclusively, before transitioning to a `closed` or `discarded` state.
     case closing
+    ///  The scope is inactive and mark as closed after its events were written.
     case closed
+    /// The scope is inactive and marked as discarded after its events were discared with the Scrubbing API.
     case discarded
 }
 
@@ -21,7 +25,7 @@ internal protocol RUMScope: class {
     /// Processes given command.
     /// Returns a `RUMScopeState`
     /// * `open` if the scope should be kept open.
-    /// * `closing` if the scope should be kept open a little longer.
+    /// * `closing` if the scope should be kept open until it receives final Scrubbing API's commands.
     /// * `closed` if the scope should be closed.
     /// * `discarded` if the scope should be closed and any related state should be rolled back.
     func process(command: RUMCommand) -> RUMScopeState
@@ -47,14 +51,11 @@ extension Array where Element: RUMScope {
     /// Propagates given `command` through array of scopes and manages their lifecycle by
     /// removing scopes that get closed or discarded.
     /// Also provides a callback with scopes to be removed to help keep external state consistent.
-    mutating func manage(byPropagatingCommand command: RUMCommand, callback: ((Element) -> Void)? = nil) {
+    mutating func manage(byPropagatingCommand command: RUMCommand, sideEffect: ((Element) -> Void)? = nil) {
         removeAll { scope in
             let managedScope = scope.manage(childScope: scope, byPropagatingCommand: command).scope
-            let shouldBeRemove = managedScope == nil
-            if shouldBeRemove {
-                callback?(scope)
-            }
-            return shouldBeRemove
+            sideEffect?(scope)
+            return managedScope == nil
         }
     }
 }

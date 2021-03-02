@@ -102,8 +102,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScopes.manage(byPropagatingCommand: command) { scope in
             if scope.state == .closed {
                 self.actionsCount += 1
+                needsViewUpdate = true
             }
-            needsViewUpdate = true
         }
         openUserActionScope = (userActionScopes.last != nil && userActionScopes.last?.state == .open) ? userActionScopes.last : nil
 
@@ -132,7 +132,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
-
         // Resource commands
         case let command as RUMStartResourceCommand where isActiveView:
             startResource(on: command)
@@ -155,7 +154,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMEventsMappingCompletionCommand<RUMErrorEvent> where command.change != .discarded && command.isViewError && command.viewUUIDString == viewUUID.toRUMDataFormat:
             errorsCount += 1
             needsViewUpdate = true
-
         default:
             break
         }
@@ -168,8 +166,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 } else /* RUMEventsMappingCompletionCommand<RUMResourceEvent> */ {
                     self.resourcesCount += 1
                 }
+                needsViewUpdate = true
             }
-            needsViewUpdate = true
         }
 
         // Consider scope state and completion

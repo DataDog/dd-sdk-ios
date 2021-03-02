@@ -260,8 +260,11 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 /// Signals the completion of mapping a RUM event (aka Data Scrubbing)
 internal struct RUMEventsMappingCompletionCommand<DM: RUMDataModel>: RUMCommand {
     enum Change {
+        /// The event was not changed with the Scrubbing API and it was passed to the writer unchanged.
         case none
+        /// The event was discarded with the Scrubbing API and it was not written.
         case discarded
+        /// The event was mutated with the Scrubbing API and its updated representation was passed to the writer.
         case mapped
     }
 

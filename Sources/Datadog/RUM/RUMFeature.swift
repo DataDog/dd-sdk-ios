@@ -53,19 +53,6 @@ internal final class RUMFeature {
 
     // MARK: - Initialization
 
-    static func createEventsMapper(
-        configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies
-    ) -> RUMEventsMapper {
-        return RUMEventsMapper(
-            dateProvider: commonDependencies.dateProvider,
-            viewEventMapper: configuration.eventMapper.viewEventMapper,
-            errorEventMapper: configuration.eventMapper.errorEventMapper,
-            resourceEventMapper: configuration.eventMapper.resourceEventMapper,
-            actionEventMapper: configuration.eventMapper.actionEventMapper
-        )
-    }
-
     static func createStorage(
         directories: FeatureDirectories,
         eventMapper: RUMEventsMapper,
@@ -121,10 +108,14 @@ internal final class RUMFeature {
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
-        let eventsMapper = RUMFeature.createEventsMapper(
-            configuration: configuration,
-            commonDependencies: commonDependencies
+        let eventsMapper = RUMEventsMapper(
+            dateProvider: commonDependencies.dateProvider,
+            viewEventMapper: configuration.eventMapper.viewEventMapper,
+            errorEventMapper: configuration.eventMapper.errorEventMapper,
+            resourceEventMapper: configuration.eventMapper.resourceEventMapper,
+            actionEventMapper: configuration.eventMapper.actionEventMapper
         )
+
         let storage = RUMFeature.createStorage(
             directories: directories,
             eventMapper: eventsMapper,
