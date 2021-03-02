@@ -123,7 +123,12 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
-            value = "CrashReportingCollectOrSendScenario"
+            value = "CrashReportingCollectOrSendWithRUMScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "CrashReportingCollectOrSendWithLoggingScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
