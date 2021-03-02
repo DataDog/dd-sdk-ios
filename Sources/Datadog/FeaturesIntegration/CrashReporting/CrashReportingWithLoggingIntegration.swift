@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
+
 /// An integration sending crash reports as logs.
 internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration {
     struct Constants {
