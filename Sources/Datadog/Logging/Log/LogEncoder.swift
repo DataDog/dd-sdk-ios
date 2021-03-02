@@ -16,6 +16,7 @@ internal struct Log: Encodable {
         case warn
         case error
         case critical
+        case emergency
     }
 
     let date: Date
@@ -26,7 +27,7 @@ internal struct Log: Encodable {
     let environment: String
     let loggerName: String
     let loggerVersion: String
-    let threadName: String
+    let threadName: String?
     let applicationVersion: String
     let userInfo: UserInfo
     let networkConnectionInfo: NetworkConnectionInfo?

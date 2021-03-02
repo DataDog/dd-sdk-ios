@@ -18,7 +18,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
     }
 
-    /// The output for writting RUM events. It uses the authorized data folder and is synchronized with the eventual
+    /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the RUM feature.
     private let rumEventOutput: RUMEventOutput
     private let dateProvider: DateProvider
