@@ -133,7 +133,7 @@ extension Log.Status: RandomMockable {
     }
 
     static func mockRandom() -> Log.Status {
-        return [.debug, .info, .notice, .warn, .error, .critical].randomElement()!
+        return allCases.randomElement()!
     }
 }
 
