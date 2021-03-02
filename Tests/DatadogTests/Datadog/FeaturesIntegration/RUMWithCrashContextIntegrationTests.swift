@@ -8,33 +8,22 @@ import XCTest
 @testable import Datadog
 
 class RUMWithCrashContextIntegrationTests: XCTestCase {
-    func testWhenCrashReporterIsRegistered_itUpdatesCrashContextWithLastRUMView() throws {
-        let crashContextProvider = CrashContextProvider(
-            consentProvider: .mockAny(),
-            userInfoProvider: .mockAny(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
-            carrierInfoProvider: CarrierInfoProviderMock.mockAny()
-        )
-
+    func testWhenCrashReportingIsEnabled_itUpdatesCrashContextWithLastRUMView() throws {
         // When
-        Global.crashReporter = CrashReporter(
-            crashReportingPlugin: CrashReportingPluginMock(),
-            crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock()
-        )
-        defer { Global.crashReporter = nil }
+        CrashReportingFeature.instance = .mockNoOp()
+        defer { CrashReportingFeature.instance = nil }
 
         // Then
         let rumWithCrashContextIntegration = try XCTUnwrap(RUMWithCrashContextIntegration())
         let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
         rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMViewEvent)
 
-        XCTAssertEqual(crashContextProvider.currentCrashContext.lastRUMViewEvent, randomRUMViewEvent)
+        XCTAssertEqual(CrashReportingFeature.instance?.rumViewEventProvider.currentValue, randomRUMViewEvent)
     }
 
-    func testWhenCrashReporterIsNotRegistered_itCannotBeInitialized() {
+    func testWhenCrashReportingIsNotEnabled_itCannotBeInitialized() {
         // When
-        XCTAssertNil(Global.crashReporter)
+        XCTAssertNil(CrashReportingFeature.instance)
 
         // Then
         XCTAssertNil(RUMWithCrashContextIntegration())

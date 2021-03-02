@@ -20,10 +20,16 @@ internal final class CrashReportingFeature {
 
     // MARK: - Dependencies
 
+    /// Publishes recent `ConsentProvider` value so it can be persisted in `CrashContext`.
     let consentProvider: ConsentProvider
+    /// Publishes recent `UserInfo` value so it can be persisted in `CrashContext`.
     let userInfoProvider: UserInfoProvider
+    /// Publishes recent `NetworkConnectionInfo` value so it can be persisted in `CrashContext`.
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    /// Publishes recent `CarrierInfo` value so it can be persisted in `CrashContext`.
     let carrierInfoProvider: CarrierInfoProviderType
+    /// Publishes recent `RUMEvent<RUMViewEvent>` value so it can be persisted in `CrashContext`.
+    let rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>
 
     init(
         configuration: FeaturesConfiguration.CrashReporting,
@@ -34,5 +40,6 @@ internal final class CrashReportingFeature {
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
+        self.rumViewEventProvider = ValuePublisher(initialValue: nil, updatesModel: .asynchronous)
     }
 }

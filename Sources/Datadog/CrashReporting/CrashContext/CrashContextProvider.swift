@@ -12,9 +12,6 @@ internal protocol CrashContextProviderType: class {
     var currentCrashContext: CrashContext { get }
     /// Notifies on `CrashContext` change.
     var onCrashContextChange: ((CrashContext) -> Void)? { set get }
-
-    /// Updates the `CrashContext` with last `RUMEvent<RUMViewEvent>` information.
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>)
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
@@ -56,13 +53,19 @@ internal class CrashContextProvider: CrashContextProviderType {
         self.unsafeCrashContext.lastCarrierInfo = newValue
     }
 
+    /// Updates `CrashContext` with last `RUMViewEvent` information.
+    private lazy var rumViewEventUpdater = ContextValueUpdater<RUMEvent<RUMViewEvent>?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastRUMViewEvent = newValue
+    }
+
     // MARK: - Initializer
 
     init(
         consentProvider: ConsentProvider,
         userInfoProvider: UserInfoProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType
+        carrierInfoProvider: CarrierInfoProviderType,
+        rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-context",
@@ -82,6 +85,7 @@ internal class CrashContextProvider: CrashContextProviderType {
         userInfoProvider.subscribe(userInfoUpdater)
         networkConnectionInfoProvider.subscribe(networkConnectionInfoUpdater)
         carrierInfoProvider.subscribe(carrierInfoUpdater)
+        rumViewEventProvider.subscribe(rumViewEventUpdater)
     }
 
     // MARK: - CrashContextProviderType
@@ -91,16 +95,4 @@ internal class CrashContextProvider: CrashContextProviderType {
     }
 
     var onCrashContextChange: ((CrashContext) -> Void)? = nil
-
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            var context = self.unsafeCrashContext
-            context.lastRUMViewEvent = lastRUMViewEvent
-            self.unsafeCrashContext = context
-        }
-    }
 }

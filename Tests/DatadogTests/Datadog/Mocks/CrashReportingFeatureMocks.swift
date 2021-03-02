@@ -63,8 +63,6 @@ internal class CrashContextProviderMock: CrashContextProviderType {
     init(initialCrashContext: CrashContext = .mockAny()) {
         self.currentCrashContext = initialCrashContext
     }
-
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {}
 }
 
 class CrashReportingIntegrationMock: CrashReportingIntegration {

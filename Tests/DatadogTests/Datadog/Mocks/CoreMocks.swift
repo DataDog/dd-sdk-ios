@@ -813,6 +813,12 @@ extension EncodableValue {
     }
 }
 
+extension ValuePublisher where Value: AnyMockable {
+    static func mockAny() -> ValuePublisher {
+        return .init(initialValue: .mockAny(), updatesModel: .synchronous)
+    }
+}
+
 internal class ValueObserverMock<Value>: ValueObserver {
     typealias ObservedValue = Value
 

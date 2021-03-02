@@ -49,7 +49,8 @@ internal class CrashReporter {
                 consentProvider: crashReportingFeature.consentProvider,
                 userInfoProvider: crashReportingFeature.userInfoProvider,
                 networkConnectionInfoProvider: crashReportingFeature.networkConnectionInfoProvider,
-                carrierInfoProvider: crashReportingFeature.carrierInfoProvider
+                carrierInfoProvider: crashReportingFeature.carrierInfoProvider,
+                rumViewEventProvider: crashReportingFeature.rumViewEventProvider
             ),
             loggingOrRUMIntegration: availableLoggingOrRUMIntegration
         )
