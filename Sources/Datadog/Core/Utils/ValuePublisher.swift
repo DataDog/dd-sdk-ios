@@ -12,6 +12,9 @@ internal protocol ValueObserver {
 
     /// Notifies this observer on the value change. Called on the publisher's queue.
     /// If the `ObservedValue` conforms to `Equatable`, only distinct changes will be notified.
+    ///
+    /// **Note:** as this method is executed on the publisher's queue, call to `publisher.publishSync(_:)`
+    /// from its implementation will result in deadlock. If the observed value must be updated, use `publishAsync(_:)` instead.
     func onValueChanged(oldValue: ObservedValue, newValue: ObservedValue)
 }
 
