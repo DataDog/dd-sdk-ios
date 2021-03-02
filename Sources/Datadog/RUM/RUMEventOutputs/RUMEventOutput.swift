@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// An interface for writing RUM events to some destination.
 internal protocol RUMEventOutput {
     func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>)
 }

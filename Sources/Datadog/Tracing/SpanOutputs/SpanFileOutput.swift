@@ -8,12 +8,12 @@ import Foundation
 
 /// `SpanOutput` which saves spans to file.
 internal struct SpanFileOutput: SpanOutput {
-    let spanBuilder: SpanBuilder
     let fileWriter: Writer
+    /// Environment to encode in span.
+    let environment: String
 
-    func write(ddspan: DDSpan, finishTime: Date) {
-        let span = spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
-        let envelope = SpanEnvelope(span: span, environment: spanBuilder.environment)
+    func write(span: Span) {
+        let envelope = SpanEnvelope(span: span, environment: environment)
         fileWriter.write(value: envelope)
     }
 }

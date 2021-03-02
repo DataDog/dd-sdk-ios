@@ -1104,7 +1104,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Then
         resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """
@@ -1114,7 +1114,7 @@ class RUMMonitorTests: XCTestCase {
         )
 
         viewsHandler.notify_viewDidAppear(viewController: mockView, animated: .mockAny())
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """
@@ -1130,7 +1130,7 @@ class RUMMonitorTests: XCTestCase {
             application: .shared,
             event: .mockWith(touches: [.mockWith(phase: .ended, view: mockUIControl)])
         )
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """

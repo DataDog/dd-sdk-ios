@@ -65,7 +65,7 @@ class DateCorrectorTests: XCTestCase {
 
         // Then
         let log = try XCTUnwrap(userLogOutput.recordedLog)
-        XCTAssertEqual(log.level, .info)
+        XCTAssertEqual(log.status, .info)
         XCTAssertEqual(
             log.message,
             """
@@ -84,7 +84,7 @@ class DateCorrectorTests: XCTestCase {
 
         // Then
         let log = try XCTUnwrap(userLogOutput.recordedLog)
-        XCTAssertEqual(log.level, .warn)
+        XCTAssertEqual(log.status, .warn)
         XCTAssertEqual(
             log.message,
             """

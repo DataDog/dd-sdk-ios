@@ -9,7 +9,7 @@ import Foundation
 /// `Encodable` representation of log. It gets sanitized before encoding.
 /// All mutable properties are subject of sanitization.
 internal struct Log: Encodable {
-    enum Status: String, Encodable {
+    enum Status: String, Encodable, CaseIterable {
         case debug
         case info
         case notice
