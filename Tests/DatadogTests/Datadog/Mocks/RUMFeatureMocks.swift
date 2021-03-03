@@ -84,6 +84,12 @@ struct RUMDataModelMock: RUMDataModel, Equatable {
 
 // MARK: - Component Mocks
 
+extension RUMEvent: AnyMockable where DM == RUMViewEvent {
+    static func mockAny() -> RUMEvent<RUMViewEvent> {
+        return .mockWith(model: RUMViewEvent.mockRandom())
+    }
+}
+
 extension RUMEvent {
     static func mockWith<DM: RUMDataModel>(
         model: DM,

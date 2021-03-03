@@ -10,7 +10,7 @@ import XCTest
 class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
-    func testGivenPendingCrashReport_whenLoggingOrRUMIntegrationIsEnabled_itSendsAndPurgesTheCrashReport() {
+    func testGivenPendingCrashReport_whenLoggingOrRUMIntegrationIsEnabled_itSendsAndPurgesTheCrashReport() throws {
         let expectation = self.expectation(description: "`LoggingOrRUMIntegration` sends the crash report")
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
@@ -34,7 +34,12 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(integration.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
-        XCTAssertEqual(integration.sentCrashContext?.data, crashContext.data, "It should send the crash context retrieved from the `plugin`")
+        AssertDictionariesEqual(
+            try integration.sentCrashContext!.data.toJSONObject(),
+            try crashContext.data.toJSONObject(),
+            "It should send the crash context retrieved from the `plugin`"
+        )
+
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 
@@ -94,7 +99,7 @@ class CrashReporterTests: XCTestCase {
 
     // MARK: - Crash Context Injection
 
-    func testWhenInitialized_itInjectsInitialCrashContextToThePlugin() {
+    func testWhenInitialized_itInjectsInitialCrashContextToThePlugin() throws {
         let expectation = self.expectation(description: "`plugin` received initial crash context")
         let plugin = CrashReportingPluginMock()
         plugin.didInjectContext = { expectation.fulfill() }
@@ -107,14 +112,17 @@ class CrashReporterTests: XCTestCase {
             loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
-        withExtendedLifetime(crashReporter) {
+        try withExtendedLifetime(crashReporter) {
             // Then
             waitForExpectations(timeout: 0.5, handler: nil)
-            XCTAssertEqual(plugin.injectedContextData, initialCrashContext.data)
+            AssertDictionariesEqual(
+                try plugin.injectedContextData!.toJSONObject(),
+                try initialCrashContext.data.toJSONObject()
+            )
         }
     }
 
-    func testWhenCrashContextChanges_itInjectsNewCrashContextToThePlugin() {
+    func testWhenCrashContextChanges_itInjectsNewCrashContextToThePlugin() throws {
         let expectation = self.expectation(description: "`plugin` received initial and updated crash contexts")
         expectation.expectedFulfillmentCount = 2
         let plugin = CrashReportingPluginMock()
@@ -127,14 +135,17 @@ class CrashReporterTests: XCTestCase {
             loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
-        withExtendedLifetime(crashReporter) {
+        try withExtendedLifetime(crashReporter) {
             // When
             let updatedCrashContext: CrashContext = .mockRandom()
             crashContextProvider.onCrashContextChange?(updatedCrashContext)
 
             // Then
             waitForExpectations(timeout: 2, handler: nil)
-            XCTAssertEqual(plugin.injectedContextData, updatedCrashContext.data)
+            AssertDictionariesEqual(
+                try plugin.injectedContextData!.toJSONObject(),
+                try updatedCrashContext.data.toJSONObject()
+            )
         }
     }
 
@@ -199,7 +210,7 @@ class CrashReporterTests: XCTestCase {
 
         // Then
         XCTAssertNil(crashReporter)
-        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(output.recordedLog?.status, .error)
         XCTAssertEqual(
             output.recordedLog?.message,
             """

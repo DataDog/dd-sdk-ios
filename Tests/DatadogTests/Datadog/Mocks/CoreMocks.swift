@@ -12,6 +12,15 @@ extension TrackingConsent {
     static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }
+
+    static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
+        while true {
+            let randomConsent: TrackingConsent = .mockRandom()
+            if randomConsent != consent {
+                return randomConsent
+            }
+        }
+    }
 }
 
 extension ConsentProvider {
@@ -534,13 +543,22 @@ struct LaunchTimeProviderMock: LaunchTimeProviderType {
     var launchTime: TimeInterval? = nil
 }
 
-extension UserInfo {
+extension UserInfo: AnyMockable, RandomMockable {
     static func mockAny() -> UserInfo {
         return mockEmpty()
     }
 
     static func mockEmpty() -> UserInfo {
         return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+    }
+
+    static func mockRandom() -> UserInfo {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
     }
 }
 
@@ -643,7 +661,13 @@ extension NetworkConnectionInfo.Reachability {
     }
 }
 
-extension NetworkConnectionInfo {
+extension NetworkConnectionInfo.Interface: RandomMockable {
+    static func mockRandom() -> NetworkConnectionInfo.Interface {
+        return allCases.randomElement()!
+    }
+}
+
+extension NetworkConnectionInfo: RandomMockable {
     static func mockAny() -> NetworkConnectionInfo {
         return mockWith()
     }
@@ -665,11 +689,20 @@ extension NetworkConnectionInfo {
             isConstrained: isConstrained
         )
     }
+
+    static func mockRandom() -> NetworkConnectionInfo {
+        return NetworkConnectionInfo(
+            reachability: .mockRandom(),
+            availableInterfaces: .mockRandom(),
+            supportsIPv4: .random(),
+            supportsIPv6: .random(),
+            isExpensive: .random(),
+            isConstrained: .random()
+        )
+    }
 }
 
-extension NetworkConnectionInfo: EquatableInTests {}
-
-class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
+class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType, WrappedNetworkConnectionInfoProvider {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
     private var _current: NetworkConnectionInfo?
 
@@ -687,6 +720,9 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
         queue.sync { _current }
     }
 
+    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
+    }
+
     // MARK: - Mocking
 
     static func mockAny() -> NetworkConnectionInfoProviderMock {
@@ -700,11 +736,15 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     }
 }
 
-extension CarrierInfo.RadioAccessTechnology {
+extension CarrierInfo.RadioAccessTechnology: RandomMockable {
     static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
+
+    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
+        return allCases.randomElement()!
+    }
 }
 
-extension CarrierInfo {
+extension CarrierInfo: RandomMockable {
     static func mockAny() -> CarrierInfo {
         return mockWith()
     }
@@ -722,11 +762,18 @@ extension CarrierInfo {
             radioAccessTechnology: radioAccessTechnology
         )
     }
+
+    static func mockRandom() -> CarrierInfo {
+        return CarrierInfo(
+            carrierName: .mockRandom(),
+            carrierISOCountryCode: .mockRandom(),
+            carrierAllowsVOIP: .random(),
+            radioAccessTechnology: .mockRandom()
+        )
+    }
 }
 
-extension CarrierInfo: EquatableInTests {}
-
-class CarrierInfoProviderMock: CarrierInfoProviderType {
+class CarrierInfoProviderMock: CarrierInfoProviderType, WrappedCarrierInfoProvider {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
     private var _current: CarrierInfo?
 
@@ -742,6 +789,9 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
 
     var current: CarrierInfo? {
         queue.sync { _current }
+    }
+
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
     }
 
     // MARK: - Mocking
@@ -763,6 +813,68 @@ extension EncodableValue {
     }
 }
 
+extension ValuePublisher where Value: AnyMockable {
+    static func mockAny() -> ValuePublisher {
+        return .init(initialValue: .mockAny())
+    }
+}
+
+extension ValuePublisher {
+    /// Publishes `newValue` using `publishSync(:_)` or `publishAsync(:_)`.
+    func publishSyncOrAsync(_ newValue: Value) {
+        if Bool.random() {
+            publishSync(newValue)
+        } else {
+            publishAsync(newValue)
+        }
+    }
+}
+
+internal class ValueObserverMock<Value>: ValueObserver {
+    typealias ObservedValue = Value
+
+    private(set) var onValueChange: ((Value, Value) -> Void)?
+    private(set) var lastChange: (oldValue: Value, newValue: Value)?
+
+    init(onValueChange: ((Value, Value) -> Void)? = nil) {
+        self.onValueChange = onValueChange
+    }
+
+    func onValueChanged(oldValue: Value, newValue: Value) {
+        lastChange = (oldValue, newValue)
+        onValueChange?(oldValue, newValue)
+    }
+}
+
+// MARK: - Attributes Mock
+
+private let mockAttributesEncoder = JSONEncoder()
+
+/// Creates randomized `[String: Encodable]` attributes
+func mockRandomAttributes() -> [String: Encodable] {
+    struct Foo: Encodable {
+        let bar: String = .mockRandom()
+        let bizz = Bizz()
+
+        struct Bizz: Encodable {
+            let buzz: String = .mockRandom()
+        }
+    }
+
+    return [
+        "string-attribute": String.mockRandom(),
+        "int-attribute": Int.mockRandom(),
+        "uint64-attribute": UInt64.mockRandom(),
+        "double-attribute": Double.mockRandom(),
+        "bool-attribute": Bool.random(),
+        "int-array-attribute": [Int].mockRandom(),
+        "dictionary-attribute": [String: Int].mockRandom(),
+        "url-attribute": URL.mockRandom(),
+        "encodable-struct-attribute": Foo(),
+        "custom-encodable-attribute": JSONStringEncodableValue(Foo(), encodedUsing: mockAttributesEncoder)
+    ]
+}
+
 extension DDError: RandomMockable {
     static func mockRandom() -> DDError {
         return DDError(
@@ -776,7 +888,7 @@ extension DDError: RandomMockable {
 // MARK: - Global Dependencies Mocks
 
 /// Mock which can be used to intercept messages printed by `developerLogger` or
-/// `userLogger` by overwritting `Datadog.consolePrint` function:
+/// `userLogger` by overwriting `Datadog.consolePrint` function:
 ///
 ///     let printFunction = PrintFunctionMock()
 ///     consolePrint = printFunction.print

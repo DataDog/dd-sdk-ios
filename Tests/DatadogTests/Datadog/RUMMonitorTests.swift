@@ -911,14 +911,11 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance = nil }
 
-        let crashContextProvider = CrashContextProvider(consentProvider: .mockAny())
+        CrashReportingFeature.instance = .mockNoOp()
+        defer { CrashReportingFeature.instance = nil }
 
         // Given
-        Global.crashReporter = CrashReporter(
-            crashReportingPlugin: CrashReportingPluginMock(),
-            crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock()
-        )
+        Global.crashReporter = CrashReporter(crashReportingFeature: CrashReportingFeature.instance!)
         defer { Global.crashReporter = nil }
 
         // When
@@ -929,16 +926,17 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
+        let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
         XCTAssertEqual(
-            crashContextProvider.currentCrashContext.lastRUMViewEvent?.model,
+            currentCrashContext.lastRUMViewEvent?.model,
             lastRUMViewEventSent
         )
         XCTAssertEqual(
-            crashContextProvider.currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
+            currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
             randomViewEventAttributes
         )
         XCTAssertEqual(
-            crashContextProvider.currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
+            currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
             randomUserInfoAttributes
         )
     }

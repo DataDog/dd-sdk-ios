@@ -55,6 +55,12 @@ extension Data: AnyMockable {
     }
 }
 
+extension Optional: AnyMockable where Wrapped: AnyMockable {
+    static func mockAny() -> Self {
+        return .some(.mockAny())
+    }
+}
+
 extension Array where Element == Data {
     /// Returns chunks of mocked data. Accumulative size of all chunks equals `totalSize`.
     static func mockChunksOf(totalSize: UInt64, maxChunkSize: UInt64) -> [Data] {

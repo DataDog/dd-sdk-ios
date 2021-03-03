@@ -10,40 +10,82 @@ import Foundation
 internal protocol CrashContextProviderType: class {
     /// Returns current `CrashContext` value.
     var currentCrashContext: CrashContext { get }
-    /// Notifies on current `CrashContext` change.
+    /// Notifies on `CrashContext` change.
     var onCrashContextChange: ((CrashContext) -> Void)? { set get }
-
-    /// Updates the `CrashContext` with last `RUMEvent<RUMViewEvent>` information.
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>)
-
-    /// Updates the `CrashContext` with last `TarckingConsent` information.
-    func update(lastTrackingConsent: TrackingConsent)
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
-internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber {
-    /// Queue for synchronizing internal operations.
+internal class CrashContextProvider: CrashContextProviderType {
+    /// Queue for synchronizing `unsafeCrashContext` updates.
     private let queue: DispatchQueue
     /// Unsychronized `CrashContext`. The `queue` must be used to synchronize its mutation.
     private var unsafeCrashContext: CrashContext {
         willSet { onCrashContextChange?(newValue) }
     }
 
+    /// Observes changes to a particular `Value` in the `CrashContext` and manages its updates.
+    private struct ContextValueUpdater<Value>: ValueObserver {
+        let queue: DispatchQueue
+        let update: (Value) -> Void
+
+        func onValueChanged(oldValue: Value, newValue: Value) {
+            queue.async { update(newValue) }
+        }
+    }
+
+    /// Updates `CrashContext` with last `TrackingConsent` information.
+    private lazy var trackingConsentUpdater = ContextValueUpdater<TrackingConsent>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastTrackingConsent = newValue
+    }
+
+    /// Updates `CrashContext` with last `UserInfo` information.
+    private lazy var userInfoUpdater = ContextValueUpdater<UserInfo>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastUserInfo = newValue
+    }
+
+    /// Updates `CrashContext` with last `NetworkConnectionInfo` information.
+    private lazy var networkConnectionInfoUpdater = ContextValueUpdater<NetworkConnectionInfo?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastNetworkConnectionInfo = newValue
+    }
+
+    /// Updates `CrashContext` with last `CarrierInfo` information.
+    private lazy var carrierInfoUpdater = ContextValueUpdater<CarrierInfo?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastCarrierInfo = newValue
+    }
+
+    /// Updates `CrashContext` with last `RUMViewEvent` information.
+    private lazy var rumViewEventUpdater = ContextValueUpdater<RUMEvent<RUMViewEvent>?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastRUMViewEvent = newValue
+    }
+
     // MARK: - Initializer
 
-    init(consentProvider: ConsentProvider) {
+    init(
+        consentProvider: ConsentProvider,
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType,
+        rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>
+    ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-context",
             target: .global(qos: .utility)
         )
+        // Set initial context
         self.unsafeCrashContext = CrashContext(
-            // Set initial `TrackingConsent`
             lastTrackingConsent: consentProvider.currentValue,
-            lastRUMViewEvent: nil
+            lastUserInfo: userInfoProvider.value,
+            lastRUMViewEvent: nil,
+            lastNetworkConnectionInfo: networkConnectionInfoProvider.current,
+            lastCarrierInfo: carrierInfoProvider.current
         )
 
-        // Subscribe for `TrackingConsent` updates
-        consentProvider.subscribe(consentSubscriber: self)
+        // Subscribe for context updates
+        consentProvider.subscribe(trackingConsentUpdater)
+        userInfoProvider.subscribe(userInfoUpdater)
+        networkConnectionInfoProvider.subscribe(networkConnectionInfoUpdater)
+        carrierInfoProvider.subscribe(carrierInfoUpdater)
+        rumViewEventProvider.subscribe(rumViewEventUpdater)
     }
 
     // MARK: - CrashContextProviderType
@@ -53,34 +95,4 @@ internal class CrashContextProvider: CrashContextProviderType, ConsentSubscriber
     }
 
     var onCrashContextChange: ((CrashContext) -> Void)? = nil
-
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            var context = self.unsafeCrashContext
-            context.lastRUMViewEvent = lastRUMViewEvent
-            self.unsafeCrashContext = context
-        }
-    }
-
-    func update(lastTrackingConsent: TrackingConsent) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            var context = self.unsafeCrashContext
-            context.lastTrackingConsent = lastTrackingConsent
-            self.unsafeCrashContext = context
-        }
-    }
-
-    // MARK: - ConsentSubscriber
-
-    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
-        update(lastTrackingConsent: newValue)
-    }
 }
