@@ -1,8 +1,22 @@
-# 1.4.1 / 01-18-2021
-
-* [BUGFIX] Fix app extension compilation issue for `UIApplication.shared` symbol. See [#370][] (Thanks [@SimpleApp][])
+# 1.5.0 / 03-04-2021
 
 ### Changes
+
+* [BUGFIX] Fix baggage items propagation issue for `Span`. See [#365][] (Thanks [@philtre][])
+* [FEATURE] Add set of scrubbing APIs for redacting and dropping particular RUM Events. See [#367][]
+* [FEATURE] Add support for GDPR compliance with new `Datadog.set(trackingConsent:)` API. See [#335][]
+* [FEATURE] Add `Global.rum.addTiming(name:)` API for marking custom tming events in RUM Views. See [#323][]
+* [FEATURE] Add support for Alamofire networking with `DatadogAlamofireExtension`. See [#340][]
+* [FEATURE] Add configuration of data upload frequency and paylaod size with `.set(batchSize:)` and `.set(uploadFrequency:)` APIs. See [#358][]
+* [FEATURE] Add convenient `.setError(_:)` API for setting `Error` on `Span`. See [#390][]
+* [IMPROVEMENT] Improve `DATE` accurracy (with NTP time sync) for all data send from the SDK. See [#327][]
+* [IMPROVEMENT] Improve App Launch Time metric accurracy. See [#381][]
+
+# 1.4.1 / 01-18-2021
+
+### Changes
+
+* [BUGFIX] Fix app extension compilation issue for `UIApplication.shared` symbol. See [#370][] (Thanks [@SimpleApp][])
 
 # 1.4.0 / 12-14-2020
 
@@ -127,7 +141,16 @@
 [#317]: https://github.com/DataDog/dd-sdk-ios/issues/317
 [#320]: https://github.com/DataDog/dd-sdk-ios/issues/320
 [#322]: https://github.com/DataDog/dd-sdk-ios/issues/322
+[#323]: https://github.com/DataDog/dd-sdk-ios/issues/323
+[#327]: https://github.com/DataDog/dd-sdk-ios/issues/327
+[#335]: https://github.com/DataDog/dd-sdk-ios/issues/335
+[#340]: https://github.com/DataDog/dd-sdk-ios/issues/340
+[#358]: https://github.com/DataDog/dd-sdk-ios/issues/358
+[#365]: https://github.com/DataDog/dd-sdk-ios/issues/365
+[#367]: https://github.com/DataDog/dd-sdk-ios/issues/367
 [#370]: https://github.com/DataDog/dd-sdk-ios/issues/370
+[#381]: https://github.com/DataDog/dd-sdk-ios/issues/381
+[#390]: https://github.com/DataDog/dd-sdk-ios/issues/390
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
