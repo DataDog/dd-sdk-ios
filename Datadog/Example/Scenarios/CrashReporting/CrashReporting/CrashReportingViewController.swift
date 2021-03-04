@@ -15,7 +15,7 @@ internal class CrashReportingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let testScenario = (appConfiguration.testScenario as! CrashReportingCollectOrSendScenario)
+        let testScenario = (appConfiguration.testScenario as! CrashReportingBaseScenario)
         sendingCrashReportLabel.isHidden = !testScenario.hadPendingCrashReportDataOnStartup
 
         addCrashVariantButtons()

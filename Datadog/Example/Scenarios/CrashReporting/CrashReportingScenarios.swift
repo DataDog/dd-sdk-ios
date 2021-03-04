@@ -15,7 +15,7 @@ import UIKit
 ///
 /// To test this scenario manually:
 ///  → disconnect debugger → run the Example app → tap the crash button  → run again to have the crash report uploaded.
-final class CrashReportingCollectOrSendScenario: TestScenario {
+internal class CrashReportingBaseScenario {
     static let storyboardName = "CrashReportingScenario"
 
     let hadPendingCrashReportDataOnStartup: Bool
@@ -25,7 +25,10 @@ final class CrashReportingCollectOrSendScenario: TestScenario {
         // before the SDK gets a chance to read & purge the crash report file.
         hadPendingCrashReportDataOnStartup = PersistenceHelpers.hasPendingCrashReportData()
     }
+}
 
+/// A `CrashReportingScenario` which uploads the crash report as RUM Error.
+final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenario, TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         class CustomPredicate: UIKitRUMViewsPredicate {
             private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
@@ -43,6 +46,15 @@ final class CrashReportingCollectOrSendScenario: TestScenario {
 
         _ = builder
             .trackUIKitRUMViews(using: CustomPredicate())
+            .enableCrashReporting(using: DDCrashReportingPlugin())
+    }
+}
+
+/// A `CrashReportingScenario` which uploads the crash report as "EMERGENCY" Log.
+final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseScenario, TestScenario {
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .enableRUM(false) // disable RUM, so the crash report is sent with Logging
             .enableCrashReporting(using: DDCrashReportingPlugin())
     }
 }

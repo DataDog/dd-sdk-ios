@@ -14,8 +14,7 @@ internal class UserInfoProvider {
     private let publisher: ValuePublisher<UserInfo>
 
     init() {
-        let emptyUserInfo = UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-        self.publisher = ValuePublisher(initialValue: emptyUserInfo)
+        self.publisher = ValuePublisher(initialValue: .empty)
     }
 
     // MARK: - `UserInfo` Value
@@ -42,4 +41,6 @@ internal struct UserInfo {
     let name: String?
     let email: String?
     let extraInfo: [AttributeKey: AttributeValue]
+
+    internal static var empty: UserInfo { UserInfo(id: nil, name: nil, email: nil, extraInfo: [:]) }
 }
