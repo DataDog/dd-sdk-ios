@@ -42,5 +42,5 @@ internal struct UserInfo {
     let email: String?
     let extraInfo: [AttributeKey: AttributeValue]
 
-    internal static let empty = UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+    internal static var empty: UserInfo { UserInfo(id: nil, name: nil, email: nil, extraInfo: [:]) }
 }
