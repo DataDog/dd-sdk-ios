@@ -151,7 +151,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
                 tracesEndpoint: tracingServerSession.recordingURL,
                 rumEndpoint: rumServerSession.recordingURL
             ),
-            clearPeristentData: false // do not clear data from previous session
+            clearPersistentData: false // do not clear data from previous session
         )
 
         try assertLoggingDataWasCollected(withConsent: "granted", andSentTo: loggingServerSession)
@@ -185,7 +185,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
                 tracesEndpoint: tracingServerSession.recordingURL,
                 rumEndpoint: rumServerSession.recordingURL
             ),
-            clearPeristentData: false // do not clear data from previous session
+            clearPersistentData: false // do not clear data from previous session
         )
 
         // Because the app was restarted with consent `.granted`, we expect data

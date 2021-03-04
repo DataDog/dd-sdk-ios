@@ -288,6 +288,7 @@
 		61B22E5A24F3E6B700DC26D2 /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
 		61B558CF2469561C001460D3 /* LoggerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */; };
 		61B558D42469CDD8001460D3 /* TracingUUIDGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B558D32469CDD8001460D3 /* TracingUUIDGeneratorTests.swift */; };
+		61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */; };
 		61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		61B7886225C180CB002675B5 /* DDCrashReportingPluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B7886125C180CB002675B5 /* DDCrashReportingPluginTests.swift */; };
 		61B7886425C180CB002675B5 /* DatadogCrashReporting.h in Headers */ = {isa = PBXBuildFile; fileRef = 61B7885625C180CB002675B5 /* DatadogCrashReporting.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -810,6 +811,7 @@
 		61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebugging.swift; sourceTree = "<group>"; };
 		61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerBuilderTests.swift; sourceTree = "<group>"; };
 		61B558D32469CDD8001460D3 /* TracingUUIDGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUIDGeneratorTests.swift; sourceTree = "<group>"; };
+		61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithLoggingScenarioTests.swift; sourceTree = "<group>"; };
 		61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCrashReporting.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61B7885625C180CB002675B5 /* DatadogCrashReporting.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatadogCrashReporting.h; sourceTree = "<group>"; };
 		61B7885725C180CB002675B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -2294,6 +2296,22 @@
 			path = Debugging;
 			sourceTree = "<group>";
 		};
+		61B6811D25F0E8480015B4AF /* CrashReporting */ = {
+			isa = PBXGroup;
+			children = (
+				61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */,
+			);
+			path = CrashReporting;
+			sourceTree = "<group>";
+		};
+		61C1512F25ADC67500362D4B /* Processing */ = {
+			isa = PBXGroup;
+			children = (
+				61C1513025ADC68D00362D4B /* DataProcessorTests.swift */,
+			);
+			path = Processing;
+			sourceTree = "<group>";
+		};
 		61C3637E2436163400C4D4E6 /* DatadogPrivate */ = {
 			isa = PBXGroup;
 			children = (
@@ -2584,6 +2602,7 @@
 				61F3CD9D251106FA00C816E5 /* Logging */,
 				61F3CD9E251106FF00C816E5 /* Tracing */,
 				61F3CD9F2511070300C816E5 /* RUM */,
+				61B6811D25F0E8480015B4AF /* CrashReporting */,
 				611EA15325815EDC00BC0E56 /* TrackingConsent */,
 			);
 			path = Scenarios;
@@ -3553,6 +3572,7 @@
 				61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */,
 				61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */,
+				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */,
 				61FF282924B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */,
 				61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */,
