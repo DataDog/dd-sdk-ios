@@ -16,6 +16,12 @@ See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/
 
 ![Datadog iOS Log Collection](docs/images/tracing.png)
 
+### RUM Events Collection
+
+See [Datadog iOS RUM Collection](https://docs.datadoghq.com/real_user_monitoring/ios/?tab=us) documentation to try it out.
+
+![Datadog iOS RUM Collection](docs/images/rum.png)
+
 ## Integrations
 
 ### Alamofire

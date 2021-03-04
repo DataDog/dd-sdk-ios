@@ -16,6 +16,7 @@ internal class JSONSchema: Decodable {
         case title = "title"
         case description = "description"
         case properties = "properties"
+        case additionalProperties = "additionalProperties"
         case required = "required"
         case type = "type"
         case `enum` = "enum"
@@ -65,6 +66,7 @@ internal class JSONSchema: Decodable {
     private(set) var title: String?
     private(set) var description: String?
     private(set) var properties: [String: JSONSchema]?
+    private(set) var additionalProperties: JSONSchema?
     private(set) var required: [String]?
     private(set) var type: SchemaType?
     private(set) var `enum`: [String]?
@@ -142,6 +144,8 @@ internal class JSONSchema: Decodable {
         } else {
             self.properties = self.properties ?? otherSchema.properties
         }
+
+        self.additionalProperties = self.additionalProperties ?? otherSchema.additionalProperties
 
         // Required properties are accumulated.
         if let selfRequired = self.required, let otherRequired = otherSchema.required {

@@ -270,6 +270,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: .init(count: actionsCount.toInt64),
                 crash: nil,
                 cumulativeLayoutShift: nil,
+                customTimings: customTimings,
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,
@@ -291,7 +292,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes, customTimings: customTimings)
+        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
         dependencies.eventOutput.write(rumEvent: event)
     }
 

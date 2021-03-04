@@ -19,7 +19,7 @@ internal class SwiftToObjcInteropTypeTransformer {
 
         try takeRootSwiftStructs(from: swiftTypes)
             .forEach { rootStruct in
-                let rootClass = ObjcInteropRootClass(managedSwiftStruct: rootStruct)
+                let rootClass = ObjcInteropRootClass(bridgedSwiftStruct: rootStruct)
                 outputObjcInteropTypes.append(rootClass)
                 try generateTransitiveObjcInteropTypes(in: rootClass)
             }
@@ -48,7 +48,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcNestedClass = ObjcInteropTransitiveClass(
                         owner: propertyWrapper,
-                        managedSwiftStruct: swiftStruct
+                        bridgedSwiftStruct: swiftStruct
                     )
                     return propertyWrapper
                 case let swiftEnum as SwiftEnum:
@@ -58,7 +58,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcNestedEnum = ObjcInteropEnum(
                         owner: propertyWrapper,
-                        managedSwiftEnum: swiftEnum
+                        bridgedSwiftEnum: swiftEnum
                     )
                     return propertyWrapper
                 case let swiftArray as SwiftArray where swiftArray.element is SwiftEnum:
@@ -68,7 +68,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcNestedEnumsArray = ObjcInteropEnumArray(
                         owner: propertyWrapper,
-                        managedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
+                        bridgedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
                     )
                     return propertyWrapper
                 case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitiveType:
@@ -77,6 +77,13 @@ internal class SwiftToObjcInteropTypeTransformer {
                         swiftProperty: swiftProperty
                     )
                     propertyWrapper.objcInteropType = try objcInteropType(for: swiftArray)
+                    return propertyWrapper
+                case let swiftDictionary as SwiftDictionary:
+                    let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcInteropType = try objcInteropType(for: swiftDictionary)
                     return propertyWrapper
                 case let swifTypeReference as SwiftTypeReference:
                     let referencedType = try resolve(swiftTypeReference: swifTypeReference)
@@ -89,7 +96,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                         )
                         propertyWrapper.objcNestedClass = ObjcInteropReferencedTransitiveClass(
                             owner: propertyWrapper,
-                            managedSwiftStruct: swiftStruct
+                            bridgedSwiftStruct: swiftStruct
                         )
                         return propertyWrapper
                     case let swiftEnum as SwiftEnum:
@@ -99,7 +106,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                         )
                         propertyWrapper.objcNestedEnum = ObjcInteropReferencedEnum(
                             owner: propertyWrapper,
-                            managedSwiftEnum: swiftEnum
+                            bridgedSwiftEnum: swiftEnum
                         )
                         return propertyWrapper
                     default:
@@ -135,6 +142,11 @@ internal class SwiftToObjcInteropTypeTransformer {
             return ObjcInteropNSString(swiftString: swiftString)
         case let swiftArray as SwiftArray:
             return ObjcInteropNSArray(element: try objcInteropType(for: swiftArray.element))
+        case let swiftDictionary as SwiftDictionary:
+            return ObjcInteropNSDictionary(
+                key: try objcInteropType(for: swiftDictionary.key),
+                value: try objcInteropType(for: swiftDictionary.value)
+            )
         default:
             throw Exception.unimplemented(
                 "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."

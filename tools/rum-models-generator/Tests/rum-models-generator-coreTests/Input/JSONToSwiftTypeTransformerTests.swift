@@ -24,7 +24,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "property1",
                                 comment: "Description of Bar's `property1`.",
                                 type: JSONPrimitive.string,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 isRequired: false,
                                 isReadOnly: true
                             ),
@@ -32,13 +32,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "property2",
                                 comment: "Description of Bar's `property2`.",
                                 type: JSONPrimitive.string,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 isRequired: true,
                                 isReadOnly: false
                             )
                         ]
                     ),
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     isRequired: false,
                     isReadOnly: true
                 ),
@@ -50,7 +50,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         comment: "Description of Foo's `property1`.",
                         values: ["case1", "case2", "case3", "case4"]
                     ),
-                    defaultVaule: JSONObject.Property.DefaultValue.string(value: "case2"),
+                    defaultValue: JSONObject.Property.DefaultValue.string(value: "case2"),
                     isRequired: true,
                     isReadOnly: true
                 ),
@@ -64,7 +64,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                             values: ["option1", "option2", "option3", "option4"]
                         )
                     ),
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     isRequired: false,
                     isReadOnly: false
                 )
@@ -88,7 +88,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
                                 isMutable: false,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 codingKey: "property1"
                             ),
                             SwiftStruct.Property(
@@ -97,7 +97,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
                                 isMutable: true,
-                                defaultVaule: nil,
+                                defaultValue: nil,
                                 codingKey: "property2"
                             )
                         ],
@@ -105,7 +105,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     ),
                     isOptional: true,
                     isMutable: true, // should be mutable as at least one of the `Bar's` properties is mutable
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     codingKey: "bar"
                 ),
                 SwiftStruct.Property(
@@ -124,7 +124,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     ),
                     isOptional: false,
                     isMutable: false,
-                    defaultVaule: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
                     codingKey: "property1"
                 ),
                 SwiftStruct.Property(
@@ -145,8 +145,188 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     ),
                     isOptional: true,
                     isMutable: true,
-                    defaultVaule: nil,
+                    defaultValue: nil,
                     codingKey: "property2"
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
+    }
+
+    func testTransformingNestedJSONObjectWithAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {
+        let object = JSONObject(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                JSONObject.Property(
+                    name: "propertyWithAdditionalProperties",
+                    comment: "Description of a property with nested additional properties.",
+                    type: JSONObject(
+                        name: "propertyWithAdditionalProperties",
+                        comment: "Description of a property with nested additional properties.",
+                        properties: [],
+                        additionalProperties:
+                            JSONObject.AdditionalProperties(
+                                comment: nil,
+                                type: JSONPrimitive.integer,
+                                isReadOnly: true
+                            )
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                )
+            ]
+        )
+
+        let expected = SwiftStruct(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                SwiftStruct.Property(
+                    name: "propertyWithAdditionalProperties",
+                    comment: "Description of a property with nested additional properties.",
+                    type: SwiftDictionary(value: SwiftPrimitive<Int>()),
+                    isOptional: true,
+                    isMutable: false,
+                    defaultValue: nil,
+                    codingKey: "propertyWithAdditionalProperties"
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
+    }
+
+    func testTransformingNestedJSONObjectWithPropertiesAndAdditionalPropertiesIntoSwiftStruct() throws {
+        let object = JSONObject(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                JSONObject.Property(
+                    name: "bar",
+                    comment: "Description of Foo's `bar`.",
+                    type: JSONObject(
+                        name: "bar",
+                        comment: "Description of Foo's `baz`.",
+                        properties: [
+                            JSONObject.Property(
+                                    name: "baz",
+                                    comment: "Description of Foo.bar's `baz`.",
+                                    type: JSONPrimitive.string,
+                                    defaultValue: nil,
+                                    isRequired: false,
+                                    isReadOnly: true
+                                )
+                        ],
+                        additionalProperties: JSONObject.AdditionalProperties(
+                            comment: "Additional properties of property1.",
+                            type: JSONPrimitive.string,
+                            isReadOnly: true
+                        )
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                )
+            ]
+        )
+
+        var error: Error? = nil
+        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])) { error = $0 }
+        let exception = try XCTUnwrap(error as? Exception)
+        XCTAssertTrue(exception.description.contains("not supported"))
+    }
+
+    func testTransformingRootJSONObjectWithAdditionalPropertiesIntoSwiftStruct() throws {
+        let object = JSONObject(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                JSONObject.Property(
+                    name: "bar",
+                    comment: "Description of Foo's `bar`.",
+                    type: JSONObject(
+                        name: "bar",
+                        comment: "Description of Foo's `baz`.",
+                        properties: [
+                            JSONObject.Property(
+                                    name: "baz",
+                                    comment: "Description of Foo.bar's `baz`.",
+                                    type: JSONPrimitive.string,
+                                    defaultValue: nil,
+                                    isRequired: false,
+                                    isReadOnly: true
+                                )
+                        ]
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                )
+            ],
+            additionalProperties: JSONObject.AdditionalProperties(
+                comment: "Additional properties of Foo.",
+                type: JSONPrimitive.string,
+                isReadOnly: true
+            )
+        )
+
+        var error: Error? = nil
+        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])) { error = $0 }
+        let exception = try XCTUnwrap(error as? Exception)
+        XCTAssertTrue(exception.description.contains("not supported"))
+    }
+
+    func testTransformingJSONObjectPropertyWithAdditionalPropertiesAndConflictingFlags() throws {
+        let object = JSONObject(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                JSONObject.Property(
+                    name: "propertyWithAdditionalProperties",
+                    comment: "Description of a property with nested additional properties.",
+                    type: JSONObject(
+                        name: "propertyWithAdditionalProperties",
+                        comment: "Description of a property with nested additional properties.",
+                        properties: [],
+                        additionalProperties:
+                            JSONObject.AdditionalProperties(
+                                comment: nil,
+                                type: JSONPrimitive.integer,
+                                isReadOnly: false
+                            )
+                    ),
+                    defaultValue: nil,
+                    isRequired: true, // Expect this flag to be take precedence over the inner `additionalProperties`.
+                    isReadOnly: true // Expect this flag to be take precedence over the inner `additionalProperties`.
+                )
+            ]
+        )
+
+        let expected = SwiftStruct(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                SwiftStruct.Property(
+                    name: "propertyWithAdditionalProperties",
+                    comment: "Description of a property with nested additional properties.",
+                    type: SwiftDictionary(
+                        value: SwiftPrimitive<Int>()
+                    ),
+                    isOptional: false,
+                    isMutable: false,
+                    defaultValue: nil,
+                    codingKey: "propertyWithAdditionalProperties"
                 )
             ],
             conformance: []

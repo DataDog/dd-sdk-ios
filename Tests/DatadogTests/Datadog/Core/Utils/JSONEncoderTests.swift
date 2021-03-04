@@ -29,31 +29,4 @@ class JSONEncoderTests: XCTestCase {
             XCTAssertEqual(encodedURL.utf8String, #"{"value":"https:\/\/example.com\/foo"}"#)
         }
     }
-
-    func testWhenEncoding_thenKeysFollowLexicographicOrder() throws {
-        struct Foo: Codable {
-            var one = 1
-            var two = 1
-            var three = 1
-            var four = 1
-            var five = 1
-
-            enum CodingKeys: String, CodingKey {
-                case one = "aaaaaa"
-                case two = "bb"
-                case three = "aaa"
-                case four = "bbb"
-                case five = "aaa.aaa"
-            }
-        }
-
-        // When
-        let encodedFoo = try jsonEncoder.encode(Foo())
-
-        // Then
-        XCTAssertEqual(
-            encodedFoo.utf8String,
-            #"{"aaa":1,"aaa.aaa":1,"aaaaaa":1,"bb":1,"bbb":1}"#
-        )
-    }
 }

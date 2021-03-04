@@ -56,7 +56,7 @@ public class SwiftPrinter: BasePrinter {
             let name = property.name
             let type = try typeDeclaration(property.type)
             let optionality = property.isOptional ? "?" : ""
-            let defaultValue: String? = try property.defaultVaule.ifNotNil { value in
+            let defaultValue: String? = try property.defaultValue.ifNotNil { value in
                 switch value {
                 case let integerValue as Int:
                     return " = \(integerValue)"
@@ -135,6 +135,8 @@ public class SwiftPrinter: BasePrinter {
             return "String"
         case let swiftArray as SwiftArray:
             return "[\(try typeDeclaration(swiftArray.element))]"
+        case let swiftDictionary as SwiftDictionary:
+            return "[\(try typeDeclaration(swiftDictionary.key)): \(try typeDeclaration(swiftDictionary.value))]"
         case let swiftEnum as SwiftEnum:
             return swiftEnum.name
         case let swiftStruct as SwiftStruct:

@@ -16,6 +16,14 @@ let package = Package(
             name: "DatadogObjc",
             type: .dynamic,
             targets: ["DatadogObjc"]),
+        .library(
+            name: "DatadogStatic",
+            type: .static,
+            targets: ["Datadog"]),
+        .library(
+            name: "DatadogStaticObjc",
+            type: .static,
+            targets: ["DatadogObjc"]),
     ],
     dependencies: [
         .package(url: "https://github.com/lyft/Kronos.git", .upToNextMinor(from: "4.1.0"))

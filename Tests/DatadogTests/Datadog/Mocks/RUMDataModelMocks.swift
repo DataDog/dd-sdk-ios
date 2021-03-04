@@ -60,6 +60,7 @@ extension RUMViewEvent {
                 action: .init(count: .mockRandom()),
                 crash: .init(count: .mockRandom()),
                 cumulativeLayoutShift: .mockRandom(),
+                customTimings: .mockAny(),
                 domComplete: .mockRandom(),
                 domContentLoaded: .mockRandom(),
                 domInteractive: .mockRandom(),
