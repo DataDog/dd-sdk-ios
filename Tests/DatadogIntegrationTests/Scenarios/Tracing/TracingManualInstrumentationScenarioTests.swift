@@ -88,7 +88,8 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
         let matcher = { (str: String) in str.contains("SendTracesFixtureViewController") }
         logMatchers[1].assertValue(forKeyPath: "message", matches: matcher)
         logMatchers[1].assertValue(forKeyPath: "error.kind", matches: matcher)
-        logMatchers[1].assertValue(forKeyPath: "stack", matches: matcher)
+        logMatchers[1].assertValue(forKeyPath: "error.message", matches: matcher)
+        logMatchers[1].assertValue(forKeyPath: "error.stack", matches: matcher)
 
         // Assert logs are linked to "data downloading" span
         logMatchers[0].assertValue(forKey: "dd.trace_id", equals: try spanMatchers[0].traceID().hexadecimalNumberToDecimal)
