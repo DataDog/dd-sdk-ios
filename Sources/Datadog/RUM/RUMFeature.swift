@@ -48,18 +48,19 @@ internal final class RUMFeature {
     /// RUM upload worker.
     let upload: FeatureUpload
 
+    /// RUM events mapper.
+    let eventsMapper: RUMEventsMapper
+
     // MARK: - Initialization
 
     static func createStorage(
         directories: FeatureDirectories,
-        eventMapper: RUMEventsMapper,
         commonDependencies: FeaturesCommonDependencies
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directories: directories,
-            eventMapper: eventMapper,
             commonDependencies: commonDependencies
         )
     }
@@ -105,13 +106,19 @@ internal final class RUMFeature {
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies
     ) {
+        let eventsMapper = RUMEventsMapper(
+            viewEventMapper: configuration.eventMapper.viewEventMapper,
+            errorEventMapper: configuration.eventMapper.errorEventMapper,
+            resourceEventMapper: configuration.eventMapper.resourceEventMapper,
+            actionEventMapper: configuration.eventMapper.actionEventMapper
+        )
         let storage = RUMFeature.createStorage(
             directories: directories,
-            eventMapper: configuration.eventMapper,
             commonDependencies: commonDependencies
         )
         let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
         self.init(
+            eventsMapper: eventsMapper,
             storage: storage,
             upload: upload,
             configuration: configuration,
@@ -120,6 +127,7 @@ internal final class RUMFeature {
     }
 
     init(
+        eventsMapper: RUMEventsMapper,
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: FeaturesConfiguration.RUM,
@@ -137,6 +145,7 @@ internal final class RUMFeature {
         self.launchTimeProvider = commonDependencies.launchTimeProvider
 
         // Initialize stacks
+        self.eventsMapper = eventsMapper
         self.storage = storage
         self.upload = upload
     }

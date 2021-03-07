@@ -26,7 +26,6 @@ class FeatureStorageTests: XCTestCase {
             featureName: .mockAny(),
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            eventMapper: nil,
             commonDependencies: .mockWith(consentProvider: consentProvider)
         )
 
