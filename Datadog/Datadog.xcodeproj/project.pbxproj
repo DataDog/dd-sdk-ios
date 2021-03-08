@@ -905,6 +905,8 @@
 		61EF78B0257E2E7A00EDCCB3 /* MoveDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveDataMigrator.swift; sourceTree = "<group>"; };
 		61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveDataMigratorTests.swift; sourceTree = "<group>"; };
 		61EF78C0257F842000EDCCB3 /* FeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTests.swift; sourceTree = "<group>"; };
+		61F1872325F657630022CE9A /* DatadogIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogIntegrationTests.xctestplan; sourceTree = "<group>"; };
+		61F1872B25F658260022CE9A /* DatadogCrashReportingIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogCrashReportingIntegrationTests.xctestplan; sourceTree = "<group>"; };
 		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
 		61F1A620249A45E400075390 /* DDSpanContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanContextTests.swift; sourceTree = "<group>"; };
 		61F1A622249B811200075390 /* Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
@@ -2771,6 +2773,8 @@
 		9EF49F1524476FBD004F2CA0 /* DatadogIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				61F1872325F657630022CE9A /* DatadogIntegrationTests.xctestplan */,
+				61F1872B25F658260022CE9A /* DatadogCrashReportingIntegrationTests.xctestplan */,
 				9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */,
 				9EF49F1624476FBD004F2CA0 /* Info.plist */,
 			);
