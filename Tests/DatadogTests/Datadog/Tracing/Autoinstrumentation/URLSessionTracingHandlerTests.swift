@@ -7,10 +7,17 @@
 import XCTest
 @testable import Datadog
 
+private class MockAppStateListener: AppStateListening {
+    let history = AppStateHistory(
+        initialState: .init(isActive: true, date: .mockDecember15th2019At10AMUTC()),
+        finalDate: .mockDecember15th2019At10AMUTC() + 10
+    )
+}
+
 class URLSessionTracingHandlerTests: XCTestCase {
     private let spanOutput = SpanOutputMock()
     private let logOutput = LogOutputMock()
-    private let handler = URLSessionTracingHandler()
+    private let handler = URLSessionTracingHandler(appStateListener: MockAppStateListener())
 
     override func setUp() {
         Global.sharedTracer = Tracer.mockWith(
@@ -95,7 +102,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpUrl]?.encodable.value as? String, request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod]?.encodable.value as? String, "POST")
         XCTAssertEqual(span.tags[OTTags.httpStatusCode]?.encodable.value as? Int, 200)
-        XCTAssertEqual(span.tags.count, 3)
+        XCTAssertEqual(span.tags.count, 5)
 
         let log = logOutput.recordedLog
         XCTAssertNil(log)
@@ -138,7 +145,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
             "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
         )
         XCTAssertEqual(span.tags[DDTags.errorMessage]?.encodable.value as? String, "network error")
-        XCTAssertEqual(span.tags.count, 5)
+        XCTAssertEqual(span.tags.count, 7)
 
         let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
         XCTAssertEqual(log.status, .error)
@@ -201,7 +208,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
             span.tags[DDTags.errorStack]?.encodable.value as? String,
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
-        XCTAssertEqual(span.tags.count, 6)
+        XCTAssertEqual(span.tags.count, 8)
 
         let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
         XCTAssertEqual(log.status, .error)
@@ -268,5 +275,27 @@ class URLSessionTracingHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertNil(spanOutput.recordedSpan)
         XCTAssertNil(logOutput.recordedLog)
+    }
+
+    func testGivenAnyInterception_itAddsAppStateInformationToSpan() throws {
+        // Given
+        let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
+        interception.register(completion: .mockAny())
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10)
+                )
+            )
+        )
+
+        // When
+        handler.notify_taskInterceptionCompleted(interception: interception)
+
+        // Then
+        let recordedSpan = try XCTUnwrap(spanOutput.recordedSpan)
+        XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration]?.encodable.value as? UInt64, 10_000_000_000)
+        XCTAssertEqual(recordedSpan.tags[DDTags.isBackground]?.encodable.value as? Bool, false)
     }
 }

@@ -15,6 +15,12 @@ public struct DDTags {
     ///
     /// Expects `String` value set for a tag.
     public static let resource = "resource.name"
+    /// Internal tag. `Integer` value. Measures elapsed time at app's foreground state in nanoseconds.
+    /// (duration - foregroundDuration) gives you the elapsed time while the app wasn't active (probably at background)
+    internal static let foregroundDuration = "foreground_duration"
+    /// Internal tag. `Bool` value.
+    /// `true` if span was started or ended while the app was not active, `false` otherwise.
+    internal static let isBackground = "is_background"
 
     /// Those keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields.
     /// Supported by Datadog platform.

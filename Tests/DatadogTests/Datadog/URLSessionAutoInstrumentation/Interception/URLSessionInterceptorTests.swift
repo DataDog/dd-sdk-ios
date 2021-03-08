@@ -38,19 +38,22 @@ class URLSessionInterceptorTests: XCTestCase {
 
     // MARK: - Initialization
 
-    func testGivenOnlyTracingInstrumentationEnabled_whenInitializing_itRegistersTracingHandler() {
+    func testGivenOnlyTracingInstrumentationEnabled_whenInitializing_itRegistersTracingHandler() throws {
         // Given
         let instrumentTracing = true
         let instrumentRUM = false
 
         // When
+        let appStateListener = AppStateListener.mockAny()
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: appStateListener
         )
 
         // Then
-        XCTAssertTrue(interceptor.handler is URLSessionTracingHandler)
+        let tracingHandler = try XCTUnwrap(interceptor.handler as? URLSessionTracingHandler)
+        XCTAssert(tracingHandler.appStateListener === appStateListener)
         XCTAssertTrue(
             interceptor.injectTracingHeadersToFirstPartyRequests,
             "Tracing headers should be injected when only Tracing instrumentation is enabled."
@@ -69,7 +72,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // When
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListener.mockAny()
         )
 
         // Then
@@ -92,7 +96,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // When
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListener.mockAny()
         )
 
         // Then
@@ -126,7 +131,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: true),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -176,7 +182,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: false),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -205,7 +212,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -225,7 +233,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
         XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
 
@@ -260,7 +269,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -359,7 +369,8 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
 
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
@@ -421,7 +432,8 @@ class URLSessionInterceptorTests: XCTestCase {
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: true),
-            handler: handler
+            handler: handler,
+            appStateListener: AppStateListener.mockAny()
         )
 
         let requests = [firstPartyRequest, thirdPartyRequest, internalRequest]
