@@ -33,6 +33,7 @@ class RUMIntegrationsTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_whenSessionIsSampled_itProvidesEmptyRUMContextAttributes() throws {
         RUMFeature.instance = RUMFeature(
+            eventsMapper: .mockNoOp(),
             storage: FeatureStorage(
                 writer: NoOpFileWriter(),
                 reader: NoOpFileReader(),

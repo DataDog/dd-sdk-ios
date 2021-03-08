@@ -179,8 +179,11 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+        } else {
+            // TODO: RUMM-1078 Adjust counts for dropped events
+        }
     }
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
@@ -218,8 +221,11 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+        } else {
+            // TODO: RUMM-1078 Adjust counts for dropped events
+        }
     }
 
     // MARK: - Resource provider helpers

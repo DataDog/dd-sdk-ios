@@ -54,7 +54,6 @@ internal final class LoggingFeature {
             featureName: LoggingFeature.featureName,
             dataFormat: LoggingFeature.dataFormat,
             directories: directories,
-            eventMapper: nil,
             commonDependencies: commonDependencies
         )
     }

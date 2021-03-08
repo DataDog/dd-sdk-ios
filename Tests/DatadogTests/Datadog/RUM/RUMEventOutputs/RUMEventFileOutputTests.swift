@@ -20,7 +20,7 @@ class RUMEventFileOutputTests: XCTestCase {
 
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
-        let builder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())
+        let builder = RUMEventBuilder(userInfoProvider: .mockAny(), eventsMapper: .mockNoOp())
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
                 dataFormat: RUMFeature.dataFormat,
@@ -37,8 +37,8 @@ class RUMEventFileOutputTests: XCTestCase {
 
         let dataModel1 = RUMDataModelMock(attribute: "foo")
         let dataModel2 = RUMDataModelMock(attribute: "bar")
-        let event1 = builder.createRUMEvent(with: dataModel1, attributes: ["custom.attribute": "value"])
-        let event2 = builder.createRUMEvent(with: dataModel2, attributes: [:])
+        let event1 = try XCTUnwrap(builder.createRUMEvent(with: dataModel1, attributes: ["custom.attribute": "value"]))
+        let event2 = try XCTUnwrap(builder.createRUMEvent(with: dataModel2, attributes: [:]))
 
         output.write(rumEvent: event1)
 

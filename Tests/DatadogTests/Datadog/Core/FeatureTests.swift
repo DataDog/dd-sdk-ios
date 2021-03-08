@@ -26,7 +26,6 @@ class FeatureStorageTests: XCTestCase {
             featureName: .mockAny(),
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            eventMapper: nil,
             commonDependencies: .mockWith(consentProvider: consentProvider)
         )
 
@@ -65,7 +64,6 @@ class FeatureStorageTests: XCTestCase {
             featureName: .mockAny(),
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            eventMapper: nil,
             commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
         )
 
@@ -85,38 +83,6 @@ class FeatureStorageTests: XCTestCase {
             .map { $0.utf8String }
         XCTAssertEqual(dataWritten.filter { $0 == "\"regular write\"" }.count, 25)
         XCTAssertEqual(dataWritten.filter { $0 == "\"arbitrary write\"" }.count, 25)
-    }
-
-    func testGivenStorageWithEventMapper_whenWrittingData_itMapsValuesWrittenWithBothRegularAndArbitraryWriters() {
-        class EventMapperMock: EventMapper {
-            func map<T: Encodable>(event: T) -> T? {
-                switch event as! String {
-                case "drop": return nil
-                case "secret": return "redact" as? T
-                default: return event
-                }
-            }
-        }
-
-        // Given
-        let storage = FeatureStorage(
-            featureName: .mockAny(),
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
-            directories: temporaryFeatureDirectories,
-            eventMapper: EventMapperMock(),
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
-        )
-
-        // When
-        ["value", "secret", "drop"].forEach { event in
-            storage.writer.write(value: event)
-            storage.arbitraryAuthorizedWriter.write(value: event)
-        }
-
-        // Then
-        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: 4)
-            .map { $0.utf8String }
-        XCTAssertEqual(dataWritten, ["\"value\"", "\"value\"", "\"redact\"", "\"redact\""])
     }
 
     // MARK: - Helpers
