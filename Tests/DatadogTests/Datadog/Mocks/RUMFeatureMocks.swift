@@ -11,6 +11,7 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
+            eventsMapper: .mockNoOp(),
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
@@ -48,6 +49,7 @@ extension RUMFeature {
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         return RUMFeature(
+            eventsMapper: configuration.eventMapper,
             storage: observedStorage,
             upload: mockedUpload,
             configuration: configuration,
@@ -114,7 +116,7 @@ extension RUMEvent {
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
-        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())
+        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp())
     }
 }
 
@@ -134,11 +136,20 @@ class RUMEventOutputMock: RUMEventOutput {
 
 extension RUMEventsMapper {
     static func mockNoOp() -> RUMEventsMapper {
+        return mockWith()
+    }
+
+    static func mockWith(
+        viewEventMapper: RUMViewEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil
+    ) -> RUMEventsMapper {
         return RUMEventsMapper(
-            viewEventMapper: nil,
-            errorEventMapper: nil,
-            resourceEventMapper: nil,
-            actionEventMapper: nil
+            viewEventMapper: viewEventMapper,
+            errorEventMapper: errorEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper
         )
     }
 }
@@ -388,7 +399,7 @@ extension RUMScopeDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
-        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock()

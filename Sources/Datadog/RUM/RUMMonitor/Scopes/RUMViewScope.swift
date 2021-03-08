@@ -256,8 +256,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: command.attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: command.attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+        } else {
+            // TODO: RUMM-1078 Adjust counts for dropped events
+        }
     }
 
     private func sendViewUpdateEvent(on command: RUMCommand) {
@@ -299,8 +302,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+        } else {
+            // TODO: RUMM-1078 Adjust counts for dropped events
+        }
     }
 
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) {
@@ -333,7 +339,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+        } else {
+            // adjsut state
+        }
     }
 }

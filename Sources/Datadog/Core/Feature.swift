@@ -41,7 +41,6 @@ internal struct FeatureStorage {
         featureName: String,
         dataFormat: DataFormat,
         directories: FeatureDirectories,
-        eventMapper: EventMapper?,
         commonDependencies: FeaturesCommonDependencies
     ) {
         let readWriteQueue = DispatchQueue(
@@ -70,8 +69,7 @@ internal struct FeatureStorage {
                 authorizedFileWriter: FileWriter(
                     dataFormat: dataFormat,
                     orchestrator: authorizedFilesOrchestrator
-                ),
-                eventMapper: eventMapper
+                )
             ),
             dataMigratorFactory: DataMigratorFactory(
                 directories: directories
