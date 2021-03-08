@@ -42,7 +42,6 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
             clearPersistentData: false // do not clear data from previous session
         )
 
-        // Get expected number of `LogMatchers`
         let recordedRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
             try LogMatcher.from(requests: requests).count >= 1
         }
@@ -53,8 +52,9 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
 
         let crashLog = logMatchers[0]
         crashLog.assertDate(matches: { Date().timeIntervalSince($0) < dataDeliveryTimeout * 2 })
-        crashLog.assertStatus(equals: "emergency")
 
+        // Assert crash report info
+        crashLog.assertStatus(equals: "emergency")
         crashLog.assertMessage(equals: "Illegal instruction")
         crashLog.assertAttributes(
             equal: [
@@ -67,7 +67,7 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
             isTypeOf: String.self
         )
 
-        // Check if it has some user info encoded
+        // Assert user info
         crashLog.assertUserInfo(
             equals: (
                 id: "abcd-1234",
@@ -76,13 +76,13 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
             )
         )
 
-        // Check if it has some network info encoded
+        // Assert network info
         crashLog.assertValue(
             forKeyPath: LogMatcher.JSONKey.networkReachability,
             matches: { LogMatcher.allowedNetworkReachabilityValues.contains($0) }
         )
 
-        // Check some other characteristics
+        // Assert other characteristics important for crash reporting
         crashLog.assertServiceName(equals: "ui-tests-service-name")
         crashLog.assertLoggerName(equals: "crash-reporter")
     }

@@ -289,6 +289,7 @@
 		61B558CF2469561C001460D3 /* LoggerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */; };
 		61B558D42469CDD8001460D3 /* TracingUUIDGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B558D32469CDD8001460D3 /* TracingUUIDGeneratorTests.swift */; };
 		61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */; };
+		61B6815E25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */; };
 		61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		61B7886225C180CB002675B5 /* DDCrashReportingPluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B7886125C180CB002675B5 /* DDCrashReportingPluginTests.swift */; };
 		61B7886425C180CB002675B5 /* DatadogCrashReporting.h in Headers */ = {isa = PBXBuildFile; fileRef = 61B7885625C180CB002675B5 /* DatadogCrashReporting.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -812,6 +813,7 @@
 		61B558CE2469561C001460D3 /* LoggerBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerBuilderTests.swift; sourceTree = "<group>"; };
 		61B558D32469CDD8001460D3 /* TracingUUIDGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUIDGeneratorTests.swift; sourceTree = "<group>"; };
 		61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithLoggingScenarioTests.swift; sourceTree = "<group>"; };
+		61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithRUMScenarioTests.swift; sourceTree = "<group>"; };
 		61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCrashReporting.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61B7885625C180CB002675B5 /* DatadogCrashReporting.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatadogCrashReporting.h; sourceTree = "<group>"; };
 		61B7885725C180CB002675B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -2300,6 +2302,7 @@
 			isa = PBXGroup;
 			children = (
 				61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */,
+				61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */,
 			);
 			path = CrashReporting;
 			sourceTree = "<group>";
@@ -3584,6 +3587,7 @@
 				611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */,
 				61F3CD9A2510D8C500C816E5 /* Environment.swift in Sources */,
 				61F9CA9F2513978D000A5E61 /* RUMSessionMatcher.swift in Sources */,
+				61B6815E25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift in Sources */,
 				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
 				61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */,
 				61441C4924618052003D8BB8 /* JSONDataMatcher.swift in Sources */,

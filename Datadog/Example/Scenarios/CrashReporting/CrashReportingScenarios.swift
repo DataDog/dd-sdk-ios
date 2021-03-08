@@ -34,13 +34,14 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
             private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
 
             func rumView(for viewController: UIViewController) -> RUMView? {
-                let defaultRUMView = defaultPredicate.rumView(for: viewController)
-                return .init(
-                    name: defaultRUMView!.name,
-                    attributes: [
-                        "custom-attribute": "This attribute will be attached to crash report."
-                    ]
-                )
+                return defaultPredicate.rumView(for: viewController).flatMap { defaultRUMView in
+                    return RUMView(
+                        name: defaultRUMView.name,
+                        attributes: [
+                            "custom-attribute": "This attribute will be attached to crash report."
+                        ]
+                    )
+                }
             }
         }
 

@@ -192,12 +192,12 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
         // from this session to be send, but no RUM, Logging nor Tracing events from the first
         // session should be recorded.
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 1
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 1
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         XCTAssertEqual(session.viewVisits.count, 1)
         XCTAssertEqual(session.viewVisits[0].path, "Example.TSHomeViewController")
 
@@ -284,12 +284,12 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
         andSentTo serverSession: ServerSession
     ) throws {
         let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 4
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 4
         }
 
         assertRUM(requests: recordedRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRequests))
         XCTAssertEqual(session.viewVisits[0].path, "Example.TSHomeViewController")
         XCTAssertGreaterThan(session.viewVisits[0].actionEvents.count, 0)
 

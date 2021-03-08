@@ -106,12 +106,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 2
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 2
         }
 
         assertRUM(requests: rumRequests)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.from(requests: rumRequests))
+        let session = try XCTUnwrap(try RUMSessionMatcher.singleSession(from: rumRequests))
         XCTAssertEqual(session.viewVisits.count, 2)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View

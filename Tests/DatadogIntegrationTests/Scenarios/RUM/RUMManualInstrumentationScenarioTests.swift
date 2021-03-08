@@ -45,12 +45,12 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 3
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 3
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         let view1 = session.viewVisits[0]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")

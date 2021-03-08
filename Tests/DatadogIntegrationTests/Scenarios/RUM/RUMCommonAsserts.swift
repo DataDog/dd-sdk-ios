@@ -49,16 +49,27 @@ extension RUMCommonAsserts {
 }
 
 extension RUMSessionMatcher {
-    class func from(requests: [HTTPServerMock.Request]) throws -> RUMSessionMatcher? {
+    /// Retrieves single RUM Session from given `requests`.
+    class func singleSession(from requests: [HTTPServerMock.Request]) throws -> RUMSessionMatcher? {
+        return try sessions(maxCount: 1, from: requests).first
+    }
+
+    /// Retrieves `maxCount` RUM Sessions from given `requests`.
+    class func sessions(maxCount: Int, from requests: [HTTPServerMock.Request]) throws -> [RUMSessionMatcher] {
         let eventMatchers = try requests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
         let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers)
 
-        if sessionMatchers.count > 1 {
-            throw Exception(description: "There is more than one RUM Session among recorded requests.")
+        if sessionMatchers.count > maxCount {
+            throw Exception(
+                description:
+                """
+                Expected to build \(maxCount) RUM Session(s) from given requests, but got \(sessionMatchers.count) instead.
+                """
+            )
         }
 
-        return sessionMatchers.first
+        return sessionMatchers
     }
 
     class func assertViewWasEventuallyInactive(_ viewVisit: ViewVisit) {
