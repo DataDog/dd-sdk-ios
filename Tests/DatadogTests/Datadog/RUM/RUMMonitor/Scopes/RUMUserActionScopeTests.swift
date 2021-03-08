@@ -357,4 +357,84 @@ class RUMUserActionScopeTests: XCTestCase {
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
+
+    // MARK: - Events sending callbacks
+
+    func testGivenUserActionScopeWithEventSentCallback_whenSuccessfullySendingEvent_thenCallbackIsCalled() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var callbackCalled = false
+        // swiftlint:disable trailing_closure
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: dependencies,
+            name: .mockAny(),
+            actionType: .tap,
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            isContinuous: false,
+            onActionEventSent: {
+                callbackCalled = true
+            }
+        )
+        // swiftlint:enable trailing_closure
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    actionType: .tap,
+                    name: nil
+                )
+            )
+        )
+
+        XCTAssertNotNil(try output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        XCTAssertTrue(callbackCalled)
+    }
+
+    func testGivenUserActionScopeWithEventSentCallback_whenBypassingSendingEvent_thenCallbackIsNotCalled() {
+        // swiftlint:disable trailing_closure
+        let eventBuilder = RUMEventBuilder(
+            userInfoProvider: UserInfoProvider.mockAny(),
+            eventsMapper: RUMEventsMapper.mockWith(
+                actionEventMapper: { event in
+                    nil
+                }
+            )
+        )
+        let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
+
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var callbackCalled = false
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: dependencies,
+            name: .mockAny(),
+            actionType: .tap,
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            isContinuous: false,
+            onActionEventSent: {
+                callbackCalled = true
+            }
+        )
+        // swiftlint:enable trailing_closure
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    actionType: .tap,
+                    name: nil
+                )
+            )
+        )
+
+        XCTAssertNil(try output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        XCTAssertFalse(callbackCalled)
+    }
 }

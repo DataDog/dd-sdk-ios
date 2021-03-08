@@ -453,4 +453,154 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
         XCTAssertNil(event.model.error.resource?.provider)
     }
+
+    // MARK: - Events sending callbacks
+
+    func testGivenResourceScopeWithDefaultEventsMapper_whenSendingEvents_thenEventSentCallbacksAreCalled() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var onResourceEventSentCalled = false
+        var onErrorEventSentCalled = false
+        // Given
+        // swiftlint:disable trailing_closure
+        let scope1 = RUMResourceScope.mockWith(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: nil,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200"),
+            onResourceEventSent: {
+                onResourceEventSentCalled = true
+            }
+        )
+
+        let scope2 = RUMResourceScope.mockWith(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/2",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/2",
+            httpMethod: .post,
+            isFirstPartyResource: nil,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200"),
+            onErrorEventSent: {
+                onErrorEventSentCalled = true
+            }
+        )
+        // swiftlint:enable trailing_closure
+
+        // When
+        XCTAssertFalse(
+            scope1.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    kind: .image,
+                    httpStatusCode: 200,
+                    size: 1_024
+                )
+            )
+        )
+
+        XCTAssertFalse(
+            scope2.process(
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")
+            )
+        )
+
+        // Then
+        XCTAssertNotNil(try (output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first))
+        XCTAssertTrue(onResourceEventSentCalled)
+        XCTAssertTrue(onErrorEventSentCalled)
+    }
+
+    func testGivenResourceScopeWithDroppingEventsMapper_whenBypassingSendingEvents_thenEventSentCallbacksAreNotCalled() {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var onResourceEventSentCalled = false
+        var onErrorEventSentCalled = false
+
+        // Given
+        let eventBuilder = RUMEventBuilder(
+            userInfoProvider: UserInfoProvider.mockAny(),
+            eventsMapper: RUMEventsMapper.mockWith(
+                errorEventMapper: { event in
+                    nil
+                },
+                resourceEventMapper: { event in
+                    nil
+                }
+            )
+        )
+        let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
+
+        // swiftlint:disable trailing_closure
+        let scope1 = RUMResourceScope.mockWith(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: nil,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200"),
+            onResourceEventSent: {
+                onResourceEventSentCalled = true
+            }
+        )
+
+        let scope2 = RUMResourceScope.mockWith(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/2",
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/2",
+            httpMethod: .post,
+            isFirstPartyResource: nil,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200"),
+            onErrorEventSent: {
+                onErrorEventSentCalled = true
+            }
+        )
+        // swiftlint:enable trailing_closure
+
+        // When
+        XCTAssertFalse(
+            scope1.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    kind: .image,
+                    httpStatusCode: 200,
+                    size: 1_024
+                )
+            )
+        )
+
+        XCTAssertFalse(
+            scope2.process(
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")
+            )
+        )
+
+        // Then
+        XCTAssertNil(try (output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first))
+        XCTAssertFalse(onResourceEventSentCalled)
+        XCTAssertFalse(onErrorEventSentCalled)
+    }
 }

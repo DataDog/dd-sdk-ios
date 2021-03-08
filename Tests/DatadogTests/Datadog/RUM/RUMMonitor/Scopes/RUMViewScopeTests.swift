@@ -748,4 +748,101 @@ class RUMViewScopeTests: XCTestCase {
             XCTAssertEqual(view.model.date, expectedOtherEventsDate)
         }
     }
+
+    // MARK: ViewScope counts Correction
+
+    func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() throws {
+        struct ResourceMapperHolder {
+            var resourceEventMapper: RUMResourceEventMapper?
+        }
+        var resourceMapperHolder = ResourceMapperHolder()
+
+        // Given an eventBuilder using an eventsMapper that:
+        // - discards `RUMActionEvent` for `RUMAddUserActionCommand`
+        // - discards `RUMErrorEvent` for `RUMAddCurrentViewErrorCommand`
+        // - discards `RUMResourceEvent` from `RUMStartResourceCommand` /resource/1
+        let eventBuilder = RUMEventBuilder(
+            userInfoProvider: UserInfoProvider.mockAny(),
+            eventsMapper: RUMEventsMapper.mockWith(
+                errorEventMapper: { event in
+                    nil
+                },
+                resourceEventMapper: {
+                    resourceMapperHolder.resourceEventMapper?($0)
+                },
+                actionEventMapper: { event in
+                    event.action.type == .applicationStart ? event : nil
+                }
+            )
+        )
+        let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
+
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewController",
+            attributes: [:],
+            customTimings: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView, isInitialView: true))
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1")
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockAny()
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage()
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2")
+            )
+        )
+
+        XCTAssertEqual(scope.resourceScopes.count, 2)
+
+        let resourceScope1 = try XCTUnwrap(scope.resourceScopes["/resource/1"])
+        let resourceID1 = resourceScope1.resourceUUID.toRUMDataFormat
+
+        resourceMapperHolder.resourceEventMapper = { event in
+            return event.resource.id == resourceID1 ? nil : event
+        }
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/2")
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+            )
+        )
+
+        XCTAssertEqual(scope.resourceScopes.count, 0)
+
+        XCTAssertFalse(
+            scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+
+        // Then
+        XCTAssertEqual(event.model.view.resource.count, 1, "After dropping 1 Resource event (of 2), View should record 1 Resource")
+        XCTAssertEqual(event.model.view.action.count, 1, "After dropping a User Action event, View should record only ApplicationStart Action")
+        XCTAssertEqual(event.model.view.error.count, 0, "After dropping an Error event, View should record 0 Errors")
+    }
 }
