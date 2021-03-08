@@ -6,12 +6,6 @@
 
 import Foundation
 
-/// Data scrubbing interface.
-/// It takes an `event` and returns its modified representation or `nil` (for dropping the event).
-internal protocol EventMapper {
-    func map<T: Encodable>(event: T) -> T?
-}
-
 internal struct DataProcessorFactory {
     /// File writer writting unauthorized data when consent is `.pending`.
     let unauthorizedFileWriter: Writer
