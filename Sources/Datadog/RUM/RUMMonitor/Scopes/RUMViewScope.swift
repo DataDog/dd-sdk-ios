@@ -54,6 +54,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
 
+    /// Whether or not the current call to `process(command:)` should trigger a `sendViewEvent()` with an update.
+    private var needsViewUpdate = false
+
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
@@ -91,17 +94,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     func process(command: RUMCommand) -> Bool {
         // Tells if the View did change and an update event should be send.
-        var needsViewUpdate = false
+        needsViewUpdate = false
 
         // Propagate to User Action scope
-        let beforeHadUserAction = userActionScope != nil
         userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
-        let afterHasUserAction = userActionScope != nil
-
-        if beforeHadUserAction && !afterHasUserAction { // if User Action was tracked
-            actionsCount += 1
-            needsViewUpdate = true
-        }
 
         // Apply side effects
         switch command {
@@ -114,7 +110,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
             if command.isInitialView {
                 actionsCount += 1
-                sendApplicationStartAction(on: command)
+                if !sendApplicationStartAction(on: command) {
+                    actionsCount -= 1
+                }
             }
             didReceiveStartCommand = true
             needsViewUpdate = true
@@ -146,30 +144,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Error command
         case let command as RUMAddCurrentViewErrorCommand where isActiveView:
             errorsCount += 1
-            sendErrorEvent(on: command)
-            needsViewUpdate = true
+            if sendErrorEvent(on: command) {
+                needsViewUpdate = true
+            } else {
+                errorsCount -= 1
+            }
 
         default:
             break
         }
 
         // Propagate to Resource scopes
-        let beforeResourcesCount = resourceScopes.count
         if let resourceCommand = command as? RUMResourceCommand {
             resourceScopes[resourceCommand.resourceKey] = manage(
                 childScope: resourceScopes[resourceCommand.resourceKey],
                 byPropagatingCommand: resourceCommand
             )
-        }
-        let afterResourcesCount = resourceScopes.count
-
-        if beforeResourcesCount != afterResourcesCount { // if Resource was tracked
-            if command is RUMStopResourceWithErrorCommand { // if Resource completed with error
-                errorsCount += 1
-            } else {
-                resourcesCount += 1
-            }
-            needsViewUpdate = true
         }
 
         // Consider scope state and completion
@@ -197,11 +187,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             httpMethod: command.httpMethod,
             isFirstPartyResource: command.isFirstPartyRequest,
             resourceKindBasedOnRequest: command.kind,
-            spanContext: command.spanContext
+            spanContext: command.spanContext,
+            onResourceEventSent: { [weak self] in
+                self?.resourcesCount += 1
+                self?.needsViewUpdate = true
+            },
+            onErrorEventSent: { [weak self] in
+                self?.errorsCount += 1
+                self?.needsViewUpdate = true
+            }
         )
     }
 
     private func startContinuousUserAction(on command: RUMStartUserActionCommand) {
+        // swiftlint:disable trailing_closure
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
@@ -210,11 +209,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             attributes: command.attributes,
             startTime: command.time,
             dateCorrection: dateCorrection,
-            isContinuous: true
+            isContinuous: true,
+            onActionEventSent: { [weak self] in
+                self?.actionsCount += 1
+                self?.needsViewUpdate = true
+            }
         )
+        // swiftlint:enable trailing_closure
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
+        // swiftlint:disable trailing_closure
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
@@ -223,13 +228,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             attributes: command.attributes,
             startTime: command.time,
             dateCorrection: dateCorrection,
-            isContinuous: false
+            isContinuous: false,
+            onActionEventSent: { [weak self] in
+                self?.actionsCount += 1
+                self?.needsViewUpdate = true
+            }
         )
+        // swiftlint:enable trailing_closure
     }
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(on command: RUMCommand) {
+    private func sendApplicationStartAction(on command: RUMCommand) -> Bool {
         let eventData = RUMActionEvent(
             dd: .init(),
             action: .init(
@@ -258,9 +268,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: command.attributes) {
             dependencies.eventOutput.write(rumEvent: event)
-        } else {
-            // TODO: RUMM-1078 Adjust counts for dropped events
+            return true
         }
+        return false
     }
 
     private func sendViewUpdateEvent(on command: RUMCommand) {
@@ -305,11 +315,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
             dependencies.eventOutput.write(rumEvent: event)
         } else {
-            // TODO: RUMM-1078 Adjust counts for dropped events
+            version -= 1
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) {
+    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMErrorEvent(
@@ -341,8 +351,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
             dependencies.eventOutput.write(rumEvent: event)
-        } else {
-            // adjsut state
+            return true
         }
+        return false
     }
 }

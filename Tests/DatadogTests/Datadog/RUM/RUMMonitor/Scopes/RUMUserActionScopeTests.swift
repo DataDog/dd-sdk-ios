@@ -22,7 +22,7 @@ class RUMUserActionScopeTests: XCTestCase {
     )
 
     func testDefaultContext() {
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -63,7 +63,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenContinuousUserActionEnds_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -105,7 +105,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -130,7 +130,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileContinuousUserActionIsActive_itTracksCompletedResources() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -182,7 +182,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
         var currentTime = Date()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -215,7 +215,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenContinuousUserActionStopsWithName_itChangesItsName() throws {
         var currentTime = Date()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -246,7 +246,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenDiscreteUserActionTimesOut_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -273,7 +273,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileDiscreteUserActionIsActive_itDoesNotComplete_untilAllTrackedResourcesAreCompleted() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -328,7 +328,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileDiscreteUserActionIsActive_itCountsViewErrors() throws {
         var currentTime = Date()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),

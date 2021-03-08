@@ -20,18 +20,13 @@ class RUMResourceScopeTests: XCTestCase {
     )
 
     func testDefaultContext() {
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: .mockAny(),
             resourceKey: .mockAny(),
             attributes: [:],
             startTime: .mockAny(),
-            dateCorrection: .zero,
-            url: .mockAny(),
-            httpMethod: .mockAny(),
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            dateCorrection: .zero
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, context.rumApplicationID)
@@ -45,7 +40,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -108,7 +103,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -116,10 +111,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            httpMethod: .post
         )
 
         currentTime.addTimeInterval(2)
@@ -164,7 +156,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -172,10 +164,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            httpMethod: .post
         )
 
         currentTime.addTimeInterval(2)
@@ -274,18 +263,14 @@ class RUMResourceScopeTests: XCTestCase {
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
         let resourceKey: String = .mockAny()
         func createScope(url: String) -> RUMResourceScope {
-            RUMResourceScope(
+            RUMResourceScope.mockWith(
                 context: context,
                 dependencies: dependencies,
                 resourceKey: resourceKey,
                 attributes: [:],
                 startTime: .mockAny(),
                 dateCorrection: .zero,
-                url: url,
-                httpMethod: .mockAny(),
-                isFirstPartyResource: nil,
-                resourceKindBasedOnRequest: nil,
-                spanContext: nil
+                url: url
             )
         }
 
@@ -311,7 +296,7 @@ class RUMResourceScopeTests: XCTestCase {
         let kindBasedOnResponse = kinds.randomElement()!
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -321,8 +306,7 @@ class RUMResourceScopeTests: XCTestCase {
             url: .mockAny(),
             httpMethod: .post,
             isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: kindBasedOnRequest,
-            spanContext: nil
+            resourceKindBasedOnRequest: kindBasedOnRequest
         )
 
         // When
@@ -344,7 +328,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -379,7 +363,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -411,7 +395,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -420,9 +404,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: true,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            isFirstPartyResource: true
         )
 
         currentTime.addTimeInterval(2)
@@ -446,7 +428,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let scope = RUMResourceScope(
+        let scope = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
@@ -455,9 +437,7 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: false,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            isFirstPartyResource: false
         )
 
         currentTime.addTimeInterval(2)
