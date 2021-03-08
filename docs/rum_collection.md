@@ -51,6 +51,7 @@ github "DataDog/dd-sdk-ios"
 ```swift
 Datadog.initialize(
     appContext: .init(),
+    trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
         .builderUsing(
             rumApplicationID: "<rum_application-id>",
@@ -68,6 +69,7 @@ Datadog.initialize(
 ```swift
 Datadog.initialize(
     appContext: .init(),
+    trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
         .builderUsing(
             rumApplicationID: "<rum_application-id>",
@@ -82,6 +84,19 @@ Datadog.initialize(
 
     {{% /tab %}}
     {{< /tabs >}}
+
+    To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
+    The `trackingConsent` can be one of the following values:
+
+    - `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
+    - `.granted` - the SDK starts collecting the data and sends it to Datadog.
+    - `.notGranted` - the SDK does not collect any data: logs, traces, and RUM events are not sent to Datadog.
+
+    To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
+    The SDK changes its behavior according to the new value. For example, if the current tracking consent is `.pending`:
+
+    - if changed to `.granted`, the SDK will send all current and future data to Datadog;
+    - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
 
 3. Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
 
@@ -264,6 +279,51 @@ Global.rum.addError(message: "error message.")
 ```
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
+
+## Data scrubbing
+
+To modify the attributes of a RUM event before it is sent to Datadog or to drop an event entirely, use the event mappers API when configuring the SDK:
+```swift
+Datadog.Configuration
+    .builderUsing(...)
+    .setRUMViewEventMapper { viewEvent in 
+        return viewEvent
+    }
+    .setRUMErrorEventMapper { errorEvent in
+        return errorEvent
+    }
+    .setRUMResourceEventMapper { resourceEvent in
+        return resourceEvent
+    }
+    .setRUMActionEventMapper { actionEvent in
+        return actionEvent
+    }
+    .build()
+```
+Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it gets sent. For example to redact sensitive information in RUM Resource's `url` you may implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
+```swift
+.setRUMResourceEventMapper { resourceEvent in
+    var resourceEvent = resourceEvent
+    resourceEvent.resource.url = redacted(resourceEvent.resource.url)
+    return resourceEvent
+}
+```
+Returning `nil` from the error, resource or action mapper will drop the event entirely (it won't be sent to Datadog). The value returned from the view event mapper must be not `nil`.
+
+Depending on a given event's type, only some specific properties can be mutated:
+
+| Event Type        | Attribute key                     | Description                                     |
+|-------------------|-----------------------------------|-------------------------------------------------|
+| RUMViewEvent      | `viewEvent.view.name`             | Name of the view                                 |
+|                   | `viewEvent.view.url`              | URL of the view                                 |
+| RUMActionEvent    | `actionEvent.action.target?.name` | Name of the action                              |
+|                   | `actionEvent.view.url`            | URL of the view linked to this action           |
+| RUMErrorEvent     | `errorEvent.error.message`        | Error message                                   |
+|                   | `errorEvent.error.stack`          | Stacktrace of the error                         |
+|                   | `errorEvent.error.resource?.url`  | URL of the resource the error refers to         |
+|                   | `errorEvent.view.url`             | URL of the view linked to this error            |
+| RUMResourceEvent  | `resourceEvent.resource.url`      | URL of the resource                             |
+|                   | `resourceEvent.view.url`          | URL of the view linked to this resource         |
 
 [1]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
 [2]: https://github.com/DataDog/dd-sdk-ios

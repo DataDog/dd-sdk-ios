@@ -151,20 +151,17 @@ class URLSessionTracingHandlerTests: XCTestCase {
             log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[OTLogFields.errorKind] as? String,
-            "domain - 123"
-        )
-        XCTAssertEqual(log.attributes.internalAttributes?.count, 3)
+        XCTAssertEqual(log.error?.type, "domain - 123")
+        XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
         XCTAssertEqual(
             log.attributes.userAttributes[OTLogFields.event] as? String,
             "error"
         )
         XCTAssertEqual(
-            log.attributes.userAttributes[OTLogFields.stack] as? String,
+            log.error?.stack,
             "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
         )
-        XCTAssertEqual(log.attributes.userAttributes.count, 2)
+        XCTAssertEqual(log.attributes.userAttributes.count, 1)
     }
 
     func testGivenFirstPartyInterceptionWithClientError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
@@ -217,20 +214,17 @@ class URLSessionTracingHandlerTests: XCTestCase {
             log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[OTLogFields.errorKind] as? String,
-            "HTTPURLResponse - 404"
-        )
-        XCTAssertEqual(log.attributes.internalAttributes?.count, 3)
+        XCTAssertEqual(log.error?.type, "HTTPURLResponse - 404")
+        XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
         XCTAssertEqual(
             log.attributes.userAttributes[OTLogFields.event] as? String,
             "error"
         )
         XCTAssertEqual(
-            log.attributes.userAttributes[OTLogFields.stack] as? String,
+            log.error?.stack,
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
-        XCTAssertEqual(log.attributes.userAttributes.count, 2)
+        XCTAssertEqual(log.attributes.userAttributes.count, 1)
     }
 
     func testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {

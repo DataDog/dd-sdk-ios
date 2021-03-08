@@ -48,6 +48,7 @@ internal struct LoggingForTracingAdapter {
     internal struct AdaptedLogOutput {
         private struct Constants {
             static let defaultLogMessage = "Span event"
+            static let defaultErrorProperty = "Unknown"
         }
 
         /// Log builder using Tracing configuration.
@@ -59,8 +60,9 @@ internal struct LoggingForTracingAdapter {
             var userAttributes = fields
 
             // get the log message and optional error kind
-            let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
             let errorKind = userAttributes.removeValue(forKey: OTLogFields.errorKind) as? String
+            let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
+            let errorStack = userAttributes.removeValue(forKey: OTLogFields.stack) as? String
 
             // infer the log level
             let isErrorEvent = fields[OTLogFields.event] as? String == "error"
@@ -68,18 +70,24 @@ internal struct LoggingForTracingAdapter {
             let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
 
             // set tracing attributes
-            var internalAttributes = [
+            let internalAttributes = [
                 TracingAttributes.traceID: "\(spanContext.traceID.rawValue)",
                 TracingAttributes.spanID: "\(spanContext.spanID.rawValue)"
             ]
-            if let errorKind = errorKind {
-                internalAttributes[OTLogFields.errorKind] = errorKind
+
+            var extractedError: DDError?
+            if level == .error {
+                extractedError = DDError(
+                    type: errorKind ?? Constants.defaultErrorProperty,
+                    message: message,
+                    stack: errorStack ?? Constants.defaultErrorProperty
+                )
             }
 
             let log = logBuilder.createLogWith(
                 level: level,
                 message: message,
-                error: nil, // TODO: RUMM-1112
+                error: extractedError,
                 date: date,
                 attributes: LogAttributes(
                     userAttributes: userAttributes,

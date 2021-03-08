@@ -18,9 +18,9 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '11.0'
 
   # :tag must follow DatadogSDK version below
-  s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => '1.5.0-beta1' }
+  s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => '1.5.0' }
 
   s.source_files = ["Sources/DatadogExtensions/Alamofire/**/*.swift"]
-  s.dependency 'DatadogSDK', '~> 1.5.0-beta1'
+  s.dependency 'DatadogSDK', '~> 1.5.0'
   s.dependency 'Alamofire', '~> 5.0'
 end

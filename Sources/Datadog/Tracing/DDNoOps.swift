@@ -17,6 +17,7 @@ internal struct DDNoopTracer: OTTracer {
     func extract(reader: OTFormatReader) -> OTSpanContext? { DDNoopGlobals.context }
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {}
     func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
+    func startRootSpan(operationName: String, tags: [String: Encodable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
 }
 
 internal struct DDNoopSpan: OTSpan {
