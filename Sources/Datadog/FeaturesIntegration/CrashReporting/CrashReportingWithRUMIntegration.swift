@@ -152,6 +152,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 loadingTime: original.view.loadingTime,
                 loadingType: original.view.loadingType,
                 longTask: original.view.longTask,
+                name: original.view.name,
                 referrer: original.view.referrer,
                 resource: original.view.resource,
                 timeSpent: original.view.timeSpent,
