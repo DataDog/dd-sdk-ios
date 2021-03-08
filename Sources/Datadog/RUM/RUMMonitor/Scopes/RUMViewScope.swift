@@ -108,13 +108,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
             }
+            didReceiveStartCommand = true
             if command.isInitialView {
                 actionsCount += 1
                 if !sendApplicationStartAction(on: command) {
                     actionsCount -= 1
+                    break
                 }
             }
-            didReceiveStartCommand = true
             needsViewUpdate = true
         case let command as RUMStartViewCommand where !identity.equals(command.identity):
             isActiveView = false

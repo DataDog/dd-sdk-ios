@@ -845,4 +845,34 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.action.count, 1, "After dropping a User Action event, View should record only ApplicationStart Action")
         XCTAssertEqual(event.model.view.error.count, 0, "After dropping an Error event, View should record 0 Errors")
     }
+
+    func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenNoEventIsSent() throws {
+        // swiftlint:disable trailing_closure
+        let eventBuilder = RUMEventBuilder(
+            userInfoProvider: UserInfoProvider.mockAny(),
+            eventsMapper: RUMEventsMapper.mockWith(
+                actionEventMapper: { event in
+                    nil
+                }
+            )
+        )
+        // swiftlint:enable trailing_closure
+        let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
+
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewController",
+            attributes: [:],
+            customTimings: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView, isInitialView: true))
+        )
+
+        XCTAssertNil(try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+    }
 }
