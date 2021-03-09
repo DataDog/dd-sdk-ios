@@ -872,7 +872,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addUserAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 5)
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
 
         XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
@@ -889,6 +889,45 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
     }
+
+    func testDroppingEventsBeforeTheyGetSent() throws {
+            RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+                directories: temporaryFeatureDirectories,
+                configuration: .mockWith(
+                    eventMapper: .mockWith(
+                        errorEventMapper: { _ in nil },
+                        resourceEventMapper: { _ in nil },
+                        actionEventMapper: { event in
+                            return event.action.type == .applicationStart ? event : nil
+                        }
+                    )
+                )
+            )
+            defer { RUMFeature.instance = nil }
+
+            let monitor = RUMMonitor.initialize()
+
+            monitor.startView(viewController: mockView)
+            monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
+            monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+            monitor.addUserAction(type: .tap, name: .mockAny())
+            monitor.addError(message: .mockAny())
+
+            let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
+            let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+
+            XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
+            let session = sessions[0]
+
+            XCTAssertNotEqual(session.viewVisits[0].viewEvents.count, 0)
+            let lastEvent = session.viewVisits[0].viewEvents.last!
+            XCTAssertEqual(lastEvent.view.resource.count, 0, "resource.count should reflect all resource events being dropped.")
+            XCTAssertEqual(lastEvent.view.action.count, 1, "action.count should reflect all action events being dropped.")
+            XCTAssertEqual(lastEvent.view.error.count, 0, "error.count should reflect all error events being dropped.")
+            XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
+            XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
+            XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
+        }
 
     // MARK: - Thread safety
 

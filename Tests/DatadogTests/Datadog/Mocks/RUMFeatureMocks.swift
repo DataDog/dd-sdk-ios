@@ -539,6 +539,68 @@ extension RUMViewScope {
     }
 }
 
+extension RUMResourceScope {
+    static func mockWith(
+        context: RUMContext,
+        dependencies: RUMScopeDependencies,
+        resourceKey: String = .mockAny(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection = .zero,
+        url: String = .mockAny(),
+        httpMethod: RUMMethod = .mockAny(),
+        isFirstPartyResource: Bool? = nil,
+        resourceKindBasedOnRequest: RUMResourceType? = nil,
+        spanContext: RUMSpanContext? = nil,
+        onResourceEventSent: @escaping () -> Void = {},
+        onErrorEventSent: @escaping () -> Void = {}
+    ) -> RUMResourceScope {
+        return RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: resourceKey,
+            attributes: attributes,
+            startTime: startTime,
+            dateCorrection: dateCorrection,
+            url: url,
+            httpMethod: httpMethod,
+            isFirstPartyResource: isFirstPartyResource,
+            resourceKindBasedOnRequest: resourceKindBasedOnRequest,
+            spanContext: spanContext,
+            onResourceEventSent: onResourceEventSent,
+            onErrorEventSent: onErrorEventSent
+        )
+    }
+}
+
+extension RUMUserActionScope {
+    // swiftlint:disable function_default_parameter_at_end
+    static func mockWith(
+        parent: RUMContextProvider,
+        dependencies: RUMScopeDependencies = .mockAny(),
+        name: String = .mockAny(),
+        actionType: RUMUserActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection,
+        isContinuous: Bool = .mockAny(),
+        onActionEventSent: @escaping () -> Void = {}
+    ) -> RUMUserActionScope {
+        return RUMUserActionScope(
+                parent: parent,
+                dependencies: dependencies,
+                name: name,
+                actionType: actionType,
+                attributes: attributes,
+                startTime: startTime,
+                dateCorrection: dateCorrection,
+                isContinuous: isContinuous,
+                onActionEventSent: onActionEventSent
+        )
+    }
+    // swiftlint:enable function_default_parameter_at_end
+}
+
 class RUMContextProviderMock: RUMContextProvider {
     init(context: RUMContext = .mockAny()) {
         self.context = context
