@@ -841,9 +841,10 @@ class RUMViewScopeTests: XCTestCase {
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
 
         // Then
-        XCTAssertEqual(event.model.view.resource.count, 1, "After dropping 1 Resource event (of 2), View should record 1 Resource")
+        XCTAssertEqual(event.model.view.resource.count, 1, "After dropping 1 Resource event (out of 2), View should record 1 Resource")
         XCTAssertEqual(event.model.view.action.count, 1, "After dropping a User Action event, View should record only ApplicationStart Action")
         XCTAssertEqual(event.model.view.error.count, 0, "After dropping an Error event, View should record 0 Errors")
+        XCTAssertEqual(event.model.dd.documentVersion, 3, "After starting the application, stopping the view, starting/stopping one resource out of 2, discarding a user action and an error, the View scope should have sent 3 View events.")
     }
 
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenNoEventIsSent() throws {

@@ -540,14 +540,13 @@ extension RUMViewScope {
 }
 
 extension RUMResourceScope {
-    // swiftlint:disable function_default_parameter_at_end
     static func mockWith(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
-        dateCorrection: DateCorrection,
+        dateCorrection: DateCorrection = .zero,
         url: String = .mockAny(),
         httpMethod: RUMMethod = .mockAny(),
         isFirstPartyResource: Bool? = nil,
@@ -572,7 +571,6 @@ extension RUMResourceScope {
             onErrorEventSent: onErrorEventSent
         )
     }
-    // swiftlint:enable function_default_parameter_at_end
 }
 
 extension RUMUserActionScope {

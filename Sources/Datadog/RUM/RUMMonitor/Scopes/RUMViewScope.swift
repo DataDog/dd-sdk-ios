@@ -55,6 +55,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var version: UInt = 0
 
     /// Whether or not the current call to `process(command:)` should trigger a `sendViewEvent()` with an update.
+    /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
 
     init(
