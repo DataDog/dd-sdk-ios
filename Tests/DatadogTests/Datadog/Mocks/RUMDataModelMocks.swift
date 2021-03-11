@@ -76,6 +76,7 @@ extension RUMViewEvent {
                 loadingTime: .mockRandom(),
                 loadingType: nil,
                 longTask: .init(count: .mockRandom()),
+                name: .mockRandom(),
                 referrer: .mockRandom(),
                 resource: .init(count: .mockRandom()),
                 timeSpent: .mockRandom(),

@@ -136,6 +136,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             && sendRUMViewEvent.view.id == lastRUMViewEvent.view.id,
             "The `RUMViewEvent` sent must be linked to the same RUM Session as the last `RUMViewEvent`."
         )
+        XCTAssertEqual(sendRUMViewEvent.connectivity, lastRUMViewEvent.connectivity)
+        XCTAssertEqual(sendRUMViewEvent.usr, lastRUMViewEvent.usr)
         XCTAssertEqual(
             sendRUMViewEvent.view.crash?.count, 1, "The `RUMViewEvent` must include incremented crash count."
         )
@@ -147,6 +149,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertTrue(
             sendRUMViewEvent.view.isActive == false, "The `RUMViewEvent` must be marked as inactive."
         )
+        XCTAssertEqual(sendRUMViewEvent.view.name, lastRUMViewEvent.view.name)
+        XCTAssertEqual(sendRUMViewEvent.view.url, lastRUMViewEvent.view.url)
+        XCTAssertEqual(sendRUMViewEvent.view.error.count, lastRUMViewEvent.view.error.count)
+        XCTAssertEqual(sendRUMViewEvent.view.resource.count, lastRUMViewEvent.view.resource.count)
+        XCTAssertEqual(sendRUMViewEvent.view.action.count, lastRUMViewEvent.view.action.count)
         XCTAssertEqual(
             sendRUMViewEvent.date,
             crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
