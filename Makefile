@@ -20,9 +20,15 @@ DD_SDK_SWIFT_TESTING_ENV=ci\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
+define DD_SDK_BASE_XCCONFIG
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
+endef
+export DD_SDK_BASE_XCCONFIG
+
 dependencies:
 		@echo "⚙️  Installing dependencies..."
 		@carthage bootstrap --platform iOS
+		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
