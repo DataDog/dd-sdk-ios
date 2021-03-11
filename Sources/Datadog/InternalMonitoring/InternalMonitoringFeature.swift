@@ -73,8 +73,8 @@ internal final class InternalMonitoringFeature {
                 headers: [
                     .contentTypeHeader(contentType: .applicationJSON),
                     .userAgentHeader(
-                        appName: configuration.sdkServiceName,
-                        appVersion: configuration.sdkVersion,
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
                     )
                 ]
@@ -140,7 +140,6 @@ internal final class InternalMonitoringFeature {
         )
 
         internalLogger.addAttribute(forKey: "application.name", value: configuration.common.applicationName)
-        internalLogger.addAttribute(forKey: "application.version", value: configuration.common.applicationVersion)
         internalLogger.addAttribute(forKey: "application.bundle-id", value: configuration.common.applicationBundleIdentifier)
 
         self.monitor = InternalMonitor(sdkLogger: internalLogger)

@@ -262,6 +262,26 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     }
 }
 
+extension FeaturesConfiguration.InternalMonitoring {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        sdkServiceName: String = .mockAny(),
+        sdkEnvironment: String = .mockAny(),
+        logsUploadURLWithClientToken: URL = .mockAny()
+    ) -> Self {
+        return .init(
+            common: common,
+            sdkServiceName: sdkServiceName,
+            sdkEnvironment: sdkEnvironment,
+            logsUploadURLWithClientToken: logsUploadURLWithClientToken
+        )
+    }
+}
+
 extension AppContext {
     static func mockAny() -> AppContext {
         return mockWith()

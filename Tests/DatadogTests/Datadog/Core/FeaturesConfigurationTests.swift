@@ -494,7 +494,6 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.sdkServiceName, "dd-sdk-ios", "Internal monitoring data should be available under \"service:dd-sdk-ios\"")
         XCTAssertEqual(configuration.sdkEnvironment, "prod", "Internal monitoring data should be available under \"env:prod\"")
         XCTAssertEqual(configuration.sdkServiceName, "dd-sdk-ios", "Internal monitoring data should be available under \"service:dd-sdk-ios\"")
-        XCTAssertEqual(configuration.sdkVersion, sdkVersion)
         XCTAssertEqual(
             configuration.logsUploadURLWithClientToken.absoluteString,
             "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + internalMonitoringClientToken
