@@ -1,4 +1,8 @@
-// Base configuration file, included by all targets.
+// Base configuration file for all targets.
+// Note: all configuration here will be applied to `Datadog*.framework` built with Carthage.
+
+// Include internal base config (git-ignored, so excluded from Carthage build)
+#include? "Base.local.xcconfig"
 
 // Required after adding `lyft/Kronos` dependency through Carthage.
 // Otherwise build fails with "module 'Kronos' was created for incompatible target arm64-apple-ios8.0"

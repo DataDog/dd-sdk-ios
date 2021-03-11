@@ -515,6 +515,7 @@ extension Datadog {
                 return self
             }
 
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
             // MARK: - Internal Monitoring Configuration
 
             /// Enables the internal monitoring feature.
@@ -528,11 +529,12 @@ extension Datadog {
                 configuration.internalMonitoringClientToken = clientToken
                 return self
             }
+#endif
 
             // MARK: - Features Common Configuration
 
             /// Sets the default service name associated with data send to Datadog.
-            /// NOTE: The `serviceName` can be also overwriten by each `Logger` instance.
+            /// NOTE: The `serviceName` can be also overwritten by each `Logger` instance.
             /// - Parameter serviceName: the service name (default value is set to application bundle identifier)
             public func set(serviceName: String) -> Builder {
                 configuration.serviceName = serviceName
