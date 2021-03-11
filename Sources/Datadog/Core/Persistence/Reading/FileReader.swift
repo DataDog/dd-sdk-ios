@@ -20,7 +20,7 @@ internal final class FileReader: Reader {
     init(
         dataFormat: DataFormat,
         orchestrator: FilesOrchestrator,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator

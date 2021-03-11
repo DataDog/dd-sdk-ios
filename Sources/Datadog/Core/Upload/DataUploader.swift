@@ -65,7 +65,7 @@ internal final class DataUploader {
         urlProvider: UploadURLProvider,
         httpClient: HTTPClient,
         httpHeaders: HTTPHeaders,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.urlProvider = urlProvider
         self.httpClient = httpClient
@@ -84,6 +84,7 @@ internal final class DataUploader {
         httpClient.send(request: request) { [weak self] result in
             switch result {
             case .success(let httpResponse):
+                self?.internalMonitor?.sdkLogger.debug("Upload success")
                 uploadStatus = DataUploadStatus(from: httpResponse)
             case .failure(let error):
                 self?.internalMonitor?.sdkLogger.error("Failed to upload data", error: error)

@@ -12,7 +12,7 @@ internal protocol DataMigrator {
 internal struct DataMigratorFactory {
     /// Data directories for the feature.
     let directories: FeatureDirectories
-    let internalMonitor: InternalMonitor?
+    var internalMonitor: InternalMonitor? = nil
 
     /// Resolves migrator to use when the SDK is started.
     func resolveInitialMigrator() -> DataMigrator {

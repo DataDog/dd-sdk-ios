@@ -11,7 +11,7 @@ import Foundation
 internal struct MoveDataMigrator: DataMigrator {
     let sourceDirectory: Directory
     let destinationDirectory: Directory
-    let internalMonitor: InternalMonitor?
+    var internalMonitor: InternalMonitor? = nil
 
     func migrate() {
         do {

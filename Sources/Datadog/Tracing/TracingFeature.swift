@@ -59,7 +59,7 @@ internal final class TracingFeature {
     static func createStorage(
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: TracingFeature.featureName,
@@ -74,7 +74,7 @@ internal final class TracingFeature {
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: TracingFeature.featureName,
@@ -104,7 +104,7 @@ internal final class TracingFeature {
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         let storage = TracingFeature.createStorage(
             directories: directories,

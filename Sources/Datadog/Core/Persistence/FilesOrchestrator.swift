@@ -24,7 +24,7 @@ internal class FilesOrchestrator {
         directory: Directory,
         performance: StoragePerformancePreset,
         dateProvider: DateProvider,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.directory = directory
         self.performance = performance

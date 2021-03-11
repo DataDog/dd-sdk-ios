@@ -56,7 +56,7 @@ internal final class RUMFeature {
     static func createStorage(
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
@@ -71,7 +71,7 @@ internal final class RUMFeature {
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
@@ -109,7 +109,7 @@ internal final class RUMFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         let eventsMapper = RUMEventsMapper(
             viewEventMapper: configuration.eventMapper.viewEventMapper,

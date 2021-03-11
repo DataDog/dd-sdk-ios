@@ -138,7 +138,8 @@ extension FeaturesConfiguration {
         tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
+        internalMonitoring: InternalMonitoring? = nil
     ) -> Self {
         return .init(
             common: common,
@@ -146,7 +147,8 @@ extension FeaturesConfiguration {
             tracing: tracing,
             rum: rum,
             urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
-            crashReporting: crashReporting
+            crashReporting: crashReporting,
+            internalMonitoring: internalMonitoring
         )
     }
 }

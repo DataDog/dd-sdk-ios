@@ -9,7 +9,7 @@ import Foundation
 /// Data migrator which deletes all files in given directory.
 internal struct DeleteAllDataMigrator: DataMigrator {
     let directory: Directory
-    let internalMonitor: InternalMonitor?
+    var internalMonitor: InternalMonitor? = nil
 
     func migrate() {
         do {

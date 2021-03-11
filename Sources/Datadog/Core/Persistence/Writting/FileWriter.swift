@@ -19,7 +19,7 @@ internal final class FileWriter: Writer {
     init(
         dataFormat: DataFormat,
         orchestrator: FilesOrchestrator,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator

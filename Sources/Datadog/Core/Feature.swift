@@ -48,7 +48,7 @@ internal struct FeatureStorage {
         dataFormat: DataFormat,
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-read-write",
@@ -132,7 +132,7 @@ internal struct FeatureUpload {
         uploadHTTPHeaders: HTTPHeaders,
         uploadURLProvider: UploadURLProvider,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor?
+        internalMonitor: InternalMonitor? = nil
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",

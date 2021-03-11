@@ -17,7 +17,7 @@ internal struct RUMEventsMapper {
     let errorEventMapper: RUMErrorEventMapper?
     let resourceEventMapper: RUMResourceEventMapper?
     let actionEventMapper: RUMActionEventMapper?
-    let internalMonitor: InternalMonitor?
+    var internalMonitor: InternalMonitor? = nil
 
     // MARK: - EventMapper
 
