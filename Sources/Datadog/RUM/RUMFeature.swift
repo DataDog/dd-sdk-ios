@@ -55,20 +55,23 @@ internal final class RUMFeature {
 
     static func createStorage(
         directories: FeatureDirectories,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor?
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directories: directories,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor?
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
@@ -97,26 +100,35 @@ internal final class RUMFeature {
                     )
                 ]
             ),
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     convenience init(
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor?
     ) {
         let eventsMapper = RUMEventsMapper(
             viewEventMapper: configuration.eventMapper.viewEventMapper,
             errorEventMapper: configuration.eventMapper.errorEventMapper,
             resourceEventMapper: configuration.eventMapper.resourceEventMapper,
-            actionEventMapper: configuration.eventMapper.actionEventMapper
+            actionEventMapper: configuration.eventMapper.actionEventMapper,
+            internalMonitor: internalMonitor
         )
         let storage = RUMFeature.createStorage(
             directories: directories,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
-        let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
+        let upload = RUMFeature.createUpload(
+            storage: storage,
+            configuration: configuration,
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
+        )
         self.init(
             eventsMapper: eventsMapper,
             storage: storage,

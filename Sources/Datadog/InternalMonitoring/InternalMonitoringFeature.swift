@@ -15,8 +15,8 @@ internal func obtainInternalMonitoringFeatureLogDirectories() throws -> FeatureD
     )
 }
 
-/// Internal Monitoring `Logger`, sending SDK monitoring data to Datadog org.
-internal var developerLogger: Logger? { InternalMonitoringFeature.instance?.internalLogger }
+///// Internal Monitoring `Logger`, sending SDK monitoring data to Datadog org.
+//internal var developerLogger: Logger? { InternalMonitoringFeature.instance?.monitor.sdkLogger }
 
 /// This feature provides observability for internal events happening in the SDK. All data collected by this feature
 /// is sent to Datadog org, not to the customer's org. This feature is opt-in and requires specific configuration to be enabled.
@@ -44,8 +44,8 @@ internal final class InternalMonitoringFeature {
     /// Logs upload worker.
     let logsUpload: FeatureUpload
 
-    /// The logger sending internal monitoring data to Datadog org.
-    let internalLogger: Logger
+    /// Monitor bundling internal monitoring tools for `dd-sdk-ios` observability in Datadog org.
+    let monitor: InternalMonitor
 
     // MARK: - Initialization
 
@@ -54,7 +54,10 @@ internal final class InternalMonitoringFeature {
             featureName: InternalMonitoringFeature.featureName,
             dataFormat: InternalMonitoringFeature.logsDataFormat,
             directories: directories,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            // (!) Do not inject monitoring bundle, otherwise the feature will be monitoring itself
+            // leading to infinite processing loops.
+            internalMonitor: nil
         )
     }
 
@@ -82,7 +85,10 @@ internal final class InternalMonitoringFeature {
                     .ddsource()
                 ]
             ),
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            // (!) Do not inject monitoring bundle, otherwise the feature will be monitoring itself
+            // leading to infinite processing loops.
+            internalMonitor: nil
         )
     }
 
@@ -111,26 +117,31 @@ internal final class InternalMonitoringFeature {
         self.logsStorage = storage
         self.logsUpload = upload
 
-        // Initialize internal logger
-        self.internalLogger = Logger(
-            logBuilder: LogBuilder(
-                applicationVersion: configuration.sdkVersion,
-                environment: configuration.sdkEnvironment,
-                serviceName: configuration.sdkServiceName,
-                loggerName: configuration.loggerName,
-                userInfoProvider: UserInfoProvider(), // TODO: RUMM-1128 Anonymize user info instead of passing empty info
-                networkConnectionInfoProvider: commonDependencies.networkConnectionInfoProvider,
-                carrierInfoProvider: commonDependencies.carrierInfoProvider,
-                dateCorrector: commonDependencies.dateCorrector
-            ),
-            logOutput: LogFileOutput(
-                fileWriter: storage.writer,
-                rumErrorsIntegration: nil
-            ),
-            dateProvider: commonDependencies.dateProvider,
-            identifier: configuration.loggerName,
-            rumContextIntegration: nil,
-            activeSpanIntegration: nil
+        // Initialize internal monitor
+
+        self.monitor = InternalMonitor(
+            sdkLogger: Logger(
+                logBuilder: LogBuilder(
+                    applicationVersion: configuration.sdkVersion, // TODO: RUMM-1128 Unify with `dd-sdk-android`
+                    environment: configuration.sdkEnvironment,
+                    serviceName: configuration.sdkServiceName,
+                    loggerName: configuration.loggerName,
+                    userInfoProvider: UserInfoProvider(), // TODO: RUMM-1128 Anonymize user info instead of passing empty info
+                    networkConnectionInfoProvider: commonDependencies.networkConnectionInfoProvider,
+                    carrierInfoProvider: commonDependencies.carrierInfoProvider,
+                    dateCorrector: commonDependencies.dateCorrector
+                ),
+                logOutput: LogFileOutput(
+                    fileWriter: storage.writer,
+                    rumErrorsIntegration: nil
+                ),
+                dateProvider: commonDependencies.dateProvider,
+                identifier: configuration.loggerName,
+                rumContextIntegration: nil,
+                activeSpanIntegration: nil
+            )
         )
+
+        // TODO: RUMM-1128 Add `host_application.name` global attribute to `sdkLogger`
     }
 }

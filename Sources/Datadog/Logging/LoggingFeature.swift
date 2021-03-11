@@ -49,19 +49,25 @@ internal final class LoggingFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(
+        directories: FeatureDirectories,
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor?
+    ) -> FeatureStorage {
         return FeatureStorage(
             featureName: LoggingFeature.featureName,
             dataFormat: LoggingFeature.dataFormat,
             directories: directories,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.Logging,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor?
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: LoggingFeature.featureName,
@@ -82,17 +88,28 @@ internal final class LoggingFeature {
                     .ddsource()
                 ]
             ),
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     convenience init(
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor?
     ) {
-        let storage = LoggingFeature.createStorage(directories: directories, commonDependencies: commonDependencies)
-        let upload = LoggingFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
+        let storage = LoggingFeature.createStorage(
+            directories: directories,
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
+        )
+        let upload = LoggingFeature.createUpload(
+            storage: storage,
+            configuration: configuration,
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
+        )
         self.init(
             storage: storage,
             upload: upload,

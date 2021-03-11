@@ -9,19 +9,15 @@ import Foundation
 /// Data migrator which moves files from source directory to destination directory.
 /// Existing files in target direcory remain untouched.
 internal struct MoveDataMigrator: DataMigrator {
-    private let sourceDirectory: Directory
-    private let destinationDirectory: Directory
-
-    init(sourceDirectory: Directory, destinationDirectory: Directory) {
-        self.sourceDirectory = sourceDirectory
-        self.destinationDirectory = destinationDirectory
-    }
+    let sourceDirectory: Directory
+    let destinationDirectory: Directory
+    let internalMonitor: InternalMonitor?
 
     func migrate() {
         do {
             try sourceDirectory.moveAllFiles(to: destinationDirectory)
         } catch {
-            developerLogger?.error(
+            internalMonitor?.sdkLogger.error(
                 """
                 🔥 Failed to use `MoveDataMigrator` for source directory \(sourceDirectory.url)
                 and destination directory \(destinationDirectory.url) due to: \(error)

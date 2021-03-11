@@ -53,13 +53,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 return
             }
 
-            developerLogger?.info("⏳ (\(self.featureName)) Checking for next batch...")
-
             let blockersForUpload = self.uploadConditions.blockersForUpload()
             let isSystemReady = blockersForUpload.count == 0
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
-                developerLogger?.info("⏳ (\(self.featureName)) Uploading batch...")
                 userLogger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
@@ -69,17 +66,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     self.fileReader.markBatchAsRead(batch)
                     self.delay.decrease()
 
-                    developerLogger?.info("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                     userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                 } else {
                     self.delay.increase()
 
-                    developerLogger?.info("  → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                     userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                developerLogger?.info("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
                 userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()

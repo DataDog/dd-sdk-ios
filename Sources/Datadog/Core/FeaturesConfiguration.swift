@@ -189,7 +189,8 @@ extension FeaturesConfiguration {
                         viewEventMapper: configuration.rumViewEventMapper,
                         errorEventMapper: configuration.rumErrorEventMapper,
                         resourceEventMapper: configuration.rumResourceEventMapper,
-                        actionEventMapper: configuration.rumActionEventMapper
+                        actionEventMapper: configuration.rumActionEventMapper,
+                        internalMonitor: nil // TODO: RUMM-1128 Do not create `RUMEventsMapper` here, instead pass its configuration
                     ),
                     autoInstrumentation: autoInstrumentation
                 )

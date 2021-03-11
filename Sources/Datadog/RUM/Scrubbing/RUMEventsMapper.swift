@@ -17,6 +17,7 @@ internal struct RUMEventsMapper {
     let errorEventMapper: RUMErrorEventMapper?
     let resourceEventMapper: RUMResourceEventMapper?
     let actionEventMapper: RUMActionEventMapper?
+    let internalMonitor: InternalMonitor?
 
     // MARK: - EventMapper
 
@@ -33,7 +34,7 @@ internal struct RUMEventsMapper {
         case let actionEvent as RUMEvent<RUMActionEvent>:
             return map(rumEvent: actionEvent, using: actionEventMapper) as? T
         default:
-            developerLogger?.warn("No `RUMEventsMapper` is registered for \(type(of: event))")
+            internalMonitor?.sdkLogger.error("No `RUMEventMapper` is registered for \(type(of: event))")
             return event
         }
     }

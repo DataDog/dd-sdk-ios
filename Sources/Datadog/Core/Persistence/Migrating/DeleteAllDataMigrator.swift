@@ -8,17 +8,14 @@ import Foundation
 
 /// Data migrator which deletes all files in given directory.
 internal struct DeleteAllDataMigrator: DataMigrator {
-    private let directory: Directory
-
-    init(directory: Directory) {
-        self.directory = directory
-    }
+    let directory: Directory
+    let internalMonitor: InternalMonitor?
 
     func migrate() {
         do {
             try directory.deleteAllFiles()
         } catch {
-            developerLogger?.error(
+            internalMonitor?.sdkLogger.error(
                 "🔥 Failed to use `DeleteAllDataMigrator` in directory \(directory.url) due to: \(error)"
             )
         }
