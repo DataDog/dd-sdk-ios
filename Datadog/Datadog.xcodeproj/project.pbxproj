@@ -182,9 +182,6 @@
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		6152C83E24BE1C91006A1679 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 6152C83D24BE1C91006A1679 /* HTTPServerMock */; };
 		6152C84024BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */; };
-		61569795256CF6D400C6AADA /* Kronos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; };
-		615697E3256CFB4700C6AADA /* Kronos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; };
-		615697E4256CFB4700C6AADA /* Kronos.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61569794256CF6D400C6AADA /* Kronos.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
 		6156CB9024DDA8BE008CB2B2 /* RUMCurrentContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8F24DDA8BE008CB2B2 /* RUMCurrentContext.swift */; };
 		6156CB9324DDAA34008CB2B2 /* RUMCurrentContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9224DDAA34008CB2B2 /* RUMCurrentContextTests.swift */; };
@@ -376,6 +373,9 @@
 		61FF282924B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */; };
 		61FF283024BC5E2D000B3D9B /* RUMEventFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */; };
 		61FF9A4525AC5DEA001058CC /* RUMViewIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */; };
+		9E0542CB25F8EBBE007A3D0B /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
+		9E0542D725F8EBE3007A3D0B /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
+		9E0542D825F8EBE3007A3D0B /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
 		9E307C3224C8846D0039607E /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
@@ -442,9 +442,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				9E0542D825F8EBE3007A3D0B /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
 				61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
 				61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
-				615697E4256CFB4700C6AADA /* Kronos.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -634,7 +634,6 @@
 		6152C84224BE2165006A1679 /* MockServerAddress.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MockServerAddress.local.xcconfig; sourceTree = "<group>"; };
 		615519252461BCE7002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519262461BCE7002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
-		61569794256CF6D400C6AADA /* Kronos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Kronos.framework; path = ../Carthage/Build/iOS/Kronos.framework; sourceTree = "<group>"; };
 		61569894256D0E9A00C6AADA /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextProvider.swift; sourceTree = "<group>"; };
 		6156CB8F24DDA8BE008CB2B2 /* RUMCurrentContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCurrentContext.swift; sourceTree = "<group>"; };
@@ -825,6 +824,7 @@
 		61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventMatcher.swift; sourceTree = "<group>"; };
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewIdentity.swift; sourceTree = "<group>"; };
+		9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = ../Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
 		9E26E6B824C87693000B3270 /* RUMDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMDataModels.swift; sourceTree = "<group>"; };
 		9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
 		9E544A4E24753C6E00E83072 /* MethodSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
@@ -871,7 +871,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				615697E3256CFB4700C6AADA /* Kronos.framework in Frameworks */,
+				9E0542D725F8EBE3007A3D0B /* Kronos.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -897,7 +897,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61569795256CF6D400C6AADA /* Kronos.framework in Frameworks */,
+				9E0542CB25F8EBBE007A3D0B /* Kronos.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1369,7 +1369,7 @@
 		61133C6F2423993200786299 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				61569794256CF6D400C6AADA /* Kronos.framework */,
+				9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -3368,7 +3368,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
+					"$(SRCROOT)/../Carthage/Build/",
 				);
 				INFOPLIST_FILE = TargetSupport/Datadog/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -3398,7 +3398,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
+					"$(SRCROOT)/../Carthage/Build/",
 				);
 				INFOPLIST_FILE = TargetSupport/Datadog/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -3473,6 +3473,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../Carthage/Build/",
+				);
 				INFOPLIST_FILE = TargetSupport/DatadogObjc/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3498,6 +3502,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../Carthage/Build/",
+				);
 				INFOPLIST_FILE = TargetSupport/DatadogObjc/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3521,10 +3529,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3547,10 +3551,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3571,10 +3571,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = TargetSupport/Example/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3774,7 +3770,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/iOS",
+					"$(SRCROOT)/../Carthage/Build/",
 				);
 				INFOPLIST_FILE = TargetSupport/Datadog/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -3802,6 +3798,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../Carthage/Build/",
+				);
 				INFOPLIST_FILE = TargetSupport/DatadogObjc/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
