@@ -39,6 +39,7 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
+            .enableInternalMonitoring(clientToken: Environment.readClientToken())
 
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {

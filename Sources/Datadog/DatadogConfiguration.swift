@@ -181,6 +181,9 @@ extension Datadog {
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
 
+        /// The client token autorizing internal monitoring data to be sent to Datadog org.
+        private(set) var internalMonitoringClientToken: String?
+
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
         /// - Parameter clientToken: the client token (generated for the RUM Application) obtained on Datadog website.
@@ -244,7 +247,8 @@ extension Datadog {
                     rumActionEventMapper: nil,
                     rumErrorEventMapper: nil,
                     batchSize: .medium,
-                    uploadFrequency: .average
+                    uploadFrequency: .average,
+                    internalMonitoringClientToken: nil
                 )
             }
 
@@ -508,6 +512,20 @@ extension Datadog {
             /// - Parameter crashReportingPlugin: `nil` by default (Datadog crash reporting is disabled by default)
             public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder {
                 configuration.crashReportingPlugin = crashReportingPlugin
+                return self
+            }
+
+            // MARK: - Internal Monitoring Configuration
+
+            /// Enables the internal monitoring feature.
+            ///
+            /// This feature provides observability for internal events happening in the SDK. All data collected by this feature
+            /// is sent to Datadog org, not to the customer's org. This feature is opt-in and requires specific configuration to be enabled.
+            /// It is never enabled by default. We do not collect any internal monitoring data for those who didn't explicitly opt-in for that by contacting Datadog.
+            ///
+            /// - Parameter clientToken: the client token authorizing monitoring data to be uploaded to Datadog's org.
+            public func enableInternalMonitoring(clientToken: String) -> Builder {
+                configuration.internalMonitoringClientToken = clientToken
                 return self
             }
 

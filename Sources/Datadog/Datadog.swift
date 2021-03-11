@@ -179,6 +179,8 @@ public class Datadog {
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumAutoInstrumentation: RUMAutoInstrumentation?
 
+        var internalMonitoring: InternalMonitoringFeature?
+
         let commonDependencies = FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: configuration.common.performance,
@@ -238,6 +240,14 @@ public class Datadog {
             )
         }
 
+        if let internalMonitoringConfiguration = configuration.internalMonitoring {
+            internalMonitoring = InternalMonitoringFeature(
+                logDirectories: try obtainInternalMonitoringFeatureLogDirectories(),
+                configuration: internalMonitoringConfiguration,
+                commonDependencies: commonDependencies
+            )
+        }
+
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
@@ -248,6 +258,8 @@ public class Datadog {
 
         URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
         URLSessionAutoInstrumentation.instance?.enable()
+
+        InternalMonitoringFeature.instance = internalMonitoring
 
         // Only after all features were initialized with no error thrown:
         self.instance = Datadog(
@@ -292,6 +304,8 @@ public class Datadog {
 
         RUMAutoInstrumentation.instance = nil
         URLSessionAutoInstrumentation.instance = nil
+
+        InternalMonitoringFeature.instance = nil
 
         // Deinitialize Crash Reporter managed internally by the SDK
         Global.crashReporter = nil

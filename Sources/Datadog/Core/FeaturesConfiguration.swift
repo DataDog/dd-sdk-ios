@@ -62,6 +62,15 @@ internal struct FeaturesConfiguration {
         let crashReportingPlugin: DDCrashReportingPluginType
     }
 
+    struct InternalMonitoring {
+        let serviceName: String
+        let environment: String
+        let hostApplicationName: String
+        let hostApplicationVersion: String
+        let hostApplicationBundleIdentifier: String
+        let logsUploadURLWithClientToken: URL
+    }
+
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
@@ -74,6 +83,8 @@ internal struct FeaturesConfiguration {
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
     /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
     let crashReporting: CrashReporting?
+    /// Internal Monitoring feature configuration or `nil` if the feature was not enabled.
+    let internalMonitoring: InternalMonitoring?
 }
 
 extension FeaturesConfiguration {
@@ -90,6 +101,7 @@ extension FeaturesConfiguration {
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var crashReporting: CrashReporting?
+        var internalMonitoring: InternalMonitoring?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
@@ -226,12 +238,27 @@ extension FeaturesConfiguration {
             }
         }
 
+        if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
+            internalMonitoring = InternalMonitoring(
+                serviceName: "dd-sdk-ios",
+                environment: "prod",
+                hostApplicationName: common.applicationName,
+                hostApplicationVersion: common.applicationVersion,
+                hostApplicationBundleIdentifier: common.applicationBundleIdentifier,
+                logsUploadURLWithClientToken: try ifValid(
+                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us.logsEndpoint.url,
+                    clientToken: internalMonitoringClientToken
+                )
+            )
+        }
+
         self.common = common
         self.logging = logging
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
+        self.internalMonitoring = internalMonitoring
     }
 }
 

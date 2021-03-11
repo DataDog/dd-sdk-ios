@@ -1,0 +1,130 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-2020 Datadog, Inc.
+ */
+
+import Foundation
+
+/// Obtains subdirectories in `/Library/Caches` where internal monitoring data is stored.
+internal func obtainInternalMonitoringFeatureLogDirectories() throws -> FeatureDirectories {
+    let version = "v1"
+    return FeatureDirectories(
+        unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.im-logs/intermediate-\(version)"),
+        authorized: try Directory(withSubdirectoryPath: "com.datadoghq.im-logs/\(version)")
+    )
+}
+
+/// This feature provides observability for internal events happening in the SDK. All data collected by this feature
+/// is sent to Datadog org, not to the customer's org. This feature is opt-in and requires specific configuration to be enabled.
+/// It is never enabled by default. We do not collect any internal monitoring data for those who didn't explicitly opt-in for that by contacting Datadog.
+///
+/// This feature uses Datadog logs for sending observability data.
+///
+/// The `InternalMonitoringFeature` facade creates and owns components enabling the feature.
+/// Bundles dependencies for monitoring-related components created later at runtime  (i.e. internal `Logger`).
+internal final class InternalMonitoringFeature {
+    /// Single, shared instance of `InternalMonitoringFeature`.
+    internal static var instance: InternalMonitoringFeature?
+
+    /// Tells if the feature was enabled by the user in the SDK configuration.
+    static var isEnabled: Bool { instance != nil }
+
+    // MARK: - Configuration
+
+    let configuration: FeaturesConfiguration.InternalMonitoring
+
+    // MARK: - Dependencies
+
+    let dateProvider: DateProvider
+    let dateCorrector: DateCorrectorType
+    let userInfoProvider: UserInfoProvider
+    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
+    let carrierInfoProvider: CarrierInfoProviderType
+
+    // MARK: - Components
+
+    static let featureName = "internal-monitoring"
+    /// NOTE: any change to data format requires updating the directory url to be unique
+    static let logsDataFormat = DataFormat(prefix: "[", suffix: "]", separator: ",")
+
+    /// Log files storage.
+    let logsStorage: FeatureStorage
+    /// Logs upload worker.
+    let logsUpload: FeatureUpload
+
+    // MARK: - Initialization
+
+    static func createLogsStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+        return FeatureStorage(
+            featureName: InternalMonitoringFeature.featureName,
+            dataFormat: InternalMonitoringFeature.logsDataFormat,
+            directories: directories,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    static func createLogsUpload(
+        storage: FeatureStorage,
+        configuration: FeaturesConfiguration.InternalMonitoring,
+        commonDependencies: FeaturesCommonDependencies
+    ) -> FeatureUpload {
+        return FeatureUpload(
+            featureName: InternalMonitoringFeature.featureName,
+            storage: storage,
+            uploadHTTPHeaders: HTTPHeaders(
+                headers: [
+                    .contentTypeHeader(contentType: .applicationJSON),
+                    .userAgentHeader(
+                        appName: "dd-sdk-ios",
+                        appVersion: sdkVersion,
+                        device: commonDependencies.mobileDevice
+                    )
+                ]
+            ),
+            uploadURLProvider: UploadURLProvider(
+                urlWithClientToken: configuration.logsUploadURLWithClientToken,
+                queryItemProviders: [
+                    .ddsource()
+                ]
+            ),
+            commonDependencies: commonDependencies
+        )
+    }
+
+    convenience init(
+        logDirectories: FeatureDirectories,
+        configuration: FeaturesConfiguration.InternalMonitoring,
+        commonDependencies: FeaturesCommonDependencies
+    ) {
+        let storage = InternalMonitoringFeature.createLogsStorage(directories: logDirectories, commonDependencies: commonDependencies)
+        let upload = InternalMonitoringFeature.createLogsUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
+        self.init(
+            storage: storage,
+            upload: upload,
+            configuration: configuration,
+            commonDependencies: commonDependencies
+        )
+    }
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        configuration: FeaturesConfiguration.InternalMonitoring,
+        commonDependencies: FeaturesCommonDependencies
+    ) {
+        // Configuration
+        self.configuration = configuration
+
+        // Bundle dependencies
+        self.dateProvider = commonDependencies.dateProvider
+        self.dateCorrector = commonDependencies.dateCorrector
+        self.userInfoProvider = commonDependencies.userInfoProvider
+        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
+        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
+
+        // Initialize stacks
+        self.logsStorage = storage
+        self.logsUpload = upload
+    }
+}

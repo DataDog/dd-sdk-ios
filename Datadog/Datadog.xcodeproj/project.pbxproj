@@ -380,6 +380,7 @@
 		61EF78B1257E2E7A00EDCCB3 /* MoveDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78B0257E2E7A00EDCCB3 /* MoveDataMigrator.swift */; };
 		61EF78B7257E37D500EDCCB3 /* MoveDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */; };
 		61EF78C1257F842000EDCCB3 /* FeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78C0257F842000EDCCB3 /* FeatureTests.swift */; };
+		61F1878425FA121F0022CE9A /* InternalMonitoringFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1878325FA121F0022CE9A /* InternalMonitoringFeature.swift */; };
 		61F1A61A2498A51700075390 /* CoreMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A6192498A51700075390 /* CoreMocks.swift */; };
 		61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A620249A45E400075390 /* DDSpanContextTests.swift */; };
 		61F1A623249B811200075390 /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A622249B811200075390 /* Encoding.swift */; };
@@ -907,6 +908,7 @@
 		61EF78C0257F842000EDCCB3 /* FeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTests.swift; sourceTree = "<group>"; };
 		61F1872325F657630022CE9A /* DatadogIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogIntegrationTests.xctestplan; sourceTree = "<group>"; };
 		61F1872B25F658260022CE9A /* DatadogCrashReportingIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogCrashReportingIntegrationTests.xctestplan; sourceTree = "<group>"; };
+		61F1878325FA121F0022CE9A /* InternalMonitoringFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalMonitoringFeature.swift; sourceTree = "<group>"; };
 		61F1A6192498A51700075390 /* CoreMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMocks.swift; sourceTree = "<group>"; };
 		61F1A620249A45E400075390 /* DDSpanContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanContextTests.swift; sourceTree = "<group>"; };
 		61F1A622249B811200075390 /* Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
@@ -1147,6 +1149,7 @@
 				61E5332A24B75C3B003D6C4E /* RUM */,
 				61DE332425C826B6008E3EC2 /* CrashReporting */,
 				618E132A25233E890098C6B0 /* URLSessionAutoInstrumentation */,
+				61F1878225FA10A30022CE9A /* InternalMonitoring */,
 				61216277247D1F2100AC5D67 /* FeaturesIntegration */,
 				61133BB72423979B00786299 /* Utils */,
 				61E909E524A24DD3005EA2DE /* OpenTracing */,
@@ -2309,14 +2312,6 @@
 			path = CrashReporting;
 			sourceTree = "<group>";
 		};
-		61C1512F25ADC67500362D4B /* Processing */ = {
-			isa = PBXGroup;
-			children = (
-				61C1513025ADC68D00362D4B /* DataProcessorTests.swift */,
-			);
-			path = Processing;
-			sourceTree = "<group>";
-		};
 		61C3637E2436163400C4D4E6 /* DatadogPrivate */ = {
 			isa = PBXGroup;
 			children = (
@@ -2563,6 +2558,14 @@
 				61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */,
 			);
 			path = Migrating;
+			sourceTree = "<group>";
+		};
+		61F1878225FA10A30022CE9A /* InternalMonitoring */ = {
+			isa = PBXGroup;
+			children = (
+				61F1878325FA121F0022CE9A /* InternalMonitoringFeature.swift */,
+			);
+			path = InternalMonitoring;
 			sourceTree = "<group>";
 		};
 		61F1A61B2498AD2C00075390 /* SystemFrameworks */ = {
@@ -3249,6 +3252,7 @@
 				61BCB81F256EB77F0039887B /* ServerDateProvider.swift in Sources */,
 				61122EDA25B1BA9700F9C7F5 /* AttributesSanitizer.swift in Sources */,
 				61FF282624B8A248000B3D9B /* RUMEventOutput.swift in Sources */,
+				61F1878425FA121F0022CE9A /* InternalMonitoringFeature.swift in Sources */,
 				618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				E1D202EA24C065CF00D1AF3A /* ActiveSpansPool.swift in Sources */,
