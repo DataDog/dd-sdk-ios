@@ -118,30 +118,31 @@ internal final class InternalMonitoringFeature {
         self.logsUpload = upload
 
         // Initialize internal monitor
-
-        self.monitor = InternalMonitor(
-            sdkLogger: Logger(
-                logBuilder: LogBuilder(
-                    applicationVersion: configuration.sdkVersion, // TODO: RUMM-1128 Unify with `dd-sdk-android`
-                    environment: configuration.sdkEnvironment,
-                    serviceName: configuration.sdkServiceName,
-                    loggerName: configuration.loggerName,
-                    userInfoProvider: UserInfoProvider(), // TODO: RUMM-1128 Anonymize user info instead of passing empty info
-                    networkConnectionInfoProvider: commonDependencies.networkConnectionInfoProvider,
-                    carrierInfoProvider: commonDependencies.carrierInfoProvider,
-                    dateCorrector: commonDependencies.dateCorrector
-                ),
-                logOutput: LogFileOutput(
-                    fileWriter: storage.writer,
-                    rumErrorsIntegration: nil
-                ),
-                dateProvider: commonDependencies.dateProvider,
-                identifier: configuration.loggerName,
-                rumContextIntegration: nil,
-                activeSpanIntegration: nil
-            )
+        let internalLogger = Logger(
+            logBuilder: LogBuilder(
+                applicationVersion: configuration.common.applicationVersion,
+                environment: configuration.sdkEnvironment,
+                serviceName: configuration.sdkServiceName,
+                loggerName: configuration.loggerName,
+                userInfoProvider: UserInfoProvider(), // no-op to not associate user info with internal logs
+                networkConnectionInfoProvider: commonDependencies.networkConnectionInfoProvider,
+                carrierInfoProvider: commonDependencies.carrierInfoProvider,
+                dateCorrector: commonDependencies.dateCorrector
+            ),
+            logOutput: LogFileOutput(
+                fileWriter: storage.writer,
+                rumErrorsIntegration: nil
+            ),
+            dateProvider: commonDependencies.dateProvider,
+            identifier: configuration.loggerName,
+            rumContextIntegration: nil,
+            activeSpanIntegration: nil
         )
 
-        // TODO: RUMM-1128 Add `host_application.name` global attribute to `sdkLogger`
+        internalLogger.addAttribute(forKey: "application.name", value: configuration.common.applicationName)
+        internalLogger.addAttribute(forKey: "application.version", value: configuration.common.applicationVersion)
+        internalLogger.addAttribute(forKey: "application.bundle-id", value: configuration.common.applicationBundleIdentifier)
+
+        self.monitor = InternalMonitor(sdkLogger: internalLogger)
     }
 }

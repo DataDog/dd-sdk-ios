@@ -63,12 +63,10 @@ internal struct FeaturesConfiguration {
     }
 
     struct InternalMonitoring {
+        let common: Common
         let sdkServiceName: String
         let sdkEnvironment: String
         let sdkVersion: String
-        let hostApplicationName: String
-        let hostApplicationVersion: String
-        let hostApplicationBundleIdentifier: String
         /// Internal monitoring logger's name.
         let loggerName = "im-logger"
         let logsUploadURLWithClientToken: URL
@@ -244,12 +242,10 @@ extension FeaturesConfiguration {
 
         if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
             internalMonitoring = InternalMonitoring(
+                common: common,
                 sdkServiceName: "dd-sdk-ios",
                 sdkEnvironment: "prod",
                 sdkVersion: sdkVersion,
-                hostApplicationName: common.applicationName,
-                hostApplicationVersion: common.applicationVersion,
-                hostApplicationBundleIdentifier: common.applicationBundleIdentifier,
                 logsUploadURLWithClientToken: try ifValid(
                     endpointURLString: Datadog.Configuration.DatadogEndpoint.us.logsEndpoint.url,
                     clientToken: internalMonitoringClientToken
