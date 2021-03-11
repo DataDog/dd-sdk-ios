@@ -43,7 +43,7 @@ internal final class FileWriter: Writer {
             }
         } catch {
             userLogger.error("🔥 Failed to write data: \(error)")
-            internalMonitor?.sdkLogger.error("🔥 Failed to write data to file: \(error)")
+            internalMonitor?.sdkLogger.error("Failed to write data to file", error: error)
         }
     }
 }

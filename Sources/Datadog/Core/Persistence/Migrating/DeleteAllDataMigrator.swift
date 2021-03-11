@@ -16,7 +16,7 @@ internal struct DeleteAllDataMigrator: DataMigrator {
             try directory.deleteAllFiles()
         } catch {
             internalMonitor?.sdkLogger.error(
-                "🔥 Failed to use `DeleteAllDataMigrator` in directory \(directory.url) due to: \(error)"
+                "Failed to use `DeleteAllDataMigrator` in directory \(directory.url)", error: error
             )
         }
     }

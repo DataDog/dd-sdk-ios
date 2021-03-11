@@ -20,8 +20,9 @@ internal struct MoveDataMigrator: DataMigrator {
             internalMonitor?.sdkLogger.error(
                 """
                 🔥 Failed to use `MoveDataMigrator` for source directory \(sourceDirectory.url)
-                and destination directory \(destinationDirectory.url) due to: \(error)
-                """
+                and destination directory \(destinationDirectory.url)
+                """,
+                error: error
             )
         }
     }

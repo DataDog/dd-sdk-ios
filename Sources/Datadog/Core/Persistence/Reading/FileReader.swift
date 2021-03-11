@@ -36,7 +36,7 @@ internal final class FileReader: Reader {
                 let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
                 return Batch(data: batchData, file: file)
             } catch {
-                internalMonitor?.sdkLogger.error("🔥 Failed to read data from file: \(error)") // TODO: RUMM-1128 improve usage by passing `error`
+                internalMonitor?.sdkLogger.error("Failed to read data from file", error: error)
                 return nil
             }
         }
