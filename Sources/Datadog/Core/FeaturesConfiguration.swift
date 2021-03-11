@@ -40,7 +40,10 @@ internal struct FeaturesConfiguration {
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
-        let eventMapper: RUMEventsMapper
+        let viewEventMapper: RUMViewEventMapper?
+        let resourceEventMapper: RUMResourceEventMapper?
+        let actionEventMapper: RUMActionEventMapper?
+        let errorEventMapper: RUMErrorEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
     }
@@ -183,13 +186,10 @@ extension FeaturesConfiguration {
                     ),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
-                    eventMapper: RUMEventsMapper(
-                        viewEventMapper: configuration.rumViewEventMapper,
-                        errorEventMapper: configuration.rumErrorEventMapper,
-                        resourceEventMapper: configuration.rumResourceEventMapper,
-                        actionEventMapper: configuration.rumActionEventMapper,
-                        internalMonitor: nil // TODO: RUMM-1128 Do not create `RUMEventsMapper` here, instead pass its configuration
-                    ),
+                    viewEventMapper: configuration.rumViewEventMapper,
+                    resourceEventMapper: configuration.rumResourceEventMapper,
+                    actionEventMapper: configuration.rumActionEventMapper,
+                    errorEventMapper: configuration.rumErrorEventMapper,
                     autoInstrumentation: autoInstrumentation
                 )
             } else {

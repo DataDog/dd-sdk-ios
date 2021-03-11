@@ -112,10 +112,10 @@ internal final class RUMFeature {
         internalMonitor: InternalMonitor? = nil
     ) {
         let eventsMapper = RUMEventsMapper(
-            viewEventMapper: configuration.eventMapper.viewEventMapper,
-            errorEventMapper: configuration.eventMapper.errorEventMapper,
-            resourceEventMapper: configuration.eventMapper.resourceEventMapper,
-            actionEventMapper: configuration.eventMapper.actionEventMapper,
+            viewEventMapper: configuration.viewEventMapper,
+            errorEventMapper: configuration.errorEventMapper,
+            resourceEventMapper: configuration.resourceEventMapper,
+            actionEventMapper: configuration.actionEventMapper,
             internalMonitor: internalMonitor
         )
         let storage = RUMFeature.createStorage(

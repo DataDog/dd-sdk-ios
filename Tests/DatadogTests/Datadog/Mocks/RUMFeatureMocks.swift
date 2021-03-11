@@ -49,7 +49,7 @@ extension RUMFeature {
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         return RUMFeature(
-            eventsMapper: configuration.eventMapper,
+            eventsMapper: fullFeature.eventsMapper,
             storage: observedStorage,
             upload: mockedUpload,
             configuration: configuration,
