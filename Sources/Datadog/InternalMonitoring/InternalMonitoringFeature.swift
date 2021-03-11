@@ -15,6 +15,9 @@ internal func obtainInternalMonitoringFeatureLogDirectories() throws -> FeatureD
     )
 }
 
+/// Internal Monitoring `Logger`, sending SDK monitoring data to Datadog org.
+internal var developerLogger: Logger? { InternalMonitoringFeature.instance?.internalLogger }
+
 /// This feature provides observability for internal events happening in the SDK. All data collected by this feature
 /// is sent to Datadog org, not to the customer's org. This feature is opt-in and requires specific configuration to be enabled.
 /// It is never enabled by default. We do not collect any internal monitoring data for those who didn't explicitly opt-in for that by contacting Datadog.
@@ -30,18 +33,6 @@ internal final class InternalMonitoringFeature {
     /// Tells if the feature was enabled by the user in the SDK configuration.
     static var isEnabled: Bool { instance != nil }
 
-    // MARK: - Configuration
-
-    let configuration: FeaturesConfiguration.InternalMonitoring
-
-    // MARK: - Dependencies
-
-    let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
-    let userInfoProvider: UserInfoProvider
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    let carrierInfoProvider: CarrierInfoProviderType
-
     // MARK: - Components
 
     static let featureName = "internal-monitoring"
@@ -52,6 +43,9 @@ internal final class InternalMonitoringFeature {
     let logsStorage: FeatureStorage
     /// Logs upload worker.
     let logsUpload: FeatureUpload
+
+    /// The logger sending internal monitoring data to Datadog org.
+    let internalLogger: Logger
 
     // MARK: - Initialization
 
@@ -76,8 +70,8 @@ internal final class InternalMonitoringFeature {
                 headers: [
                     .contentTypeHeader(contentType: .applicationJSON),
                     .userAgentHeader(
-                        appName: "dd-sdk-ios",
-                        appVersion: sdkVersion,
+                        appName: configuration.sdkServiceName,
+                        appVersion: configuration.sdkVersion,
                         device: commonDependencies.mobileDevice
                     )
                 ]
@@ -113,18 +107,30 @@ internal final class InternalMonitoringFeature {
         configuration: FeaturesConfiguration.InternalMonitoring,
         commonDependencies: FeaturesCommonDependencies
     ) {
-        // Configuration
-        self.configuration = configuration
-
-        // Bundle dependencies
-        self.dateProvider = commonDependencies.dateProvider
-        self.dateCorrector = commonDependencies.dateCorrector
-        self.userInfoProvider = commonDependencies.userInfoProvider
-        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
-        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
-
         // Initialize stacks
         self.logsStorage = storage
         self.logsUpload = upload
+
+        // Initialize internal logger
+        self.internalLogger = Logger(
+            logBuilder: LogBuilder(
+                applicationVersion: configuration.sdkVersion,
+                environment: configuration.sdkEnvironment,
+                serviceName: configuration.sdkServiceName,
+                loggerName: configuration.loggerName,
+                userInfoProvider: UserInfoProvider(), // TODO: RUMM-1128 Anonymize user info instead of passing empty info
+                networkConnectionInfoProvider: commonDependencies.networkConnectionInfoProvider,
+                carrierInfoProvider: commonDependencies.carrierInfoProvider,
+                dateCorrector: commonDependencies.dateCorrector
+            ),
+            logOutput: LogFileOutput(
+                fileWriter: storage.writer,
+                rumErrorsIntegration: nil
+            ),
+            dateProvider: commonDependencies.dateProvider,
+            identifier: configuration.loggerName,
+            rumContextIntegration: nil,
+            activeSpanIntegration: nil
+        )
     }
 }

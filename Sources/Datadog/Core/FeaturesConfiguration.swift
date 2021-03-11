@@ -63,11 +63,14 @@ internal struct FeaturesConfiguration {
     }
 
     struct InternalMonitoring {
-        let serviceName: String
-        let environment: String
+        let sdkServiceName: String
+        let sdkEnvironment: String
+        let sdkVersion: String
         let hostApplicationName: String
         let hostApplicationVersion: String
         let hostApplicationBundleIdentifier: String
+        /// Internal monitoring logger's name.
+        let loggerName = "im-logger"
         let logsUploadURLWithClientToken: URL
     }
 
@@ -240,8 +243,9 @@ extension FeaturesConfiguration {
 
         if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
             internalMonitoring = InternalMonitoring(
-                serviceName: "dd-sdk-ios",
-                environment: "prod",
+                sdkServiceName: "dd-sdk-ios",
+                sdkEnvironment: "prod",
+                sdkVersion: sdkVersion,
                 hostApplicationName: common.applicationName,
                 hostApplicationVersion: common.applicationVersion,
                 hostApplicationBundleIdentifier: common.applicationBundleIdentifier,

@@ -167,7 +167,6 @@ public class Datadog {
         )
 
         userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
-        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
 
         // Then, initialize features:
 
@@ -294,7 +293,6 @@ public class Datadog {
 
         // First, reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
-        developerLogger = nil
 
         // Then, deinitialize features:
         LoggingFeature.instance = nil
