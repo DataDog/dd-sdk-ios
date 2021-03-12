@@ -1,3 +1,9 @@
+# 1.5.1 / 03-11-2021
+
+### Changes
+
+* [BUGFIX] Carthage XCFrameworks support. See [#439][]
+
 # 1.5.0 / 03-04-2021
 
 ### Changes
@@ -151,6 +157,7 @@
 [#370]: https://github.com/DataDog/dd-sdk-ios/issues/370
 [#381]: https://github.com/DataDog/dd-sdk-ios/issues/381
 [#390]: https://github.com/DataDog/dd-sdk-ios/issues/390
+[#439]: https://github.com/DataDog/dd-sdk-ios/pull/439
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
