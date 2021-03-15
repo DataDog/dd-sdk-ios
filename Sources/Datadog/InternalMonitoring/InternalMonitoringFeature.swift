@@ -15,8 +15,6 @@ internal func obtainInternalMonitoringFeatureLogDirectories() throws -> FeatureD
     )
 }
 
-///// Internal Monitoring `Logger`, sending SDK monitoring data to Datadog org.
-//internal var developerLogger: Logger? { InternalMonitoringFeature.instance?.monitor.sdkLogger }
 
 /// This feature provides observability for internal events happening in the SDK. All data collected by this feature
 /// is sent to Datadog org, not to the customer's org. This feature is opt-in and requires specific configuration to be enabled.
