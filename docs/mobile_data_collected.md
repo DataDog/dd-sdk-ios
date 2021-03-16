@@ -20,7 +20,7 @@ The following diagram illustrates the RUM event hierarchy:
 RUM collects common attributes for all events and attributes specific to each event by default listed below. You can also choose to enrich your user session data with [additional events][1] to default events specific to your application monitoring and business analytics needs.
 
 
-### Common Core Attributes
+### Common core attributes
 
 | Attribute name   | Type   | Description                 |
 |------------------|--------|-----------------------------|
