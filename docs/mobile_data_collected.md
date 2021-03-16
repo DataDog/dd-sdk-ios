@@ -28,7 +28,7 @@ RUM collects common attributes for all events and attributes specific to each ev
 | `application.id` | string | The Datadog application ID. |
 | `session.id` | string | Unique ID of the session. |
 | `view.id` | string | Unique ID of the initial view corresponding to the event. |
-| `view.url` | string | URL of the initial view corresponding to the event. |
+| `view.url` | string | Name of the `UIViewController` class corresponding to the event. |
 | `view.name` | string | Name of the initial view corresponding to the event. |
 | `service` | string | The [unified service name][] for this application used to corelate user sessions. |
 | `date` | integer  | Start of the event in ms from epoch. |
