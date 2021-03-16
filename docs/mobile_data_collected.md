@@ -38,7 +38,7 @@ RUM collects common attributes for all events and attributes specific to each ev
 | `connectivity.cellular.technology` | string | The type of a radio technology used for cellular connection |
 | `connectivity.cellular.carrier_name` | string | The name of the SIM carrier |
 
-### Global User Attributes
+### Global user attributes
 
 You can enable [tracking user info][2] globally to collect and apply user attributes to all RUM events.
 
