@@ -145,8 +145,8 @@ Network errors include information about failing HTTP requests. The following fa
 | Metric    | Type   | Description              |
 |--------------|--------|--------------------------|
 | `action.loading_time` | number (ns) | The loading time of the action.  |
-| `action.resource.count`         | number      | Count of all resources collected for this action. |
-| `action.error.count`      | number      | Count of all errors collected for this action.|
+| `action.resource.count`         | number      | Count of all resources issued by this action. |
+| `action.error.count`      | number      | Count of all errors issued by this action.|
 
 ### Action attributes
 
