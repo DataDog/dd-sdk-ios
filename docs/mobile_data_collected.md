@@ -59,7 +59,7 @@ Metrics are quantifiable values that can be used for measurements related to the
 ### View Metrics
 
 
-| Metric                              | Type        | Decription                                                                                          |
+| Metric                              | Type        | Description                                                                                          |
 |----------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `view.time_spent`                             | number (ns) | Time spent on the current view.                                                                                                                                                                                                  |
 | `view.error.count`            | number      | Count of all errors collected for this view.                                                                                                                                                                |
