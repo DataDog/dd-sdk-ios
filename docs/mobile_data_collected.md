@@ -68,7 +68,7 @@ Metrics are quantifiable values that can be used for measurements related to the
 | `view.action.count`      | number      | Count of all actions collected for this view.                                                                                     
       |
 
-| `view.is_active`      |    boolean   | Indicates whether the View corresponding to this event is considered active                                                                                       
+| `view.is_active`      |    boolean   | Indicates whether the view corresponding to this event is considered active                                                                                       
       |
 
 
