@@ -56,7 +56,7 @@ Metrics are quantifiable values that can be used for measurements related to the
 {{% /tab %}}
 {{% tab "View" %}}
 
-### View Metrics
+### View metrics
 
 
 | Metric                              | Type        | Description                                                                                          |
