@@ -49,7 +49,7 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 | `usr.email` | string | Email of the user. |
 
 
-## Event Specific Metrics and Attributes
+## Event specific metrics and attributes
 
 Metrics are quantifiable values that can be used for measurements related to the event. Attributes are non-quantifiable values used to slice metrics data (group by) in analytics. 
 
