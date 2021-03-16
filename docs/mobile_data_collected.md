@@ -1,4 +1,4 @@
-#Mobile Data Collected
+# Mobile Data Collected
 
 The Datadog Real User Monitoring SDK generates six types of events:
 
@@ -170,4 +170,3 @@ By default, all data collected is kept at full granularity for 15 days.
 
 [1]: /real_user_monitoring/ios#manual-instrumentation
 [2]:https://github.com/DataDog/dd-sdk-ios/blob/master/Datadog/Example/ExampleAppDelegate.swift#L37
-
