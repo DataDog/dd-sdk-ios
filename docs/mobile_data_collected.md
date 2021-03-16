@@ -95,7 +95,7 @@ Metrics are quantifiable values that can be used for measurements related to the
 | Attribute                      | Type   | Description                                                                             |
 |--------------------------------|--------|-----------------------------------------------------------------------------------------|
 | `resource.id`                | string |  Unique identifier of the resource.      |
-| `resource.type`                | string | The type of resource being collected (for example, `xhr`, `image`, `font`, `CSS`, `Javascript`).          |
+| `resource.type`                | string | The type of resource being collected (for example, `xhr`, `image`, `font`, `css`, `js`).          |
 | `resource.method`                | string | The HTTP method (for example `POST`, `GET` `PATCH`, `DELETE` etc).           |
 | `resource.status_code`             | number | The response status code.                                                               |
 | `resource.url`                     | string | The resource URL.                                                                       |
