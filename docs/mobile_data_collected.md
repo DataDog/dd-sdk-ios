@@ -76,7 +76,7 @@ Metrics are quantifiable values that can be used for measurements related to the
 {{% /tab %}}
 {{% tab "Resource" %}}
 
-### Resource Metrics
+### Resource metrics
 
 
 | Metric                              | Type           | Description                                                                                                                               |
