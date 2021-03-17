@@ -41,7 +41,7 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(uploadFrequency: .frequent)
 
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
-        configuration
+        _ = configuration
             .enableInternalMonitoring(clientToken: Environment.readClientToken())
 #endif
 

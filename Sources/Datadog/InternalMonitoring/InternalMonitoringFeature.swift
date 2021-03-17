@@ -15,7 +15,6 @@ internal func obtainInternalMonitoringFeatureLogDirectories() throws -> FeatureD
     )
 }
 
-
 /// This feature provides observability for internal events happening in the SDK. All data collected by this feature
 /// is sent to Datadog org, not to the customer's org. This feature is opt-in and requires specific configuration to be enabled.
 /// It is never enabled by default. We do not collect any internal monitoring data for those who didn't explicitly opt-in for that by contacting Datadog.
