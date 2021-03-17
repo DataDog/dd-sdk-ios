@@ -26,7 +26,7 @@ let package = Package(
             targets: ["DatadogObjc"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/lyft/Kronos.git", .upToNextMinor(from: "4.1.0"))
+        .package(url: "https://github.com/lyft/Kronos.git", .upToNextMinor(from: "4.2.0"))
     ],
     targets: [
         .target(
