@@ -830,33 +830,31 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
-                eventMapper: RUMEventsMapper(
-                    viewEventMapper: { viewEvent in
-                        var viewEvent = viewEvent
-                        viewEvent.view.url = "ModifiedViewURL"
-                        viewEvent.view.name = "ModifiedViewName"
-                        return viewEvent
-                    },
-                    errorEventMapper: { errorEvent in
-                        var errorEvent = errorEvent
-                        errorEvent.error.message = "Modified error message"
-                        return errorEvent
-                    },
-                    resourceEventMapper: { resourceEvent in
-                        var resourceEvent = resourceEvent
-                        resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
-                        return resourceEvent
-                    },
-                    actionEventMapper: { actionEvent in
-                        if actionEvent.action.type == .applicationStart {
-                            return nil // drop `.applicationStart` action
-                        } else {
-                            var actionEvent = actionEvent
-                            actionEvent.action.target?.name = "Modified tap action name"
-                            return actionEvent
-                        }
+                viewEventMapper: { viewEvent in
+                    var viewEvent = viewEvent
+                    viewEvent.view.url = "ModifiedViewURL"
+                    viewEvent.view.name = "ModifiedViewName"
+                    return viewEvent
+                },
+                resourceEventMapper: { resourceEvent in
+                    var resourceEvent = resourceEvent
+                    resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
+                    return resourceEvent
+                },
+                actionEventMapper: { actionEvent in
+                    if actionEvent.action.type == .applicationStart {
+                        return nil // drop `.applicationStart` action
+                    } else {
+                        var actionEvent = actionEvent
+                        actionEvent.action.target?.name = "Modified tap action name"
+                        return actionEvent
                     }
-                )
+                },
+                errorEventMapper: { errorEvent in
+                    var errorEvent = errorEvent
+                    errorEvent.error.message = "Modified error message"
+                    return errorEvent
+                }
             ),
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)

@@ -8,17 +8,23 @@ import Foundation
 
 /// Writes data to files.
 internal final class FileWriter: Writer {
-    /// Data writting format.
+    /// Data writing format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to writable file.
     private let orchestrator: FilesOrchestrator
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
+    private let internalMonitor: InternalMonitor?
 
-    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator) {
+    init(
+        dataFormat: DataFormat,
+        orchestrator: FilesOrchestrator,
+        internalMonitor: InternalMonitor? = nil
+    ) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.jsonEncoder = JSONEncoder.default()
+        self.internalMonitor = internalMonitor
     }
 
     // MARK: - Writing data
@@ -36,8 +42,8 @@ internal final class FileWriter: Writer {
                 try file.append(data: atomicData)
             }
         } catch {
-            userLogger.error("🔥 Failed to write log: \(error)")
-            developerLogger?.error("🔥 Failed to write file: \(error)")
+            userLogger.error("🔥 Failed to write data: \(error)")
+            internalMonitor?.sdkLogger.error("Failed to write data to file", error: error)
         }
     }
 }

@@ -53,7 +53,8 @@ extension Datadog.Configuration {
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
-        uploadFrequency: UploadFrequency = .average
+        uploadFrequency: UploadFrequency = .average,
+        internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -76,7 +77,8 @@ extension Datadog.Configuration {
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
             batchSize: batchSize,
-            uploadFrequency: uploadFrequency
+            uploadFrequency: uploadFrequency,
+            internalMonitoringClientToken: internalMonitoringClientToken
         )
     }
 }
@@ -138,7 +140,8 @@ extension FeaturesConfiguration {
         tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
+        internalMonitoring: InternalMonitoring? = nil
     ) -> Self {
         return .init(
             common: common,
@@ -146,7 +149,8 @@ extension FeaturesConfiguration {
             tracing: tracing,
             rum: rum,
             urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
-            crashReporting: crashReporting
+            crashReporting: crashReporting,
+            internalMonitoring: internalMonitoring
         )
     }
 }
@@ -206,7 +210,10 @@ extension FeaturesConfiguration.RUM {
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
-        eventMapper: RUMEventsMapper = .mockNoOp(),
+        viewEventMapper: RUMViewEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(
@@ -214,7 +221,10 @@ extension FeaturesConfiguration.RUM {
             uploadURLWithClientToken: uploadURLWithClientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
-            eventMapper: eventMapper,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
             autoInstrumentation: autoInstrumentation
         )
     }
@@ -248,6 +258,26 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             sdkInternalURLs: sdkInternalURLs,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM
+        )
+    }
+}
+
+extension FeaturesConfiguration.InternalMonitoring {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        sdkServiceName: String = .mockAny(),
+        sdkEnvironment: String = .mockAny(),
+        logsUploadURLWithClientToken: URL = .mockAny()
+    ) -> Self {
+        return .init(
+            common: common,
+            sdkServiceName: sdkServiceName,
+            sdkEnvironment: sdkEnvironment,
+            logsUploadURLWithClientToken: logsUploadURLWithClientToken
         )
     }
 }

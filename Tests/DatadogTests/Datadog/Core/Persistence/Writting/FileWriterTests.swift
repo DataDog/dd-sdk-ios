@@ -71,7 +71,7 @@ class FileWriterTests: XCTestCase {
 
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
         XCTAssertEqual(output.recordedLog?.status, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: data exceeds the maximum size of 17 bytes.")
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write data: data exceeds the maximum size of 17 bytes.")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
@@ -93,7 +93,7 @@ class FileWriterTests: XCTestCase {
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
 
         XCTAssertEqual(output.recordedLog?.status, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: failed to encode `FailingEncodable`.")
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write data: failed to encode `FailingEncodable`.")
     }
 
     func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {

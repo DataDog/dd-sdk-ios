@@ -167,10 +167,10 @@ public class Datadog {
         )
 
         userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
-        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
 
         // Then, initialize features:
 
+        var internalMonitoring: InternalMonitoringFeature?
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
@@ -192,11 +192,20 @@ public class Datadog {
             launchTimeProvider: launchTimeProvider
         )
 
+        if let internalMonitoringConfiguration = configuration.internalMonitoring {
+            internalMonitoring = InternalMonitoringFeature(
+                logDirectories: try obtainInternalMonitoringFeatureLogDirectories(),
+                configuration: internalMonitoringConfiguration,
+                commonDependencies: commonDependencies
+            )
+        }
+
         if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
                 directories: try obtainLoggingFeatureDirectories(),
                 configuration: loggingConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                internalMonitor: internalMonitoring?.monitor
             )
         }
 
@@ -206,7 +215,8 @@ public class Datadog {
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator()
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+                internalMonitor: internalMonitoring?.monitor
             )
         }
 
@@ -214,7 +224,8 @@ public class Datadog {
             rum = RUMFeature(
                 directories: try obtainRUMFeatureDirectories(),
                 configuration: rumConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                internalMonitor: internalMonitoring?.monitor
             )
             if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
                 rumAutoInstrumentation = RUMAutoInstrumentation(
@@ -237,6 +248,8 @@ public class Datadog {
                 dateProvider: dateProvider
             )
         }
+
+        InternalMonitoringFeature.instance = internalMonitoring
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
@@ -282,9 +295,9 @@ public class Datadog {
 
         // First, reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
-        developerLogger = nil
 
         // Then, deinitialize features:
+        InternalMonitoringFeature.instance = nil
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
         RUMFeature.instance = nil

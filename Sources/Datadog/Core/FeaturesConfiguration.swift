@@ -40,7 +40,10 @@ internal struct FeaturesConfiguration {
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
-        let eventMapper: RUMEventsMapper
+        let viewEventMapper: RUMViewEventMapper?
+        let resourceEventMapper: RUMResourceEventMapper?
+        let actionEventMapper: RUMActionEventMapper?
+        let errorEventMapper: RUMErrorEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
     }
@@ -62,6 +65,15 @@ internal struct FeaturesConfiguration {
         let crashReportingPlugin: DDCrashReportingPluginType
     }
 
+    struct InternalMonitoring {
+        let common: Common
+        let sdkServiceName: String
+        let sdkEnvironment: String
+        /// Internal monitoring logger's name.
+        let loggerName = "im-logger"
+        let logsUploadURLWithClientToken: URL
+    }
+
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
@@ -74,6 +86,8 @@ internal struct FeaturesConfiguration {
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
     /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
     let crashReporting: CrashReporting?
+    /// Internal Monitoring feature configuration or `nil` if the feature was not enabled.
+    let internalMonitoring: InternalMonitoring?
 }
 
 extension FeaturesConfiguration {
@@ -90,6 +104,7 @@ extension FeaturesConfiguration {
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var crashReporting: CrashReporting?
+        var internalMonitoring: InternalMonitoring?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
@@ -170,12 +185,10 @@ extension FeaturesConfiguration {
                     ),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
-                    eventMapper: RUMEventsMapper(
-                        viewEventMapper: configuration.rumViewEventMapper,
-                        errorEventMapper: configuration.rumErrorEventMapper,
-                        resourceEventMapper: configuration.rumResourceEventMapper,
-                        actionEventMapper: configuration.rumActionEventMapper
-                    ),
+                    viewEventMapper: configuration.rumViewEventMapper,
+                    resourceEventMapper: configuration.rumResourceEventMapper,
+                    actionEventMapper: configuration.rumActionEventMapper,
+                    errorEventMapper: configuration.rumErrorEventMapper,
                     autoInstrumentation: autoInstrumentation
                 )
             } else {
@@ -226,12 +239,25 @@ extension FeaturesConfiguration {
             }
         }
 
+        if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
+            internalMonitoring = InternalMonitoring(
+                common: common,
+                sdkServiceName: "dd-sdk-ios",
+                sdkEnvironment: "prod",
+                logsUploadURLWithClientToken: try ifValid(
+                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us.logsEndpoint.url,
+                    clientToken: internalMonitoringClientToken
+                )
+            )
+        }
+
         self.common = common
         self.logging = logging
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
+        self.internalMonitoring = internalMonitoring
     }
 }
 

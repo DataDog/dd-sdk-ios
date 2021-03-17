@@ -40,6 +40,11 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
 
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+        _ = configuration
+            .enableInternalMonitoring(clientToken: Environment.readClientToken())
+#endif
+
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {
             testScenario.configureSDK(builder: configuration)
