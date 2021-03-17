@@ -11,7 +11,7 @@ public class DDDatadog: NSObject
  public static func initialize(appContext: DDAppContext,trackingConsent: DDTrackingConsent,configuration: DDConfiguration)
  public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
  public static func verbosityLevel() -> DDSDKVerbosityLevel
- public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil)
+ public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
  public static func setTrackingConsent(consent: DDTrackingConsent)
 public class DDEndpoint: NSObject
  public static func eu() -> DDEndpoint
