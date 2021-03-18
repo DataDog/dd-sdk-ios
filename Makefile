@@ -21,17 +21,18 @@ endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
 define DD_SDK_BASE_XCCONFIG
+// To enable Internal Monitoring APIs:
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
 endef
 export DD_SDK_BASE_XCCONFIG
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		@carthage bootstrap --platform iOS
+		@brew upgrade carthage
+		@carthage bootstrap --platform iOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
-endif
 		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
@@ -39,6 +40,7 @@ endif
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
 		@unzip instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
+endif
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."

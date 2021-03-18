@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDK"
   s.module_name  = "Datadog"
-  s.version      = "1.5.0"
+  s.version      = "1.5.1"
   s.summary      = "Official Datadog Swift SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -25,5 +25,5 @@ Pod::Spec.new do |s|
   s.public_header_files = "Datadog/TargetSupport/Datadog/Datadog.h"
   s.private_header_files = "Sources/_Datadog_Private/include/*.h"
   s.module_map = "Sources/Datadog/Datadog.modulemap"
-  s.dependency 'Kronos', '~> 4.1'
+  s.dependency 'Kronos', '~> 4.2'
 end

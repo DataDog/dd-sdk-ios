@@ -3,7 +3,3 @@
 
 // Include internal base config (git-ignored, so excluded from Carthage build)
 #include? "Base.local.xcconfig"
-
-// Required after adding `lyft/Kronos` dependency through Carthage.
-// Otherwise build fails with "module 'Kronos' was created for incompatible target arm64-apple-ios8.0"
-EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64

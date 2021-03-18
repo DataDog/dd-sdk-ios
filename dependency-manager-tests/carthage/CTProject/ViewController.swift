@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogObjc
 import DatadogCrashReporting
 
 internal class ViewController: UIViewController {

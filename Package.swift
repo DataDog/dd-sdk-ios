@@ -35,7 +35,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "Kronos", url: "https://github.com/lyft/Kronos.git", from: "4.1.0"),
+        .package(name: "Kronos", url: "https://github.com/lyft/Kronos.git", from: "4.2.1"),
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.8.1"),
     ],
     targets: [
