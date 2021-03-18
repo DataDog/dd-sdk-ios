@@ -21,8 +21,15 @@ endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
 define DD_SDK_BASE_XCCONFIG
-// To enable Internal Monitoring APIs:
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
+// To enable Internal Monitoring APIs:\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING\n
+\n
+// To build only active architecture for all configurations.\n
+// TODO: RUMM-1200 We can perhaps remove this fix when carthage supports pre-build xcframeworks.\n
+//		 The only "problematic" dependency is `CrashReporter.xcframework` which doesn't produce\n
+//		 the `arm64-simulator` architecture when compiled from source. Its pre-build `CrashReporter.xcframework`\n
+//		 available since `1.8.0` contains the `ios-arm64_i386_x86_64-simulator` slice and should link fine in all configurations.\n
+ONLY_ACTIVE_ARCH = YES
 endef
 export DD_SDK_BASE_XCCONFIG
 

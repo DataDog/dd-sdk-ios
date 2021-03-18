@@ -745,6 +745,7 @@
 		615AAC35251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMTabBarAutoInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASVariousUIControllsViewController.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsHandlerTests.swift; sourceTree = "<group>"; };
+		615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReporting.xcconfig; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		6161247825CA9CA6009901BE /* CrashReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporter.swift; sourceTree = "<group>"; };
 		6161249D25CAB340009901BE /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
@@ -2101,6 +2102,7 @@
 		6170DC0525C184FA003AED5C /* DatadogCrashReporting */ = {
 			isa = PBXGroup;
 			children = (
+				615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */,
 				61B7885625C180CB002675B5 /* DatadogCrashReporting.h */,
 				61B7885725C180CB002675B5 /* Info.plist */,
 			);
@@ -4214,7 +4216,7 @@
 		};
 		61B7886525C180CB002675B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			baseConfigurationReference = 615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -4245,7 +4247,7 @@
 		};
 		61B7886625C180CB002675B5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			baseConfigurationReference = 615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -4275,7 +4277,7 @@
 		};
 		61B7886725C180CB002675B5 /* Integration */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			baseConfigurationReference = 615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
