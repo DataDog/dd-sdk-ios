@@ -45,7 +45,7 @@ ifeq (${ci}, true)
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
-		@unzip instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
+		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
 endif
 
