@@ -10,9 +10,9 @@ import SystemConfiguration
 @testable import Datadog
 
 class NetworkConnectionInfoProviderTests: XCTestCase {
-    /// Constantly pulls the `NetworkConnectionInfo` from given provider and fulfills the expectation if value is received.
+    /// Constantly pulls the `NetworkConnectionInfo` from given provider and fulfils the expectation if value is received.
     private func pullNetworkConnectionInfo(
-        from provider: NetworkConnectionInfoProviderType,
+        from provider: NetworkConnectionInfoProvider,
         on queue: DispatchQueue,
         thenFulfill expectation: XCTestExpectation
     ) {
@@ -27,7 +27,9 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
 
     func testNWPathNetworkConnectionInfoProviderGivesValue() {
         if #available(iOS 12.0, *) {
-            let provider = NWPathNetworkConnectionInfoProvider()
+            let provider = NetworkConnectionInfoProvider(
+                wrappedProvider: NWPathNetworkConnectionInfoProvider()
+            )
 
             pullNetworkConnectionInfo(
                 from: provider,
@@ -41,7 +43,9 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
 
     func testNWPathNetworkConnectionInfoProviderCanBeSafelyAccessedFromConcurrentThreads() {
         if #available(iOS 12.0, *) {
-            let provider = NWPathNetworkConnectionInfoProvider()
+            let provider = NetworkConnectionInfoProvider(
+                wrappedProvider: NWPathNetworkConnectionInfoProvider()
+            )
 
             DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
                 _ = provider.current
@@ -69,7 +73,9 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
     // MARK: - iOS 11
 
     func testiOS11NetworkConnectionInfoProviderGivesValue() {
-        let provider = iOS11NetworkConnectionInfoProvider()
+        let provider = NetworkConnectionInfoProvider(
+            wrappedProvider: iOS11NetworkConnectionInfoProvider()
+        )
 
         pullNetworkConnectionInfo(
             from: provider,
@@ -81,7 +87,9 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
     }
 
     func testiOS11NetworkConnectionInfoProviderCanBeSafelyAccessedFromConcurrentThreads() {
-        let provider = iOS11NetworkConnectionInfoProvider()
+        let provider = NetworkConnectionInfoProvider(
+            wrappedProvider: iOS11NetworkConnectionInfoProvider()
+        )
 
         DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
             _ = provider.current

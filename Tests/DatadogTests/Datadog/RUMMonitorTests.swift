@@ -830,33 +830,31 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
-                eventMapper: RUMEventsMapper(
-                    viewEventMapper: { viewEvent in
-                        var viewEvent = viewEvent
-                        viewEvent.view.url = "ModifiedViewURL"
-                        viewEvent.view.name = "ModifiedViewName"
-                        return viewEvent
-                    },
-                    errorEventMapper: { errorEvent in
-                        var errorEvent = errorEvent
-                        errorEvent.error.message = "Modified error message"
-                        return errorEvent
-                    },
-                    resourceEventMapper: { resourceEvent in
-                        var resourceEvent = resourceEvent
-                        resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
-                        return resourceEvent
-                    },
-                    actionEventMapper: { actionEvent in
-                        if actionEvent.action.type == .applicationStart {
-                            return nil // drop `.applicationStart` action
-                        } else {
-                            var actionEvent = actionEvent
-                            actionEvent.action.target?.name = "Modified tap action name"
-                            return actionEvent
-                        }
+                viewEventMapper: { viewEvent in
+                    var viewEvent = viewEvent
+                    viewEvent.view.url = "ModifiedViewURL"
+                    viewEvent.view.name = "ModifiedViewName"
+                    return viewEvent
+                },
+                resourceEventMapper: { resourceEvent in
+                    var resourceEvent = resourceEvent
+                    resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
+                    return resourceEvent
+                },
+                actionEventMapper: { actionEvent in
+                    if actionEvent.action.type == .applicationStart {
+                        return nil // drop `.applicationStart` action
+                    } else {
+                        var actionEvent = actionEvent
+                        actionEvent.action.target?.name = "Modified tap action name"
+                        return actionEvent
                     }
-                )
+                },
+                errorEventMapper: { errorEvent in
+                    var errorEvent = errorEvent
+                    errorEvent.error.message = "Modified error message"
+                    return errorEvent
+                }
             ),
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
@@ -891,43 +889,92 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testDroppingEventsBeforeTheyGetSent() throws {
-            RUMFeature.instance = .mockByRecordingRUMEventMatchers(
-                directories: temporaryFeatureDirectories,
-                configuration: .mockWith(
-                    eventMapper: .mockWith(
-                        errorEventMapper: { _ in nil },
-                        resourceEventMapper: { _ in nil },
-                        actionEventMapper: { event in
-                            return event.action.type == .applicationStart ? event : nil
-                        }
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                resourceEventMapper: { _ in nil },
+                actionEventMapper: { event in
+                    return event.action.type == .applicationStart ? event : nil
+                },
+                errorEventMapper: { _ in nil }
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.addUserAction(type: .tap, name: .mockAny())
+        monitor.addError(message: .mockAny())
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
+        let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+
+        XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
+        let session = sessions[0]
+
+        XCTAssertNotEqual(session.viewVisits[0].viewEvents.count, 0)
+        let lastEvent = session.viewVisits[0].viewEvents.last!
+        XCTAssertEqual(lastEvent.view.resource.count, 0, "resource.count should reflect all resource events being dropped.")
+        XCTAssertEqual(lastEvent.view.action.count, 1, "action.count should reflect all action events being dropped.")
+        XCTAssertEqual(lastEvent.view.error.count, 0, "error.count should reflect all error events being dropped.")
+        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
+        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
+        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
+    }
+
+    // MARK: - Integration with Crash Reporting
+
+    func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
+        let randomUserInfoAttributes: [String: String] = .mockRandom()
+        let randomViewEventAttributes: [String: String] = .mockRandom()
+
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                userInfoProvider: .mockWith(
+                    userInfo: .init(
+                        id: .mockRandom(),
+                        name: .mockRandom(),
+                        email: .mockRandom(),
+                        extraInfo: randomUserInfoAttributes
                     )
                 )
             )
-            defer { RUMFeature.instance = nil }
+        )
+        defer { RUMFeature.instance = nil }
 
-            let monitor = RUMMonitor.initialize()
+        CrashReportingFeature.instance = .mockNoOp()
+        defer { CrashReportingFeature.instance = nil }
 
-            monitor.startView(viewController: mockView)
-            monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
-            monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-            monitor.addUserAction(type: .tap, name: .mockAny())
-            monitor.addError(message: .mockAny())
+        // Given
+        Global.crashReporter = CrashReporter(crashReportingFeature: CrashReportingFeature.instance!)
+        defer { Global.crashReporter = nil }
 
-            let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
-            let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+        // When
+        let monitor = RUMMonitor.initialize()
+        monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
 
-            XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
-            let session = sessions[0]
+        // Then
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
+        let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
-            XCTAssertNotEqual(session.viewVisits[0].viewEvents.count, 0)
-            let lastEvent = session.viewVisits[0].viewEvents.last!
-            XCTAssertEqual(lastEvent.view.resource.count, 0, "resource.count should reflect all resource events being dropped.")
-            XCTAssertEqual(lastEvent.view.action.count, 1, "action.count should reflect all action events being dropped.")
-            XCTAssertEqual(lastEvent.view.error.count, 0, "error.count should reflect all error events being dropped.")
-            XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
-            XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
-            XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
-        }
+        let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
+        XCTAssertEqual(
+            currentCrashContext.lastRUMViewEvent?.model,
+            lastRUMViewEventSent
+        )
+        XCTAssertEqual(
+            currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
+            randomViewEventAttributes
+        )
+        XCTAssertEqual(
+            currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
+            randomUserInfoAttributes
+        )
+    }
 
     // MARK: - Thread safety
 

@@ -22,6 +22,7 @@ internal struct DataProcessorFactory {
 }
 
 /// The processing pipeline for writing data.
+/// It uses `EventMapper` to redact or drop data before it gets written.
 internal final class DataProcessor: Writer {
     private let fileWriter: Writer
 

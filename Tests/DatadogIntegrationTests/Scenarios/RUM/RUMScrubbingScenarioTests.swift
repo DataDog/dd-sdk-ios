@@ -21,12 +21,12 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Session with expected number of RUM Errors
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.last?.errorEvents.count == 2
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.last?.errorEvents.count == 2
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         XCTAssertEqual(session.viewVisits.count, 1)
         let viewVisit = session.viewVisits[0]

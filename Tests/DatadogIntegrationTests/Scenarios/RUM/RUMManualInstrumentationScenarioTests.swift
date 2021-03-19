@@ -45,12 +45,12 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 3
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 3
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         let view1 = session.viewVisits[0]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")
@@ -67,7 +67,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
         XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
         XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration, 100_000_000 - 1) // ~0.1s
-        XCTAssertLessThan(view1.resourceEvents[0].resource.duration, 100_000_000 * 3) // less than 0.3s
+        XCTAssertLessThan(view1.resourceEvents[0].resource.duration, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
         XCTAssertEqual(view1.errorEvents[0].error.type, "NSURLErrorDomain - -1011")
         XCTAssertEqual(view1.errorEvents[0].error.message, "Bad response.")
         XCTAssertEqual(

@@ -48,6 +48,12 @@ internal class LogMatcher: JSONDataMatcher {
         static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
         static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
         static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
+
+        // MARK: - Error info
+
+        static let errorKind = "error.kind"
+        static let errorMessage = "error.message"
+        static let errorStack = "error.stack"
     }
 
     /// Allowed values for `network.client.available_interfaces` attribute.

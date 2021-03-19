@@ -108,12 +108,12 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 7
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 7
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         XCTAssertEqual(session.viewVisits[0].name, "MenuView")
         XCTAssertEqual(session.viewVisits[0].path, "Example.RUMTASScreen1ViewController")

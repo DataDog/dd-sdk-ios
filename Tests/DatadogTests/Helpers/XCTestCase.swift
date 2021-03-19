@@ -35,4 +35,92 @@ extension XCTestCase {
             randomizedClosures[iteration]()
         }
     }
+
+    /// Asserts that two dictionaries are equal.
+    /// It uses debug string representation of values to check equality of `Any` values.
+    func AssertDictionariesEqual(
+        _ dictionary1: [String: Any],
+        _ dictionary2: [String: Any],
+        _ message: String? = nil,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        AssertDictionariesEqual(
+            dictionary1,
+            dictionary2,
+            keyPath: "",
+            message: message ?? "",
+            file: file,
+            line: line
+        )
+    }
+
+    private func AssertDictionariesEqual(
+        _ dictionary1: [String: Any],
+        _ dictionary2: [String: Any],
+        keyPath: String,
+        message: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        if dictionary1.keys.count != dictionary2.keys.count {
+            XCTFail(
+                """
+                🔥 Failure: \(message)
+
+                Both dictionaries have different number of keys:
+                    * (1) \(dictionary1.keys.count) keys
+                    * (2) \(dictionary2.keys.count) keys
+                """,
+                file: file,
+                line: line
+            )
+            return
+        }
+
+        for (key, value1) in dictionary1 {
+            let currentKeyPath = keyPath.isEmpty ? "\(key)" : "\(keyPath).\(key)"
+
+            guard let value2 = dictionary2[key] else {
+                XCTFail(
+                    """
+                    🔥 Failure: \(message)
+
+                    Second dictionary doesn't define value for key path: '\(currentKeyPath)'
+                    """,
+                    file: file,
+                    line: line
+                )
+                return
+            }
+
+            if let nestedDictionary1 = value1 as? [String: Any],
+               let nestedDictionary2 = value2 as? [String: Any] {
+                AssertDictionariesEqual(
+                    nestedDictionary1,
+                    nestedDictionary2,
+                    keyPath: currentKeyPath,
+                    message: message,
+                    file: file,
+                    line: line
+                )
+            } else {
+                let value1Description = String(describing: value1)
+                let value2Description = String(describing: value2)
+                XCTAssertEqual(
+                    value1Description,
+                    value2Description,
+                    """
+                    🔥 Failure: \(message)
+
+                    The value for key path '\(currentKeyPath)' is different in both dictionaries:
+                        * (1): \(value1Description)
+                        * (2): \(value2Description)
+                    """,
+                    file: file,
+                    line: line
+                )
+            }
+        }
+    }
 }

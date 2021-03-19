@@ -20,12 +20,24 @@ DD_SDK_SWIFT_TESTING_ENV=ci\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
+define DD_SDK_BASE_XCCONFIG
+// To enable Internal Monitoring APIs:\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING\n
+\n
+// To build only active architecture for all configurations.\n
+// TODO: RUMM-1200 We can perhaps remove this fix when carthage supports pre-build xcframeworks.\n
+//		 The only "problematic" dependency is `CrashReporter.xcframework` which doesn't produce\n
+//		 the `arm64-simulator` architecture when compiled from source. Its pre-build `CrashReporter.xcframework`\n
+//		 available since `1.8.0` contains the `ios-arm64_i386_x86_64-simulator` slice and should link fine in all configurations.\n
+ONLY_ACTIVE_ARCH = YES
+endef
+export DD_SDK_BASE_XCCONFIG
+
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		# NOTE: RUMM-1145 Bitrise Stacks don't have carthage v0.37 
-		# despite https://github.com/bitrise-io/bitrise.io/blob/master/system_reports/osx-xcode-12.4.x.log
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
+		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 		@brew list gh &>/dev/null || brew install gh
@@ -33,7 +45,7 @@ ifeq (${ci}, true)
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
-		@unzip instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
+		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
 endif
 

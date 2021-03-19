@@ -6,46 +6,32 @@
 
 import Foundation
 
-internal protocol ConsentSubscriber: class {
-    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent)
-}
+/// An observer for `TrackingConsent` value.
+internal typealias TrackingConsentObserver = ValueObserver
 
 /// Provides the current `TrackingConsent` value and notifies all subscribers on its change.
 internal class ConsentProvider {
-    private let queue = DispatchQueue(
-        label: "com.datadoghq.tracking-consent",
-        target: .global(qos: .userInteractive)
-    )
-    private var subscribers: [ConsentSubscriber] = []
+    private let publisher: ValuePublisher<TrackingConsent>
 
     init(initialConsent: TrackingConsent) {
-        self.unsafeCurrentValue = initialConsent
+        self.publisher = ValuePublisher(initialValue: initialConsent)
     }
 
     // MARK: - Consent Value
 
-    /// Unsychronized consent value. Use `self.currentValue` setter & getter.
-    private var unsafeCurrentValue: TrackingConsent
-
     /// The current value of`TrackingConsent`.
-    private(set) var currentValue: TrackingConsent {
-        get { queue.sync { unsafeCurrentValue } }
-        set { queue.async { self.unsafeCurrentValue = newValue } }
-    }
+    var currentValue: TrackingConsent { publisher.currentValue }
 
     /// Sets the new value of `TrackingConsent` and notifies all subscribers.
     func changeConsent(to newValue: TrackingConsent) {
-        let oldValue = currentValue
-        currentValue = newValue
-
-        subscribers.forEach { subscriber in
-            subscriber.consentChanged(from: oldValue, to: newValue)
-        }
+        // Synchronous update ensures that the new value of the consent will be applied immediately
+        // to all data sent from the the same thread.
+        publisher.publishSync(newValue)
     }
 
     // MARK: - Managing Subscribers
 
-    func subscribe(consentSubscriber: ConsentSubscriber) {
-        subscribers.append(consentSubscriber)
+    func subscribe<Observer: TrackingConsentObserver>(_ subscriber: Observer) where Observer.ObservedValue == TrackingConsent {
+        publisher.subscribe(subscriber)
     }
 }

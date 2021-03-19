@@ -10,7 +10,7 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs no writes and no uploads.
     static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
@@ -118,11 +118,11 @@ extension Log: RandomMockable {
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
-            userInfo: .init(id: .mockRandom(), name: .mockRandom(), email: .mockRandom(), extraInfo: [:]), // TODO: RUMM-1050 use `.mockRandom()`
-            networkConnectionInfo: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
-            mobileCarrierInfo: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
-            attributes: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
-            tags: nil // TODO: RUMM-1050 use `.mockRandom()`
+            userInfo: .mockRandom(),
+            networkConnectionInfo: .mockRandom(),
+            mobileCarrierInfo: .mockRandom(),
+            attributes: .mockRandom(),
+            tags: .mockRandom()
         )
     }
 }
@@ -199,6 +199,13 @@ extension LogAttributes: Equatable {
         return LogAttributes(
             userAttributes: userAttributes,
             internalAttributes: internalAttributes
+        )
+    }
+
+    static func mockRandom() -> LogAttributes {
+        return .init(
+            userAttributes: mockRandomAttributes(),
+            internalAttributes: mockRandomAttributes()
         )
     }
 
