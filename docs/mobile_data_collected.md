@@ -140,7 +140,7 @@ RUM action, error, resource and long task events contain information about the a
 |--------------------------------|--------|----------------------------------------------------------------------------------------------------------------|
 | `view.id`                      | string | Unique ID of the initial view corresponding to the event.view.                                                                      |
 | `view.url`                     | string | URL of the `UIViewController` class corresponding to the event.                                                           |
-| `view.name` | string | Name of the initial view corresponding to the event. |
+| `view.name` | string | Customizable name of the view corresponding to the event. |
 
 
 {{% /tab %}}
