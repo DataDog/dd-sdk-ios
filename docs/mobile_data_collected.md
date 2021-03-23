@@ -25,18 +25,41 @@ RUM collects common attributes for all events and attributes specific to each ev
 | Attribute name   | Type   | Description                 |
 |------------------|--------|-----------------------------|
 | `type`     | string | The type of the event (for example, `view` or `resource`).             |
+| `service` | string | The [unified service name][2] for this application used to corelate user sessions. |
+| `date` | integer  | Start of the event in ms from epoch. |
 | `application.id` | string | The Datadog application ID. |
 | `session.id` | string | Unique ID of the session. |
+| `session.type` | string | Type of the session (`user`). |
 | `view.id` | string | Unique ID of the initial view corresponding to the event. |
 | `view.url` | string | Name of the `UIViewController` class corresponding to the event. |
 | `view.name` | string | Name of the initial view corresponding to the event. |
-| `service` | string | The [unified service name][] for this application used to corelate user sessions. |
-| `date` | integer  | Start of the event in ms from epoch. |
-| `session.type` | string | Type of the session (`user`). |
 | `connectivity.status` | string | Status of device connectivity (`connected`, `not connected`, `maybe`). |
 | `connectivity.interfaces` | string | The list of available network interfaces (for example, `bluetooth`, `cellular`, `ethernet`, `wifi` etc). |
 | `connectivity.cellular.technology` | string | The type of a radio technology used for cellular connection |
 | `connectivity.cellular.carrier_name` | string | The name of the SIM carrier |
+| `session.time_spent` | string | Time spent on a session |
+| `session.is_active` | string | Indicates if the session is currently active |
+| `session.error.count` | string | Number of errors in the session |
+| `session.resource.count` | string | Number of resources in the session |
+| `session.action.count` | string | Number of actions in the session |
+| `session.view.count` | string | Number of views in the session |
+| `session.initial_view.url` | string | URL of the initial view of the session |
+| `ssession.initial_view.name` | string | Name of the initial view of the session |
+| `session.last_view.url` | string | URL of the last view of the session |
+| `session.last_view.name` | string | Name of the last view of the session |
+| `session.ip` | string | IP address of the session extracted from the TCP connectiion of the intake |
+| `session.useragent` | string | System user agent info to interpret device info  |
+| `os.name` | string | Name of the device operating system |
+| `os.version` | string | Version of the device operating system |
+| `os.version_major` | string | Major version of the device operating system |
+| `device.type` | string | Thee type of device |
+| `device.name` | string | The name of the device |
+| `geo.city` | string | Geo information about city extracted from the IP address |
+| `geo.country_subdivision` | string | Geo information about country subdivision extracted from the IP address |
+| `geo.country` | string | Geo information about country extracted from the IP address |
+| `geo.continent` | string | Geo information about the continent extracted from the IP address |
+| `geo.continent_code` | string | Geo information about the country code extracted from the IP address |
+
 
 ### Global user attributes
 
@@ -119,9 +142,14 @@ Front-end errors are collected with Real User Monitoring (RUM). The error messag
 | `error.type`    | string | The error type (or error code in some cases).                   |
 | `error.message` | string | A concise, human-readable, one-line message explaining the event. |
 | `error.stack`   | string | The stack trace or complementary information about the error.     |
+| `error.issue_id`   | string | The stack trace or complementary information about the error.     |
 
 
-#### Network errors
+
+
+
+
+#### Network errors 
 
 Network errors include information about failing HTTP requests. The following facets are also collected:
 
@@ -148,13 +176,16 @@ Network errors include information about failing HTTP requests. The following fa
 | `action.resource.count`         | number      | Count of all resources issued by this action. |
 | `action.error.count`      | number      | Count of all errors issued by this action.|
 
+
 ### Action attributes
 
 | Attribute    | Type   | Description              |
 |--------------|--------|--------------------------|
 | `action.id` | string | UUID of the user action. |
 | `action.type` | string | Type of the user action (`tap`, `application_start`). |
+| `action.name` | string | Name of the user action. |
 | `action.target.name` | string | Element that the user interacted with. Only for automatically collected actions |
+
 
 
 {{% /tab %}}
@@ -169,4 +200,4 @@ By default, all data collected is kept at full granularity for 15 days.
 {{< partial name="whats-next/whats-next.html" >}}
 
 [1]: /real_user_monitoring/ios#manual-instrumentation
-[2]:https://github.com/DataDog/dd-sdk-ios/blob/master/Datadog/Example/ExampleAppDelegate.swift#L37
+[2]: /getting_started/tagging/unified_service_tagging/
