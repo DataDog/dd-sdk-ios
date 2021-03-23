@@ -124,15 +124,13 @@ RUM action, error, resource and long task events contain information about the a
 
 | Metric                              | Type        | Description                                                                                          |
 |----------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `view.time_spent`                             | number (ns) | Time spent on the this view.                                                                                                                                                                                                  |
+| `view.time_spent`                             | number (ns) | Time spent on the this view.                                                                                                                                                               |
 | `view.error.count`            | number      | Count of all errors collected for this view.                                                                                                                                                                |
 
-| `view.resource.count`         | number      | Count of all resources collected for this view.                                                                                                                                                                            |
-| `view.action.count`      | number      | Count of all actions collected for this view.                                                                                     
-      |
+| `view.resource.count`         | number      | Count of all resources collected for this view.                                                                                                                                                             |
+| `view.action.count`      | number      | Count of all actions collected for this view.                                                                                       |
 
-| `view.is_active`      |    boolean   | Indicates whether the view corresponding to this event is considered active                                                                                       
-      |
+| `view.is_active`      |    boolean   | Indicates whether the view corresponding to this event is considered active                                                                                       |
 
 ### View attributes      
 
@@ -168,11 +166,10 @@ RUM action, error, resource and long task events contain information about the a
 | `resource.type`                | string | The type of resource being collected (for example, `xhr`, `image`, `font`, `css`, `js`).          |
 | `resource.method`                | string | The HTTP method (for example `POST`, `GET` `PATCH`, `DELETE` etc).           |
 | `resource.status_code`             | number | The response status code.                                                               |
-| `resource.url`                     | string | The resource URL.                                                                       |
-
-| `resource.provider.name`      | string | The resource provider name. Default is `unknown`.                                            |
+| `resource.url`              | string | The resource URL.                             |
+| `resource.provider.name`      | string | The resource provider name. Default is `unknown`.                     |
 | `resource.provider.domain`      | string | The resource provider domain.                                            |
-| `resource.provider.type`      | string | The resource provider type (for example `first-party`, `cdn`, `ad`, `analytics`).                                            |
+| `resource.provider.type`  | string | The resource provider type (for example `first-party`, `cdn`, `ad`, `analytics`).              |
 
 
 
