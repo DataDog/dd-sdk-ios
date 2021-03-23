@@ -2,18 +2,17 @@
 
 The Datadog Real User Monitoring SDK generates six types of events:
 
-| Event Type | Description                                                                                                                                                                                                                                                   |
-|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Session    | Session represents a real user journey on your mobile application. It begins when the user launches the application, and the session remains live as long as the user stays active. During the user journey, all RUM events generated as part of the session will share the same `session.id` attribute.
- |
-| View       | View represents a unique screen (or screen segment) on your mobile application. Individual `ViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`                                   |
-| Resource   | Resources represents network requests to first-party hosts, APIs, 3rd party providers, and libraries in your mobile application. All requests generated during a user session are attached to the view with a unique `resource.id`                                                      |
-| Error     | Error represents an exception or crash emitted by the mobile application attached to the view it is generated in.                                                                                                                                            |
-| Action   | Action represents user activity in your mobile application (application launch, tap, swipe, back etc). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                                                                |             
+| Event Type     | Retention | Description                                                                                                                                                                                                                                                   |
+|----------------|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Session   | 30 days   | Session represents a real user journey on your mobile application. It begins when the user launches the application, and the session remains live as long as the user stays active. During the user journey, all RUM events generated as part of the session will share the same `session.id` attribute.  |
+| View      | 30 days   | iew represents a unique screen (or screen segment) on your mobile application. Individual `ViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`                     |
+| Resource  | 15 days   | Resources represents network requests to first-party hosts, APIs, 3rd party providers, and libraries in your mobile application. All requests generated during a user session are attached to the view with a unique `resource.id`                                                                                           |
+| Error     | 30 days   | Error represents an exception or crash emitted by the mobile application attached to the view it is generated in.                                                                                                                                            |
+| Action    | 30 days   | Action represents user activity in your mobile application (application launch, tap, swipe, back etc). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                                            |       
 
 The following diagram illustrates the RUM event hierarchy:
 
-{{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
+{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}
 
 ## Default attributes
 
@@ -24,41 +23,51 @@ RUM collects common attributes for all events and attributes specific to each ev
 
 | Attribute name   | Type   | Description                 |
 |------------------|--------|-----------------------------|
+| `date` | integer  | Start of the event in ms from epoch. |
 | `type`     | string | The type of the event (for example, `view` or `resource`).             |
 | `service` | string | The [unified service name][2] for this application used to corelate user sessions. |
-| `date` | integer  | Start of the event in ms from epoch. |
 | `application.id` | string | The Datadog application ID. |
-| `session.id` | string | Unique ID of the session. |
-| `session.type` | string | Type of the session (`user`). |
-| `view.id` | string | Unique ID of the initial view corresponding to the event. |
-| `view.url` | string | Name of the `UIViewController` class corresponding to the event. |
-| `view.name` | string | Name of the initial view corresponding to the event. |
+
+### Device
+
+The following device-related attributes are attached automatically to all events collected by Datadog:
+
+| Attribute name                           | Type   | Description                                     |
+|------------------------------------------|--------|-------------------------------------------------|
+| `device.type`       | string | The device type as reported by the device (System User-Agent)      |
+| `device.brand`  | string | The device brand as reported by the device (System User-Agent)  |
+| `device.model`   | string | The device model as reported by the device (System User-Agent)    |
+| `device.name` | string | The device name as reported by the device (System User-Agent)  |
 | `connectivity.status` | string | Status of device connectivity (`connected`, `not connected`, `maybe`). |
 | `connectivity.interfaces` | string | The list of available network interfaces (for example, `bluetooth`, `cellular`, `ethernet`, `wifi` etc). |
 | `connectivity.cellular.technology` | string | The type of a radio technology used for cellular connection |
 | `connectivity.cellular.carrier_name` | string | The name of the SIM carrier |
-| `session.time_spent` | string | Time spent on a session |
-| `session.is_active` | string | Indicates if the session is currently active |
-| `session.error.count` | string | Number of errors in the session |
-| `session.resource.count` | string | Number of resources in the session |
-| `session.action.count` | string | Number of actions in the session |
-| `session.view.count` | string | Number of views in the session |
-| `session.initial_view.url` | string | URL of the initial view of the session |
-| `ssession.initial_view.name` | string | Name of the initial view of the session |
-| `session.last_view.url` | string | URL of the last view of the session |
-| `session.last_view.name` | string | Name of the last view of the session |
-| `session.ip` | string | IP address of the session extracted from the TCP connectiion of the intake |
-| `session.useragent` | string | System user agent info to interpret device info  |
-| `os.name` | string | Name of the device operating system |
-| `os.version` | string | Version of the device operating system |
-| `os.version_major` | string | Major version of the device operating system |
-| `device.type` | string | Thee type of device |
-| `device.name` | string | The name of the device |
-| `geo.city` | string | Geo information about city extracted from the IP address |
-| `geo.country_subdivision` | string | Geo information about country subdivision extracted from the IP address |
-| `geo.country` | string | Geo information about country extracted from the IP address |
-| `geo.continent` | string | Geo information about the continent extracted from the IP address |
-| `geo.continent_code` | string | Geo information about the country code extracted from the IP address |
+
+
+### Operating system
+
+The following OS-related attributes are attached automatically to all events collected by Datadog:
+
+| Attribute name                           | Type   | Description                                     |
+|------------------------------------------|--------|-------------------------------------------------|
+| `os.name`       | string | The OS name as reported by the by the device (System User-Agent)       |
+| `os.version`  | string | The OS version as reported by the by the device (System User-Agent)  |
+| `os.version_major`   | string | The OS version major as reported by the by the device (System User-Agent)   |
+
+
+### Geo-location
+
+The following attributes are related to the geo-location of IP addresses:
+
+| Fullname                                    | Type   | Description                                                                                                                          |
+|:--------------------------------------------|:-------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `geo.country`         | string | Name of the country                                                                                                                  |
+| `geo.country_iso_code`     | string | [ISO Code][1] of the country (for example, `US` for the United States, `FR` for France).                                                  |
+| `geo.country_subdivision`     | string | Name of the first subdivision level of the country (for example, `California` in the United States or the `Sarthe` department in France). |
+| `geo.country_subdivision_iso_code` | string | [ISO Code][1] of the first subdivision level of the country (for example, `CA` in the United States or the `SA` department in France).    |
+| `geo.continent_code`       | string | ISO code of the continent (`EU`, `AS`, `NA`, `AF`, `AN`, `SA`, `OC`).                                                                 |
+| `geo.continent`       | string | Name of the continent (`Europe`, `Australia`, `North America`, `Africa`, `Antartica`, `South America`, `Oceania`).                    |
+| `geo.city`            | string | The name of the city (example `Paris`, `New York`).                                                                                   |
 
 
 ### Global user attributes
@@ -76,10 +85,41 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 
 Metrics are quantifiable values that can be used for measurements related to the event. Attributes are non-quantifiable values used to slice metrics data (group by) in analytics. 
 
+{{< tabs >}}
+{{% tab "Session" %}}
+
+### Session metrics
+
+| Metric  | Type   | Description                |
+|------------|--------|----------------------------|
+| `session.time_spent` | number (ns) | Time spent on a session. |
+| `session.view.count`        | number      | Count of all views collected for this session. |
+| `session.error.count`      | number      | Count of all errors collected for this session.  |
+| `session.resource.count`         | number      | Count of all resources collected for this session. |
+| `session.action.count`      | number      | Count of all actions collected for this session. |
+| `session.long_task.count`      | number      | Count of all long tasks collected for this session. |
+
+
+### Session attributes
+
+| Attribute name                 | Type   | Description                                                                                                    |
+|--------------------------------|--------|----------------------------------------------------------------------------------------------------------------|
+| `session.id` | string | Unique ID of the session. |
+| `session.type` | string | Type of the session (`user`). |
+| `session.is_active` | string | Indicates if the session is currently active |
+| `session.initial_view.url` | string | URL of the initial view of the session |
+| `ssession.initial_view.name` | string | Name of the initial view of the session |
+| `session.last_view.url` | string | URL of the last view of the session |
+| `session.last_view.name` | string | Name of the last view of the session |
+| `session.ip` | string | IP address of the session extracted from the TCP connectiion of the intake |
+| `session.useragent` | string | System user agent info to interpret device info  |
+
 {{% /tab %}}
 {{% tab "View" %}}
 
 ### View metrics
+
+RUM action, error, resource and long task events contain information about the active RUM view event at the time of collection:
 
 
 | Metric                              | Type        | Description                                                                                          |
@@ -94,6 +134,13 @@ Metrics are quantifiable values that can be used for measurements related to the
 | `view.is_active`      |    boolean   | Indicates whether the view corresponding to this event is considered active                                                                                       
       |
 
+### View attributes      
+
+| Attribute name                 | Type   | Description                                                                                                    |
+|--------------------------------|--------|----------------------------------------------------------------------------------------------------------------|
+| `view.id`                      | string | Unique ID of the initial view corresponding to the event.view.                                                                      |
+| `view.url`                     | string | URL of the `UIViewController` class corresponding to the event.                                                           |
+| `view.name` | string | Name of the initial view corresponding to the event. |
 
 
 {{% /tab %}}
@@ -145,10 +192,6 @@ Front-end errors are collected with Real User Monitoring (RUM). The error messag
 | `error.issue_id`   | string | The stack trace or complementary information about the error.     |
 
 
-
-
-
-
 #### Network errors 
 
 Network errors include information about failing HTTP requests. The following facets are also collected:
@@ -165,8 +208,6 @@ Network errors include information about failing HTTP requests. The following fa
 
 {{% /tab %}}
 {{% tab "User Action" %}}
-
-
 
 ### Action metrics
 
@@ -191,9 +232,6 @@ Network errors include information about failing HTTP requests. The following fa
 {{% /tab %}}
 {{< /tabs >}}
 
-
-## Data retention
-By default, all data collected is kept at full granularity for 15 days. 
 
 ## Further Reading
 
