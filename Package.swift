@@ -3,13 +3,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "Datadog",
+    name: "DatadogSDK",
     platforms: [
         .iOS(.v11)
     ],
     products: [
         .library(
-            name: "Datadog",
+            name: "DatadogSDK",
             type: .dynamic,
             targets: ["Datadog"]
         ),
@@ -44,6 +44,9 @@ let package = Package(
             dependencies: [
                 "_Datadog_Private",
                 .product(name: "Kronos", package: "Kronos"),
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
             ]
         ),
         .target(
