@@ -4,6 +4,11 @@ public enum TrackingConsent
  case granted
  case notGranted
  case pending
+public class DDCrashReport: NSObject
+ public init(date: Date?,type: String,message: String,stackTrace: String,context: Data?)
+public protocol DDCrashReportingPluginType: class
+ func readPendingCrashReport(completion: (DDCrashReport?) -> Bool)
+ func inject(context: Data)
 public class DDRUMMonitor
  public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue] = [:])
  public func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
@@ -86,6 +91,8 @@ public class Datadog
    public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder
    public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder
    public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder
+   public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder
+   public func enableInternalMonitoring(clientToken: String) -> Builder
    public func set(serviceName: String) -> Builder
    public func set(batchSize: BatchSize) -> Builder
    public func set(uploadFrequency: UploadFrequency) -> Builder

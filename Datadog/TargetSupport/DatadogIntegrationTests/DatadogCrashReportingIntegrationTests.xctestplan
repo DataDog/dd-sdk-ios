@@ -1,0 +1,58 @@
+{
+  "configurations" : [
+    {
+      "id" : "15325B2B-2C4A-4B53-88F7-B6C1E3B6BE98",
+      "name" : "Default",
+      "options" : {
+        "mainThreadCheckerEnabled" : false,
+        "uiTestingScreenshotsLifetime" : "keepNever",
+        "userAttachmentLifetime" : "keepNever"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "61133B81242393DE00786299",
+          "name" : "Datadog"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "61B7885325C180CB002675B5",
+          "name" : "DatadogCrashReporting"
+        }
+      ]
+    },
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Datadog.xcodeproj",
+      "identifier" : "61441C2924616F1D003D8BB8",
+      "name" : "DatadogIntegrationTests"
+    }
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "IntegrationTests",
+        "LoggingScenarioTests",
+        "RUMManualInstrumentationScenarioTests",
+        "RUMModalViewsScenarioTests",
+        "RUMNavigationControllerScenarioTests",
+        "RUMResourcesScenarioTests",
+        "RUMScrubbingScenarioTests",
+        "RUMTabBarControllerScenarioTests",
+        "RUMTapActionScenarioTests",
+        "TracingManualInstrumentationScenarioTests",
+        "TracingURLSessionScenarioTests",
+        "TrackingConsentScenarioTests"
+      ],
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "61441C2924616F1D003D8BB8",
+        "name" : "DatadogIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}

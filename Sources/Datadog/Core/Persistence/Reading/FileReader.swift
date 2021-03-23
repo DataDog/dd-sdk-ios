@@ -12,13 +12,19 @@ internal final class FileReader: Reader {
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestrator
+    private let internalMonitor: InternalMonitor?
 
     /// Files marked as read.
     private var filesRead: [ReadableFile] = []
 
-    init(dataFormat: DataFormat, orchestrator: FilesOrchestrator) {
+    init(
+        dataFormat: DataFormat,
+        orchestrator: FilesOrchestrator,
+        internalMonitor: InternalMonitor? = nil
+    ) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator
+        self.internalMonitor = internalMonitor
     }
 
     // MARK: - Reading batches
@@ -30,7 +36,7 @@ internal final class FileReader: Reader {
                 let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
                 return Batch(data: batchData, file: file)
             } catch {
-                developerLogger?.error("🔥 Failed to read file: \(error)")
+                internalMonitor?.sdkLogger.error("Failed to read data from file", error: error)
                 return nil
             }
         }

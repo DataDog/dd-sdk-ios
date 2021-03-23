@@ -18,15 +18,18 @@ internal class FilesOrchestrator {
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
     /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
     private var lastWritableFileUsesCount: Int = 0
+    private let internalMonitor: InternalMonitor?
 
     init(
         directory: Directory,
         performance: StoragePerformancePreset,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.internalMonitor = internalMonitor
     }
 
     // MARK: - `WritableFile` orchestration
@@ -71,7 +74,7 @@ internal class FilesOrchestrator {
                     return lastFile
                 }
             } catch {
-                developerLogger?.error("🔥 Failed to read previously used writable file: \(error)")
+                internalMonitor?.sdkLogger.warn("Failed to read previously used writable file", error: error)
             }
         }
 
@@ -99,7 +102,7 @@ internal class FilesOrchestrator {
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
-            developerLogger?.error("🔥 Failed to obtain readable file: \(error)")
+            internalMonitor?.sdkLogger.error("Failed to obtain readable file", error: error)
             return nil
         }
     }
@@ -108,7 +111,7 @@ internal class FilesOrchestrator {
         do {
             try readableFile.delete()
         } catch {
-            developerLogger?.error("🔥 Failed to delete file: \(error)")
+            internalMonitor?.sdkLogger.error("Failed to delete file", error: error)
         }
     }
 

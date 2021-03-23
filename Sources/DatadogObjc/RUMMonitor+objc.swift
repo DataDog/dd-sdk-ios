@@ -257,19 +257,27 @@ public class DDRUMMonitor: NSObject {
     public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
+        size: NSNumber?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, response: response, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, response: response, size: size?.int64Value, attributes: castAttributesToSwift(attributes))
     }
 
     @objc
     public func stopResourceLoading(
         resourceKey: String,
-        statusCode: Int,
+        statusCode: NSNumber?,
         kind: DDRUMResourceType,
+        size: NSNumber?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.stopResourceLoading(resourceKey: resourceKey, statusCode: statusCode, kind: kind.swiftType, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.stopResourceLoading(
+            resourceKey: resourceKey,
+            statusCode: statusCode?.intValue,
+            kind: kind.swiftType,
+            size: size?.int64Value,
+            attributes: castAttributesToSwift(attributes)
+        )
     }
 
     @objc

@@ -40,7 +40,10 @@ internal struct FeaturesConfiguration {
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
-        let eventMapper: RUMEventsMapper
+        let viewEventMapper: RUMViewEventMapper?
+        let resourceEventMapper: RUMResourceEventMapper?
+        let actionEventMapper: RUMActionEventMapper?
+        let errorEventMapper: RUMErrorEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
     }
@@ -57,6 +60,20 @@ internal struct FeaturesConfiguration {
         let instrumentRUM: Bool
     }
 
+    struct CrashReporting {
+        /// The `DDCrashReportingPluginType` implementation provided by `DatadogCrashReporting` library.
+        let crashReportingPlugin: DDCrashReportingPluginType
+    }
+
+    struct InternalMonitoring {
+        let common: Common
+        let sdkServiceName: String
+        let sdkEnvironment: String
+        /// Internal monitoring logger's name.
+        let loggerName = "im-logger"
+        let logsUploadURLWithClientToken: URL
+    }
+
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
@@ -67,6 +84,10 @@ internal struct FeaturesConfiguration {
     let rum: RUM?
     /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+    /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
+    let crashReporting: CrashReporting?
+    /// Internal Monitoring feature configuration or `nil` if the feature was not enabled.
+    let internalMonitoring: InternalMonitoring?
 }
 
 extension FeaturesConfiguration {
@@ -82,6 +103,8 @@ extension FeaturesConfiguration {
         var tracing: Tracing?
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+        var crashReporting: CrashReporting?
+        var internalMonitoring: InternalMonitoring?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
@@ -162,12 +185,10 @@ extension FeaturesConfiguration {
                     ),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
-                    eventMapper: RUMEventsMapper(
-                        viewEventMapper: configuration.rumViewEventMapper,
-                        errorEventMapper: configuration.rumErrorEventMapper,
-                        resourceEventMapper: configuration.rumResourceEventMapper,
-                        actionEventMapper: configuration.rumActionEventMapper
-                    ),
+                    viewEventMapper: configuration.rumViewEventMapper,
+                    resourceEventMapper: configuration.rumResourceEventMapper,
+                    actionEventMapper: configuration.rumActionEventMapper,
+                    errorEventMapper: configuration.rumErrorEventMapper,
                     autoInstrumentation: autoInstrumentation
                 )
             } else {
@@ -196,11 +217,38 @@ extension FeaturesConfiguration {
             } else {
                 let error = ProgrammerError(
                     description: """
-                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
+                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
+                    Use: `.enableTracing(true)` or `.enableRUM(true)`.
                     """
                 )
                 consolePrint("\(error)")
             }
+        }
+
+        if let crashReportingPlugin = configuration.crashReportingPlugin {
+            if configuration.loggingEnabled || configuration.rumEnabled {
+                crashReporting = CrashReporting(crashReportingPlugin: crashReportingPlugin)
+            } else {
+                let error = ProgrammerError(
+                    description: """
+                    To use `.enableCrashReporting(using:)` either RUM or Logging must be enabled.
+                    Use: `.enableLogging(true)` or `.enableRUM(true)`.
+                    """
+                )
+                consolePrint("\(error)")
+            }
+        }
+
+        if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
+            internalMonitoring = InternalMonitoring(
+                common: common,
+                sdkServiceName: "dd-sdk-ios",
+                sdkEnvironment: "prod",
+                logsUploadURLWithClientToken: try ifValid(
+                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us.logsEndpoint.url,
+                    clientToken: internalMonitoringClientToken
+                )
+            )
         }
 
         self.common = common
@@ -208,6 +256,8 @@ extension FeaturesConfiguration {
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
+        self.crashReporting = crashReporting
+        self.internalMonitoring = internalMonitoring
     }
 }
 

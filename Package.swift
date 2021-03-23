@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.2
 
 import PackageDescription
 
@@ -11,35 +11,56 @@ let package = Package(
         .library(
             name: "Datadog",
             type: .dynamic,
-            targets: ["Datadog"]),
+            targets: ["Datadog"]
+        ),
         .library(
             name: "DatadogObjc",
             type: .dynamic,
-            targets: ["DatadogObjc"]),
+            targets: ["DatadogObjc"]
+        ),
         .library(
             name: "DatadogStatic",
             type: .static,
-            targets: ["Datadog"]),
+            targets: ["Datadog"]
+        ),
         .library(
             name: "DatadogStaticObjc",
             type: .static,
-            targets: ["DatadogObjc"]),
+            targets: ["DatadogObjc"]
+        ),
+        .library(
+            name: "DatadogCrashReporting",
+            type: .dynamic,
+            targets: ["DatadogCrashReporting"]
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/lyft/Kronos.git", .upToNextMinor(from: "4.1.0"))
+        .package(name: "Kronos", url: "https://github.com/lyft/Kronos.git", from: "4.2.1"),
+        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.8.1"),
     ],
     targets: [
         .target(
             name: "Datadog",
-            dependencies: ["_Datadog_Private", "Kronos"]),
+            dependencies: [
+                "_Datadog_Private",
+                .product(name: "Kronos", package: "Kronos"),
+            ]
+        ),
         .target(
             name: "DatadogObjc",
-            dependencies: ["Datadog"]),
+            dependencies: [
+                "Datadog",
+            ]
+        ),
         .target(
             name: "_Datadog_Private"
         ),
-        .testTarget(
-            name: "DatadogTests",
-            dependencies: ["Datadog", "DatadogObjc"]),
+        .target(
+            name: "DatadogCrashReporting",
+            dependencies: [
+                "Datadog",
+                .product(name: "CrashReporter", package: "PLCrashReporter"),
+            ]
+        )
     ]
 )

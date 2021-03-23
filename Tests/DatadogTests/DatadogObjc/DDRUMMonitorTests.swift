@@ -177,15 +177,18 @@ class DDRUMMonitorTests: XCTestCase {
             ),
             attributes: ["event-attribute2": "foo2"]
         )
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), attributes: ["event-attribute3": "foo3"])
+        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["event-attribute3": "foo3"])
 
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/string", attributes: [:])
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, attributes: [:])
+        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/2", attributes: [:])
+        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, size: 142, attributes: [:])
+
+        objcRUMMonitor.startResourceLoading(resourceKey: "/resource3", httpMethod: .get, urlString: "/some/url/3", attributes: [:])
+        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource3", response: .mockAny(), size: 242, attributes: [:])
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
 
         let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
-        XCTAssertEqual(resourceEvents.count, 2)
+        XCTAssertEqual(resourceEvents.count, 3)
 
         let event1Matcher = resourceEvents[0]
         let event1: RUMResourceEvent = try event1Matcher.model()
@@ -198,9 +201,14 @@ class DDRUMMonitorTests: XCTestCase {
 
         let event2Matcher = resourceEvents[1]
         let event2: RUMResourceEvent = try event2Matcher.model()
-        XCTAssertEqual(event2.resource.url, "/some/url/string")
+        XCTAssertEqual(event2.resource.url, "/some/url/2")
+        XCTAssertEqual(event2.resource.size, 142)
         XCTAssertEqual(event2.resource.type, .beacon)
         XCTAssertEqual(event2.resource.statusCode, 333)
+
+        let event3: RUMResourceEvent = try resourceEvents[2].model()
+        XCTAssertEqual(event3.resource.url, "/some/url/3")
+        XCTAssertEqual(event3.resource.size, 242)
     }
 
     func testSendingErrorEvents() throws {

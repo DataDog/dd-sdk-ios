@@ -11,7 +11,7 @@ public class DDDatadog: NSObject
  public static func initialize(appContext: DDAppContext,trackingConsent: DDTrackingConsent,configuration: DDConfiguration)
  public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
  public static func verbosityLevel() -> DDSDKVerbosityLevel
- public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil)
+ public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
  public static func setTrackingConsent(consent: DDTrackingConsent)
 public class DDEndpoint: NSObject
  public static func eu() -> DDEndpoint
@@ -42,6 +42,7 @@ public class DDConfigurationBuilder: NSObject
  public func enableLogging(_ enabled: Bool)
  public func enableTracing(_ enabled: Bool)
  public func enableRUM(_ enabled: Bool)
+ public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType)
  public func set(endpoint: DDEndpoint)
  public func set(customLogsEndpoint: URL)
  public func set(customTracesEndpoint: URL)
@@ -583,8 +584,8 @@ public class DDRUMMonitor: NSObject
  public func startResourceLoading(resourceKey: String,url: URL,attributes: [String: Any])
  public func startResourceLoading(resourceKey: String,httpMethod: DDRUMMethod,urlString: String,attributes: [String: Any])
  public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
- public func stopResourceLoading(resourceKey: String,response: URLResponse,attributes: [String: Any])
- public func stopResourceLoading(resourceKey: String,statusCode: Int,kind: DDRUMResourceType,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,response: URLResponse,size: NSNumber?,attributes: [String: Any])
+ public func stopResourceLoading(resourceKey: String,statusCode: NSNumber?,kind: DDRUMResourceType,size: NSNumber?,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
  public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [String: Any])
  public func startUserAction(type: DDRUMUserActionType,name: String,attributes: [String: Any])
