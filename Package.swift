@@ -9,7 +9,7 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "DatadogSDK",
+            name: "Datadog",
             type: .dynamic,
             targets: ["Datadog"]
         ),
@@ -31,6 +31,11 @@ let package = Package(
         .library(
             name: "DatadogCrashReporting",
             type: .dynamic,
+            targets: ["DatadogCrashReporting"]
+        ),
+        .library(
+            name: "DatadogCrashReportingStatic",
+            type: .static,
             targets: ["DatadogCrashReporting"]
         ),
     ],
