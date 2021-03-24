@@ -30,7 +30,7 @@ let package = Package(
         ),
         .library(
             name: "DatadogCrashReporting",
-            type: .dynamic,
+            type: .static,
             targets: ["DatadogCrashReporting"]
         ),
     ],
