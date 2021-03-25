@@ -15,10 +15,15 @@ internal class URLSessionAutoInstrumentation {
 
     init?(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        appStateListener: AppStateListening
     ) {
         do {
-            self.interceptor = URLSessionInterceptor(configuration: configuration, dateProvider: dateProvider)
+            self.interceptor = URLSessionInterceptor(
+                configuration: configuration,
+                dateProvider: dateProvider,
+                appStateListener: appStateListener
+            )
             self.swizzler = try URLSessionSwizzler()
         } catch {
             consolePrint(

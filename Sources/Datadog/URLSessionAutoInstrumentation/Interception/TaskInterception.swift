@@ -22,7 +22,10 @@ internal class TaskInterception {
     /// or when the task was created through `URLSession.dataTask(with:url)` on some iOS13+.
     private(set) var spanContext: DDSpanContext?
 
-    init(request: URLRequest, isFirstParty: Bool) {
+    init(
+        request: URLRequest,
+        isFirstParty: Bool
+    ) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty

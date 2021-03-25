@@ -829,6 +829,12 @@ class CarrierInfoProviderMock: CarrierInfoProviderType, WrappedCarrierInfoProvid
     }
 }
 
+extension AppStateListener {
+    static func mockAny() -> AppStateListener {
+        return AppStateListener(dateProvider: SystemDateProvider())
+    }
+}
+
 extension EncodableValue {
     static func mockAny() -> EncodableValue {
         return EncodableValue(String.mockAny())
