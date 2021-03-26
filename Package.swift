@@ -44,7 +44,8 @@ let package = Package(
             dependencies: [
                 "_Datadog_Private",
                 .product(name: "Kronos", package: "Kronos"),
-            ]
+            ],
+            swiftSettings: [.define("SPM_BUILD")]
         ),
         .target(
             name: "DatadogObjc",

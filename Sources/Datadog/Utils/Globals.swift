@@ -4,7 +4,11 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Foundation
+
+#if SPM_BUILD
 import _Datadog_Private
+#endif
 
 /// Function printing `String` content to console.
 internal var consolePrint: (String) -> Void = { content in

@@ -22,8 +22,8 @@ Pod::Spec.new do |s|
   s.source_files = ["Sources/Datadog/**/*.swift",
                     "Sources/_Datadog_Private/**/*.{h,m}",
                     "Datadog/TargetSupport/Datadog/Datadog.h"]
-  s.public_header_files = "Datadog/TargetSupport/Datadog/Datadog.h"
-  s.private_header_files = "Sources/_Datadog_Private/include/*.h"
-  s.module_map = "Sources/Datadog/Datadog.modulemap"
+  s.public_header_files = ["Datadog/TargetSupport/Datadog/Datadog.h", 
+                           "Sources/_Datadog_Private/include/*.h"]
+
   s.dependency 'Kronos', '~> 4.2'
 end

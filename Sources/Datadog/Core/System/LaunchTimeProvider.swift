@@ -5,7 +5,10 @@
  */
 
 import UIKit
+
+#if SPM_BUILD
 import _Datadog_Private
+#endif
 
 /// Provides the application launch time.
 internal protocol LaunchTimeProviderType {
