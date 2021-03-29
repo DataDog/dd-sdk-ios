@@ -10,9 +10,9 @@ import Foundation
 internal struct CompilationConditions {
     #if DD_SDK_DEVELOPMENT
     /// `true` if `DD_SDK_DEVELOPMENT` flag is set.
-    static var isSDKCompiledForDevelopment: Bool = true
+    static var isSDKCompiledForDevelopment = true
     #else
     /// `false` if `DD_SDK_DEVELOPMENT` flag is not set.
-    static var isSDKCompiledForDevelopment: Bool = false
+    static var isSDKCompiledForDevelopment = false
     #endif
 }
