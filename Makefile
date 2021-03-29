@@ -106,3 +106,8 @@ ship:
 		pod repo update
 		pod spec lint --allow-warnings DatadogSDKObjc.podspec
 		pod trunk push --allow-warnings DatadogSDKObjc.podspec
+
+dogfood:
+		@brew list gh &>/dev/null || brew install gh
+		@pip install GitPython==3.1.14
+		@./tools/dogfooding/dogfood.py

@@ -213,3 +213,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
+
+  create_dogfooding_pr:
+    description: |-
+        Creates PRs to repositories using `dd-sdk-ios`.
+    steps:
+    - script:
+        title: Create PR to Datadog mobile app project
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            make dogfood ci=${CI}
+
