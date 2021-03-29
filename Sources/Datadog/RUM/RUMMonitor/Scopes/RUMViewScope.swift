@@ -37,7 +37,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
-    private(set) var isActiveView: Bool = true
+    private(set) var isActiveView = true
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
