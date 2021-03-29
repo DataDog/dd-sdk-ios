@@ -16,6 +16,10 @@ workflows:
     - check_dependency_managers
     - _deploy_artifacts
 
+  push_to_dogfooding:
+    after_run:
+    - create_dogfooding_pr
+
   _make_dependencies:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
