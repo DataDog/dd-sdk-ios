@@ -2530,7 +2530,7 @@
 				61133B87242393DE00786299 /* Sources */,
 				61133B88242393DE00786299 /* Frameworks */,
 				61133B89242393DE00786299 /* Resources */,
-				9EA6A53C24489AB100621535 /* ⚙️ Run linter */,
+				6170DC2325C18762003AED5C /* ⚙️ Run linter */,
 			);
 			buildRules = (
 			);
@@ -2758,10 +2758,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "if [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		9EA6A53C24489AB100621535 /* ⚙️ Run linter */ = {
+		6170DC2325C18762003AED5C /* ⚙️ Run linter */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2777,7 +2777,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "if [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
