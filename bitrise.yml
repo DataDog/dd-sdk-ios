@@ -38,6 +38,13 @@ workflows:
     description: |-
         Runs swiftlint and license check for all source and test files.
     steps:
+    - script:
+        title: Patch linter configuration for swiftlint 0.42.0
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            ./tools/lint/patch_if_swiftlint_0.42.0.sh
     - swiftlint@0.8.0:
         title: Lint Sources/*
         inputs:
