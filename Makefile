@@ -1,10 +1,4 @@
-all: tools dependencies xcodeproj-httpservermock templates
-.PHONY : tools
-
-tools:
-		@echo "⚙️  Installing tools..."
-		@brew list swiftlint &>/dev/null || brew install swiftlint
-		@echo "OK 👌"
+all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
 DD_SDK_SWIFT_TESTING_VERSION = 0.7.0
@@ -35,6 +29,8 @@ export DD_SDK_BASE_XCCONFIG
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@brew update
+		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
