@@ -1,161 +1,108 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# -----------------------------------------------------------
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
-# Copyright 2019-Present Datadog, Inc
+# Copyright 2019-2020 Datadog, Inc.
+# -----------------------------------------------------------
 
-import re
-import subprocess
 import sys
 import os
-import subprocess
-from argparse import ArgumentParser, Namespace
+import contextlib
 from tempfile import TemporaryDirectory
-from typing import Tuple
-
-import requests
-from git import Repo
-
-TARGET_APP = "app"
-TARGET_DEMO = "demo"
-
-REPOSITORIES = {TARGET_APP: "datadog-ios", TARGET_DEMO: "shopist-ios"}
+from src.package_resolved import PackageResolvedFile
+from src.dogfooded_commit import DogfoodedCommit
+from src.repository import Repository
 
 
-def parse_arguments(args: list) -> Namespace:
-    parser = ArgumentParser()
+@contextlib.contextmanager
+def remember_cwd():
+    """
+    Creates context manager for convenient work with `os.chdir()` API.
+    After context returns, the `os.getcwd()` is set to its previous value.
+    """
+    previous = os.getcwd()
+    try:
+        yield
+    finally:
+        os.chdir(previous)
 
-    parser.add_argument("-v", "--version", required=True, help="the version of the SDK")
-    parser.add_argument("-t", "--target", required=True,
-                        choices=[TARGET_APP, TARGET_DEMO],
-                        help="the target repository")
-
-    return parser.parse_args(args)
-
-
-def github_create_pr(repository: str, branch_name: str, base_name: str, version: str, gh_token: str) -> int:
-    headers = {
-        'authorization': "Bearer " + gh_token,
-        'Accept': 'application/vnd.github.v3+json',
-    }
-    data = '{"body": "This PR has been created automatically by the CI", ' \
-           '"title": "Update to version ' + version + '", ' \
-                                                      '"base":"' + base_name + '", "head":"' + branch_name + '"}'
-
-    url = "https://api.github.com/repos/DataDog/" + repository + "/pulls"
-    response = requests.post(url=url, headers=headers, data=data)
-    if response.status_code == 201:
-        print("✔ Pull Request created successfully")
-        return 0
-    else:
-        print("✘ pull request failed " + str(response.status_code) + '\n' + response.text)
-        return 1
-
-
-def generate_target_code(target: str, temp_dir_path: str, version: str) -> int:
-    print("… Generating code with version " + version)
-
-    if target == TARGET_APP:
-        print("… Updating app's Podfile")
-        target_file_path = os.path.join(temp_dir_path, "Podfile")
-        content = ""
-        with open(target_file_path, 'r') as target_file:
-            lines = target_file.readlines()
-            for line in lines:
-                if "pod 'DatadogSDK'" in line:
-                    content = content + "    pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => '" + version + "'\n"
-                else:
-                    content = content + line
-
-        with open(target_file_path, 'w') as target_file:
-            target_file.write(content)
-
-
-        print("… Running `bundle exec pod install`") 
-        os.chdir(temp_dir_path)
-        cmd_args = ['bundle', 'exec', 'pod', 'install']
-        process = subprocess.Popen(cmd_args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
-        try:
-            output, errlog = process.communicate(timeout=120)
-        except subprocess.TimeoutExpired:
-            print("✘ generation timeout for " + target + ", version: " + version)
-            return 1
-
-        if process.returncode is None:
-            print("✘ generation status unknown for " + target + ", version: " + version)
-            return 1
-        elif process.returncode > 0:
-            print("✘ generation failed for " + target + ", version: " + version)
-            print(output.decode("utf-8"))
-            print(errlog.decode("utf-8"))
-            return 1
-        else:
-            return 0
-    # TODO RUMM-1063 elif target == TARGET_DEMO: …
-    else:
-        print("? unknown generation target: " + target + ", version: " + version)
-
-
-def git_clone_repository(repo_name: str, gh_token: str, temp_dir_path: str) -> Tuple[Repo, str]:
-    print("… Cloning repository " + repo_name)
-    url = "https://" + gh_token + ":x-oauth-basic@github.com/DataDog/" + repo_name
-    repo = Repo.clone_from(url, temp_dir_path)
-    base_name = repo.active_branch.name
-    return repo, base_name
-
-
-def git_push_changes(repo: Repo, version: str):
-    print("… Committing changes")
-    repo.git.add(update=True)
-    repo.index.commit("Update DD SDK to " + version)
-
-    print("⑊ Pushing branch")
-    origin = repo.remote(name="origin")
-    repo.git.push("--set-upstream", "--force", origin, repo.head.ref)
-
-
-def update_dependant(version: str, target: str, gh_token: str) -> int:
-    branch_name = "update_sdk_" + version
-    temp_dir = TemporaryDirectory()
-    temp_dir_path = temp_dir.name
-    repo_name = REPOSITORIES[target]
-
-    repo, base_name = git_clone_repository(repo_name, gh_token, temp_dir_path)
-
-    print("… Creating branch " + branch_name)
-    repo.git.checkout('HEAD', b=branch_name)
-
-
-    cwd = os.getcwd()
-    result = generate_target_code(target, temp_dir_path, version)
-    os.chdir(cwd)
-
-    if result > 0:
-        return result
-
-    if not repo.is_dirty():
-        print("∅ Nothing to commit, all is in order…")
-        return 0
-
-    git_push_changes(repo, version)
-
-    return github_create_pr(repo_name, branch_name, base_name, version, gh_token)
 
 def run_main() -> int:
-    cli_args = parse_arguments(sys.argv[1:])
+    try:
+        # Read commit information:
+        dd_sdk_ios_commit = DogfoodedCommit()
 
-    if cli_args.target != TARGET_APP:
-        print("Cannot dogfood target : " + cli_args.target)
+        # Resolve and read `dd-sdk-ios` dependencies:
+        dd_sdk_package_path = '.' if 'CI' in os.environ else '../..'
+        os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
+        dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
+        kronos_dependency = dd_sdk_ios_package.read_dependency(package_name='Kronos')
+        plcrash_reporter_dependency = dd_sdk_ios_package.read_dependency(package_name='PLCrashReporter')
+
+        if dd_sdk_ios_package.get_number_of_dependencies() > 2:
+            raise Exception('`dogfood.py` needs update as `dd-sdk-ios` has unrecognized dependencies')
+
+        # Clone `datadog-ios` repository to temporary location and update its `Package.resolved` so it points
+        # to the current `dd-sdk-ios` commit. After that, push changes to `datadog-ios` and create dogfooding PR.
+        with TemporaryDirectory() as temp_dir:
+            with remember_cwd():
+                repository = Repository.clone(
+                    ssh='git@github.com:DataDog/datadog-ios.git',
+                    repository_name='datadog-ios',
+                    temp_dir=temp_dir
+                )
+                repository.create_branch(f'dogfooding-{dd_sdk_ios_commit.hash_short}')
+                package = PackageResolvedFile(
+                    path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+                )
+                # Update version of `dd-sdk-ios`:
+                package.update_dependency(
+                    package_name='DatadogSDK',
+                    new_branch='dogfooding',
+                    new_revision=dd_sdk_ios_commit.hash,
+                    new_version=None
+                )
+                # Set version of `Kronos` to as it is resolved in `dd-sdk-ios`:
+                package.update_dependency(
+                    package_name='Kronos',
+                    new_branch=kronos_dependency['branch'],
+                    new_revision=kronos_dependency['revision'],
+                    new_version=kronos_dependency['version'],
+                )
+                # Set version of `PLCrashReporter` to as it is resolved in `dd-sdk-ios`:
+                package.update_dependency(
+                    package_name='PLCrashReporter',
+                    new_branch=plcrash_reporter_dependency['branch'],
+                    new_revision=plcrash_reporter_dependency['revision'],
+                    new_version=plcrash_reporter_dependency['version'],
+                )
+                package.save()
+                # Push changes to `datadog-ios`:
+                repository.commit(
+                    message=f'Dogfooding dd-sdk-ios commit: {dd_sdk_ios_commit.hash}\n\n' +
+                            f'Dogfooded commit message: {dd_sdk_ios_commit.message}',
+                    author=dd_sdk_ios_commit.author
+                )
+                repository.push()
+                # Create PR:
+                repository.create_pr(
+                    title=f'[Dogfooding] Upgrade dd-sdk-ios to {dd_sdk_ios_commit.hash_short}',
+                    description='⚙️ This is an automated PR upgrading the version of \`dd-sdk-ios\` to ' +
+                                f'https://github.com/DataDog/dd-sdk-ios/commit/{dd_sdk_ios_commit.hash}'
+                )
+    except Exception as error:
+        print(f'❌ Dogfooding failed: {error}')
         return 1
 
-    # This script expects to have a valid Github Token in a "gh_token" text file
-    # The token needs the `repo` permissions, and for now is a PAT
-    with open('gh_token', 'r') as f:
-        gh_token = f.read().strip()
-
-    return update_dependant(cli_args.version, cli_args.target, gh_token)
+    return 0
 
 
 if __name__ == "__main__":
+    launch_dir = os.path.dirname(sys.argv[0])
+    print(f'ℹ️ Launch dir {launch_dir}')
+    if os.path.basename(launch_dir) == 'dd-sdk-ios':
+        os.chdir('tools/dogfooding')
+        print(f'    → changing current directory to: {os.getcwd()}')
     sys.exit(run_main())
