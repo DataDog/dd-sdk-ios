@@ -159,8 +159,8 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .rare)
 
         objcBuilder.set(additionalConfiguration: ["foo": 42, "bar": "something"])
-        XCTAssertEqual((objcBuilder.build().sdkConfiguration.additionalConfiguration["foo"] as? AnyEncodable)?.value as? Int, 42)
-        XCTAssertEqual((objcBuilder.build().sdkConfiguration.additionalConfiguration["bar"]as? AnyEncodable)?.value as? String, "something")
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["foo"] as? Int, 42)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["bar"] as? String, "something")
     }
 
     func testScrubbingRUMEvents() {

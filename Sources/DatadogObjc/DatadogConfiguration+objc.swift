@@ -279,7 +279,7 @@ public class DDConfigurationBuilder: NSObject {
 
     @objc
     public func set(additionalConfiguration: [String: Any]) {
-        _ = sdkBuilder.set(additionalConfiguration: castAttributesToSwift(additionalConfiguration))
+        _ = sdkBuilder.set(additionalConfiguration: additionalConfiguration)
     }
 
     @objc
