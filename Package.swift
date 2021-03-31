@@ -58,6 +58,9 @@ let package = Package(
             name: "DatadogObjc",
             dependencies: [
                 "Datadog",
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
             ]
         ),
         .target(
@@ -68,6 +71,9 @@ let package = Package(
             dependencies: [
                 "Datadog",
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
             ]
         )
     ]
