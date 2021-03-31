@@ -79,7 +79,7 @@ internal final class InternalMonitoringFeature {
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.logsUploadURLWithClientToken,
                 queryItemProviders: [
-                    .ddsource()
+                    .ddsource(source: configuration.common.source)
                 ]
             ),
             commonDependencies: commonDependencies,

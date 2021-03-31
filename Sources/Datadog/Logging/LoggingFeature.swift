@@ -85,7 +85,7 @@ internal final class LoggingFeature {
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
-                    .ddsource()
+                    .ddsource(source: configuration.common.source)
                 ]
             ),
             commonDependencies: commonDependencies,
