@@ -50,7 +50,7 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
 }
 
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
-/// Diagnositc information about the crash report, collected for `DatadogCrashReporting` observability.
+/// Diagnostic information about the crash report, collected for `DatadogCrashReporting` observability.
 /// Available only if internal monitoring is enabled, disabled by default.
 /// See: `Datadog.Configuration.Builder.enableInternalMonitoring(clientToken:)`.
 private struct PLCrashReportDiagnosticInfo: Encodable {

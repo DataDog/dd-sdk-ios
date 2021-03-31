@@ -21,7 +21,7 @@ public class DDCrashReport: NSObject {
     internal let context: Data?
 
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
-    /// Additional diagnositc information about the crash report, collected for `DatadogCrashReporting` observability.
+    /// Additional diagnostic information about the crash report, collected for `DatadogCrashReporting` observability.
     /// Available only if internal monitoring is enabled, disabled by default.
     /// See: `Datadog.Configuration.Builder.enableInternalMonitoring(clientToken:)`.
     public var diagnosticInfo: [String: Encodable] = [:]
