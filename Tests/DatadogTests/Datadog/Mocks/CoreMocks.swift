@@ -54,6 +54,7 @@ extension Datadog.Configuration {
         rumUIKitActionsTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
+        additionalConfiguration: [String: Any] = [:],
         internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
@@ -78,6 +79,7 @@ extension Datadog.Configuration {
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
+            additionalConfiguration: additionalConfiguration,
             internalMonitoringClientToken: internalMonitoringClientToken
         )
     }

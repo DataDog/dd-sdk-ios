@@ -52,6 +52,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.rumErrorEventMapper)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
+            XCTAssertEqual(configuration.additionalConfiguration.count, 0)
         }
     }
 
@@ -83,6 +84,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .setRUMActionEventMapper { _ in mockRUMActionEvent }
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
+                .set(additionalConfiguration: ["foo": 42, "bar": "something"])
 
             return builder
         }
@@ -125,6 +127,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
+            XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
+            XCTAssertEqual(configuration.additionalConfiguration["bar"] as? String, "something")
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

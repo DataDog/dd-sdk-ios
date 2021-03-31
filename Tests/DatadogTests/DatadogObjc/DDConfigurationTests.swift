@@ -63,6 +63,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertNil(configuration.rumResourceEventMapper)
             XCTAssertNil(configuration.rumActionEventMapper)
             XCTAssertNil(configuration.rumErrorEventMapper)
+            XCTAssertEqual(configuration.additionalConfiguration.count, 0)
         }
     }
 
@@ -156,6 +157,10 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(uploadFrequency: .rare)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .rare)
+
+        objcBuilder.set(additionalConfiguration: ["foo": 42, "bar": "something"])
+        XCTAssertEqual((objcBuilder.build().sdkConfiguration.additionalConfiguration["foo"] as? AnyEncodable)?.value as? Int, 42)
+        XCTAssertEqual((objcBuilder.build().sdkConfiguration.additionalConfiguration["bar"]as? AnyEncodable)?.value as? String, "something")
     }
 
     func testScrubbingRUMEvents() {

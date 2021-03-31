@@ -278,6 +278,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(additionalConfiguration: [String: Any]) {
+        _ = sdkBuilder.set(additionalConfiguration: castAttributesToSwift(additionalConfiguration))
+    }
+
+    @objc
     public func build() -> DDConfiguration {
         return DDConfiguration(sdkConfiguration: sdkBuilder.build())
     }
