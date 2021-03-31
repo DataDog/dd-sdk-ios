@@ -54,6 +54,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         }
 
         guard let lastRUMViewEvent = crashContext.lastRUMViewEvent else {
+            InternalMonitoringFeature.instance?.monitor.sdkLogger.error("Attempt to send crash report through RUM integration, but last `RUMViewEvent` is missing")
             return // This integration requires crash report with associated `RUMViewEvent`
         }
 
