@@ -7,6 +7,13 @@
 import Foundation
 
 internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
+    /// Listening to app state changes and use it to report `foreground_duration`
+    let appStateListener: AppStateListening
+
+    init(appStateListener: AppStateListening) {
+        self.appStateListener = appStateListener
+    }
+
     // MARK: - URLSessionInterceptionHandler
 
     func notify_taskInterceptionStarted(interception: TaskInterception) {
@@ -68,6 +75,11 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
                 }
             }
         }
+        let appStateHistory = appStateListener.history.take(
+            between: resourceMetrics.fetch.start...resourceMetrics.fetch.end
+        )
+        span.setTag(key: DDTags.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
+        span.setTag(key: DDTags.isBackground, value: appStateHistory.didRunInBackground)
 
         span.finish(at: resourceMetrics.fetch.end)
     }

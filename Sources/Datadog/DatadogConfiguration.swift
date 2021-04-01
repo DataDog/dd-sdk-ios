@@ -180,6 +180,7 @@ extension Datadog {
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
+        private(set) var additionalConfiguration: [String: Any]
 
         /// The client token autorizing internal monitoring data to be sent to Datadog org.
         private(set) var internalMonitoringClientToken: String?
@@ -248,6 +249,7 @@ extension Datadog {
                     rumErrorEventMapper: nil,
                     batchSize: .medium,
                     uploadFrequency: .average,
+                    additionalConfiguration: [:],
                     internalMonitoringClientToken: nil
                 )
             }
@@ -560,6 +562,14 @@ extension Datadog {
             /// - Parameter uploadFrequency: `.average` by default.
             public func set(uploadFrequency: UploadFrequency) -> Builder {
                 configuration.uploadFrequency = uploadFrequency
+                return self
+            }
+
+            /// Sets additional configuration attributes.
+            /// This can be used to tweak internal features of the SDK.
+            /// - Parameter additionalConfiguration: `[:]` by default.
+            public func set(additionalConfiguration: [String: Any]) -> Builder {
+                configuration.additionalConfiguration = additionalConfiguration
                 return self
             }
 

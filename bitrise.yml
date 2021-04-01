@@ -16,6 +16,10 @@ workflows:
     - check_dependency_managers
     - _deploy_artifacts
 
+  push_to_dogfooding:
+    after_run:
+    - create_dogfooding_pr
+
   _make_dependencies:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
@@ -38,6 +42,13 @@ workflows:
     description: |-
         Runs swiftlint and license check for all source and test files.
     steps:
+    - script:
+        title: Patch linter configuration for swiftlint 0.42.0
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            ./tools/lint/patch_if_swiftlint_0.42.0.sh
     - swiftlint@0.8.0:
         title: Lint Sources/*
         inputs:
@@ -213,3 +224,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
+
+  create_dogfooding_pr:
+    description: |-
+        Creates PRs to repositories using `dd-sdk-ios`.
+    steps:
+    - script:
+        title: Create PR to Datadog mobile app project
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            make dogfood ci=${CI}
+

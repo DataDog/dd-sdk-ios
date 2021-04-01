@@ -90,6 +90,11 @@ internal class CrashReporter {
                     return false
                 }
 
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+                InternalMonitoringFeature.instance?.monitor.sdkLogger
+                    .debug("Loaded pending crash report", attributes: availableCrashReport.diagnosticInfo)
+#endif
+
                 guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
                     // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
                     // purge this crash report as we are not able to process it respectively.
@@ -132,6 +137,8 @@ internal class CrashReporter {
                 Error details: \(error)
                 """
             )
+            InternalMonitoringFeature.instance?.monitor.sdkLogger
+                .error("Failed to encode crash report context", error: error)
             return nil
         }
     }
@@ -148,6 +155,8 @@ internal class CrashReporter {
                 Error details: \(error)
                 """
             )
+            InternalMonitoringFeature.instance?.monitor.sdkLogger
+                .error("Failed to decode crash report context", error: error)
             return nil
         }
     }

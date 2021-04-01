@@ -96,7 +96,7 @@ public class Datadog {
     /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
     /// May be used to debug issues with RUM instrumentation in your app.
     /// Default is `false`.
-    public static var debugRUM: Bool = false {
+    public static var debugRUM = false {
         didSet {
             (Global.rum as? RUMMonitor)?.enableRUMDebugging(debugRUM)
         }
@@ -245,7 +245,8 @@ public class Datadog {
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: dateProvider
+                dateProvider: dateProvider,
+                appStateListener: AppStateListener(dateProvider: dateProvider)
             )
         }
 

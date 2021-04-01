@@ -37,22 +37,24 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
     convenience init(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        appStateListener: AppStateListening
     ) {
         let handler: URLSessionInterceptionHandler
 
         if configuration.instrumentRUM {
             handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider)
         } else {
-            handler = URLSessionTracingHandler()
+            handler = URLSessionTracingHandler(appStateListener: appStateListener)
         }
 
-        self.init(configuration: configuration, handler: handler)
+        self.init(configuration: configuration, handler: handler, appStateListener: appStateListener)
     }
 
     init(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        handler: URLSessionInterceptionHandler
+        handler: URLSessionInterceptionHandler,
+        appStateListener: AppStateListening
     ) {
         self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)

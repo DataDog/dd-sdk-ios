@@ -54,6 +54,7 @@ extension Datadog.Configuration {
         rumUIKitActionsTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
+        additionalConfiguration: [String: Any] = [:],
         internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
@@ -78,6 +79,7 @@ extension Datadog.Configuration {
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
+            additionalConfiguration: additionalConfiguration,
             internalMonitoringClientToken: internalMonitoringClientToken
         )
     }
@@ -826,6 +828,12 @@ class CarrierInfoProviderMock: CarrierInfoProviderType, WrappedCarrierInfoProvid
         carrierInfo: CarrierInfo = .mockAny()
     ) -> CarrierInfoProviderMock {
         return CarrierInfoProviderMock(carrierInfo: carrierInfo)
+    }
+}
+
+extension AppStateListener {
+    static func mockAny() -> AppStateListener {
+        return AppStateListener(dateProvider: SystemDateProvider())
     }
 }
 
