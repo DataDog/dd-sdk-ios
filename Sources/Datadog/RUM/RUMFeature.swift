@@ -85,7 +85,7 @@ internal final class RUMFeature {
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
-                    .ddsource(),
+                    .ddsource(source: configuration.common.source),
                     .ddtags(
                         tags: [
                             "service:\(configuration.common.serviceName)",
