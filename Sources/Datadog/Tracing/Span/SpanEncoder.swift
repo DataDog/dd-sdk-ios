@@ -41,6 +41,7 @@ internal struct Span: Encodable {
     let startTime: Date
     let duration: TimeInterval
     let isError: Bool
+    let source: String
 
     // MARK: - Meta
 
@@ -159,7 +160,7 @@ internal struct SpanEncoder {
     /// Encodes default `meta.*` attributes
     private func encodeDefaultMeta(_ span: Span, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
         // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
-        try container.encode(Datadog.Constants.ddsource, forKey: .source)
+        try container.encode(span.source, forKey: .source)
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
         try container.encode(span.applicationVersion, forKey: .applicationVersion)
 
