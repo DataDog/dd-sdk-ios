@@ -43,7 +43,7 @@ github "DataDog/dd-sdk-ios"
     {{% /tab %}}
     {{< /tabs >}}
 
-2. Initialize the library with your application context and your [Datadog client token][7]. For security reasons, you must use a client token: you cannot use [Datadog API keys][9] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][7]. You also need to provide an Application ID (create a Javascript RUM application as explained in the [RUM Getting Started page][8]).
+2. Initialize the library with your application context and your [Datadog client token][7]. For security reasons, you must use a client token: you cannot use [Datadog API keys][9] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][7]. You also need to provide an Application ID (create a Javascript RUM application as explained in the [RUM Getting Started page][8]). During initialization, you can set the sampling rate for RUM Sessions. This setting expects a value between 0 and 100, and is used as a percentage of sessions for which data will be sent to Datadog.
 
     {{< tabs >}}
     {{% tab "US" %}}
@@ -59,6 +59,9 @@ Datadog.initialize(
             environment: "<environment_name>"
         )
         .set(serviceName: "app-name")
+        // Optionally set a sampling between 0.0 and 100.0%
+        // Here 75% of the RUM Sessions will be sent to Datadog
+        .set(rumSessionsSamplingRate: 75.0)
         .build()
 )
 ```
@@ -77,6 +80,9 @@ Datadog.initialize(
             environment: "<environment_name>"
         )
         .set(serviceName: "app-name")
+        // Optionally set a sampling between 0.0 and 100.0%
+        // Here 75% of the RUM Sessions will be sent to Datadog
+        .set(rumSessionsSamplingRate: 75.0)
         .set(endpoint: .eu)
         .build()
 )
