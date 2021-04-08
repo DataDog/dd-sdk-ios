@@ -6,12 +6,28 @@
 
 import Foundation
 
+/// In case that you are not able to use `DDURLSessionDelegate` or its subclasses in your `URLSession` instance,
+/// you can use `DDURLSessionDelegateProviding` protocol.
+/// Implement this protocol in your `URLSessionDelegate` class and forward required API calls to `DDURLSessionDelegate`.
+@objc
+public protocol URLSessionDelegateProviding: URLSessionDelegate {
+    /// Datadog delegate object.
+    /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
+    // - `func urlSession(_:task:didFinishCollecting:)`
+    // - `func urlSession(_:task: didCompleteWithError:)`
+    var ddURLSessionDelegate: DDURLSessionDelegate { get }
+}
+
 /// The `URLSession` delegate object which enables network requests instrumentation. **It must be
 /// used together with** `Datadog.Configuration.trackURLSession(firstPartyHosts:)`.
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
-open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate {
+open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDelegateProviding {
+    public var ddURLSessionDelegate: DDURLSessionDelegate {
+        return self
+    }
+
     var interceptor: URLSessionInterceptorType?
     let firstPartyURLsFilter: FirstPartyURLsFilter?
 
