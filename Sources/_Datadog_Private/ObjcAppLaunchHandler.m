@@ -76,7 +76,7 @@ NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterva
 
 @end
 
-CFTimeInterval AppLaunchTime() {
+CFTimeInterval __dd_private_AppLaunchTime() {
     pthread_rwlock_rdlock(&rwLock);
     CFTimeInterval time = TimeToApplicationDidBecomeActive;
     pthread_rwlock_unlock(&rwLock);

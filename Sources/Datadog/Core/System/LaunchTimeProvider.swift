@@ -19,9 +19,9 @@ internal protocol LaunchTimeProviderType {
 
 internal class LaunchTimeProvider: LaunchTimeProviderType {
     var launchTime: TimeInterval? {
-        // Even if AppLaunchTime() is using a lock behind the scenes, TSAN will report a data race if there are no synchronizations at this level.
+        // Even if __dd_private_AppLaunchTime() is using a lock behind the scenes, TSAN will report a data race if there are no synchronizations at this level.
         objc_sync_enter(self)
-        let time = AppLaunchTime()
+        let time = __dd_private_AppLaunchTime()
         objc_sync_exit(self)
         return time > 0 ? time : nil
     }

@@ -16,4 +16,4 @@ internal var consolePrint: (String) -> Void = { content in
 }
 
 /// Exception handler rethrowing `NSExceptions` to Swift `NSError`.
-internal var objcExceptionHandler = ObjcExceptionHandler()
+internal var objcExceptionHandler = __dd_private_ObjcExceptionHandler()

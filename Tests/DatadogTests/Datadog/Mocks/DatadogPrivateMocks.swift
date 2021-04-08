@@ -7,7 +7,7 @@
 import Foundation
 import Datadog
 
-class ObjcExceptionHandlerMock: ObjcExceptionHandler {
+class ObjcExceptionHandlerMock: __dd_private_ObjcExceptionHandler {
     let error: Error
 
     init(throwingError: Error) {
