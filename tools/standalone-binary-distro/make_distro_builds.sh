@@ -27,7 +27,6 @@ export XCODE_XCCONFIG_FILE="$xcconfig"
 
 # clear existing carthage artifacts
 rm -rf Carthage/
-rm Cartfile.resolved
 
 # fetch 3rd party deps via carthage
 echo "carthage bootstrap with no build..."
@@ -39,8 +38,6 @@ carthage build --platform iOS --use-xcframeworks --no-skip-current
 # zip artifacts
 cd Carthage/Build/
 zip --symlinks -r $OUT_FILENAME *.xcframework
-mv $OUT_FILENAME ../../$OUT_FILENAME
-cd ../../
 
 # upload zip
 gh release upload $SDK_VERSION $OUT_FILENAME -R DataDog/dd-sdk-ios

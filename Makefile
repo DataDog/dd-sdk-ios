@@ -101,9 +101,9 @@ ship:
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
 		pod repo update
 		./tools/standalone-binary-distro/make_distro_builds.sh
-		# DatadogSDKObjc.podspec needs to be tried after ~1 hour
-		# pod spec lint --allow-warnings DatadogSDKObjc.podspec
-		# pod trunk push --allow-warnings DatadogSDKObjc.podspec
+		@echo "⚠️ DatadogSDKObjc.podspec needs to be tried after ~1 hour:"
+		@echo "pod spec lint --allow-warnings DatadogSDKObjc.podspec"
+		@echo "pod trunk push --allow-warnings DatadogSDKObjc.podspec"
 
 dogfood:
 		@brew list gh &>/dev/null || brew install gh
