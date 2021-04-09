@@ -8,8 +8,8 @@ import Foundation
 import Datadog
 
 @objc
-open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDelegateProviding {
-    let swiftDelegate: DDURLSessionDelegate
+open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionDelegateProviding {
+    var swiftDelegate: DDURLSessionDelegate
     public var ddURLSessionDelegate: DDURLSessionDelegate {
         return swiftDelegate
     }

@@ -6,15 +6,14 @@
 
 import Foundation
 
-/// In case that you are not able to use `DDURLSessionDelegate` or its subclasses in your `URLSession` instance,
-/// you can use `DDURLSessionDelegateProviding` protocol.
-/// Implement this protocol in your `URLSessionDelegate` class and forward required API calls to `DDURLSessionDelegate`.
+/// An interface for forwarding `URLSessionDelegate` calls to `DDURLSessionDelegate`.
+/// The implementation must ensure that required methods are called on the `ddURLSessionDelegate`.
 @objc
-public protocol URLSessionDelegateProviding: URLSessionDelegate {
+public protocol __URLSessionDelegateProviding: URLSessionDelegate {
     /// Datadog delegate object.
     /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
     // - `func urlSession(_:task:didFinishCollecting:)`
-    // - `func urlSession(_:task: didCompleteWithError:)`
+    // - `func urlSession(_:task:didCompleteWithError:)`
     var ddURLSessionDelegate: DDURLSessionDelegate { get }
 }
 
@@ -23,7 +22,7 @@ public protocol URLSessionDelegateProviding: URLSessionDelegate {
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
-open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDelegateProviding {
+open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionDelegateProviding {
     public var ddURLSessionDelegate: DDURLSessionDelegate {
         return self
     }

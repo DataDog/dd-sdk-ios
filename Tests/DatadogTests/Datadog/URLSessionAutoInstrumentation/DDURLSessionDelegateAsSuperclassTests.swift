@@ -34,5 +34,6 @@ class DDURLSessionDelegateAsSuperclassTests: XCTestCase {
     func testSubclassability() {
         // Success: tests compile, failure: compilation error
         _ = SubDDURLSessionDelegate()
+        _ = SubDDNSURLSessionDelegate()
     }
 }
