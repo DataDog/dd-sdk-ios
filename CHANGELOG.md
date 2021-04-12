@@ -1,3 +1,10 @@
+# 1.5.2 / 04-12-2021
+
+### Changes
+
+* [BUGFIX] Static pod support for cocoapods. See [#451][]
+* [BUGFIX] Swiftlint won't run for carthage builds. See [#450][]
+
 # 1.5.1 / 03-11-2021
 
 ### Changes
@@ -158,6 +165,8 @@
 [#381]: https://github.com/DataDog/dd-sdk-ios/issues/381
 [#390]: https://github.com/DataDog/dd-sdk-ios/issues/390
 [#439]: https://github.com/DataDog/dd-sdk-ios/pull/439
+[#450]: https://github.com/DataDog/dd-sdk-ios/pull/450
+[#451]: https://github.com/DataDog/dd-sdk-ios/pull/451
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
