@@ -1,37 +1,11 @@
 all: dependencies xcodeproj-httpservermock templates
 
-# The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.6.0
-
-define DD_SDK_TESTING_XCCONFIG_CI
-FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-OTHER_LDFLAGS=$$(inherited) -framework DatadogSDKTesting\n
-DD_TEST_RUNNER=1\n
-DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
-DD_SDK_SWIFT_TESTING_CLIENT_TOKEN=${DD_SDK_SWIFT_TESTING_CLIENT_TOKEN}\n
-DD_SDK_SWIFT_TESTING_ENV=ci\n
-endef
-export DD_SDK_TESTING_XCCONFIG_CI
-
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		@brew update
-		@brew list swiftlint &>/dev/null || brew install swiftlint
 		# NOTE: RUMM-1145 Bitrise Stacks don't have carthage v0.37 
 		# despite https://github.com/bitrise-io/bitrise.io/blob/master/system_reports/osx-xcode-12.4.x.log
-		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
-ifeq (${ci}, true)
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
-		@brew list gh &>/dev/null || brew install gh
-		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
-		@rm -rf instrumented-tests/DatadogSDKTesting.zip
-		@rm -rf instrumented-tests/LICENSE
-		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
-		@unzip instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
-		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
-endif
+		@echo "" > xcconfigs/DatadogSDKTesting.local.xcconfig;
 
 xcodeproj-httpservermock:
 		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."

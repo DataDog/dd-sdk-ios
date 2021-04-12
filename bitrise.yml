@@ -10,7 +10,7 @@ workflows:
   push_to_any_branch:
     after_run:
     - _make_dependencies
-    - run_linter
+    # - run_linter
     - run_unit_tests
     - run_integration_tests
     - check_dependency_managers
