@@ -5,7 +5,10 @@
  */
 
 import Foundation
+
+#if SPM_BUILD
 import _Datadog_Private
+#endif
 
 internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.

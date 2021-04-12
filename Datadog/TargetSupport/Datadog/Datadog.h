@@ -14,4 +14,5 @@ FOUNDATION_EXPORT const unsigned char DatadogVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <Datadog/PublicHeader.h>
 
-
+#import "ObjcAppLaunchHandler.h"
+#import "ObjcExceptionHandler.h"

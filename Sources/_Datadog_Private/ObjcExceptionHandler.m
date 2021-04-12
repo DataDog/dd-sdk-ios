@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 #import "ObjcExceptionHandler.h"
 
-@implementation ObjcExceptionHandler
+@implementation __dd_private_ObjcExceptionHandler
 
 - (BOOL)catchException:(void(^)(void))tryBlock error:(__autoreleasing NSError **)error {
     @try {

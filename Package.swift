@@ -26,12 +26,17 @@ let package = Package(
             targets: ["DatadogObjc"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/lyft/Kronos.git", .upToNextMinor(from: "4.1.0"))
+        .package(name: "Kronos", url: "https://github.com/lyft/Kronos.git", from: "4.1.0")
     ],
     targets: [
         .target(
             name: "Datadog",
-            dependencies: ["_Datadog_Private", "Kronos"]),
+            dependencies: [
+                "_Datadog_Private",
+                .product(name: "Kronos", package: "Kronos"),
+            ],
+            swiftSettings: [.define("SPM_BUILD")]
+        ),
         .target(
             name: "DatadogObjc",
             dependencies: ["Datadog"]),
