@@ -1,10 +1,4 @@
-all: tools dependencies xcodeproj-httpservermock templates
-.PHONY : tools
-
-tools:
-		@echo "⚙️  Installing tools..."
-		@brew list swiftlint &>/dev/null || brew install swiftlint
-		@echo "OK 👌"
+all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
 DD_SDK_SWIFT_TESTING_VERSION = 0.6.0
@@ -22,6 +16,8 @@ export DD_SDK_TESTING_XCCONFIG_CI
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@brew update
+		@brew list swiftlint &>/dev/null || brew install swiftlint
 		# NOTE: RUMM-1145 Bitrise Stacks don't have carthage v0.37 
 		# despite https://github.com/bitrise-io/bitrise.io/blob/master/system_reports/osx-xcode-12.4.x.log
 		@brew upgrade carthage
