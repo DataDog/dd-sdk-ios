@@ -360,6 +360,10 @@ extension URLSession {
 }
 
 extension URLSessionTask {
+    static func mockAny() -> URLSessionTask {
+        return URLSessionTaskMock(request: .mockAny(), response: .mockAny())
+    }
+
     static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
         return URLSessionTaskMock(request: request, response: response)
     }
