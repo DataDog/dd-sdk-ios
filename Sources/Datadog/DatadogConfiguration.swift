@@ -179,6 +179,7 @@ extension Datadog {
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
+        private(set) var additionalConfiguration: [String: Any]
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -242,7 +243,8 @@ extension Datadog {
                     rumActionEventMapper: nil,
                     rumErrorEventMapper: nil,
                     batchSize: .medium,
-                    uploadFrequency: .average
+                    uploadFrequency: .average,
+                    additionalConfiguration: [:]
                 )
             }
 
@@ -512,6 +514,14 @@ extension Datadog {
             /// - Parameter uploadFrequency: `.average` by default.
             public func set(uploadFrequency: UploadFrequency) -> Builder {
                 configuration.uploadFrequency = uploadFrequency
+                return self
+            }
+
+            /// Sets additional configuration attributes.
+            /// This can be used to tweak internal features of the SDK.
+            /// - Parameter additionalConfiguration: `[:]` by default.
+            public func set(additionalConfiguration: [String: Any]) -> Builder {
+                configuration.additionalConfiguration = additionalConfiguration
                 return self
             }
 

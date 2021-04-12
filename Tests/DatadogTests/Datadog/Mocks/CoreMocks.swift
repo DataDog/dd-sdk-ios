@@ -37,7 +37,8 @@ extension Datadog.Configuration {
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
-        uploadFrequency: UploadFrequency = .average
+        uploadFrequency: UploadFrequency = .average,
+        additionalConfiguration: [String: Any] = [:]
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -59,7 +60,8 @@ extension Datadog.Configuration {
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
             batchSize: batchSize,
-            uploadFrequency: uploadFrequency
+            uploadFrequency: uploadFrequency,
+            additionalConfiguration: additionalConfiguration
         )
     }
 }
