@@ -15,8 +15,8 @@ internal class UploadURLProvider {
         let value: () -> URLQueryItem
 
         /// Creates `ddsource=ios` query item.
-        static func ddsource() -> QueryItemProvider {
-            let queryItem = URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource)
+        static func ddsource(source: String) -> QueryItemProvider {
+            let queryItem = URLQueryItem(name: "ddsource", value: source)
             return QueryItemProvider { queryItem }
         }
 

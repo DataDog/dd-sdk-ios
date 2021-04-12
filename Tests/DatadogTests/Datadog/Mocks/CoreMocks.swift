@@ -143,7 +143,8 @@ extension FeaturesConfiguration.Common {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+        source: String = .mockAny()
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -151,7 +152,8 @@ extension FeaturesConfiguration.Common {
             applicationBundleIdentifier: applicationBundleIdentifier,
             serviceName: serviceName,
             environment: environment,
-            performance: performance
+            performance: performance,
+            source: source
         )
     }
 }
