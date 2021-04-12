@@ -6,4 +6,4 @@
 
 #import <CoreFoundation/CFDate.h>
 
-CFTimeInterval AppLaunchTime(void);
+CFTimeInterval __dd_private_AppLaunchTime(void);
