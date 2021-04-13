@@ -33,7 +33,8 @@ class TracerTests: XCTestCase {
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                     serviceName: "default-service-name",
-                    environment: "custom"
+                    environment: "custom",
+                    source: "abc"
                 )
             ),
             dependencies: .mockWith(
@@ -65,7 +66,7 @@ class TracerTests: XCTestCase {
               "type": "custom",
               "meta.tracer.version": "\(sdkVersion)",
               "meta.version": "1.0.0",
-              "meta._dd.source": "ios",
+              "meta._dd.source": "abc",
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1
             }

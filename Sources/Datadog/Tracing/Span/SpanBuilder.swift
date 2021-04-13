@@ -20,6 +20,8 @@ internal struct SpanBuilder {
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts span's time (device time) to server time.
     let dateCorrector: DateCorrectorType
+    /// source tag to encode in span.
+    let source: String
 
     /// Encodes tag `Span` tag values as JSON string
     private let tagsJSONEncoder: JSONEncoder = .default()
@@ -58,6 +60,7 @@ internal struct SpanBuilder {
             startTime: dateCorrector.currentCorrection.applying(to: ddspan.startTime),
             duration: finishTime.timeIntervalSince(ddspan.startTime),
             isError: tagsReducer.extractedIsError ?? false,
+            source: source,
             tracerVersion: sdkVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfoProvider?.current,

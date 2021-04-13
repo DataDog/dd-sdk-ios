@@ -51,7 +51,8 @@ let package = Package(
                 .product(name: "Kronos", package: "Kronos"),
             ],
             swiftSettings: [
-                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
+                .define("SPM_BUILD"),
+                .define("DD_SDK_ENABLE_INTERNAL_MONITORING")
             ]
         ),
         .target(

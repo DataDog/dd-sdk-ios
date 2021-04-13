@@ -175,6 +175,7 @@ extension Span {
         startTime: Date = .mockAny(),
         duration: TimeInterval = .mockAny(),
         isError: Bool = .mockAny(),
+        source: String = .mockAny(),
         tracerVersion: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
@@ -192,6 +193,7 @@ extension Span {
             startTime: startTime,
             duration: duration,
             isError: isError,
+            source: source,
             tracerVersion: tracerVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfo,
@@ -262,7 +264,8 @@ extension SpanBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock()
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        source: String = .mockAny()
     ) -> SpanBuilder {
         return SpanBuilder(
             applicationVersion: applicationVersion,
@@ -270,7 +273,8 @@ extension SpanBuilder {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            source: source
         )
     }
 }

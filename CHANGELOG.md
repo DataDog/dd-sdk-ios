@@ -1,3 +1,11 @@
+# 1.5.2 / 04-13-2021
+
+### Changes
+
+* [BUGFIX] Add missing RUM Resource APIs to RUM for Objc. See [#447][] (Thanks [@sdejesusF][])
+* [BUGFIX] Fix eventual `swiftlint` error during `carthage` builds. See [#450][]
+* [IMPROVEMENT] Improve cocoapods installation by not requiring `!use_frameworks`. See [#451][]
+
 # 1.5.1 / 03-11-2021
 
 ### Changes
@@ -157,7 +165,10 @@
 [#370]: https://github.com/DataDog/dd-sdk-ios/issues/370
 [#381]: https://github.com/DataDog/dd-sdk-ios/issues/381
 [#390]: https://github.com/DataDog/dd-sdk-ios/issues/390
-[#439]: https://github.com/DataDog/dd-sdk-ios/pull/439
+[#439]: https://github.com/DataDog/dd-sdk-ios/issues/439
+[#447]: https://github.com/DataDog/dd-sdk-ios/issues/447
+[#450]: https://github.com/DataDog/dd-sdk-ios/issues/450
+[#451]: https://github.com/DataDog/dd-sdk-ios/issues/451
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu

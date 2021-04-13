@@ -4,9 +4,10 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import _Datadog_Private
+import Foundation
+import Datadog
 
-class ObjcExceptionHandlerMock: ObjcExceptionHandler {
+class ObjcExceptionHandlerMock: __dd_private_ObjcExceptionHandler {
     let error: Error
 
     init(throwingError: Error) {
