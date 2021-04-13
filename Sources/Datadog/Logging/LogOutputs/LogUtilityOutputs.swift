@@ -6,12 +6,6 @@
 
 import Foundation
 
-/// `LogOutput` which does nothing.
-internal struct NoOpLogOutput: LogOutput {
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {}
-}
-
-/// Combines one or more `LogOutputs` into one.
 internal struct CombinedLogOutput: LogOutput {
     let combinedOutputs: [LogOutput]
 
@@ -19,18 +13,19 @@ internal struct CombinedLogOutput: LogOutput {
         self.combinedOutputs = outputs
     }
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        combinedOutputs.forEach { $0.writeLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags) }
+    func write(log: Log) {
+        combinedOutputs.forEach { $0.write(log: log) }
     }
 }
 
+/// Sends the log to `conditionedOutput` only if the `condition` is met.
 internal struct ConditionalLogOutput: LogOutput {
     let conditionedOutput: LogOutput
-    let condition: (LogLevel) -> Bool
+    let condition: (Log) -> Bool
 
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        if condition(level) {
-            conditionedOutput.writeLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags)
+    func write(log: Log) {
+        if condition(log) {
+            conditionedOutput.write(log: log)
         }
     }
 }

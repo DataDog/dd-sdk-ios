@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		615D9E662604B5AB006DC6D1 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; };
+		615D9E672604B5AB006DC6D1 /* CrashReporter.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		615D9E6B2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; };
+		615D9E6C2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
 		61C3641B243752A500C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641A243752A500C4D4E6 /* SceneDelegate.swift */; };
 		61C3641D243752A500C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
@@ -46,9 +50,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				615D9E672604B5AB006DC6D1 /* CrashReporter.xcframework in Embed Frameworks */,
 				9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */,
 				9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */,
 				9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */,
+				615D9E6C2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -58,6 +64,8 @@
 /* Begin PBXFileReference section */
 		615519322461CDB4002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519332461CDB4002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
+		615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CrashReporter.xcframework; path = Carthage/Build/CrashReporter.xcframework; sourceTree = "<group>"; };
+		615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogCrashReporting.xcframework; path = Carthage/Build/DatadogCrashReporting.xcframework; sourceTree = "<group>"; };
 		61C36415243752A500C4D4E6 /* CTProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CTProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C36418243752A500C4D4E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61C3641A243752A500C4D4E6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -81,9 +89,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				615D9E662604B5AB006DC6D1 /* CrashReporter.xcframework in Frameworks */,
 				9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */,
 				9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */,
 				9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */,
+				615D9E6B2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,6 +180,8 @@
 		61C364492437547A00C4D4E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */,
+				615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */,
 				9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */,
 				9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */,
 				9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */,
@@ -446,6 +458,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Debug;
 		};
@@ -501,6 +514,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Release;
 		};

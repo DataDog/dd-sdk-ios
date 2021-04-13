@@ -33,7 +33,12 @@ class RUMIntegrationsTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_whenSessionIsSampled_itProvidesEmptyRUMContextAttributes() throws {
         RUMFeature.instance = RUMFeature(
-            storage: FeatureStorage(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            eventsMapper: .mockNoOp(),
+            storage: FeatureStorage(
+                writer: NoOpFileWriter(),
+                reader: NoOpFileReader(),
+                arbitraryAuthorizedWriter: NoOpFileWriter()
+            ),
             upload: FeatureUpload(uploader: NoOpDataUploadWorker()),
             configuration: .mockWith(sessionSamplingRate: 0.0),
             commonDependencies: .mockAny()
@@ -86,13 +91,14 @@ class RUMErrorsIntegrationTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
-        integration.addError(with: "error message", stack: "Foo.swift:10", source: .logger)
+        integration.addError(with: "error message", type: "Error type", stack: "Foo.swift:10", source: .logger)
 
         // then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")
+            XCTAssertEqual(rumModel.error.type, "Error type")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertEqual(rumModel.error.stack, "Foo.swift:10")
         }

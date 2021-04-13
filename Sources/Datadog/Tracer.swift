@@ -15,6 +15,12 @@ public struct DDTags {
     ///
     /// Expects `String` value set for a tag.
     public static let resource = "resource.name"
+    /// Internal tag. `Integer` value. Measures elapsed time at app's foreground state in nanoseconds.
+    /// (duration - foregroundDuration) gives you the elapsed time while the app wasn't active (probably at background)
+    internal static let foregroundDuration = "foreground_duration"
+    /// Internal tag. `Bool` value.
+    /// `true` if span was started or ended while the app was not active, `false` otherwise.
+    internal static let isBackground = "is_background"
 
     /// Those keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields.
     /// Supported by Datadog platform.
@@ -39,7 +45,9 @@ public struct DDTags {
 public typealias DDTracer = Tracer
 
 public class Tracer: OTTracer {
-    /// Writes `Span` objects to output.
+    /// Builds the `Span` from user input.
+    internal let spanBuilder: SpanBuilder
+    /// Writes the `Span` file.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output.
     /// Equals `nil` if Logging feature is disabled.
@@ -92,18 +100,18 @@ public class Tracer: OTTracer {
 
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         self.init(
+            spanBuilder: SpanBuilder(
+                applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
+                userInfoProvider: tracingFeature.userInfoProvider,
+                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
+                dateCorrector: tracingFeature.dateCorrector,
+                source: tracingFeature.configuration.common.source
+            ),
             spanOutput: SpanFileOutput(
-                spanBuilder: SpanBuilder(
-                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
-                    environment: tracingFeature.configuration.common.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
-                    userInfoProvider: tracingFeature.userInfoProvider,
-                    networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                    dateCorrector: tracingFeature.dateCorrector,
-                    source: tracingFeature.configuration.common.source
-                ),
-                fileWriter: tracingFeature.storage.writer
+                fileWriter: tracingFeature.storage.writer,
+                environment: tracingFeature.configuration.common.environment
             ),
             logOutput: tracingFeature
                 .loggingFeatureAdapter?
@@ -116,6 +124,7 @@ public class Tracer: OTTracer {
     }
 
     internal init(
+        spanBuilder: SpanBuilder,
         spanOutput: SpanOutput,
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
         dateProvider: DateProvider,
@@ -123,6 +132,7 @@ public class Tracer: OTTracer {
         globalTags: [String: Encodable]?,
         rumContextIntegration: TracingWithRUMContextIntegration?
     ) {
+        self.spanBuilder = spanBuilder
         self.spanOutput = spanOutput
         self.logOutput = logOutput
         self.queue = DispatchQueue(
@@ -203,8 +213,9 @@ public class Tracer: OTTracer {
         return span
     }
 
-    internal func write(span: DDSpan, finishTime: Date) {
-        spanOutput.write(ddspan: span, finishTime: finishTime)
+    internal func write(ddspan: DDSpan, finishTime: Date) {
+        let span = spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
+        spanOutput.write(span: span)
     }
 
     internal func writeLog(for span: DDSpan, fields: [String: Encodable], date: Date) {

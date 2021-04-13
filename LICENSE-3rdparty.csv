@@ -1,6 +1,7 @@
 Component,Origin,License,Copyright
 import,io.opentracing,MIT,Copyright 2018 LightStep
 import,com.Lyft.Kronos,Apache-2.0,Copyright (C) 2016 Lyft Inc.
+import,PLCrashReporter,MIT,Copyright Microsoft Corporation
 import (tools),https://github.com/jpsim/SourceKitten,MIT,Copyright (c) 2014 JP Simard
 import (tools),https://github.com/apple/swift-argument-parser,Apache-2.0,(c) 2020 Apple Inc. and the Swift project authors
 import (tools),https://github.com/krzysztofzablocki/Difference.git,MIT,Copyright (c) 2017 Krzysztof Zablocki

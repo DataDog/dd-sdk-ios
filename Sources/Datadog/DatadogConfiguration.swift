@@ -151,6 +151,7 @@ extension Datadog {
         private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
+        private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
         /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
         private(set) var datadogEndpoint: DatadogEndpoint?
@@ -180,6 +181,9 @@ extension Datadog {
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
+
+        /// The client token autorizing internal monitoring data to be sent to Datadog org.
+        private(set) var internalMonitoringClientToken: String?
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -224,6 +228,7 @@ extension Datadog {
                     loggingEnabled: true,
                     tracingEnabled: true,
                     rumEnabled: rumApplicationID != nil,
+                    crashReportingPlugin: nil,
                     // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
                     // so we know the clear user's intent to override deprecated values.
                     datadogEndpoint: nil,
@@ -244,7 +249,8 @@ extension Datadog {
                     rumErrorEventMapper: nil,
                     batchSize: .medium,
                     uploadFrequency: .average,
-                    additionalConfiguration: [:]
+                    additionalConfiguration: [:],
+                    internalMonitoringClientToken: nil
                 )
             }
 
@@ -456,10 +462,13 @@ extension Datadog {
             }
 
             /// Sets the custom mapper for `RUMViewEvent`. This can be used to modify RUM View events before they are send to Datadog.
-            /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` or `nil` as output.
-            /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return. Returning `nil` will result
-            /// with dropping the RUM View event entirely, so it won't be send to Datadog.
-            public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent?) -> Builder {
+            /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` as output.
+            /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return it.
+            ///
+            /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `RUMViewEvent` entirely, this ensures that all `RUMViewEvent` are sent to Datadog.
+            ///
+            /// Use the `UIKitRUMViewsPredicate` API to ensure upstream consideration or filtering out of `UIViewController`/`RUMView`s.
+            public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder {
                 configuration.rumViewEventMapper = mapper
                 return self
             }
@@ -491,10 +500,49 @@ extension Datadog {
                 return self
             }
 
+            // MARK: - Crash Reporting Configuration
+
+            /// Enables the crash reporting feature.
+            ///
+            /// To enable Datadog crash reporting, configure this option by passing the `crashReportingPlugin`.
+            /// The plugin must be obtained from `DatadogCrashReporting` library:
+            ///
+            ///         import DatadogCrashReporting
+            ///
+            ///         .enableCrashReporting(using: DDCrashReportingPlugin())
+            ///
+            /// - Parameter crashReportingPlugin: `nil` by default (Datadog crash reporting is disabled by default)
+            public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder {
+                configuration.crashReportingPlugin = crashReportingPlugin
+                return self
+            }
+
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+            // MARK: - Internal Monitoring Configuration
+
+            /// Enables the internal monitoring feature.
+            ///
+            /// This feature provides an observability for the SDK performance. All telemetry collected by the internal monitoring feature is sent to
+            /// Datadog instance authorised for given `clientToken`, which can be a different org than the one configured for RUM, Tracing and Logging data.
+            ///
+            /// This feature is opt-in and requires specific configuration to be enabled. **Datadog does not collect any internal telemetry data by default.**
+            ///
+            /// To make this API visible, the `DD_SDK_ENABLE_INTERNAL_MONITORING` compiler flag must be defined in the  "Active Compilation Conditions" Build Setting
+            /// or in the `.xcconfig` set for the build configuration:
+            ///
+            ///     SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
+            ///
+            /// - Parameter clientToken: the client token authorised for a Datadog org which should receive the SDK telemetry
+            public func enableInternalMonitoring(clientToken: String) -> Builder {
+                configuration.internalMonitoringClientToken = clientToken
+                return self
+            }
+#endif
+
             // MARK: - Features Common Configuration
 
             /// Sets the default service name associated with data send to Datadog.
-            /// NOTE: The `serviceName` can be also overwriten by each `Logger` instance.
+            /// NOTE: The `serviceName` can be also overwritten by each `Logger` instance.
             /// - Parameter serviceName: the service name (default value is set to application bundle identifier)
             public func set(serviceName: String) -> Builder {
                 configuration.serviceName = serviceName

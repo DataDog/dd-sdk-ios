@@ -19,7 +19,8 @@ class InternalLoggersTests: XCTestCase {
     // MARK: - User Logger
 
     func testWhenSDKIsNotInitialized_itUsesNoOpUserLogger() {
-        XCTAssertTrue(userLogger.logOutput is NoOpLogOutput)
+        XCTAssertNil(userLogger.logBuilder)
+        XCTAssertNil(userLogger.logOutput)
     }
 
     func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() throws {
@@ -97,70 +98,6 @@ class InternalLoggersTests: XCTestCase {
         XCTAssertEqual(printedMessages, Array(expectedMessages[5..<expectedMessages.count]))
 
         Datadog.verbosityLevel = nil
-    }
-
-    // MARK: - SDK Developer Logger
-
-    func testGivenSDKCompiledNotForDevelopment_whenSDKIsInitialized_developerLoggerIsNotAvailable() {
-        let originalValue = CompilationConditions.isSDKCompiledForDevelopment
-        defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
-
-        XCTAssertNil(developerLogger)
-    }
-
-    func testGivenSDKCompiledForDevelopment_whenSDKIsInitialized_developerLoggerIsAvailable() throws {
-        let originalValue = CompilationConditions.isSDKCompiledForDevelopment
-        defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
-
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: .mockAny()
-        )
-        XCTAssertNotNil(developerLogger)
-        try Datadog.deinitializeOrThrow()
-    }
-
-    func testGivenSDKCompiledForDevelopment_whenLoggingFeatureIsDisabled_developerLoggerIsAvailable() throws {
-        let originalValue = CompilationConditions.isSDKCompiledForDevelopment
-        defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
-
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: .mockWith(loggingEnabled: false)
-        )
-        XCTAssertNotNil(developerLogger)
-        try Datadog.deinitializeOrThrow()
-    }
-
-    func testDeveloperLoggerPrintsAllMessages() {
-        let originalValue = CompilationConditions.isSDKCompiledForDevelopment
-        defer { CompilationConditions.isSDKCompiledForDevelopment = originalValue }
-
-        var printedMessages: [String] = []
-
-        CompilationConditions.isSDKCompiledForDevelopment = true
-
-        let developerLogger = createSDKDeveloperLogger(
-            configuration: internalLoggerConfigurationMock,
-            consolePrintFunction: { printedMessages.append($0) },
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            timeZone: .EET
-        )
-
-        let expectedMessages = [
-            "🐶 → 12:00:00.000 [DEBUG] message",
-            "🐶 → 12:00:00.000 [INFO] message",
-            "🐶 → 12:00:00.000 [NOTICE] message",
-            "🐶 → 12:00:00.000 [WARN] message",
-            "🐶 → 12:00:00.000 [ERROR] message",
-            "🐶 → 12:00:00.000 [CRITICAL] message"
-        ]
-
-        logMessageUsingAllLevels("message", with: developerLogger!)
-
-        XCTAssertEqual(printedMessages, expectedMessages)
     }
 
     // MARK: - Helpers

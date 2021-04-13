@@ -167,13 +167,14 @@ public class Datadog {
         )
 
         userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
-        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
 
         // Then, initialize features:
 
+        var internalMonitoring: InternalMonitoringFeature?
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
+        var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumAutoInstrumentation: RUMAutoInstrumentation?
@@ -191,11 +192,20 @@ public class Datadog {
             launchTimeProvider: launchTimeProvider
         )
 
+        if let internalMonitoringConfiguration = configuration.internalMonitoring {
+            internalMonitoring = InternalMonitoringFeature(
+                logDirectories: try obtainInternalMonitoringFeatureLogDirectories(),
+                configuration: internalMonitoringConfiguration,
+                commonDependencies: commonDependencies
+            )
+        }
+
         if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
                 directories: try obtainLoggingFeatureDirectories(),
                 configuration: loggingConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                internalMonitor: internalMonitoring?.monitor
             )
         }
 
@@ -205,7 +215,8 @@ public class Datadog {
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator()
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+                internalMonitor: internalMonitoring?.monitor
             )
         }
 
@@ -213,7 +224,8 @@ public class Datadog {
             rum = RUMFeature(
                 directories: try obtainRUMFeatureDirectories(),
                 configuration: rumConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                internalMonitor: internalMonitoring?.monitor
             )
             if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
                 rumAutoInstrumentation = RUMAutoInstrumentation(
@@ -223,16 +235,27 @@ public class Datadog {
             }
         }
 
+        if let crashReportingConfiguration = configuration.crashReporting {
+            crashReporting = CrashReportingFeature(
+                configuration: crashReportingConfiguration,
+                commonDependencies: commonDependencies
+            )
+        }
+
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: dateProvider
+                dateProvider: dateProvider,
+                appStateListener: AppStateListener(dateProvider: dateProvider)
             )
         }
+
+        InternalMonitoringFeature.instance = internalMonitoring
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
+        CrashReportingFeature.instance = crashReporting
 
         RUMAutoInstrumentation.instance = rumAutoInstrumentation
         RUMAutoInstrumentation.instance?.enable()
@@ -246,6 +269,13 @@ public class Datadog {
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider
         )
+
+        // After everything is set up, if the Crash Reporting feature was enabled,
+        // register crash reporter and send crash report if available:
+        if let crashReportingFeature = CrashReportingFeature.instance {
+            Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
+            Global.crashReporter?.sendCrashReportIfFound()
+        }
     }
 
     internal init(
@@ -266,15 +296,19 @@ public class Datadog {
 
         // First, reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
-        developerLogger = nil
 
         // Then, deinitialize features:
+        InternalMonitoringFeature.instance = nil
         LoggingFeature.instance = nil
         TracingFeature.instance = nil
         RUMFeature.instance = nil
+        CrashReportingFeature.instance = nil
 
         RUMAutoInstrumentation.instance = nil
         URLSessionAutoInstrumentation.instance = nil
+
+        // Deinitialize Crash Reporter managed internally by the SDK
+        Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil

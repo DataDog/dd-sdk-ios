@@ -10,7 +10,7 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs no writes and no uploads.
     static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
@@ -67,11 +67,14 @@ extension LoggingFeature {
 
 // MARK: - Log Mocks
 
-extension Log {
+extension Log: EquatableInTests {}
+
+extension Log: RandomMockable {
     static func mockWith(
         date: Date = .mockAny(),
         status: Log.Status = .mockAny(),
         message: String = .mockAny(),
+        error: DDError? = nil,
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         loggerName: String = .mockAny(),
@@ -88,6 +91,7 @@ extension Log {
             date: date,
             status: status,
             message: message,
+            error: error,
             serviceName: serviceName,
             environment: environment,
             loggerName: loggerName,
@@ -101,11 +105,35 @@ extension Log {
             tags: tags
         )
     }
+
+    static func mockRandom() -> Log {
+        return Log(
+            date: .mockRandomInThePast(),
+            status: .mockRandom(),
+            message: .mockRandom(),
+            error: .mockRandom(),
+            serviceName: .mockRandom(),
+            environment: .mockRandom(),
+            loggerName: .mockRandom(),
+            loggerVersion: .mockRandom(),
+            threadName: .mockRandom(),
+            applicationVersion: .mockRandom(),
+            userInfo: .mockRandom(),
+            networkConnectionInfo: .mockRandom(),
+            mobileCarrierInfo: .mockRandom(),
+            attributes: .mockRandom(),
+            tags: .mockRandom()
+        )
+    }
 }
 
-extension Log.Status {
+extension Log.Status: RandomMockable {
     static func mockAny() -> Log.Status {
         return .info
+    }
+
+    static func mockRandom() -> Log.Status {
+        return allCases.randomElement()!
     }
 }
 
@@ -113,6 +141,7 @@ extension Log.Status {
 
 extension Logger {
     static func mockWith(
+        logBuilder: LogBuilder = .mockAny(),
         logOutput: LogOutput = LogOutputMock(),
         dateProvider: DateProvider = SystemDateProvider(),
         identifier: String = .mockAny(),
@@ -120,6 +149,7 @@ extension Logger {
         activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil
     ) -> Logger {
         return Logger(
+            logBuilder: logBuilder,
             logOutput: logOutput,
             dateProvider: dateProvider,
             identifier: identifier,
@@ -172,6 +202,13 @@ extension LogAttributes: Equatable {
         )
     }
 
+    static func mockRandom() -> LogAttributes {
+        return .init(
+            userAttributes: mockRandomAttributes(),
+            internalAttributes: mockRandomAttributes()
+        )
+    }
+
     public static func == (lhs: LogAttributes, rhs: LogAttributes) -> Bool {
         let lhsUserAttributesSorted = lhs.userAttributes.sorted { $0.key < $1.key }
         let rhsUserAttributesSorted = rhs.userAttributes.sorted { $0.key < $1.key }
@@ -186,17 +223,9 @@ extension LogAttributes: Equatable {
 
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
-    struct RecordedLog: Equatable {
-        var level: LogLevel
-        var message: String
-        var date: Date
-        var attributes = LogAttributes(userAttributes: [:], internalAttributes: [:])
-        var tags: Set<String> = []
-    }
+    var recordedLog: Log?
 
-    var recordedLog: RecordedLog? = nil
-
-    func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
-        recordedLog = RecordedLog(level: level, message: message, date: date, attributes: attributes, tags: tags)
+    func write(log: Log) {
+        recordedLog = log
     }
 }

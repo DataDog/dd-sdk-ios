@@ -6,7 +6,6 @@
 
 import XCTest
 @testable import Datadog
-@testable import Example
 
 extension UIApplicationSwizzler {
     func unswizzle() {

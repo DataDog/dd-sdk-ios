@@ -50,37 +50,45 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 8
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 8
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         let visits = session.viewVisits
 
-        XCTAssertEqual(visits[0].path, "Screen1")
+        XCTAssertEqual(visits[0].name, "Screen1")
+        XCTAssertEqual(visits[0].path, "UIViewController")
         XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen2"
 
-        XCTAssertEqual(session.viewVisits[1].path, "Screen2")
+        XCTAssertEqual(session.viewVisits[1].name, "Screen2")
+        XCTAssertEqual(session.viewVisits[1].path, "UIViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1])// go to "Screen3"
 
-        XCTAssertEqual(session.viewVisits[2].path, "Screen3")
+        XCTAssertEqual(session.viewVisits[2].name, "Screen3")
+        XCTAssertEqual(session.viewVisits[2].path, "Example.RUMNCSScreen3ViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2])// go to "Screen4"
 
-        XCTAssertEqual(session.viewVisits[3].path, "Screen4")
+        XCTAssertEqual(session.viewVisits[3].name, "Screen4")
+        XCTAssertEqual(session.viewVisits[3].path, "UIViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3])// go to "Screen3"
 
-        XCTAssertEqual(session.viewVisits[4].path, "Screen3")
+        XCTAssertEqual(session.viewVisits[4].name, "Screen3")
+        XCTAssertEqual(session.viewVisits[4].path, "Example.RUMNCSScreen3ViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4])// go to "Screen1"
 
-        XCTAssertEqual(session.viewVisits[5].path, "Screen1")
+        XCTAssertEqual(session.viewVisits[5].name, "Screen1")
+        XCTAssertEqual(session.viewVisits[5].path, "UIViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5])// go to "Screen2"
 
-        XCTAssertEqual(session.viewVisits[6].path, "Screen2")
+        XCTAssertEqual(session.viewVisits[6].name, "Screen2")
+        XCTAssertEqual(session.viewVisits[6].path, "UIViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6])// swipe back to "Screen1"
 
-        XCTAssertEqual(session.viewVisits[7].path, "Screen1")
+        XCTAssertEqual(session.viewVisits[7].name, "Screen1")
+        XCTAssertEqual(session.viewVisits[7].path, "UIViewController")
     }
 }

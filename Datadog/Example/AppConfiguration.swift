@@ -40,6 +40,11 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
 
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+        _ = configuration
+            .enableInternalMonitoring(clientToken: Environment.readClientToken())
+#endif
+
         // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {
             testScenario.configureSDK(builder: configuration)
@@ -63,7 +68,7 @@ struct UITestsAppConfiguration: AppConfiguration {
 
     init() {
         if Environment.shouldClearPersistentData() {
-            deletePersistedSDKData()
+            PersistenceHelpers.deleteAllSDKData()
         }
     }
 
@@ -113,24 +118,5 @@ struct UITestsAppConfiguration: AppConfiguration {
 
     func initialStoryboard() -> UIStoryboard? {
         return UIStoryboard(name: type(of: testScenario!).storyboardName, bundle: nil)
-    }
-
-    private func deletePersistedSDKData() {
-        guard let cachesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-            return
-        }
-
-        do {
-            let dataDirectories = try FileManager.default
-                .contentsOfDirectory(at: cachesDirectoryURL, includingPropertiesForKeys: [.isDirectoryKey, .canonicalPathKey])
-                .filter { $0.absoluteString.contains("com.datadoghq") }
-
-            try dataDirectories.forEach { url in
-                try FileManager.default.removeItem(at: url)
-                print("🧹 Deleted SDK data directory: \(url)")
-            }
-        } catch {
-            print("🔥 Failed to delete SDK data directory: \(error)")
-        }
     }
 }

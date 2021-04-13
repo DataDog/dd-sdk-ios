@@ -18,17 +18,17 @@ internal struct LoggingForTracingAdapter {
 
     func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration) -> AdaptedLogOutput {
         return AdaptedLogOutput(
+            logBuilder: LogBuilder(
+                applicationVersion: tracingFeature.configuration.common.applicationVersion,
+                environment: tracingFeature.configuration.common.environment,
+                serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
+                loggerName: "trace",
+                userInfoProvider: tracingFeature.userInfoProvider,
+                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
+                dateCorrector: loggingFeature.dateCorrector
+            ),
             loggingOutput: LogFileOutput(
-                logBuilder: LogBuilder(
-                    applicationVersion: tracingFeature.configuration.common.applicationVersion,
-                    environment: tracingFeature.configuration.common.environment,
-                    serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
-                    loggerName: "trace",
-                    userInfoProvider: tracingFeature.userInfoProvider,
-                    networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                    dateCorrector: loggingFeature.dateCorrector
-                ),
                 fileWriter: loggingFeature.storage.writer,
 
                 // The RUM Errors integration is not set for this instance of the `LogFileOutput`, as RUM Errors for
@@ -48,8 +48,11 @@ internal struct LoggingForTracingAdapter {
     internal struct AdaptedLogOutput {
         private struct Constants {
             static let defaultLogMessage = "Span event"
+            static let defaultErrorProperty = "Unknown"
         }
 
+        /// Log builder using Tracing configuration.
+        let logBuilder: LogBuilder
         /// Actual `LogOutput` bridged to `LoggingFeature`.
         let loggingOutput: LogOutput
 
@@ -57,8 +60,9 @@ internal struct LoggingForTracingAdapter {
             var userAttributes = fields
 
             // get the log message and optional error kind
-            let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
             let errorKind = userAttributes.removeValue(forKey: OTLogFields.errorKind) as? String
+            let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
+            let errorStack = userAttributes.removeValue(forKey: OTLogFields.stack) as? String
 
             // infer the log level
             let isErrorEvent = fields[OTLogFields.event] as? String == "error"
@@ -66,17 +70,24 @@ internal struct LoggingForTracingAdapter {
             let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
 
             // set tracing attributes
-            var internalAttributes = [
+            let internalAttributes = [
                 TracingAttributes.traceID: "\(spanContext.traceID.rawValue)",
                 TracingAttributes.spanID: "\(spanContext.spanID.rawValue)"
             ]
-            if let errorKind = errorKind {
-                internalAttributes[OTLogFields.errorKind] = errorKind
+
+            var extractedError: DDError?
+            if level == .error {
+                extractedError = DDError(
+                    type: errorKind ?? Constants.defaultErrorProperty,
+                    message: message,
+                    stack: errorStack ?? Constants.defaultErrorProperty
+                )
             }
 
-            loggingOutput.writeLogWith(
+            let log = logBuilder.createLogWith(
                 level: level,
                 message: message,
+                error: extractedError,
                 date: date,
                 attributes: LogAttributes(
                     userAttributes: userAttributes,
@@ -84,6 +95,7 @@ internal struct LoggingForTracingAdapter {
                 ),
                 tags: []
             )
+            loggingOutput.write(log: log)
         }
     }
 }

@@ -236,8 +236,7 @@ class DDTracerTests: XCTestCase {
             "x-datadog-trace-id": "1",
             "x-datadog-parent-id": "2",
         ]
-        let swiftWritter = objcWriter.swiftHTTPHeadersWriter
-        XCTAssertEqual(swiftWritter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
     func testInjectingSpanContextToInvalidCarrierOrFormat() throws {

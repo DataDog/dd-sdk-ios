@@ -8,16 +8,31 @@ import XCTest
 import Datadog
 
 class UIKitRUMViewsPredicateTests: XCTestCase {
-    func testGivenDefaultPredicate_whenAskingForCustomViewController_itNamesTheViewByItsClassName() {
+    func testGivenDefaultPredicate_whenAskingForCustomSwiftViewController_itNamesTheViewByItsClassName() {
         // Given
         let predicate = DefaultUIKitRUMViewsPredicate()
 
         // When
-        let customViewController = createMockView(viewControllerClassName: "Module.CustomViewController")
+        let customViewController = createMockView(viewControllerClassName: "CustomSwiftViewController")
         let rumView = predicate.rumView(for: customViewController)
 
         // Then
-        XCTAssertEqual(rumView?.path, "Module.CustomViewController")
+        XCTAssertEqual(rumView?.name, "CustomSwiftViewController")
+        XCTAssertEqual(rumView?.path, "CustomSwiftViewController")
+        XCTAssertTrue(rumView!.attributes.isEmpty)
+    }
+
+    func testGivenDefaultPredicate_whenAskingForCustomObjcViewController_itNamesTheViewByItsClassName() {
+        // Given
+        let predicate = DefaultUIKitRUMViewsPredicate()
+
+        // When
+        let customViewController = CustomObjcViewController()
+        let rumView = predicate.rumView(for: customViewController)
+
+        // Then
+        XCTAssertEqual(rumView?.name, "CustomObjcViewController")
+        XCTAssertEqual(rumView?.path, "CustomObjcViewController")
         XCTAssertTrue(rumView!.attributes.isEmpty)
     }
 

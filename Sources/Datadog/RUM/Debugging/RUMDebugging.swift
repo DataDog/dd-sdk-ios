@@ -9,11 +9,11 @@ import Foundation
 
 private struct RUMDebugInfo {
     struct View {
-        let uri: String
+        let name: String
         let isActive: Bool
 
         init(scope: RUMViewScope) {
-            self.uri = scope.viewURI
+            self.name = scope.viewName
             self.isActive = scope.isActiveView
         }
     }
@@ -132,7 +132,7 @@ internal class RUMViewOutline: RUMDebugView {
         self.label = UILabel(frame: .zero)
         self.stackOffset = CGFloat(stack.index) * Constants.labelHeight
 
-        let viewName = viewInfo.uri
+        let viewName = viewInfo.name
         let separator = " # "
         let viewDetails = (viewInfo.isActive ? "ACTIVE" : "INACTIVE")
         let labelText = "\(viewName)\(separator)\(viewDetails)"

@@ -2,4 +2,4 @@
 #include "../xcconfigs/Datadog.xcconfig"
 
 // Add DatadogSDKTesting instrumentation (if available in current environment)
-#include "../xcconfigs/DatadogSDKTesting.local.xcconfig"
+#include? "../xcconfigs/DatadogSDKTesting.local.xcconfig"

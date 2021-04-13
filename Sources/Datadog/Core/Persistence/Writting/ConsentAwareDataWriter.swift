@@ -6,9 +6,10 @@
 
 import Foundation
 
-/// Writes data to different folders depending on the tracking consent value.
+/// Writes data to different folders depending on current the value of the `TrackingConsent`.
+/// When the value of `TrackingConsent` changes, it may move data from unauthorized folder to the authorized one or wipe it out entirely.
 /// It synchronizes the work of underlying `FileWriters` on given read/write queue.
-internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
+internal class ConsentAwareDataWriter: Writer, TrackingConsentObserver {
     /// Queue used to synchronize reads and writes for the feature.
     internal let readWriteQueue: DispatchQueue
     /// Creates data processors depending on the tracking consent value.
@@ -30,7 +31,7 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
         self.dataMigratorFactory = dataMigratorFactory
         self.processor = dataProcessorFactory.resolveProcessor(for: consentProvider.currentValue)
 
-        consentProvider.subscribe(consentSubscriber: self)
+        consentProvider.subscribe(self)
 
         let initialDataMigrator = dataMigratorFactory.resolveInitialMigrator()
         readWriteQueue.async { initialDataMigrator.migrate() }
@@ -44,9 +45,9 @@ internal class ConsentAwareDataWriter: Writer, ConsentSubscriber {
         }
     }
 
-    // MARK: - ConsentSubscriber
+    // MARK: - TrackingConsentObserver
 
-    func consentChanged(from oldValue: TrackingConsent, to newValue: TrackingConsent) {
+    func onValueChanged(oldValue: TrackingConsent, newValue: TrackingConsent) {
         readWriteQueue.async {
             self.processor = self.dataProcessorFactory.resolveProcessor(for: newValue)
             self.dataMigratorFactory

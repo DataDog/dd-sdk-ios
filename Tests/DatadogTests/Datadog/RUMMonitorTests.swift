@@ -72,16 +72,18 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize()
         setGlobalAttributes(of: monitor)
 
-        monitor.startView(key: "view1", path: "View1")
+        monitor.startView(key: "view1", name: "View1")
         monitor.stopView(key: "view1")
-        monitor.startView(key: "view2", path: "View2")
+        monitor.startView(key: "view2", name: "View2")
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         XCTAssertEqual(session.viewVisits.count, 2)
+        XCTAssertEqual(session.viewVisits[0].name, "View1")
         XCTAssertEqual(session.viewVisits[0].path, "View1")
+        XCTAssertEqual(session.viewVisits[1].name, "View2")
         XCTAssertEqual(session.viewVisits[1].path, "View2")
     }
 
@@ -324,7 +326,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.error.message, "View error message")
             XCTAssertEqual(rumModel.error.stack, "Foo.swift:100")
             XCTAssertEqual(rumModel.error.source, .source)
-            XCTAssertEqual(rumModel.error.type, "View error message")
+            XCTAssertNil(rumModel.error.type)
         }
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
@@ -335,7 +337,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.error.message, "Another error message")
             XCTAssertEqual(rumModel.error.stack, "Error stack")
             XCTAssertEqual(rumModel.error.source, .webview)
-            XCTAssertEqual(rumModel.error.type, "Another error message")
+            XCTAssertNil(rumModel.error.type)
         }
         try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
@@ -384,6 +386,7 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController")
                 XCTAssertEqual(rumModel.view.action.count, 1, "First View should track only the 'applicationStart' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 0)
             }
@@ -391,6 +394,7 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController")
                 XCTAssertEqual(rumModel.view.action.count, 1, "Second View should track the 'tap' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "Second View should track the Resource")
             }
@@ -398,12 +402,14 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMActionEvent.self)
             .model(ofType: RUMActionEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Action should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Action should be associated with the second View")
                 XCTAssertEqual(rumModel.action.type, .tap)
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self)
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
             }
     }
 
@@ -437,6 +443,7 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "First View should track 1 Resource")
                 XCTAssertEqual(rumModel.view.error.count, 1, "First View should track 1 Resource Error")
             }
@@ -444,27 +451,32 @@ class RUMMonitorTests: XCTestCase {
             .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController")
                 XCTAssertEqual(rumModel.view.resource.count, 2, "Second View should track 2 Resources")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/1") }
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController", "Resource should be associated with the first View")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMErrorEvent.self) { rumModel in rumModel.error.resource?.url.contains("/resource/2") ?? false }
             .model(ofType: RUMErrorEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
+                XCTAssertEqual(rumModel.view.name, "FirstViewController", "Resource should be associated with the first View")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/3") }
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/4") }
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
             }
     }
 
@@ -787,19 +799,19 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize()
 
         // When
-        monitor.startView(viewController: mockView, path: "view in `.pending` consent changed to `.granted`")
+        monitor.startView(viewController: mockView, name: "view in `.pending` consent changed to `.granted`")
         monitor.stopView(viewController: mockView)
         monitor.dd.queue.sync {} // wait for processing the event in `RUMMonitor`
         consentProvider.changeConsent(to: .granted)
-        monitor.startView(viewController: mockView, path: "view in `.granted` consent")
+        monitor.startView(viewController: mockView, name: "view in `.granted` consent")
         monitor.stopView(viewController: mockView)
         monitor.dd.queue.sync {}
         consentProvider.changeConsent(to: .notGranted)
-        monitor.startView(viewController: mockView, path: "view in `.notGranted` consent")
+        monitor.startView(viewController: mockView, name: "view in `.notGranted` consent")
         monitor.stopView(viewController: mockView)
         monitor.dd.queue.sync {}
         consentProvider.changeConsent(to: .granted)
-        monitor.startView(viewController: mockView, path: "another view in `.granted` consent")
+        monitor.startView(viewController: mockView, name: "another view in `.granted` consent")
         monitor.stopView(viewController: mockView)
 
         // Then
@@ -807,9 +819,9 @@ class RUMMonitorTests: XCTestCase {
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
 
         XCTAssertEqual(session.viewVisits.count, 3, "Only 3 RUM Views were visited in authorized consent.")
-        XCTAssertEqual(session.viewVisits[0].path, "view in `.pending` consent changed to `.granted`")
-        XCTAssertEqual(session.viewVisits[1].path, "view in `.granted` consent")
-        XCTAssertEqual(session.viewVisits[2].path, "another view in `.granted` consent")
+        XCTAssertEqual(session.viewVisits[0].name, "view in `.pending` consent changed to `.granted`")
+        XCTAssertEqual(session.viewVisits[1].name, "view in `.granted` consent")
+        XCTAssertEqual(session.viewVisits[2].name, "another view in `.granted` consent")
     }
 
     // MARK: - Data Scrubbing
@@ -818,32 +830,31 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
-                eventMapper: RUMEventsMapper(
-                    viewEventMapper: { viewEvent in
-                        var viewEvent = viewEvent
-                        viewEvent.view.url = "ModifiedViewName"
-                        return viewEvent
-                    },
-                    errorEventMapper: { errorEvent in
-                        var errorEvent = errorEvent
-                        errorEvent.error.message = "Modified error message"
-                        return errorEvent
-                    },
-                    resourceEventMapper: { resourceEvent in
-                        var resourceEvent = resourceEvent
-                        resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
-                        return resourceEvent
-                    },
-                    actionEventMapper: { actionEvent in
-                        if actionEvent.action.type == .applicationStart {
-                            return nil // drop `.applicationStart` action
-                        } else {
-                            var actionEvent = actionEvent
-                            actionEvent.action.target?.name = "Modified tap action name"
-                            return actionEvent
-                        }
+                viewEventMapper: { viewEvent in
+                    var viewEvent = viewEvent
+                    viewEvent.view.url = "ModifiedViewURL"
+                    viewEvent.view.name = "ModifiedViewName"
+                    return viewEvent
+                },
+                resourceEventMapper: { resourceEvent in
+                    var resourceEvent = resourceEvent
+                    resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
+                    return resourceEvent
+                },
+                actionEventMapper: { actionEvent in
+                    if actionEvent.action.type == .applicationStart {
+                        return nil // drop `.applicationStart` action
+                    } else {
+                        var actionEvent = actionEvent
+                        actionEvent.action.target?.name = "Modified tap action name"
+                        return actionEvent
                     }
-                )
+                },
+                errorEventMapper: { errorEvent in
+                    var errorEvent = errorEvent
+                    errorEvent.error.message = "Modified error message"
+                    return errorEvent
+                }
             ),
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
@@ -853,20 +864,21 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize()
 
-        monitor.startView(viewController: mockView, path: "OriginalViewName")
+        monitor.startView(viewController: mockView, name: "OriginalViewName")
         monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 5)
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
 
         XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
         let session = sessions[0]
 
         session.viewVisits[0].viewEvents.forEach { viewEvent in
-            XCTAssertEqual(viewEvent.view.url, "ModifiedViewName")
+            XCTAssertEqual(viewEvent.view.url, "ModifiedViewURL")
+            XCTAssertEqual(viewEvent.view.name, "ModifiedViewName")
         }
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].resourceEvents[0].resource.url, "https://foo.com?q=modified-resource-url")
@@ -874,6 +886,94 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.target?.name, "Modified tap action name")
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
+    }
+
+    func testDroppingEventsBeforeTheyGetSent() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                resourceEventMapper: { _ in nil },
+                actionEventMapper: { event in
+                    return event.action.type == .applicationStart ? event : nil
+                },
+                errorEventMapper: { _ in nil }
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.addUserAction(type: .tap, name: .mockAny())
+        monitor.addError(message: .mockAny())
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
+        let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+
+        XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
+        let session = sessions[0]
+
+        XCTAssertNotEqual(session.viewVisits[0].viewEvents.count, 0)
+        let lastEvent = session.viewVisits[0].viewEvents.last!
+        XCTAssertEqual(lastEvent.view.resource.count, 0, "resource.count should reflect all resource events being dropped.")
+        XCTAssertEqual(lastEvent.view.action.count, 1, "action.count should reflect all action events being dropped.")
+        XCTAssertEqual(lastEvent.view.error.count, 0, "error.count should reflect all error events being dropped.")
+        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
+        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
+        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
+    }
+
+    // MARK: - Integration with Crash Reporting
+
+    func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
+        let randomUserInfoAttributes: [String: String] = .mockRandom()
+        let randomViewEventAttributes: [String: String] = .mockRandom()
+
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                userInfoProvider: .mockWith(
+                    userInfo: .init(
+                        id: .mockRandom(),
+                        name: .mockRandom(),
+                        email: .mockRandom(),
+                        extraInfo: randomUserInfoAttributes
+                    )
+                )
+            )
+        )
+        defer { RUMFeature.instance = nil }
+
+        CrashReportingFeature.instance = .mockNoOp()
+        defer { CrashReportingFeature.instance = nil }
+
+        // Given
+        Global.crashReporter = CrashReporter(crashReportingFeature: CrashReportingFeature.instance!)
+        defer { Global.crashReporter = nil }
+
+        // When
+        let monitor = RUMMonitor.initialize()
+        monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
+
+        // Then
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
+        let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
+
+        let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
+        XCTAssertEqual(
+            currentCrashContext.lastRUMViewEvent?.model,
+            lastRUMViewEventSent
+        )
+        XCTAssertEqual(
+            currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
+            randomViewEventAttributes
+        )
+        XCTAssertEqual(
+            currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
+            randomUserInfoAttributes
+        )
     }
 
     // MARK: - Thread safety
@@ -1019,7 +1119,7 @@ class RUMMonitorTests: XCTestCase {
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
                 .trackURLSession(firstPartyHosts: [.mockAny()])
-                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(path: .mockAny())))
+                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(name: .mockAny())))
                 .trackUIKitActions(true)
                 .build()
         )
@@ -1037,7 +1137,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Then
         resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """
@@ -1047,7 +1147,7 @@ class RUMMonitorTests: XCTestCase {
         )
 
         viewsHandler.notify_viewDidAppear(viewController: mockView, animated: .mockAny())
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """
@@ -1063,7 +1163,7 @@ class RUMMonitorTests: XCTestCase {
             application: .shared,
             event: .mockWith(touches: [.mockWith(phase: .ended, view: mockUIControl)])
         )
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """

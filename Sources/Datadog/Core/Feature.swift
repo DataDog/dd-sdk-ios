@@ -32,17 +32,23 @@ internal struct FeaturesCommonDependencies {
 }
 
 internal struct FeatureStorage {
-    /// Writes data to files.
+    /// Writes data to files. This `Writer` takes current value of the `TrackingConsent` into consideration
+    /// to decided if the data should be written to authorized or unauthorized folder.
     let writer: Writer
-    /// Reads data from files.
+    /// Reads data from files in authorized folder.
     let reader: Reader
+
+    /// An arbitrary `Writer` which always writes data to authorized folder.
+    /// Should be only used by components which implement their own consideration of the `TrackingConsent` value
+    /// associated with data written.
+    let arbitraryAuthorizedWriter: Writer
 
     init(
         featureName: String,
         dataFormat: DataFormat,
         directories: FeatureDirectories,
-        eventMapper: EventMapper?,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
     ) {
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-read-write",
@@ -51,47 +57,68 @@ internal struct FeatureStorage {
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider
+            dateProvider: commonDependencies.dateProvider,
+            internalMonitor: internalMonitor
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
             performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider
+            dateProvider: commonDependencies.dateProvider,
+            internalMonitor: internalMonitor
+        )
+
+        let unauthorizedFileWriter = FileWriter(
+            dataFormat: dataFormat,
+            orchestrator: unauthorizedFilesOrchestrator,
+            internalMonitor: internalMonitor
+        )
+
+        let authorizedFileWriter = FileWriter(
+            dataFormat: dataFormat,
+            orchestrator: authorizedFilesOrchestrator,
+            internalMonitor: internalMonitor
         )
 
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: commonDependencies.consentProvider,
             readWriteQueue: readWriteQueue,
             dataProcessorFactory: DataProcessorFactory(
-                unauthorizedFileWriter: FileWriter(
-                    dataFormat: dataFormat,
-                    orchestrator: unauthorizedFilesOrchestrator
-                ),
-                authorizedFileWriter: FileWriter(
-                    dataFormat: dataFormat,
-                    orchestrator: authorizedFilesOrchestrator
-                ),
-                eventMapper: eventMapper
+                unauthorizedFileWriter: unauthorizedFileWriter,
+                authorizedFileWriter: authorizedFileWriter
             ),
             dataMigratorFactory: DataMigratorFactory(
-                directories: directories
+                directories: directories,
+                internalMonitor: internalMonitor
             )
         )
 
-        let dataReader = DataReader(
+        let arbitraryDataWriter = ArbitraryDataWriter(
             readWriteQueue: readWriteQueue,
-            fileReader: FileReader(dataFormat: dataFormat, orchestrator: authorizedFilesOrchestrator)
+            dataProcessor: DataProcessor(
+                fileWriter: authorizedFileWriter
+            )
+        )
+
+        let authorisedDataReader = DataReader(
+            readWriteQueue: readWriteQueue,
+            fileReader: FileReader(
+                dataFormat: dataFormat,
+                orchestrator: authorizedFilesOrchestrator,
+                internalMonitor: internalMonitor
+            )
         )
 
         self.init(
             writer: consentAwareDataWriter,
-            reader: dataReader
+            reader: authorisedDataReader,
+            arbitraryAuthorizedWriter: arbitraryDataWriter
         )
     }
 
-    init(writer: Writer, reader: Reader) {
+    init(writer: Writer, reader: Reader, arbitraryAuthorizedWriter: Writer) {
         self.writer = writer
         self.reader = reader
+        self.arbitraryAuthorizedWriter = arbitraryAuthorizedWriter
     }
 }
 
@@ -104,7 +131,8 @@ internal struct FeatureUpload {
         storage: FeatureStorage,
         uploadHTTPHeaders: HTTPHeaders,
         uploadURLProvider: UploadURLProvider,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
@@ -119,7 +147,8 @@ internal struct FeatureUpload {
         let dataUploader = DataUploader(
             urlProvider: uploadURLProvider,
             httpClient: commonDependencies.httpClient,
-            httpHeaders: uploadHTTPHeaders
+            httpHeaders: uploadHTTPHeaders,
+            internalMonitor: internalMonitor
         )
 
         self.init(

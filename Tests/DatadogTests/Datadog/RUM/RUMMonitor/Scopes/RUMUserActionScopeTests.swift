@@ -15,13 +15,14 @@ class RUMUserActionScopeTests: XCTestCase {
             rumApplicationID: "rum-123",
             sessionID: .mockRandom(),
             activeViewID: .mockRandom(),
-            activeViewURI: "FooViewController",
+            activeViewPath: "FooViewController",
+            activeViewName: "FooViewName",
             activeUserActionID: .mockRandom()
         )
     )
 
     func testDefaultContext() {
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -35,7 +36,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.rumApplicationID, parent.context.rumApplicationID)
         XCTAssertEqual(scope.context.sessionID, parent.context.sessionID)
         XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(parent.context.activeViewID))
-        XCTAssertEqual(scope.context.activeViewURI, try XCTUnwrap(parent.context.activeViewURI))
+        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(parent.context.activeViewPath))
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
     }
 
@@ -62,7 +63,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenContinuousUserActionEnds_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -93,6 +94,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.session.type, .user)
         XCTAssertEqual(event.model.view.id, parent.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertEqual(event.model.view.name, "FooViewName")
         XCTAssertEqual(event.model.action.id, scope.actionUUID.toRUMDataFormat)
         XCTAssertEqual(event.model.action.type, .swipe)
         XCTAssertEqual(event.model.action.loadingTime, 1_000_000_000)
@@ -103,7 +105,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -128,7 +130,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileContinuousUserActionIsActive_itTracksCompletedResources() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -180,7 +182,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
         var currentTime = Date()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -213,7 +215,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenContinuousUserActionStopsWithName_itChangesItsName() throws {
         var currentTime = Date()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -244,7 +246,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenDiscreteUserActionTimesOut_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -271,7 +273,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileDiscreteUserActionIsActive_itDoesNotComplete_untilAllTrackedResourcesAreCompleted() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -326,7 +328,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhileDiscreteUserActionIsActive_itCountsViewErrors() throws {
         var currentTime = Date()
-        let scope = RUMUserActionScope(
+        let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
             name: .mockAny(),
@@ -354,5 +356,85 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
         XCTAssertEqual(event.model.action.error?.count, 1)
+    }
+
+    // MARK: - Events sending callbacks
+
+    func testGivenUserActionScopeWithEventSentCallback_whenSuccessfullySendingEvent_thenCallbackIsCalled() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var callbackCalled = false
+        // swiftlint:disable trailing_closure
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: dependencies,
+            name: .mockAny(),
+            actionType: .tap,
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            isContinuous: false,
+            onActionEventSent: {
+                callbackCalled = true
+            }
+        )
+        // swiftlint:enable trailing_closure
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    actionType: .tap,
+                    name: nil
+                )
+            )
+        )
+
+        XCTAssertNotNil(try output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        XCTAssertTrue(callbackCalled)
+    }
+
+    func testGivenUserActionScopeWithEventSentCallback_whenBypassingSendingEvent_thenCallbackIsNotCalled() {
+        // swiftlint:disable trailing_closure
+        let eventBuilder = RUMEventBuilder(
+            userInfoProvider: UserInfoProvider.mockAny(),
+            eventsMapper: RUMEventsMapper.mockWith(
+                actionEventMapper: { event in
+                    nil
+                }
+            )
+        )
+        let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
+
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var callbackCalled = false
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: dependencies,
+            name: .mockAny(),
+            actionType: .tap,
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            isContinuous: false,
+            onActionEventSent: {
+                callbackCalled = true
+            }
+        )
+        // swiftlint:enable trailing_closure
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    actionType: .tap,
+                    name: nil
+                )
+            )
+        )
+
+        XCTAssertNil(try output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        XCTAssertFalse(callbackCalled)
     }
 }

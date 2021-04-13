@@ -10,8 +10,6 @@ import Foundation
 internal struct SpanBuilder {
     /// Application version to encode in span.
     let applicationVersion: String
-    /// Environment to encode in span.
-    let environment: String
     /// Service name to encode in span.
     let serviceName: String
     /// Shared user info provider.

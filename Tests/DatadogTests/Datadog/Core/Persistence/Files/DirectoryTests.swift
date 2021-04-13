@@ -53,14 +53,37 @@ class DirectoryTests: XCTestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: file.url.path))
     }
 
-    func testItRetrievesFile() throws {
+    func testItChecksIfFileExists() throws {
         let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
         defer { directory.delete() }
+
+        XCTAssertFalse(directory.hasFile(named: "foo"))
+        _ = try directory.createFile(named: "foo")
+        XCTAssertTrue(directory.hasFile(named: "foo"))
+    }
+
+    func testWhenFileExists_ItCanBeRetrieved() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        // When
         _ = try directory.createFile(named: "abcd")
 
+        // Then
         let file = try directory.file(named: "abcd")
         XCTAssertEqual(file.url, directory.url.appendingPathComponent("abcd"))
         XCTAssertTrue(fileManager.fileExists(atPath: file.url.path))
+    }
+
+    func testWhenFileDoesNotExist_ItThrowsErrorWhenRetrieving() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        // When
+        XCTAssertFalse(directory.hasFile(named: "foo"))
+
+        // Then
+        XCTAssertThrowsError(try directory.file(named: "foo"))
     }
 
     func testItRetrievesAllFiles() throws {

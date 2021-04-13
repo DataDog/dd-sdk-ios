@@ -16,6 +16,10 @@ workflows:
     - check_dependency_managers
     - _deploy_artifacts
 
+  push_to_dogfooding:
+    after_run:
+    - create_dogfooding_pr
+
   _make_dependencies:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
@@ -92,7 +96,15 @@ workflows:
         - should_retry_test_on_fail: 'yes' # temporarily mutes flakiness until we collect more info (in RUMM-839) then fix it
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for DatadogCrashReporting - iOS Simulator
+        inputs:
+        - scheme: DatadogCrashReporting
+        - simulator_device: iPhone 11
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         inputs:
@@ -122,7 +134,7 @@ workflows:
         Runs integration tests from Datadog.xcworkspace.
     steps:
     - xcode-test:
-        title: Run integration tests - DatadogIntegrationTests on iOS Simulator
+        title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
         inputs:
         - scheme: DatadogIntegrationTests
         - simulator_device: iPhone 11
@@ -130,7 +142,19 @@ workflows:
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Integration-tests.html"
+        - xcodebuild_test_options: -testPlan DatadogIntegrationTests
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
+    - xcode-test:
+        title: Run integration tests for Crash Reporting (on iOS Simulator)
+        inputs:
+        - scheme: DatadogIntegrationTests
+        - simulator_device: iPhone 11
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcodebuild_test_options: -testPlan DatadogCrashReportingIntegrationTests
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReportingIntegration-tests.html"
 
   check_dependency_managers:
     description: |-
@@ -200,3 +224,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
+
+  create_dogfooding_pr:
+    description: |-
+        Creates PRs to repositories using `dd-sdk-ios`.
+    steps:
+    - script:
+        title: Create PR to Datadog mobile app project
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            make dogfood ci=${CI}
+

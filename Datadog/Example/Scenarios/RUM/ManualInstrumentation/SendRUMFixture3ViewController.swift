@@ -10,7 +10,7 @@ internal class SendRUMFixture3ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        rumMonitor.startView(key: "fixture3-vc", path: "SendRUMFixture3ViewController")
+        rumMonitor.startView(key: "fixture3-vc", name: "SendRUMFixture3View")
     }
 
     override func viewWillDisappear(_ animated: Bool) {

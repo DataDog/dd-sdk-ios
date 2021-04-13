@@ -13,8 +13,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
     private let authorizedWriter = FileWriterMock()
     private lazy var dataProcessorFactory = DataProcessorFactory(
         unauthorizedFileWriter: unauthorizedWriter,
-        authorizedFileWriter: authorizedWriter,
-        eventMapper: nil
+        authorizedFileWriter: authorizedWriter
     )
     private lazy var dataMigratorFactory = DataMigratorFactory(
         directories: temporaryFeatureDirectories
@@ -158,7 +157,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         XCTAssertEqual(try directories.unauthorized.files().count, 10)
 
         // When
-        let initialConsent: TrackingConsent = [.granted, .pending, .notGranted].randomElement()!
+        let initialConsent: TrackingConsent = .mockRandom()
         _ = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: initialConsent),
             readWriteQueue: queue,
@@ -251,11 +250,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
     // MARK: - Thread Safety
 
     func testChangingConsentAndCallingWriterFromDifferentThreadsShouldNotCrash() {
-        func randomConsent() -> TrackingConsent {
-            return [.granted, .pending, .notGranted].randomElement()!
-        }
-
-        let consentProvider = ConsentProvider(initialConsent: randomConsent())
+        let consentProvider = ConsentProvider(initialConsent: .mockRandom())
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
@@ -265,7 +260,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
 
         DispatchQueue.concurrentPerform(iterations: 10_000) { iteration in
             if iteration % 2 == 0 {
-                consentProvider.changeConsent(to: randomConsent())
+                consentProvider.changeConsent(to: .mockRandom())
             } else {
                 writer.write(value: "data \(iteration)")
             }

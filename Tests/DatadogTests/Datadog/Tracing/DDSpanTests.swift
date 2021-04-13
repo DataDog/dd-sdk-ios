@@ -217,7 +217,7 @@ class DDSpanTests: XCTestCase {
 
         fixtures.forEach { tracerMethod, expectedConsoleWarning in
             tracerMethod()
-            XCTAssertEqual(output.recordedLog?.level, .warn)
+            XCTAssertEqual(output.recordedLog?.status, .warn)
             XCTAssertEqual(output.recordedLog?.message, expectedConsoleWarning)
         }
     }

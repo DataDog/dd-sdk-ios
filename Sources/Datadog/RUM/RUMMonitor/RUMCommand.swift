@@ -23,7 +23,10 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// The value holding stable identity of the RUM View.
     let identity: RUMViewIdentifiable
 
-    /// The path of this View, rendered in RUM Explorer.
+    /// The name of this View, rendered in RUM Explorer as `VIEW NAME`.
+    let name: String
+
+    /// The path of this View, rendered in RUM Explorer as `VIEW URL`.
     let path: String
 
     /// Used to indicate if this command starts the very first View in the app.
@@ -31,10 +34,17 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// * it can be set to `true` by the `RUMApplicationScope` which tracks this state.
     var isInitialView = false
 
-    init(time: Date, identity: RUMViewIdentifiable, path: String?, attributes: [AttributeKey: AttributeValue]) {
+    init(
+        time: Date,
+        identity: RUMViewIdentifiable,
+        name: String?,
+        path: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
         self.time = time
         self.attributes = attributes
         self.identity = identity
+        self.name = name ?? identity.defaultViewPath
         self.path = path ?? identity.defaultViewPath
     }
 }
@@ -53,14 +63,17 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 
     /// The error message.
     let message: String
-    /// The origin of this error.
-    let source: RUMInternalErrorSource
+    /// Error type.
+    let type: String?
     /// Error stacktrace.
     let stack: String?
+    /// The origin of this error.
+    let source: RUMInternalErrorSource
 
     init(
         time: Date,
         message: String,
+        type: String?,
         stack: String?,
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
@@ -69,6 +82,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.source = source
         self.attributes = attributes
         self.message = message
+        self.type = type
         self.stack = stack
     }
 
@@ -83,8 +97,9 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.attributes = attributes
 
         let dderror = DDError(error: error)
-        self.message = dderror.title
-        self.stack = dderror.details
+        self.message = dderror.message
+        self.type = dderror.type
+        self.stack = dderror.stack
     }
 }
 
@@ -157,6 +172,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
 
     /// The error message.
     let errorMessage: String
+    /// Error type.
+    let errorType: String?
     /// The origin of the error (network, webview, ...)
     let errorSource: RUMInternalErrorSource
     /// Error stacktrace.
@@ -168,6 +185,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         resourceKey: String,
         time: Date,
         message: String,
+        type: String?,
         source: RUMInternalErrorSource,
         httpStatusCode: Int?,
         attributes: [AttributeKey: AttributeValue]
@@ -175,6 +193,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.resourceKey = resourceKey
         self.time = time
         self.errorMessage = message
+        self.errorType = type
         self.errorSource = source
         self.attributes = attributes
         self.httpStatusCode = httpStatusCode
@@ -197,9 +216,10 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.httpStatusCode = httpStatusCode
 
         let dderror = DDError(error: error)
-        self.errorMessage = dderror.title
+        self.errorMessage = dderror.message
+        self.errorType = dderror.type
         // The stack will give the networking error (`NSError`) description in most cases:
-        self.stack = dderror.details
+        self.stack = dderror.stack
     }
 }
 

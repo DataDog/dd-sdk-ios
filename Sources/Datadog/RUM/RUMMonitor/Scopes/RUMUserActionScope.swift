@@ -45,6 +45,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
 
+    /// Callback called when a `RUMActionEvent` is submitted for storage.
+    private let onActionEventSent: () -> Void
+
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
@@ -53,7 +56,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         dateCorrection: DateCorrection,
-        isContinuous: Bool
+        isContinuous: Bool,
+        onActionEventSent: @escaping () -> Void
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -65,6 +69,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.dateCorrection = dateCorrection
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
+        self.onActionEventSent = onActionEventSent
     }
 
     // MARK: - RUMContextProvider
@@ -80,18 +85,24 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     func process(command: RUMCommand) -> Bool {
         if let expirationTime = possibleExpirationTime(currentTime: command.time),
            allResourcesCompletedLoading() {
-            sendActionEvent(completionTime: expirationTime)
+            if sendActionEvent(completionTime: expirationTime) {
+                onActionEventSent()
+            }
             return false
         }
 
         lastActivityTime = command.time
         switch command {
         case is RUMStopViewCommand:
-            sendActionEvent(completionTime: command.time)
+            if sendActionEvent(completionTime: command.time) {
+                onActionEventSent()
+            }
             return false
         case let command as RUMStopUserActionCommand:
             name = command.name ?? name
-            sendActionEvent(completionTime: command.time, on: command)
+            if sendActionEvent(completionTime: command.time, on: command) {
+                onActionEventSent()
+            }
             return false
         case is RUMStartResourceCommand:
             activeResourcesCount += 1
@@ -111,7 +122,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand? = nil) {
+    private func sendActionEvent(completionTime: Date, on command: RUMCommand? = nil) -> Bool {
         if let commandAttributes = command?.attributes {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
@@ -136,13 +147,17 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+            return true
+        }
+        return false
     }
 
     // MARK: - Private

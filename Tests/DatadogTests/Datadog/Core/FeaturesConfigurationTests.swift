@@ -324,6 +324,59 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    // MARK: - Crash Reporting Configuration Tests
+
+    func testWhenCrashReportingIsDisabled() throws {
+        XCTAssertNil(
+            try FeaturesConfiguration(configuration: .mockWith(crashReportingPlugin: nil), appContext: .mockAny()).crashReporting,
+            "Feature configuration should not be available if the feature is disabled"
+        )
+    }
+
+    func testWhenRUMorLoggingFeaturesAreEnabled_thenCrashReportingFeatureCanBeEnabled() throws {
+        let random = [true, true, false].shuffled() // get at least one `true` on first two positions
+        let enableLogging = random[0]
+        let enableRUM = random[1]
+
+        XCTAssertNotNil(
+            try FeaturesConfiguration(
+                configuration: .mockWith(
+                    loggingEnabled: enableLogging,
+                    rumEnabled: enableRUM,
+                    crashReportingPlugin: CrashReportingPluginMock()
+                ),
+                appContext: .mockAny()
+            ).crashReporting,
+            """
+            When Logging is \(enableLogging ? "" : "dis")abled and RUM is \(enableRUM ? "" : "dis")abled,
+            then Crash Reporting should be enabled.
+            """
+        )
+    }
+
+    func testGivenRUMAndLoggingFeaturesDisabled_whenCrashReportingFeatureIsEnabled_itPrintsConsoleWarning() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        _ = try FeaturesConfiguration(
+            configuration: .mockWith(
+                loggingEnabled: false,
+                rumEnabled: false,
+                crashReportingPlugin: CrashReportingPluginMock()
+            ),
+            appContext: .mockAny()
+        )
+
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: To use `.enableCrashReporting(using:)` either RUM or Logging must be enabled.
+            Use: `.enableLogging(true)` or `.enableRUM(true)`.
+            """
+        )
+    }
+
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
@@ -414,6 +467,38 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    // MARK: - Internal Monitoring Configuration Tests
+
+    func testWhenInternalMonitoringIsDisabled() throws {
+        XCTAssertNil(
+            try FeaturesConfiguration(configuration: .mockWith(internalMonitoringClientToken: nil), appContext: .mockAny()).internalMonitoring,
+            "Feature configuration should not be available if the feature is disabled"
+        )
+    }
+
+    func testWhenInternalMonitoringClientTokenIsSet_thenInternalMonitoringConfigurationIsEnabled() throws {
+        // When
+        let internalMonitoringClientToken: String = .mockRandom(among: "abcdef")
+        let featuresConfiguration = try FeaturesConfiguration(
+            configuration: .mockWith(internalMonitoringClientToken: internalMonitoringClientToken),
+            appContext: .mockWith(
+                bundleIdentifier: "com.bundle.identifier",
+                bundleVersion: "1.2.3",
+                bundleName: "AppName"
+            )
+        )
+
+        // Then
+        let configuration = try XCTUnwrap(featuresConfiguration.internalMonitoring)
+        XCTAssertEqual(configuration.common, featuresConfiguration.common)
+        XCTAssertEqual(configuration.sdkServiceName, "dd-sdk-ios", "Internal monitoring data should be available under \"service:dd-sdk-ios\"")
+        XCTAssertEqual(configuration.sdkEnvironment, "prod", "Internal monitoring data should be available under \"env:prod\"")
+        XCTAssertEqual(
+            configuration.logsUploadURLWithClientToken.absoluteString,
+            "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + internalMonitoringClientToken
+        )
+    }
+
     // MARK: - Invalid Configurations
 
     func testWhenClientTokenIsInvalid_itThrowsProgrammerError() {
@@ -476,7 +561,8 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             printFunction.printedMessage,
             """
-            🔥 Datadog SDK usage error: To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
+            🔥 Datadog SDK usage error: To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
+            Use: `.enableTracing(true)` or `.enableRUM(true)`.
             """
         )
     }

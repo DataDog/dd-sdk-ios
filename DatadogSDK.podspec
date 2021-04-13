@@ -25,5 +25,5 @@ Pod::Spec.new do |s|
   s.public_header_files = ["Datadog/TargetSupport/Datadog/Datadog.h", 
                            "Sources/_Datadog_Private/include/*.h"]
 
-  s.dependency 'Kronos', '~> 4.1'
+  s.dependency 'Kronos', '~> 4.2'
 end

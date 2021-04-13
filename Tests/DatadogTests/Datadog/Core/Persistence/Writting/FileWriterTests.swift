@@ -70,8 +70,8 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key2": "value3 that makes it exceed 17 bytes"]) // will be dropped
 
         XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
-        XCTAssertEqual(output.recordedLog?.level, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: data exceeds the maximum size of 17 bytes.")
+        XCTAssertEqual(output.recordedLog?.status, .error)
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write data: data exceeds the maximum size of 17 bytes.")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
@@ -92,8 +92,8 @@ class FileWriterTests: XCTestCase {
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
 
-        XCTAssertEqual(output.recordedLog?.level, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write log: failed to encode `FailingEncodable`.")
+        XCTAssertEqual(output.recordedLog?.status, .error)
+        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write data: failed to encode `FailingEncodable`.")
     }
 
     func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
@@ -117,7 +117,7 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["won't be written"])
         try? temporaryDirectory.files()[0].makeReadWrite()
 
-        XCTAssertEqual(output.recordedLog?.level, .error)
+        XCTAssertEqual(output.recordedLog?.status, .error)
         XCTAssertNotNil(output.recordedLog?.message)
         XCTAssertTrue(output.recordedLog!.message.contains("You don’t have permission"))
     }

@@ -8,18 +8,34 @@ import UIKit
 
 /// A description of the RUM View returned from the `UIKitRUMViewsPredicate`.
 public struct RUMView {
-    /// The RUM View path, appearing as `PATH` in RUM Explorer.
-    public var path: String
+    /// The RUM View name, appearing as `VIEW NAME` in RUM Explorer.
+    public var name: String
+
+    /// The RUM View path, appearing as `VIEW PATH GROUP` / `VIEW URL` in RUM Explorer.
+    /// If set `nil`, the view controller class name will be used.
+    public var path: String?
 
     /// Additional attributes to associate with the RUM View.
     public var attributes: [AttributeKey: AttributeValue]
 
     /// Initializes the RUM View description.
     /// - Parameters:
-    ///   - path: the RUM View path, appearing as "PATH" in RUM Explorer.
+    ///   - path: the RUM View path, appearing as `PATH` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM View.
+    @available(*, deprecated, message: "This initializer is renamed to `init(name:attributes:)`.")
     public init(path: String, attributes: [AttributeKey: AttributeValue] = [:]) {
+        self.name = path
         self.path = path
+        self.attributes = attributes
+    }
+
+    /// Initializes the RUM View description.
+    /// - Parameters:
+    ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
+    ///   - attributes: additional attributes to associate with the RUM View.
+    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
+        self.name = name
+        self.path = nil // the "VIEW URL" will default to view controller class name
         self.attributes = attributes
     }
 }
@@ -42,9 +58,21 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     public init () {}
 
     public func rumView(for viewController: UIViewController) -> RUMView? {
-        let className = NSStringFromClass(type(of: viewController))
-        let isCustomClass = className.contains(".") // custom class contains module prefix
+        guard !isUIKit(class: type(of: viewController)) else {
+            // Part of our heuristic for (auto) tracking view controllers is to ignore
+            // container view controllers coming from `UIKit` if they are not subclassed.
+            // This condition is wider and it ignores all view controllers defined in `UIKit` bundle.
+            return nil
+        }
 
-        return isCustomClass ? RUMView(path: className) : nil
+        let canonicalClassName = viewController.canonicalClassName
+        var view = RUMView(name: canonicalClassName)
+        view.path = canonicalClassName
+        return view
+    }
+
+    /// If given `class` comes from UIKit framework.
+    private func isUIKit(`class`: AnyClass) -> Bool {
+        return Bundle(for: `class`).isUIKit
     }
 }

@@ -112,7 +112,7 @@ internal class DDSpan: OTSpan {
         if let activity = activityReference {
             ddTracer.activeSpansPool.removeSpan(activityReference: activity)
         }
-        ddTracer.write(span: self, finishTime: time)
+        ddTracer.write(ddspan: self, finishTime: time)
     }
 
     @discardableResult

@@ -9,13 +9,13 @@ import XCTest
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
     /// Launches the app by providing mock server configuration.
-    /// If `clearPeristentData` is set to `true`, the app will clear all SDK data persisted in previous session(s).
+    /// If `clearPersistentData` is set `true`, the app will clear all SDK data persisted in previous session(s).
     func launchWith(
         testScenarioClassName: String,
         serverConfiguration: HTTPServerMockConfiguration,
-        clearPeristentData: Bool = true
+        clearPersistentData: Bool = true
     ) {
-        if clearPeristentData {
+        if clearPersistentData {
             launchArguments = [
                 Environment.Argument.isRunningUITests
             ]

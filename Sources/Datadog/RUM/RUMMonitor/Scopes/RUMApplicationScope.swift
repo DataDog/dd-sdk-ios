@@ -42,7 +42,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             rumApplicationID: rumApplicationID,
             sessionID: .nullUUID,
             activeViewID: nil,
-            activeViewURI: nil,
+            activeViewPath: nil,
+            activeViewName: nil,
             activeUserActionID: nil
         )
     }

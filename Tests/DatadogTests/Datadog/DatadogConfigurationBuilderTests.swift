@@ -33,6 +33,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
+            XCTAssertNil(configuration.crashReportingPlugin)
             XCTAssertNil(configuration.datadogEndpoint)
             XCTAssertNil(configuration.customLogsEndpoint)
             XCTAssertNil(configuration.customTracesEndpoint)
@@ -60,6 +61,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
         let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
         let mockRUMActionEvent: RUMActionEvent = .mockRandom()
+        let mockCrashReportingPlugin = CrashReportingPluginMock()
 
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
             _ = builder
@@ -67,6 +69,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .enableLogging(false)
                 .enableTracing(false)
                 .enableRUM(false)
+                .enableCrashReporting(using: mockCrashReportingPlugin)
                 .set(endpoint: .eu)
                 .set(customLogsEndpoint: URL(string: "https://api.custom.logs/")!)
                 .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
@@ -109,6 +112,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertFalse(configuration.loggingEnabled)
             XCTAssertFalse(configuration.tracingEnabled)
             XCTAssertFalse(configuration.rumEnabled)
+            XCTAssertTrue(configuration.crashReportingPlugin === mockCrashReportingPlugin)
             XCTAssertEqual(configuration.datadogEndpoint, .eu)
             XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
             XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)

@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Type writting spans to some destination.
+/// An interface for writing spans to some destination.
 internal protocol SpanOutput {
-    func write(ddspan: DDSpan, finishTime: Date)
+    func write(span: Span)
 }

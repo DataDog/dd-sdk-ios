@@ -108,43 +108,49 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 7
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 7
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
-        XCTAssertEqual(session.viewVisits[0].path, "MenuViewController")
+        XCTAssertEqual(session.viewVisits[0].name, "MenuView")
+        XCTAssertEqual(session.viewVisits[0].path, "Example.RUMTASScreen1ViewController")
         XCTAssertEqual(session.viewVisits[0].actionEvents.count, 3)
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertGreaterThan(session.viewVisits[0].actionEvents[0].action.loadingTime!, 0)
         XCTAssertEqual(session.viewVisits[0].actionEvents[1].action.target?.name, "UIButton")
         XCTAssertEqual(session.viewVisits[0].actionEvents[2].action.target?.name, "UIButton(Show UITableView)")
 
-        XCTAssertEqual(session.viewVisits[1].path, "TableViewController")
+        XCTAssertEqual(session.viewVisits[1].name, "TableView")
+        XCTAssertEqual(session.viewVisits[1].path, "Example.RUMTASTableViewController")
         XCTAssertEqual(session.viewVisits[1].actionEvents.count, 1)
         XCTAssertEqual(
             session.viewVisits[1].actionEvents[0].action.target?.name,
             "UITableViewCell(Item 4)"
         )
 
-        XCTAssertEqual(session.viewVisits[2].path, "MenuViewController")
+        XCTAssertEqual(session.viewVisits[2].name, "MenuView")
+        XCTAssertEqual(session.viewVisits[2].path, "Example.RUMTASScreen1ViewController")
         XCTAssertEqual(session.viewVisits[2].actionEvents.count, 1)
         XCTAssertEqual(session.viewVisits[2].actionEvents[0].action.target?.name, "UIButton(Show UICollectionView)")
 
-        XCTAssertEqual(session.viewVisits[3].path, "CollectionViewController")
+        XCTAssertEqual(session.viewVisits[3].name, "CollectionView")
+        XCTAssertEqual(session.viewVisits[3].path, "Example.RUMTASCollectionViewController")
         XCTAssertEqual(session.viewVisits[3].actionEvents.count, 1)
         XCTAssertEqual(
             session.viewVisits[3].actionEvents[0].action.target?.name,
             "Example.RUMTASCollectionViewCell(Item 14)"
         )
 
-        XCTAssertEqual(session.viewVisits[4].path, "MenuViewController")
+        XCTAssertEqual(session.viewVisits[4].name, "MenuView")
+        XCTAssertEqual(session.viewVisits[4].path, "Example.RUMTASScreen1ViewController")
         XCTAssertEqual(session.viewVisits[4].actionEvents.count, 1)
         XCTAssertEqual(session.viewVisits[4].actionEvents[0].action.target?.name, "UIButton(Show various UIControls)")
 
-        XCTAssertEqual(session.viewVisits[5].path, "UIControlsViewController")
+        XCTAssertEqual(session.viewVisits[5].name, "UIControlsView")
+        XCTAssertEqual(session.viewVisits[5].path, "Example.RUMTASVariousUIControllsViewController")
         XCTAssertEqual(session.viewVisits[5].actionEvents.count, 7)
         let targetNames = session.viewVisits[5].actionEvents.compactMap { $0.action.target?.name }
         XCTAssertEqual(targetNames[0], "UITextField")
@@ -155,7 +161,8 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(targetNames[5], "_UIButtonBarButton(Share)")
         XCTAssert(targetNames[6].contains("_UIButtonBarButton"), "Target name should be either _UIButtonBarButton (iOS 13) or _UIButtonBarButton(BackButton) (iOS 14)") // back button
 
-        XCTAssertEqual(session.viewVisits[6].path, "MenuViewController")
+        XCTAssertEqual(session.viewVisits[6].name, "MenuView")
+        XCTAssertEqual(session.viewVisits[6].path, "Example.RUMTASScreen1ViewController")
         XCTAssertEqual(session.viewVisits[6].actionEvents.count, 0)
     }
 }

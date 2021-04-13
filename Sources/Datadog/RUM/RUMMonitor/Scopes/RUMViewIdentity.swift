@@ -40,7 +40,9 @@ extension UIViewController: RUMViewIdentifiable {
         return RUMViewIdentity(object: self)
     }
 
-    var defaultViewPath: String { "\(type(of: self))" }
+    var defaultViewPath: String {
+        return canonicalClassName
+    }
 }
 
 /// Extends `String` with the ability to identify the RUM View.

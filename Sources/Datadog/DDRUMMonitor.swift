@@ -18,9 +18,24 @@ public class DDRUMMonitor {
     ///   - viewController: the instance of `UIViewController` representing this View.
     ///   - path: the View path used for RUM Explorer. If not provided, the `UIViewController` class name will be used.
     ///   - attributes: custom attributes to attach to the View.
+    @available(*, deprecated, message: """
+    This API is replaced by `startView(viewController:name:attributes)`.
+    Refer to the new API comment for details.
+    """)
     public func startView(
         viewController: UIViewController,
-        path: String? = nil,
+        path: String?,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
+    /// Notifies that the View starts being presented to the user.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this View.
+    ///   - name: the View name used for RUM Explorer. If not provided, the `viewController` class name will be used.
+    ///   - attributes: custom attributes to attach to the View.
+    public func startView(
+        viewController: UIViewController,
+        name: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
@@ -36,11 +51,11 @@ public class DDRUMMonitor {
     /// Notifies that the View starts being presented to the user.
     /// - Parameters:
     ///   - key: a `String` value identifying this View. It must match the `key` passed later to `stopView(key:attributes:)`.
-    ///   - path: the View path used for RUM Explorer. If not provided, the `key` name will be used.
+    ///   - name: the View name used for RUM Explorer. If not provided, the `key` name will be used.
     ///   - attributes: custom attributes to attach to the View.
     public func startView(
         key: String,
-        path: String? = nil,
+        name: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 

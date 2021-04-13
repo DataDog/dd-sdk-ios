@@ -24,7 +24,8 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         // When
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListener.mockAny()
         )
         defer {
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
@@ -42,7 +43,8 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListener.mockAny()
         )
         defer {
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()

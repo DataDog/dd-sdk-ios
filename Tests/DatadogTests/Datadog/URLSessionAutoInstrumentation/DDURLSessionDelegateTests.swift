@@ -194,7 +194,8 @@ class DDURLSessionDelegateTests: XCTestCase {
         // given
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListener.mockAny()
         )
         defer { URLSessionAutoInstrumentation.instance = nil }
 
@@ -212,7 +213,8 @@ class DDURLSessionDelegateTests: XCTestCase {
         // given
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListener.mockAny()
         )
         defer { URLSessionAutoInstrumentation.instance = nil }
 

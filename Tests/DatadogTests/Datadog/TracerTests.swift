@@ -630,6 +630,7 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertStatus(equals: "error")
         errorLogMatcher.assertValue(forKey: "event", equals: "error")
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
+        errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
         errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
@@ -665,6 +666,7 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertStatus(equals: "error")
         errorLogMatcher.assertValue(forKey: "event", equals: "error")
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
+        errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
         errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
@@ -706,6 +708,7 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertStatus(equals: "error")
         errorLogMatcher.assertValue(forKey: "event", equals: "error")
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Tracer - 1")
+        errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
         errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
@@ -742,6 +745,7 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertStatus(equals: "error")
         errorLogMatcher.assertValue(forKey: "event", equals: "error")
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "ErrorMock")
+        errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
         errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
         errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
@@ -798,7 +802,7 @@ class TracerTests: XCTestCase {
         span.finish()
 
         // then
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         try XCTAssertTrue(
             XCTUnwrap(output.recordedLog?.message)
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
@@ -1043,7 +1047,7 @@ class TracerTests: XCTestCase {
         span.log(fields: ["bar": "bizz"])
 
         // then
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 
         try Datadog.deinitializeOrThrow()
@@ -1098,7 +1102,7 @@ class TracerTests: XCTestCase {
 
         // Then
         tracingHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: true))
-        XCTAssertEqual(output.recordedLog?.level, .warn)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
             """

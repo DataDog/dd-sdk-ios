@@ -23,7 +23,7 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Integration"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "NO">
@@ -98,7 +98,12 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
-            value = "RUMResourcesScenario"
+            value = "RUMURLSessionResourcesScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMNSURLSessionResourcesScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -114,6 +119,16 @@
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "RUMScrubbingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "CrashReportingCollectOrSendWithRUMScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "CrashReportingCollectOrSendWithLoggingScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>

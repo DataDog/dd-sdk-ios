@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="svZ-CV-H7D">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Crash Reporting View Controller-->
+        <scene sceneID="GCQ-MZ-FBH">
+            <objects>
+                <viewController id="svZ-CV-H7D" customClass="CrashReportingViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="4zU-Jd-E7f">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="06E-eL-L8c">
+                                <rect key="frame" x="8" y="433" width="398" height="30"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending crash report... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RxJ-Ne-sYn">
+                                        <rect key="frame" x="0.0" y="0.0" width="398" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="pWR-S0-8GJ"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" red="0.4705848098" green="0.27062672380000002" blue="0.70971673729999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="vOa-RY-Cv0"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="06E-eL-L8c" firstAttribute="leading" secondItem="vOa-RY-Cv0" secondAttribute="leading" constant="8" id="8Fm-NV-S1D"/>
+                            <constraint firstItem="06E-eL-L8c" firstAttribute="centerY" secondItem="4zU-Jd-E7f" secondAttribute="centerY" id="pvp-LH-AvX"/>
+                            <constraint firstItem="vOa-RY-Cv0" firstAttribute="trailing" secondItem="06E-eL-L8c" secondAttribute="trailing" constant="8" id="qa4-Mp-lG8"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="nWs-H8-pOo"/>
+                    <connections>
+                        <outlet property="sendingCrashReportLabel" destination="RxJ-Ne-sYn" id="OxV-Uu-mOI"/>
+                        <outlet property="verticalStackView" destination="06E-eL-L8c" id="f8M-bP-xim"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="a6m-Nu-QWl" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1026" y="1233"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

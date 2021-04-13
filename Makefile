@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.6.0
+DD_SDK_SWIFT_TESTING_VERSION = 0.7.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -14,6 +14,19 @@ DD_SDK_SWIFT_TESTING_ENV=ci\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
+define DD_SDK_BASE_XCCONFIG
+// To enable Internal Monitoring APIs:\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING\n
+\n
+// To build only active architecture for all configurations.\n
+// TODO: RUMM-1200 We can perhaps remove this fix when carthage supports pre-build xcframeworks.\n
+//		 The only "problematic" dependency is `CrashReporter.xcframework` which doesn't produce\n
+//		 the `arm64-simulator` architecture when compiled from source. Its pre-build `CrashReporter.xcframework`\n
+//		 available since `1.8.0` contains the `ios-arm64_i386_x86_64-simulator` slice and should link fine in all configurations.\n
+ONLY_ACTIVE_ARCH = YES
+endef
+export DD_SDK_BASE_XCCONFIG
+
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
@@ -21,6 +34,7 @@ dependencies:
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
+		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 		@brew list gh &>/dev/null || brew install gh
@@ -28,7 +42,7 @@ ifeq (${ci}, true)
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
-		@unzip instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
+		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
 endif
 
@@ -88,5 +102,12 @@ ship:
 		pod spec lint --allow-warnings DatadogSDK.podspec
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
 		pod repo update
-		pod spec lint --allow-warnings DatadogSDKObjc.podspec
-		pod trunk push --allow-warnings DatadogSDKObjc.podspec
+		./tools/standalone-binary-distro/make_distro_builds.sh
+		@echo "⚠️ DatadogSDKObjc.podspec needs to be tried after ~1 hour:"
+		@echo "pod spec lint --allow-warnings DatadogSDKObjc.podspec"
+		@echo "pod trunk push --allow-warnings DatadogSDKObjc.podspec"
+
+dogfood:
+		@brew list gh &>/dev/null || brew install gh
+		@pip install GitPython==3.1.14
+		@./tools/dogfooding/dogfood.py

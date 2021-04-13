@@ -6,7 +6,7 @@
 
 import XCTest
 @testable import Datadog
-import DatadogObjc
+@testable import DatadogObjc
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDDatadogTests: XCTestCase {
@@ -74,17 +74,31 @@ class DDDatadogTests: XCTestCase {
             trackingConsent: randomConsent().objc,
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
-        let userInfo = Datadog.instance?.userInfoProvider
+        let userInfo = try XCTUnwrap(Datadog.instance?.userInfoProvider)
 
-        DDDatadog.setUserInfo(id: "id", name: "name", email: "email")
-        XCTAssertEqual(userInfo?.value.id, "id")
-        XCTAssertEqual(userInfo?.value.name, "name")
-        XCTAssertEqual(userInfo?.value.email, "email")
+        DDDatadog.setUserInfo(
+            id: "id",
+            name: "name",
+            email: "email",
+            extraInfo: [
+                "attribute-int": 42,
+                "attribute-double": 42.5,
+                "attribute-string": "string value"
+            ]
+        )
+        XCTAssertEqual(userInfo.value.id, "id")
+        XCTAssertEqual(userInfo.value.name, "name")
+        XCTAssertEqual(userInfo.value.email, "email")
+        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: AnyEncodable])
+        XCTAssertEqual(extraInfo["attribute-int"]?.value as? Int, 42)
+        XCTAssertEqual(extraInfo["attribute-double"]?.value as? Double, 42.5)
+        XCTAssertEqual(extraInfo["attribute-string"]?.value as? String, "string value")
 
-        DDDatadog.setUserInfo(id: nil, name: nil, email: nil)
-        XCTAssertNil(userInfo?.value.id)
-        XCTAssertNil(userInfo?.value.name)
-        XCTAssertNil(userInfo?.value.email)
+        DDDatadog.setUserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+        XCTAssertNil(userInfo.value.id)
+        XCTAssertNil(userInfo.value.name)
+        XCTAssertNil(userInfo.value.email)
+        XCTAssertTrue(userInfo.value.extraInfo.isEmpty)
 
         try Datadog.deinitializeOrThrow()
     }

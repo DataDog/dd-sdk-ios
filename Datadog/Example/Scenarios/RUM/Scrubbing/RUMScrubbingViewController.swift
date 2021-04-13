@@ -15,7 +15,7 @@ internal class RUMScrubbingViewController: UIViewController {
     }
 
     private func simulateRUMView() {
-        Global.rum.startView(viewController: self, path: "ViewName (sensitive detail)")
+        Global.rum.startView(viewController: self, name: "ViewName (sensitive detail)")
 
         simulateRUMUserAction()
         simulateRUMError()

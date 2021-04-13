@@ -29,10 +29,10 @@ class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
 
 class DDRUMViewTests: XCTestCase {
     func testItCreatesSwiftRUMView() {
-        let objcRUMView = DDRUMView(path: "path", attributes: ["foo": "bar"])
-        XCTAssertEqual(objcRUMView.swiftView.path, "path")
+        let objcRUMView = DDRUMView(name: "name", attributes: ["foo": "bar"])
+        XCTAssertEqual(objcRUMView.swiftView.name, "name")
         XCTAssertEqual((objcRUMView.swiftView.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
-        XCTAssertEqual(objcRUMView.path, "path")
+        XCTAssertEqual(objcRUMView.name, "name")
         XCTAssertEqual((objcRUMView.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
     }
 }
@@ -99,10 +99,11 @@ class DDRUMMonitorTests: XCTestCase {
         defer { RUMFeature.instance = nil }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let mockView = createMockView(viewControllerClassName: "FirstViewController")
 
-        objcRUMMonitor.startView(viewController: mockView, path: "FirstView", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
-        objcRUMMonitor.startView(key: "view2", path: "SecondView", attributes: ["event-attribute1": "bar1"])
+        objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
         objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 5)
@@ -114,9 +115,13 @@ class DDRUMMonitorTests: XCTestCase {
         let event2: RUMViewEvent = try viewEvents[1].model()
         let event3: RUMViewEvent = try viewEvents[2].model()
         let event4: RUMViewEvent = try viewEvents[3].model()
-        XCTAssertEqual(event1.view.url, "FirstView")
-        XCTAssertEqual(event2.view.url, "FirstView")
+        XCTAssertEqual(event1.view.name, "FirstView")
+        XCTAssertEqual(event1.view.url, "FirstViewController")
+        XCTAssertEqual(event2.view.name, "FirstView")
+        XCTAssertEqual(event2.view.url, "FirstViewController")
+        XCTAssertEqual(event3.view.name, "SecondView")
         XCTAssertEqual(event3.view.url, "SecondView")
+        XCTAssertEqual(event4.view.name, "SecondView")
         XCTAssertEqual(event4.view.url, "SecondView")
         XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
@@ -130,7 +135,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
-        objcRUMMonitor.startView(viewController: mockView, path: "SomeView", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addTiming(name: "timing")
         objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
 
@@ -141,8 +146,8 @@ class DDRUMMonitorTests: XCTestCase {
 
         let event1: RUMViewEvent = try viewEvents[0].model()
         let event2: RUMViewEvent = try viewEvents[1].model()
-        XCTAssertEqual(event1.view.url, "SomeView")
-        XCTAssertEqual(event2.view.url, "SomeView")
+        XCTAssertEqual(event1.view.name, "SomeView")
+        XCTAssertEqual(event2.view.name, "SomeView")
         XCTAssertEqual(try viewEvents.first?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute2"), "foo2")
@@ -159,7 +164,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
-        objcRUMMonitor.startView(viewController: mockView, path: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
         objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addResourceMetrics(
@@ -212,7 +217,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
-        objcRUMMonitor.startView(viewController: mockView, path: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
         let request: URLRequest = .mockAny()
         let error = ErrorMock("error details")
@@ -237,7 +242,8 @@ class DDRUMMonitorTests: XCTestCase {
         let event1Matcher = errorEvents[0]
         let event1: RUMErrorEvent = try event1Matcher.model()
         XCTAssertEqual(event1.error.resource?.url, request.url!.absoluteString)
-        XCTAssertEqual(event1.error.message, "ErrorMock")
+        XCTAssertEqual(event1.error.type, "ErrorMock")
+        XCTAssertEqual(event1.error.message, "error details")
         XCTAssertEqual(event1.error.source, .network)
         XCTAssertEqual(event1.error.stack, "error details")
         XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
@@ -255,7 +261,8 @@ class DDRUMMonitorTests: XCTestCase {
         let event3Matcher = errorEvents[2]
         let event3: RUMErrorEvent = try event3Matcher.model()
         XCTAssertNil(event3.error.resource)
-        XCTAssertEqual(event3.error.message, "ErrorMock")
+        XCTAssertEqual(event3.error.type, "ErrorMock")
+        XCTAssertEqual(event3.error.message, "error details")
         XCTAssertEqual(event3.error.source, .custom)
         XCTAssertEqual(event3.error.stack, "error details")
         XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
@@ -278,7 +285,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
-        objcRUMMonitor.startView(viewController: mockView, path: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
         objcRUMMonitor.addUserAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
 
@@ -315,7 +322,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
         objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
 
-        objcRUMMonitor.startView(viewController: mockView, path: "SomeView", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["event-attribute1": "foo1"])
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
 

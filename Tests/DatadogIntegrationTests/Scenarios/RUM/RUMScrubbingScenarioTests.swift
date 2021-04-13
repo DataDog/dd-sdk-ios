@@ -21,12 +21,12 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Session with expected number of RUM Errors
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.last?.errorEvents.count == 2
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.last?.errorEvents.count == 2
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         XCTAssertEqual(session.viewVisits.count, 1)
         let viewVisit = session.viewVisits[0]
@@ -34,12 +34,14 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(viewVisit.viewEvents.count, 0)
         viewVisit.viewEvents.forEach { event in
             XCTAssertTrue(event.view.url.isRedacted)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
         }
 
         XCTAssertGreaterThan(viewVisit.errorEvents.count, 0)
         viewVisit.errorEvents.forEach { event in
             XCTAssertTrue(event.error.message.isRedacted)
             XCTAssertTrue(event.view.url.isRedacted)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
             XCTAssertTrue(event.error.resource?.url.isRedacted ?? true)
             XCTAssertTrue(event.error.stack?.isRedacted ?? true)
         }
@@ -47,11 +49,13 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(viewVisit.resourceEvents.count, 0)
         viewVisit.resourceEvents.forEach { event in
             XCTAssertTrue(event.resource.url.isRedacted)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
         }
 
         XCTAssertGreaterThan(viewVisit.actionEvents.count, 0)
         viewVisit.actionEvents.forEach { event in
             XCTAssertTrue(event.action.target?.name.isRedacted ?? true)
+            XCTAssertTrue(event.view.name?.isRedacted == true)
         }
     }
 }

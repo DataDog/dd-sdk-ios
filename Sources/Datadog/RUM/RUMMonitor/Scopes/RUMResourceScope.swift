@@ -13,7 +13,7 @@ internal class RUMResourceScope: RUMScope {
     private let dependencies: RUMScopeDependencies
 
     /// This Resource's UUID.
-    private let resourceUUID: RUMUUID
+    let resourceUUID: RUMUUID
     /// The name used to identify this Resource.
     private let resourceKey: String
     /// Resource attributes.
@@ -40,6 +40,11 @@ internal class RUMResourceScope: RUMScope {
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     private let spanContext: RUMSpanContext?
 
+    /// Callback called when a `RUMResourceEvent` is submitted for storage.
+    private let onResourceEventSent: () -> Void
+    /// Callback called when a `RUMErrorEvent` is submitted for storage.
+    private let onErrorEventSent: () -> Void
+
     init(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
@@ -51,7 +56,9 @@ internal class RUMResourceScope: RUMScope {
         httpMethod: RUMMethod,
         isFirstPartyResource: Bool?,
         resourceKindBasedOnRequest: RUMResourceType?,
-        spanContext: RUMSpanContext?
+        spanContext: RUMSpanContext?,
+        onResourceEventSent: @escaping () -> Void,
+        onErrorEventSent: @escaping () -> Void
     ) {
         self.context = context
         self.dependencies = dependencies
@@ -65,6 +72,8 @@ internal class RUMResourceScope: RUMScope {
         self.isFirstPartyResource = isFirstPartyResource
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
+        self.onResourceEventSent = onResourceEventSent
+        self.onErrorEventSent = onErrorEventSent
     }
 
     // MARK: - RUMScope
@@ -72,10 +81,14 @@ internal class RUMResourceScope: RUMScope {
     func process(command: RUMCommand) -> Bool {
         switch command {
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
-            sendResourceEvent(on: command)
+            if sendResourceEvent(on: command) {
+                onResourceEventSent()
+            }
             return false
         case let command as RUMStopResourceWithErrorCommand where command.resourceKey == resourceKey:
-            sendErrorEvent(on: command)
+            if sendErrorEvent(on: command) {
+                onErrorEventSent()
+            }
             return false
         case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
             addMetrics(from: command)
@@ -92,7 +105,7 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - Sending RUM Events
 
-    private func sendResourceEvent(on command: RUMStopResourceCommand) {
+    private func sendResourceEvent(on command: RUMStopResourceCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let resourceStartTime: Date
@@ -173,16 +186,20 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+            return true
+        }
+        return false
     }
 
-    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) {
+    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMErrorEvent(
@@ -204,20 +221,24 @@ internal class RUMResourceScope: RUMScope {
                 ),
                 source: command.errorSource.toRUMDataFormat,
                 stack: command.stack,
-                type: command.errorMessage
+                type: command.errorType
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                name: context.activeViewName,
                 referrer: nil,
-                url: context.activeViewURI ?? ""
+                url: context.activeViewPath ?? ""
             )
         )
 
-        let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes)
-        dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+            dependencies.eventOutput.write(rumEvent: event)
+            return true
+        }
+        return false
     }
 
     // MARK: - Resource provider helpers
