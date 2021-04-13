@@ -14,9 +14,10 @@ DD_SDK_SWIFT_TESTING_ENV=ci\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
+# Installs tools and dependencies with homebrew.
+# Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		@brew update
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
