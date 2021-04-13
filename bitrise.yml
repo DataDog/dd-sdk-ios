@@ -30,7 +30,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            echo "CI run"
+            make dependencies ci=${CI}
 
   _deploy_artifacts:
     description: |-
@@ -72,14 +72,14 @@ workflows:
             #!/usr/bin/env bash
             set -e
             ./tools/license/check-license.sh
-    # - script:
-    #     title: Verify RUM data models
-    #     is_always_run: true
-    #     inputs:
-    #     - content: |-
-    #         #!/usr/bin/env zsh
-    #         set -e
-    #         make rum-models-verify ci=${CI}
+    - script:
+        title: Verify RUM data models
+        is_always_run: true
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            make rum-models-verify ci=${CI}
 
   run_unit_tests:
     description: |-

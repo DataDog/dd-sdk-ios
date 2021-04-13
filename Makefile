@@ -29,7 +29,7 @@ export DD_SDK_BASE_XCCONFIG
 
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		@brew update
+		#@brew update
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
