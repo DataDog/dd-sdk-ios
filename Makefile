@@ -27,9 +27,10 @@ ONLY_ACTIVE_ARCH = YES
 endef
 export DD_SDK_BASE_XCCONFIG
 
+# Installs tools and dependencies with homebrew.
+# Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		@brew update
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
