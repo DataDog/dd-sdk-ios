@@ -18,6 +18,7 @@ internal struct FeaturesConfiguration {
         let serviceName: String
         let environment: String
         let performance: PerformancePreset
+        let source: String
     }
 
     struct Logging {
@@ -110,6 +111,8 @@ extension FeaturesConfiguration {
         var tracesEndpoint = configuration.tracesEndpoint
         var rumEndpoint = configuration.rumEndpoint
 
+        let source = (configuration.additionalConfiguration["_dd.source"] as? String) ?? Datadog.Constants.ddsource
+
         if let datadogEndpoint = configuration.datadogEndpoint {
             // If `.set(endpoint:)` API was used, it should override the values
             // set by deprecated `.set(<feature>Endpoint:)` APIs.
@@ -143,7 +146,8 @@ extension FeaturesConfiguration {
                 batchSize: configuration.batchSize,
                 uploadFrequency: configuration.uploadFrequency,
                 bundleType: appContext.bundleType
-            )
+            ),
+            source: source
         )
 
         if configuration.loggingEnabled {

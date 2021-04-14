@@ -9,10 +9,10 @@ import XCTest
 
 class DataUploadURLProviderTests: XCTestCase {
     func testDDSourceQueryItem() {
-        let item: UploadURLProvider.QueryItemProvider = .ddsource()
+        let item: UploadURLProvider.QueryItemProvider = .ddsource(source: "abc")
 
         XCTAssertEqual(item.value().name, "ddsource")
-        XCTAssertEqual(item.value().value, "ios")
+        XCTAssertEqual(item.value().value, "abc")
     }
 
     func testItBuildsValidURLUsingNoQueryItems() throws {
@@ -27,11 +27,11 @@ class DataUploadURLProviderTests: XCTestCase {
     func testItBuildsValidURLUsingAllQueryItems() throws {
         let urlProvider = UploadURLProvider(
             urlWithClientToken: URL(string: "https://api.example.com/v1/endpoint/abc")!,
-            queryItemProviders: [.ddsource(), .ddtags(tags: ["abc:def"])]
+            queryItemProviders: [.ddsource(source: "abc"), .ddtags(tags: ["abc:def"])]
         )
 
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&ddtags=abc:def"))
-        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=ios&ddtags=abc:def"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=abc&ddtags=abc:def"))
+        XCTAssertEqual(urlProvider.url, URL(string: "https://api.example.com/v1/endpoint/abc?ddsource=abc&ddtags=abc:def"))
     }
 
     func testItEscapesWhitespacesInQueryItems() throws {

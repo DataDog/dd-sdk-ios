@@ -5,10 +5,10 @@
  */
 
 import XCTest
-import _Datadog_Private
+import Datadog
 
 class ObjcExceptionHandlerTests: XCTestCase {
-    private let exceptionHandler = ObjcExceptionHandler()
+    private let exceptionHandler = __dd_private_ObjcExceptionHandler()
 
     func testGivenNonThrowingCode_itDoesNotThrow() throws {
         var counter = 0

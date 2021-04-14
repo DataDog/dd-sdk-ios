@@ -6,6 +6,18 @@
 
 import XCTest
 import Datadog
+import DatadogObjc
+
+@objc
+public class SubDDNSURLSessionDelegate: DDNSURLSessionDelegate {
+    override public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        super.urlSession(session, task: task, didCompleteWithError: error)
+    }
+
+    override public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        super.urlSession(session, task: task, didFinishCollecting: metrics)
+    }
+}
 
 internal final class SubDDURLSessionDelegate: DDURLSessionDelegate {
     let property: String
@@ -22,5 +34,6 @@ class DDURLSessionDelegateAsSuperclassTests: XCTestCase {
     func testSubclassability() {
         // Success: tests compile, failure: compilation error
         _ = SubDDURLSessionDelegate()
+        _ = SubDDNSURLSessionDelegate()
     }
 }

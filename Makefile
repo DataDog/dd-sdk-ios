@@ -27,9 +27,10 @@ ONLY_ACTIVE_ARCH = YES
 endef
 export DD_SDK_BASE_XCCONFIG
 
+# Installs tools and dependencies with homebrew.
+# Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
 		@echo "⚙️  Installing dependencies..."
-		@brew update
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS --use-xcframeworks
@@ -92,6 +93,7 @@ bump:
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.src > DatadogSDK.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKAlamofireExtension.podspec.src > DatadogSDKAlamofireExtension.podspec; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
@@ -100,8 +102,10 @@ ship:
 		pod spec lint --allow-warnings DatadogSDK.podspec
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
 		pod repo update
-		pod spec lint --allow-warnings DatadogSDKObjc.podspec
-		pod trunk push --allow-warnings DatadogSDKObjc.podspec
+		./tools/standalone-binary-distro/make_distro_builds.sh
+		@echo "⚠️ DatadogSDKObjc.podspec needs to be tried after ~1 hour:"
+		@echo "pod spec lint --allow-warnings DatadogSDKObjc.podspec"
+		@echo "pod trunk push --allow-warnings DatadogSDKObjc.podspec"
 
 dogfood:
 		@brew list gh &>/dev/null || brew install gh

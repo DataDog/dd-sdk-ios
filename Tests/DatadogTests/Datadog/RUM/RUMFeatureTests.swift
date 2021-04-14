@@ -33,7 +33,8 @@ class RUMFeatureTests: XCTestCase {
                     applicationName: "FoobarApp",
                     applicationVersion: "2.1.0",
                     serviceName: "service-name",
-                    environment: "environment-name"
+                    environment: "environment-name",
+                    source: "abc"
                 )
             ),
             dependencies: .mockWith(
@@ -52,7 +53,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(
             request.url?.query,
             """
-            ddsource=ios&ddtags=service:service-name,version:2.1.0,sdk_version:\(sdkVersion),env:environment-name
+            ddsource=abc&ddtags=service:service-name,version:2.1.0,sdk_version:\(sdkVersion),env:environment-name
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")

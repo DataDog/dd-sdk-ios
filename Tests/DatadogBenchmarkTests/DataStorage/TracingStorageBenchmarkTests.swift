@@ -87,6 +87,7 @@ class TracingStorageBenchmarkTests: XCTestCase {
             startTime: Date(),
             duration: Double.random(in: 0.0..<1.0),
             isError: false,
+            source: "ios",
             tracerVersion: "0.0.0",
             applicationVersion: "0.0.0",
             networkConnectionInfo: NetworkConnectionInfo(
