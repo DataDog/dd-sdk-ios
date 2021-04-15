@@ -21,19 +21,34 @@ OUT_FILENAME="Datadog-$SDK_VERSION.zip"
 # create temporary xcconfig for carthage build
 set -euo pipefail
 xcconfig=$(mktemp /tmp/static.xcconfig.XXXXXX)
-trap 'rm -f "$xcconfig" ;' INT TERM HUP EXIT
-echo "BUILD_LIBRARY_FOR_DISTRIBUTION = YES" >> $xcconfig
 export XCODE_XCCONFIG_FILE="$xcconfig"
 
-# clear existing carthage artifacts
-rm -rf Carthage/
+# Prepares the repository folder for building xcframeworks.
+prepare() {
+   echo "BUILD_LIBRARY_FOR_DISTRIBUTION = YES" >> $xcconfig
+   # carthage may try to build schemes in dependency-manager-tests folder, so we hide it temporarily
+   mv dependency-manager-tests/ .dependency-manager-tests/ 
+   rm -rf Carthage/
+}
 
-# fetch 3rd party deps via carthage
-echo "carthage bootstrap with no build..."
-carthage bootstrap --no-build
+# Resets repository changes made in 'prepare()'
+cleanup() {
+   rm -f "$xcconfig"
+   mv .dependency-manager-tests/ dependency-manager-tests/
+}
 
-echo "carthage build..."
-carthage build --platform iOS --use-xcframeworks --no-skip-current
+build_xcframeworks() {
+  trap cleanup INT TERM HUP EXIT
+   echo "carthage bootstrap with no build..."
+   carthage bootstrap --no-build
+   echo "carthage build..."
+   carthage build --platform iOS --use-xcframeworks --no-skip-current
+   trap - INT TERM HUP EXIT
+}
+
+prepare
+build_xcframeworks
+cleanup
 
 # zip artifacts
 cd Carthage/Build/
