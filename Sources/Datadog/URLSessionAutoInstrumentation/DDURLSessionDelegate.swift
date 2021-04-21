@@ -12,8 +12,9 @@ import Foundation
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
     /// Datadog delegate object.
     /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
-    // - `func urlSession(_:task:didFinishCollecting:)`
-    // - `func urlSession(_:task:didCompleteWithError:)`
+    /// - `func urlSession(_:task:didFinishCollecting:)`
+    /// - `func urlSession(_:task:didCompleteWithError:)`
+    /// - `func urlSession(_:dataTask:didReceive:)`
     var ddURLSessionDelegate: DDURLSessionDelegate { get }
 }
 
@@ -22,7 +23,7 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
-open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionDelegateProviding {
+open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     public var ddURLSessionDelegate: DDURLSessionDelegate {
         return self
     }
@@ -75,5 +76,11 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionD
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
 
         interceptor?.taskCompleted(task: task, error: error)
+    }
+
+    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
+
+        interceptor?.taskReceivedData(task: dataTask, data: data)
     }
 }

@@ -11,6 +11,7 @@ import XCTest
 private class DDURLSessionDelegateMock: DDURLSessionDelegate {
     var calledDidFinishCollecting = false
     var calledDidCompleteWithError = false
+    var calledDidReceiveData = false
 
     override func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         calledDidFinishCollecting = true
@@ -18,6 +19,10 @@ private class DDURLSessionDelegateMock: DDURLSessionDelegate {
 
     override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         calledDidCompleteWithError = true
+    }
+
+    override func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        calledDidReceiveData = true
     }
 }
 
@@ -39,8 +44,10 @@ class DDNSURLSessionDelegateTests: XCTestCase {
 
         objcDelegate.urlSession(.shared, task: .mockAny(), didFinishCollecting: .mockAny())
         objcDelegate.urlSession(.shared, task: .mockAny(), didCompleteWithError: ErrorMock())
+        objcDelegate.urlSession(.shared, dataTask: URLSessionDataTask(), didReceive: .mockAny())
 
         XCTAssertTrue(swiftDelegate.calledDidFinishCollecting)
         XCTAssertTrue(swiftDelegate.calledDidCompleteWithError)
+        XCTAssertTrue(swiftDelegate.calledDidReceiveData)
     }
 }

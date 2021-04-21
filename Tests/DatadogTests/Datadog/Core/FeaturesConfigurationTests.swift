@@ -467,6 +467,54 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    func testWhenURLSessionAutoinstrumentationEnabled_thenRUMAttributesProviderCanBeConfigured() throws {
+        // When
+        let configurationWithAttributesProvider = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: .random(),
+                rumEnabled: true,
+                firstPartyHosts: ["foo.com"],
+                rumResourceAttributesProvider: { _, _, _, _ in [:] }
+            ),
+            appContext: .mockAny()
+        )
+        let configurationWithoutAttributesProvider = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingEnabled: .random(),
+                rumEnabled: true,
+                firstPartyHosts: ["foo.com"],
+                rumResourceAttributesProvider: nil
+            ),
+            appContext: .mockAny()
+        )
+
+        // Then
+        XCTAssertNotNil(configurationWithAttributesProvider.urlSessionAutoInstrumentation?.rumAttributesProvider)
+        XCTAssertNil(configurationWithoutAttributesProvider.urlSessionAutoInstrumentation?.rumAttributesProvider)
+    }
+
+    func testGivenURLSessionAutoinstrumentationDisabled_whenRUMAttributesProviderIsSet_itPrintsConsoleWarning() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        _ = try FeaturesConfiguration(
+            configuration: .mockWith(
+                firstPartyHosts: nil,
+                rumResourceAttributesProvider: { _, _, _, _ in nil }
+            ),
+            appContext: .mockAny()
+        )
+
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            """
+            🔥 Datadog SDK usage error: To use `.setRUMResourceAttributesProvider(_:)` URLSession tracking must be enabled
+            with `.trackURLSession(firstPartyHosts:)`.
+            """
+        )
+    }
+
     // MARK: - Internal Monitoring Configuration Tests
 
     func testWhenInternalMonitoringIsDisabled() throws {

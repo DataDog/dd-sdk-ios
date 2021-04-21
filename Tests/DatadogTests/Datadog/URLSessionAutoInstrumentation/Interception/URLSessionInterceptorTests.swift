@@ -131,8 +131,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: true),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -182,8 +181,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: false),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -212,8 +210,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -233,8 +230,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
         XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
 
@@ -269,8 +265,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
         Global.sharedTracer = Tracer.mockAny()
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -292,12 +287,23 @@ class URLSessionInterceptorTests: XCTestCase {
         let internalTask: URLSessionTask = .mockWith(request: interceptedInternalRequest, response: .mockAny())
         let alternativeFirstPartyTask: URLSessionTask = .mockWith(request: interceptedCustomFirstPartyRequest, response: .mockAny())
 
+        let firstPartyTaskData: Data = .mockRandom()
+        let thirdPartyTaskData: Data = .mockRandom()
+        let internalTaskData: Data = .mockRandom()
+        let alternativeFirstPartyTaskData: Data = .mockRandom()
+
         // swiftlint:disable opening_brace
         callConcurrently(
             { interceptor.taskCreated(task: firstPartyTask) },
             { interceptor.taskCreated(task: thirdPartyTask) },
             { interceptor.taskCreated(task: internalTask) },
             { interceptor.taskCreated(task: alternativeFirstPartyTask, session: sessionWithCustomFirstPartyHosts) }
+        )
+        callConcurrently(
+            { interceptor.taskReceivedData(task: firstPartyTask, data: firstPartyTaskData) },
+            { interceptor.taskReceivedData(task: thirdPartyTask, data: thirdPartyTaskData) },
+            { interceptor.taskReceivedData(task: internalTask, data: internalTaskData) },
+            { interceptor.taskReceivedData(task: alternativeFirstPartyTask, data: alternativeFirstPartyTaskData) }
         )
         callConcurrently(
             closures: [
@@ -317,38 +323,49 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
+        var interception: TaskInterception
+
         // We compare `URLRequests` by their `.url` in following assertions
         // due to https://openradar.appspot.com/radar?id=4988276943355904
 
         let startedInterceptions = handler.startedInterceptions
         XCTAssertEqual(startedInterceptions.count, 3)
-        XCTAssertTrue(
-            startedInterceptions.contains { $0.request.url == firstPartyRequest.url && $0.spanContext != nil },
-            "Interception should be started and span context should be set for 1st party request."
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == firstPartyRequest.url }, "Interception should be started for 1st party request."
         )
-        XCTAssertTrue(
-            startedInterceptions.contains { $0.request.url == thirdPartyRequest.url && $0.spanContext == nil },
-            "Interception should be started but span context should NOT be set for 3rd party request."
+        XCTAssertNotNil(interception.spanContext, "Span context should be set for 1st party request.")
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == thirdPartyRequest.url }, "Interception should be started for 3rd party request."
         )
-        XCTAssertTrue(
-            startedInterceptions.contains { $0.request.url == alternativeFirstPartyRequest.url && $0.spanContext != nil },
-            "Interception should be started and span context should be set for custom 1st party request."
+        XCTAssertNil(interception.spanContext, "Span context should NOT be set for 3rd party request.")
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == alternativeFirstPartyRequest.url }, "Interception should be started for custom 1st party request."
         )
+        XCTAssertNotNil(interception.spanContext, "Span context should be set for custom 1st party request.")
 
         let completedInterceptions = handler.completedInterceptions
         XCTAssertEqual(completedInterceptions.count, 3)
-        XCTAssertTrue(
-            completedInterceptions.contains { $0.request.url == firstPartyRequest.url && $0.spanContext != nil },
-            "Interception should be completed and span context be set for 1st party request."
+
+        interception = try XCTUnwrap(
+            completedInterceptions.first { $0.request.url == firstPartyRequest.url }, "Interception should be completed for 1st party request."
         )
-        XCTAssertTrue(
-            completedInterceptions.contains { $0.request.url == thirdPartyRequest.url && $0.spanContext == nil },
-            "Interception should be completed but span context should NOT be set for 3rd party request."
+        XCTAssertNotNil(interception.spanContext, "Span context should be set for 1st party request.")
+        XCTAssertEqual(interception.data, firstPartyTaskData, "Data should be recorded for 1st party request.")
+
+        interception = try XCTUnwrap(
+            completedInterceptions.first { $0.request.url == thirdPartyRequest.url }, "Interception should be completed for 3rd party request."
         )
-        XCTAssertTrue(
-            completedInterceptions.contains { $0.request.url == alternativeFirstPartyRequest.url && $0.spanContext != nil },
-            "Interception should be completed and span context be set for custom 1st party request."
+        XCTAssertNil(interception.spanContext, "Span context should NOT be set for 3rd party request.")
+        XCTAssertEqual(interception.data, thirdPartyTaskData, "Data should be recorded for 3rd party request.")
+
+        interception = try XCTUnwrap(
+            completedInterceptions.first { $0.request.url == alternativeFirstPartyRequest.url }, "Interception should be completed for custom 1st party request."
         )
+        XCTAssertNotNil(interception.spanContext, "Span context should be set for custom 1st party request.")
+        XCTAssertEqual(interception.data, alternativeFirstPartyTaskData, "Data should be recorded for custom 1st party request.")
     }
 
     func testGivenOnlyRUMInstrumentationEnabled_whenInterceptingURLSessionTasks_itNotifiesStartAndCompletion() throws {
@@ -369,8 +386,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Given
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
 
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
@@ -382,11 +398,20 @@ class URLSessionInterceptorTests: XCTestCase {
         let thirdPartyTask: URLSessionTask = .mockWith(request: interceptedThirdPartyRequest, response: .mockAny())
         let internalTask: URLSessionTask = .mockWith(request: interceptedInternalRequest, response: .mockAny())
 
+        let firstPartyTaskData: Data = .mockRandom()
+        let thirdPartyTaskData: Data = .mockRandom()
+        let internalTaskData: Data = .mockRandom()
+
         // swiftlint:disable opening_brace
         callConcurrently(
             { interceptor.taskCreated(task: firstPartyTask) },
             { interceptor.taskCreated(task: thirdPartyTask) },
             { interceptor.taskCreated(task: internalTask) }
+        )
+        callConcurrently(
+            { interceptor.taskReceivedData(task: firstPartyTask, data: firstPartyTaskData) },
+            { interceptor.taskReceivedData(task: thirdPartyTask, data: thirdPartyTaskData) },
+            { interceptor.taskReceivedData(task: internalTask, data: internalTaskData) }
         )
         callConcurrently(
             { interceptor.taskCompleted(task: firstPartyTask, error: nil) },
@@ -401,30 +426,39 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.25, handler: nil)
 
+        var interception: TaskInterception
+
         // We compare `URLRequests` by their `.url` in following assertions
         // due to https://openradar.appspot.com/radar?id=4988276943355904
 
         let startedInterceptions = handler.startedInterceptions
         XCTAssertEqual(startedInterceptions.count, 2)
-        XCTAssertTrue(
-            startedInterceptions.contains { $0.request.url == firstPartyRequest.url && $0.spanContext == nil },
-            "Interception should be started but span context should NOT be set for 1st party request."
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == firstPartyRequest.url }, "Interception should be started for 1st party request."
         )
-        XCTAssertTrue(
-            startedInterceptions.contains { $0.request.url == thirdPartyRequest.url && $0.spanContext == nil },
-            "Interception should be started but span context should NOT be set for 3rd party request."
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == thirdPartyRequest.url }, "Interception should be started for 3rd party request."
         )
 
         let completedInterceptions = handler.completedInterceptions
         XCTAssertEqual(completedInterceptions.count, 2)
-        XCTAssertTrue(
-            completedInterceptions.contains { $0.request.url == firstPartyRequest.url && $0.spanContext == nil },
-            "Interception should be completed but span context should NOT be set for 1st party request."
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == firstPartyRequest.url }, "Interception should be completed for 1st party request."
         )
-        XCTAssertTrue(
-            completedInterceptions.contains { $0.request.url == thirdPartyRequest.url && $0.spanContext == nil },
-            "Interception should be completed but span context should NOT be set for 3rd party request."
+        XCTAssertEqual(interception.data, firstPartyTaskData)
+
+        interception = try XCTUnwrap(
+            startedInterceptions.first { $0.request.url == thirdPartyRequest.url }, "Interception should be completed for 3rd party request."
         )
+        XCTAssertEqual(interception.data, thirdPartyTaskData)
+
+        let allInterceptions = startedInterceptions + completedInterceptions
+        allInterceptions.forEach { interception in
+            XCTAssertNil(interception.spanContext, "Span context should NOT be set when Tracing instrumentation is disabled.")
+        }
     }
 
     // MARK: - Thread Safety
@@ -432,24 +466,24 @@ class URLSessionInterceptorTests: XCTestCase {
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let interceptor = URLSessionInterceptor(
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: true),
-            handler: handler,
-            appStateListener: AppStateListener.mockAny()
+            handler: handler
         )
 
         let requests = [firstPartyRequest, thirdPartyRequest, internalRequest]
         let tasks = (0..<10).map { _ in URLSessionTask.mockWith(request: .mockAny(), response: .mockAny()) }
 
-        // swiftlint:disable opening_brace
+        // swiftlint:disable opening_brace trailing_closure
         callConcurrently(
             closures: [
                 { _ = interceptor.modify(request: requests.randomElement()!) },
                 { interceptor.taskCreated(task: tasks.randomElement()!) },
+                { interceptor.taskReceivedData(task: tasks.randomElement()!, data: .mockRandom()) },
                 { interceptor.taskMetricsCollected(task: tasks.randomElement()!, metrics: .mockAny()) },
                 { interceptor.taskCompleted(task: tasks.randomElement()!, error: nil) }
             ],
             iterations: 50
         )
-        // swiftlint:enable opening_brace
+        // swiftlint:enable opening_brace trailing_closure
     }
 
     // MARK: - Helpers

@@ -50,6 +50,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.rumResourceEventMapper)
             XCTAssertNil(configuration.rumActionEventMapper)
             XCTAssertNil(configuration.rumErrorEventMapper)
+            XCTAssertNil(configuration.rumResourceAttributesProvider)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
@@ -82,6 +83,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .setRUMErrorEventMapper { _ in mockRUMErrorEvent }
                 .setRUMResourceEventMapper { _ in mockRUMResourceEvent }
                 .setRUMActionEventMapper { _ in mockRUMActionEvent }
+                .setRUMResourceAttributesProvider { _, _, _, _ in ["foo": "bar"] }
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
                 .set(additionalConfiguration: ["foo": 42, "bar": "something"])
@@ -125,6 +127,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
             XCTAssertEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
             XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
+            XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
