@@ -129,6 +129,7 @@ final class RUMURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
+            .setRUMResourceAttributesProvider(rumResourceAttributesProvider(request:response:data:error:))
 
         super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
     }
@@ -142,6 +143,7 @@ final class RUMNSURLSessionResourcesScenario: URLSessionBaseScenario, TestScenar
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
+            .setRUMResourceAttributesProvider(rumResourceAttributesProvider(request:response:data:error:))
 
         super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
     }
@@ -202,4 +204,42 @@ final class RUMScrubbingScenario: TestScenario {
                 return actionEvent
             }
     }
+}
+
+// MARK: - Helpers
+
+private func rumResourceAttributesProvider(
+    request: URLRequest,
+    response: URLResponse?,
+    data: Data?,
+    error: Error?
+) -> [AttributeKey: AttributeValue]? {
+    /// Apples new-line separated text format to  response headers.
+    func format(headers: [AnyHashable: Any]) -> String {
+        var formattedHeaders: [String] = []
+        headers.forEach { key, value in
+            formattedHeaders.append("\(String(describing: key)): \(String(describing: value))")
+        }
+        return formattedHeaders.joined(separator: "\n")
+    }
+
+    var responseBodyValue: String?
+    var responseHeadersValue: String?
+    var errorDetailsValue: String?
+
+    if let responseHeaders = (response as? HTTPURLResponse)?.allHeaderFields {
+        responseHeadersValue = format(headers: responseHeaders)
+    }
+    if let data = data {
+        responseBodyValue = String(data: data, encoding: .utf8) ?? "<not an UTF-8 data>"
+    }
+    if let error = error {
+        errorDetailsValue = String(describing: error)
+    }
+
+    return [
+        "response.body.truncated" : responseBodyValue.flatMap { String($0.prefix(128)) },
+        "response.headers" : responseHeadersValue,
+        "response.error" : errorDetailsValue,
+    ]
 }
