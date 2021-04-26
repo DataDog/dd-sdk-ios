@@ -18,10 +18,12 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
 
     var onRequestModified: ((URLRequest, URLSession?) -> Void)?
     var onTaskCreated: ((URLSessionTask, URLSession?) -> Void)?
+    var onTaskReceivedData: ((URLSessionTask, Data) -> Void)?
     var onTaskCompleted: ((URLSessionTask, Error?) -> Void)?
     var onTaskMetricsCollected: ((URLSessionTask, URLSessionTaskMetrics) -> Void)?
 
     var tasksCreated: [URLSessionTask] = []
+    var tasksReceivedData: [(task: URLSessionTask, data: Data)] = []
     var tasksCompleted: [(task: URLSessionTask, error: Error?)] = []
     var taskMetrics: [(task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
 
@@ -33,6 +35,15 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
     func taskCreated(task: URLSessionTask, session: URLSession?) {
         tasksCreated.append(task)
         onTaskCreated?(task, session)
+    }
+
+    func taskReceivedData(task: URLSessionTask, data: Data) {
+        if let existingEntryIndex = tasksReceivedData.firstIndex(where: { $0.task === task }) {
+            tasksReceivedData[existingEntryIndex].data.append(data)
+        } else {
+            tasksReceivedData.append((task: task, data: data))
+        }
+        onTaskReceivedData?(task, data)
     }
 
     func taskCompleted(task: URLSessionTask, error: Error?) {

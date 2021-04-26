@@ -78,6 +78,9 @@ internal class URLSessionSwizzler {
                         var taskReference: URLSessionDataTask?
                         let newCompletionHandler: CompletionHandler = { data, response, error in
                             if let task = taskReference { // sanity check, should always succeed
+                                if let data = data {
+                                    interceptor.taskReceivedData(task: task, data: data)
+                                }
                                 interceptor.taskCompleted(task: task, error: error)
                             }
                             completionHandler?(data, response, error)
@@ -137,6 +140,9 @@ internal class URLSessionSwizzler {
                         var taskReference: URLSessionDataTask?
                         let newCompletionHandler: CompletionHandler = { data, response, error in
                             if let task = taskReference { // sanity check, should always succeed
+                                if let data = data {
+                                    interceptor.taskReceivedData(task: task, data: data)
+                                }
                                 interceptor.taskCompleted(task: task, error: error)
                             }
                             completionHandler?(data, response, error)

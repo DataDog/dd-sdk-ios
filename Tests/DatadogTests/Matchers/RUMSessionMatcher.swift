@@ -74,6 +74,11 @@ internal class RUMSessionMatcher {
     /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.
     let viewVisits: [ViewVisit]
 
+    let viewEventMatchers: [RUMEventMatcher]
+    let actionEventMatchers: [RUMEventMatcher]
+    let resourceEventMatchers: [RUMEventMatcher]
+    let errorEventMatchers: [RUMEventMatcher]
+
     private init(sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
         let sessionEventOrderedByTime = try sessionEventMatchers.sorted { firstEvent, secondEvent in
@@ -88,16 +93,20 @@ internal class RUMSessionMatcher {
 
         // Get RUM Events by kind:
 
-        let viewEventMatchers = eventsMatchersByType["view"] ?? []
+        self.viewEventMatchers = eventsMatchersByType["view"] ?? []
+        self.actionEventMatchers = eventsMatchersByType["action"] ?? []
+        self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
+        self.errorEventMatchers = eventsMatchersByType["error"] ?? []
+
         let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
-        let actionEvents: [RUMActionEvent] = try (eventsMatchersByType["action"] ?? [])
+        let actionEvents: [RUMActionEvent] = try actionEventMatchers
             .map { matcher in try matcher.model() }
 
-        let resourceEvents: [RUMResourceEvent] = try (eventsMatchersByType["resource"] ?? [])
+        let resourceEvents: [RUMResourceEvent] = try resourceEventMatchers
             .map { matcher in try matcher.model() }
 
-        let errorEvents: [RUMErrorEvent] = try (eventsMatchersByType["error"] ?? [])
+        let errorEvents: [RUMErrorEvent] = try errorEventMatchers
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually

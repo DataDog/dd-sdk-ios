@@ -178,6 +178,7 @@ extension Datadog {
         private(set) var rumResourceEventMapper: RUMResourceEventMapper?
         private(set) var rumActionEventMapper: RUMActionEventMapper?
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
+        private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -247,6 +248,7 @@ extension Datadog {
                     rumResourceEventMapper: nil,
                     rumActionEventMapper: nil,
                     rumErrorEventMapper: nil,
+                    rumResourceAttributesProvider: nil,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -497,6 +499,19 @@ extension Datadog {
             /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
             public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
                 configuration.rumErrorEventMapper = mapper
+                return self
+            }
+
+            /// Sets a closure to provide custom attributes for intercepted RUM Resources.
+            ///
+            /// The `provider` closure is called for each `URLSession` task intercepted by the SDK (each automatically collected RUM Resource).
+            /// The closure is called with session task information (`URLRequest`, `URLResponse?`, `Data?` and `Error?`) that can be used to identify the task, inspect its
+            /// values and return custom attributes for the RUM Resource.
+            ///
+            /// - Parameter provider: the closure called for each RUM Resource collected by the SDK. This closure is called with task information and may return custom attributes
+            ///                       for the RUM Resource or `nil` if no attributes should be attached.
+            public func setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?) -> Builder {
+                configuration.rumResourceAttributesProvider = provider
                 return self
             }
 

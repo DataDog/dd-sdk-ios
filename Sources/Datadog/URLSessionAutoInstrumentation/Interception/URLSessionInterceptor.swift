@@ -10,6 +10,7 @@ internal protocol URLSessionInterceptorType: class {
     func modify(request: URLRequest, session: URLSession?) -> URLRequest
     func taskCreated(task: URLSessionTask, session: URLSession?)
     func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
+    func taskReceivedData(task: URLSessionTask, data: Data)
     func taskCompleted(task: URLSessionTask, error: Error?)
 }
 
@@ -43,18 +44,20 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         let handler: URLSessionInterceptionHandler
 
         if configuration.instrumentRUM {
-            handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider)
+            handler = URLSessionRUMResourcesHandler(
+                dateProvider: dateProvider,
+                rumAttributesProvider: configuration.rumAttributesProvider
+            )
         } else {
             handler = URLSessionTracingHandler(appStateListener: appStateListener)
         }
 
-        self.init(configuration: configuration, handler: handler, appStateListener: appStateListener)
+        self.init(configuration: configuration, handler: handler)
     }
 
     init(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        handler: URLSessionInterceptionHandler,
-        appStateListener: AppStateListening
+        handler: URLSessionInterceptionHandler
     ) {
         self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
@@ -79,11 +82,11 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     /// An internal queue for synchronising the access to `interceptionByTask`.
-    private let queue = DispatchQueue(label: "com.datadoghq.URLSessionInterceptor", target: .global(qos: .utility))
+    internal let queue = DispatchQueue(label: "com.datadoghq.URLSessionInterceptor", target: .global(qos: .utility))
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     private var interceptionByTask: [URLSessionTask: TaskInterception] = [:]
 
-    // MARK: - Public
+    // MARK: - Interception Flow
 
     /// Intercepts given `URLRequest` before it is sent.
     /// If Tracing feature is enabled and first party hosts are configured in `Datadog.Configuration`, this method will
@@ -127,10 +130,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     }
 
     /// Notifies the `URLSessionTask` metrics collection.
-    /// This method should be called as soon as the task metrics were received by `URLSessionDelegate`.
+    /// This method should be called as soon as the task metrics were received by `URLSessionTaskDelegate`.
     /// - Parameters:
     ///   - task: task receiving metrics.
-    ///   - metrics: metrics object delivered to `URLSessionDelegate`.
+    ///   - metrics: metrics object delivered to `URLSessionTaskDelegate`.
     public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics) {
         guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
             return
@@ -148,6 +151,25 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             if interception.isDone {
                 self.finishInterception(task: task, interception: interception)
             }
+        }
+    }
+
+    /// Notifies the `URLSessionTask` data receiving.
+    /// This method should be called as soon as the next chunk of data is received by `URLSessionDataDelegate`.
+    /// - Parameters:
+    ///   - task: task receiving data.
+    ///   - data: next chunk of data delivered to `URLSessionDataDelegate`.
+    public func taskReceivedData(task: URLSessionTask, data: Data) {
+        guard !internalURLsFilter.isInternal(url: task.originalRequest?.url) else {
+            return
+        }
+
+        queue.async {
+            guard let interception = self.interceptionByTask[task] else {
+                return
+            }
+
+            interception.register(nextData: data)
         }
     }
 

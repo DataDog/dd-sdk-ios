@@ -16,6 +16,8 @@ internal class TaskInterception {
     internal let isFirstPartyRequest: Bool
     /// Task metrics collected during this interception.
     private(set) var metrics: ResourceMetrics?
+    /// Task data received during this interception. Can be `nil` if task completed with error.
+    private(set) var data: Data?
     /// Task completion collected during this interception.
     private(set) var completion: ResourceCompletion?
     /// Trace information propagated with the task. Not available when Tracing is disabled
@@ -33,6 +35,14 @@ internal class TaskInterception {
 
     func register(metrics: ResourceMetrics) {
         self.metrics = metrics
+    }
+
+    func register(nextData: Data) {
+        if data != nil {
+            self.data?.append(nextData)
+        } else {
+            self.data = nextData
+        }
     }
 
     func register(completion: ResourceCompletion) {

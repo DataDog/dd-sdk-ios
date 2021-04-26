@@ -52,6 +52,7 @@ extension Datadog.Configuration {
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false,
+        rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -77,6 +78,7 @@ extension Datadog.Configuration {
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
+            rumResourceAttributesProvider: rumResourceAttributesProvider,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -254,12 +256,14 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockWith(
         userDefinedFirstPartyHosts: Set<String> = [],
         sdkInternalURLs: Set<String> = [],
+        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
             sdkInternalURLs: sdkInternalURLs,
+            rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM
         )

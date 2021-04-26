@@ -22,6 +22,10 @@ public class DDEventMonitor: EventMonitor {
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         URLSessionInterceptor.shared?.taskCompleted(task: task, error: error)
     }
+
+    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        URLSessionInterceptor.shared?.taskReceivedData(task: dataTask, data: data)
+    }
 }
 
 /// An `Alamofire.RequestInterceptor` which instruments `Alamofire.Session` with Datadog RUM and Tracing.
