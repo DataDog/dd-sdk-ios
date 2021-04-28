@@ -12,33 +12,33 @@ class SpanSanitizerTests: XCTestCase {
         let span = Span.mockWith(
             userInfo: .mockWith(
                 extraInfo: [
-                    "extra-info-one": mockValue(),
-                    "extra-info-one.two": mockValue(),
-                    "extra-info-one.two.three": mockValue(),
-                    "extra-info-one.two.three.four": mockValue(),
-                    "extra-info-one.two.three.four.five": mockValue(),
-                    "extra-info-one.two.three.four.five.six": mockValue(),
-                    "extra-info-one.two.three.four.five.six.seven": mockValue(),
-                    "extra-info-one.two.three.four.five.six.seven.eight": mockValue(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine": mockValue(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+                    "extra-info-one": .mockAny(),
+                    "extra-info-one.two": .mockAny(),
+                    "extra-info-one.two.three": .mockAny(),
+                    "extra-info-one.two.three.four": .mockAny(),
+                    "extra-info-one.two.three.four.five": .mockAny(),
+                    "extra-info-one.two.three.four.five.six": .mockAny(),
+                    "extra-info-one.two.three.four.five.six.seven": .mockAny(),
+                    "extra-info-one.two.three.four.five.six.seven.eight": .mockAny(),
+                    "extra-info-one.two.three.four.five.six.seven.eight.nine": .mockAny(),
+                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
+                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
+                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
                 ]
             ),
             tags: [
-                "tag-one": mockValue(),
-                "tag-one.two": mockValue(),
-                "tag-one.two.three": mockValue(),
-                "tag-one.two.three.four": mockValue(),
-                "tag-one.two.three.four.five": mockValue(),
-                "tag-one.two.three.four.five.six": mockValue(),
-                "tag-one.two.three.four.five.six.seven": mockValue(),
-                "tag-one.two.three.four.five.six.seven.eight": mockValue(),
-                "tag-one.two.three.four.five.six.seven.eight.nine": mockValue(),
-                "tag-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-                "tag-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-                "tag-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+                "tag-one": .mockAny(),
+                "tag-one.two": .mockAny(),
+                "tag-one.two.three": .mockAny(),
+                "tag-one.two.three.four": .mockAny(),
+                "tag-one.two.three.four.five": .mockAny(),
+                "tag-one.two.three.four.five.six": .mockAny(),
+                "tag-one.two.three.four.five.six.seven": .mockAny(),
+                "tag-one.two.three.four.five.six.seven.eight": .mockAny(),
+                "tag-one.two.three.four.five.six.seven.eight.nine": .mockAny(),
+                "tag-one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
+                "tag-one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
+                "tag-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
             ]
         )
 
@@ -81,10 +81,10 @@ class SpanSanitizerTests: XCTestCase {
         let numberOfTags: Int = .random(in: halfTheLimit...twiceTheLimit)
 
         let mockUserExtraAttributes = (0..<numberOfUserExtraAttributes).map { index in
-            ("extra-info-\(index)", mockValue())
+            ("extra-info-\(index)", String.mockAny())
         }
         let mockTags = (0..<numberOfTags).map { index in
-            ("tag-\(index)", mockValue())
+            ("tag-\(index)", String.mockAny())
         }
 
         let span = Span.mockWith(
@@ -106,11 +106,5 @@ class SpanSanitizerTests: XCTestCase {
             sanitized.userInfo.extraInfo.count >= sanitized.tags.count,
             "If number of attributes needs to be limited, `tags` are removed prior to `extraInfo` attributes."
         )
-    }
-
-    // MARK: - Private
-
-    private func mockValue() -> JSONStringEncodableValue {
-        return JSONStringEncodableValue(String.mockAny(), encodedUsing: JSONEncoder())
     }
 }

@@ -99,9 +99,9 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 2)
         XCTAssertEqual(span.resource, request.url!.absoluteString)
-        XCTAssertEqual(span.tags[OTTags.httpUrl]?.encodable.value as? String, request.url!.absoluteString)
-        XCTAssertEqual(span.tags[OTTags.httpMethod]?.encodable.value as? String, "POST")
-        XCTAssertEqual(span.tags[OTTags.httpStatusCode]?.encodable.value as? Int, 200)
+        XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
         XCTAssertEqual(span.tags.count, 5)
 
         let log = logOutput.recordedLog
@@ -137,14 +137,14 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.resource, request.url!.absoluteString)
         XCTAssertEqual(span.duration, 30)
         XCTAssertTrue(span.isError)
-        XCTAssertEqual(span.tags[OTTags.httpUrl]?.encodable.value as? String, request.url!.absoluteString)
-        XCTAssertEqual(span.tags[OTTags.httpMethod]?.encodable.value as? String, "GET")
-        XCTAssertEqual(span.tags[DDTags.errorType]?.encodable.value as? String, "domain - 123")
+        XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
+        XCTAssertEqual(span.tags[DDTags.errorType], "domain - 123")
         XCTAssertEqual(
-            span.tags[DDTags.errorStack]?.encodable.value as? String,
+            span.tags[DDTags.errorStack],
             "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
         )
-        XCTAssertEqual(span.tags[DDTags.errorMessage]?.encodable.value as? String, "network error")
+        XCTAssertEqual(span.tags[DDTags.errorMessage], "network error")
         XCTAssertEqual(span.tags.count, 7)
 
         let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
@@ -199,13 +199,13 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.resource, "404")
         XCTAssertEqual(span.duration, 2)
         XCTAssertTrue(span.isError)
-        XCTAssertEqual(span.tags[OTTags.httpUrl]?.encodable.value as? String, request.url!.absoluteString)
-        XCTAssertEqual(span.tags[OTTags.httpMethod]?.encodable.value as? String, "GET")
-        XCTAssertEqual(span.tags[OTTags.httpStatusCode]?.encodable.value as? Int, 404)
-        XCTAssertEqual(span.tags[DDTags.errorType]?.encodable.value as? String, "HTTPURLResponse - 404")
-        XCTAssertEqual(span.tags[DDTags.errorMessage]?.encodable.value as? String, "404 not found")
+        XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
+        XCTAssertEqual(span.tags[DDTags.errorType], "HTTPURLResponse - 404")
+        XCTAssertEqual(span.tags[DDTags.errorMessage], "404 not found")
         XCTAssertEqual(
-            span.tags[DDTags.errorStack]?.encodable.value as? String,
+            span.tags[DDTags.errorStack],
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
         XCTAssertEqual(span.tags.count, 8)
@@ -295,7 +295,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         let recordedSpan = try XCTUnwrap(spanOutput.recordedSpan)
-        XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration]?.encodable.value as? UInt64, 10_000_000_000)
-        XCTAssertEqual(recordedSpan.tags[DDTags.isBackground]?.encodable.value as? Bool, false)
+        XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration], "10000000000")
+        XCTAssertEqual(recordedSpan.tags[DDTags.isBackground], "false")
     }
 }

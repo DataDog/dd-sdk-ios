@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class SpanBuilderTests: XCTestCase {
-    func testBuildingBasicSpan() throws {
+    func testBuildingBasicSpan() {
         let builder: SpanBuilder = .mockWith(serviceName: "test-service-name")
         let ddspan = DDSpan(
             tracer: .mockAny(),
@@ -29,10 +29,10 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(span.duration, 0.50, accuracy: 0.01)
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.tracerVersion, sdkVersion)
-        XCTAssertEqual(try span.tags.toEquatable(), ["foo": "bar", "bizz": "123"])
+        XCTAssertEqual(span.tags, ["foo": "bar", "bizz": "123"])
     }
 
-    func testBuildingSpanWithErrorTagSet() throws {
+    func testBuildingSpanWithErrorTagSet() {
         let builder: SpanBuilder = .mockAny()
 
         // given
@@ -41,7 +41,7 @@ class SpanBuilderTests: XCTestCase {
 
         // then
         XCTAssertTrue(span.isError)
-        XCTAssertEqual(try span.tags.toEquatable(), ["error": "true"])
+        XCTAssertEqual(span.tags, ["error": "true"])
 
         // given
         ddspan = .mockWith(tags: [OTTags.error: false])
@@ -49,10 +49,10 @@ class SpanBuilderTests: XCTestCase {
 
         // then
         XCTAssertFalse(span.isError)
-        XCTAssertEqual(try span.tags.toEquatable(), ["error": "false"])
+        XCTAssertEqual(span.tags, ["error": "false"])
     }
 
-    func testBuildingSpanWithErrorLogsSend() throws {
+    func testBuildingSpanWithErrorLogsSend() {
         let builder: SpanBuilder = .mockAny()
 
         // given
@@ -62,7 +62,7 @@ class SpanBuilderTests: XCTestCase {
 
         // then
         XCTAssertTrue(span.isError)
-        XCTAssertEqual(try span.tags.toEquatable(), ["error.type": "Swift error"]) // remapped to `error.type`
+        XCTAssertEqual(span.tags, ["error.type": "Swift error"]) // remapped to `error.type`
 
         // given
         ddspan = .mockWith(tags: [:])
@@ -79,7 +79,7 @@ class SpanBuilderTests: XCTestCase {
         // then
         XCTAssertTrue(span.isError)
         XCTAssertEqual(
-            try span.tags.toEquatable(),
+            span.tags,
             [
                 "error.type": "Swift error",    // remapped to `error.type`
                 "error.msg": "Error occured",   // remapped to `error.msg`
@@ -96,10 +96,10 @@ class SpanBuilderTests: XCTestCase {
 
         // then
         XCTAssertTrue(span.isError)
-        XCTAssertEqual(try span.tags.toEquatable(), ["error.type": "Swift error 1"]) // only first error log is captured
+        XCTAssertEqual(span.tags, ["error.type": "Swift error 1"]) // only first error log is captured
     }
 
-    func testBuildingSpanWithErrorTagAndErrorLogsSend() throws {
+    func testBuildingSpanWithErrorTagAndErrorLogsSend() {
         let builder: SpanBuilder = .mockAny()
 
         // given
@@ -119,7 +119,7 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertTrue(span.isError)
     }
 
-    func testBuildingSpanWithResourceNameTagSet() throws {
+    func testBuildingSpanWithResourceNameTagSet() {
         let builder: SpanBuilder = .mockAny()
 
         // given
@@ -128,14 +128,111 @@ class SpanBuilderTests: XCTestCase {
 
         // then
         XCTAssertEqual(span.resource, "custom resource name")
-        XCTAssertEqual(try span.tags.toEquatable(), [:])
+        XCTAssertEqual(span.tags, [:])
     }
-}
 
-private extension Dictionary where Key == String, Value == JSONStringEncodableValue {
-    /// Converts `[String: JSONStringEncodableValue]` to `[String: String]` for equitability comparison.
-    func toEquatable() throws -> [String: String] {
-        let data = try JSONEncoder().encode(self)
-        return try data.toJSONObject().mapValues { $0 as! String }
+    // MARK: - Attributes Conversion
+
+    private struct Foo: Encodable {
+        let bar: String = "bar"
+        let bizz = Bizz()
+
+        struct Bizz: Encodable {
+            let buzz: String = "buzz"
+        }
+    }
+
+    func testWhenBuildingSpan_itConvertsTagValuesToString() {
+        let builder: SpanBuilder = .mockAny()
+        let ddspan: DDSpan = .mockAny()
+
+        ddspan.setTag(key: "string-attribute", value: "string value")
+        ddspan.setTag(key: "int-attribute", value: 42)
+        ddspan.setTag(key: "int64-attribute", value: Int64(42))
+        ddspan.setTag(key: "double-attribute", value: 42.5)
+        ddspan.setTag(key: "bool-attribute", value: true)
+        ddspan.setTag(key: "int-array-attribute", value: [1, 2, 3, 4])
+        ddspan.setTag(key: "dictionary-attribute", value: ["key": 1])
+        ddspan.setTag(key: "url-attribute", value: URL(string: "https://datadoghq.com")!)
+        ddspan.setTag(key: "encodable-struct-attribute", value: Foo())
+
+        // When
+        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // Then
+        XCTAssertEqual(span.tags["string-attribute"], "string value")
+        XCTAssertEqual(span.tags["int-attribute"], "42")
+        XCTAssertEqual(span.tags["int64-attribute"], "42")
+        XCTAssertEqual(span.tags["double-attribute"], "42.5")
+        XCTAssertEqual(span.tags["bool-attribute"], "true")
+        XCTAssertEqual(span.tags["int-array-attribute"], "[1,2,3,4]")
+        XCTAssertEqual(span.tags["dictionary-attribute"], "{\"key\":1}")
+        XCTAssertEqual(span.tags["url-attribute"], "https://datadoghq.com")
+        XCTAssertEqual(span.tags["encodable-struct-attribute"], "{\"bar\":\"bar\",\"bizz\":{\"buzz\":\"buzz\"}}")
+    }
+
+    func testWhenBuildingSpan_itConvertsUserExtraInfoValuesToString() {
+        let builder: SpanBuilder = .mockWith(
+            userInfoProvider: .mockWith(
+                userInfo: .init(
+                    id: .mockRandom(),
+                    name: .mockRandom(),
+                    email: .mockRandom(),
+                    extraInfo: [
+                        "string-attribute": "string value",
+                        "int-attribute": 42,
+                        "int64-attribute": Int64(42),
+                        "double-attribute": 42.5,
+                        "bool-attribute": true,
+                        "int-array-attribute": [1, 2, 3, 4],
+                        "dictionary-attribute": ["key": 1],
+                        "url-attribute": URL(string: "https://datadoghq.com")!,
+                        "encodable-struct-attribute": Foo()
+                    ]
+                )
+            )
+        )
+        let ddspan: DDSpan = .mockAny()
+
+        // When
+        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        // Then
+        XCTAssertEqual(span.userInfo.extraInfo["string-attribute"], "string value")
+        XCTAssertEqual(span.userInfo.extraInfo["int-attribute"], "42")
+        XCTAssertEqual(span.userInfo.extraInfo["int64-attribute"], "42")
+        XCTAssertEqual(span.userInfo.extraInfo["double-attribute"], "42.5")
+        XCTAssertEqual(span.userInfo.extraInfo["bool-attribute"], "true")
+        XCTAssertEqual(span.userInfo.extraInfo["int-array-attribute"], "[1,2,3,4]")
+        XCTAssertEqual(span.userInfo.extraInfo["dictionary-attribute"], "{\"key\":1}")
+        XCTAssertEqual(span.userInfo.extraInfo["url-attribute"], "https://datadoghq.com")
+        XCTAssertEqual(span.userInfo.extraInfo["encodable-struct-attribute"], "{\"bar\":\"bar\",\"bizz\":{\"buzz\":\"buzz\"}}")
+    }
+
+    func testWhenTagValueCannotBeConvertedToString_itPrintsErrorAndSkipsTheTag() {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        let builder: SpanBuilder = .mockAny()
+        let ddspan: DDSpan = .mockAny()
+
+        // When
+        ddspan.setTag(key: "failing-tag", value: FailingEncodableMock(errorMessage: "Value cannot be encoded."))
+
+        // Then
+        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+
+        XCTAssertNil(span.tags["failing-tag"])
+        XCTAssertEqual(output.recordedLog?.status, .error)
+        XCTAssertEqual(
+            output.recordedLog?.message,
+            """
+            Failed to convert span `Encodable` attribute to `String`. The value of `failing-tag` will not be sent.
+            """
+        )
+        XCTAssertEqual(output.recordedLog?.error?.message, "Value cannot be encoded.")
     }
 }

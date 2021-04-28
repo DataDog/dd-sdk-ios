@@ -884,8 +884,6 @@ internal class ValueObserverMock<Value>: ValueObserver {
 
 // MARK: - Attributes Mock
 
-private let mockAttributesEncoder = JSONEncoder()
-
 /// Creates randomized `[String: Encodable]` attributes
 func mockRandomAttributes() -> [String: Encodable] {
     struct Foo: Encodable {
@@ -906,8 +904,7 @@ func mockRandomAttributes() -> [String: Encodable] {
         "int-array-attribute": [Int].mockRandom(),
         "dictionary-attribute": [String: Int].mockRandom(),
         "url-attribute": URL.mockRandom(),
-        "encodable-struct-attribute": Foo(),
-        "custom-encodable-attribute": JSONStringEncodableValue(Foo(), encodedUsing: mockAttributesEncoder)
+        "encodable-struct-attribute": Foo()
     ]
 }
 

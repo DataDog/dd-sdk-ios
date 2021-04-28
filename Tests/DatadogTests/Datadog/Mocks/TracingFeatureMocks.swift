@@ -181,7 +181,7 @@ extension Span {
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
         userInfo: Span.UserInfo = .mockAny(),
-        tags: [String: JSONStringEncodableValue] = [:]
+        tags: [String: String] = [:]
     ) -> Span {
         return Span(
             traceID: traceID,
@@ -209,7 +209,7 @@ extension Span.UserInfo {
         id: String? = .mockAny(),
         name: String? = .mockAny(),
         email: String? = .mockAny(),
-        extraInfo: [AttributeKey: JSONStringEncodableValue] = [:]
+        extraInfo: [String: String] = [:]
     ) -> Span.UserInfo {
         return Span.UserInfo(
             id: id,

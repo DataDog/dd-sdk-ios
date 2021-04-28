@@ -54,13 +54,13 @@ internal struct Span: Encodable {
         let id: String?
         let name: String?
         let email: String?
-        var extraInfo: [AttributeKey: JSONStringEncodableValue]
+        var extraInfo: [String: String]
     }
 
     var userInfo: UserInfo
 
     /// Custom tags, received from the user.
-    var tags: [String: JSONStringEncodableValue]
+    var tags: [String: String]
 
     func encode(to encoder: Encoder) throws {
         let sanitizedSpan = SpanSanitizer().sanitize(span: self)
