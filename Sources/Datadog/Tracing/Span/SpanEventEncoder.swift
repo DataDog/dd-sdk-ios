@@ -29,40 +29,60 @@ internal struct SpanEventsEnvelope: Encodable {
     }
 }
 
-/// `Encodable` representation of span.
-/// All mutable properties are subject of sanitization.
-internal struct SpanEvent: Encodable {
-    let traceID: TracingUUID
-    let spanID: TracingUUID
-    let parentID: TracingUUID?
-    let operationName: String
-    let serviceName: String
-    let resource: String
-    let startTime: Date
-    let duration: TimeInterval
-    let isError: Bool
-    let source: String
+/// Individual span event sent do Datadog.
+public struct SpanEvent: Encodable {
+    /// The id of the trace this span belongs to.
+    internal let traceID: TracingUUID
+    /// The unique id of this span.
+    internal let spanID: TracingUUID
+    /// The id this span's parent or `nil` if this is the root span.
+    internal let parentID: TracingUUID?
+    /// The operation name set for this span.
+    public var operationName: String
+    /// The service name configured for tracer.
+    public let serviceName: String
+    /// The resource name associated with this span.
+    /// For automatically tracked spans, it is set to the request URL.
+    /// For all other spands it fallbacks to `operationName`.
+    public var resource: String
+    /// The start time of this span.
+    public let startTime: Date
+    /// The span duration.
+    public let duration: TimeInterval
+    /// Indicates if there was an error information collected for this span.
+    public let isError: Bool
+    /// Name of the component sourcing the span, for iOS SDK it is set to `ios`.
+    internal let source: String
 
     // MARK: - Meta
 
-    let tracerVersion: String
-    let applicationVersion: String
-    let networkConnectionInfo: NetworkConnectionInfo?
-    let mobileCarrierInfo: CarrierInfo?
+    /// The SDK version.
+    public let tracerVersion: String
+    /// The client application version.
+    public let applicationVersion: String
+    /// The network connection information from the moment the span was completed.
+    public let networkConnectionInfo: NetworkConnectionInfo?
+    /// The mobile carrier information from the moment the span was completed.
+    public let mobileCarrierInfo: CarrierInfo?
 
-    struct UserInfo {
-        let id: String?
-        let name: String?
-        let email: String?
-        var extraInfo: [String: String]
+    public struct UserInfo {
+        /// User ID, if any.
+        public let id: String?
+        /// Name representing the user, if any.
+        public let name: String?
+        /// User email, if any.
+        public let email: String?
+        /// User custom attributes, if any.
+        public var extraInfo: [String: String]
     }
 
-    var userInfo: UserInfo
+    /// Custom user information configured globally for the SDK.
+    public var userInfo: UserInfo
 
-    /// Custom tags, received from the user.
-    var tags: [String: String]
+    /// Tags associated with the span.
+    public var tags: [String: String]
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         let sanitizedSpan = SpanSanitizer().sanitize(span: self)
         try SpanEventEncoder().encode(sanitizedSpan, to: encoder)
     }
