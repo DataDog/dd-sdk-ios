@@ -18,7 +18,7 @@ internal class DDSpan: OTSpan {
     /// Span creation date
     internal let startTime: Date
     /// Builds the `Span` from user input.
-    internal let spanBuilder: SpanBuilder
+    internal let spanBuilder: SpanEventBuilder
     /// Writes the `Span` to file.
     private let spanOutput: SpanOutput
     /// Writes span logs to output. `nil` if Logging feature is disabled.
@@ -143,7 +143,7 @@ internal class DDSpan: OTSpan {
         sendSpan(finishTime: time)
     }
 
-    // MARK: - Writting Span
+    // MARK: - Writting SpanEvent
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date) {
@@ -155,7 +155,7 @@ internal class DDSpan: OTSpan {
         // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
         // as it is very likely to be deallocated after return.
         ddTracer.queue.async {
-            let span = self.spanBuilder.createSpan(
+            let span = self.spanBuilder.createSpanEvent(
                 traceID: self.ddContext.traceID,
                 spanID: self.ddContext.spanID,
                 parentSpanID: self.ddContext.parentSpanID,

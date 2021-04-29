@@ -6,8 +6,8 @@
 
 import Foundation
 
-/// Builds `Span` representation (for later serialization) from `DDSpan`.
-internal struct SpanBuilder {
+/// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
+internal struct SpanEventBuilder {
     /// Application version to encode in span.
     let applicationVersion: String
     /// Service name to encode in span.
@@ -23,7 +23,7 @@ internal struct SpanBuilder {
     /// source tag to encode in span.
     let source: String
 
-    func createSpan(
+    func createSpanEvent(
         traceID: TracingUUID,
         spanID: TracingUUID,
         parentSpanID: TracingUUID?,
@@ -33,7 +33,7 @@ internal struct SpanBuilder {
         tags: [String: Encodable],
         baggageItems: [String: String],
         logFields: [[String: Encodable]]
-    ) -> Span {
+    ) -> SpanEvent {
         let tagsReducer = SpanTagsReducer(spanTags: tags, logFields: logFields)
 
         var tags: [String: String]
@@ -45,16 +45,16 @@ internal struct SpanBuilder {
         let regularTags = castValuesToString(tagsReducer.reducedSpanTags)
         tags.merge(regularTags) { _, regularTag in regularTag }
 
-        // Transform user info to `Span.UserInfo` representation
+        // Transform user info to `SpanEvent.UserInfo` representation
         let userInfo = userInfoProvider.value
-        let spanUserInfo = Span.UserInfo(
+        let spanUserInfo = SpanEvent.UserInfo(
             id: userInfo.id,
             name: userInfo.name,
             email: userInfo.email,
             extraInfo: castValuesToString(userInfo.extraInfo)
         )
 
-        let span = Span(
+        let span = SpanEvent(
             traceID: traceID,
             spanID: spanID,
             parentID: parentSpanID,
