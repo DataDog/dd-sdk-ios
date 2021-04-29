@@ -420,6 +420,37 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func addResourceMetrics(
+        resourceKey: String,
+        fetch: (start: Date, end: Date),
+        redirection: (start: Date, end: Date)?,
+        dns: (start: Date, end: Date)?,
+        connect: (start: Date, end: Date)?,
+        ssl: (start: Date, end: Date)?,
+        firstByte: (start: Date, end: Date)?,
+        download: (start: Date, end: Date)?,
+        responseSize: Int64?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        process(
+            command: RUMAddResourceMetricsCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.currentDate(),
+                attributes: attributes,
+                metrics: ResourceMetrics(
+                    fetch: ResourceMetrics.DateInterval(start: fetch.start, end: fetch.end),
+                    redirection: ResourceMetrics.DateInterval.create(start: redirection?.start, end: redirection?.end),
+                    dns: ResourceMetrics.DateInterval.create(start: dns?.start, end: dns?.end),
+                    connect: ResourceMetrics.DateInterval.create(start: connect?.start, end: connect?.end),
+                    ssl: ResourceMetrics.DateInterval.create(start: ssl?.start, end: ssl?.end),
+                    firstByte: ResourceMetrics.DateInterval.create(start: firstByte?.start, end: firstByte?.end),
+                    download: ResourceMetrics.DateInterval.create(start: download?.start, end: download?.end),
+                    responseSize: responseSize
+                )
+            )
+        )
+    }
+
     override public func stopResourceLoading(
         resourceKey: String,
         response: URLResponse,
