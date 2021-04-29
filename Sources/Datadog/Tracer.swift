@@ -47,10 +47,9 @@ public typealias DDTracer = Tracer
 public class Tracer: OTTracer {
     /// Builds the `Span` from user input.
     internal let spanBuilder: SpanBuilder
-    /// Writes the `Span` file.
+    /// Writes the `Span` to file.
     internal let spanOutput: SpanOutput
-    /// Writes span logs to output.
-    /// Equals `nil` if Logging feature is disabled.
+    /// Writes span logs to output. `nil` if Logging feature is disabled.
     internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
@@ -211,18 +210,5 @@ public class Tracer: OTTracer {
             tags: combinedTags
         )
         return span
-    }
-
-    internal func write(ddspan: DDSpan, finishTime: Date) {
-        let span = spanBuilder.createSpan(from: ddspan, finishTime: finishTime)
-        spanOutput.write(span: span)
-    }
-
-    internal func writeLog(for span: DDSpan, fields: [String: Encodable], date: Date) {
-        guard let logOutput = logOutput else {
-            userLogger.warn("The log for span \"\(span.operationName)\" will not be send, because the Logging feature is disabled.")
-            return
-        }
-        logOutput.writeLog(withSpanContext: span.ddContext, fields: fields, date: date)
     }
 }

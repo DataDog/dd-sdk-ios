@@ -17,6 +17,12 @@ internal class DDSpan: OTSpan {
     internal let ddContext: DDSpanContext
     /// Span creation date
     internal let startTime: Date
+    /// Builds the `Span` from user input.
+    internal let spanBuilder: SpanBuilder
+    /// Writes the `Span` to file.
+    private let spanOutput: SpanOutput
+    /// Writes span logs to output. `nil` if Logging feature is disabled.
+    private let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
 
     /// Unsynchronized span operation name. Use `self.operationName` setter & getter.
     private var unsafeOperationName: String
@@ -58,6 +64,9 @@ internal class DDSpan: OTSpan {
         self.ddTracer = tracer
         self.ddContext = context
         self.startTime = startTime
+        self.spanBuilder = tracer.spanBuilder
+        self.spanOutput = tracer.spanOutput
+        self.logOutput = tracer.logOutput
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
         self.unsafeIsFinished = false
@@ -104,17 +113,6 @@ internal class DDSpan: OTSpan {
         return ddContext.baggageItems.get(key: key)
     }
 
-    func finish(at time: Date) {
-        if warnIfFinished("finish(at:)") {
-            return
-        }
-        isFinished = true
-        if let activity = activityReference {
-            ddTracer.activeSpansPool.removeSpan(activityReference: activity)
-        }
-        ddTracer.write(ddspan: self, finishTime: time)
-    }
-
     @discardableResult
     func setActive() -> OTSpan {
         activityReference = ActivityReference()
@@ -131,7 +129,53 @@ internal class DDSpan: OTSpan {
         ddTracer.queue.async {
             self.unsafeLogFields.append(fields)
         }
-        ddTracer.writeLog(for: self, fields: fields, date: timestamp)
+        sendSpanLogs(fields: fields, date: timestamp)
+    }
+
+    func finish(at time: Date) {
+        if warnIfFinished("finish(at:)") {
+            return
+        }
+        isFinished = true
+        if let activity = activityReference {
+            ddTracer.activeSpansPool.removeSpan(activityReference: activity)
+        }
+        sendSpan(finishTime: time)
+    }
+
+    // MARK: - Writting Span
+
+    /// Sends span event for given `DDSpan`.
+    private func sendSpan(finishTime: Date) {
+        // Baggage items must be read before entering the `tracer.queue` as it uses that queue for internal sync.
+        let baggageItems = ddContext.baggageItems.all
+
+        // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
+        // the `builder.createSpan()` off the main thread. This is important as the span creation includes
+        // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
+        // as it is very likely to be deallocated after return.
+        ddTracer.queue.async {
+            let span = self.spanBuilder.createSpan(
+                traceID: self.ddContext.traceID,
+                spanID: self.ddContext.spanID,
+                parentSpanID: self.ddContext.parentSpanID,
+                operationName: self.unsafeOperationName,
+                startTime: self.startTime,
+                finishTime: finishTime,
+                tags: self.unsafeTags,
+                baggageItems: baggageItems,
+                logFields: self.unsafeLogFields
+            )
+            self.spanOutput.write(span: span)
+        }
+    }
+
+    private func sendSpanLogs(fields: [String: Encodable], date: Date) {
+        guard let logOutput = logOutput else {
+            userLogger.warn("The log for span \"\(operationName)\" will not be send, because the Logging feature is disabled.")
+            return
+        }
+        logOutput.writeLog(withSpanContext: ddContext, fields: fields, date: date)
     }
 
     // MARK: - Private

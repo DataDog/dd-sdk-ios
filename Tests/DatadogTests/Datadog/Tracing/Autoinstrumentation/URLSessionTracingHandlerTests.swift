@@ -278,6 +278,9 @@ class URLSessionTracingHandlerTests: XCTestCase {
     }
 
     func testGivenAnyInterception_itAddsAppStateInformationToSpan() throws {
+        let spanSentExpectation = expectation(description: "Send span")
+        spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
+
         // Given
         let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
         interception.register(completion: .mockAny())
@@ -294,6 +297,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         handler.notify_taskInterceptionCompleted(interception: interception)
 
         // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
         let recordedSpan = try XCTUnwrap(spanOutput.recordedSpan)
         XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration], "10000000000")
         XCTAssertEqual(recordedSpan.tags[DDTags.isBackground], "false")

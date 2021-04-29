@@ -10,14 +10,21 @@ import XCTest
 class SpanBuilderTests: XCTestCase {
     func testBuildingBasicSpan() {
         let builder: SpanBuilder = .mockWith(serviceName: "test-service-name")
-        let ddspan = DDSpan(
-            tracer: .mockAny(),
-            context: .mockWith(traceID: 1, spanID: 2, parentSpanID: 1),
+
+        let span = builder.createSpan(
+            traceID: 1,
+            spanID: 2,
+            parentSpanID: 1,
             operationName: "operation-name",
             startTime: .mockDecember15th2019At10AMUTC(),
-            tags: ["foo": "bar", "bizz": 123]
+            finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5),
+            tags: [
+                "foo": "bar",
+                "bizz": 123
+            ],
+            baggageItems: [:],
+            logFields: []
         )
-        let span = builder.createSpan(from: ddspan, finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
         XCTAssertEqual(span.traceID, 1)
         XCTAssertEqual(span.spanID, 2)
@@ -36,16 +43,34 @@ class SpanBuilderTests: XCTestCase {
         let builder: SpanBuilder = .mockAny()
 
         // given
-        var ddspan: DDSpan = .mockWith(tags: [OTTags.error: true])
-        var span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        var span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [OTTags.error: true],
+            baggageItems: [:],
+            logFields: []
+        )
 
         // then
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags, ["error": "true"])
 
         // given
-        ddspan = .mockWith(tags: [OTTags.error: false])
-        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [OTTags.error: false],
+            baggageItems: [:],
+            logFields: []
+        )
 
         // then
         XCTAssertFalse(span.isError)
@@ -56,25 +81,43 @@ class SpanBuilderTests: XCTestCase {
         let builder: SpanBuilder = .mockAny()
 
         // given
-        var ddspan: DDSpan = .mockWith(tags: [:])
-        ddspan.log(fields: [OTLogFields.errorKind: "Swift error"])
-        var span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        var span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: [
+                [OTLogFields.errorKind: "Swift error"]
+            ]
+        )
 
         // then
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags, ["error.type": "Swift error"]) // remapped to `error.type`
 
         // given
-        ddspan = .mockWith(tags: [:])
-        ddspan.log(
-            fields: [
-                OTLogFields.errorKind: "Swift error",
-                OTLogFields.event: "error",
-                OTLogFields.message: "Error occured",
-                OTLogFields.stack: "Foo.swift:42",
+        span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: [
+                [
+                    OTLogFields.errorKind: "Swift error",
+                    OTLogFields.event: "error",
+                    OTLogFields.message: "Error occured",
+                    OTLogFields.stack: "Foo.swift:42",
+                ]
             ]
         )
-        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
 
         // then
         XCTAssertTrue(span.isError)
@@ -88,11 +131,21 @@ class SpanBuilderTests: XCTestCase {
         )
 
         // given
-        ddspan = .mockWith(tags: [:])
-        ddspan.log(fields: ["foo": "bar"]) // ignored
-        ddspan.log(fields: [OTLogFields.errorKind: "Swift error 1"]) // captured
-        ddspan.log(fields: [OTLogFields.errorKind: "Swift error 2"]) // ignored
-        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: [
+                ["foo": "bar"], // ignored
+                [OTLogFields.errorKind: "Swift error 1"], // captured
+                [OTLogFields.errorKind: "Swift error 2"] // ignored
+            ]
+        )
 
         // then
         XCTAssertTrue(span.isError)
@@ -103,17 +156,41 @@ class SpanBuilderTests: XCTestCase {
         let builder: SpanBuilder = .mockAny()
 
         // given
-        var ddspan: DDSpan = .mockWith(tags: ["error": true])
-        ddspan.log(fields: [OTLogFields.event: "error"])
-        var span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        var span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [
+                "error": true
+            ],
+            baggageItems: [:],
+            logFields: [
+                [OTLogFields.event: "error"]
+            ]
+        )
 
         // then
         XCTAssertTrue(span.isError)
 
         // given
-        ddspan = .mockWith(tags: ["error": false])
-        ddspan.log(fields: [OTLogFields.event: "error"])
-        span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [
+                "error": false
+            ],
+            baggageItems: [:],
+            logFields: [
+                [OTLogFields.event: "error"]
+            ]
+        )
 
         // then
         XCTAssertTrue(span.isError)
@@ -123,12 +200,52 @@ class SpanBuilderTests: XCTestCase {
         let builder: SpanBuilder = .mockAny()
 
         // given
-        let ddspan: DDSpan = .mockWith(tags: [DDTags.resource: "custom resource name"])
-        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        let span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [
+                DDTags.resource: "custom resource name"
+            ],
+            baggageItems: [:],
+            logFields: []
+        )
 
         // then
         XCTAssertEqual(span.resource, "custom resource name")
         XCTAssertEqual(span.tags, [:])
+    }
+
+    func testItSendsBaggageItemsAsTags() {
+        let builder: SpanBuilder = .mockAny()
+
+        // When
+        let span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [
+                "tag-name": "tag value"
+            ],
+            baggageItems: [
+                "item-1": "value 1",
+                "item-2": "value 2",
+                "tag-name": "baggage item value"
+            ],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertEqual(span.tags.count, 3)
+        XCTAssertEqual(span.tags["item-1"], "value 1")
+        XCTAssertEqual(span.tags["item-2"], "value 2")
+        XCTAssertEqual(span.tags["tag-name"], "tag value", "It should prefer tags over baggage items if their names duplicate")
     }
 
     // MARK: - Attributes Conversion
@@ -142,33 +259,52 @@ class SpanBuilderTests: XCTestCase {
         }
     }
 
+    private func createMockAttributes() -> [String: Encodable] {
+        [
+            "string-attribute": "string value",
+            "int-attribute": 42,
+            "int64-attribute": Int64(42),
+            "double-attribute": 42.5,
+            "bool-attribute": true,
+            "int-array-attribute": [1, 2, 3, 4],
+            "dictionary-attribute": ["key": 1],
+            "url-attribute": URL(string: "https://datadoghq.com")!,
+            "encodable-struct-attribute": Foo(),
+        ]
+    }
+
+    private let expectedAttributes: [String: String] = [
+        "string-attribute": "string value",
+        "int-attribute": "42",
+        "int64-attribute": "42",
+        "double-attribute": "42.5",
+        "bool-attribute": "true",
+        "int-array-attribute": "[1,2,3,4]",
+        "dictionary-attribute": "{\"key\":1}",
+        "url-attribute": "https://datadoghq.com",
+        "encodable-struct-attribute": "{\"bar\":\"bar\",\"bizz\":{\"buzz\":\"buzz\"}}",
+    ]
+
     func testWhenBuildingSpan_itConvertsTagValuesToString() {
         let builder: SpanBuilder = .mockAny()
-        let ddspan: DDSpan = .mockAny()
-
-        ddspan.setTag(key: "string-attribute", value: "string value")
-        ddspan.setTag(key: "int-attribute", value: 42)
-        ddspan.setTag(key: "int64-attribute", value: Int64(42))
-        ddspan.setTag(key: "double-attribute", value: 42.5)
-        ddspan.setTag(key: "bool-attribute", value: true)
-        ddspan.setTag(key: "int-array-attribute", value: [1, 2, 3, 4])
-        ddspan.setTag(key: "dictionary-attribute", value: ["key": 1])
-        ddspan.setTag(key: "url-attribute", value: URL(string: "https://datadoghq.com")!)
-        ddspan.setTag(key: "encodable-struct-attribute", value: Foo())
 
         // When
-        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        let span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: createMockAttributes(),
+            baggageItems: [:],
+            logFields: []
+        )
 
         // Then
-        XCTAssertEqual(span.tags["string-attribute"], "string value")
-        XCTAssertEqual(span.tags["int-attribute"], "42")
-        XCTAssertEqual(span.tags["int64-attribute"], "42")
-        XCTAssertEqual(span.tags["double-attribute"], "42.5")
-        XCTAssertEqual(span.tags["bool-attribute"], "true")
-        XCTAssertEqual(span.tags["int-array-attribute"], "[1,2,3,4]")
-        XCTAssertEqual(span.tags["dictionary-attribute"], "{\"key\":1}")
-        XCTAssertEqual(span.tags["url-attribute"], "https://datadoghq.com")
-        XCTAssertEqual(span.tags["encodable-struct-attribute"], "{\"bar\":\"bar\",\"bizz\":{\"buzz\":\"buzz\"}}")
+        expectedAttributes.forEach { tagKey, tagValue in
+            XCTAssertEqual(span.tags[tagKey], tagValue)
+        }
     }
 
     func testWhenBuildingSpan_itConvertsUserExtraInfoValuesToString() {
@@ -178,35 +314,28 @@ class SpanBuilderTests: XCTestCase {
                     id: .mockRandom(),
                     name: .mockRandom(),
                     email: .mockRandom(),
-                    extraInfo: [
-                        "string-attribute": "string value",
-                        "int-attribute": 42,
-                        "int64-attribute": Int64(42),
-                        "double-attribute": 42.5,
-                        "bool-attribute": true,
-                        "int-array-attribute": [1, 2, 3, 4],
-                        "dictionary-attribute": ["key": 1],
-                        "url-attribute": URL(string: "https://datadoghq.com")!,
-                        "encodable-struct-attribute": Foo()
-                    ]
+                    extraInfo: createMockAttributes()
                 )
             )
         )
-        let ddspan: DDSpan = .mockAny()
 
         // When
-        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
+        let span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
 
         // Then
-        XCTAssertEqual(span.userInfo.extraInfo["string-attribute"], "string value")
-        XCTAssertEqual(span.userInfo.extraInfo["int-attribute"], "42")
-        XCTAssertEqual(span.userInfo.extraInfo["int64-attribute"], "42")
-        XCTAssertEqual(span.userInfo.extraInfo["double-attribute"], "42.5")
-        XCTAssertEqual(span.userInfo.extraInfo["bool-attribute"], "true")
-        XCTAssertEqual(span.userInfo.extraInfo["int-array-attribute"], "[1,2,3,4]")
-        XCTAssertEqual(span.userInfo.extraInfo["dictionary-attribute"], "{\"key\":1}")
-        XCTAssertEqual(span.userInfo.extraInfo["url-attribute"], "https://datadoghq.com")
-        XCTAssertEqual(span.userInfo.extraInfo["encodable-struct-attribute"], "{\"bar\":\"bar\",\"bizz\":{\"buzz\":\"buzz\"}}")
+        expectedAttributes.forEach { extraInfoKey, extraInfoValue in
+            XCTAssertEqual(span.userInfo.extraInfo[extraInfoKey], extraInfoValue)
+        }
     }
 
     func testWhenTagValueCannotBeConvertedToString_itPrintsErrorAndSkipsTheTag() {
@@ -217,14 +346,23 @@ class SpanBuilderTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         let builder: SpanBuilder = .mockAny()
-        let ddspan: DDSpan = .mockAny()
 
         // When
-        ddspan.setTag(key: "failing-tag", value: FailingEncodableMock(errorMessage: "Value cannot be encoded."))
+        let span = builder.createSpan(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [
+                "failing-tag": FailingEncodableMock(errorMessage: "Value cannot be encoded.")
+            ],
+            baggageItems: [:],
+            logFields: []
+        )
 
         // Then
-        let span = builder.createSpan(from: ddspan, finishTime: .mockAny())
-
         XCTAssertNil(span.tags["failing-tag"])
         XCTAssertEqual(output.recordedLog?.status, .error)
         XCTAssertEqual(

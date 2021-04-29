@@ -23,13 +23,23 @@ internal struct SpanBuilder {
     /// source tag to encode in span.
     let source: String
 
-    func createSpan(from ddspan: DDSpan, finishTime: Date) -> Span {
-        let tagsReducer = SpanTagsReducer(spanTags: ddspan.tags, logFields: ddspan.logFields)
+    func createSpan(
+        traceID: TracingUUID,
+        spanID: TracingUUID,
+        parentSpanID: TracingUUID?,
+        operationName: String,
+        startTime: Date,
+        finishTime: Date,
+        tags: [String: Encodable],
+        baggageItems: [String: String],
+        logFields: [[String: Encodable]]
+    ) -> Span {
+        let tagsReducer = SpanTagsReducer(spanTags: tags, logFields: logFields)
 
         var tags: [String: String]
 
         // Add baggage items as tags
-        tags = ddspan.ddContext.baggageItems.all
+        tags = baggageItems
 
         // Add regular tags (prefer regular tags over baggate items)
         let regularTags = castValuesToString(tagsReducer.reducedSpanTags)
@@ -45,14 +55,14 @@ internal struct SpanBuilder {
         )
 
         let span = Span(
-            traceID: ddspan.ddContext.traceID,
-            spanID: ddspan.ddContext.spanID,
-            parentID: ddspan.ddContext.parentSpanID,
-            operationName: ddspan.operationName,
+            traceID: traceID,
+            spanID: spanID,
+            parentID: parentSpanID,
+            operationName: operationName,
             serviceName: serviceName,
-            resource: tagsReducer.extractedResourceName ?? ddspan.operationName,
-            startTime: dateCorrector.currentCorrection.applying(to: ddspan.startTime),
-            duration: finishTime.timeIntervalSince(ddspan.startTime),
+            resource: tagsReducer.extractedResourceName ?? operationName,
+            startTime: dateCorrector.currentCorrection.applying(to: startTime),
+            duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
             source: source,
             tracerVersion: sdkVersion,
