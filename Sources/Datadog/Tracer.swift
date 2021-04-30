@@ -183,9 +183,7 @@ public class Tracer: OTTracer {
         return activeSpansPool.getActiveSpan()
     }
 
-    // MARK: - Internal
-
-    internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+    public func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
         return DDSpanContext(
             traceID: parentSpanContext?.traceID ?? (environmentSpanIntegration.environmentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique()),
             spanID: tracingUUIDGenerator.generateUnique(),
@@ -193,6 +191,8 @@ public class Tracer: OTTracer {
             baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
         )
     }
+
+    // MARK: - Internal
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         var combinedTags = globalTags ?? [:]
