@@ -43,6 +43,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumEndpoint, .us)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
+            XCTAssertNil(configuration.spanEventMapper)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
@@ -58,6 +59,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
     }
 
     func testCustomizedBuilder() {
+        let mockSpanEvent: SpanEvent = .mockAny()
         let mockRUMViewEvent: RUMViewEvent = .mockRandom()
         let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
         let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
@@ -76,6 +78,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .set(rumSessionsSamplingRate: 42.5)
+                .setSpanEventMapper { _ in mockSpanEvent }
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitActions(false)
@@ -122,6 +125,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
+            XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
             XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
             XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
             XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)

@@ -20,8 +20,10 @@ internal struct SpanEventBuilder {
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts span's time (device time) to server time.
     let dateCorrector: DateCorrectorType
-    /// source tag to encode in span.
+    /// Source tag to encode in span (e.g. `ios` for native iOS).
     let source: String
+    /// Span events mapper configured by the user, `nil` if not set.
+    let eventsMapper: SpanEventMapper?
 
     func createSpanEvent(
         traceID: TracingUUID,
@@ -73,7 +75,11 @@ internal struct SpanEventBuilder {
             tags: tags
         )
 
-        return span
+        if let eventMapper = eventsMapper {
+            return eventMapper(span)
+        } else {
+            return span
+        }
     }
 
     // MARK: - Attributes Conversion
