@@ -27,6 +27,29 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
         self.predicate = predicate
         self.dateProvider = dateProvider
         self.inspector = inspector
+
+        let nc = NotificationCenter.default
+        nc.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        nc.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    private weak var lastActiveAppVC: UIViewController?
+    @objc
+    private func appWillResignActive() {
+        if lastActiveAppVC != nil {
+            return
+        }
+        lastActiveAppVC = lastStartedViewController
+        stop(viewController: lastActiveAppVC)
+    }
+
+    @objc
+    private func appDidBecomeActive() {
+        if let vc = lastActiveAppVC,
+           let rumView = predicate.rumView(for: vc) {
+            start(viewController: vc, rumView: rumView)
+        }
+        lastActiveAppVC = nil
     }
 
     // MARK: - UIKitRUMViewsHandlerType
@@ -81,16 +104,13 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
             )
         }
 
-        if let lastStartedViewController = lastStartedViewController {
-            subscriber?.process(
-                command: RUMStopViewCommand(
-                    time: dateProvider.currentDate(),
-                    attributes: rumView.attributes,
-                    identity: lastStartedViewController
-                )
-            )
-        }
+        stop(viewController: lastStartedViewController)
+        start(viewController: viewController, rumView: rumView)
 
+        lastStartedViewController = viewController
+    }
+
+    private func start(viewController: UIViewController, rumView: RUMView) {
         subscriber?.process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
@@ -100,7 +120,17 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
                 attributes: rumView.attributes
             )
         )
+    }
 
-        lastStartedViewController = viewController
+    private func stop(viewController: UIViewController?) {
+        if let vc = viewController {
+            subscriber?.process(
+                command: RUMStopViewCommand(
+                    time: dateProvider.currentDate(),
+                    attributes: [:],
+                    identity: vc
+                )
+            )
+        }
     }
 }
