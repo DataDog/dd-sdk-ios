@@ -150,6 +150,31 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Adds temporal metrics to given Resource. This method must be called before the Resource is stopped.
+    /// - Parameters:
+    ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
+    ///   - fetch: Properties of the fetch phase for the resource (task started fetching the resource from the server to task received the last byte of the resource).
+    ///   - redirection: Properties of the redirection phase for the resource.
+    ///   - dns: Properties of the name lookup phase for the resource.
+    ///   - connect: Properties of the connect phase for the resource.
+    ///   - ssl: Properties of the secure connect phase for the resource.
+    ///   - firstByte: Properties of the TTFB phase for the resource.
+    ///   - download: Properties of the download phase for the resource.
+    ///   - responseSize: The size of data delivered to delegate or completion handler.
+    ///   - attributes: custom attributes to attach to the Resource.
+    public func addResourceMetrics(
+        resourceKey: String,
+        fetch: (start: Date, end: Date),
+        redirection: (start: Date, end: Date)?,
+        dns: (start: Date, end: Date)?,
+        connect: (start: Date, end: Date)?,
+        ssl: (start: Date, end: Date)?,
+        firstByte: (start: Date, end: Date)?,
+        download: (start: Date, end: Date)?,
+        responseSize: Int64?,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {}
+
     /// Notifies that the Resource stops being loaded succesfully.
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.

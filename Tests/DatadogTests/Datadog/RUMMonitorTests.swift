@@ -156,6 +156,74 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.dns!.duration, 2_000_000_000)
     }
 
+    func testStartingView_thenLoadingXHRResourceWithRequestWithExternalMetrics() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        defer { RUMFeature.instance = nil }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
+
+        let fetch = (start: Date.mockDecember15th2019At10AMUTC(),
+                     end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 12))
+        let redirection = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                           end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+        let dns = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 3),
+                   end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 4))
+        let connect = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 5),
+                       end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 6))
+        let ssl = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 7),
+                   end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 8))
+        let firstByte = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 9),
+                         end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 10))
+        let download = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 11),
+                        end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 12))
+
+        monitor.addResourceMetrics(
+            resourceKey: "/resource/1",
+            fetch: fetch,
+            redirection: redirection,
+            dns: dns,
+            connect: connect,
+            ssl: ssl,
+            firstByte: firstByte,
+            download: download,
+            responseSize: 42
+        )
+
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
+        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+
+        XCTAssertEqual(resourceEvent.resource.duration, 12_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.redirect!.start, 1_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.redirect!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.dns!.start, 3_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.dns!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.connect!.start, 5_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.connect!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.ssl!.start, 7_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.ssl!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.firstByte!.start, 9_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.firstByte!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.download!.start, 11_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.download!.duration, 1_000_000_000)
+    }
+
     func testStartingView_thenLoadingResourceWithURL() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance = nil }

@@ -69,12 +69,19 @@ internal struct ResourceCompletion {
     }
 }
 
-/// Encapsulates key metrics retrieved from `URLSessionTaskMetrics`.
+/// Encapsulates key metrics retrieved either from `URLSessionTaskMetrics` or any other relevant data source.
 /// Reference: https://developer.apple.com/documentation/foundation/urlsessiontasktransactionmetrics
 internal struct ResourceMetrics {
     struct DateInterval {
         let start, end: Date
         var duration: TimeInterval { end.timeIntervalSince(start) }
+
+        static func create(start: Date?, end: Date?) -> DateInterval? {
+            if let start = start, let end = end {
+                return DateInterval(start: start, end: end)
+            }
+            return nil
+        }
     }
 
     /// Properties of the fetch phase for the resource:
