@@ -101,6 +101,10 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         XCTAssertEqual(try taskWithRequest.operationName(), "urlsession.request")
         XCTAssertEqual(try taskWithBadURL.operationName(), "urlsession.request")
 
+        XCTAssertEqual(try taskWithURL.meta.custom(keyPath: "meta.http.url"), "redacted")
+        XCTAssertEqual(try taskWithRequest.meta.custom(keyPath: "meta.http.url"), "redacted")
+        XCTAssertEqual(try taskWithBadURL.meta.custom(keyPath: "meta.http.url"), "redacted")
+
         XCTAssertEqual(try taskWithURL.metrics.isRootSpan(), 1)
         XCTAssertEqual(try taskWithRequest.metrics.isRootSpan(), 1)
         XCTAssertEqual(try taskWithBadURL.metrics.isRootSpan(), 1)
