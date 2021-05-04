@@ -122,16 +122,14 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:],
-        logFields: [[String: Encodable]] = []
+        tags: [String: Encodable] = [:]
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: tags,
-            logFields: logFields
+            tags: tags
         )
     }
 }
@@ -317,12 +315,14 @@ extension SpanEventBuilder {
 
 /// `SpanOutput` recording received spans.
 class SpanOutputMock: SpanOutput {
-    var onSpanRecorded: ((SpanEvent?) -> Void)?
-    var recordedSpan: SpanEvent? = nil {
-        didSet { onSpanRecorded?(recordedSpan) }
-    }
+    var onSpanRecorded: ((SpanEvent) -> Void)?
+
+    var lastRecordedSpan: SpanEvent?
+    var allRecordedSpans: [SpanEvent] = []
 
     func write(span: SpanEvent) {
-        recordedSpan = span
+        lastRecordedSpan = span
+        allRecordedSpans.append(span)
+        onSpanRecorded?(span)
     }
 }
