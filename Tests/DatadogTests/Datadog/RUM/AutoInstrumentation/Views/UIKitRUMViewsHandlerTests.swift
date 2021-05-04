@@ -207,13 +207,9 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
 
         // When
-        for _ in 0..<3 {
-            NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
-        }
+        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
-        for _ in 0..<3 {
-            NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        }
+        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -238,13 +234,9 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
 
         // When
-        for _ in 0..<3 {
-            NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
-        }
+        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
-        for _ in 0..<3 {
-            NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        }
+        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)

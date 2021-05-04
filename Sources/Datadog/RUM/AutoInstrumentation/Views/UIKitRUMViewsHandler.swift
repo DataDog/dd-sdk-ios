@@ -33,25 +33,6 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
         nc.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
-    private weak var lastActiveAppVC: UIViewController?
-    @objc
-    private func appWillResignActive() {
-        if lastActiveAppVC != nil {
-            return
-        }
-        lastActiveAppVC = lastStartedViewController
-        stop(viewController: lastActiveAppVC)
-    }
-
-    @objc
-    private func appDidBecomeActive() {
-        if let vc = lastActiveAppVC,
-           let rumView = predicate.rumView(for: vc) {
-            start(viewController: vc, rumView: rumView)
-        }
-        lastActiveAppVC = nil
-    }
-
     // MARK: - UIKitRUMViewsHandlerType
 
     weak var subscriber: RUMCommandSubscriber?
@@ -74,6 +55,19 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     }
 
     // MARK: - Private
+
+    @objc
+    private func appWillResignActive() {
+        stop(viewController: lastStartedViewController)
+    }
+
+    @objc
+    private func appDidBecomeActive() {
+        if let vc = lastStartedViewController,
+           let rumView = predicate.rumView(for: vc) {
+            start(viewController: vc, rumView: rumView)
+        }
+    }
 
     /// The `UIViewController` recently asked in `UIKitRUMViewsPredicate`.
     private weak var recentlyAskedViewController: UIViewController?
