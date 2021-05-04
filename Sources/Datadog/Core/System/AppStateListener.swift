@@ -103,7 +103,10 @@ internal class AppStateListener: AppStateListening {
         return UIApplication.managedShared?.applicationState == .active
     }
 
-    init(dateProvider: DateProvider) {
+    init(
+        dateProvider: DateProvider,
+        notificationCenter: NotificationCenter = .default
+    ) {
         self.dateProvider = dateProvider
         let currentState = Snapshot(
             isActive: AppStateListener.isAppActive,
@@ -116,9 +119,8 @@ internal class AppStateListener: AppStateListening {
             )
         )
 
-        let nc = NotificationCenter.default
-        nc.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
-        nc.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
     @objc

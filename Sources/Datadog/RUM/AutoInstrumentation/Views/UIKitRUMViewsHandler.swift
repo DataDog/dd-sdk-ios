@@ -22,15 +22,15 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     init(
         predicate: UIKitRUMViewsPredicate,
         dateProvider: DateProvider,
-        inspector: UIKitHierarchyInspectorType = UIKitHierarchyInspector()
+        inspector: UIKitHierarchyInspectorType = UIKitHierarchyInspector(),
+        notificationCenter: NotificationCenter = .default
     ) {
         self.predicate = predicate
         self.dateProvider = dateProvider
         self.inspector = inspector
 
-        let nc = NotificationCenter.default
-        nc.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
-        nc.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
     // MARK: - UIKitRUMViewsHandlerType

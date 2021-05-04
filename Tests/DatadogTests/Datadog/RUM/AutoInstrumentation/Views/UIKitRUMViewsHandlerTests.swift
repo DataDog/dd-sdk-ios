@@ -18,12 +18,14 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
     private let commandSubscriber = RUMCommandSubscriberMock()
     private let predicate = UIKitRUMViewsPredicateMock()
     private let uiKitHierarchyInspector = UIKitHierarchyInspectorMock()
+    private let notificationCenter = NotificationCenter()
 
     private lazy var handler: UIKitRUMViewsHandler = {
         let handler = UIKitRUMViewsHandler(
             predicate: predicate,
             dateProvider: dateProvider,
-            inspector: uiKitHierarchyInspector
+            inspector: uiKitHierarchyInspector,
+            notificationCenter: notificationCenter
         )
         handler.subscribe(commandsSubscriber: commandSubscriber)
         return handler
@@ -207,9 +209,9 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
 
         // When
-        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
-        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -234,9 +236,9 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
         predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
 
         // When
-        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
-        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
