@@ -125,14 +125,17 @@ class AppStateHistoryTests: XCTestCase {
 }
 
 class AppStateListenerTests: XCTestCase {
+    private let notificationCenter = NotificationCenter()
+
     func testWhenAppResignActiveAndBecomeActive_thenAppStateHistoryIsRecorded() {
         let startDate = Date.mockDecember15th2019At10AMUTC()
         let listener = AppStateListener(
-            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 1.0)
+            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 1.0),
+            notificationCenter: notificationCenter
         )
 
-        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
         let expected = AppStateHistory(
             initialState: .init(isActive: true, date: startDate),
@@ -148,10 +151,11 @@ class AppStateListenerTests: XCTestCase {
     func testWhenAppBecomeActiveAndResignActive_thenAppStateHistoryIsRecorded() {
         let startDate = Date.mockDecember15th2019At10AMUTC()
         let listener = AppStateListener(
-            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 1.0)
+            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 1.0),
+            notificationCenter: notificationCenter
         )
-        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
 
         let expected = AppStateHistory(
             initialState: .init(isActive: true, date: startDate),
@@ -167,7 +171,8 @@ class AppStateListenerTests: XCTestCase {
     func testWhenAppStateHistoryIsRetrieved_thenFinalDateOfHistoryChanges() {
         let startDate = Date.mockDecember15th2019At10AMUTC()
         let listener = AppStateListener(
-            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 1.0)
+            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 1.0),
+            notificationCenter: notificationCenter
         )
         let history1 = listener.history
         let history2 = listener.history
@@ -176,12 +181,14 @@ class AppStateListenerTests: XCTestCase {
     }
 
     func testWhenAppStateListenerIsCalledFromDifferentThreads_thenItWorks() {
-        let listener = AppStateListener(dateProvider: SystemDateProvider())
+        let listener = AppStateListener(
+            dateProvider: SystemDateProvider(),
+            notificationCenter: notificationCenter
+        )
         DispatchQueue.concurrentPerform(iterations: 10_000) { iteration in
             // write
             if iteration < 1_000 {
-                let nc = NotificationCenter.default
-                nc.post(
+                notificationCenter.post(
                     name: (Bool.random() ?
                             UIApplication.willResignActiveNotification :
                             UIApplication.didBecomeActiveNotification),
