@@ -16,25 +16,32 @@ extension URLSessionSwizzler {
     }
 }
 
+extension URLSessionAutoInstrumentation {
+    func disable() {
+        swizzler.unswizzle()
+    }
+}
+
 class URLSessionSwizzlerTests: XCTestCase {
     private let interceptor = URLSessionInterceptorMock()
-    private var swizzler: URLSessionSwizzler! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         super.setUp()
-        swizzler = try URLSessionSwizzler()
-        swizzler.swizzle()
+        URLSessionAutoInstrumentation.instance = .init(
+            swizzler: try URLSessionSwizzler(),
+            interceptor: interceptor
+        )
+        URLSessionAutoInstrumentation.instance?.enable() // swizzle `URLSession`
     }
 
     override func tearDown() {
-        swizzler.unswizzle()
+        URLSessionAutoInstrumentation.instance?.disable() // unswizzle `URLSession`
+        URLSessionAutoInstrumentation.instance = nil
         super.tearDown()
     }
 
     private func interceptedSession() -> URLSession {
-        let delegate = DDURLSessionDelegate()
-        delegate.interceptor = self.interceptor
-        return URLSession.createServerMockURLSession(delegate: delegate)
+        return .createServerMockURLSession(delegate: DDURLSessionDelegate())
     }
 
     // MARK: - Interception Flow

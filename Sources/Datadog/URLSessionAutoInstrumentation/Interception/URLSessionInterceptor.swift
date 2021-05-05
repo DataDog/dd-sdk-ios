@@ -6,18 +6,29 @@
 
 import Foundation
 
+/// An interface for handling `URLSession` interceptions start and completion.
+internal protocol URLSessionInterceptionHandler {
+    /// Notifies the `URLSessionTask` interception start.
+    func notify_taskInterceptionStarted(interception: TaskInterception)
+    /// Notifies the `URLSessionTask` interception completion.
+    func notify_taskInterceptionCompleted(interception: TaskInterception)
+}
+
+/// An interface for processing `URLSession` task interceptions.
 internal protocol URLSessionInterceptorType: class {
     func modify(request: URLRequest, session: URLSession?) -> URLRequest
     func taskCreated(task: URLSessionTask, session: URLSession?)
     func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
     func taskReceivedData(task: URLSessionTask, data: Data)
     func taskCompleted(task: URLSessionTask, error: Error?)
+
+    var handler: URLSessionInterceptionHandler { get }
 }
 
 /// An object performing interception of requests sent with `URLSession`.
 public class URLSessionInterceptor: URLSessionInterceptorType {
     public static var shared: URLSessionInterceptor? {
-        URLSessionAutoInstrumentation.instance?.interceptor
+        URLSessionAutoInstrumentation.instance?.interceptor as? URLSessionInterceptor
     }
 
     /// Filters first party `URLs` defined by the user.

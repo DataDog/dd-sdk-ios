@@ -7,24 +7,6 @@
 import XCTest
 @testable import Datadog
 
-private class URLSessionInterceptionHandlerMock: URLSessionInterceptionHandler {
-    var didNotifyInterceptionStart: ((TaskInterception) -> Void)?
-    var startedInterceptions: [TaskInterception] = []
-
-    func notify_taskInterceptionStarted(interception: TaskInterception) {
-        startedInterceptions.append(interception)
-        didNotifyInterceptionStart?(interception)
-    }
-
-    var didNotifyInterceptionCompletion: ((TaskInterception) -> Void)?
-    var completedInterceptions: [TaskInterception] = []
-
-    func notify_taskInterceptionCompleted(interception: TaskInterception) {
-        completedInterceptions.append(interception)
-        didNotifyInterceptionCompletion?(interception)
-    }
-}
-
 class URLSessionInterceptorTests: XCTestCase {
     private let handler = URLSessionInterceptionHandlerMock()
     /// Mock request made to a first party URL.

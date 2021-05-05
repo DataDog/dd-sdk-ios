@@ -9,11 +9,20 @@ import XCTest
 
 class DDURLSessionDelegateTests: XCTestCase {
     private let interceptor = URLSessionInterceptorMock()
-    private lazy var delegate: DDURLSessionDelegate = {
-        let delegate = DDURLSessionDelegate()
-        delegate.interceptor = interceptor
-        return delegate
-    }()
+    private let delegate = DDURLSessionDelegate()
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        URLSessionAutoInstrumentation.instance = .init(
+            swizzler: try URLSessionSwizzler(),
+            interceptor: interceptor
+        )
+    }
+
+    override func tearDown() {
+        URLSessionAutoInstrumentation.instance = nil
+        super.tearDown()
+    }
 
     // MARK: - Interception Flow
 
@@ -157,91 +166,5 @@ class DDURLSessionDelegateTests: XCTestCase {
         XCTAssertNil(interceptor.tasksCompleted[1].error)
         XCTAssertTrue(interceptor.tasksReceivedData[1].task === taskWithURLRequest)
         XCTAssertEqual(interceptor.tasksReceivedData[1].data, randomData)
-    }
-
-    // MARK: - Usage errors
-
-    func testGivenAutoInstrumentationInstanceIsNil_whenInitializingDDURLSessionDelegate_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        let previousConsolePrint = consolePrint
-        consolePrint = printFunction.print
-        defer { consolePrint = previousConsolePrint }
-
-        // given
-        URLSessionAutoInstrumentation.instance = nil
-
-        // when
-        _ = DDURLSessionDelegate()
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
-            first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
-            to enable network requests tracking.
-            """
-        )
-    }
-
-    func testGivenAutoInstrumentationInstanceIsNil_whenInitializingDDURLSessionDelegateWithCustomFirstPartyHosts_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        let previousConsolePrint = consolePrint
-        consolePrint = printFunction.print
-        defer { consolePrint = previousConsolePrint }
-
-        // given
-        URLSessionAutoInstrumentation.instance = nil
-
-        // when
-        _ = DDURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
-            first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
-            to enable network requests tracking.
-            """
-        )
-    }
-
-    func testWhenDDURLSessionDelegateInits_itPicksCorrectInterceptor() {
-        // given
-        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
-            configuration: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            appStateListener: AppStateListener.mockAny()
-        )
-        defer { URLSessionAutoInstrumentation.instance = nil }
-
-        // when
-        let testDelegate = DDURLSessionDelegate()
-
-        // then
-        XCTAssert(
-            testDelegate.interceptor === URLSessionAutoInstrumentation.instance?.interceptor,
-            "\(String(describing: testDelegate.interceptor)) must be identical to \(String(describing: URLSessionAutoInstrumentation.instance?.interceptor))"
-        )
-    }
-
-    func testWhenDDURLSessionDelegateInitsWithCustomFirstPartyHosts_itPicksCorrectInterceptor() {
-        // given
-        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
-            configuration: .mockAny(),
-            dateProvider: SystemDateProvider(),
-            appStateListener: AppStateListener.mockAny()
-        )
-        defer { URLSessionAutoInstrumentation.instance = nil }
-
-        // when
-        let testDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
-
-        // then
-        XCTAssert(
-            testDelegate.interceptor === URLSessionAutoInstrumentation.instance?.interceptor,
-            "\(String(describing: testDelegate.interceptor)) must be identical to \(String(describing: URLSessionAutoInstrumentation.instance?.interceptor))"
-        )
     }
 }
