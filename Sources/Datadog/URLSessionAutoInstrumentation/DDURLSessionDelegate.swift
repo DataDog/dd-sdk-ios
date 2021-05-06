@@ -28,8 +28,8 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
         return self
     }
 
-    internal var interceptor: URLSessionInterceptorType? { URLSessionAutoInstrumentation.instance?.interceptor }
-    private(set) var firstPartyURLsFilter: FirstPartyURLsFilter?
+    var interceptor: URLSessionInterceptorType? { URLSessionAutoInstrumentation.instance?.interceptor }
+    let firstPartyURLsFilter: FirstPartyURLsFilter?
 
     @objc
     override public init() {

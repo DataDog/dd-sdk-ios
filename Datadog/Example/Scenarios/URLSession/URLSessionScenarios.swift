@@ -20,7 +20,7 @@ class URLSessionBaseScenario: NSObject {
 
     /// Randomizes the way of creating `URLSession` instrumented with `DDURLSessionDelegate`.
     /// If `true`, the session is created after `Datadog.initialize()`; if `false`, it's created before.
-    private let lazyInitRLSession: Bool
+    private let lazyInitURLSession: Bool
 
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
     @objc
@@ -47,7 +47,7 @@ class URLSessionBaseScenario: NSObject {
 
     override init() {
         feedAdditionalFirstyPartyHosts = .random()
-        lazyInitRLSession = .random()
+        lazyInitURLSession = .random()
 
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let serverMockConfiguration = Environment.serverMockConfiguration()!
@@ -82,7 +82,7 @@ class URLSessionBaseScenario: NSObject {
         }
         super.init()
 
-        if lazyInitRLSession {
+        if lazyInitURLSession {
             self.session = nil // it will be created on lazily, on first access from VC
         } else {
             self.session = createInstrumentedURLSession()
@@ -104,7 +104,7 @@ class URLSessionBaseScenario: NSObject {
     @objc
     func getURLSession() -> URLSession {
         if session == nil {
-            precondition(lazyInitRLSession, "The session is unavailable, but it is not configured for lazy init")
+            precondition(lazyInitURLSession, "The session is unavailable, but it is not configured for lazy init")
             session = createInstrumentedURLSession()
         }
         return session
