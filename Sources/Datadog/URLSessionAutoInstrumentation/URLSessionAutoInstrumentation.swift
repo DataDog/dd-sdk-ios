@@ -11,26 +11,33 @@ internal class URLSessionAutoInstrumentation {
     static var instance: URLSessionAutoInstrumentation?
 
     let swizzler: URLSessionSwizzler
-    let interceptor: URLSessionInterceptor
+    let interceptor: URLSessionInterceptorType
 
-    init?(
+    convenience init?(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         dateProvider: DateProvider,
         appStateListener: AppStateListening
     ) {
         do {
-            self.interceptor = URLSessionInterceptor(
-                configuration: configuration,
-                dateProvider: dateProvider,
-                appStateListener: appStateListener
+            self.init(
+                swizzler: try URLSessionSwizzler(),
+                interceptor: URLSessionInterceptor(
+                    configuration: configuration,
+                    dateProvider: dateProvider,
+                    appStateListener: appStateListener
+                )
             )
-            self.swizzler = try URLSessionSwizzler()
         } catch {
             consolePrint(
                 "🔥 Datadog SDK error: automatic tracking of `URLSession` requests can't be set up due to error: \(error)"
             )
             return nil
         }
+    }
+
+    init(swizzler: URLSessionSwizzler, interceptor: URLSessionInterceptorType) {
+        self.swizzler = swizzler
+        self.interceptor = interceptor
     }
 
     func enable() {

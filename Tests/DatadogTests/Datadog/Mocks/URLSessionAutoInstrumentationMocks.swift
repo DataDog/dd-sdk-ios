@@ -55,6 +55,26 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
         taskMetrics.append((task: task, metrics: metrics))
         onTaskMetricsCollected?(task, metrics)
     }
+
+    let handler: URLSessionInterceptionHandler = URLSessionInterceptionHandlerMock()
+}
+
+class URLSessionInterceptionHandlerMock: URLSessionInterceptionHandler {
+    var didNotifyInterceptionStart: ((TaskInterception) -> Void)?
+    var startedInterceptions: [TaskInterception] = []
+
+    func notify_taskInterceptionStarted(interception: TaskInterception) {
+        startedInterceptions.append(interception)
+        didNotifyInterceptionStart?(interception)
+    }
+
+    var didNotifyInterceptionCompletion: ((TaskInterception) -> Void)?
+    var completedInterceptions: [TaskInterception] = []
+
+    func notify_taskInterceptionCompleted(interception: TaskInterception) {
+        completedInterceptions.append(interception)
+        didNotifyInterceptionCompletion?(interception)
+    }
 }
 
 extension ResourceCompletion {

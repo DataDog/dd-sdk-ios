@@ -260,7 +260,6 @@
 		6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */; };
 		6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */; };
 		6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */; };
-		61940C7C25668EC600A20043 /* URLSessionInterceptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
@@ -804,7 +803,6 @@
 		6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASScreen1ViewController.swift; sourceTree = "<group>"; };
 		6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASTableViewController.swift; sourceTree = "<group>"; };
 		6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASCollectionViewController.swift; sourceTree = "<group>"; };
-		61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptionHandler.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
 		619E16D72577C1CB00B2516B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
 		619E16E82578E73E00B2516B /* DataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigrator.swift; sourceTree = "<group>"; };
@@ -1903,7 +1901,6 @@
 			children = (
 				613F23DC252B05BD006CD2D7 /* URLFiltering */,
 				618E1337252340810098C6B0 /* URLSessionInterceptor.swift */,
-				61940C7B25668EC600A20043 /* URLSessionInterceptionHandler.swift */,
 				61417DC52525CDDE00E2D55C /* TaskInterception.swift */,
 			);
 			path = Interception;
@@ -3293,7 +3290,6 @@
 				618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				E1D202EA24C065CF00D1AF3A /* ActiveSpansPool.swift in Sources */,
-				61940C7C25668EC600A20043 /* URLSessionInterceptionHandler.swift in Sources */,
 				9ED6A6B425F2901800CB2E29 /* AppStateListener.swift in Sources */,
 				61F3CDA3251118FB00C816E5 /* UIKitRUMViewsHandler.swift in Sources */,
 				61C5A88824509A0C00DA608C /* Warnings.swift in Sources */,
