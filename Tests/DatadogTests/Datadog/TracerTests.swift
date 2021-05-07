@@ -333,9 +333,11 @@ class TracerTests: XCTestCase {
         let tracer = Tracer.initialize(configuration: .init()).dd
 
         tracer.startSpan(operationName: "span with no user info").finish()
+        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         Datadog.setUserInfo(id: "abc-123", name: "Foo")
         tracer.startSpan(operationName: "span with user `id` and `name`").finish()
+        tracer.queue.sync {}
 
         Datadog.setUserInfo(
             id: "abc-123",
@@ -348,6 +350,7 @@ class TracerTests: XCTestCase {
             ]
         )
         tracer.startSpan(operationName: "span with user `id`, `name`, `email` and `extraInfo`").finish()
+        tracer.queue.sync {}
 
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
         tracer.startSpan(operationName: "span with no user info").finish()
@@ -400,6 +403,7 @@ class TracerTests: XCTestCase {
         )
 
         tracer.startSpan(operationName: "span with carrier info").finish()
+        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         // simulate leaving cellular service range
         carrierInfoProvider.set(current: nil)
@@ -447,6 +451,7 @@ class TracerTests: XCTestCase {
         )
 
         tracer.startSpan(operationName: "online span").finish()
+        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         // simulate unreachable network
         networkConnectionInfoProvider.set(
@@ -897,14 +902,20 @@ class TracerTests: XCTestCase {
         )
         defer { TracingFeature.instance = nil }
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init()).dd
 
         // When
         tracer.startSpan(operationName: "span in `.pending` consent changed to `.granted`").finish()
+        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
+
         consentProvider.changeConsent(to: .granted)
         tracer.startSpan(operationName: "span in `.granted` consent").finish()
+        tracer.queue.sync {}
+
         consentProvider.changeConsent(to: .notGranted)
         tracer.startSpan(operationName: "span in `.notGranted` consent").finish()
+        tracer.queue.sync {}
+
         consentProvider.changeConsent(to: .granted)
         tracer.startSpan(operationName: "another span in `.granted` consent").finish()
 
@@ -954,30 +965,6 @@ class TracerTests: XCTestCase {
                 // swiftlint:enable opening_brace
             ]
         )
-    }
-
-    func testWhenSpanStateChangesFromDifferentThreads_itChangesSpanState() {
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
-        let tracer = Tracer.initialize(configuration: .init())
-        let span = tracer.startSpan(operationName: "some span", childOf: nil).dd
-
-        let closures: [(DDSpan) -> Void] = [
-            // swiftlint:disable opening_brace
-            { span in span.setTag(key: .mockRandom(), value: "value") },
-            { span in span.setBaggageItem(key: .mockRandom(), value: "value") },
-            { span in _ = span.baggageItem(withKey: .mockRandom()) },
-            { span in _ = span.context.forEachBaggageItem { _, _ in return false } },
-            { span in span.log(fields: [.mockRandom(): "value"]) }
-            // swiftlint:enable opening_brace
-        ]
-        /// Calls given closures on each span cuncurrently
-        let iterations = 100
-        DispatchQueue.concurrentPerform(iterations: iterations) { iteration in
-            closures.forEach { $0(span) }
-        }
-        XCTAssertEqual(span.tags.count, iterations)
-        XCTAssertEqual(span.logFields.count, iterations)
     }
 
     // MARK: - Usage errors
@@ -1047,6 +1034,7 @@ class TracerTests: XCTestCase {
         span.log(fields: ["bar": "bizz"])
 
         // then
+        tracer.dd.queue.sync {} // wait synchronizing span's internal state
         XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 

@@ -8,7 +8,7 @@ import Foundation
 import Datadog
 
 @objc
-open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionDelegateProviding {
+open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     var swiftDelegate: DDURLSessionDelegate
     public var ddURLSessionDelegate: DDURLSessionDelegate {
         return swiftDelegate
@@ -30,5 +30,9 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessio
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         swiftDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
+    }
+
+    open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        swiftDelegate.urlSession(session, dataTask: dataTask, didReceive: data)
     }
 }

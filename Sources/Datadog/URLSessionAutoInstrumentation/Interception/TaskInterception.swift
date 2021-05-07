@@ -16,6 +16,8 @@ internal class TaskInterception {
     internal let isFirstPartyRequest: Bool
     /// Task metrics collected during this interception.
     private(set) var metrics: ResourceMetrics?
+    /// Task data received during this interception. Can be `nil` if task completed with error.
+    private(set) var data: Data?
     /// Task completion collected during this interception.
     private(set) var completion: ResourceCompletion?
     /// Trace information propagated with the task. Not available when Tracing is disabled
@@ -33,6 +35,14 @@ internal class TaskInterception {
 
     func register(metrics: ResourceMetrics) {
         self.metrics = metrics
+    }
+
+    func register(nextData: Data) {
+        if data != nil {
+            self.data?.append(nextData)
+        } else {
+            self.data = nextData
+        }
     }
 
     func register(completion: ResourceCompletion) {
@@ -59,12 +69,19 @@ internal struct ResourceCompletion {
     }
 }
 
-/// Encapsulates key metrics retrieved from `URLSessionTaskMetrics`.
+/// Encapsulates key metrics retrieved either from `URLSessionTaskMetrics` or any other relevant data source.
 /// Reference: https://developer.apple.com/documentation/foundation/urlsessiontasktransactionmetrics
 internal struct ResourceMetrics {
     struct DateInterval {
         let start, end: Date
         var duration: TimeInterval { end.timeIntervalSince(start) }
+
+        static func create(start: Date?, end: Date?) -> DateInterval? {
+            if let start = start, let end = end {
+                return DateInterval(start: start, end: end)
+            }
+            return nil
+        }
     }
 
     /// Properties of the fetch phase for the resource:

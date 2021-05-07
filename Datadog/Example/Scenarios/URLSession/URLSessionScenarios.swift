@@ -14,9 +14,13 @@ import Datadog
 /// calls third party endpoints.
 @objc
 class URLSessionBaseScenario: NSObject {
-    /// If yes, instrumented endpoints are passed to `DDURLSessionDelegate`; otherwise, they are passed to `DatadogConfiguration.trackURLSession` method
-    @objc
-    let feedAdditionalFirstyPartyHosts: Bool
+    /// Randomizes the way of passing additional first party hosts.
+    /// If `true`, instrumented endpoints are passed to `DDURLSessionDelegate`; otherwise, they are passed to `DatadogConfiguration.trackURLSession(...)`.
+    private let feedAdditionalFirstyPartyHosts: Bool
+
+    /// Randomizes the way of creating `URLSession` instrumented with `DDURLSessionDelegate`.
+    /// If `true`, the session is created after `Datadog.initialize()`; if `false`, it's created before.
+    private let lazyInitURLSession: Bool
 
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
     @objc
@@ -38,8 +42,13 @@ class URLSessionBaseScenario: NSObject {
     @objc
     let thirdPartyURL: URL
 
+    /// Randomized value determining if the `DDURLSessionDelegate` should be initialized before (`false)` or after `Datadog.initialize()` (`true`).
+    private var ddURLSessionDelegate: DDURLSessionDelegate?
+
     override init() {
-        feedAdditionalFirstyPartyHosts = Bool.random()
+        feedAdditionalFirstyPartyHosts = .random()
+        lazyInitURLSession = .random()
+
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let serverMockConfiguration = Environment.serverMockConfiguration()!
             customGETResourceURL = serverMockConfiguration.instrumentedEndpoints[0]
@@ -71,6 +80,13 @@ class URLSessionBaseScenario: NSObject {
                 return request
             }()
         }
+        super.init()
+
+        if lazyInitURLSession {
+            self.session = nil // it will be created on lazily, on first access from VC
+        } else {
+            self.session = createInstrumentedURLSession()
+        }
     }
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
@@ -83,8 +99,18 @@ class URLSessionBaseScenario: NSObject {
         }
     }
 
+    private var session: URLSession!
+
     @objc
-    func buildURLSession() -> URLSession {
+    func getURLSession() -> URLSession {
+        if session == nil {
+            precondition(lazyInitURLSession, "The session is unavailable, but it is not configured for lazy init")
+            session = createInstrumentedURLSession()
+        }
+        return session
+    }
+
+    private func createInstrumentedURLSession() -> URLSession {
         let delegate: DDURLSessionDelegate
         if feedAdditionalFirstyPartyHosts {
             delegate = DDURLSessionDelegate(

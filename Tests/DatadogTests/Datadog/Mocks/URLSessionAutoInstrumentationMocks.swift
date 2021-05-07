@@ -18,10 +18,12 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
 
     var onRequestModified: ((URLRequest, URLSession?) -> Void)?
     var onTaskCreated: ((URLSessionTask, URLSession?) -> Void)?
+    var onTaskReceivedData: ((URLSessionTask, Data) -> Void)?
     var onTaskCompleted: ((URLSessionTask, Error?) -> Void)?
     var onTaskMetricsCollected: ((URLSessionTask, URLSessionTaskMetrics) -> Void)?
 
     var tasksCreated: [URLSessionTask] = []
+    var tasksReceivedData: [(task: URLSessionTask, data: Data)] = []
     var tasksCompleted: [(task: URLSessionTask, error: Error?)] = []
     var taskMetrics: [(task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
 
@@ -35,6 +37,15 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
         onTaskCreated?(task, session)
     }
 
+    func taskReceivedData(task: URLSessionTask, data: Data) {
+        if let existingEntryIndex = tasksReceivedData.firstIndex(where: { $0.task === task }) {
+            tasksReceivedData[existingEntryIndex].data.append(data)
+        } else {
+            tasksReceivedData.append((task: task, data: data))
+        }
+        onTaskReceivedData?(task, data)
+    }
+
     func taskCompleted(task: URLSessionTask, error: Error?) {
         tasksCompleted.append((task: task, error: error))
         onTaskCompleted?(task, error)
@@ -43,6 +54,26 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
     func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics) {
         taskMetrics.append((task: task, metrics: metrics))
         onTaskMetricsCollected?(task, metrics)
+    }
+
+    let handler: URLSessionInterceptionHandler = URLSessionInterceptionHandlerMock()
+}
+
+class URLSessionInterceptionHandlerMock: URLSessionInterceptionHandler {
+    var didNotifyInterceptionStart: ((TaskInterception) -> Void)?
+    var startedInterceptions: [TaskInterception] = []
+
+    func notify_taskInterceptionStarted(interception: TaskInterception) {
+        startedInterceptions.append(interception)
+        didNotifyInterceptionStart?(interception)
+    }
+
+    var didNotifyInterceptionCompletion: ((TaskInterception) -> Void)?
+    var completedInterceptions: [TaskInterception] = []
+
+    func notify_taskInterceptionCompleted(interception: TaskInterception) {
+        completedInterceptions.append(interception)
+        didNotifyInterceptionCompletion?(interception)
     }
 }
 

@@ -29,6 +29,7 @@ internal struct FeaturesConfiguration {
     struct Tracing {
         let common: Common
         let uploadURLWithClientToken: URL
+        let spanEventMapper: SpanEventMapper?
     }
 
     struct RUM {
@@ -54,6 +55,8 @@ internal struct FeaturesConfiguration {
         let userDefinedFirstPartyHosts: Set<String>
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>
+        /// An optional RUM Resource attributes provider.
+        let rumAttributesProvider: URLSessionRUMAttributesProvider?
 
         /// If the Tracing instrumentation should be enabled.
         let instrumentTracing: Bool
@@ -166,7 +169,8 @@ extension FeaturesConfiguration {
                 uploadURLWithClientToken: try ifValid(
                     endpointURLString: tracesEndpoint.url,
                     clientToken: configuration.clientToken
-                )
+                ),
+                spanEventMapper: configuration.spanEventMapper
             )
         }
 
@@ -215,6 +219,7 @@ extension FeaturesConfiguration {
                         tracesEndpoint.url,
                         rumEndpoint.url
                     ],
+                    rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     instrumentTracing: configuration.tracingEnabled,
                     instrumentRUM: configuration.rumEnabled
                 )
@@ -227,6 +232,14 @@ extension FeaturesConfiguration {
                 )
                 consolePrint("\(error)")
             }
+        } else if configuration.rumResourceAttributesProvider != nil {
+            let error = ProgrammerError(
+                description: """
+                To use `.setRUMResourceAttributesProvider(_:)` URLSession tracking must be enabled
+                with `.trackURLSession(firstPartyHosts:)`.
+                """
+            )
+            consolePrint("\(error)")
         }
 
         if let crashReportingPlugin = configuration.crashReportingPlugin {

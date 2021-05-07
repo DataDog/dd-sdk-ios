@@ -16,25 +16,32 @@ extension URLSessionSwizzler {
     }
 }
 
+extension URLSessionAutoInstrumentation {
+    func disable() {
+        swizzler.unswizzle()
+    }
+}
+
 class URLSessionSwizzlerTests: XCTestCase {
     private let interceptor = URLSessionInterceptorMock()
-    private var swizzler: URLSessionSwizzler! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         super.setUp()
-        swizzler = try URLSessionSwizzler()
-        swizzler.swizzle()
+        URLSessionAutoInstrumentation.instance = .init(
+            swizzler: try URLSessionSwizzler(),
+            interceptor: interceptor
+        )
+        URLSessionAutoInstrumentation.instance?.enable() // swizzle `URLSession`
     }
 
     override func tearDown() {
-        swizzler.unswizzle()
+        URLSessionAutoInstrumentation.instance?.disable() // unswizzle `URLSession`
+        URLSessionAutoInstrumentation.instance = nil
         super.tearDown()
     }
 
     private func interceptedSession() -> URLSession {
-        let delegate = DDURLSessionDelegate()
-        delegate.interceptor = self.interceptor
-        return URLSession.createServerMockURLSession(delegate: delegate)
+        return .createServerMockURLSession(delegate: DDURLSessionDelegate())
     }
 
     // MARK: - Interception Flow
@@ -42,6 +49,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLRequestAndCompletion_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
         let requestModified = expectation(description: "Modify request")
         let notifyTaskCreated = expectation(description: "Notify task creation")
+        let notifyTaskReceivedData = expectation(description: "Notify task received data")
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         let completionHandlerCalled = expectation(description: "Call completion handler")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
@@ -54,6 +62,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCreated = { _, session in
             XCTAssertNotNil(session)
             notifyTaskCreated.fulfill()
+        }
+        interceptor.onTaskReceivedData = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskReceivedData.fulfill()
         }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
@@ -67,7 +79,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         task.resume()
 
         // Then
-        wait(for: [requestModified, notifyTaskCreated, notifyTaskCompleted, completionHandlerCalled], timeout: 0.5, enforceOrder: true)
+        wait(for: [requestModified, notifyTaskCreated, notifyTaskReceivedData, notifyTaskCompleted, completionHandlerCalled], timeout: 2, enforceOrder: true)
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified")
@@ -79,6 +91,7 @@ class URLSessionSwizzlerTests: XCTestCase {
             requestModified.isInverted = true
         }
         let notifyTaskCreated = expectation(description: "Notify task creation")
+        let notifyTaskReceivedData = expectation(description: "Notify task received data")
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         let completionHandlerCalled = expectation(description: "Call completion handler")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
@@ -92,6 +105,10 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertNotNil(session)
             notifyTaskCreated.fulfill()
         }
+        interceptor.onTaskReceivedData = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskReceivedData.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -104,7 +121,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         task.resume()
 
         // Then
-        wait(for: [requestModified, notifyTaskCreated, notifyTaskCompleted, completionHandlerCalled], timeout: 0.5, enforceOrder: true)
+        wait(for: [requestModified, notifyTaskCreated, notifyTaskReceivedData, notifyTaskCompleted, completionHandlerCalled], timeout: 2, enforceOrder: true)
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         if #available(iOS 13.0, *) {
@@ -117,6 +134,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLRequest_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
         let requestModified = expectation(description: "Modify request")
         let notifyTaskCreated = expectation(description: "Notify task creation")
+        let notifyTaskReceivedData = expectation(description: "Notify task received data")
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -129,6 +147,10 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertNotNil(session)
             notifyTaskCreated.fulfill()
         }
+        interceptor.onTaskReceivedData = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskReceivedData.fulfill()
+        }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -139,7 +161,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         task.resume()
 
         // Then
-        wait(for: [requestModified, notifyTaskCreated, notifyTaskCompleted], timeout: 0.5, enforceOrder: true)
+        wait(for: [requestModified, notifyTaskCreated, notifyTaskReceivedData, notifyTaskCompleted], timeout: 2, enforceOrder: true)
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified.")
@@ -149,6 +171,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         let requestNotModified = expectation(description: "Do not modify request")
         requestNotModified.isInverted = true
         let notifyTaskCreated = expectation(description: "Notify task creation")
+        let notifyTaskReceivedData = expectation(description: "Notify task received data")
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -157,6 +180,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCreated = { _, session in
             XCTAssertNotNil(session)
             notifyTaskCreated.fulfill()
+        }
+        interceptor.onTaskReceivedData = { _, session in
+            XCTAssertNotNil(session)
+            notifyTaskReceivedData.fulfill()
         }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
@@ -168,7 +195,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         task.resume()
 
         // Then
-        wait(for: [requestNotModified, notifyTaskCreated, notifyTaskCompleted], timeout: 0.5, enforceOrder: true)
+        wait(for: [requestNotModified, notifyTaskCreated, notifyTaskReceivedData, notifyTaskCompleted], timeout: 2, enforceOrder: true)
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         XCTAssertNotEqual(requestSent, interceptor.modifiedRequest, "The request should not be modified.")
@@ -199,16 +226,16 @@ class URLSessionSwizzlerTests: XCTestCase {
         task2.resume()
 
         // Then
-        wait(for: [notifyTaskCreated, notifyTaskCompleted], timeout: 0.5, enforceOrder: true)
+        wait(for: [notifyTaskCreated, notifyTaskCompleted], timeout: 2, enforceOrder: false)
 
         _ = server.waitAndReturnRequests(count: 2)
     }
 
     func testGivenNonInterceptedSession_itDoesntCallInterceptor() throws {
-        let doNotModifyRequest = expectation(description: "Notify request modification")
+        let doNotModifyRequest = expectation(description: "Do not notify request modification")
         doNotModifyRequest.isInverted = true
         interceptor.onRequestModified = { _, _ in doNotModifyRequest.fulfill() }
-        let doNotNotifyTaskCreated = expectation(description: "Notify task creation")
+        let doNotNotifyTaskCreated = expectation(description: "Do not notify task creation")
         doNotNotifyTaskCreated.isInverted = true
         interceptor.onTaskCreated = { _, _ in doNotNotifyTaskCreated.fulfill() }
 
@@ -222,7 +249,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         let taskWithURLRequestWithCompletion = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in }
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 2, handler: nil)
         XCTAssertNotNil(taskWithURL)
         XCTAssertNotNil(taskWithURLRequest)
         XCTAssertNotNil(taskWithURLWithCompletion)
@@ -232,15 +259,19 @@ class URLSessionSwizzlerTests: XCTestCase {
     // MARK: - Interception Values
 
     func testGivenSuccessfulTask_whenUsingSwizzledAPIs_itPassessAllValuesToTheInterceptor() {
-        let completionHandlersCalled = expectation(description: "Call completion handlers")
+        let completionHandlersCalled = expectation(description: "Call 2 completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
-        let notifyTaskCompleted = expectation(description: "Notify task completion")
+        let notifyTaskReceivedData = expectation(description: "Notify 4 tasks received data")
+        notifyTaskReceivedData.expectedFulfillmentCount = 4
+        let notifyTaskCompleted = expectation(description: "Notify 4 tasks completion")
         notifyTaskCompleted.expectedFulfillmentCount = 4
+
+        interceptor.onTaskReceivedData = { _, _ in notifyTaskReceivedData.fulfill() }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let expectedResponse: HTTPURLResponse = .mockResponseWith(statusCode: 200)
-        let expectedData: Data = .mock(ofSize: 10)
+        let expectedData: Data = .mockRandom()
         let server = ServerMock(delivery: .success(response: expectedResponse, data: expectedData))
         let session = interceptedSession()
 
@@ -268,7 +299,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         taskWithURL.resume()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 2, handler: nil)
 
         _ = server.waitAndReturnRequests(count: 4)
         XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record all 4 tasks created.")
@@ -277,25 +308,33 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertTrue(interceptor.tasksCreated[0] === taskWithURLRequestAndCompletion)
         XCTAssertTrue(interceptor.tasksCompleted[0].task === taskWithURLRequestAndCompletion)
         XCTAssertNil(interceptor.tasksCompleted[0].error)
+        XCTAssertEqual(interceptor.tasksReceivedData[0].data, expectedData)
 
         XCTAssertTrue(interceptor.tasksCreated[1] === taskWithURLAndCompletion)
         XCTAssertTrue(interceptor.tasksCompleted[1].task === taskWithURLAndCompletion)
         XCTAssertNil(interceptor.tasksCompleted[1].error)
+        XCTAssertEqual(interceptor.tasksReceivedData[1].data, expectedData)
 
         XCTAssertTrue(interceptor.tasksCreated[2] === taskWithURLRequest)
         XCTAssertTrue(interceptor.tasksCompleted[2].task === taskWithURLRequest)
         XCTAssertNil(interceptor.tasksCompleted[2].error)
+        XCTAssertEqual(interceptor.tasksReceivedData[2].data, expectedData)
 
         XCTAssertTrue(interceptor.tasksCreated[3] === taskWithURL)
         XCTAssertTrue(interceptor.tasksCompleted[3].task === taskWithURL)
         XCTAssertNil(interceptor.tasksCompleted[3].error)
+        XCTAssertEqual(interceptor.tasksReceivedData[3].data, expectedData)
     }
 
     func testGivenFailedTask_whenUsingSwizzledAPIs_itPassessAllValuesToTheInterceptor() {
-        let completionHandlersCalled = expectation(description: "Call completion handlers")
+        let completionHandlersCalled = expectation(description: "Call 2 completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
-        let notifyTaskCompleted = expectation(description: "Notify task completion")
+        let noTaskShouldReceiveData = expectation(description: "None of tasks should recieve data")
+        noTaskShouldReceiveData.isInverted = true
+        let notifyTaskCompleted = expectation(description: "Notify 4 tasks completion")
         notifyTaskCompleted.expectedFulfillmentCount = 4
+
+        interceptor.onTaskReceivedData = { _, _ in noTaskShouldReceiveData.fulfill() }
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
@@ -327,7 +366,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         taskWithURL.resume()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 2, handler: nil)
 
         _ = server.waitAndReturnRequests(count: 4)
         XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record all 4 tasks created.")
@@ -348,5 +387,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertTrue(interceptor.tasksCreated[3] === taskWithURL)
         XCTAssertTrue(interceptor.tasksCompleted[3].task === taskWithURL)
         XCTAssertEqual((interceptor.tasksCompleted[3].error! as NSError).localizedDescription, "some error")
+
+        XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "When tasks complete with failure, they should not receive data")
     }
 }

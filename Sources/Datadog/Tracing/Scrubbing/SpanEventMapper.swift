@@ -6,7 +6,6 @@
 
 import Foundation
 
-/// An interface for writing spans to some destination.
-internal protocol SpanOutput {
-    func write(span: SpanEvent)
-}
+/// Data scrubbing interface.
+/// It takes `SpanEvent` and returns modified `SpanEvent`.
+internal typealias SpanEventMapper = (SpanEvent) -> SpanEvent

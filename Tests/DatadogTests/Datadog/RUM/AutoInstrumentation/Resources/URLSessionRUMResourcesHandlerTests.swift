@@ -13,11 +13,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private lazy var handler: URLSessionRUMResourcesHandler = {
-        let handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider)
+    private func createHandler(rumAttributesProvider: URLSessionRUMAttributesProvider? = nil) -> URLSessionRUMResourcesHandler {
+        let handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider, rumAttributesProvider: rumAttributesProvider)
         handler.subscribe(commandsSubscriber: commandSubscriber)
         return handler
-    }()
+    }
+    private lazy var handler = createHandler(rumAttributesProvider: nil)
 
     func testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
         let receiveCommand = expectation(description: "Receive RUM command")
@@ -98,7 +99,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStartCommand.spanContext?.spanID, "2")
     }
 
-    func testGivenTaskInterceptionWithMetricsAndCompletion_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
+    func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
         let receiveCommands = expectation(description: "Receive 2 RUM commands")
         receiveCommands.expectedFulfillmentCount = 2
         var commandsReceived: [RUMCommand] = []
@@ -173,5 +174,79 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.errorSource, .network)
         XCTAssertEqual(resourceStopCommand.stack, DDError(error: taskError).stack)
         XCTAssertNil(resourceStopCommand.httpStatusCode)
+    }
+
+    // MARK: - RUM Resource Attributes Provider
+
+    func testGivenRUMAttributesProviderRegistered_whenInterceptionCompletesWithResponse_itAddsCustomRUMAttributes() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let mockRequest: URLRequest = .mockAny()
+        let mockResponse: URLResponse = .mockAny()
+        let mockData: Data = .mockRandom()
+        let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
+
+        let handler = createHandler { request, response, data, error in
+            XCTAssertEqual(request, mockRequest)
+            XCTAssertEqual(response, mockResponse)
+            XCTAssertEqual(data, mockData)
+            XCTAssertNil(error)
+            return mockAttributes
+        }
+
+        // When
+        let taskInterception = TaskInterception(request: mockRequest, isFirstParty: .random())
+        taskInterception.register(nextData: mockData)
+        taskInterception.register(metrics: .mockAny())
+        taskInterception.register(completion: .mockWith(response: mockResponse, error: nil))
+        handler.notify_taskInterceptionCompleted(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        AssertDictionariesEqual(stopResourceCommand!.attributes, mockAttributes)
+    }
+
+    func testGivenTaskInterceptionWithError_whenInterceptionCompletes_itAsksForCustomRUMAttributes() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceWithErrorCommand")
+        var stopResourceWithErrorCommand: RUMStopResourceWithErrorCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceWithErrorCommand {
+                stopResourceWithErrorCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let mockRequest: URLRequest = .mockAny()
+        let mockError = ErrorMock()
+        let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
+
+        let handler = createHandler { request, response, data, error in
+            XCTAssertEqual(request, mockRequest)
+            XCTAssertNil(response)
+            XCTAssertNil(data)
+            XCTAssertTrue(error is ErrorMock)
+            return mockAttributes
+        }
+
+        // When
+        let taskInterception = TaskInterception(request: mockRequest, isFirstParty: .random())
+        taskInterception.register(metrics: .mockAny())
+        taskInterception.register(completion: .mockWith(response: nil, error: mockError))
+        handler.notify_taskInterceptionCompleted(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        AssertDictionariesEqual(stopResourceWithErrorCommand!.attributes, mockAttributes)
     }
 }

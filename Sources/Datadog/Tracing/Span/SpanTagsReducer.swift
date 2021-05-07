@@ -15,7 +15,7 @@ import Foundation
 /// - reducing the initial `spanTags` collection to `reducedSpanTags` by removing extracted information.
 ///
 /// In result, the `reducedSpanTags` will contain only the tags that do NOT require special handling by Datadog and can be send as generic `span.meta.*` JSON values.
-/// Values extracted from `spanTags` and `logFields` will be passed to the `Span` encoding process in a type-safe manner.
+/// Values extracted from `spanTags` and `logFields` will be passed to the `SpanEvent` encoding process in a type-safe manner.
 internal struct SpanTagsReducer {
     /// Tags for generic `span.meta.*` encoding in `Span` JSON.
     let reducedSpanTags: [String: Encodable]

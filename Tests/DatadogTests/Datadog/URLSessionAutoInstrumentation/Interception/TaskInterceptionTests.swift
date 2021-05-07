@@ -19,6 +19,30 @@ class TaskInterceptionTests: XCTestCase {
         XCTAssertFalse(interception2.isFirstPartyRequest)
     }
 
+    func testWhenInterceptionReceivesData_itAppendsItToPreviousData() {
+        let chunk1 = "abc".utf8Data
+        let chunk2 = "def".utf8Data
+        let chunk3 = "ghi".utf8Data
+
+        let interception = TaskInterception(request: .mockAny(), isFirstParty: .random())
+        XCTAssertNil(interception.data)
+
+        // When
+        interception.register(nextData: chunk1)
+        let data1 = interception.data
+
+        interception.register(nextData: chunk2)
+        let data2 = interception.data
+
+        interception.register(nextData: chunk3)
+        let data3 = interception.data
+
+        // Then
+        XCTAssertEqual(data1, chunk1)
+        XCTAssertEqual(data2, chunk1 + chunk2)
+        XCTAssertEqual(data3, chunk1 + chunk2 + chunk3)
+    }
+
     func testWhenInterceptionReceivesBothMetricsAndCompletion_itIsConsideredDone() {
         let interception = TaskInterception(request: .mockAny(), isFirstParty: .mockAny())
 

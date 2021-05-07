@@ -52,6 +52,7 @@ extension Datadog.Configuration {
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false,
+        rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -77,6 +78,7 @@ extension Datadog.Configuration {
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
+            rumResourceAttributesProvider: rumResourceAttributesProvider,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -197,11 +199,13 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny()
+        uploadURLWithClientToken: URL = .mockAny(),
+        spanEventMapper: SpanEventMapper? = nil
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            spanEventMapper: spanEventMapper
         )
     }
 }
@@ -254,12 +258,14 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockWith(
         userDefinedFirstPartyHosts: Set<String> = [],
         sdkInternalURLs: Set<String> = [],
+        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
             sdkInternalURLs: sdkInternalURLs,
+            rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM
         )
@@ -880,8 +886,6 @@ internal class ValueObserverMock<Value>: ValueObserver {
 
 // MARK: - Attributes Mock
 
-private let mockAttributesEncoder = JSONEncoder()
-
 /// Creates randomized `[String: Encodable]` attributes
 func mockRandomAttributes() -> [String: Encodable] {
     struct Foo: Encodable {
@@ -902,8 +906,7 @@ func mockRandomAttributes() -> [String: Encodable] {
         "int-array-attribute": [Int].mockRandom(),
         "dictionary-attribute": [String: Int].mockRandom(),
         "url-attribute": URL.mockRandom(),
-        "encodable-struct-attribute": Foo(),
-        "custom-encodable-attribute": JSONStringEncodableValue(Foo(), encodedUsing: mockAttributesEncoder)
+        "encodable-struct-attribute": Foo()
     ]
 }
 

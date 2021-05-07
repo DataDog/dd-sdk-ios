@@ -171,6 +171,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
+        private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitActionsTrackingEnabled: Bool
@@ -178,6 +179,7 @@ extension Datadog {
         private(set) var rumResourceEventMapper: RUMResourceEventMapper?
         private(set) var rumActionEventMapper: RUMActionEventMapper?
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
+        private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -240,6 +242,7 @@ extension Datadog {
                     rumEndpoint: .us,
                     serviceName: nil,
                     firstPartyHosts: nil,
+                    spanEventMapper: nil,
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
                     rumUIKitActionsTrackingEnabled: false,
@@ -247,6 +250,7 @@ extension Datadog {
                     rumResourceEventMapper: nil,
                     rumActionEventMapper: nil,
                     rumErrorEventMapper: nil,
+                    rumResourceAttributesProvider: nil,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -387,6 +391,18 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the custom mapper for `SpanEvent`. This can be used to modify spans before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `SpanEvent` as input and expecting `SpanEvent` as output.
+            /// The implementation should obtain a mutable version of the `SpanEvent`, modify it and return it.
+            ///
+            /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `SpanEvent` entirely, this ensures that all spans are sent to Datadog.
+            ///
+            /// Use the `trackURLSession(firstPartyHosts:)` API to confiture tracing only the hosts that you are interested in.
+            public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
+                configuration.spanEventMapper = mapper
+                return self
+            }
+
             // MARK: - RUM Configuration
 
             /// Enables or disables the RUM feature.
@@ -497,6 +513,19 @@ extension Datadog {
             /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
             public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
                 configuration.rumErrorEventMapper = mapper
+                return self
+            }
+
+            /// Sets a closure to provide custom attributes for intercepted RUM Resources.
+            ///
+            /// The `provider` closure is called for each `URLSession` task intercepted by the SDK (each automatically collected RUM Resource).
+            /// The closure is called with session task information (`URLRequest`, `URLResponse?`, `Data?` and `Error?`) that can be used to identify the task, inspect its
+            /// values and return custom attributes for the RUM Resource.
+            ///
+            /// - Parameter provider: the closure called for each RUM Resource collected by the SDK. This closure is called with task information and may return custom attributes
+            ///                       for the RUM Resource or `nil` if no attributes should be attached.
+            public func setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?) -> Builder {
+                configuration.rumResourceAttributesProvider = provider
                 return self
             }
 

@@ -12,8 +12,9 @@ import Foundation
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
     /// Datadog delegate object.
     /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
-    // - `func urlSession(_:task:didFinishCollecting:)`
-    // - `func urlSession(_:task:didCompleteWithError:)`
+    /// - `func urlSession(_:task:didFinishCollecting:)`
+    /// - `func urlSession(_:task:didCompleteWithError:)`
+    /// - `func urlSession(_:dataTask:didReceive:)`
     var ddURLSessionDelegate: DDURLSessionDelegate { get }
 }
 
@@ -22,49 +23,27 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
-open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionDelegateProviding {
+open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     public var ddURLSessionDelegate: DDURLSessionDelegate {
         return self
     }
 
-    var interceptor: URLSessionInterceptorType?
+    var interceptor: URLSessionInterceptorType? { URLSessionAutoInstrumentation.instance?.interceptor }
     let firstPartyURLsFilter: FirstPartyURLsFilter?
 
     @objc
     override public init() {
-        Self.datadogInitializationCheck()
         firstPartyURLsFilter = nil
-        interceptor = URLSessionAutoInstrumentation.instance?.interceptor
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer
     /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     /// passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
+    ///
     /// **NOTE:** If `trackURLSession(firstPartyHosts:)` is never called, automatic tracking will **not** take place
     @objc
     public init(additionalFirstPartyHosts: Set<String>) {
-        // NOTE: RUMM-954 copy&pasting `init()` is a conscious decision.
-        // otherwise `DDURLSessionDelegateAsSuperclassTests` fails.
-        // if `init()` was made convenience and call the designated `init` below,
-        // that would result in potential breaking changes.
-        // host projects would need to change their `init()`s in subclasses.
-        // we can fix this in v2.0
-        Self.datadogInitializationCheck()
         firstPartyURLsFilter = FirstPartyURLsFilter(hosts: additionalFirstPartyHosts)
-        interceptor = URLSessionAutoInstrumentation.instance?.interceptor
-    }
-
-    private static func datadogInitializationCheck() {
-        if URLSessionAutoInstrumentation.instance?.interceptor == nil {
-            let error = ProgrammerError(
-                description: """
-                `Datadog.initialize()` must be called before initializing the `DDURLSessionDelegate` and
-                first party hosts must be specified in `Datadog.Configuration`: `trackURLSession(firstPartyHosts:)`
-                to enable network requests tracking.
-                """
-            )
-            consolePrint("\(error)")
-        }
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
@@ -75,5 +54,11 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, __URLSessionD
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
 
         interceptor?.taskCompleted(task: task, error: error)
+    }
+
+    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
+
+        interceptor?.taskReceivedData(task: dataTask, data: data)
     }
 }

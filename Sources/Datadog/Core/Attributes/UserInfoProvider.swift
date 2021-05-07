@@ -21,7 +21,7 @@ internal class UserInfoProvider {
 
     var value: UserInfo {
         set {
-            // Synchronous update ensures that the new value of the consent will be applied immediately
+            // Synchronous update ensures that the new value of the user info will be applied immediately
             // to all data sent from the the same thread.
             publisher.publishSync(newValue)
         }

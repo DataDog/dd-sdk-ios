@@ -41,7 +41,7 @@ protocol RandomMockable {
     static func mockRandom() -> Self
 }
 
-extension Data: AnyMockable {
+extension Data: AnyMockable, RandomMockable {
     static func mockAny() -> Data {
         return Data()
     }
@@ -52,6 +52,10 @@ extension Data: AnyMockable {
 
     static func mock(ofSize size: UInt64) -> Data {
         return mockRepeating(byte: 0x41, times: Int(size))
+    }
+
+    static func mockRandom() -> Data {
+        return mockRepeating(byte: .random(in: 0x00...0xFF), times: 256)
     }
 }
 
