@@ -134,20 +134,24 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
     // MARK: - Private
 
     private func castTagsToSwift(_ tags: NSDictionary) -> [String: Encodable] {
-        guard let dictionary = tags as? [String: Any] else {
-            return [:]
-        }
+        var validTags: [String: Encodable] = [:]
 
-        return dictionary.mapValues { objcTagValue in
-            // As underlying `Datadog.JSONStringEncodableValue` provides special handling for `String` and `URL`
-            // when converting those `Encodables` to lossless JSON string representation, we have to cast them directly:
-            if let stringValue = objcTagValue as? String {
-                return stringValue
-            } else if let urlValue = objcTagValue as? URL {
-                return urlValue
-            } else {
-                return AnyEncodable(objcTagValue)
+        tags.forEach { tagKey, tagValue in
+            if let stringKey = tagKey as? String {
+                let encodableValue: Encodable = {
+                    if let stringValue = tagValue as? String {
+                        return stringValue
+                    } else if let urlValue = tagValue as? URL {
+                        return urlValue
+                    } else {
+                        return AnyEncodable(tagValue)
+                    }
+                }()
+
+                validTags[stringKey] = encodableValue
             }
         }
+
+        return validTags
     }
 }

@@ -7,9 +7,9 @@
 import Network
 
 /// Network connection details.
-internal struct NetworkConnectionInfo: Equatable {
+public struct NetworkConnectionInfo: Equatable {
     /// Tells if network is reachable.
-    enum Reachability: String, Codable, CaseIterable {
+    public enum Reachability: String, Codable, CaseIterable {
         /// The network is reachable.
         case yes
         /// The network might be reachable after trying.
@@ -19,7 +19,7 @@ internal struct NetworkConnectionInfo: Equatable {
     }
 
     /// Network connection interfaces.
-    enum Interface: String, Codable, CaseIterable {
+    public enum Interface: String, Codable, CaseIterable {
         case wifi
         case wiredEthernet
         case cellular
@@ -27,12 +27,18 @@ internal struct NetworkConnectionInfo: Equatable {
         case other
     }
 
-    let reachability: Reachability
-    let availableInterfaces: [Interface]?
-    let supportsIPv4: Bool?
-    let supportsIPv6: Bool?
-    let isExpensive: Bool?
-    let isConstrained: Bool?
+    /// Network reachability status.
+    public let reachability: Reachability
+    /// Available network interfaces.
+    public let availableInterfaces: [Interface]?
+    /// A Boolean indicating whether the connection supports IPv4 traffic.
+    public let supportsIPv4: Bool?
+    /// A Boolean indicating whether the connection supports IPv6 traffic.
+    public let supportsIPv6: Bool?
+    /// A Boolean indicating if the connection uses an interface that is considered expensive, such as Cellular or a Personal Hotspot.
+    public let isExpensive: Bool?
+    /// A Boolean indicating if the connection uses an interface in Low Data Mode.
+    public let isConstrained: Bool?
 }
 
 /// An observer for `NetworkConnectionInfo` value.

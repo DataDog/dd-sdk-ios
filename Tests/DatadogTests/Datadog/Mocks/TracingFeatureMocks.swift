@@ -122,16 +122,14 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:],
-        logFields: [[String: Encodable]] = []
+        tags: [String: Encodable] = [:]
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: tags,
-            logFields: logFields
+            tags: tags
         )
     }
 }
@@ -164,7 +162,9 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
     }
 }
 
-extension SpanEvent {
+extension SpanEvent: EquatableInTests {}
+
+extension SpanEvent: AnyMockable, RandomMockable {
     static func mockWith(
         traceID: TracingUUID = .mockAny(),
         spanID: TracingUUID = .mockAny(),
@@ -202,9 +202,32 @@ extension SpanEvent {
             tags: tags
         )
     }
+
+    static func mockAny() -> SpanEvent { .mockWith() }
+
+    static func mockRandom() -> SpanEvent {
+        return SpanEvent(
+            traceID: .init(rawValue: .mockRandom()),
+            spanID: .init(rawValue: .mockRandom()),
+            parentID: .init(rawValue: .mockRandom()),
+            operationName: .mockRandom(),
+            serviceName: .mockRandom(),
+            resource: .mockRandom(),
+            startTime: .mockRandomInThePast(),
+            duration: .mockRandom(),
+            isError: .random(),
+            source: .mockRandom(),
+            tracerVersion: .mockRandom(),
+            applicationVersion: .mockRandom(),
+            networkConnectionInfo: .mockRandom(),
+            mobileCarrierInfo: .mockRandom(),
+            userInfo: .mockRandom(),
+            tags: .mockRandom()
+        )
+    }
 }
 
-extension SpanEvent.UserInfo {
+extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
     static func mockWith(
         id: String? = .mockAny(),
         name: String? = .mockAny(),
@@ -220,6 +243,15 @@ extension SpanEvent.UserInfo {
     }
 
     static func mockAny() -> SpanEvent.UserInfo { .mockWith() }
+
+    static func mockRandom() -> SpanEvent.UserInfo {
+        return SpanEvent.UserInfo(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: .mockRandom()
+        )
+    }
 }
 
 // MARK: - Component Mocks
@@ -265,7 +297,8 @@ extension SpanEventBuilder {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
-        source: String = .mockAny()
+        source: String = .mockAny(),
+        eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
             applicationVersion: applicationVersion,
@@ -274,19 +307,22 @@ extension SpanEventBuilder {
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
             dateCorrector: dateCorrector,
-            source: source
+            source: source,
+            eventsMapper: eventsMapper
         )
     }
 }
 
 /// `SpanOutput` recording received spans.
 class SpanOutputMock: SpanOutput {
-    var onSpanRecorded: ((SpanEvent?) -> Void)?
-    var recordedSpan: SpanEvent? = nil {
-        didSet { onSpanRecorded?(recordedSpan) }
-    }
+    var onSpanRecorded: ((SpanEvent) -> Void)?
+
+    var lastRecordedSpan: SpanEvent?
+    var allRecordedSpans: [SpanEvent] = []
 
     func write(span: SpanEvent) {
-        recordedSpan = span
+        lastRecordedSpan = span
+        allRecordedSpans.append(span)
+        onSpanRecorded?(span)
     }
 }

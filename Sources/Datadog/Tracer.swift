@@ -106,7 +106,8 @@ public class Tracer: OTTracer {
                 networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
                 dateCorrector: tracingFeature.dateCorrector,
-                source: tracingFeature.configuration.common.source
+                source: tracingFeature.configuration.common.source,
+                eventsMapper: tracingFeature.configuration.spanEventMapper
             ),
             spanOutput: SpanFileOutput(
                 fileWriter: tracingFeature.storage.writer,

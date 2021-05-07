@@ -39,6 +39,32 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags, ["foo": "bar", "bizz": "123"])
     }
 
+    func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
+        let builder: SpanEventBuilder = .mockWith(
+            eventsMapper: { span in
+                var mutableSpan = span
+                mutableSpan.operationName = "modified operation name"
+                mutableSpan.tags = .mockRandom()
+                return mutableSpan
+            }
+        )
+
+        let span = builder.createSpanEvent(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: "original operation name",
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        XCTAssertEqual(span.operationName, "modified operation name")
+        XCTAssertGreaterThan(span.tags.count, 0)
+    }
+
     func testBuildingSpanWithErrorTagSet() {
         let builder: SpanEventBuilder = .mockAny()
 

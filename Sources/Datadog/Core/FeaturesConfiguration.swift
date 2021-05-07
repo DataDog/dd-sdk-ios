@@ -29,6 +29,7 @@ internal struct FeaturesConfiguration {
     struct Tracing {
         let common: Common
         let uploadURLWithClientToken: URL
+        let spanEventMapper: SpanEventMapper?
     }
 
     struct RUM {
@@ -168,7 +169,8 @@ extension FeaturesConfiguration {
                 uploadURLWithClientToken: try ifValid(
                     endpointURLString: tracesEndpoint.url,
                     clientToken: configuration.clientToken
-                )
+                ),
+                spanEventMapper: configuration.spanEventMapper
             )
         }
 
