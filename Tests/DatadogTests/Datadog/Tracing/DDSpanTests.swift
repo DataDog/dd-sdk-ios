@@ -7,185 +7,155 @@
 import XCTest
 @testable import Datadog
 
-fileprivate extension Dictionary where Key == String, Value == Encodable {
-    func otEvent() throws -> String {
-        try XCTUnwrap(self[OTLogFields.event] as? String)
-    }
-
-    func otMessage() throws -> String {
-        try XCTUnwrap(self[OTLogFields.message] as? String)
-    }
-
-    func otStack() throws -> String {
-        try XCTUnwrap(self[OTLogFields.stack] as? String)
-    }
-}
-
 class DDSpanTests: XCTestCase {
-    func testOverwritingOperationName() {
-        let span: DDSpan = .mockWith(operationName: "initial")
-        span.setOperationName("new")
-        XCTAssertEqual(span.operationName, "new")
+    private let spanOutput = SpanOutputMock()
+    private let logOutput = LogOutputMock()
+    private lazy var mockTracer: Tracer = .mockWith(
+        spanOutput: spanOutput,
+        logOutput: .init(logBuilder: .mockAny(), loggingOutput: logOutput)
+    )
+
+    // MARK: - Sending SpanEvent
+
+    func testWhenSpanIsFinished_itWritesSpanEventToSpanOutput() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let span: DDSpan = .mockWith(tracer: mockTracer)
+
+        // When
+        span.finish()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
     }
 
-    // MARK: - Tags
+    // MARK: - Sending Span Logs
 
-    func testSettingTag() {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.tags.count, 0)
+    func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
+        let writeSpanLogsExpectation = expectation(description: "write 2 logs")
+        writeSpanLogsExpectation.expectedFulfillmentCount = 2
+        logOutput.onLogRecorded  = { _ in writeSpanLogsExpectation.fulfill() }
 
-        span.setTag(key: "key1", value: "value1")
-        span.setTag(key: "key2", value: "value2")
+        // Given
+        let span: DDSpan = .mockWith(tracer: mockTracer)
 
-        XCTAssertEqual(span.tags.count, 2)
-        XCTAssertEqual(span.tags["key1"] as? String, "value1")
-        XCTAssertEqual(span.tags["key2"] as? String, "value2")
+        // When
+        let log1Fields = mockRandomAttributes()
+        span.log(fields: log1Fields)
+
+        let log2Fields = mockRandomAttributes()
+        span.log(fields: log2Fields)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertEqual(logOutput.allRecordedLogs.count, 2)
+        let log1 = try XCTUnwrap(logOutput.allRecordedLogs[0])
+        let log2 = try XCTUnwrap(logOutput.allRecordedLogs[1])
+        AssertDictionariesEqual(log1.attributes.userAttributes, log1Fields)
+        AssertDictionariesEqual(log2.attributes.userAttributes, log2Fields)
     }
 
-    // MARK: - Baggage Items
+    // MARK: - Customizing SpanEvents
+
+    func testWhenSettingCustomOperationName_itOverwritesOriginalName() {
+        let writeSpansExpectation = expectation(description: "write 2 span events")
+        writeSpansExpectation.expectedFulfillmentCount = 2
+        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let defaultOperationName: String = .mockRandom()
+        let defaultSpan: DDSpan = .mockWith(tracer: mockTracer, operationName: defaultOperationName)
+        let customizedSpan: DDSpan = .mockWith(tracer: mockTracer, operationName: defaultOperationName)
+
+        // When
+        let customizedOperationName: String = .mockRandom()
+        customizedSpan.setOperationName(customizedOperationName)
+
+        // Then
+        defaultSpan.finish()
+        customizedSpan.finish()
+
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertEqual(spanOutput.allRecordedSpans.count, 2)
+        XCTAssertEqual(spanOutput.allRecordedSpans[0].operationName, defaultOperationName)
+        XCTAssertEqual(spanOutput.allRecordedSpans[1].operationName, customizedOperationName)
+    }
+
+    func testWhenSettingCustomTags_theyAreMergedWithDefaultTags() {
+        let writeSpansExpectation = expectation(description: "write 2 span events")
+        writeSpansExpectation.expectedFulfillmentCount = 2
+        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let defaultTags: [String: String] = .mockRandom()
+        let defaultSpan: DDSpan = .mockWith(tracer: mockTracer, tags: defaultTags)
+        let customizedSpan: DDSpan = .mockWith(tracer: mockTracer, tags: defaultTags)
+
+        // When
+        let customTags: [String: String] = .mockRandom()
+        customTags.forEach { tagKey, tagValue in
+            customizedSpan.setTag(key: tagKey, value: tagValue)
+        }
+
+        // Then
+        defaultSpan.finish()
+        customizedSpan.finish()
+
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertEqual(spanOutput.allRecordedSpans.count, 2)
+        XCTAssertEqual(spanOutput.allRecordedSpans[0].tags, defaultTags)
+        XCTAssertEqual(spanOutput.allRecordedSpans[1].tags, defaultTags.merging(customTags) { _, custom in custom })
+    }
 
     func testSettingBaggageItems() {
         let queue = DispatchQueue(label: "com.datadoghq.\(#function)")
+
+        // Given
         let span: DDSpan = .mockWith(
             context: .mockWith(baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: nil))
         )
-
         XCTAssertEqual(span.ddContext.baggageItems.all, [:])
 
+        // When
         span.setBaggageItem(key: "foo", value: "bar")
         span.setBaggageItem(key: "bizz", value: "buzz")
 
+        // Then
         XCTAssertEqual(span.baggageItem(withKey: "foo"), "bar")
         XCTAssertEqual(span.baggageItem(withKey: "bizz"), "buzz")
         XCTAssertEqual(span.ddContext.baggageItems.all, ["foo": "bar", "bizz": "buzz"])
     }
 
-    // MARK: - Errors
+    // MARK: - Thread Safety
 
-    func testSettingErrorFromSwiftError() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.logFields.count, 0)
+    func testSpanCanBeSafelyAccessedFromDifferentThreads() {
+        let writeSpansExpectation = expectation(description: "write span event")
+        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
 
-        #sourceLocation(file: "File.swift", line: 42)
-        span.setError(ErrorMock())
-        #sourceLocation()
+        // Given
+        let span: DDSpan = .mockWith(tracer: mockTracer)
 
-        XCTAssertEqual(span.logFields.count, 1)
-        let logFields = span.logFields.first!
-        XCTAssertNotEqual(logFields.count, 0)
-        try XCTAssertEqual(logFields.otEvent(), "error")
-        let spanErrorStack = try logFields.otStack()
-        XCTAssertTrue(spanErrorStack.contains("File.swift"))
-        XCTAssertTrue(spanErrorStack.contains("42"))
-    }
-
-    func testSettingErrorFromSwiftErrorWithFileAndLine() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.logFields.count, 0)
-
-        span.setError(ErrorMock(), file: "File.swift", line: 42)
-
-        XCTAssertEqual(span.logFields.count, 1)
-        let spanErrorStack = try span.logFields.first!.otStack()
-        XCTAssertTrue(spanErrorStack.contains("File.swift"))
-        XCTAssertTrue(spanErrorStack.contains("42"))
-    }
-
-    func testSettingErrorFromNSError() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.logFields.count, 0)
-
-        #sourceLocation(file: "File.swift", line: 42)
-        span.setError(
-            NSError(
-                domain: "DDSpan",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "some error description"]
-            )
+        // When
+        callConcurrently(
+            closures: [
+                // swiftlint:disable opening_brace
+                { span.setTag(key: .mockRandom(), value: "value") },
+                { span.setBaggageItem(key: .mockRandom(), value: "value") },
+                { _ = span.baggageItem(withKey: .mockRandom()) },
+                { _ = span.context.forEachBaggageItem { _, _ in return false } },
+                // swiftlint:enable opening_brace
+            ],
+            iterations: 100
         )
-        #sourceLocation()
 
-        XCTAssertEqual(span.logFields.count, 1)
-        let logFields = span.logFields.first!
-        XCTAssertNotEqual(logFields.count, 0)
-        try XCTAssertEqual(logFields.otEvent(), "error")
-        let spanErrorMessage = try logFields.otMessage()
-        let spanErrorStack = try logFields.otStack()
-        XCTAssertTrue(spanErrorMessage.contains("some error description"))
-        XCTAssertTrue(spanErrorStack.contains("DDSpan"))
-        XCTAssertTrue(spanErrorStack.contains("File.swift"))
-        XCTAssertTrue(spanErrorStack.contains("42"))
-    }
+        span.finish()
 
-    func testSettingErrorFromArguments() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.logFields.count, 0)
-
-        #sourceLocation(file: "File.swift", line: 42)
-        span.setError(kind: .mockAny(), message: "DDSpan Error")
-        #sourceLocation()
-
-        XCTAssertEqual(span.logFields.count, 1)
-        let logFields = span.logFields.first!
-        XCTAssertNotEqual(logFields.count, 0)
-        try XCTAssertEqual(logFields.otEvent(), "error")
-        let spanErrorMessage = try logFields.otMessage()
-        let spanErrorStack = try logFields.otStack()
-        XCTAssertTrue(spanErrorMessage.contains("DDSpan Error"))
-        XCTAssertTrue(spanErrorStack.contains("File.swift"))
-        XCTAssertTrue(spanErrorStack.contains("42"))
-    }
-
-    func testSettingErrorFromArgumentsWithStack() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-
-        let stack = """
-        Thread 0 Crashed:
-        0   app                                 0x0000000102bc0d8c 0x102bb8000 + 36236
-        1   UIKitCore                           0x00000001b513d9ac 0x1b4739000 + 10504620
-        """
-        span.setError(kind: .mockAny(), message: .mockAny(), stack: stack)
-
-        XCTAssertEqual(span.logFields.count, 1)
-        let spanErrorStack = try span.logFields.first!.otStack()
-        XCTAssertTrue(spanErrorStack.contains(stack))
-    }
-
-    func testSettingErrorFromArgumentsWithFileAndLine() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        span.setError(kind: .mockAny(), message: .mockAny(), file: "File.swift", line: 42)
-
-        XCTAssertEqual(span.logFields.count, 1)
-        let spanErrorStack = try span.logFields.first!.otStack()
-        XCTAssertTrue(spanErrorStack.contains("File.swift"))
-        XCTAssertTrue(spanErrorStack.contains("42"))
-    }
-
-    func testSettingErrorWithEmptyFileLineAndStack() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.logFields.count, 0)
-
-        span.setError(ErrorMock(), file: "", line: 0)
-
-        XCTAssertEqual(span.logFields.count, 1)
-        let logFields = span.logFields.first!
-        XCTAssertNotEqual(logFields.count, 0)
-        XCTAssertNil(logFields[OTLogFields.stack])
-    }
-
-    func testSettingErrorWithEmptyFileLineAndNonEmptyStack() throws {
-        let span: DDSpan = .mockWith(operationName: "operation")
-        XCTAssertEqual(span.logFields.count, 0)
-
-        span.setError(ErrorMock("the stack"), file: "", line: 0)
-
-        XCTAssertEqual(span.logFields.count, 1)
-        let logFields = span.logFields.first!
-        XCTAssertNotEqual(logFields.count, 0)
-        let spanErrorStack = try span.logFields.first!.otStack()
-        XCTAssertFalse(spanErrorStack.contains("File.swift"))
-        XCTAssertFalse(spanErrorStack.contains("42"))
-        XCTAssertTrue(spanErrorStack.contains("the stack"))
+        // Then
+        waitForExpectations(timeout: 2, handler: nil)
+        XCTAssertEqual(spanOutput.allRecordedSpans.count, 1)
+        XCTAssertEqual(spanOutput.allRecordedSpans[0].tags.count, 200, "It should contain 200 tags (100 explicit tags + 100 baggage items as tags)")
     }
 
     // MARK: - Usage
@@ -217,6 +187,7 @@ class DDSpanTests: XCTestCase {
 
         fixtures.forEach { tracerMethod, expectedConsoleWarning in
             tracerMethod()
+            span.tracer().dd.queue.sync {} // wait synchronizing span's internal state
             XCTAssertEqual(output.recordedLog?.status, .warn)
             XCTAssertEqual(output.recordedLog?.message, expectedConsoleWarning)
         }
