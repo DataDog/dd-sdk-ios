@@ -7,9 +7,9 @@
 import CoreTelephony
 
 /// Network connection details specific to cellular radio access.
-internal struct CarrierInfo: Equatable {
+public struct CarrierInfo: Equatable {
     // swiftlint:disable identifier_name
-    enum RadioAccessTechnology: String, Codable, CaseIterable {
+    public enum RadioAccessTechnology: String, Codable, CaseIterable {
         case GPRS
         case Edge
         case WCDMA
@@ -25,10 +25,14 @@ internal struct CarrierInfo: Equatable {
     }
     // swiftlint:enable identifier_name
 
-    let carrierName: String?
-    let carrierISOCountryCode: String?
-    let carrierAllowsVOIP: Bool
-    let radioAccessTechnology: RadioAccessTechnology
+    /// The name of the user’s home cellular service provider.
+    public let carrierName: String?
+    /// The ISO country code for the user’s cellular service provider.
+    public let carrierISOCountryCode: String?
+    /// Indicates if the carrier allows making VoIP calls on its network.
+    public let carrierAllowsVOIP: Bool
+    /// The radio access technology used for cellular connection.
+    public let radioAccessTechnology: RadioAccessTechnology
 }
 
 /// An observer for `CarrierInfo` value.

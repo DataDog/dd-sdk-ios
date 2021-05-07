@@ -171,6 +171,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
+        private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitActionsTrackingEnabled: Bool
@@ -241,6 +242,7 @@ extension Datadog {
                     rumEndpoint: .us,
                     serviceName: nil,
                     firstPartyHosts: nil,
+                    spanEventMapper: nil,
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
                     rumUIKitActionsTrackingEnabled: false,
@@ -386,6 +388,18 @@ extension Datadog {
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
                 configuration.firstPartyHosts = firstPartyHosts
+                return self
+            }
+
+            /// Sets the custom mapper for `SpanEvent`. This can be used to modify spans before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `SpanEvent` as input and expecting `SpanEvent` as output.
+            /// The implementation should obtain a mutable version of the `SpanEvent`, modify it and return it.
+            ///
+            /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `SpanEvent` entirely, this ensures that all spans are sent to Datadog.
+            ///
+            /// Use the `trackURLSession(firstPartyHosts:)` API to confiture tracing only the hosts that you are interested in.
+            public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
+                configuration.spanEventMapper = mapper
                 return self
             }
 

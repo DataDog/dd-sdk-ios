@@ -75,9 +75,9 @@ class TracingStorageBenchmarkTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createRandomizedSpan() -> Span {
+    private func createRandomizedSpan() -> SpanEvent {
         let tracingUUIDGenerator = DefaultTracingUUIDGenerator()
-        return Span(
+        return SpanEvent(
             traceID: tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
             parentID: nil,
@@ -104,13 +104,11 @@ class TracingStorageBenchmarkTests: XCTestCase {
                 name: "foo",
                 email: "foo@bar.com",
                 extraInfo: [
-                    "str": JSONStringEncodableValue("value", encodedUsing: JSONEncoder()),
-                    "int": JSONStringEncodableValue(11_235, encodedUsing: JSONEncoder()),
-                    "bool": JSONStringEncodableValue(true, encodedUsing: JSONEncoder())
+                    "info": .mockRandom(),
                 ]
             ),
             tags: [
-                "tag": JSONStringEncodableValue("value", encodedUsing: JSONEncoder())
+                "tag": .mockRandom(),
             ]
         )
     }

@@ -26,15 +26,6 @@ extension Optional {
     }
 }
 
-/// Utility protocol adding `Equatable` conformance to any type, based on `String(describing:)` comparison.
-protocol EquatableInTests: Equatable {}
-
-extension EquatableInTests {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return String(describing: lhs) == String(describing: rhs)
-    }
-}
-
 extension Date {
     func secondsAgo(_ seconds: TimeInterval) -> Date {
         return addingTimeInterval(-seconds)
