@@ -88,14 +88,14 @@ internal class DDSpan: OTSpan {
     func setBaggageItem(key: String, value: String) {
         let isFinished = queue.sync { self.warnIfFinished("setBaggageItem(key:value:)") }
         if !isFinished {
-            // Baggage items must accessed outside `tracer.queue` as it uses that queue for internal sync.
+            // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
             ddContext.baggageItems.set(key: key, value: value)
         }
     }
 
     func baggageItem(withKey key: String) -> String? {
         let isFinished = queue.sync { self.warnIfFinished("baggageItem(withKey:)") }
-        // Baggage items must accessed outside `tracer.queue` as it uses that queue for internal sync.
+        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         return !isFinished ? ddContext.baggageItems.get(key: key) : nil
     }
 
@@ -137,7 +137,7 @@ internal class DDSpan: OTSpan {
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date) {
-        // Baggage items must accessed outside `tracer.queue` as it uses that queue for internal sync.
+        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
 
         // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
