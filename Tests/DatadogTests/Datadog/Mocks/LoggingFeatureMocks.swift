@@ -223,9 +223,14 @@ extension LogAttributes: Equatable {
 
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
+    var onLogRecorded: ((Log) -> Void)?
+
     var recordedLog: Log?
+    var allRecordedLogs: [Log] = []
 
     func write(log: Log) {
         recordedLog = log
+        allRecordedLogs.append(log)
+        onLogRecorded?(log)
     }
 }

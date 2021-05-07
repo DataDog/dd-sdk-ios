@@ -6,8 +6,8 @@
 
 import Foundation
 
-/// Builds `Span` representation (for later serialization) from `DDSpan`.
-internal struct SpanBuilder {
+/// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
+internal struct SpanEventBuilder {
     /// Application version to encode in span.
     let applicationVersion: String
     /// Service name to encode in span.
@@ -20,10 +20,12 @@ internal struct SpanBuilder {
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts span's time (device time) to server time.
     let dateCorrector: DateCorrectorType
-    /// source tag to encode in span.
+    /// Source tag to encode in span (e.g. `ios` for native iOS).
     let source: String
+    /// Span events mapper configured by the user, `nil` if not set.
+    let eventsMapper: SpanEventMapper?
 
-    func createSpan(
+    func createSpanEvent(
         traceID: TracingUUID,
         spanID: TracingUUID,
         parentSpanID: TracingUUID?,
@@ -33,7 +35,7 @@ internal struct SpanBuilder {
         tags: [String: Encodable],
         baggageItems: [String: String],
         logFields: [[String: Encodable]]
-    ) -> Span {
+    ) -> SpanEvent {
         let tagsReducer = SpanTagsReducer(spanTags: tags, logFields: logFields)
 
         var tags: [String: String]
@@ -45,16 +47,16 @@ internal struct SpanBuilder {
         let regularTags = castValuesToString(tagsReducer.reducedSpanTags)
         tags.merge(regularTags) { _, regularTag in regularTag }
 
-        // Transform user info to `Span.UserInfo` representation
+        // Transform user info to `SpanEvent.UserInfo` representation
         let userInfo = userInfoProvider.value
-        let spanUserInfo = Span.UserInfo(
+        let spanUserInfo = SpanEvent.UserInfo(
             id: userInfo.id,
             name: userInfo.name,
             email: userInfo.email,
             extraInfo: castValuesToString(userInfo.extraInfo)
         )
 
-        let span = Span(
+        let span = SpanEvent(
             traceID: traceID,
             spanID: spanID,
             parentID: parentSpanID,
@@ -73,7 +75,11 @@ internal struct SpanBuilder {
             tags: tags
         )
 
-        return span
+        if let eventMapper = eventsMapper {
+            return eventMapper(span)
+        } else {
+            return span
+        }
     }
 
     // MARK: - Attributes Conversion

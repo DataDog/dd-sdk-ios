@@ -60,7 +60,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.recordedSpan)
+        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(span.traceID.rawValue, 100)
         XCTAssertEqual(span.spanID.rawValue, 200)
         XCTAssertEqual(span.operationName, "urlsession.request")
@@ -94,7 +94,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.recordedSpan)
+        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 2)
@@ -132,7 +132,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.recordedSpan)
+        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertEqual(span.resource, request.url!.absoluteString)
         XCTAssertEqual(span.duration, 30)
@@ -194,7 +194,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.recordedSpan)
+        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertEqual(span.resource, "404")
         XCTAssertEqual(span.duration, 2)
@@ -248,7 +248,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertNil(spanOutput.recordedSpan)
+        XCTAssertNil(spanOutput.lastRecordedSpan)
     }
 
     func testGivenThirdPartyInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
@@ -273,7 +273,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertNil(spanOutput.recordedSpan)
+        XCTAssertNil(spanOutput.lastRecordedSpan)
         XCTAssertNil(logOutput.recordedLog)
     }
 
@@ -298,7 +298,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpan = try XCTUnwrap(spanOutput.recordedSpan)
+        let recordedSpan = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration], "10000000000")
         XCTAssertEqual(recordedSpan.tags[DDTags.isBackground], "false")
     }

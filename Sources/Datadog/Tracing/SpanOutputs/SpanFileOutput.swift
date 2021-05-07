@@ -12,8 +12,8 @@ internal struct SpanFileOutput: SpanOutput {
     /// Environment to encode in span.
     let environment: String
 
-    func write(span: Span) {
-        let envelope = SpanEnvelope(span: span, environment: environment)
+    func write(span: SpanEvent) {
+        let envelope = SpanEventsEnvelope(span: span, environment: environment)
         fileWriter.write(value: envelope)
     }
 }

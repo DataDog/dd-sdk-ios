@@ -199,11 +199,13 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny()
+        uploadURLWithClientToken: URL = .mockAny(),
+        spanEventMapper: SpanEventMapper? = nil
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            spanEventMapper: spanEventMapper
         )
     }
 }

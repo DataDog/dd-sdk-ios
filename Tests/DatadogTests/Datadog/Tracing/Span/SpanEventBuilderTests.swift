@@ -7,11 +7,11 @@
 import XCTest
 @testable import Datadog
 
-class SpanBuilderTests: XCTestCase {
+class SpanEventBuilderTests: XCTestCase {
     func testBuildingBasicSpan() {
-        let builder: SpanBuilder = .mockWith(serviceName: "test-service-name")
+        let builder: SpanEventBuilder = .mockWith(serviceName: "test-service-name")
 
-        let span = builder.createSpan(
+        let span = builder.createSpanEvent(
             traceID: 1,
             spanID: 2,
             parentSpanID: 1,
@@ -39,11 +39,37 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags, ["foo": "bar", "bizz": "123"])
     }
 
+    func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
+        let builder: SpanEventBuilder = .mockWith(
+            eventsMapper: { span in
+                var mutableSpan = span
+                mutableSpan.operationName = "modified operation name"
+                mutableSpan.tags = .mockRandom()
+                return mutableSpan
+            }
+        )
+
+        let span = builder.createSpanEvent(
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: "original operation name",
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        XCTAssertEqual(span.operationName, "modified operation name")
+        XCTAssertGreaterThan(span.tags.count, 0)
+    }
+
     func testBuildingSpanWithErrorTagSet() {
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // given
-        var span = builder.createSpan(
+        var span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -60,7 +86,7 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags, ["error": "true"])
 
         // given
-        span = builder.createSpan(
+        span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -78,10 +104,10 @@ class SpanBuilderTests: XCTestCase {
     }
 
     func testBuildingSpanWithErrorLogsSend() {
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // given
-        var span = builder.createSpan(
+        var span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -100,7 +126,7 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags, ["error.type": "Swift error"]) // remapped to `error.type`
 
         // given
-        span = builder.createSpan(
+        span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -131,7 +157,7 @@ class SpanBuilderTests: XCTestCase {
         )
 
         // given
-        span = builder.createSpan(
+        span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -153,10 +179,10 @@ class SpanBuilderTests: XCTestCase {
     }
 
     func testBuildingSpanWithErrorTagAndErrorLogsSend() {
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // given
-        var span = builder.createSpan(
+        var span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -176,7 +202,7 @@ class SpanBuilderTests: XCTestCase {
         XCTAssertTrue(span.isError)
 
         // given
-        span = builder.createSpan(
+        span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -197,10 +223,10 @@ class SpanBuilderTests: XCTestCase {
     }
 
     func testBuildingSpanWithResourceNameTagSet() {
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // given
-        let span = builder.createSpan(
+        let span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -220,10 +246,10 @@ class SpanBuilderTests: XCTestCase {
     }
 
     func testItSendsBaggageItemsAsTags() {
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // When
-        let span = builder.createSpan(
+        let span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -286,10 +312,10 @@ class SpanBuilderTests: XCTestCase {
     ]
 
     func testWhenBuildingSpan_itConvertsTagValuesToString() {
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // When
-        let span = builder.createSpan(
+        let span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -308,7 +334,7 @@ class SpanBuilderTests: XCTestCase {
     }
 
     func testWhenBuildingSpan_itConvertsUserExtraInfoValuesToString() {
-        let builder: SpanBuilder = .mockWith(
+        let builder: SpanEventBuilder = .mockWith(
             userInfoProvider: .mockWith(
                 userInfo: .init(
                     id: .mockRandom(),
@@ -320,7 +346,7 @@ class SpanBuilderTests: XCTestCase {
         )
 
         // When
-        let span = builder.createSpan(
+        let span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -345,10 +371,10 @@ class SpanBuilderTests: XCTestCase {
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
-        let builder: SpanBuilder = .mockAny()
+        let builder: SpanEventBuilder = .mockAny()
 
         // When
-        let span = builder.createSpan(
+        let span = builder.createSpanEvent(
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),

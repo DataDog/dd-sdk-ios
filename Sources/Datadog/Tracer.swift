@@ -46,7 +46,7 @@ public typealias DDTracer = Tracer
 
 public class Tracer: OTTracer {
     /// Builds the `Span` from user input.
-    internal let spanBuilder: SpanBuilder
+    internal let spanBuilder: SpanEventBuilder
     /// Writes the `Span` to file.
     internal let spanOutput: SpanOutput
     /// Writes span logs to output. `nil` if Logging feature is disabled.
@@ -99,14 +99,15 @@ public class Tracer: OTTracer {
 
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         self.init(
-            spanBuilder: SpanBuilder(
+            spanBuilder: SpanEventBuilder(
                 applicationVersion: tracingFeature.configuration.common.applicationVersion,
                 serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                 userInfoProvider: tracingFeature.userInfoProvider,
                 networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
                 dateCorrector: tracingFeature.dateCorrector,
-                source: tracingFeature.configuration.common.source
+                source: tracingFeature.configuration.common.source,
+                eventsMapper: tracingFeature.configuration.spanEventMapper
             ),
             spanOutput: SpanFileOutput(
                 fileWriter: tracingFeature.storage.writer,
@@ -123,7 +124,7 @@ public class Tracer: OTTracer {
     }
 
     internal init(
-        spanBuilder: SpanBuilder,
+        spanBuilder: SpanEventBuilder,
         spanOutput: SpanOutput,
         logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
         dateProvider: DateProvider,

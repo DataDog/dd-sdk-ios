@@ -31,7 +31,7 @@ class SpanFileOutputTests: XCTestCase {
             environment: .mockRandom()
         )
 
-        let span: Span = .mockWith(operationName: .mockRandom(), duration: 2)
+        let span: SpanEvent = .mockWith(operationName: .mockRandom(), duration: 2)
         output.write(span: span)
 
         let fileData = try temporaryDirectory.files()[0].read()

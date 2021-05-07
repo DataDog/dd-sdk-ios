@@ -9,7 +9,7 @@ import XCTest
 
 class SpanSanitizerTests: XCTestCase {
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
-        let span = Span.mockWith(
+        let span = SpanEvent.mockWith(
             userInfo: .mockWith(
                 extraInfo: [
                     "extra-info-one": .mockAny(),
@@ -87,7 +87,7 @@ class SpanSanitizerTests: XCTestCase {
             ("tag-\(index)", String.mockAny())
         }
 
-        let span = Span.mockWith(
+        let span = SpanEvent.mockWith(
             userInfo: .mockWith(
                 extraInfo: Dictionary(uniqueKeysWithValues: mockUserExtraAttributes)
             ),
