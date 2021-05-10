@@ -616,9 +616,9 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
         let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo")
         try rumEventMatchers.forEach { event in
-            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.str"), "value")
-            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.int"), 11_235)
-            XCTAssertEqual(try event.attribute(forKeyPath: "context.usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
+            XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
+            XCTAssertEqual(try event.attribute(forKeyPath: "usr.int"), 11_235)
+            XCTAssertEqual(try event.attribute(forKeyPath: "usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMActionEvent.self) { action in
             XCTAssertEqual(action.usr, expectedUserInfo)
