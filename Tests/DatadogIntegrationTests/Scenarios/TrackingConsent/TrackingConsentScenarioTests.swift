@@ -205,7 +205,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
             .forEach { event in
                 XCTAssertEqual(
-                    try event.attribute(forKeyPath: "context.usr.current-consent-value"),
+                    try event.attribute(forKeyPath: "usr.current-consent-value"),
                     "GRANTED"
                 )
             }
@@ -308,7 +308,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         try eventMatchers.forEach { event in
             XCTAssertEqual(
-                try event.attribute(forKeyPath: "context.usr.current-consent-value"),
+                try event.attribute(forKeyPath: "usr.current-consent-value"),
                 expectedConsentValue.uppercased()
             )
         }
