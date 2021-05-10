@@ -30,6 +30,7 @@ export DD_SDK_BASE_XCCONFIG
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
+		@./tools/crash-reporting-patch/enable-crash-reporting.sh
 		@echo "⚙️  Installing dependencies..."
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
