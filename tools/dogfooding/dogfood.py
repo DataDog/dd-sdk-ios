@@ -35,7 +35,7 @@ def run_main() -> int:
         dd_sdk_ios_commit = DogfoodedCommit()
 
         # Resolve and read `dd-sdk-ios` dependencies:
-        dd_sdk_package_path = '.' if 'CI' in os.environ else '../..'
+        dd_sdk_package_path = '../..'
         os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
         dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
         kronos_dependency = dd_sdk_ios_package.read_dependency(package_name='Kronos')
@@ -100,9 +100,10 @@ def run_main() -> int:
 
 
 if __name__ == "__main__":
+    print(f'ℹ️ Launch dir: {sys.argv[0]}')
     launch_dir = os.path.dirname(sys.argv[0])
-    print(f'ℹ️ Launch dir {launch_dir}')
-    if os.path.basename(launch_dir) == 'dd-sdk-ios':
-        os.chdir('tools/dogfooding')
+    launch_dir = '.' if launch_dir == '' else launch_dir
+    if launch_dir == 'tools/dogfooding':
         print(f'    → changing current directory to: {os.getcwd()}')
+        os.chdir('tools/dogfooding')
     sys.exit(run_main())
