@@ -6,6 +6,7 @@
 
 import Foundation
 
+#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
 /// Crash Report format supported by Datadog SDK.
 @objc
 public class DDCrashReport: NSObject {
@@ -20,12 +21,12 @@ public class DDCrashReport: NSObject {
     /// The last context injected through `inject(context:)`
     internal let context: Data?
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
+    #if DD_SDK_ENABLE_INTERNAL_MONITORING
     /// Additional diagnostic information about the crash report, collected for `DatadogCrashReporting` observability.
     /// Available only if internal monitoring is enabled, disabled by default.
     /// See: `Datadog.Configuration.Builder.enableInternalMonitoring(clientToken:)`.
     public var diagnosticInfo: [String: Encodable] = [:]
-#endif
+    #endif
 
     public init(
         date: Date?,
@@ -64,3 +65,38 @@ public protocol DDCrashReportingPluginType: class {
     /// It is called on a background thread and succeeding calls are synchronized.
     func inject(context: Data)
 }
+
+#else
+
+@objc
+internal class DDCrashReport: NSObject {
+    internal let date: Date?
+    internal let type: String
+    internal let message: String
+    internal let stackTrace: String
+    internal let context: Data?
+    #if DD_SDK_ENABLE_INTERNAL_MONITORING
+    internal var diagnosticInfo: [String: Encodable] = [:]
+    #endif
+    internal init(
+        date: Date?,
+        type: String,
+        message: String,
+        stackTrace: String,
+        context: Data?
+    ) {
+        self.date = date
+        self.type = type
+        self.message = message
+        self.stackTrace = stackTrace
+        self.context = context
+    }
+}
+
+@objc
+internal protocol DDCrashReportingPluginType: class {
+    func readPendingCrashReport(completion: (DDCrashReport?) -> Bool)
+    func inject(context: Data)
+}
+
+#endif

@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		615D9E662604B5AB006DC6D1 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; };
-		615D9E672604B5AB006DC6D1 /* CrashReporter.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		615D9E6B2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; };
-		615D9E6C2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
 		61C3641B243752A500C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641A243752A500C4D4E6 /* SceneDelegate.swift */; };
 		61C3641D243752A500C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
@@ -50,11 +46,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				615D9E672604B5AB006DC6D1 /* CrashReporter.xcframework in Embed Frameworks */,
 				9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */,
 				9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */,
 				9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */,
-				615D9E6C2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -89,11 +83,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				615D9E662604B5AB006DC6D1 /* CrashReporter.xcframework in Frameworks */,
 				9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */,
 				9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */,
 				9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */,
-				615D9E6B2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
