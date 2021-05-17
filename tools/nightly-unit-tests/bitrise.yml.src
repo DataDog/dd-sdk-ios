@@ -3,16 +3,6 @@ format_version: '8'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
-# Stack specification:
-# https://github.com/bitrise-io/bitrise.io/blob/master/system_reports/osx-xcode-12.0.x.log
-#
-# This stack is configured for the `trigger_all_platform_tests` workflow
-# defined in Workflow Editor on Bitrise.io
-#
-# To properly use this stack, environment variables need to be picked up carefully:
-# - SIMULATOR_DEVICE - pick one listed in `== Device Types ==`
-# - SIMULATOR_OS_VERSION - pick one listed in `== Runtimes ==`
-
 app:
   envs:
   - PROJECT_PATH: Datadog.xcworkspace
@@ -22,43 +12,10 @@ workflows:
   run_all:
     after_run:
     - _make_dependencies
-    - _run_unit_tests_iOS13.3
-    - _run_unit_tests_iOS13.4
-    - _run_unit_tests_iOS13.5
-    - _run_unit_tests_iOS14.0
-    - _deploy_artifacts
+### <WORKFLOW INVOCATIONS> ###
+    - _send_slack_notification
 
-  # Platform-specific workflows:
-
-  _run_unit_tests_iOS13.3:
-    envs:
-    - SIMULATOR_DEVICE: iPhone 11
-    - SIMULATOR_OS_VERSION: '13.3'
-    after_run:
-    - _run_unit_tests
-
-  _run_unit_tests_iOS13.4:
-    envs:
-    - SIMULATOR_DEVICE: iPhone 11
-    - SIMULATOR_OS_VERSION: '13.4'
-    after_run:
-    - _run_unit_tests
-
-  _run_unit_tests_iOS13.5:
-    envs:
-    - SIMULATOR_DEVICE: iPhone 11
-    - SIMULATOR_OS_VERSION: '13.5'
-    after_run:
-    - _run_unit_tests
-
-  _run_unit_tests_iOS14.0:
-    envs:
-    - SIMULATOR_DEVICE: iPhone 11
-    - SIMULATOR_OS_VERSION: '14.0'
-    after_run:
-    - _run_unit_tests
-
-  # Platform-agnostic workflows:
+### <WORKFLOW DEFINITIONS> ###
 
   _make_dependencies:
     description: |-
@@ -70,13 +27,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            make dependencies
-
-  _deploy_artifacts:
-    description: |-
-        Uploads artifacts to associate them with build log on Bitrise.io.
-    steps:
-    - deploy-to-bitrise-io: {}
+            make dependencies ci=${CI}
 
   _run_unit_tests:
     steps:
@@ -90,6 +41,7 @@ workflows:
     - xcode-test@2.4.5:
         title: Run unit tests for given platform
         is_always_run: true # continue next tests if some failed
+        run_if: '{{(getenv "DD_SKIP_RUNNING_TESTS") | eq ""}}'
         inputs:
         - project_path: $PROJECT_PATH
         - scheme: $PROJECT_SCHEME
@@ -99,3 +51,38 @@ workflows:
         - should_retry_test_on_fail: 'yes' # retry once to mitigate flakiness
         - generate_code_coverage_files: 'yes'
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests-${PROJECT_SCHEME}-${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION}).html"
+    - deploy-to-bitrise-io: {}
+
+  _send_slack_notification:
+    description: |-
+        Sends Slack notification with the worklow status.
+    steps:
+    - slack:
+        run_if: '{{(getenv "DD_SKIP_SLACK") | eq ""}}'
+        inputs:
+        - channel: '#dd-sdk-ios'
+        - fields: |-
+            macOS|## <MACOS VERSION> ##
+            Commit|${GIT_CLONE_COMMIT_HASH}
+            Branch|${BITRISE_GIT_BRANCH}
+        - buttons: |-
+            See Bitrise log|${BITRISE_BUILD_URL}
+        - pretext: |-
+            Nighly unit tests run: 🚀 all good
+### <SLACK SIMULATORS LIST> ###
+
+            Issues found:
+### <SLACK ISSUES LIST> ###
+        - pretext_on_error: |-
+            Nighly unit tests run: ⚠️ some tests did fail️
+### <SLACK SIMULATORS LIST> ###
+
+            Issues found:
+### <SLACK ISSUES LIST> ###
+        - color: '#36e500'
+        - color_on_error: '#FF0000'
+        - author_name: ''
+        - message: ''
+        - message_on_error: ''
+        - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
+        - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
