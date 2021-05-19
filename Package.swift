@@ -30,7 +30,7 @@ let package = Package(
         ),
         .library(
             name: "DatadogCrashReporting",
-            type: .static,
+            type: .dynamic,
             targets: ["DatadogCrashReporting"]
         ),
         .library(
@@ -52,7 +52,8 @@ let package = Package(
             ],
             swiftSettings: [
                 .define("SPM_BUILD"),
-                .define("DD_SDK_ENABLE_INTERNAL_MONITORING")
+                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         ),
         .target(
@@ -62,6 +63,7 @@ let package = Package(
             ],
             swiftSettings: [
                 .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         ),
         .target(
@@ -75,6 +77,7 @@ let package = Package(
             ],
             swiftSettings: [
                 .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         )
     ]

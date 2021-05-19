@@ -40,7 +40,7 @@ internal struct RUMEventEncoder {
             try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))
         }
         try event.userInfoAttributes.forEach { attributeName, attributeValue in
-            try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.usr.\(attributeName)"))
+            try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("usr.\(attributeName)"))
         }
 
         // Encode `RUMDataModel`

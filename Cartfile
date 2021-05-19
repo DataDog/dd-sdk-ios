@@ -1,2 +1,1 @@
 github "lyft/Kronos" ~> 4.2
-github "microsoft/plcrashreporter" ~> 1.8.1

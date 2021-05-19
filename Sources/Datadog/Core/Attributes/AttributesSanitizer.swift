@@ -11,7 +11,7 @@ internal struct AttributesSanitizer {
     struct Constraints {
         /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
         /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).
-        static let maxNestedLevelsInAttributeName: Int = 8
+        static let maxNestedLevelsInAttributeName: Int = 10
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
         static let maxNumberOfAttributes: Int = 128
@@ -30,9 +30,9 @@ internal struct AttributesSanitizer {
     ///
     ///     one.two.three.four.five.six.seven.eight_nine_ten_eleven
     ///
-    func sanitizeKeys<Value>(for attributes: [String: Value]) -> [String: Value] {
+    func sanitizeKeys<Value>(for attributes: [String: Value], prefixLevels: Int = 0) -> [String: Value] {
         let sanitizedAttributes: [(String, Value)] = attributes.map { key, value in
-            let sanitizedName = sanitize(attributeKey: key)
+            let sanitizedName = sanitize(attributeKey: key, prefixLevels: prefixLevels)
             if sanitizedName != key {
                 userLogger.warn(
                     """
@@ -47,8 +47,8 @@ internal struct AttributesSanitizer {
         return Dictionary(uniqueKeysWithValues: sanitizedAttributes)
     }
 
-    private func sanitize(attributeKey: String) -> String {
-        var dotsCount = 0
+    private func sanitize(attributeKey: String, prefixLevels: Int = 0) -> String {
+        var dotsCount = prefixLevels
         var sanitized = ""
         for char in attributeKey {
             if char == "." {
