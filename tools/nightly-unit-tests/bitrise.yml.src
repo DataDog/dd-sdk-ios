@@ -12,10 +12,10 @@ workflows:
   run_all:
     after_run:
     - _make_dependencies
-### <WORKFLOW INVOCATIONS> ###
+    ### <WORKFLOW INVOCATIONS> ###
     - _send_slack_notification
 
-### <WORKFLOW DEFINITIONS> ###
+  ### <WORKFLOW DEFINITIONS> ###
 
   _make_dependencies:
     description: |-
@@ -69,16 +69,16 @@ workflows:
             See Bitrise log|${BITRISE_BUILD_URL}
         - pretext: |-
             Nighly unit tests run: 🚀 all good
-### <SLACK SIMULATORS LIST> ###
+            ### <SLACK SIMULATORS LIST> ###
 
             Issues found:
-### <SLACK ISSUES LIST> ###
+            ### <SLACK ISSUES LIST> ###
         - pretext_on_error: |-
             Nighly unit tests run: ⚠️ some tests did fail️
-### <SLACK SIMULATORS LIST> ###
+            ### <SLACK SIMULATORS LIST> ###
 
             Issues found:
-### <SLACK ISSUES LIST> ###
+            ### <SLACK ISSUES LIST> ###
         - color: '#36e500'
         - color_on_error: '#FF0000'
         - author_name: ''

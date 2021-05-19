@@ -57,8 +57,7 @@ class Devices:
                         is_available=device_json['isAvailable'],
                         name=device_json['name'],
                         runtime=runtimes.get_runtime(identifier=runtime_identifier),
-                        availability_comment=device_json['availabilityError'] if 'availabilityError'
-                                                                                 in device_json else ''
+                        availability_comment=device_json.get('availabilityError') or ''
                     )
                     self.all.append(device)
             else:

@@ -29,6 +29,7 @@ class Simulator:
         availability = 'installed' if self.is_installed else 'not installed'
         return f'{self.os_name} Simulator ({self.os_version}) ({availability})'
 
+
 class Simulators:
     """
     Lists all 'Simulator' objects compatible with this host.

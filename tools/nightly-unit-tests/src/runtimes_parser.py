@@ -55,7 +55,7 @@ class Runtimes:
                 os_name=os_match.groups()[0],
                 os_version=Version.parse(runtime_json['version']),
                 build_version=runtime_json['buildversion'],
-                availability_comment=runtime_json['availabilityError'] if 'availabilityError' in runtime_json else ''
+                availability_comment=runtime_json.get('availabilityError') or ''
             )
             self.all.append(runtime)
 
