@@ -7,9 +7,11 @@
 # Copyright 2019-2020 Datadog, Inc.
 # -----------------------------------------------------------
 
+import argparse
 import sys
 import os
 import contextlib
+import traceback
 from tempfile import TemporaryDirectory
 from src.package_resolved import PackageResolvedFile
 from src.dogfooded_commit import DogfoodedCommit
@@ -29,62 +31,62 @@ def remember_cwd():
         os.chdir(previous)
 
 
-def run_main() -> int:
-    try:
-        # Read commit information:
-        dd_sdk_ios_commit = DogfoodedCommit()
+def dogfood(dry_run: bool) -> int:
+    # Read commit information:
+    dd_sdk_ios_commit = DogfoodedCommit()
 
-        # Resolve and read `dd-sdk-ios` dependencies:
-        dd_sdk_package_path = '../..'
-        os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
-        dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
-        kronos_dependency = dd_sdk_ios_package.read_dependency(package_name='Kronos')
-        plcrash_reporter_dependency = dd_sdk_ios_package.read_dependency(package_name='PLCrashReporter')
+    # Resolve and read `dd-sdk-ios` dependencies:
+    dd_sdk_package_path = '../..'
+    os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
+    dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
+    kronos_dependency = dd_sdk_ios_package.read_dependency(package_name='Kronos')
+    plcrash_reporter_dependency = dd_sdk_ios_package.read_dependency(package_name='PLCrashReporter')
 
-        if dd_sdk_ios_package.get_number_of_dependencies() > 2:
-            raise Exception('`dogfood.py` needs update as `dd-sdk-ios` has unrecognized dependencies')
+    if dd_sdk_ios_package.get_number_of_dependencies() > 2:
+        raise Exception('`dogfood.py` needs update as `dd-sdk-ios` has unrecognized dependencies')
 
-        # Clone `datadog-ios` repository to temporary location and update its `Package.resolved` so it points
-        # to the current `dd-sdk-ios` commit. After that, push changes to `datadog-ios` and create dogfooding PR.
-        with TemporaryDirectory() as temp_dir:
-            with remember_cwd():
-                repository = Repository.clone(
-                    ssh='git@github.com:DataDog/datadog-ios.git',
-                    repository_name='datadog-ios',
-                    temp_dir=temp_dir
-                )
-                repository.create_branch(f'dogfooding-{dd_sdk_ios_commit.hash_short}')
-                package = PackageResolvedFile(
-                    path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
-                )
-                # Update version of `dd-sdk-ios`:
-                package.update_dependency(
-                    package_name='DatadogSDK',
-                    new_branch='dogfooding',
-                    new_revision=dd_sdk_ios_commit.hash,
-                    new_version=None
-                )
-                # Set version of `Kronos` to as it is resolved in `dd-sdk-ios`:
-                package.update_dependency(
-                    package_name='Kronos',
-                    new_branch=kronos_dependency['branch'],
-                    new_revision=kronos_dependency['revision'],
-                    new_version=kronos_dependency['version'],
-                )
-                # Set version of `PLCrashReporter` to as it is resolved in `dd-sdk-ios`:
-                package.update_dependency(
-                    package_name='PLCrashReporter',
-                    new_branch=plcrash_reporter_dependency['branch'],
-                    new_revision=plcrash_reporter_dependency['revision'],
-                    new_version=plcrash_reporter_dependency['version'],
-                )
-                package.save()
-                # Push changes to `datadog-ios`:
-                repository.commit(
-                    message=f'Dogfooding dd-sdk-ios commit: {dd_sdk_ios_commit.hash}\n\n' +
-                            f'Dogfooded commit message: {dd_sdk_ios_commit.message}',
-                    author=dd_sdk_ios_commit.author
-                )
+    # Clone `datadog-ios` repository to temporary location and update its `Package.resolved` so it points
+    # to the current `dd-sdk-ios` commit. After that, push changes to `datadog-ios` and create dogfooding PR.
+    with TemporaryDirectory() as temp_dir:
+        with remember_cwd():
+            repository = Repository.clone(
+                ssh='git@github.com:DataDog/datadog-ios.git',
+                repository_name='datadog-ios',
+                temp_dir=temp_dir
+            )
+            repository.create_branch(f'dogfooding-{dd_sdk_ios_commit.hash_short}')
+            package = PackageResolvedFile(
+                path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+            )
+            # Update version of `dd-sdk-ios`:
+            package.update_dependency(
+                package_name='DatadogSDK',
+                new_branch='dogfooding',
+                new_revision=dd_sdk_ios_commit.hash,
+                new_version=None
+            )
+            # Set version of `Kronos` to as it is resolved in `dd-sdk-ios`:
+            package.update_dependency(
+                package_name='Kronos',
+                new_branch=kronos_dependency['branch'],
+                new_revision=kronos_dependency['revision'],
+                new_version=kronos_dependency['version'],
+            )
+            # Set version of `PLCrashReporter` to as it is resolved in `dd-sdk-ios`:
+            package.update_dependency(
+                package_name='PLCrashReporter',
+                new_branch=plcrash_reporter_dependency['branch'],
+                new_revision=plcrash_reporter_dependency['revision'],
+                new_version=plcrash_reporter_dependency['version'],
+            )
+            package.save()
+            # Push changes to `datadog-ios`:
+            repository.commit(
+                message=f'Dogfooding dd-sdk-ios commit: {dd_sdk_ios_commit.hash}\n\n' +
+                        f'Dogfooded commit message: {dd_sdk_ios_commit.message}',
+                author=dd_sdk_ios_commit.author
+            )
+            if not dry_run:
                 repository.push()
                 # Create PR:
                 repository.create_pr(
@@ -92,18 +94,35 @@ def run_main() -> int:
                     description='⚙️ This is an automated PR upgrading the version of \`dd-sdk-ios\` to ' +
                                 f'https://github.com/DataDog/dd-sdk-ios/commit/{dd_sdk_ios_commit.hash}'
                 )
-    except Exception as error:
-        print(f'❌ Dogfooding failed: {error}')
-        return 1
-
-    return 0
 
 
 if __name__ == "__main__":
+    # Change working directory to `tools/dogfooding/`
     print(f'ℹ️ Launch dir: {sys.argv[0]}')
     launch_dir = os.path.dirname(sys.argv[0])
     launch_dir = '.' if launch_dir == '' else launch_dir
     if launch_dir == 'tools/dogfooding':
         print(f'    → changing current directory to: {os.getcwd()}')
         os.chdir('tools/dogfooding')
-    sys.exit(run_main())
+
+    # Read arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dry-run",
+        action='store_true',
+        help="Debugging utility. The tool will run as usual, but will skip the actual git push and PR creation."
+    )
+    args = parser.parse_args()
+
+    try:
+        dry_run = True if args.dry_run else False
+        dogfood(dry_run=dry_run)
+    except Exception as error:
+        print(f'❌ Failed to dogfood: {error}')
+        print('-' * 60)
+        traceback.print_exc(file=sys.stdout)
+        print('-' * 60)
+        sys.exit(1)
+
+    sys.exit(0)
+
