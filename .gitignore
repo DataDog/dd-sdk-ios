@@ -11,3 +11,9 @@ instrumented-tests/DatadogSDKTesting.*
 instrumented-tests/LICENSE
 
 *.local.xcconfig
+
+# Ignore files for Python tools:
+.idea
+venv
+*.pyc
+__pycache__
