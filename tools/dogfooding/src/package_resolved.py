@@ -27,7 +27,11 @@ class PackageResolvedFile:
                     f'version {self.__SUPPORTED_PACKAGE_RESOLVED_VERSION}. Update `package_resolved.py` to new format.'
                 )
 
-    def update_dependency(self, package_name: str, new_branch, new_revision, new_version):
+    def has_dependency(self, package_name: str):
+        pins = self.packages['object']['pins']
+        return package_name in [p['package'] for p in pins]
+
+    def update_dependency(self, package_name: str, new_branch: str, new_revision: str, new_version):
         """
         Updates dependency resolution values.
         :param package_name: the name of the package to update
@@ -66,20 +70,63 @@ class PackageResolvedFile:
         else:
             print(f'✏️️ "{package_name}" is up-to-date')
 
+    def add_dependency(self, package_name: str, repository_url: str, branch: str, revision: str, version):
+        """
+        Inserts new dependency resolution to this `Package.resolved`.
+        """
+
+        pins = self.packages['object']['pins']
+
+        # Find the index in `pins` array where the new dependency should be inserted.
+        # The `pins` array seems to follow the alphabetical order, but not always
+        # - I've seen `Package.resolved` where some dependencies were misplaced.
+        index = next((i for i in range(len(pins)) if pins[i]['package'].lower() > package_name.lower()), len(pins))
+
+        # Individual package pin looks this:
+        # {
+        #     "package": "DatadogSDK",
+        #     "repositoryURL": "https://github.com/DataDog/dd-sdk-ios",
+        #     "state": {
+        #         "branch": "dogfooding",
+        #         "revision": "4e93a8f1f662d9126074a0f355b4b6d20f9f30a7",
+        #         "version": null
+        #     }
+        # }
+
+        new_pin = {
+            'package': package_name,
+            'repositoryURL': repository_url,
+            'state': {
+                'branch': branch,
+                'revision': revision,
+                'version': version
+            }
+        }
+
+        pins.insert(index, new_pin)
+
+        print(f'✏️️ Added "{package_name}" at index {index}:')
+        print(f'    → branch: {branch}')
+        print(f'    → revision: {revision}')
+        print(f'    → version: {version}')
+
+    def read_dependency_names(self):
+        """
+        Returns package names for all dependencies in this `Package.resolved` file.
+        :return: list of package names (strings)
+        """
+        pins = self.packages['object']['pins']
+        package_names = [pin['package'] for pin in pins]
+        return package_names
+
     def read_dependency(self, package_name):
         """
         Returns resolution info for given dependency.
         :param package_name: the name of dependency
-        :return: `state` object from `Package.resolved`
+        :return: the `pin` object from `Package.resolved`
         """
         package = self.__get_package(package_name=package_name)
-        return deepcopy(package['state'])
-
-    def get_number_of_dependencies(self):
-        """
-        :return: number of dependencies
-        """
-        return len(self.packages['object']['pins'])
+        return deepcopy(package)
 
     def save(self):
         """
@@ -94,6 +141,14 @@ class PackageResolvedFile:
                 sort_keys=True  # preserve `swift package` packages sorting
             )
             file.write('\n')  # add new line to the EOF
+
+    def print(self):
+        """
+        Prints the content of this file.
+        """
+        with open(self.path, 'r') as file:
+            print(f'⚙️ Content of {file.name}:')
+            print(file.read())
 
     def __get_package(self, package_name: str):
         pins = self.packages['object']['pins']

@@ -39,11 +39,6 @@ def dogfood(dry_run: bool) -> int:
     dd_sdk_package_path = '../..'
     os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
     dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
-    kronos_dependency = dd_sdk_ios_package.read_dependency(package_name='Kronos')
-    plcrash_reporter_dependency = dd_sdk_ios_package.read_dependency(package_name='PLCrashReporter')
-
-    if dd_sdk_ios_package.get_number_of_dependencies() > 2:
-        raise Exception('`dogfood.py` needs update as `dd-sdk-ios` has unrecognized dependencies')
 
     # Clone `datadog-ios` repository to temporary location and update its `Package.resolved` so it points
     # to the current `dd-sdk-ios` commit. After that, push changes to `datadog-ios` and create dogfooding PR.
@@ -55,9 +50,11 @@ def dogfood(dry_run: bool) -> int:
                 temp_dir=temp_dir
             )
             repository.create_branch(f'dogfooding-{dd_sdk_ios_commit.hash_short}')
+
             package = PackageResolvedFile(
                 path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
             )
+
             # Update version of `dd-sdk-ios`:
             package.update_dependency(
                 package_name='DatadogSDK',
@@ -65,28 +62,39 @@ def dogfood(dry_run: bool) -> int:
                 new_revision=dd_sdk_ios_commit.hash,
                 new_version=None
             )
-            # Set version of `Kronos` to as it is resolved in `dd-sdk-ios`:
-            package.update_dependency(
-                package_name='Kronos',
-                new_branch=kronos_dependency['branch'],
-                new_revision=kronos_dependency['revision'],
-                new_version=kronos_dependency['version'],
-            )
-            # Set version of `PLCrashReporter` to as it is resolved in `dd-sdk-ios`:
-            package.update_dependency(
-                package_name='PLCrashReporter',
-                new_branch=plcrash_reporter_dependency['branch'],
-                new_revision=plcrash_reporter_dependency['revision'],
-                new_version=plcrash_reporter_dependency['version'],
-            )
+
+            # Add or update `dd-sdk-ios` dependencies
+            for dependency_name in dd_sdk_ios_package.read_dependency_names():
+                dependency = dd_sdk_ios_package.read_dependency(package_name=dependency_name)
+
+                if package.has_dependency(package_name=dependency_name):
+                    package.update_dependency(
+                        package_name=dependency_name,
+                        new_branch=dependency['state']['branch'],
+                        new_revision=dependency['state']['revision'],
+                        new_version=dependency['state']['version'],
+                    )
+                else:
+                    package.add_dependency(
+                        package_name=dependency_name,
+                        repository_url=dependency['repositoryURL'],
+                        branch=dependency['state']['branch'],
+                        revision=dependency['state']['revision'],
+                        version=dependency['state']['version']
+                    )
+
             package.save()
+
             # Push changes to `datadog-ios`:
             repository.commit(
                 message=f'Dogfooding dd-sdk-ios commit: {dd_sdk_ios_commit.hash}\n\n' +
                         f'Dogfooded commit message: {dd_sdk_ios_commit.message}',
                 author=dd_sdk_ios_commit.author
             )
-            if not dry_run:
+
+            if dry_run:
+                package.print()
+            else:
                 repository.push()
                 # Create PR:
                 repository.create_pr(
