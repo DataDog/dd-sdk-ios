@@ -671,3 +671,11 @@ class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
         onSendEvent?(application, event)
     }
 }
+
+class VitalListenerMock: VitalListener {
+    var onVitalInfoUpdate: ((VitalInfo) -> Void)?
+
+    func onVitalInfo(info: VitalInfo) {
+        onVitalInfoUpdate?(info)
+    }
+}

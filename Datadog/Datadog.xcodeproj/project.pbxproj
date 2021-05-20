@@ -439,6 +439,10 @@
 		9EEA4871258B76A100EBDA9D /* Global+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EEA4870258B76A100EBDA9D /* Global+objc.swift */; };
 		9EF963E82537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */; };
 		9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */; };
+		B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */; };
+		B3FC3C0A26526F0000DEED9E /* VitalObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C0726526F0000DEED9E /* VitalObserver.swift */; };
+		B3FC3C332652AE1400DEED9E /* VitalListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C322652AE1400DEED9E /* VitalListener.swift */; };
+		B3FC3C3C2653A97700DEED9E /* VitalObserverTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalObserverTest.swift */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
 		E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */; };
@@ -982,6 +986,10 @@
 		9EF49F17244770AD004F2CA0 /* DatadogIntegrationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogIntegrationTests.xcconfig; sourceTree = "<group>"; };
 		9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDURLSessionDelegateAsSuperclassTests.swift; sourceTree = "<group>"; };
 		9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPartyURLsFilter.swift; sourceTree = "<group>"; };
+		B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalInfo.swift; sourceTree = "<group>"; };
+		B3FC3C0726526F0000DEED9E /* VitalObserver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalObserver.swift; sourceTree = "<group>"; };
+		B3FC3C322652AE1400DEED9E /* VitalListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalListener.swift; sourceTree = "<group>"; };
+		B3FC3C3B2653A97700DEED9E /* VitalObserverTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalObserverTest.swift; sourceTree = "<group>"; };
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentSpanIntegration.swift; sourceTree = "<group>"; };
@@ -2525,6 +2533,7 @@
 		61E5332A24B75C3B003D6C4E /* RUM */ = {
 			isa = PBXGroup;
 			children = (
+				B3FC3C0426526EE900DEED9E /* RUMVitals */,
 				61E5332B24B75C51003D6C4E /* RUMFeature.swift */,
 				61E5333224B7A504003D6C4E /* DataModels */,
 				61C3E63124BF143C008053F2 /* RUMMonitor */,
@@ -2542,6 +2551,7 @@
 		61E5332D24B75DC7003D6C4E /* RUM */ = {
 			isa = PBXGroup;
 			children = (
+				B3FC3C1226526F4100DEED9E /* RUMVitals */,
 				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
 				618715FA24DC5EE700FC0F69 /* DataModels */,
 				617B953B24BF4D7300E6F443 /* RUMMonitor */,
@@ -2840,6 +2850,24 @@
 				9EF49F1624476FBD004F2CA0 /* Info.plist */,
 			);
 			path = DatadogIntegrationTests;
+			sourceTree = "<group>";
+		};
+		B3FC3C0426526EE900DEED9E /* RUMVitals */ = {
+			isa = PBXGroup;
+			children = (
+				B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */,
+				B3FC3C0726526F0000DEED9E /* VitalObserver.swift */,
+				B3FC3C322652AE1400DEED9E /* VitalListener.swift */,
+			);
+			path = RUMVitals;
+			sourceTree = "<group>";
+		};
+		B3FC3C1226526F4100DEED9E /* RUMVitals */ = {
+			isa = PBXGroup;
+			children = (
+				B3FC3C3B2653A97700DEED9E /* VitalObserverTest.swift */,
+			);
+			path = RUMVitals;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3351,6 +3379,7 @@
 				61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */,
 				61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */,
 				9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */,
+				B3FC3C0A26526F0000DEED9E /* VitalObserver.swift in Sources */,
 				613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */,
 				614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfoProvider.swift in Sources */,
@@ -3380,10 +3409,12 @@
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
 				61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */,
 				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
+				B3FC3C332652AE1400DEED9E /* VitalListener.swift in Sources */,
 				61FF282424B8A1C3000B3D9B /* RUMEventFileOutput.swift in Sources */,
 				61B22E5A24F3E6B700DC26D2 /* RUMDebugging.swift in Sources */,
 				61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */,
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
+				B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */,
 				613E81F025A740140084B751 /* RUMEventsMapper.swift in Sources */,
 				61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */,
 				61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */,
@@ -3511,6 +3542,7 @@
 				61C1510D25AC8C1B00362D4B /* RUMViewIdentityTests.swift in Sources */,
 				613E820525A879AF0084B751 /* RUMDataModelMocks.swift in Sources */,
 				61133C492423990D00786299 /* DDLoggerBuilderTests.swift in Sources */,
+				B3FC3C3C2653A97700DEED9E /* VitalObserverTest.swift in Sources */,
 				61133C4B2423990D00786299 /* DDLoggerTests.swift in Sources */,
 				618715FC24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift in Sources */,
 				61C5A89624509BF600DA608C /* TracerTests.swift in Sources */,
