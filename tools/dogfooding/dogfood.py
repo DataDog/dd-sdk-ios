@@ -7,7 +7,6 @@
 # Copyright 2019-2020 Datadog, Inc.
 # -----------------------------------------------------------
 
-import argparse
 import sys
 import os
 import contextlib
@@ -31,7 +30,9 @@ def remember_cwd():
         os.chdir(previous)
 
 
-def dogfood(dry_run: bool) -> int:
+def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository_package_resolved_path: str) -> int:
+    print(f'🐶 Dogfooding: {repository_name}...')
+
     # Read commit information:
     dd_sdk_ios_commit = DogfoodedCommit()
 
@@ -45,14 +46,14 @@ def dogfood(dry_run: bool) -> int:
     with TemporaryDirectory() as temp_dir:
         with remember_cwd():
             repository = Repository.clone(
-                ssh='git@github.com:DataDog/datadog-ios.git',
-                repository_name='datadog-ios',
+                ssh=repository_url,
+                repository_name=repository_name,
                 temp_dir=temp_dir
             )
             repository.create_branch(f'dogfooding-{dd_sdk_ios_commit.hash_short}')
 
             package = PackageResolvedFile(
-                path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+                path=repository_package_resolved_path
             )
 
             # Update version of `dd-sdk-ios`:
@@ -113,18 +114,29 @@ if __name__ == "__main__":
         print(f'    → changing current directory to: {os.getcwd()}')
         os.chdir('tools/dogfooding')
 
-    # Read arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--dry-run",
-        action='store_true',
-        help="Debugging utility. The tool will run as usual, but will skip the actual git push and PR creation."
-    )
-    args = parser.parse_args()
-
     try:
-        dry_run = True if args.dry_run else False
-        dogfood(dry_run=dry_run)
+        dry_run = os.environ.get('DD_DRY_RUN') == 'yes'
+        skip_datadog_ios = os.environ.get('DD_SKIP_DATADOG_IOS') == 'yes'
+        skip_shopist_ios = os.environ.get('DD_SKIP_SHOPIST_IOS') == 'yes'
+
+        # Dogfood in Datadog iOS app
+        if not skip_datadog_ios:
+            dogfood(
+                dry_run=dry_run,
+                repository_url='git@github.com:DataDog/datadog-ios.git',
+                repository_name='datadog-ios',
+                repository_package_resolved_path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+            )
+
+        # Dogfood in Shopist iOS
+        if not skip_shopist_ios:
+            dogfood(
+                dry_run=dry_run,
+                repository_url='git@github.com:DataDog/shopist-ios.git',
+                repository_name='shopist-ios',
+                repository_package_resolved_path='Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+            )
+
     except Exception as error:
         print(f'❌ Failed to dogfood: {error}')
         print('-' * 60)
