@@ -41,8 +41,8 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
     os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
     dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
 
-    # Clone `datadog-ios` repository to temporary location and update its `Package.resolved` so it points
-    # to the current `dd-sdk-ios` commit. After that, push changes to `datadog-ios` and create dogfooding PR.
+    # Clone dependant repo to temporary location and update its `Package.resolved` so it points
+    # to the current `dd-sdk-ios` commit. After that, push changes to dependant repo and create dogfooding PR.
     with TemporaryDirectory() as temp_dir:
         with remember_cwd():
             repository = Repository.clone(
@@ -86,7 +86,7 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
 
             package.save()
 
-            # Push changes to `datadog-ios`:
+            # Push changes to dependant repo:
             repository.commit(
                 message=f'Dogfooding dd-sdk-ios commit: {dd_sdk_ios_commit.hash}\n\n' +
                         f'Dogfooded commit message: {dd_sdk_ios_commit.message}',
