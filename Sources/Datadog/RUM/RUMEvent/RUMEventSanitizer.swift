@@ -12,8 +12,8 @@ internal struct RUMEventSanitizer {
 
     func sanitize<DM: RUMDataModel>(event: RUMEvent<DM>) -> RUMEvent<DM> {
         // Sanitize attribute names
-        var sanitizedUserExtraInfo = attributesSanitizer.sanitizeKeys(for: event.userInfoAttributes)
-        var sanitizedAttributes = attributesSanitizer.sanitizeKeys(for: event.attributes)
+        var sanitizedUserExtraInfo = attributesSanitizer.sanitizeKeys(for: event.userInfoAttributes, prefixLevels: 1)
+        var sanitizedAttributes = attributesSanitizer.sanitizeKeys(for: event.attributes, prefixLevels: 1)
 
         // Limit to max number of attributes.
         // If any attributes need to be removed, we first reduce number of

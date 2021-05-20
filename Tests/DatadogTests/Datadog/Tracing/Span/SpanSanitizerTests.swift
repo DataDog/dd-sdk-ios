@@ -55,9 +55,10 @@ class SpanSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six"])
         XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven"])
         XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight_nine_ten"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight_nine_ten_eleven"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight_nine_ten_eleven_twelve"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine.ten"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
 
         XCTAssertEqual(sanitized.tags.count, 12)
         XCTAssertNotNil(sanitized.tags["tag-one"])
@@ -68,9 +69,10 @@ class SpanSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six"])
         XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven"])
         XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight_nine_ten"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight_nine_ten_eleven"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight_nine_ten_eleven_twelve"])
+        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine"])
+        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine.ten"])
+        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
+        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
     }
 
     func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {

@@ -60,9 +60,9 @@ class RUMEventSanitizerTests: XCTestCase {
             XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six"])
             XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven"])
             XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight"])
-            XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight_nine_ten"])
-            XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight_nine_ten_eleven"])
-            XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight_nine_ten_eleven_twelve"])
+            XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight.nine_ten"])
+            XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
+            XCTAssertNotNil(sanitized.attributes["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven_twelve"])
 
             XCTAssertEqual(sanitized.userInfoAttributes.count, 12)
             XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one"])
@@ -73,9 +73,9 @@ class RUMEventSanitizerTests: XCTestCase {
             XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six"])
             XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven"])
             XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight"])
-            XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight_nine_ten"])
-            XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight_nine_ten_eleven"])
-            XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight_nine_ten_eleven_twelve"])
+            XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight.nine_ten"])
+            XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
+            XCTAssertNotNil(sanitized.userInfoAttributes["user-info-one.two.three.four.five.six.seven.eight.nine_ten_eleven_twelve"])
         }
 
         test(model: viewEvent)

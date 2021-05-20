@@ -28,6 +28,8 @@ prepare() {
    echo "BUILD_LIBRARY_FOR_DISTRIBUTION = YES" >> $xcconfig
    # carthage may try to build schemes in dependency-manager-tests folder, so we hide it temporarily
    mv dependency-manager-tests/ .dependency-manager-tests/ 
+   # hide '*.local.xcconfigs' so they are not applied to produced artifacts (they are renamed to '*_bak'):
+   find . -type f -name '*.local.xcconfig' -exec mv '{}' '{}_bak' ';'
    rm -rf Carthage/
 }
 
@@ -35,10 +37,12 @@ prepare() {
 cleanup() {
    rm -f "$xcconfig"
    mv .dependency-manager-tests/ dependency-manager-tests/
+   # revert hidding '*.local.xcconfigs' (rename back from '*_bak'):
+   find . -type f -name '*.local.xcconfig_bak' | sed -e 'p;s/_bak//' | xargs -n2 mv 
 }
 
 build_xcframeworks() {
-  trap cleanup INT TERM HUP EXIT
+   trap cleanup INT TERM HUP EXIT
    echo "carthage bootstrap with no build..."
    carthage bootstrap --no-build
    echo "carthage build..."
