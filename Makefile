@@ -102,11 +102,28 @@ bump:
 ship:
 		pod spec lint --allow-warnings DatadogSDK.podspec
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
-		pod repo update
 		./tools/standalone-binary-distro/make_distro_builds.sh
-		@echo "⚠️ DatadogSDKObjc.podspec needs to be tried after ~1 hour:"
-		@echo "pod spec lint --allow-warnings DatadogSDKObjc.podspec"
-		@echo "pod trunk push --allow-warnings DatadogSDKObjc.podspec"
+ifeq (${ci}, true)
+		curl https://app.bitrise.io/app/$$BITRISE_APP_SLUG/build/start.json \
+		--data '{"hook_info":{"type":"bitrise","build_trigger_token":"$$BITRISE_PERSONAL_ACCESS_TOKEN"},\
+		"build_params":{"workflow_id":"tagged_commit_part_2","commit_hash":"$$BITRISE_GIT_COMMIT"},\
+		"triggered_by":"curl"}'
+endif
+
+ship_part_2:
+		pod trunk me
+		pod spec lint --allow-warnings DatadogSDKObjc.podspec
+		pod spec lint --allow-warnings DatadogSDKAlamofireExtension.podspec
+		objcRetVal=1 ; \
+		while [[ $$objcRetVal -ne 0 ]] ; do \
+			pod trunk push --allow-warnings DatadogSDKObjc.podspec ; \
+        	((objcRetVal = $$?)) ; \
+    	done
+		alamofireRetVal=1 ; \
+		while [[ $$alamofireRetVal -ne 0 ]] ; do \
+			pod trunk push --allow-warnings DatadogSDKAlamofireExtension.podspec ; \
+        	((alamofireRetVal = $$?)) ; \
+    	done
 
 dogfood:
 		@cd tools/dogfooding && $(MAKE)

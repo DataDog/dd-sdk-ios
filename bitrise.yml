@@ -30,6 +30,11 @@ workflows:
     - ship
     - _deploy_artifacts
 
+  tagged_commit_part_2:
+    after_run:
+    - ship_part_2
+    - _deploy_artifacts
+
   _make_dependencies:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
@@ -258,3 +263,15 @@ workflows:
             #!/usr/bin/env zsh
             set -e
             make ship
+
+  ship_part_2:
+    description: |-
+        Ships the tagged version of DatadogSDKObjc and AlamofireExtension to Cocoapods trunk.
+    steps:
+    - script:
+        title: Ship tagged version of DatadogSDKObjc and AlamofireExtension
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            make ship_part_2
