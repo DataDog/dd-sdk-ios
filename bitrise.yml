@@ -19,6 +19,13 @@ workflows:
   push_to_dogfooding:
     after_run:
     - create_dogfooding_pr
+    - _notify_failure_on_slack
+
+  run_nightly_e2e_tests:
+    after_run:
+    - _make_dependencies
+    - run_e2e_tests
+    - _notify_failure_on_slack
 
   _make_dependencies:
     description: |-
@@ -37,6 +44,27 @@ workflows:
         Uploads artifacts to associate them with build log on Bitrise.io.
     steps:
     - deploy-to-bitrise-io: {}
+
+  _notify_failure_on_slack:
+    description: |-
+        Notifies any (previous) workflow failure on Slack.
+        Should be used to notify failures for workflows which do not report back to GitHub check.
+    steps:
+    - slack:
+        is_always_run: true
+        run_if: .IsBuildFailed
+        inputs:
+        - channel: '#dd-sdk-ios'
+        - buttons: |-
+            See Bitrise log|${BITRISE_BUILD_URL}
+        - pretext: |-
+            ⚠️ Bitrise build failed.
+        - color_on_error: '#FF0000'
+        - author_name: ''
+        - message: ''
+        - message_on_error: ''
+        - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
+        - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
 
   run_linter:
     description: |-
@@ -237,3 +265,21 @@ workflows:
             set -e
             make dogfood ci=${CI}
 
+  run_e2e_tests:
+    description: |-
+        Runs E2E tests on iOS Simulator.
+    steps:
+    - xcode-test:
+        title: Run E2E tests for manual instrumentation APIs - iOS Simulator
+        inputs:
+        - scheme: E2ETests
+        - simulator_device: iPhone 11
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-tests.html"
+    - xcode-test:
+        title: Run E2E tests for auto instrumentation APIs - iOS Simulator
+        inputs:
+        - scheme: E2EInstrumentationTests
+        - simulator_device: iPhone 11
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
