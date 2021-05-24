@@ -23,7 +23,10 @@ SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_E
 //		 The only "problematic" dependency is `CrashReporter.xcframework` which doesn't produce\n
 //		 the `arm64-simulator` architecture when compiled from source. Its pre-build `CrashReporter.xcframework`\n
 //		 available since `1.8.0` contains the `ios-arm64_i386_x86_64-simulator` slice and should link fine in all configurations.\n
-ONLY_ACTIVE_ARCH = YES
+ONLY_ACTIVE_ARCH = YES\n
+\n
+// If running on CI (can be set empty on local machine):\n
+IS_CI=${ci}\n 
 endef
 export DD_SDK_BASE_XCCONFIG
 

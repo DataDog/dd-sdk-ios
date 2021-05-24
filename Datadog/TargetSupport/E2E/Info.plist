@@ -45,5 +45,7 @@
 	<string>$(E2E_DATADOG_CLIENT_TOKEN)</string>
 	<key>E2ERUMApplicationID</key>
 	<string>$(E2E_RUM_APPLICATION_ID)</string>
+	<key>IsRunningOnCI</key>
+	<string>$(IS_CI)</string>
 </dict>
 </plist>

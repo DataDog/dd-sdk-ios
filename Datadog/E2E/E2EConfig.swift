@@ -10,12 +10,14 @@ internal class E2EConfig {
     private struct InfoPlistKey {
         static let clientToken      = "E2EDatadogClientToken"
         static let rumApplicationID = "E2ERUMApplicationID"
+        static let isRunningOnCI    = "IsRunningOnCI"
     }
 
     private static var bundle: Bundle { Bundle(for: E2EConfig.self) }
 
     // MARK: - Info.plist
 
+    /// Reads Datadog client token authorizing data for 'Mobile - Instrumentation' org.
     static func readClientToken() -> String {
         guard let clientToken = bundle.infoDictionary?[InfoPlistKey.clientToken] as? String, !clientToken.isEmpty else {
             fatalError("""
@@ -27,6 +29,7 @@ internal class E2EConfig {
         return clientToken
     }
 
+    /// Reads RUM Application ID authorizing data for 'Mobile - Instrumentation' org.
     static func readRUMApplicationID() -> String {
         guard let rumApplicationID = bundle.infoDictionary![InfoPlistKey.rumApplicationID] as? String, !rumApplicationID.isEmpty else {
             fatalError("""
@@ -38,8 +41,18 @@ internal class E2EConfig {
         return rumApplicationID
     }
 
+    /// Reads Datadog ENV for tagging events. Returns `debug` for local builds and `instrumentation` for CI.
+    /// This way local debug data is excluded from monitors installed in 'Mobile - Instrumentation' org.
+    static func readEnv() -> String {
+        let isCI = bundle.infoDictionary![InfoPlistKey.isRunningOnCI] as? String
+        return isCI == "true" ? "instrumentation" : "debug"
+    }
+
+    /// Checks the ENV configuration consistency.
+    /// TODO: RUMM-1249 remove this method when we have both manual and instrumented API tests using client token and RUM app ID.
     static func check() {
         _ = readClientToken()
         _ = readRUMApplicationID()
+        print("⚙️ Using DD ENV: '\(readEnv())'")
     }
 }
