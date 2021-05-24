@@ -257,6 +257,8 @@
 		618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */; };
 		618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */; };
 		618F9843265BC486009959F8 /* E2EInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */; };
+		618F984E265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
+		618F984F265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
 		6193DCA4251B5691009B8011 /* RUMTapActionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */; };
 		6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */; };
 		6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */; };
@@ -862,6 +864,7 @@
 		618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EInstrumentationTests.swift; sourceTree = "<group>"; };
 		618F9844265BC486009959F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		618F984C265BC53E009959F8 /* E2EInstrumentationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2EInstrumentationTests.xcconfig; sourceTree = "<group>"; };
+		618F984D265BC905009959F8 /* E2EConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EConfig.swift; sourceTree = "<group>"; };
 		6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMTapActionScenario.storyboard; sourceTree = "<group>"; };
 		6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASScreen1ViewController.swift; sourceTree = "<group>"; };
 		6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASTableViewController.swift; sourceTree = "<group>"; };
@@ -2396,6 +2399,7 @@
 		6199362C265BA959009D7EA8 /* E2E */ = {
 			isa = PBXGroup;
 			children = (
+				618F984D265BC905009959F8 /* E2EConfig.swift */,
 				6199362D265BA959009D7EA8 /* E2EAppDelegate.swift */,
 				61993636265BA95A009D7EA8 /* Assets.xcassets */,
 				61993638265BA95A009D7EA8 /* LaunchScreen.storyboard */,
@@ -4001,6 +4005,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				618F984E265BC905009959F8 /* E2EConfig.swift in Sources */,
 				6199362E265BA959009D7EA8 /* E2EAppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4009,6 +4014,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				618F984F265BC905009959F8 /* E2EConfig.swift in Sources */,
 				61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

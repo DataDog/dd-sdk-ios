@@ -9,6 +9,10 @@ import UIKit
 @UIApplicationMain
 class E2EAppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+        // TODO: RUMM-1249 remove this when we have both manual and instrumented API tests using client token and RUM app ID
+        E2EConfig.check()
+
         return true
     }
 }
