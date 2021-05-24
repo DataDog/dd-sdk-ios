@@ -265,6 +265,14 @@
 		6199362E265BA959009D7EA8 /* E2EAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6199362D265BA959009D7EA8 /* E2EAppDelegate.swift */; };
 		61993637265BA95A009D7EA8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61993636265BA95A009D7EA8 /* Assets.xcassets */; };
 		6199363A265BA95A009D7EA8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61993638265BA95A009D7EA8 /* LaunchScreen.storyboard */; };
+		61993654265BB6A6009D7EA8 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
+		61993655265BB6A6009D7EA8 /* CrashReporter.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		61993656265BB6A6009D7EA8 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
+		61993657265BB6A6009D7EA8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6199365A265BB6A6009D7EA8 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
+		6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6199365E265BB6A6009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
+		6199365F265BB6A6009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
 		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
@@ -504,6 +512,20 @@
 			remoteGlobalIDString = 61B7885325C180CB002675B5;
 			remoteInfo = DatadogCrashReporting;
 		};
+		61993658265BB6A6009D7EA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133B81242393DE00786299;
+			remoteInfo = Datadog;
+		};
+		6199365C265BB6A6009D7EA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61B7885325C180CB002675B5;
+			remoteInfo = DatadogCrashReporting;
+		};
 		61B7885E25C180CB002675B5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -539,6 +561,20 @@
 				61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
 				614ED39B260357FA00C8C519 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 				61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
+			);
+			name = "⚙️ Embed Framework Dependencies";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993660265BB6A6009D7EA8 /* ⚙️ Embed Framework Dependencies */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				61993655265BB6A6009D7EA8 /* CrashReporter.xcframework in ⚙️ Embed Framework Dependencies */,
+				6199365F265BB6A6009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
+				61993657265BB6A6009D7EA8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
+				6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1066,6 +1102,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61993656265BB6A6009D7EA8 /* Datadog.framework in Frameworks */,
+				6199365A265BB6A6009D7EA8 /* DatadogCrashReporting.framework in Frameworks */,
+				6199365E265BB6A6009D7EA8 /* Kronos.xcframework in Frameworks */,
+				61993654265BB6A6009D7EA8 /* CrashReporter.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3069,10 +3109,13 @@
 				61993627265BA958009D7EA8 /* Sources */,
 				61993628265BA958009D7EA8 /* Frameworks */,
 				61993629265BA958009D7EA8 /* Resources */,
+				61993660265BB6A6009D7EA8 /* ⚙️ Embed Framework Dependencies */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				61993659265BB6A6009D7EA8 /* PBXTargetDependency */,
+				6199365D265BB6A6009D7EA8 /* PBXTargetDependency */,
 			);
 			name = E2E;
 			productName = E2E;
@@ -3858,6 +3901,16 @@
 			isa = PBXTargetDependency;
 			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
 			targetProxy = 6170DC5225C18E57003AED5C /* PBXContainerItemProxy */;
+		};
+		61993659265BB6A6009D7EA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61133B81242393DE00786299 /* Datadog */;
+			targetProxy = 61993658265BB6A6009D7EA8 /* PBXContainerItemProxy */;
+		};
+		6199365D265BB6A6009D7EA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
+			targetProxy = 6199365C265BB6A6009D7EA8 /* PBXContainerItemProxy */;
 		};
 		61B7885F25C180CB002675B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
