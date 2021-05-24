@@ -27,6 +27,13 @@ ONLY_ACTIVE_ARCH = YES
 endef
 export DD_SDK_BASE_XCCONFIG
 
+define DD_SDK_DATADOG_XCCONFIG
+// Datadog secrets provisioning E2E tests data for 'Mobile - Integration' org:\n
+E2E_RUM_APPLICATION_ID=${E2E_RUM_APPLICATION_ID}\n
+E2E_DATADOG_CLIENT_TOKEN=${E2E_DATADOG_CLIENT_TOKEN}\n
+endef
+export DD_SDK_DATADOG_XCCONFIG
+
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
@@ -37,6 +44,7 @@ dependencies:
 		@carthage bootstrap --platform iOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
+		@echo $$DD_SDK_DATADOG_XCCONFIG > xcconfigs/Datadog.local.xcconfig;
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
