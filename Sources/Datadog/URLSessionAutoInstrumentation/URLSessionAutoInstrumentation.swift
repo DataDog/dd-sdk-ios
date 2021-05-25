@@ -7,7 +7,7 @@
 import Foundation
 
 /// `URLSession` Auto Instrumentation feature.
-internal class URLSessionAutoInstrumentation {
+internal final class URLSessionAutoInstrumentation {
     static var instance: URLSessionAutoInstrumentation?
 
     let swizzler: URLSessionSwizzler
@@ -48,4 +48,10 @@ internal class URLSessionAutoInstrumentation {
         let rumResourceHandler = interceptor.handler as? URLSessionRUMResourcesHandler
         rumResourceHandler?.subscribe(commandsSubscriber: commandSubscriber)
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        URLSessionAutoInstrumentation.instance = nil
+    }
+#endif
 }

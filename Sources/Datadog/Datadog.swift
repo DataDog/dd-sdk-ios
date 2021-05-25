@@ -288,24 +288,25 @@ public class Datadog {
         self.launchTimeProvider = launchTimeProvider
     }
 
-    /// Internal feature made only for tests purpose.
-    static func deinitializeOrThrow() throws {
-        guard Datadog.instance != nil else {
-            throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
-        }
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Deinitializes the SDK by tearing down all running feature and ensuring clean state for
+    /// next initialization. This is highly experimental API and only supported in tests.
+    static func deinitialize() {
+        assert(Datadog.instance != nil, "SDK must be first initialized.")
 
-        // First, reset internal loggers:
+        // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
 
-        // Then, deinitialize features:
-        InternalMonitoringFeature.instance = nil
-        LoggingFeature.instance = nil
-        TracingFeature.instance = nil
-        RUMFeature.instance = nil
-        CrashReportingFeature.instance = nil
+        // Tear down and deinitialize all features:
+        LoggingFeature.instance?.deinitialize()
+        TracingFeature.instance?.deinitialize()
+        RUMFeature.instance?.deinitialize()
 
-        RUMAutoInstrumentation.instance = nil
-        URLSessionAutoInstrumentation.instance = nil
+        InternalMonitoringFeature.instance?.deinitialize()
+        CrashReportingFeature.instance?.deinitialize()
+
+        RUMAutoInstrumentation.instance?.deinitialize()
+        URLSessionAutoInstrumentation.instance?.deinitialize()
 
         // Deinitialize Crash Reporter managed internally by the SDK
         Global.crashReporter = nil
@@ -313,6 +314,7 @@ public class Datadog {
         // Deinitialize `Datadog`:
         Datadog.instance = nil
     }
+#endif
 }
 
 /// Convenience typealias.

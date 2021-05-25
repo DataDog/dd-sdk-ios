@@ -161,4 +161,12 @@ internal final class RUMFeature {
         self.storage = storage
         self.upload = upload
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        storage.flush()
+        upload.flushAndTearDown()
+        RUMFeature.instance = nil
+    }
+#endif
 }

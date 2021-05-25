@@ -40,7 +40,7 @@ internal struct FeatureStorage {
 
     /// An arbitrary `Writer` which always writes data to authorized folder.
     /// Should be only used by components which implement their own consideration of the `TrackingConsent` value
-    /// associated with data written.
+    /// associated with data written (e.g. crash reporting integration which saves the consent value along with the crash report).
     let arbitraryAuthorizedWriter: Writer
 
     init(
@@ -120,6 +120,19 @@ internal struct FeatureStorage {
         self.reader = reader
         self.arbitraryAuthorizedWriter = arbitraryAuthorizedWriter
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Flushes all async write operations.
+    ///
+    /// This method is executed synchronously. After return, the storage feature has no more
+    /// pending asynchronous write operations so all its data is ready for upload.
+    func flush() {
+        let consentAwareDataWriter = writer as? ConsentAwareDataWriter
+        let arbitraryDataWriter = arbitraryAuthorizedWriter as? ArbitraryDataWriter
+        let readWriteQueue = consentAwareDataWriter?.readWriteQueue ?? arbitraryDataWriter?.readWriteQueue
+        readWriteQueue?.sync {}
+    }
+#endif
 }
 
 internal struct FeatureUpload {
@@ -166,4 +179,18 @@ internal struct FeatureUpload {
     init(uploader: DataUploadWorkerType) {
         self.uploader = uploader
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Flushes all authorised data and tears down the upload stack.
+    /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
+    /// - It completes all pending asynchronous work in upload worker and cancels its next schedules.
+    ///
+    /// This method is executed synchronously. After return, the upload feature has no more
+    /// pending asynchronous operations and all its authorized data should be considered uploaded.
+    func flushAndTearDown() {
+        let dataUploadWorker = uploader as? DataUploadWorker
+        dataUploadWorker?.cancelSynchronously()
+        dataUploadWorker?.flushSynchronously()
+    }
+#endif
 }

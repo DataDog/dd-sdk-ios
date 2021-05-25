@@ -29,6 +29,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
 
+    /// Upload work scheduled by this worker.
+    private var uploadWork: DispatchWorkItem?
+
     init(
         queue: DispatchQueue,
         fileReader: Reader,
@@ -44,11 +47,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.delay = delay
         self.featureName = featureName
 
-        scheduleNextUpload(after: self.delay.current)
-    }
-
-    private func scheduleNextUpload(after delay: TimeInterval) {
-        queue.asyncAfter(deadline: .now() + delay) { [weak self] in
+        let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
@@ -81,7 +80,45 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
             self.scheduleNextUpload(after: self.delay.current)
         }
+
+        self.uploadWork = uploadWork
+
+        scheduleNextUpload(after: self.delay.current)
     }
+
+    private func scheduleNextUpload(after delay: TimeInterval) {
+        guard let work = uploadWork else {
+            return
+        }
+
+        queue.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Sends all unsent data synchronously.
+    /// - It performs arbiitrary upload (without checking upload condition and without re-transmitting failed uploads).
+    func flushSynchronously() {
+        queue.sync {
+            while let nextBatch = self.fileReader.readNextBatch() {
+                _ = self.dataUploader.upload(data: nextBatch.data)
+                self.fileReader.markBatchAsRead(nextBatch)
+            }
+        }
+    }
+
+    /// Cancels scheduled uploads and stops scheduling next ones.
+    /// - It does not affect the upload that has already begun.
+    /// - It blocks the caller thread if called in the middle of upload execution.
+    func cancelSynchronously() {
+        queue.sync {
+            // This cancellation must be performed on the `queue` to ensure that it is not called
+            // in the middle of a `DispatchWorkItem` execution - otherwise, as the pending block would be
+            // fully executed, it will schedule another upload by calling `nextScheduledWork(after:)` at the end.
+            self.uploadWork?.cancel()
+            self.uploadWork = nil
+        }
+    }
+#endif
 }
 
 extension DataUploadConditions.Blocker: CustomStringConvertible {

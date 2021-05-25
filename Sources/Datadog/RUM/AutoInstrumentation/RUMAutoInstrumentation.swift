@@ -7,7 +7,7 @@
 import Foundation
 
 /// RUM Auto Instrumentation feature.
-internal class RUMAutoInstrumentation {
+internal final class RUMAutoInstrumentation {
     static var instance: RUMAutoInstrumentation?
 
     /// RUM Views auto instrumentation.
@@ -85,4 +85,10 @@ internal class RUMAutoInstrumentation {
         views?.handler.subscribe(commandsSubscriber: commandSubscriber)
         userActions?.handler.subscribe(commandsSubscriber: commandSubscriber)
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        RUMAutoInstrumentation.instance = nil
+    }
+#endif
 }

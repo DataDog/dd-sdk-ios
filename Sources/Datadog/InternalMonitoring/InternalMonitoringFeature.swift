@@ -141,4 +141,12 @@ internal final class InternalMonitoringFeature {
 
         self.monitor = InternalMonitor(sdkLogger: internalLogger)
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        logsStorage.flush()
+        logsUpload.flushAndTearDown()
+        InternalMonitoringFeature.instance = nil
+    }
+#endif
 }
