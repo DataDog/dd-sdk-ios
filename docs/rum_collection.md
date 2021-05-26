@@ -144,7 +144,7 @@ To enable RUM resources tracking, use the `.track(firstPartyHosts:)` option when
 ```swift
 Datadog.Configuration
    .builderUsing(...)
-   .track(firstPartyHosts: ["your.domain.com"])
+   .trackURLSession(firstPartyHosts: ["your.domain.com"])
    .build()
 
 Global.rum = RUMMonitor.initialize()
