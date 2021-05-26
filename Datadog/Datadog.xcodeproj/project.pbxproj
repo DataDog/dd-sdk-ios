@@ -192,7 +192,6 @@
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		614ED36C260352DC00C8C519 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		614ED37C2603533D00C8C519 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
-		614ED37D2603533D00C8C519 /* CrashReporter.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		614ED39A260357FA00C8C519 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		614ED39B260357FA00C8C519 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6152C83E24BE1C91006A1679 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 6152C83D24BE1C91006A1679 /* HTTPServerMock */; };
@@ -257,11 +256,27 @@
 		618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDE24C75FD300589570 /* RUMScopeTests.swift */; };
 		618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE024C766F500589570 /* SendRUMFixture2ViewController.swift */; };
 		618DCFE324C766FB00589570 /* SendRUMFixture3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFE224C766FB00589570 /* SendRUMFixture3ViewController.swift */; };
+		618F9843265BC486009959F8 /* E2EInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */; };
+		618F984E265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
+		618F984F265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
 		6193DCA4251B5691009B8011 /* RUMTapActionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */; };
 		6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */; };
 		6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */; };
 		6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */; };
 		6198D27124C6E3B700493501 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
+		6199362E265BA959009D7EA8 /* E2EAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6199362D265BA959009D7EA8 /* E2EAppDelegate.swift */; };
+		61993637265BA95A009D7EA8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61993636265BA95A009D7EA8 /* Assets.xcassets */; };
+		6199363A265BA95A009D7EA8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61993638265BA95A009D7EA8 /* LaunchScreen.storyboard */; };
+		61993654265BB6A6009D7EA8 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
+		61993656265BB6A6009D7EA8 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
+		61993657265BB6A6009D7EA8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6199365A265BB6A6009D7EA8 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
+		6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6199365E265BB6A6009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
+		6199365F265BB6A6009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61993667265BBEDC009D7EA8 /* E2ETests.swift */; };
+		61993673265BC371009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
+		61993674265BC371009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
 		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
@@ -421,8 +436,6 @@
 		61FF416225EE5FF400CE35EC /* CrashReportingWithLoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF416125EE5FF400CE35EC /* CrashReportingWithLoggingIntegrationTests.swift */; };
 		61FF9A4525AC5DEA001058CC /* RUMViewIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */; };
 		9E0542CB25F8EBBE007A3D0B /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
-		9E0542D725F8EBE3007A3D0B /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
-		9E0542D825F8EBE3007A3D0B /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
 		9E307C3224C8846D0039607E /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
 		9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
@@ -501,6 +514,34 @@
 			remoteGlobalIDString = 61B7885325C180CB002675B5;
 			remoteInfo = DatadogCrashReporting;
 		};
+		618F9845265BC486009959F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6199362A265BA958009D7EA8;
+			remoteInfo = E2E;
+		};
+		61993658265BB6A6009D7EA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61133B81242393DE00786299;
+			remoteInfo = Datadog;
+		};
+		6199365C265BB6A6009D7EA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61B7885325C180CB002675B5;
+			remoteInfo = DatadogCrashReporting;
+		};
+		6199366A265BBEDC009D7EA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6199362A265BA958009D7EA8;
+			remoteInfo = E2E;
+		};
 		61B7885E25C180CB002675B5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -531,11 +572,23 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				614ED37D2603533D00C8C519 /* CrashReporter.xcframework in ⚙️ Embed Framework Dependencies */,
-				9E0542D825F8EBE3007A3D0B /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
 				61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
+				61993674265BC371009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
 				614ED39B260357FA00C8C519 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 				61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
+			);
+			name = "⚙️ Embed Framework Dependencies";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993660265BB6A6009D7EA8 /* ⚙️ Embed Framework Dependencies */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				6199365F265BB6A6009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
+				61993657265BB6A6009D7EA8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
+				6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -807,11 +860,26 @@
 		618E136C252384D90098C6B0 /* URLSessionAutoInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionAutoInstrumentation.swift; sourceTree = "<group>"; };
 		618E13A92524B8700098C6B0 /* HTTPHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPHeadersReader.swift; sourceTree = "<group>"; };
 		618E13B02524B8F80098C6B0 /* TracingHTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingHTTPHeaders.swift; sourceTree = "<group>"; };
+		618F9840265BC486009959F8 /* E2EInstrumentationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = E2EInstrumentationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EInstrumentationTests.swift; sourceTree = "<group>"; };
+		618F9844265BC486009959F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		618F984C265BC53E009959F8 /* E2EInstrumentationTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2EInstrumentationTests.xcconfig; sourceTree = "<group>"; };
+		618F984D265BC905009959F8 /* E2EConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EConfig.swift; sourceTree = "<group>"; };
 		6193DCA3251B5691009B8011 /* RUMTapActionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMTapActionScenario.storyboard; sourceTree = "<group>"; };
 		6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASScreen1ViewController.swift; sourceTree = "<group>"; };
 		6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASTableViewController.swift; sourceTree = "<group>"; };
 		6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASCollectionViewController.swift; sourceTree = "<group>"; };
 		6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScopeTests.swift; sourceTree = "<group>"; };
+		6199362B265BA958009D7EA8 /* E2E.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = E2E.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6199362D265BA959009D7EA8 /* E2EAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EAppDelegate.swift; sourceTree = "<group>"; };
+		61993636265BA95A009D7EA8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		61993639265BA95A009D7EA8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		6199363B265BA95A009D7EA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61993641265BAD2D009D7EA8 /* E2E.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2E.xcconfig; sourceTree = "<group>"; };
+		61993665265BBEDC009D7EA8 /* E2ETests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = E2ETests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61993667265BBEDC009D7EA8 /* E2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2ETests.swift; sourceTree = "<group>"; };
+		61993669265BBEDC009D7EA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61993672265BC029009D7EA8 /* E2ETests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2ETests.xcconfig; sourceTree = "<group>"; };
 		619E16D72577C1CB00B2516B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
 		619E16E82578E73E00B2516B /* DataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigrator.swift; sourceTree = "<group>"; };
 		619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAllDataMigrator.swift; sourceTree = "<group>"; };
@@ -1021,9 +1089,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61993673265BC371009D7EA8 /* Kronos.xcframework in Frameworks */,
 				614ED39A260357FA00C8C519 /* DatadogCrashReporting.framework in Frameworks */,
 				614ED37C2603533D00C8C519 /* CrashReporter.xcframework in Frameworks */,
-				9E0542D725F8EBE3007A3D0B /* Kronos.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1050,6 +1118,31 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E0542CB25F8EBBE007A3D0B /* Kronos.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		618F983D265BC486009959F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993628265BA958009D7EA8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				61993656265BB6A6009D7EA8 /* Datadog.framework in Frameworks */,
+				6199365A265BB6A6009D7EA8 /* DatadogCrashReporting.framework in Frameworks */,
+				6199365E265BB6A6009D7EA8 /* Kronos.xcframework in Frameworks */,
+				61993654265BB6A6009D7EA8 /* CrashReporter.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993662265BBEDC009D7EA8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1124,6 +1217,9 @@
 				61441C3524617013003D8BB8 /* DatadogIntegrationTests */,
 				61133C07242397F200786299 /* TargetSupport */,
 				61441C0324616DE9003D8BB8 /* Example */,
+				6199362C265BA959009D7EA8 /* E2E */,
+				61993666265BBEDC009D7EA8 /* E2ETests */,
+				618F9841265BC486009959F8 /* E2EInstrumentationTests */,
 				61133B83242393DE00786299 /* Products */,
 				61133C6F2423993200786299 /* Frameworks */,
 			);
@@ -1140,6 +1236,9 @@
 				61441C6824619FE4003D8BB8 /* DatadogBenchmarkTests.xctest */,
 				61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */,
 				61B7885C25C180CB002675B5 /* DatadogCrashReportingTests.xctest */,
+				6199362B265BA958009D7EA8 /* E2E.app */,
+				61993665265BBEDC009D7EA8 /* E2ETests.xctest */,
+				618F9840265BC486009959F8 /* E2EInstrumentationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1344,6 +1443,9 @@
 				61441C762461A01D003D8BB8 /* DatadogBenchmarkTests */,
 				9EF49F1524476FBD004F2CA0 /* DatadogIntegrationTests */,
 				61441C9E2461AF4D003D8BB8 /* Example */,
+				61993640265BAC34009D7EA8 /* E2E */,
+				61993670265BBF19009D7EA8 /* E2ETests */,
+				618F984B265BC4C0009959F8 /* E2EInstrumentationTests */,
 			);
 			path = TargetSupport;
 			sourceTree = "<group>";
@@ -2265,6 +2367,23 @@
 			path = URLSessionAutoInstrumentation;
 			sourceTree = "<group>";
 		};
+		618F9841265BC486009959F8 /* E2EInstrumentationTests */ = {
+			isa = PBXGroup;
+			children = (
+				618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */,
+			);
+			path = E2EInstrumentationTests;
+			sourceTree = "<group>";
+		};
+		618F984B265BC4C0009959F8 /* E2EInstrumentationTests */ = {
+			isa = PBXGroup;
+			children = (
+				618F9844265BC486009959F8 /* Info.plist */,
+				618F984C265BC53E009959F8 /* E2EInstrumentationTests.xcconfig */,
+			);
+			path = E2EInstrumentationTests;
+			sourceTree = "<group>";
+		};
 		6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -2275,6 +2394,43 @@
 				615C3154251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift */,
 			);
 			path = TapActionAutoInstrumentation;
+			sourceTree = "<group>";
+		};
+		6199362C265BA959009D7EA8 /* E2E */ = {
+			isa = PBXGroup;
+			children = (
+				618F984D265BC905009959F8 /* E2EConfig.swift */,
+				6199362D265BA959009D7EA8 /* E2EAppDelegate.swift */,
+				61993636265BA95A009D7EA8 /* Assets.xcassets */,
+				61993638265BA95A009D7EA8 /* LaunchScreen.storyboard */,
+			);
+			path = E2E;
+			sourceTree = "<group>";
+		};
+		61993640265BAC34009D7EA8 /* E2E */ = {
+			isa = PBXGroup;
+			children = (
+				6199363B265BA95A009D7EA8 /* Info.plist */,
+				61993641265BAD2D009D7EA8 /* E2E.xcconfig */,
+			);
+			path = E2E;
+			sourceTree = "<group>";
+		};
+		61993666265BBEDC009D7EA8 /* E2ETests */ = {
+			isa = PBXGroup;
+			children = (
+				61993667265BBEDC009D7EA8 /* E2ETests.swift */,
+			);
+			path = E2ETests;
+			sourceTree = "<group>";
+		};
+		61993670265BBF19009D7EA8 /* E2ETests */ = {
+			isa = PBXGroup;
+			children = (
+				61993669265BBEDC009D7EA8 /* Info.plist */,
+				61993672265BC029009D7EA8 /* E2ETests.xcconfig */,
+			);
+			path = E2ETests;
 			sourceTree = "<group>";
 		};
 		619E16D42577C11B00B2516B /* Writting */ = {
@@ -3024,6 +3180,63 @@
 			productReference = 61441C6824619FE4003D8BB8 /* DatadogBenchmarkTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		618F983F265BC486009959F8 /* E2EInstrumentationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 618F9847265BC486009959F8 /* Build configuration list for PBXNativeTarget "E2EInstrumentationTests" */;
+			buildPhases = (
+				618F983C265BC486009959F8 /* Sources */,
+				618F983D265BC486009959F8 /* Frameworks */,
+				618F983E265BC486009959F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				618F9846265BC486009959F8 /* PBXTargetDependency */,
+			);
+			name = E2EInstrumentationTests;
+			productName = E2EInstrumentationTests;
+			productReference = 618F9840265BC486009959F8 /* E2EInstrumentationTests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		6199362A265BA958009D7EA8 /* E2E */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6199363F265BA95A009D7EA8 /* Build configuration list for PBXNativeTarget "E2E" */;
+			buildPhases = (
+				61993627265BA958009D7EA8 /* Sources */,
+				61993628265BA958009D7EA8 /* Frameworks */,
+				61993629265BA958009D7EA8 /* Resources */,
+				61993660265BB6A6009D7EA8 /* ⚙️ Embed Framework Dependencies */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				61993659265BB6A6009D7EA8 /* PBXTargetDependency */,
+				6199365D265BB6A6009D7EA8 /* PBXTargetDependency */,
+			);
+			name = E2E;
+			productName = E2E;
+			productReference = 6199362B265BA958009D7EA8 /* E2E.app */;
+			productType = "com.apple.product-type.application";
+		};
+		61993664265BBEDC009D7EA8 /* E2ETests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6199366C265BBEDC009D7EA8 /* Build configuration list for PBXNativeTarget "E2ETests" */;
+			buildPhases = (
+				61993661265BBEDC009D7EA8 /* Sources */,
+				61993662265BBEDC009D7EA8 /* Frameworks */,
+				61993663265BBEDC009D7EA8 /* Resources */,
+				61993671265BBF8E009D7EA8 /* ⚙️ Run linter */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6199366B265BBEDC009D7EA8 /* PBXTargetDependency */,
+			);
+			name = E2ETests;
+			productName = E2ETests;
+			productReference = 61993665265BBEDC009D7EA8 /* E2ETests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		61B7885325C180CB002675B5 /* DatadogCrashReporting */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 61B7886B25C180CB002675B5 /* Build configuration list for PBXNativeTarget "DatadogCrashReporting" */;
@@ -3070,7 +3283,7 @@
 		61133B79242393DE00786299 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1230;
+				LastSwiftUpdateCheck = 1250;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Datadog;
 				TargetAttributes = {
@@ -3096,6 +3309,17 @@
 					61441C6724619FE4003D8BB8 = {
 						CreatedOnToolsVersion = 11.4;
 						TestTargetID = 61441C0124616DE9003D8BB8;
+					};
+					618F983F265BC486009959F8 = {
+						CreatedOnToolsVersion = 12.5;
+						TestTargetID = 6199362A265BA958009D7EA8;
+					};
+					6199362A265BA958009D7EA8 = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					61993664265BBEDC009D7EA8 = {
+						CreatedOnToolsVersion = 12.5;
+						TestTargetID = 6199362A265BA958009D7EA8;
 					};
 					61B7885325C180CB002675B5 = {
 						CreatedOnToolsVersion = 12.3;
@@ -3128,6 +3352,9 @@
 				61441C6724619FE4003D8BB8 /* DatadogBenchmarkTests */,
 				61441C2924616F1D003D8BB8 /* DatadogIntegrationTests */,
 				61441C0124616DE9003D8BB8 /* Example */,
+				6199362A265BA958009D7EA8 /* E2E */,
+				61993664265BBEDC009D7EA8 /* E2ETests */,
+				618F983F265BC486009959F8 /* E2EInstrumentationTests */,
 			);
 		};
 /* End PBXProject section */
@@ -3190,6 +3417,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		618F983E265BC486009959F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993629265BA958009D7EA8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6199363A265BA95A009D7EA8 /* LaunchScreen.storyboard in Resources */,
+				61993637265BA95A009D7EA8 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993663265BBEDC009D7EA8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		61B7885225C180CB002675B5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3246,6 +3496,25 @@
 			showEnvVarsInLog = 0;
 		};
 		6170DC2425C18784003AED5C /* ⚙️ Run linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		61993671265BBF8E009D7EA8 /* ⚙️ Run linter */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3724,6 +3993,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		618F983C265BC486009959F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				618F9843265BC486009959F8 /* E2EInstrumentationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993627265BA958009D7EA8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				618F984E265BC905009959F8 /* E2EConfig.swift in Sources */,
+				6199362E265BA959009D7EA8 /* E2EAppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61993661265BBEDC009D7EA8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				618F984F265BC905009959F8 /* E2EConfig.swift in Sources */,
+				61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		61B7885025C180CB002675B5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3783,6 +4078,26 @@
 			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
 			targetProxy = 6170DC5225C18E57003AED5C /* PBXContainerItemProxy */;
 		};
+		618F9846265BC486009959F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6199362A265BA958009D7EA8 /* E2E */;
+			targetProxy = 618F9845265BC486009959F8 /* PBXContainerItemProxy */;
+		};
+		61993659265BB6A6009D7EA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61133B81242393DE00786299 /* Datadog */;
+			targetProxy = 61993658265BB6A6009D7EA8 /* PBXContainerItemProxy */;
+		};
+		6199365D265BB6A6009D7EA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
+			targetProxy = 6199365C265BB6A6009D7EA8 /* PBXContainerItemProxy */;
+		};
+		6199366B265BBEDC009D7EA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6199362A265BA958009D7EA8 /* E2E */;
+			targetProxy = 6199366A265BBEDC009D7EA8 /* PBXContainerItemProxy */;
+		};
 		61B7885F25C180CB002675B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
@@ -3813,6 +4128,14 @@
 			isa = PBXVariantGroup;
 			children = (
 				61441C1024616DEC003D8BB8 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		61993638265BA95A009D7EA8 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				61993639265BA95A009D7EA8 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -4276,6 +4599,186 @@
 			};
 			name = Integration;
 		};
+		618F9848265BC486009959F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 618F984C265BC53E009959F8 /* E2EInstrumentationTests.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2EInstrumentationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = Datadog.E2EInstrumentationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = E2E;
+			};
+			name = Debug;
+		};
+		618F9849265BC486009959F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 618F984C265BC53E009959F8 /* E2EInstrumentationTests.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2EInstrumentationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = Datadog.E2EInstrumentationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = E2E;
+			};
+			name = Release;
+		};
+		618F984A265BC486009959F8 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 618F984C265BC53E009959F8 /* E2EInstrumentationTests.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2EInstrumentationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = Datadog.E2EInstrumentationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = E2E;
+			};
+			name = Integration;
+		};
+		6199363C265BA95A009D7EA8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61993641265BAD2D009D7EA8 /* E2E.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2E/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.E2E;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6199363D265BA95A009D7EA8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61993641265BAD2D009D7EA8 /* E2E.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2E/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.E2E;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		6199363E265BA95A009D7EA8 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61993641265BAD2D009D7EA8 /* E2E.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2E/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.E2E;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Integration;
+		};
+		6199366D265BBEDC009D7EA8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61993672265BC029009D7EA8 /* E2ETests.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2ETests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = Datadog.E2ETests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/E2E.app/E2E";
+			};
+			name = Debug;
+		};
+		6199366E265BBEDC009D7EA8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61993672265BC029009D7EA8 /* E2ETests.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2ETests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = Datadog.E2ETests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/E2E.app/E2E";
+			};
+			name = Release;
+		};
+		6199366F265BBEDC009D7EA8 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61993672265BC029009D7EA8 /* E2ETests.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = TargetSupport/E2ETests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = Datadog.E2ETests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/E2E.app/E2E";
+			};
+			name = Integration;
+		};
 		61B7886525C180CB002675B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */;
@@ -4631,6 +5134,36 @@
 				61441C7124619FE4003D8BB8 /* Debug */,
 				61441C7224619FE4003D8BB8 /* Release */,
 				61441C7324619FE4003D8BB8 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		618F9847265BC486009959F8 /* Build configuration list for PBXNativeTarget "E2EInstrumentationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				618F9848265BC486009959F8 /* Debug */,
+				618F9849265BC486009959F8 /* Release */,
+				618F984A265BC486009959F8 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6199363F265BA95A009D7EA8 /* Build configuration list for PBXNativeTarget "E2E" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6199363C265BA95A009D7EA8 /* Debug */,
+				6199363D265BA95A009D7EA8 /* Release */,
+				6199363E265BA95A009D7EA8 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6199366C265BBEDC009D7EA8 /* Build configuration list for PBXNativeTarget "E2ETests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6199366D265BBEDC009D7EA8 /* Debug */,
+				6199366E265BBEDC009D7EA8 /* Release */,
+				6199366F265BBEDC009D7EA8 /* Integration */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
