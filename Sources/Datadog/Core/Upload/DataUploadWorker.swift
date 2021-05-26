@@ -49,6 +49,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
+                #if DD_SDK_COMPILED_FOR_TESTING
+                assertionFailure(
+                    """
+                    All asynchronous work must be stopped before deallocating `DataUploadWorker` in tests.
+                    This is to prevent flakiness by ensuring clean state before and after each test.
+                    """
+                )
+                #endif
                 return
             }
 
