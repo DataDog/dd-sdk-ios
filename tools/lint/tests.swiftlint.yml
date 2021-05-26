@@ -73,6 +73,14 @@ custom_rules:
       - comment
     message: "All TODOs must be followed by JIRA reference, for example: \"TODO: RUMM-123\""
     severity: error
+  unmanaged_deallocation: # prevents from unmanaged singletons deallocation with `.instance = nil`
+    name: "Unmanaged singleton deallocation: `.instance = nil`"
+    regex: '.instance = nil'
+    excluded_match_kinds: 
+      - comment
+      - doccomment
+    message: "All singletons must provide an explicit deinitialization API (e.g. `deinitialize()`) to reset its state and tear down all asynchronous work."
+    severity: error
 
 included:
   - ../../Tests
