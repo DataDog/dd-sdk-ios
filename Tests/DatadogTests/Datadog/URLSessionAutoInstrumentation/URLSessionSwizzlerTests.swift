@@ -36,7 +36,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
     override func tearDown() {
         URLSessionAutoInstrumentation.instance?.disable() // unswizzle `URLSession`
-        URLSessionAutoInstrumentation.instance = nil
+        URLSessionAutoInstrumentation.instance?.deinitialize()
         super.tearDown()
     }
 

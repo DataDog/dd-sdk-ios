@@ -38,7 +38,7 @@ class TracingFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let tracer = Tracer.initialize(configuration: .init()).dd
 
@@ -79,7 +79,7 @@ class TracingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let tracer = Tracer.initialize(configuration: .init()).dd
 

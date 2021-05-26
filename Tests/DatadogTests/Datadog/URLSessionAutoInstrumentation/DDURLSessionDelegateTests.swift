@@ -20,7 +20,7 @@ class DDURLSessionDelegateTests: XCTestCase {
     }
 
     override func tearDown() {
-        URLSessionAutoInstrumentation.instance = nil
+        URLSessionAutoInstrumentation.instance?.deinitialize()
         super.tearDown()
     }
 

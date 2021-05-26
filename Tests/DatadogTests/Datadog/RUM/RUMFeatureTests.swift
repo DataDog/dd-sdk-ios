@@ -41,7 +41,7 @@ class RUMFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let monitor = RUMMonitor.initialize()
 
@@ -87,7 +87,7 @@ class RUMFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
         fileWriter.write(value: RUMDataModelMock(attribute: "1st event"))

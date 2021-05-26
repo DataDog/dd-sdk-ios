@@ -23,7 +23,7 @@ class InternalLoggersTests: XCTestCase {
         XCTAssertNil(userLogger.logOutput)
     }
 
-    func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() throws {
+    func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() {
         let defaultSDKConfiguration = Datadog.Configuration.builderUsing(clientToken: "abc", environment: "test").build()
         Datadog.initialize(
             appContext: .mockAny(),
@@ -31,17 +31,17 @@ class InternalLoggersTests: XCTestCase {
             configuration: defaultSDKConfiguration
         )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
-        try Datadog.deinitializeOrThrow()
+        Datadog.deinitialize()
     }
 
-    func testGivenLoggingFeatureDisabled_whenSDKisInitialized_itUsesWorkingUserLogger() throws {
+    func testGivenLoggingFeatureDisabled_whenSDKisInitialized_itUsesWorkingUserLogger() {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: .mockWith(loggingEnabled: false)
         )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
-        try Datadog.deinitializeOrThrow()
+        Datadog.deinitialize()
     }
 
     func testUserLoggerPrintsMessagesAboveGivenVerbosityLevel() {

@@ -35,7 +35,7 @@ class DataUploadWorkerTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItUploadsAllData() throws {
+    func testItUploadsAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
             urlProvider: .mockAny(),
@@ -69,7 +69,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
 
-    func testWhenThereIsNoBatch_thenIntervalIncreases() throws {
+    func testWhenThereIsNoBatch_thenIntervalIncreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
         let mockDelay = MockDelay { command in
             if case .increase = command {
@@ -103,7 +103,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testWhenBatchFails_thenIntervalIncreases() throws {
+    func testWhenBatchFails_thenIntervalIncreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
         let mockDelay = MockDelay { command in
             if case .increase = command {
@@ -137,7 +137,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testWhenBatchSucceeds_thenIntervalDecreases() throws {
+    func testWhenBatchSucceeds_thenIntervalDecreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is decreased")
         let mockDelay = MockDelay { command in
             if case .decrease = command {
@@ -171,7 +171,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testWhenCancelled_itPerformsNoMoreUploads() throws {
+    func testWhenCancelled_itPerformsNoMoreUploads() {
         // Given
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(

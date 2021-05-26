@@ -26,7 +26,7 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - Initializing with configuration
 
-    func testItFowardsInitializationToSwift() throws {
+    func testItFowardsInitializationToSwift() {
         let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
         configBuilder.trackURLSession(firstPartyHosts: ["example.com"])
 
@@ -42,12 +42,12 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        try Datadog.deinitializeOrThrow()
+        Datadog.deinitialize()
     }
 
     // MARK: - Changing Tracking Consent
 
-    func testItForwardsTrackingConsentToSwift() throws {
+    func testItForwardsTrackingConsentToSwift() {
         let initialConsent = randomConsent()
         let nextConsent = randomConsent()
 
@@ -63,7 +63,7 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent.swift)
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.deinitialize()
     }
 
     // MARK: - Setting user info
@@ -100,7 +100,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNil(userInfo.value.email)
         XCTAssertTrue(userInfo.value.extraInfo.isEmpty)
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.deinitialize()
     }
 
     // MARK: - Changing SDK verbosity level

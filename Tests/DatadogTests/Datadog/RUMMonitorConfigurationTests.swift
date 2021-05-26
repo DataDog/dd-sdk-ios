@@ -28,7 +28,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 carrierInfoProvider: carrierInfoProvider
             )
         )
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let monitor = RUMMonitor.initialize().dd
 

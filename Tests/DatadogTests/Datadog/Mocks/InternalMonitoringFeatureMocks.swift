@@ -36,7 +36,7 @@ extension InternalMonitoringFeature {
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
             )
         )
-
+        fullFeature.deinitialize()
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.logsStorage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:

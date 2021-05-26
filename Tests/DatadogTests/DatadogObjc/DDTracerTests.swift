@@ -23,7 +23,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingCustomizedSpans() throws {
         TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
 
@@ -120,7 +120,7 @@ class DDTracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -129,7 +129,7 @@ class DDTracerTests: XCTestCase {
             ),
             loggingFeature: LoggingFeature.instance!
         )
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
@@ -153,7 +153,7 @@ class DDTracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -162,7 +162,7 @@ class DDTracerTests: XCTestCase {
             ),
             loggingFeature: LoggingFeature.instance!
         )
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
@@ -189,7 +189,7 @@ class DDTracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -198,7 +198,7 @@ class DDTracerTests: XCTestCase {
             ),
             loggingFeature: LoggingFeature.instance!
         )
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
@@ -260,7 +260,7 @@ class DDTracerTests: XCTestCase {
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {
         TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         // Given
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
