@@ -115,7 +115,7 @@ The RUM SDK offers two instrumentation methods:
 
 ## Auto-instrumentation
 
-### RUM Views
+### RUM views
 
 To enable RUM views tracking, use the `.trackUIKitRUMViews()` option when configuring the SDK:
 ```swift
@@ -138,7 +138,7 @@ Inside the `rumView(for:)` implementation, your app should decide if a given `UI
 
 **Note**: The SDK calls `rumView(for:)` many times while your app is running. Your implementation of the predicate should not depend on the order of SDK calls.
 
-### RUM Resources
+### RUM resources
 
 To enable RUM resources tracking, use the `.track(firstPartyHosts:)` option when configuring the SDK:
 ```swift
@@ -160,7 +160,7 @@ let session = URLSession(
 
 This will make the SDK track requests sent from this instance of the `URLSession`. Requests whose URLs match the `firstPartyHosts` will be additionally marked as "first party" in the RUM Explorer.
 
-### RUM Actions
+### RUM actions
 
 To enable RUM actions tracking, use the `.trackUIKitActions()` option when configuring the SDK:
 ```
@@ -174,7 +174,7 @@ Global.rum = RUMMonitor.initialize()
 
 This makes the SDK track all significant taps occurring in the app. For privacy reasons, all interactions with the on-screen keyboard are ignored.
 
-### RUM Errors
+### RUM errors
 
 All "error" and "critical" logs are be reported as RUM errors and linked to the current RUM view:
 ```swift
@@ -187,9 +187,9 @@ Similarly, all ended APM spans marked as error are be reported as RUM errors:
 span.setTag(key: OTTags.error, value: true)
 ```
 
-## Manual Instrumentation
+## Manual instrumentation
 
-### RUM Views
+### RUM views
 
 Use the following methods on `Global.rum` to manually collect RUM resources:
 - `.startView(viewController:)`
@@ -211,7 +211,7 @@ override func viewDidDisappear(_ animated: Bool) {
 ```
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
-### RUM Resources
+### RUM resources
 
 Use the following methods on `Global.rum` to manually collect RUM resources:
 * `.startResourceLoading(resourceKey:request:)`
@@ -238,7 +238,7 @@ Global.rum.stopResourceLoading(
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
-### RUM Actions
+### RUM actions
 
 To manually register instantaneous RUM actions (e.g: `.tap`), use:
 * `.addUserAction(type:name:)`
@@ -265,7 +265,7 @@ Example:
 
 For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
 
-### RUM Errors
+### RUM errors
 
 Use the following methods on `Global.rum` to manually collect RUM errors:
 - `.addError(message:)`
