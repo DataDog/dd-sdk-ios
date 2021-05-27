@@ -23,9 +23,9 @@ workflows:
   tagged_commit:
     after_run:
     - _make_dependencies
-    - run_linter
-    - run_unit_tests
-    - run_integration_tests
+    # - run_linter
+    # - run_unit_tests
+    # - run_integration_tests
     - check_dependency_managers
     - ship
     - _deploy_artifacts
@@ -262,7 +262,7 @@ workflows:
         - content: |-
             #!/usr/bin/env zsh
             set -e
-            make ship
+            make debug ci=${CI}
 
   ship_part_2:
     description: |-
