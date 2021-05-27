@@ -115,3 +115,11 @@ ship_part_2:
 
 dogfood:
 		@cd tools/dogfooding && $(MAKE)
+
+debug:
+ifeq (${ci}, true)
+		@curl -X POST "https://api.bitrise.io/v0.1/apps/$BITRISE_APP_SLUG/builds" \
+ 			-H "accept: application/json" -H  "Content-Type: application/json" \
+			-H  "Authorization: $BITRISE_PERSONAL_ACCESS_TOKEN" \
+ 			-d "{\"build_params\":{\"commit_hash\":\"$BITRISE_GIT_COMMIT\",\"workflow_id\":\"tagged_commit_part_2\"},\"hook_info\":{\"type\":\"bitrise\"}}"
+endif
