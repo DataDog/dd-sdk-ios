@@ -37,7 +37,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         interceptor.onTaskMetricsCollected = { _, _ in notifyTaskMetricsCollected.fulfill() }
 
         // Given
-        let session = URLSession.createServerMockURLSession(delegate: delegate)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let task = session.dataTask(with: URL.mockAny())
@@ -59,7 +59,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         interceptor.onTaskMetricsCollected = { _, _ in notifyTaskMetricsCollected.fulfill() }
 
         // Given
-        let session = URLSession.createServerMockURLSession(delegate: delegate)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let task = session.dataTask(with: URLRequest.mockAny())
@@ -90,7 +90,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let session = URLSession.createServerMockURLSession(delegate: delegate)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let taskWithURL = session.dataTask(with: URL.mockAny())
@@ -137,7 +137,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let session = URLSession.createServerMockURLSession(delegate: delegate)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let taskWithURL = session.dataTask(with: URL.mockAny())

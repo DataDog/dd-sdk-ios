@@ -24,10 +24,6 @@ class URLSessionSwizzlerTests: XCTestCase {
         super.tearDown()
     }
 
-    private func interceptedSession() -> URLSession {
-        return .createServerMockURLSession(delegate: DDURLSessionDelegate())
-    }
-
     // MARK: - Interception Flow
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLRequestAndCompletion_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
@@ -54,7 +50,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = interceptedSession()
+        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
 
         // When
         let task = session.dataTask(with: URLRequest(url: .mockRandom())) { _, _, _ in
@@ -96,7 +92,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = interceptedSession()
+        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
 
         // When
         let task = session.dataTask(with: URL.mockRandom()) { _, _, _ in
@@ -138,7 +134,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = interceptedSession()
+        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
 
         // When
         let task = session.dataTask(with: URLRequest(url: .mockAny()))
@@ -172,7 +168,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = interceptedSession()
+        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
 
         // When
         let task = session.dataTask(with: URL.mockRandom())
@@ -200,7 +196,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let nsSession = NSURLSessionBridge(interceptedSession())!
+        let nsSession = NSURLSessionBridge(server.getInterceptedURLSession(delegate: DDURLSessionDelegate()))!
 
         // When
         let task1 = nsSession.dataTask(with: URL.mockRandom(), completionHandler: nil)!
@@ -257,7 +253,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         let expectedResponse: HTTPURLResponse = .mockResponseWith(statusCode: 200)
         let expectedData: Data = .mockRandom()
         let server = ServerMock(delivery: .success(response: expectedResponse, data: expectedData))
-        let session = interceptedSession()
+        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
 
         // When
         let taskWithURLRequestAndCompletion = session.dataTask(with: URLRequest(url: .mockAny())) { data, response, error in
@@ -324,7 +320,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         // Given
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
         let server = ServerMock(delivery: .failure(error: expectedError))
-        let session = interceptedSession()
+        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
 
         // When
         let taskWithURLRequestAndCompletion = session.dataTask(with: URLRequest(url: .mockAny())) { data, response, error in
