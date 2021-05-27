@@ -1,7 +1,9 @@
-ifeq (${ci}, true)
-		GIT_BRANCH := ${BITRISE_GIT_BRANCH}
-else
-		GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH := "branch=\>\'$(shell git rev-parse --abbrev-ref HEAD)\'"
+ifneq (${BITRISE_GIT_BRANCH},)
+	GIT_BRANCH := "branch=\>\'${BITRISE_GIT_BRANCH}\'"
+endif
+ifneq (${BITRISE_GIT_TAG},)
+	GIT_BRANCH := "tag=\>\'${BITRISE_GIT_TAG}\'"
 endif
 
 test:
