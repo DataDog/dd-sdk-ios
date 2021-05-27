@@ -7,16 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension MethodSwizzler {
-    func unswizzle() {
-        for foundMethod in swizzledMethods {
-            let originalTypedIMP = originalImplementation(of: foundMethod)
-            let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
-            method_setImplementation(foundMethod.method, originalIMP)
-        }
-    }
-}
-
 @objc
 private class EmptySubclass: BaseClass { }
 

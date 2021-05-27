@@ -69,6 +69,17 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         }
     }
 
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Removes swizzling and resets the method to its original implementation.
+    func unswizzle() {
+        for foundMethod in swizzledMethods {
+            let originalTypedIMP = originalImplementation(of: foundMethod)
+            let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
+            method_setImplementation(foundMethod.method, originalIMP)
+        }
+    }
+#endif
+
     // MARK: - Private methods
 
     @discardableResult

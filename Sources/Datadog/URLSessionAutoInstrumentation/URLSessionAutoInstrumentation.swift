@@ -50,7 +50,9 @@ internal final class URLSessionAutoInstrumentation {
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
+    /// Removes `URLSession` swizzling and deinitializes this component.
     func deinitialize() {
+        swizzler.unswizzle()
         URLSessionAutoInstrumentation.instance = nil
     }
 #endif

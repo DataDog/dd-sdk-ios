@@ -87,7 +87,10 @@ internal final class RUMAutoInstrumentation {
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
+    /// Removes RUM instrumentation swizzlings and deinitializes this component.
     func deinitialize() {
+        views?.swizzler.unswizzle()
+        userActions?.swizzler.unswizzle()
         RUMAutoInstrumentation.instance = nil
     }
 #endif

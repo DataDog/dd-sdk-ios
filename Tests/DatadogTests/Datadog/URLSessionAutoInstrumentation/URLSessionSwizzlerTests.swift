@@ -7,21 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension URLSessionSwizzler {
-    func unswizzle() {
-        dataTaskWithURLRequestAndCompletion.unswizzle()
-        dataTaskWithURLRequest.unswizzle()
-        dataTaskWithURLAndCompletion?.unswizzle()
-        dataTaskWithURL?.unswizzle()
-    }
-}
-
-extension URLSessionAutoInstrumentation {
-    func disable() {
-        swizzler.unswizzle()
-    }
-}
-
 class URLSessionSwizzlerTests: XCTestCase {
     private let interceptor = URLSessionInterceptorMock()
 
@@ -35,8 +20,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     }
 
     override func tearDown() {
-        URLSessionAutoInstrumentation.instance?.disable() // unswizzle `URLSession`
-        URLSessionAutoInstrumentation.instance?.deinitialize()
+        URLSessionAutoInstrumentation.instance?.deinitialize() // unswizzle & deinit
         super.tearDown()
     }
 
