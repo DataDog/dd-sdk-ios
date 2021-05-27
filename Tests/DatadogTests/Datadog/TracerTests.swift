@@ -320,7 +320,7 @@ class TracerTests: XCTestCase {
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
-        defer { Datadog.deinitialize() }
+        defer { Datadog.flushAndDeinitialize() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -1012,7 +1012,7 @@ class TracerTests: XCTestCase {
         )
         XCTAssertTrue(tracer is DDNoopTracer)
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenLoggingFeatureDisabled_whenSendingLogFromSpan_itPrintsWarning() {
@@ -1038,7 +1038,7 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenTracerInitialized_whenInitializingAnotherTime_itPrintsError() {
@@ -1066,7 +1066,7 @@ class TracerTests: XCTestCase {
             """
         )
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenOnlyTracingAutoInstrumentationEnabled_whenTracerIsNotRegistered_itPrintsWarningsOnEachFirstPartyRequest() throws {
@@ -1101,7 +1101,7 @@ class TracerTests: XCTestCase {
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Environment Context

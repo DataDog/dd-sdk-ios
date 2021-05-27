@@ -1120,7 +1120,7 @@ class RUMMonitorTests: XCTestCase {
         )
         XCTAssertTrue(monitor is DDNoopRUMMonitor)
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenRUMMonitorInitialized_whenInitializingAnotherTime_itPrintsError() {
@@ -1148,7 +1148,7 @@ class RUMMonitorTests: XCTestCase {
             """
         )
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() {
@@ -1177,7 +1177,7 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertNil(monitor.debugging)
         }
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenRUMAutoInstrumentationEnabled_whenRUMMonitorIsNotRegistered_itPrintsWarningsOnEachEvent() throws {
@@ -1244,7 +1244,7 @@ class RUMMonitorTests: XCTestCase {
         RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
         RUMAutoInstrumentation.instance?.userActions?.swizzler.unswizzle()
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Internal attributes

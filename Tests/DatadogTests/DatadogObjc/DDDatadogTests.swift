@@ -42,7 +42,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Changing Tracking Consent
@@ -63,7 +63,7 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent.swift)
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Setting user info
@@ -100,7 +100,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNil(userInfo.value.email)
         XCTAssertTrue(userInfo.value.extraInfo.isEmpty)
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Changing SDK verbosity level

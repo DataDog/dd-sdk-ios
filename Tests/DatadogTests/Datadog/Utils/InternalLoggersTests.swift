@@ -31,7 +31,7 @@ class InternalLoggersTests: XCTestCase {
             configuration: defaultSDKConfiguration
         )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenLoggingFeatureDisabled_whenSDKisInitialized_itUsesWorkingUserLogger() {
@@ -41,7 +41,7 @@ class InternalLoggersTests: XCTestCase {
             configuration: .mockWith(loggingEnabled: false)
         )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testUserLoggerPrintsMessagesAboveGivenVerbosityLevel() {

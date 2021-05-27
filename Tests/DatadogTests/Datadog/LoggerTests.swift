@@ -170,7 +170,7 @@ class LoggerTests: XCTestCase {
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
-        defer { Datadog.deinitialize() }
+        defer { Datadog.flushAndDeinitialize() }
 
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
@@ -852,7 +852,7 @@ class LoggerTests: XCTestCase {
         XCTAssertNil(logger.logBuilder)
         XCTAssertNil(logger.logOutput)
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testDDLoggerIsLoggerTypealias() {

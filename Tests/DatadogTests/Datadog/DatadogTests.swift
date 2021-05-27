@@ -39,7 +39,7 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
         XCTAssertNotNil(Datadog.instance)
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenDefaultRUMConfiguration_itCanBeInitialized() {
@@ -49,7 +49,7 @@ class DatadogTests: XCTestCase {
             configuration: rumBuilder.build()
         )
         XCTAssertNotNil(Datadog.instance)
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testGivenInvalidConfiguration_itPrintsError() {
@@ -87,7 +87,7 @@ class DatadogTests: XCTestCase {
             "🔥 Datadog SDK usage error: SDK is already initialized."
         )
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Toggling features
@@ -103,7 +103,7 @@ class DatadogTests: XCTestCase {
 
             RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-            Datadog.deinitialize()
+            Datadog.flushAndDeinitialize()
         }
 
         defer {
@@ -347,7 +347,7 @@ class DatadogTests: XCTestCase {
 
         XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent)
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testUserInfo() {
@@ -375,7 +375,7 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(Datadog.instance?.userInfoProvider.value.email, "foo@bar.com")
         XCTAssertEqual(Datadog.instance?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 
     func testDefaultVerbosityLevel() {
@@ -398,7 +398,7 @@ class DatadogTests: XCTestCase {
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )
 
-        Datadog.deinitialize()
+        Datadog.flushAndDeinitialize()
     }
 }
 

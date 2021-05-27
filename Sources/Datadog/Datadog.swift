@@ -289,9 +289,12 @@ public class Datadog {
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
-    /// Deinitializes the SDK by tearing down all running feature and ensuring clean state for
-    /// next initialization. This is highly experimental API and only supported in tests.
-    static func deinitialize() {
+    /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
+    /// - It flushes all data authorised for each feature by performing its arbitrary upload (without retrying).
+    /// - It completes all pending asynchronous work in each feature.
+    ///
+    /// This is highly experimental API and only supported in tests.
+    public static func flushAndDeinitialize() {
         assert(Datadog.instance != nil, "SDK must be first initialized.")
 
         // Reset internal loggers:
