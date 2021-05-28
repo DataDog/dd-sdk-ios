@@ -7,6 +7,11 @@
 import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
+    struct Constants {
+        static let backgroundViewURL = "com/datadog/background/view"
+        static let backgroundViewName = "Background"
+    }
+
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by .resourceKey.
@@ -33,7 +38,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The name of this View, used as the `VIEW NAME` in RUM Explorer.
     let viewName: String
     /// The start time of this View.
-    private let viewStartTime: Date
+    let viewStartTime: Date
     /// Date correction to server time.
     private let dateCorrection: DateCorrection
     /// Tells if this View is the active one.
@@ -129,7 +134,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true
-
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
