@@ -13,7 +13,6 @@ private extension ExampleApplication {
     }
 }
 
-// swiftlint:disable trailing_closure
 class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
     /// Launches the app, taps "Call fatalError()" button (leading to crash), then restarts the app
     /// to have the crash report uploaded to logging endpoint.
@@ -87,4 +86,3 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
         crashLog.assertLoggerName(equals: "crash-reporter")
     }
 }
-// swiftlint:enable trailing_closure

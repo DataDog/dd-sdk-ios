@@ -107,11 +107,9 @@ class LoggerTests: XCTestCase {
         logger.info("message 3")
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
-        // swiftlint:disable trailing_closure
         logMatchers[0].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC() })
         logMatchers[1].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1) })
         logMatchers[2].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2) })
-        // swiftlint:enable trailing_closure
     }
 
     func testSendingLogsWithDifferentLevels() throws {

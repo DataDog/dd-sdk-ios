@@ -207,7 +207,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     private func startContinuousUserAction(on command: RUMStartUserActionCommand) {
-        // swiftlint:disable trailing_closure
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
@@ -222,11 +221,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 self?.needsViewUpdate = true
             }
         )
-        // swiftlint:enable trailing_closure
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
-        // swiftlint:disable trailing_closure
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
@@ -241,7 +238,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 self?.needsViewUpdate = true
             }
         )
-        // swiftlint:enable trailing_closure
     }
 
     // MARK: - Sending RUM Events
