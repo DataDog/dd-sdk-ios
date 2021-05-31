@@ -113,11 +113,16 @@ bump:
 ship:
 		pod spec lint --allow-warnings DatadogSDK.podspec
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
-		pod repo update
-		./tools/standalone-binary-distro/make_distro_builds.sh
-		@echo "⚠️ DatadogSDKObjc.podspec needs to be tried after ~1 hour:"
-		@echo "pod spec lint --allow-warnings DatadogSDKObjc.podspec"
-		@echo "pod trunk push --allow-warnings DatadogSDKObjc.podspec"
+		./tools/distribution/make_distro_builds.sh
+ifeq ($$CI, true)
+		@curl -X POST "https://api.bitrise.io/v0.1/apps/$$BITRISE_APP_SLUG/builds" \
+ 			-H "accept: application/json" -H  "Content-Type: application/json" \
+			-H  "Authorization: $$BITRISE_PERSONAL_ACCESS_TOKEN" \
+ 			-d "{\"build_params\":{\"tag\":\"$$BITRISE_GIT_TAG\",\"workflow_id\":\"tagged_commit_part_2\"},\"hook_info\":{\"type\":\"bitrise\"}}"
+endif
+
+ship_part_2:
+		@./tools/distribution/push_podspecs.sh
 
 dogfood:
 		@cd tools/dogfooding && $(MAKE)
