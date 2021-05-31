@@ -36,7 +36,6 @@ internal class DateCorrector: DateCorrectorType {
     init(deviceDateProvider: DateProvider, serverDateProvider: ServerDateProvider) {
         self.deviceDateProvider = deviceDateProvider
         self.serverDateProvider = serverDateProvider
-        // swiftlint:disable trailing_closure
         serverDateProvider.synchronize(
             with: DateCorrector.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
             completion: { serverTime in
@@ -59,7 +58,6 @@ internal class DateCorrector: DateCorrectorType {
                 }
             }
         )
-        // swiftlint:enable trailing_closure
     }
 
     var currentCorrection: DateCorrection {

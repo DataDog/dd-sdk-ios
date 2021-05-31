@@ -15,7 +15,7 @@ internal protocol URLSessionInterceptionHandler {
 }
 
 /// An interface for processing `URLSession` task interceptions.
-internal protocol URLSessionInterceptorType: class {
+internal protocol URLSessionInterceptorType: AnyObject {
     func modify(request: URLRequest, session: URLSession?) -> URLRequest
     func taskCreated(task: URLSessionTask, session: URLSession?)
     func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)

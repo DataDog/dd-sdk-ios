@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal protocol UIKitRUMViewsHandlerType: class {
+internal protocol UIKitRUMViewsHandlerType: AnyObject {
     func subscribe(commandsSubscriber: RUMCommandSubscriber)
     /// Gets called on `super.viewDidAppear()`.
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool)

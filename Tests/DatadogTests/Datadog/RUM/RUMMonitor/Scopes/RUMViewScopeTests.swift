@@ -848,7 +848,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenNoEventIsSent() throws {
-        // swiftlint:disable trailing_closure
         let eventBuilder = RUMEventBuilder(
             userInfoProvider: UserInfoProvider.mockAny(),
             eventsMapper: RUMEventsMapper.mockWith(
@@ -857,7 +856,6 @@ class RUMViewScopeTests: XCTestCase {
                 }
             )
         )
-        // swiftlint:enable trailing_closure
         let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
 
         let scope = RUMViewScope(

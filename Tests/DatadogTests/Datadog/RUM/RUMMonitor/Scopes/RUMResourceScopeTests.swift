@@ -461,7 +461,6 @@ class RUMResourceScopeTests: XCTestCase {
         var onResourceEventSentCalled = false
         var onErrorEventSentCalled = false
         // Given
-        // swiftlint:disable trailing_closure
         let scope1 = RUMResourceScope.mockWith(
             context: context,
             dependencies: dependencies,
@@ -495,7 +494,6 @@ class RUMResourceScopeTests: XCTestCase {
                 onErrorEventSentCalled = true
             }
         )
-        // swiftlint:enable trailing_closure
 
         // When
         XCTAssertFalse(

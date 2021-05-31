@@ -7,7 +7,6 @@
 import HTTPServerMock
 import XCTest
 
-// swiftlint:disable trailing_closure
 class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
     func testLoggingScenario() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
@@ -108,4 +107,3 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
         }
     }
 }
-// swiftlint:enable trailing_closure

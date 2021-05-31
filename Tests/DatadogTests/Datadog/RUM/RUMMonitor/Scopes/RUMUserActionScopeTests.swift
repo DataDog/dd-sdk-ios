@@ -363,7 +363,6 @@ class RUMUserActionScopeTests: XCTestCase {
     func testGivenUserActionScopeWithEventSentCallback_whenSuccessfullySendingEvent_thenCallbackIsCalled() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         var callbackCalled = false
-        // swiftlint:disable trailing_closure
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
@@ -377,7 +376,6 @@ class RUMUserActionScopeTests: XCTestCase {
                 callbackCalled = true
             }
         )
-        // swiftlint:enable trailing_closure
 
         XCTAssertFalse(
             scope.process(

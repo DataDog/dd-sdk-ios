@@ -48,7 +48,7 @@ public class DDCrashReport: NSObject {
 ///
 /// The SDK calls each API on a background thread and succeeding calls are synchronized.
 @objc
-public protocol DDCrashReportingPluginType: class {
+public protocol DDCrashReportingPluginType: AnyObject {
     /// Reads unprocessed crash report if available.
     /// - Parameter completion: the completion block called with the value of `DDCrashReport` if a crash report is available
     /// or with `nil` otherwise. The value returned by the receiver should indicate if the crash report was processed correctly (`true`)
