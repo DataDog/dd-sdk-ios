@@ -1,14 +1,14 @@
-GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+GIT_REFERENCE := $(shell git rev-parse --abbrev-ref HEAD)
 ifneq (${BITRISE_GIT_BRANCH},)
-	GIT_BRANCH := ${BITRISE_GIT_BRANCH}
+	GIT_REFERENCE := ${BITRISE_GIT_BRANCH}
 endif
 ifneq (${BITRISE_GIT_TAG},)
-	GIT_BRANCH := ${BITRISE_GIT_TAG}
+	GIT_REFERENCE := ${BITRISE_GIT_TAG}
 endif
 
 test:
-		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_BRANCH}'..."
-		@sed "s|REMOTE_GIT_BRANCH|${GIT_BRANCH}|g" Cartfile.src > Cartfile
+		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_REFERENCE}'..."
+		@sed "s|REMOTE_GIT_REFERENCE|${GIT_REFERENCE}|g" Cartfile.src > Cartfile
 		@rm -rf Carthage/
 		@echo "🧪 Run 'carthage update'"
 		@carthage update --platform iOS --use-xcframeworks

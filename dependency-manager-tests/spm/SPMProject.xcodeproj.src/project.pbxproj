@@ -680,7 +680,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = REMOTE_GIT_BRANCH;
+				branch = REMOTE_GIT_REFERENCE;
 				kind = branch;
 			};
 		};

@@ -36,11 +36,13 @@ workflows:
     - check_dependency_managers
     - ship
     - _deploy_artifacts
+    - _notify_failure_on_slack
 
   tagged_commit_part_2:
     after_run:
     - ship_part_2
     - _deploy_artifacts
+    - _notify_failure_on_slack
 
   _make_dependencies:
     description: |-
