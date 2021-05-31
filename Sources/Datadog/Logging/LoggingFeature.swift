@@ -141,7 +141,7 @@ internal final class LoggingFeature {
 
 #if DD_SDK_COMPILED_FOR_TESTING
     func deinitialize() {
-        storage.flush()
+        storage.flushAndTearDown()
         upload.flushAndTearDown()
         LoggingFeature.instance = nil
     }

@@ -156,7 +156,7 @@ internal final class TracingFeature {
 
 #if DD_SDK_COMPILED_FOR_TESTING
     func deinitialize() {
-        storage.flush()
+        storage.flushAndTearDown()
         upload.flushAndTearDown()
         TracingFeature.instance = nil
     }

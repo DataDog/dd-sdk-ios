@@ -10,3 +10,13 @@ import Foundation
 internal protocol Writer {
     func write<T: Encodable>(value: T)
 }
+
+/// Writer performing writes asynchronously on a given queue.
+internal protocol AsyncWriter: Writer {
+    /// Queue used for asynchronous writes.
+    var queue: DispatchQueue { get }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func flushAndCancelSynchronously()
+#endif
+}

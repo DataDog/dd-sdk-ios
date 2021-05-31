@@ -9,7 +9,7 @@ import XCTest
 @testable import Datadog
 
 /// Observers the `Writer` and notifies when data was written, so `DataUploaderMock` can read it immediatelly.
-private class WriterObserver: Writer {
+private class WriterObserver: AsyncWriter {
     let observedWriter: ConsentAwareDataWriter
     let writeCallback: (() -> Void)
 
@@ -18,11 +18,17 @@ private class WriterObserver: Writer {
         self.writeCallback = writeCallback
     }
 
+    var queue: DispatchQueue { observedWriter.queue }
+
     func write<T>(value: T) where T: Encodable {
         observedWriter.write(value: value)
-        observedWriter.readWriteQueue.async { [weak self] in
+        queue.async { [weak self] in
             self?.writeCallback()
         }
+    }
+
+    func flushAndCancelSynchronously() {
+        observedWriter.flushAndCancelSynchronously()
     }
 }
 
@@ -39,7 +45,7 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     func observe(featureStorage: FeatureStorage) -> FeatureStorage {
         let originalWriter = featureStorage.writer as! ConsentAwareDataWriter
         let observedWriter = WriterObserver(originalWriter) { [weak self] in
-            self?.readNextBatch()
+            self?.onNextBatchWritten()
         }
         let originalReader = featureStorage.reader
         let originalArbitraryWriter = featureStorage.arbitraryAuthorizedWriter
@@ -51,7 +57,7 @@ class DataUploadWorkerMock: DataUploadWorkerType {
         )
     }
 
-    private func readNextBatch() {
+    private func onNextBatchWritten() {
         queue.async {
             if let nextBatch = self.reader?.readNextBatch() {
                 self.record(nextBatch: nextBatch)
@@ -111,6 +117,17 @@ class DataUploadWorkerMock: DataUploadWorkerType {
         }
 
         return queue.sync { batches.map { $0.data } }
+    }
+
+    // MARK: - DataUploadWorkerType
+
+    func flushSynchronously() {
+        queue.sync {} // wait for any pending asynchronous upload
+    }
+
+    func cancelSynchronously() {
+        // There is nothing to cancel. `DataUploadWorkerMock` is a passive component - it simulates
+        // upload for each data written.
     }
 
     // MARK: - Utils

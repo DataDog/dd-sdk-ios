@@ -505,16 +505,23 @@ class FileWriterMock: Writer {
     }
 }
 
-class NoOpFileWriter: Writer {
+class NoOpFileWriter: AsyncWriter {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func write<T>(value: T) where T: Encodable {}
+    func flushAndCancelSynchronously() {}
 }
 
-class NoOpFileReader: Reader {
+class NoOpFileReader: SyncReader {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
+    func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {}
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
 
 extension DataFormat {
     static func mockAny() -> DataFormat {

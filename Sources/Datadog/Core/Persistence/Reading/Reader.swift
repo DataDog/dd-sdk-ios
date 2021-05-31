@@ -17,3 +17,13 @@ internal protocol Reader {
     func readNextBatch() -> Batch?
     func markBatchAsRead(_ batch: Batch)
 }
+
+/// Reader performing reads synchronously on a given queue.
+internal protocol SyncReader: Reader {
+    /// Queue used for synchronous reads.
+    var queue: DispatchQueue { get }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func markAllFilesAsReadable()
+#endif
+}

@@ -7,7 +7,12 @@
 import Foundation
 
 /// Abstracts the `DataUploadWorker`, so we can have no-op uploader in tests.
-internal protocol DataUploadWorkerType {}
+internal protocol DataUploadWorkerType {
+#if DD_SDK_COMPILED_FOR_TESTING
+    func flushSynchronously()
+    func cancelSynchronously()
+#endif
+}
 
 internal class DataUploadWorker: DataUploadWorkerType {
     /// Queue to execute uploads.
@@ -96,7 +101,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
 #if DD_SDK_COMPILED_FOR_TESTING
     /// Sends all unsent data synchronously.
-    /// - It performs arbiitrary upload (without checking upload condition and without re-transmitting failed uploads).
+    /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     func flushSynchronously() {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
