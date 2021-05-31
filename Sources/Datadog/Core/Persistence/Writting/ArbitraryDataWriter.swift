@@ -8,9 +8,9 @@ import Foundation
 
 /// Writes data to single folder, regardless of the value of `TrackingConsent`.
 /// It synchronizes the work of underlying `FileWriter` on given read/write queue.
-internal class ArbitraryDataWriter: Writer {
+internal class ArbitraryDataWriter: AsyncWriter {
     /// Queue used to synchronize reads and writes for the feature.
-    internal let readWriteQueue: DispatchQueue
+    internal let queue: DispatchQueue
     /// Data processor for used to process & write data.
     private let dataProcessor: DataProcessor
 
@@ -18,15 +18,26 @@ internal class ArbitraryDataWriter: Writer {
         readWriteQueue: DispatchQueue,
         dataProcessor: DataProcessor
     ) {
-        self.readWriteQueue = readWriteQueue
+        self.queue = readWriteQueue
         self.dataProcessor = dataProcessor
     }
 
     // MARK: - Writer
 
     func write<T>(value: T) where T: Encodable {
-        readWriteQueue.async {
+        queue.async {
+            #if DD_SDK_COMPILED_FOR_TESTING
+            assert(!self.isCanceled, "Trying to write data, but the writer is canceled.")
+            #endif
             self.dataProcessor.write(value: value)
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    private var isCanceled = false
+
+    func flushAndCancelSynchronously() {
+        queue.sync { self.isCanceled = true }
+    }
+#endif
 }

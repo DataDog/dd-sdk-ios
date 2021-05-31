@@ -9,9 +9,9 @@ import Foundation
 /// Writes data to different folders depending on current the value of the `TrackingConsent`.
 /// When the value of `TrackingConsent` changes, it may move data from unauthorized folder to the authorized one or wipe it out entirely.
 /// It synchronizes the work of underlying `FileWriters` on given read/write queue.
-internal class ConsentAwareDataWriter: Writer, TrackingConsentObserver {
+internal class ConsentAwareDataWriter: AsyncWriter, TrackingConsentObserver {
     /// Queue used to synchronize reads and writes for the feature.
-    internal let readWriteQueue: DispatchQueue
+    internal let queue: DispatchQueue
     /// Creates data processors depending on the tracking consent value.
     private let dataProcessorFactory: DataProcessorFactory
     /// Creates data migrators depending on the tracking consent transition.
@@ -26,7 +26,7 @@ internal class ConsentAwareDataWriter: Writer, TrackingConsentObserver {
         dataProcessorFactory: DataProcessorFactory,
         dataMigratorFactory: DataMigratorFactory
     ) {
-        self.readWriteQueue = readWriteQueue
+        self.queue = readWriteQueue
         self.dataProcessorFactory = dataProcessorFactory
         self.dataMigratorFactory = dataMigratorFactory
         self.processor = dataProcessorFactory.resolveProcessor(for: consentProvider.currentValue)
@@ -40,7 +40,7 @@ internal class ConsentAwareDataWriter: Writer, TrackingConsentObserver {
     // MARK: - Writer
 
     func write<T>(value: T) where T: Encodable {
-        readWriteQueue.async {
+        queue.async {
             self.processor?.write(value: value)
         }
     }
@@ -48,11 +48,25 @@ internal class ConsentAwareDataWriter: Writer, TrackingConsentObserver {
     // MARK: - TrackingConsentObserver
 
     func onValueChanged(oldValue: TrackingConsent, newValue: TrackingConsent) {
-        readWriteQueue.async {
+        queue.async {
+            #if DD_SDK_COMPILED_FOR_TESTING
+            assert(!self.isCanceled, "Trying to change consent, but the writer is canceled.")
+            #endif
             self.processor = self.dataProcessorFactory.resolveProcessor(for: newValue)
             self.dataMigratorFactory
                 .resolveMigratorForConsentChange(from: oldValue, to: newValue)?
                 .migrate()
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    private var isCanceled = false
+
+    func flushAndCancelSynchronously() {
+        queue.sync {
+            self.processor = nil
+            self.isCanceled = true
+        }
+    }
+#endif
 }

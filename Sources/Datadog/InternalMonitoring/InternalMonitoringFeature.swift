@@ -144,7 +144,7 @@ internal final class InternalMonitoringFeature {
 
 #if DD_SDK_COMPILED_FOR_TESTING
     func deinitialize() {
-        logsStorage.flush()
+        logsStorage.flushAndTearDown()
         logsUpload.flushAndTearDown()
         InternalMonitoringFeature.instance = nil
     }

@@ -11,7 +11,7 @@ internal final class FileWriter: Writer {
     /// Data writing format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to writable file.
-    private let orchestrator: FilesOrchestrator
+    internal let orchestrator: FilesOrchestrator
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
     private let internalMonitor: InternalMonitor?
