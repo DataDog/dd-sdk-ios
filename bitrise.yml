@@ -10,11 +10,30 @@ workflows:
   push_to_any_branch:
     after_run:
     - _make_dependencies
-    - run_linter
+    # - run_linter
     - run_unit_tests
-    - run_integration_tests
-    - check_dependency_managers
-    - _deploy_artifacts
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    - run_unit_tests
+    # - run_integration_tests
+    # - check_dependency_managers
+    # - _deploy_artifacts
 
   push_to_dogfooding:
     after_run:
@@ -120,42 +139,42 @@ workflows:
         inputs:
         - scheme: Datadog
         - simulator_device: iPhone 11
-        - is_clean_build: 'yes'
-        - should_retry_test_on_fail: 'yes' # temporarily mutes flakiness until we collect more info (in RUMM-839) then fix it
-        - generate_code_coverage_files: 'yes'
+        - is_clean_build: 'no'
+        # - should_retry_test_on_fail: 'yes' # temporarily mutes flakiness until we collect more info (in RUMM-839) then fix it
+        # - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
-    - xcode-test:
-        title: Run unit tests for DatadogCrashReporting - iOS Simulator
-        inputs:
-        - scheme: DatadogCrashReporting
-        - simulator_device: iPhone 11
-        - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
-    - xcode-test:
-        title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
-        inputs:
-        - scheme: DatadogBenchmarkTests
-        - simulator_device: iPhone 11
-        - should_build_before_test: 'no'
-        - is_clean_build: 'no'
-        - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
-    - script:
-        title: Generate HTTPServerMock.xcodeproj
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            make xcodeproj-httpservermock
-    - xcode-test-mac:
-        title: Run unit tests for HTTPServerMock.xcodeproj - macOS
-        inputs:
-        - scheme: HTTPServerMock-Package
-        - destination: platform=OS X,arch=x86_64
-        - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
+    # - xcode-test:
+    #     title: Run unit tests for DatadogCrashReporting - iOS Simulator
+    #     inputs:
+    #     - scheme: DatadogCrashReporting
+    #     - simulator_device: iPhone 11
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: Datadog.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
+    # - xcode-test:
+    #     title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
+    #     inputs:
+    #     - scheme: DatadogBenchmarkTests
+    #     - simulator_device: iPhone 11
+    #     - should_build_before_test: 'no'
+    #     - is_clean_build: 'no'
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: Datadog.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
+    # - script:
+    #     title: Generate HTTPServerMock.xcodeproj
+    #     inputs:
+    #     - content: |-
+    #         #!/usr/bin/env bash
+    #         set -e
+    #         make xcodeproj-httpservermock
+    # - xcode-test-mac:
+    #     title: Run unit tests for HTTPServerMock.xcodeproj - macOS
+    #     inputs:
+    #     - scheme: HTTPServerMock-Package
+    #     - destination: platform=OS X,arch=x86_64
+    #     - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
 
   run_integration_tests:
     description: |-
