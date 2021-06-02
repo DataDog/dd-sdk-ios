@@ -26,7 +26,7 @@ final class SwiftPrinterTests: XCTestCase {
                             isOptional: true,
                             isMutable: false,
                             defaultValue: nil,
-                            codingKey: "property1"
+                            codingKey: .static(value: "property1")
                         ),
                         SwiftStruct.Property(
                             name: "property2",
@@ -35,7 +35,7 @@ final class SwiftPrinterTests: XCTestCase {
                             isOptional: false,
                             isMutable: true,
                             defaultValue: nil,
-                            codingKey: "property2"
+                            codingKey: .static(value: "property2")
                         )
                     ],
                     conformance: [codableProtocol]
@@ -43,7 +43,7 @@ final class SwiftPrinterTests: XCTestCase {
                 isOptional: true,
                 isMutable: false,
                 defaultValue: nil,
-                codingKey: "bar"
+                codingKey: .static(value: "bar")
             ),
             SwiftStruct.Property(
                 name: "bizz",
@@ -62,7 +62,7 @@ final class SwiftPrinterTests: XCTestCase {
                 isOptional: false,
                 isMutable: false,
                 defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                codingKey: "bizz"
+                codingKey: .static(value: "bizz")
             ),
             SwiftStruct.Property(
                 name: "buzz",
@@ -83,7 +83,7 @@ final class SwiftPrinterTests: XCTestCase {
                 isOptional: true,
                 isMutable: true,
                 defaultValue: nil,
-                codingKey: "buzz"
+                codingKey: .static(value: "buzz")
             ),
             SwiftStruct.Property(
                 name: "propertiesByNames",
@@ -92,7 +92,7 @@ final class SwiftPrinterTests: XCTestCase {
                 isOptional: true,
                 isMutable: false,
                 defaultValue: nil,
-                codingKey: "propertiesByNames"
+                codingKey: .static(value: "propertiesByNames")
             )
         ],
         conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]

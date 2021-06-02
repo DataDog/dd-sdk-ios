@@ -80,9 +80,9 @@ internal class JSONToSwiftTypeTransformer {
                             value: SwiftPrimitive<SwiftCodable>()
                         ),
                         isOptional: false,
-                        isMutable: additionalProperties.isReadOnly,
+                        isMutable: !additionalProperties.isReadOnly,
                         defaultValue: nil,
-                        codingKey: additionalPropertyName
+                        codingKey: .dynamic
                     )
                 )
                 return `struct`
@@ -123,7 +123,7 @@ internal class JSONToSwiftTypeTransformer {
                     isOptional: !jsonProperty.isRequired,
                     isMutable: !jsonProperty.isReadOnly,
                     defaultValue: try readDefaultValue(for: jsonProperty),
-                    codingKey: jsonProperty.name
+                    codingKey: .static(value: jsonProperty.name)
                 )
             }
         }

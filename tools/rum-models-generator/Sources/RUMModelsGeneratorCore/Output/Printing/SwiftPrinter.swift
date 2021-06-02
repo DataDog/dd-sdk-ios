@@ -82,9 +82,18 @@ public class SwiftPrinter: BasePrinter {
         writeEmptyLine()
         writeLine("enum CodingKeys: String, CodingKey {")
         indentRight()
-        properties.forEach { property in
-            writeLine("case \(property.name) = \"\(property.codingKey)\"")
-        }
+        properties
+            .compactMap { property -> (String, String)? in
+                switch property.codingKey {
+                case .static(let value):
+                    return (property.name, value)
+                case .dynamic:
+                    return nil
+                }
+            }
+            .forEach { propertyName, codingKeyValue in
+                writeLine("case \(propertyName) = \"\(codingKeyValue)\"")
+            }
         indentLeft()
         writeLine("}")
     }

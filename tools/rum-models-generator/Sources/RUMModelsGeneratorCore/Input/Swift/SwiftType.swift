@@ -50,13 +50,20 @@ internal struct SwiftEnum: SwiftType {
 
 internal struct SwiftStruct: SwiftType {
     struct Property: SwiftType {
+        enum CodingKey {
+            /// Static coding key with fixed value.
+            case `static`(value: String)
+            /// Dynamic coding key with value determined at runtime.
+            case `dynamic`
+        }
+
         var name: String
         var comment: String?
         var type: SwiftType
         var isOptional: Bool
         var isMutable: Bool
         var defaultValue: SwiftPropertyDefaultValue?
-        var codingKey: String
+        var codingKey: CodingKey
     }
 
     var name: String

@@ -89,7 +89,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 isOptional: true,
                                 isMutable: false,
                                 defaultValue: nil,
-                                codingKey: "property1"
+                                codingKey: .static(value: "property1")
                             ),
                             SwiftStruct.Property(
                                 name: "property2",
@@ -98,7 +98,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 isOptional: false,
                                 isMutable: true,
                                 defaultValue: nil,
-                                codingKey: "property2"
+                                codingKey: .static(value: "property2")
                             )
                         ],
                         conformance: []
@@ -106,7 +106,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: true, // should be mutable as at least one of the `Bar's` properties is mutable
                     defaultValue: nil,
-                    codingKey: "bar"
+                    codingKey: .static(value: "bar")
                 ),
                 SwiftStruct.Property(
                     name: "property1",
@@ -125,7 +125,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     isOptional: false,
                     isMutable: false,
                     defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                    codingKey: "property1"
+                    codingKey: .static(value: "property1")
                 ),
                 SwiftStruct.Property(
                     name: "property2",
@@ -146,7 +146,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: true,
                     defaultValue: nil,
-                    codingKey: "property2"
+                    codingKey: .static(value: "property2")
                 )
             ],
             conformance: []
@@ -195,7 +195,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: "propertyWithAdditionalProperties"
+                    codingKey: .static(value: "propertyWithAdditionalProperties")
                 )
             ],
             conformance: []
@@ -217,11 +217,11 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     comment: "Description of Foo's `bar`.",
                     type: JSONObject(
                         name: "bar",
-                        comment: "Description of Foo's `baz`.",
+                        comment: "Description `bar`.",
                         properties: [
                             JSONObject.Property(
-                                    name: "baz",
-                                    comment: "Description of Foo.bar's `baz`.",
+                                    name: "bazz",
+                                    comment: "Description of Foo.bar's `bazz`.",
                                     type: JSONPrimitive.string,
                                     defaultValue: nil,
                                     isRequired: false,
@@ -229,7 +229,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 )
                         ],
                         additionalProperties: JSONObject.AdditionalProperties(
-                            comment: "Additional properties of property1.",
+                            comment: "Additional properties of `bar`.",
                             type: JSONPrimitive.string,
                             isReadOnly: true
                         )
@@ -241,10 +241,53 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             ]
         )
 
-        var error: Error? = nil
-        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])) { error = $0 }
-        let exception = try XCTUnwrap(error as? Exception)
-        XCTAssertTrue(exception.description.contains("not supported"))
+        let expected = SwiftStruct(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                SwiftStruct.Property(
+                    name: "bar",
+                    comment: "Description of Foo's `bar`.",
+                    type: SwiftStruct(
+                        name: "bar",
+                        comment: "Description `bar`.",
+                        properties: [
+                            SwiftStruct.Property(
+                                name: "bazz",
+                                comment: "Description of Foo.bar's `bazz`.",
+                                type: SwiftPrimitive<String>(),
+                                isOptional: true,
+                                isMutable: false,
+                                defaultValue: nil,
+                                codingKey: .static(value: "bazz")
+                            ),
+                            SwiftStruct.Property(
+                                name: "barInfo",
+                                comment: "Additional properties of `bar`.",
+                                type: SwiftDictionary(
+                                    value: SwiftPrimitive<SwiftCodable>()
+                                ),
+                                isOptional: false,
+                                isMutable: false,
+                                defaultValue: nil,
+                                codingKey: .dynamic
+                            ),
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: true,
+                    isMutable: false,
+                    defaultValue: nil,
+                    codingKey: .static(value: "bar")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingRootJSONObjectWithAdditionalPropertiesIntoSwiftStruct() throws {
@@ -326,7 +369,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     isOptional: false,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: "propertyWithAdditionalProperties"
+                    codingKey: .static(value: "propertyWithAdditionalProperties")
                 )
             ],
             conformance: []
