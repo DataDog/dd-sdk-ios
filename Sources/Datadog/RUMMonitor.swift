@@ -128,7 +128,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Attributes associated with every command.
     private var rumAttributes: [AttributeKey: AttributeValue] = [:]
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
-    internal let queue = DispatchQueue(
+    private let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
@@ -625,4 +625,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
         return mutableCommand
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Blocks the caller thread until (asynchronous) command processing in `RUMMonitor` is completed.
+    public func flush() {
+        queue.sync {}
+    }
+#endif
 }

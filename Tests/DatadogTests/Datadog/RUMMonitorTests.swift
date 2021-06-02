@@ -869,15 +869,15 @@ class RUMMonitorTests: XCTestCase {
         // When
         monitor.startView(viewController: mockView, name: "view in `.pending` consent changed to `.granted`")
         monitor.stopView(viewController: mockView)
-        monitor.dd.queue.sync {} // wait for processing the event in `RUMMonitor`
+        monitor.dd.flush()
         consentProvider.changeConsent(to: .granted)
         monitor.startView(viewController: mockView, name: "view in `.granted` consent")
         monitor.stopView(viewController: mockView)
-        monitor.dd.queue.sync {}
+        monitor.dd.flush()
         consentProvider.changeConsent(to: .notGranted)
         monitor.startView(viewController: mockView, name: "view in `.notGranted` consent")
         monitor.stopView(viewController: mockView)
-        monitor.dd.queue.sync {}
+        monitor.dd.flush()
         consentProvider.changeConsent(to: .granted)
         monitor.startView(viewController: mockView, name: "another view in `.granted` consent")
         monitor.stopView(viewController: mockView)
@@ -1162,20 +1162,17 @@ class RUMMonitorTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         let monitor = Global.rum.dd
-        monitor.queue.sync {
-            XCTAssertNil(monitor.debugging)
-        }
+        monitor.flush()
+        XCTAssertNil(monitor.debugging)
 
         // when & then
         Datadog.debugRUM = true
-        monitor.queue.sync {
-            XCTAssertNotNil(monitor.debugging)
-        }
+        monitor.flush()
+        XCTAssertNotNil(monitor.debugging)
 
         Datadog.debugRUM = false
-        monitor.queue.sync {
-            XCTAssertNil(monitor.debugging)
-        }
+        monitor.flush()
+        XCTAssertNil(monitor.debugging)
 
         Datadog.flushAndDeinitialize()
     }
