@@ -22,6 +22,9 @@ extension Int64: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 extension String: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 extension Double: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 
+/// Represents `Swift.Codable` - we need to define utility type because it cannot be declared as `extension` to `Codable`.
+internal struct SwiftCodable: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
+
 internal struct SwiftPrimitive<T: SwiftPrimitiveValue>: SwiftPrimitiveType {}
 
 internal struct SwiftArray: SwiftType {

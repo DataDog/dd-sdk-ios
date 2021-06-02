@@ -46,6 +46,7 @@ internal class JSONToSwiftTypeTransformer {
         case .double: return SwiftPrimitive<Double>()
         case .integer: return SwiftPrimitive<Int>()
         case .string: return SwiftPrimitive<String>()
+        case .any: return SwiftPrimitive<SwiftCodable>()
         }
     }
 
@@ -67,11 +68,29 @@ internal class JSONToSwiftTypeTransformer {
     private func transformJSONObject(_ jsonObject: JSONObject) throws -> SwiftType {
         if let additionalProperties = jsonObject.additionalProperties {
             if jsonObject.properties.count > 0 {
-                throw Exception.unimplemented("Transforming \(jsonObject) with both `properties` and `additionalProperties` is not supported.")
+                // RUMM-1401: if schema defines some properties and `additionalProperties: true`
+                // we model it as a `struct` with additional `<var|let> <structName>Info: [String: Codable]` property
+                let additionalPropertyName = jsonObject.name + "Info"
+                var `struct` = try transformJSONToStruct(jsonObject)
+                `struct`.properties.append(
+                    SwiftStruct.Property(
+                        name: additionalPropertyName,
+                        comment: additionalProperties.comment,
+                        type: SwiftDictionary(
+                            value: SwiftPrimitive<SwiftCodable>()
+                        ),
+                        isOptional: false,
+                        isMutable: additionalProperties.isReadOnly,
+                        defaultValue: nil,
+                        codingKey: additionalPropertyName
+                    )
+                )
+                return `struct`
+            } else {
+                return SwiftDictionary(
+                    value: transformJSONtoPrimitive(additionalProperties.type)
+                )
             }
-            return SwiftDictionary(
-                value: transformJSONtoPrimitive(additionalProperties.type)
-            )
         } else {
             return try transformJSONToStruct(jsonObject)
         }

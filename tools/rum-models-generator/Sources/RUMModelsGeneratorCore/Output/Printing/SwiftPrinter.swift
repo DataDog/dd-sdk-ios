@@ -133,6 +133,8 @@ public class SwiftPrinter: BasePrinter {
             return "Int64"
         case _ as SwiftPrimitive<String>:
             return "String"
+        case _ as SwiftPrimitive<SwiftCodable>:
+            return "Codable"
         case let swiftArray as SwiftArray:
             return "[\(try typeDeclaration(swiftArray.element))]"
         case let swiftDictionary as SwiftDictionary:
