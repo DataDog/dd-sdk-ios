@@ -37,7 +37,7 @@ internal class JSONSchema: Decodable {
     }
 
     struct SchemaConstant: Decodable {
-        enum Value {
+        enum Value: Equatable {
             case integer(value: Int)
             case string(value: String)
         }
@@ -59,6 +59,57 @@ internal class JSONSchema: Decodable {
             }
         }
     }
+
+    required init(from decoder: Decoder) throws {
+        do {
+            // First try decoding with keyed container
+            let keyedContainer = try decoder.container(keyedBy: CodingKeys.self)
+            self.id = try keyedContainer.decodeIfPresent(String.self, forKey: .id)
+            self.title = try keyedContainer.decodeIfPresent(String.self, forKey: .title)
+            self.description = try keyedContainer.decodeIfPresent(String.self, forKey: .description)
+            self.properties = try keyedContainer.decodeIfPresent([String: JSONSchema].self, forKey: .properties)
+            self.additionalProperties = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
+            self.required = try keyedContainer.decodeIfPresent([String].self, forKey: .required)
+            self.type = try keyedContainer.decodeIfPresent(SchemaType.self, forKey: .type)
+            self.enum = try keyedContainer.decodeIfPresent([String].self, forKey: .enum)
+            self.const = try keyedContainer.decodeIfPresent(SchemaConstant.self, forKey: .const)
+            self.items = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .items)
+            self.readOnly = try keyedContainer.decodeIfPresent(Bool.self, forKey: .readOnly)
+            self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
+            self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
+        } catch let keyedContainerError {
+            // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
+            // a single value. Check known schema values:
+            do {
+                if decoder.codingPath.last as! JSONSchema.CodingKeys == .additionalProperties {
+                    // Handle `additionalProperties: true | false`
+                    let singleValueContainer = try decoder.singleValueContainer()
+                    let hasAdditionalProperties = try singleValueContainer.decode(Bool.self)
+
+                    if hasAdditionalProperties {
+                        self.type = .object
+                    } else {
+                        throw Exception.moreContext(
+                            "Decoding `additionalProperties: false` is not supported in `JSONSchema.init(from:)`.",
+                            for: keyedContainerError
+                        )
+                    }
+                } else {
+                    throw Exception.moreContext(
+                        "Decoding \(decoder.codingPath) is not supported in `JSONSchema.init(from:)`.",
+                        for: keyedContainerError
+                    )
+                }
+            } catch let singleValueContainerError {
+                throw Exception.moreContext(
+                    "Unhandled parsing exception in `JSONSchema.init(from:)`.",
+                    for: singleValueContainerError
+                )
+            }
+        }
+    }
+
+    init() {}
 
     // MARK: - Schema attributes
 
