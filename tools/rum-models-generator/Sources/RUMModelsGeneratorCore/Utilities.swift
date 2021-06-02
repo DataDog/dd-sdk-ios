@@ -24,6 +24,10 @@ internal struct Exception: Error, CustomStringConvertible {
     static func unimplemented(_ operation: String) -> Exception {
         Exception("🚧 Unimplemented: \"\(operation)\".")
     }
+
+    static func moreContext(_ moreContext: String, for error: Error) -> Exception {
+        Exception("🛑 \"\(moreContext)\". Original error: \(error)")
+    }
 }
 
 internal extension Optional {
@@ -71,5 +75,13 @@ extension String {
 extension Array where Element: Hashable {
     func asSet() -> Set<Element> {
         return Set(self)
+    }
+} 
+
+func withErrorContext<T>(context: String, block: () throws -> T) throws -> T {
+    do {
+        return try block()
+    } catch let error {
+        throw Exception.moreContext(context, for: error)
     }
 }
