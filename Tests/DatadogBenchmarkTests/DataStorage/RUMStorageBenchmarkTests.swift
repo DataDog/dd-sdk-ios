@@ -28,7 +28,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
         )
         self.writer = storage.writer
         self.reader = storage.reader
-        self.queue = (storage.writer as! ConsentAwareDataWriter).readWriteQueue
+        self.queue = (storage.writer as! ConsentAwareDataWriter).queue
 
         XCTAssertTrue(try directory.files().count == 0)
     }

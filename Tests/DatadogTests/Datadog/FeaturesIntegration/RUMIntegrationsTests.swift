@@ -12,7 +12,7 @@ class RUMIntegrationsTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_itProvidesRUMContextAttributes() throws {
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         // given
         Global.rum = RUMMonitor.initialize()
@@ -43,7 +43,7 @@ class RUMIntegrationsTests: XCTestCase {
             configuration: .mockWith(sessionSamplingRate: 0.0),
             commonDependencies: .mockAny()
         )
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         // given
         Global.rum = RUMMonitor.initialize()
@@ -58,7 +58,7 @@ class RUMIntegrationsTests: XCTestCase {
 
     func testWhenRUMMonitorIsNotRegistered_itReturnsNil() throws {
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         // when
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
@@ -83,7 +83,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         // given
         Global.rum = RUMMonitor.initialize()

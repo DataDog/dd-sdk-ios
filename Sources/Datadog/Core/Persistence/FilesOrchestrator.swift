@@ -101,6 +101,12 @@ internal class FilesOrchestrator {
                 return nil
             }
 
+            #if DD_SDK_COMPILED_FOR_TESTING
+            if ignoreFilesAgeWhenReading {
+                return oldestFile
+            }
+            #endif
+
             let oldestFileAge = dateProvider.currentDate().timeIntervalSince(creationDate)
             let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
 
@@ -118,6 +124,11 @@ internal class FilesOrchestrator {
             internalMonitor?.sdkLogger.error("Failed to delete file", error: error)
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// If files age should be ignored for obtaining `ReadableFile`.
+    var ignoreFilesAgeWhenReading = false
+#endif
 
     // MARK: - Directory size management
 

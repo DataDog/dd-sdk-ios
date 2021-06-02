@@ -7,25 +7,35 @@
 import Foundation
 
 /// Synchronizes the work of `FileReader` on given read/write queue.
-internal final class DataReader: Reader {
+internal final class DataReader: SyncReader {
     /// Queue used to synchronize reads and writes for the feature.
-    private let readWriteQueue: DispatchQueue
+    internal let queue: DispatchQueue
     private let fileReader: Reader
 
     init(readWriteQueue: DispatchQueue, fileReader: Reader) {
-        self.readWriteQueue = readWriteQueue
+        self.queue = readWriteQueue
         self.fileReader = fileReader
     }
 
     func readNextBatch() -> Batch? {
-        readWriteQueue.sync {
+        queue.sync {
             self.fileReader.readNextBatch()
         }
     }
 
     func markBatchAsRead(_ batch: Batch) {
-        readWriteQueue.sync {
+        queue.sync {
             self.fileReader.markBatchAsRead(batch)
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func markAllFilesAsReadable() {
+        queue.sync {
+            let filesOrchestrator = (self.fileReader as? FileReader)?.orchestrator
+            assert(filesOrchestrator != nil)
+            filesOrchestrator?.ignoreFilesAgeWhenReading = true
+        }
+    }
+#endif
 }

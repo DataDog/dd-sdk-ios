@@ -7,12 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension UIApplicationSwizzler {
-    func unswizzle() {
-        sendEvent.unswizzle()
-    }
-}
-
 class UIApplicationSwizzlerTests: XCTestCase {
     private let handler = UIKitRUMUserActionsHandlerMock()
     private lazy var swizzler = try! UIApplicationSwizzler(handler: handler)

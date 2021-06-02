@@ -11,7 +11,7 @@ class RUMWithCrashContextIntegrationTests: XCTestCase {
     func testWhenCrashReportingIsEnabled_itUpdatesCrashContextWithLastRUMView() throws {
         // When
         CrashReportingFeature.instance = .mockNoOp()
-        defer { CrashReportingFeature.instance = nil }
+        defer { CrashReportingFeature.instance?.deinitialize() }
 
         // Then
         let rumWithCrashContextIntegration = try XCTUnwrap(RUMWithCrashContextIntegration())

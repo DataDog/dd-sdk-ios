@@ -51,7 +51,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
@@ -64,7 +64,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 300)))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
@@ -77,7 +77,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 400)))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
@@ -90,7 +90,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 403)))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
@@ -103,7 +103,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
@@ -117,7 +117,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .failure(error: mockError))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
@@ -130,7 +130,7 @@ class DataUploaderTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: -1)))
         let uploader = DataUploader(
             urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             httpHeaders: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())

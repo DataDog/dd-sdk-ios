@@ -434,10 +434,31 @@ extension FeaturesCommonDependencies {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
     ) -> FeaturesCommonDependencies {
+        let httpClient: HTTPClient
+
+        if let activeServer = ServerMock.activeInstance {
+            httpClient = HTTPClient(session: activeServer.getInterceptedURLSession())
+        } else {
+            class AssertedHTTPClient: HTTPClient {
+                // swiftlint:disable:next unavailable_function
+                override func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+                    preconditionFailure(
+                        """
+                        ⚠️ Request to \(request.url?.absoluteString ?? "null") was sent but there is no `ServerMock` instance set up for its interception.
+                        All unit tests must be configured to either send data to mocked `FeatureStorage` (`XYZFeature.mockByRecordingXYZ(...)`)
+                        or use `ServerMock` instance and `serverMock.getInterceptedURLSession()` for requests interception.
+                        """
+                    )
+                }
+            }
+
+            httpClient = AssertedHTTPClient()
+        }
+
         return FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: performance,
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: httpClient,
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -484,16 +505,23 @@ class FileWriterMock: Writer {
     }
 }
 
-class NoOpFileWriter: Writer {
+class NoOpFileWriter: AsyncWriter {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func write<T>(value: T) where T: Encodable {}
+    func flushAndCancelSynchronously() {}
 }
 
-class NoOpFileReader: Reader {
+class NoOpFileReader: SyncReader {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
+    func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {}
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
 
 extension DataFormat {
     static func mockAny() -> DataFormat {
