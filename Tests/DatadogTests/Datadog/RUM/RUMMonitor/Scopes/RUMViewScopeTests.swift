@@ -448,7 +448,12 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(
             scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom()))
         )
-        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
+
+        XCTAssertTrue(
+            scope.process(command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: .mockRandom()))
+        )
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should not change existing pending action when adding custom UA (but this custom action should be recorded anyway).")
 
         XCTAssertTrue(
             scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe))
@@ -459,7 +464,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
         )
         let viewEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(viewEvent.model.view.action.count, 1, "View should record 1 action")
+        XCTAssertEqual(viewEvent.model.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
     func testItManagesDiscreteUserActionScopeLifecycle() throws {
@@ -491,7 +496,12 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(
             scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom()))
         )
-        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
+
+        XCTAssertTrue(
+            scope.process(command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: .mockRandom()))
+        )
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should not change existing pending action when adding custom UA (but this custom action should be recorded anyway).")
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
@@ -499,7 +509,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
         )
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
+        XCTAssertEqual(event.model.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
     // MARK: - Error Tracking

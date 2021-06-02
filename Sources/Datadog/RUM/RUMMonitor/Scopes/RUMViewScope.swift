@@ -150,6 +150,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddUserActionCommand where isActiveView:
             if userActionScope == nil {
                 addDiscreteUserAction(on: command)
+            } else if command.actionType == .custom {
+                // still let it go, just instantly without any dependencies
+                sendDiscreteCustomUserAction(on: command)
             }
 
         // Error command
@@ -227,8 +230,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
-        userActionScope = RUMUserActionScope(
+    private func createDiscreteUserActionScope(on command: RUMAddUserActionCommand) -> RUMUserActionScope {
+        return RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
             name: command.name,
@@ -241,6 +244,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 self?.actionsCount += 1
                 self?.needsViewUpdate = true
             }
+        )
+    }
+
+    private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
+        userActionScope = createDiscreteUserActionScope(on: command)
+    }
+
+    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand) {
+        let customActionScope = createDiscreteUserActionScope(on: command)
+        _ = customActionScope.process(
+            command: RUMStopUserActionCommand(
+                                    time: command.time,
+                                    attributes: [:],
+                                    actionType: .custom,
+                                    name: nil
+            )
         )
     }
 
