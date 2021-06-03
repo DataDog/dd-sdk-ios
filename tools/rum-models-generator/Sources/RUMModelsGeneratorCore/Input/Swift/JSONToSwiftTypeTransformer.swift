@@ -68,8 +68,19 @@ internal class JSONToSwiftTypeTransformer {
     private func transformJSONObject(_ jsonObject: JSONObject) throws -> SwiftType {
         if let additionalProperties = jsonObject.additionalProperties {
             if jsonObject.properties.count > 0 {
-                // RUMM-1401: if schema defines some properties and `additionalProperties: true`
-                // we model it as a `struct` with additional `<var|let> <structName>Info: [String: Codable]` property
+                guard additionalProperties.type == .any else {
+                    throw Exception.unimplemented(
+                        """
+                        If schema mixes `properties` with `additionalProperties`, we only support `additionalProperties: true`
+                        syntax, wchich is transformed to `.any` type (and generated as `[String: Codable]` dictionary).
+                        """
+                    )
+                }
+
+                // RUMM-1401: if schema defines some properties and declares `additionalProperties: true`
+                // we model it as a `struct` with additional `<var|let> <structName>Info: [String: Codable]` dictionary.
+                // In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
+                // properties encoded in JSON.
                 let additionalPropertyName = jsonObject.name + "Info"
                 var `struct` = try transformJSONToStruct(jsonObject)
                 `struct`.properties.append(

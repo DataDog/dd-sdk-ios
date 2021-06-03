@@ -10,7 +10,7 @@ import XCTest
 final class RUMModelsGeneratorTests: XCTestCase {
     /// Test made for debugging purpose.
     /// Uncomment it to run code generation for `../../../rum-events-format/schemas`.
-//    func testPrintDebugSchemas() throws {
+    func testPrintDebugSchemas() throws {
 //        let rumEventsFormatSchemasFolder = URL(fileURLWithPath: #file)
 //            .deletingLastPathComponent()
 //            .deletingLastPathComponent()
@@ -21,12 +21,12 @@ final class RUMModelsGeneratorTests: XCTestCase {
 //
 //        let schemas = try RUMJSONSchemaFiles(folder: schemasFolderURL)
 //        let generator = RUMModelsGenerator()
-//
+
 //        print(">>>>>>>>>>>>>>>>>> Swift >>>>>>>>>>>>>>>>>>>>>>")
-//        print(try generator.printRUMModels(for: schemas, using: SwiftPrinter()))
+//        print(try generator.printRUMModels(for: schemas, using: .swift))
 //        print("<<<<<<<<<<<<<<<<<< Swift <<<<<<<<<<<<<<<<<<<<<<")
 //        print(">>>>>>>>>>>>>>>>>> ObjcInterop >>>>>>>>>>>>>>>>>>>>>>")
-//        print(try generator.printRUMModels(for: schemas, using: ObjcInteropPrinter()))
+//        print(try generator.printRUMModels(for: schemas, using: .objcInterop))
 //        print(">>>>>>>>>>>>>>>>>> ObjcInterop >>>>>>>>>>>>>>>>>>>>>>")
-//    }
+    }
 }

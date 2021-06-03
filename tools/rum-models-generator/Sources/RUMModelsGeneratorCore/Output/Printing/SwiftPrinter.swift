@@ -36,7 +36,7 @@ public class SwiftPrinter: BasePrinter {
         indentRight()
         try printPropertiesList(swiftStruct.properties)
         if swiftStruct.conforms(to: codableProtocol) {
-            printCodingKeys(for: swiftStruct.properties)
+            try printCodableDeclaration(for: swiftStruct.properties)
         }
         try printNestedTypes(in: swiftStruct)
         indentLeft()
@@ -78,24 +78,156 @@ public class SwiftPrinter: BasePrinter {
         }
     }
 
-    private func printCodingKeys(for properties: [SwiftStruct.Property]) {
-        writeEmptyLine()
-        writeLine("enum CodingKeys: String, CodingKey {")
-        indentRight()
-        properties
-            .compactMap { property -> (String, String)? in
-                switch property.codingKey {
-                case .static(let value):
-                    return (property.name, value)
-                case .dynamic:
-                    return nil
+    private func printCodableDeclaration(for properties: [SwiftStruct.Property]) throws {
+        let staticallyCodedProperties = properties.filter { $0.codingKey.isStatic }
+        let dynamicallyCodedProperties = properties.filter { !$0.codingKey.isStatic }
+
+        guard dynamicallyCodedProperties.count < 2 else {
+            throw Exception.illegal(
+                """
+                There can be 0 or 1 dynamically coded property. Received \(dynamicallyCodedProperties.count):
+                \(dynamicallyCodedProperties.map({ "- \($0.name)\n" }))
+                """
+            )
+        }
+
+        let dynamicallyCodedProperty = dynamicallyCodedProperties.first
+
+        func printStaticCodingKeys(named codingKeyEnumName: String) throws {
+            writeEmptyLine()
+            writeLine("enum \(codingKeyEnumName): String, CodingKey {")
+            indentRight()
+            try staticallyCodedProperties
+                .forEach { property in
+                    guard case .static(let codingKeyValue) = property.codingKey else {
+                        throw Exception.illegal("Expected `codingKey` to be `.static` for property `\(property.name)`")
+                    }
+
+                    writeLine("case \(property.name) = \"\(codingKeyValue)\"")
+                }
+            indentLeft()
+            writeLine("}")
+        }
+
+        func printDynamicCodingKeys() {
+            writeEmptyLine()
+            writeLine("struct DynamicCodingKey: CodingKey {")
+            indentRight()
+            writeLine("var stringValue: String")
+            writeLine("var intValue: Int?")
+            writeLine("init?(stringValue: String) { self.stringValue = stringValue }")
+            writeLine("init?(intValue: Int) { return nil }")
+            writeLine("init(_ string: String) { self.stringValue = string }")
+            indentLeft()
+            writeLine("}")
+        }
+
+        func printEncodingImplemenation() throws {
+            writeEmptyLine()
+            writeLine("public func encode(to encoder: Encoder) throws {")
+            indentRight()
+
+            if !staticallyCodedProperties.isEmpty {
+                writeLine("// Encode static properties:")
+                writeLine("var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)")
+
+                staticallyCodedProperties.forEach { staticProperty in
+                    writeLine("try staticContainer.encodeIfPresent(\(staticProperty.name), forKey: .\(staticProperty.name))")
                 }
             }
-            .forEach { propertyName, codingKeyValue in
-                writeLine("case \(propertyName) = \"\(codingKeyValue)\"")
+
+            if !staticallyCodedProperties.isEmpty && dynamicallyCodedProperty != nil {
+                writeEmptyLine()
             }
-        indentLeft()
-        writeLine("}")
+
+            if let dynamicProperty = dynamicallyCodedProperty {
+                writeLine("// Encode dynamic properties:")
+                writeLine("var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)")
+
+                guard dynamicProperty.type is SwiftDictionary else {
+                    throw Exception.unimplemented("Printing dynamic property of type `\(dynamicProperty.type)` is not supported ")
+                }
+
+                writeLine("try \(dynamicProperty.name).forEach {") // dynamic properties are dictionaries
+                indentRight()
+                    writeLine("let key = DynamicCodingKey($0)") // dictionary key is used as coding key
+                    writeLine("try dynamicContainer.encode(EncodableValue($1), forKey: key)") // encode value
+                indentLeft()
+                writeLine("}")
+            }
+
+            indentLeft()
+            writeLine("}")
+        }
+
+        func printDecodingImplemenation() throws {
+            writeEmptyLine()
+            writeLine("public init(from decoder: Decoder) throws {")
+            indentRight()
+
+            if !staticallyCodedProperties.isEmpty {
+                writeLine("// Decode static properties:")
+                writeLine("let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)")
+
+                try staticallyCodedProperties.forEach { staticProperty in
+                    let type = try typeDeclaration(staticProperty.type)
+                    if staticProperty.isOptional {
+                        writeLine("self.\(staticProperty.name) = try staticContainer.decodeIfPresent(\(type).self, forKey: .\(staticProperty.name))")
+                    } else {
+                        writeLine("self.\(staticProperty.name) = try staticContainer.decode(\(type).self, forKey: .\(staticProperty.name))")
+                    }
+                }
+            }
+
+            if !staticallyCodedProperties.isEmpty && dynamicallyCodedProperty != nil {
+                writeEmptyLine()
+            }
+
+            if let dynamicProperty = dynamicallyCodedProperty {
+                writeLine("// Decode other properties into [String: Codable] dictionary:")
+                writeLine("let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)")
+
+                if !staticallyCodedProperties.isEmpty {
+                    // If the type defines some static properties, treat other properties as dynamic
+                    writeLine("let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })")
+                    writeLine("let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }")
+
+                } else {
+                    // If the type doesn't define any static properties, treat all properties as dynamic
+                    writeLine("let dynamicKeys = dynamicContainer.allKeys")
+                }
+
+                writeLine("var dictionary: [String: Codable] = [:]")
+                writeEmptyLine()
+
+                writeLine("try dynamicKeys.forEach { codingKey in")
+                indentRight()
+                writeLine("dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)")
+                indentLeft()
+                writeLine("}")
+
+                writeEmptyLine()
+                writeLine("self.\(dynamicProperty.name) = dictionary")
+            }
+
+            indentLeft()
+            writeLine("}")
+        }
+
+        if dynamicallyCodedProperties.isEmpty && !staticallyCodedProperties.isEmpty {
+            // If the `struct` has no dynamically coded properties, its `Codable` conformance will
+            // be generated by the compiler and we only need to list coding keys in `CodingKeys` enum.
+            try printStaticCodingKeys(named: "CodingKeys")
+        } else {
+            // If the `struct` has some dynamically coded properties, we need to generate `Codable` conformance code.
+            // Static properties will be encoded using `StaticCodingKeys` enum and dynamic ones using `DynamicCodingKey`
+            if !staticallyCodedProperties.isEmpty {
+                try printStaticCodingKeys(named: "StaticCodingKeys")
+            }
+            printDynamicCodingKeys()
+            try printEncodingImplemenation()
+            try printDecodingImplemenation()
+        }
     }
 
     private func printNestedTypes(in swiftStruct: SwiftStruct) throws {

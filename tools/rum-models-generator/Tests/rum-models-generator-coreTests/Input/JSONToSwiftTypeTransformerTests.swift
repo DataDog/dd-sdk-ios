@@ -230,7 +230,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         ],
                         additionalProperties: JSONObject.AdditionalProperties(
                             comment: "Additional properties of `bar`.",
-                            type: JSONPrimitive.string,
+                            type: JSONPrimitive.any,
                             isReadOnly: true
                         )
                     ),
@@ -297,21 +297,8 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             properties: [
                 JSONObject.Property(
                     name: "bar",
-                    comment: "Description of Foo's `bar`.",
-                    type: JSONObject(
-                        name: "bar",
-                        comment: "Description of Foo's `baz`.",
-                        properties: [
-                            JSONObject.Property(
-                                    name: "baz",
-                                    comment: "Description of Foo.bar's `baz`.",
-                                    type: JSONPrimitive.string,
-                                    defaultValue: nil,
-                                    isRequired: false,
-                                    isReadOnly: true
-                                )
-                        ]
-                    ),
+                    comment: nil,
+                    type: JSONPrimitive.string,
                     defaultValue: nil,
                     isRequired: false,
                     isReadOnly: true
@@ -324,10 +311,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             )
         )
 
-        var error: Error? = nil
-        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])) { error = $0 }
-        let exception = try XCTUnwrap(error as? Exception)
-        XCTAssertTrue(exception.description.contains("not supported"))
+        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])) { error in
+            let exceptionDescription = (error as? Exception)?.description ?? ""
+            XCTAssertTrue(
+                exceptionDescription.contains("Transforming root object")
+                && exceptionDescription.contains("is not supported")
+            )
+        }
     }
 
     func testTransformingJSONObjectPropertyWithAdditionalPropertiesAndConflictingFlags() throws {

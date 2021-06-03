@@ -55,6 +55,13 @@ internal struct SwiftStruct: SwiftType {
             case `static`(value: String)
             /// Dynamic coding key with value determined at runtime.
             case `dynamic`
+
+            var isStatic: Bool {
+                switch self {
+                case .static: return true
+                case .dynamic: return false
+                }
+            }
         }
 
         var name: String
