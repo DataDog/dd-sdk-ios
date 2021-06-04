@@ -457,6 +457,8 @@
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9E989A4225F640D100235FC3 /* AppStateListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E989A4125F640D100235FC3 /* AppStateListenerTests.swift */; };
+		9EC8B5DA2668197B000F7529 /* VitalCPUReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */; };
+		9EC8B5EE2668E4DB000F7529 /* VitalCPUReaderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTest.swift */; };
 		9ED6A6B425F2901800CB2E29 /* AppStateListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ED6A6B325F2901800CB2E29 /* AppStateListener.swift */; };
 		9EE5AD8226205B82001E699E /* DDNSURLSessionDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */; };
 		9EEA4871258B76A100EBDA9D /* Global+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EEA4870258B76A100EBDA9D /* Global+objc.swift */; };
@@ -1068,6 +1070,8 @@
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
 		9E989A4125F640D100235FC3 /* AppStateListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateListenerTests.swift; sourceTree = "<group>"; };
 		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
+		9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReader.swift; sourceTree = "<group>"; };
+		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTest.swift; sourceTree = "<group>"; };
 		9ED6A6B325F2901800CB2E29 /* AppStateListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateListener.swift; sourceTree = "<group>"; };
 		9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNSURLSessionDelegateTests.swift; sourceTree = "<group>"; };
 		9EEA4870258B76A100EBDA9D /* Global+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Global+objc.swift"; sourceTree = "<group>"; };
@@ -3059,6 +3063,7 @@
 		B3FC3C0426526EE900DEED9E /* RUMVitals */ = {
 			isa = PBXGroup;
 			children = (
+				9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */,
 				B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */,
 				B3BBBCB1265E71C600943419 /* VitalReader.swift */,
 				B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */,
@@ -3071,6 +3076,7 @@
 		B3FC3C1226526F4100DEED9E /* RUMVitals */ = {
 			isa = PBXGroup;
 			children = (
+				9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTest.swift */,
 				B3BBBCBB265E71D100943419 /* VitalMemoryReaderTest.swift */,
 				B3FC3C3B2653A97700DEED9E /* VitalObserverTest.swift */,
 			);
@@ -3685,6 +3691,7 @@
 				6161247925CA9CA6009901BE /* CrashReporter.swift in Sources */,
 				61133BE62423979B00786299 /* LogSanitizer.swift in Sources */,
 				615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */,
+				9EC8B5DA2668197B000F7529 /* VitalCPUReader.swift in Sources */,
 				614D812C24E3EA15004C9C5D /* Feature.swift in Sources */,
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				61B0385A2527247000518F3C /* DDURLSessionDelegate.swift in Sources */,
@@ -3908,6 +3915,7 @@
 				61B0387B252724AB00518F3C /* URLSessionTracingHandlerTests.swift in Sources */,
 				611529AE25E3E429004F740E /* ValuePublisherTests.swift in Sources */,
 				61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */,
+				9EC8B5EE2668E4DB000F7529 /* VitalCPUReaderTest.swift in Sources */,
 				6115299725E3BEF9004F740E /* UIKitExtensionsTests.swift in Sources */,
 				614B0A4D24EBD71500A2A780 /* RUMUserInfoProviderTests.swift in Sources */,
 				9EF963E82537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift in Sources */,
