@@ -311,7 +311,9 @@ public class Datadog {
         RUMAutoInstrumentation.instance?.deinitialize()
         URLSessionAutoInstrumentation.instance?.deinitialize()
 
-        // Deinitialize Crash Reporter managed internally by the SDK
+        // Reset Globals:
+        Global.sharedTracer = DDNoopGlobals.tracer
+        Global.rum = DDNoopRUMMonitor()
         Global.crashReporter = nil
 
         // Deinitialize `Datadog`:

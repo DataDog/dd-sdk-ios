@@ -199,7 +199,11 @@ extension Int: AnyMockable, RandomMockable {
     }
 
     static func mockRandom() -> Int {
-        return .random(in: Int.min...Int.max)
+        return mockRandom(min: .min, max: .max)
+    }
+
+    static func mockRandom(min: Int, max: Int) -> Int {
+        return .random(in: min...max)
     }
 }
 
@@ -236,7 +240,11 @@ extension Double: AnyMockable, RandomMockable {
     }
 
     static func mockRandom() -> Double {
-        return Double.random(in: 0..<Double.greatestFiniteMagnitude)
+        return mockRandom(min: 0, max: .greatestFiniteMagnitude)
+    }
+
+    static func mockRandom(min: Double, max: Double) -> Double {
+        return .random(in: min...max)
     }
 }
 
