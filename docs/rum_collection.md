@@ -6,6 +6,8 @@ Send [Real User Monitoring data][1] to Datadog from your iOS applications with [
 * Understand which resources are the slowest.
 * Analyze errors by OS and device type.
 
+**Minimum iOS version**: Datadog SDK for iOS supports iOS v11+.
+
 ## Setup
 
 1. Declare the library as a dependency, depending on your package manager. See Datadog's [Releases page][3] for the latest beta version.
