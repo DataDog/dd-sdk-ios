@@ -63,7 +63,7 @@ struct DD {
     }
 
     static func specialBoolAttribute() -> SpecialAttribute {
-        let value: Bool = .random() // asserted in monitors (`@test_special_double_attribute:(true OR false)`)
+        let value: Bool = .random() // asserted in monitors (`@test_special_bool_attribute:(true OR false)`)
         return .init(key: "test_special_bool_attribute", value: value)
     }
 
