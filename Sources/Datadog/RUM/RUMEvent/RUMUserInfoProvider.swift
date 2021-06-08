@@ -17,7 +17,12 @@ internal struct RUMUserInfoProvider {
         if userInfo.id == nil && userInfo.name == nil && userInfo.email == nil {
             return nil
         } else {
-            return RUMUser(email: userInfo.email, id: userInfo.id, name: userInfo.name)
+            return RUMUser(
+                email: userInfo.email,
+                id: userInfo.id,
+                name: userInfo.name,
+                usrInfo: [:]
+            )
         }
     }
 }

@@ -18,15 +18,19 @@ class RUMUserInfoProviderTests: XCTestCase {
 
     func testWhenUserInfoIsAvailable_itReturnsRUMUserInfo() {
         userInfoProvider.value = UserInfo(id: "abc-123", name: nil, email: nil, extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: nil, id: "abc-123", name: nil))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: nil, id: "abc-123", name: nil, usrInfo: [:]))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: nil, id: "abc-123", name: "Foo"))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: nil, id: "abc-123", name: "Foo", usrInfo: [:]))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo"))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [:]))
 
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: [:])
-        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo"))
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [:]))
+
+        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: mockRandomAttributes())
+        // TODO: RUMM-1420 Encode user `extraInfo` info as RUMUser `usrInfo`
+        XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [:]))
     }
 }

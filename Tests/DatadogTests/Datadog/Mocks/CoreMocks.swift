@@ -915,13 +915,13 @@ internal class ValueObserverMock<Value>: ValueObserver {
 // MARK: - Attributes Mock
 
 /// Creates randomized `[String: Encodable]` attributes
-func mockRandomAttributes() -> [String: Encodable] {
-    struct Foo: Encodable {
-        let bar: String = .mockRandom()
-        let bizz = Bizz()
+func mockRandomAttributes() -> [String: Codable] {
+    struct Foo: Codable {
+        var bar: String = .mockRandom()
+        var bizz = Bizz()
 
-        struct Bizz: Encodable {
-            let buzz: String = .mockRandom()
+        struct Bizz: Codable {
+            var buzz: String = .mockRandom()
         }
     }
 

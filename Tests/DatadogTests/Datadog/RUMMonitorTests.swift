@@ -614,7 +614,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
-        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo")
+        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [:])
         try rumEventMatchers.forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.int"), 11_235)

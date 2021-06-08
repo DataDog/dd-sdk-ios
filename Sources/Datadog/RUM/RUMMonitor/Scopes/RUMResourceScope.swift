@@ -134,6 +134,7 @@ internal class RUMResourceScope: RUMScope {
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             resource: .init(
                 connect: resourceMetrics?.connect.flatMap { metric in
@@ -209,8 +210,10 @@ internal class RUMResourceScope: RUMScope {
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                id: nil,
                 isCrash: false,
                 message: command.errorMessage,
                 resource: .init(
@@ -228,6 +231,7 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                inForeground: nil,
                 name: context.activeViewName,
                 referrer: nil,
                 url: context.activeViewPath ?? ""
