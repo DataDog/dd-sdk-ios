@@ -26,7 +26,7 @@ internal class JSONToSwiftTypeTransformer {
     private func transformJSONToAnyType(_ json: JSONType) throws -> SwiftType {
         switch json {
         case let jsonPrimitive as JSONPrimitive:
-            return transformJSONtoPrimitive(jsonPrimitive)
+            return try transformJSONtoPrimitive(jsonPrimitive)
         case let jsonArray as JSONArray:
             return try transformJSONToArray(jsonArray)
         case let jsonEnumeration as JSONEnumeration:
@@ -40,13 +40,13 @@ internal class JSONToSwiftTypeTransformer {
 
     // MARK: - Transforming concrete types
 
-    private func transformJSONtoPrimitive(_ jsonPrimitive: JSONPrimitive) -> SwiftPrimitiveType {
+    private func transformJSONtoPrimitive(_ jsonPrimitive: JSONPrimitive) throws -> SwiftPrimitiveType {
         switch jsonPrimitive {
         case .bool: return SwiftPrimitive<Bool>()
         case .double: return SwiftPrimitive<Double>()
         case .integer: return SwiftPrimitive<Int>()
         case .string: return SwiftPrimitive<String>()
-        case .any: return SwiftPrimitive<SwiftCodable>()
+        case .any: throw Exception.illegal("Untyped JSON schema (`.any`) cannot be transformed to `SwiftPrimitiveType`.")
         }
     }
 
@@ -67,18 +67,9 @@ internal class JSONToSwiftTypeTransformer {
 
     private func transformJSONObject(_ jsonObject: JSONObject) throws -> SwiftType {
         if let additionalProperties = jsonObject.additionalProperties {
-            if jsonObject.properties.count > 0 {
-                guard additionalProperties.type == .any else {
-                    throw Exception.unimplemented(
-                        """
-                        If schema mixes `properties` with `additionalProperties`, we only support `additionalProperties: true`
-                        syntax, wchich is transformed to `.any` type (and generated as `[String: Codable]` dictionary).
-                        """
-                    )
-                }
-
-                // RUMM-1401: if schema defines some properties and declares `additionalProperties: true`
-                // we model it as a `struct` with additional `<var|let> <structName>Info: [String: Codable]` dictionary.
+            if additionalProperties.type == .any {
+                // RUMM-1401: if schema declares `additionalProperties: true` or `additionalProperties: {type: object, ...}`
+                // we model it as a `struct` with nested `<var|let> <structName>Info: [String: Codable]` dictionary.
                 // In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
                 // properties encoded in JSON.
                 let additionalPropertyName = jsonObject.name + "Info"
@@ -98,8 +89,10 @@ internal class JSONToSwiftTypeTransformer {
                 )
                 return `struct`
             } else {
+                // RUMM-1401: if schema declares `additionalProperties: {type: string | bool | integer | double, ...}}`
+                // we model it as dictionary property.
                 return SwiftDictionary(
-                    value: transformJSONtoPrimitive(additionalProperties.type)
+                    value: try transformJSONtoPrimitive(additionalProperties.type)
                 )
             }
         } else {

@@ -158,17 +158,17 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         XCTAssertEqual(expected, actual[0])
     }
 
-    func testTransformingNestedJSONObjectWithAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {
+    func testTransformingNestedJSONObjectWithIntAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {
         let object = JSONObject(
             name: "Foo",
             comment: "Description of Foo.",
             properties: [
                 JSONObject.Property(
-                    name: "propertyWithAdditionalProperties",
-                    comment: "Description of a property with nested additional properties.",
+                    name: "propertyWithAdditionalIntProperties",
+                    comment: "Description of a property with nested additional Int properties.",
                     type: JSONObject(
-                        name: "propertyWithAdditionalProperties",
-                        comment: "Description of a property with nested additional properties.",
+                        name: "propertyWithAdditionalIntProperties",
+                        comment: "Description of a property with nested additional Int properties.",
                         properties: [],
                         additionalProperties:
                             JSONObject.AdditionalProperties(
@@ -189,13 +189,79 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             comment: "Description of Foo.",
             properties: [
                 SwiftStruct.Property(
-                    name: "propertyWithAdditionalProperties",
-                    comment: "Description of a property with nested additional properties.",
+                    name: "propertyWithAdditionalIntProperties",
+                    comment: "Description of a property with nested additional Int properties.",
                     type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: .static(value: "propertyWithAdditionalProperties")
+                    codingKey: .static(value: "propertyWithAdditionalIntProperties")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
+    }
+
+    func testTransformingNestedJSONObjectWithAnyAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {
+        let object = JSONObject(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                JSONObject.Property(
+                    name: "propertyWithAdditionalAnyProperties",
+                    comment: "Description of a property with nested additional Any properties.",
+                    type: JSONObject(
+                        name: "propertyWithAdditionalAnyProperties",
+                        comment: "Description of a property with nested additional Any properties.",
+                        properties: [],
+                        additionalProperties:
+                            JSONObject.AdditionalProperties(
+                                comment: nil,
+                                type: JSONPrimitive.any,
+                                isReadOnly: true
+                            )
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                )
+            ]
+        )
+
+        let expected = SwiftStruct(
+            name: "Foo",
+            comment: "Description of Foo.",
+            properties: [
+                SwiftStruct.Property(
+                    name: "propertyWithAdditionalAnyProperties",
+                    comment: "Description of a property with nested additional Any properties.",
+                    type: SwiftStruct(
+                        name: "propertyWithAdditionalAnyProperties",
+                        comment: "Description of a property with nested additional Any properties.",
+                        properties: [
+                            SwiftStruct.Property(
+                                name: "propertyWithAdditionalAnyPropertiesInfo",
+                                comment: nil,
+                                type: SwiftDictionary(
+                                    value: SwiftPrimitive<SwiftCodable>()
+                                ),
+                                isOptional: false,
+                                isMutable: false,
+                                defaultValue: nil,
+                                codingKey: .dynamic
+                            )
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: true,
+                    isMutable: false,
+                    defaultValue: nil,
+                    codingKey: .static(value: "propertyWithAdditionalAnyProperties")
                 )
             ],
             conformance: []
