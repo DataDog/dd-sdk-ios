@@ -423,6 +423,7 @@
 		61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
 		61F3CDAB25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */; };
 		61F3CDAD25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */; };
+		61F7F1DD266F9CB000F9F53B /* EncodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* EncodableValue.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */; };
 		61F9CA712512450B000A5E61 /* RUMAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA702512450B000A5E61 /* RUMAutoInstrumentationTests.swift */; };
 		61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */; };
@@ -4007,6 +4008,7 @@
 				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */,
 				61FF282924B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */,
+				61F7F1DD266F9CB000F9F53B /* EncodableValue.swift in Sources */,
 				61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */,
 				61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */,
 				612D8F8125AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift in Sources */,
