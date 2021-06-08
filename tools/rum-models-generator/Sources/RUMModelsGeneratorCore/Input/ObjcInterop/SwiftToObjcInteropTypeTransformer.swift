@@ -138,6 +138,8 @@ internal class SwiftToObjcInteropTypeTransformer {
              _ as SwiftPrimitive<Int>,
              _ as SwiftPrimitive<Int64>:
             return ObjcInteropNSNumber(swiftType: swiftType)
+        case let swiftCodable as SwiftPrimitive<SwiftCodable>:
+            return ObjcInteropAny(swiftCodable: swiftCodable)
         case let swiftString as SwiftPrimitive<String>:
             return ObjcInteropNSString(swiftString: swiftString)
         case let swiftArray as SwiftArray:

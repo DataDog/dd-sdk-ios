@@ -126,6 +126,14 @@ internal class ObjcInteropNSString: ObjcInteropType {
     }
 }
 
+internal class ObjcInteropAny: ObjcInteropType {
+    let swiftCodable: SwiftPrimitive<SwiftCodable>
+
+    init(swiftCodable: SwiftPrimitive<SwiftCodable>) {
+        self.swiftCodable = swiftCodable
+    }
+}
+
 internal class ObjcInteropNSArray: ObjcInteropType {
     let element: ObjcInteropType
 

@@ -261,6 +261,15 @@ internal class ObjcInteropPrinter: BasePrinter {
 
     private func printPrimitivePropertyWrapper(_ propertyWrapper: ObjcInteropPropertyWrapperManagingSwiftStructProperty) throws {
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
+
+        if let swiftDictionary = swiftProperty.type as? SwiftDictionary, swiftDictionary.value is SwiftPrimitive<SwiftCodable> {
+            guard !swiftProperty.isMutable else {
+                throw Exception.unimplemented(
+                    "Generating ObjcInterop for mutable `[Swift: Codable]` is not supported."
+                )
+            }
+        }
+
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
@@ -308,6 +317,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return "NSNumber"
         case _ as ObjcInteropNSString:
             return "String"
+        case _ as ObjcInteropAny:
+            return "Any"
         case let objcArray as ObjcInteropNSArray:
             return "[\(try objcInteropTypeName(for: objcArray.element))]"
         case let objcDictionary as ObjcInteropNSDictionary:
@@ -333,6 +344,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return nil // `[String]` <> `[NSString]` interoperability doesn't require casting
         case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropNSString:
             return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
+        case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropAny:
+            return nil // `[Key: Any]` <> `[Key: Any]` interoperability doesn't require casting
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
         }
@@ -352,6 +365,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return nil // `[String]` <> `[NSString]` interoperability doesn't require casting
         case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitive<String>:
             return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
+        case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitive<SwiftCodable>:
+            return nil
         case let swiftArray as SwiftArray:
             let elementCast = try objcToSwiftCast(for: swiftArray.element)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftArray` with elements of type: \(type(of: swiftArray.element))"))

@@ -1126,6 +1126,64 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingObjcInteropForSwiftStructWithCodableDictionaryProperties() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "immutableCodables",
+                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    isOptional: false,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "optionalImmutableCodables",
+                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    isOptional: true,
+                    isMutable: false
+                ),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let immutableCodables: [String: Codable]
+
+            public let optionalImmutableCodables: [String: Codable]?
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var immutableCodables: [String: Any] {
+                root.swiftModel.immutableCodables
+            }
+
+            @objc public var optionalImmutableCodables: [String: Any]? {
+                root.swiftModel.optionalImmutableCodables
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
+
     // MARK: - Nested Swift Structs and Enums
 
     func testPrintingObjcInteropForSwiftStructWithNestedStructs() throws {
