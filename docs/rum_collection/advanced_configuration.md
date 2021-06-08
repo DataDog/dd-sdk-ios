@@ -45,6 +45,18 @@ To identify user sessions, use the `setUser` API:
 // TODO Add code snippet
 //Datadog.setUserInfo()
 
+### Add your own performance timing
+
+On top of RUM’s default attributes, you may measure where your application is spending its time with greater flexibility. The `addTiming` API provides you with a simple way to add extra performance timing. The timing measure will be relative to the start of the current RUM view. For example, you can add a timing when your hero image has appeared:
+
+   ```kotlin
+       func onHeroImageLoaded() {
+           Global.rum.addTiming(name: "content-ready")
+       } 
+   ```
+
+Once the timing is sent, the timing will be accessible as `@view.custom_timings.<timing_name>` (For example, `@view.custom_timings.hero_image`). You must [create a measure](https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures) before graphing it in RUM analytics or in dashboards. 
+
 ## Sample RUM events
 
 To control the data your application sends to Datadog RUM, you can secify a sampling rate for RUM sessions while [initializing the RumMonitor][] as a percentage between 0 and 100.
