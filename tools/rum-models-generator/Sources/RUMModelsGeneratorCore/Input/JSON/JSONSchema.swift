@@ -81,7 +81,7 @@ internal class JSONSchema: Decodable {
             // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
             // a single value. Check known schema values:
             do {
-                if decoder.codingPath.last as! JSONSchema.CodingKeys == .additionalProperties {
+                if decoder.codingPath.last as! JSONSchema.CodingKeys == .additionalProperties { // swiftlint:disable:this force_cast
                     // Handle `additionalProperties: true | false`
                     let singleValueContainer = try decoder.singleValueContainer()
                     let hasAdditionalProperties = try singleValueContainer.decode(Bool.self)

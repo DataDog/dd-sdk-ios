@@ -10,7 +10,7 @@ import Foundation
 internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
     /// Types which will shared between all input `types`. Sharing means detaching those types from nested declaration
     /// and putting them at the root level of the resultant `types` array, so the type can be printed without being nested.
-    private let sharedTypeNames = ["RUMConnectivity", "RUMUser", "RUMMethod"]
+    private let sharedTypeNames = ["RUMConnectivity", "RUMUser", "RUMMethod", "RUMEventAttributes"]
     /// `RUMDataModel` protocol, implemented by all RUM models.
     private let rumDataModelProtocol = SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])
 
@@ -166,6 +166,10 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
 
         if fixedName == "Method" {
             fixedName = "RUMMethod"
+        }
+
+        if fixedName == "Context" {
+            fixedName = "RUMEventAttributes"
         }
 
         return fixedName
