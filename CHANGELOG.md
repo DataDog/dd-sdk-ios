@@ -1,3 +1,21 @@
+# 1.6.0 / 06-09-2021
+
+### Changes
+
+* [BUGFIX] Trace: Fix `[configuration trackUIKitRUMViews]` not working properly in Obj-c. See [#419][]
+* [BUGFIX] Trace: Make `tracePropagationHTTPHeaders` available in Obj-c. See [#421][] (Thanks [@ben-yolabs][])
+* [BUGFIX] RUM: Fix RUM Views auto-instrumentation issue on iOS 11. See [#474][]
+* [FEATURE] RUM: Support adding custom attributes for auto-instrumented RUM Resources. See [#473][]
+* [FEATURE] Trace: Add scrubbing APIs for redacting auto-instrumented spans. See [#481][]
+* [IMPROVEMENT] RUM: Add "VIEW NAME" attribute to RUM Views. See [#318][]
+* [IMPROVEMENT] RUM: Views cannot be now dropped using view event mapper. See [#415][]
+* [IMPROVEMENT] RUM: Improve presentation of errors sent with `Logger`. See [#423][]
+* [IMPROVEMENT] Trace: Improve presentation of errors sent with `span.log()`. See [#431][]
+* [IMPROVEMENT] Add support for extra user attributes in Obj-c. See [#444][]
+* [IMPROVEMENT] Trace: Add `foreground_duration` and `is_background` information to network spans. See [#436][]
+* [IMPROVEMENT] RUM: Views will now automatically stop when the app leaves foreground. See [#479][]
+* [IMPROVEMENT] `DDURLSessionDelegate` can now be initialized before starting SDK. See [#483][]
+
 # 1.5.2 / 04-13-2021
 
 ### Changes
@@ -153,6 +171,7 @@
 [#303]: https://github.com/DataDog/dd-sdk-ios/issues/303
 [#315]: https://github.com/DataDog/dd-sdk-ios/issues/315
 [#317]: https://github.com/DataDog/dd-sdk-ios/issues/317
+[#318]: https://github.com/DataDog/dd-sdk-ios/issues/318
 [#320]: https://github.com/DataDog/dd-sdk-ios/issues/320
 [#322]: https://github.com/DataDog/dd-sdk-ios/issues/322
 [#323]: https://github.com/DataDog/dd-sdk-ios/issues/323
@@ -165,16 +184,29 @@
 [#370]: https://github.com/DataDog/dd-sdk-ios/issues/370
 [#381]: https://github.com/DataDog/dd-sdk-ios/issues/381
 [#390]: https://github.com/DataDog/dd-sdk-ios/issues/390
+[#415]: https://github.com/DataDog/dd-sdk-ios/issues/415
+[#419]: https://github.com/DataDog/dd-sdk-ios/issues/419
+[#421]: https://github.com/DataDog/dd-sdk-ios/issues/421
+[#423]: https://github.com/DataDog/dd-sdk-ios/issues/423
+[#431]: https://github.com/DataDog/dd-sdk-ios/issues/431
+[#436]: https://github.com/DataDog/dd-sdk-ios/issues/436
 [#439]: https://github.com/DataDog/dd-sdk-ios/issues/439
+[#444]: https://github.com/DataDog/dd-sdk-ios/issues/444
 [#447]: https://github.com/DataDog/dd-sdk-ios/issues/447
 [#450]: https://github.com/DataDog/dd-sdk-ios/issues/450
 [#451]: https://github.com/DataDog/dd-sdk-ios/issues/451
+[#473]: https://github.com/DataDog/dd-sdk-ios/issues/473
+[#474]: https://github.com/DataDog/dd-sdk-ios/issues/474
+[#479]: https://github.com/DataDog/dd-sdk-ios/issues/479
+[#481]: https://github.com/DataDog/dd-sdk-ios/issues/481
+[#483]: https://github.com/DataDog/dd-sdk-ios/issues/483
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
 [@LeffelMania]: https://github.com/LeffelMania
 [@SimpleApp]: https://github.com/SimpleApp
 [@TsvetelinVladimirov]: https://github.com/TsvetelinVladimirov
+[@ben-yolabs]: https://github.com/ben-yolabs
 [@flobories]: https://github.com/flobories
 [@hyling]: https://github.com/hyling
 [@jegnux]: https://github.com/jegnux
