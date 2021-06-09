@@ -46,7 +46,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                         owner: objcClass,
                         swiftProperty: swiftProperty
                     )
-                    propertyWrapper.objcNestedClass = ObjcInteropTransitiveClass(
+                    propertyWrapper.objcNestedClass = ObjcInteropTransitiveNestedClass(
                         owner: propertyWrapper,
                         bridgedSwiftStruct: swiftStruct
                     )
@@ -77,6 +77,16 @@ internal class SwiftToObjcInteropTypeTransformer {
                         swiftProperty: swiftProperty
                     )
                     propertyWrapper.objcInteropType = try objcInteropType(for: swiftArray)
+                    return propertyWrapper
+                case let swiftArray as SwiftArray where swiftArray.element is SwiftStruct:
+                    let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedStructsArray(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcNestedClass = ObjcInteropNestedClass(
+                        owner: propertyWrapper,
+                        bridgedSwiftStruct: swiftArray.element as! SwiftStruct // swiftlint:disable:this force_cast
+                    )
                     return propertyWrapper
                 case let swiftDictionary as SwiftDictionary:
                     let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
