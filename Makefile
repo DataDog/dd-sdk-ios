@@ -19,7 +19,7 @@ define DD_SDK_BASE_XCCONFIG
 // - DD_SDK_ENABLE_INTERNAL_MONITORING - enables Internal Monitoring APIs\n
 // - DD_SDK_ENABLE_EXPERIMENTAL_APIS - enables APIs which are not available in released version of the SDK\n
 // - DD_SDK_COMPILED_FOR_TESTING - conditions the SDK code compiled for testing\n
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
 \n
 // To build only active architecture for all configurations.\n
 // TODO: RUMM-1200 We can perhaps remove this fix when carthage supports pre-build xcframeworks.\n
