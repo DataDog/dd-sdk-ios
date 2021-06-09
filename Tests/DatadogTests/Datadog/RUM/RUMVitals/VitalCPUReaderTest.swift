@@ -5,37 +5,60 @@
  */
 
 import XCTest
+import UIKit.UIApplication
 @testable import Datadog
 
 class VitalCPUReaderTest: XCTestCase {
-    let cpuReader = VitalCPUReader()
+    let testNotificationCenter = NotificationCenter()
+    lazy var cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
 
-    func testWhenCPUUnderHeavyLoad() throws {
-        let lowLoadAverage = try averageCPUTicks {
-            Thread.sleep(forTimeInterval: 0.05)
-        }
+    func test_whenCPUUnderHeavyLoad_itMeasuresHigherCPUTicks() throws {
         let highLoadAverage = try averageCPUTicks {
-            var bigFloatingPoint = Double.greatestFiniteMagnitude
-            for _ in 0...1_000 {
-                bigFloatingPoint.formSquareRoot()
+            for _ in 0...500_000 {
+                let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
+                _ = tan(random).squareRoot()
             }
         }
 
-        // TODO: RUMM-1276 highLoadAverage sometimes becomes 0.0,
-        // PR will stay as draft until fixing this
+        let lowLoadAverage = try averageCPUTicks {
+            Thread.sleep(forTimeInterval: 1.0)
+        }
+
         XCTAssertGreaterThan(highLoadAverage, lowLoadAverage)
+    }
+
+    func test_whenInactiveAppState_itIggnoresCPUTicks() throws {
+        let heavyLoad = {
+            for _ in 0...500_000 {
+                let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
+                _ = tan(random).squareRoot()
+            }
+        }
+
+        let baseline = try XCTUnwrap(cpuReader.readVitalData())
+        testNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        heavyLoad()
+        let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
+        testNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        heavyLoad()
+        let measurementWhenActive = try XCTUnwrap(cpuReader.readVitalData())
+
+        let diffWhenInactive = measurementWhenInactive - baseline
+        let diffWhenActive = measurementWhenActive - measurementWhenInactive
+
+        XCTAssertGreaterThan(diffWhenActive, diffWhenInactive)
     }
 
     private func averageCPUTicks(with block: () -> Void) throws -> Double {
         let startDate = Date()
-
-        let startCPUTicks = try XCTUnwrap(cpuReader.readVitalData())
+        let startUtilization = try XCTUnwrap(cpuReader.readVitalData())
         block()
-        let endCPUTicks = try XCTUnwrap(cpuReader.readVitalData())
+        let endUtilization = try XCTUnwrap(cpuReader.readVitalData())
         let duration = Date().timeIntervalSince(startDate)
 
-        let averageCPUTicks = (endCPUTicks - startCPUTicks) / duration
+        let utilizedTicks = endUtilization - startUtilization
+        let utilization = utilizedTicks / duration
 
-        return averageCPUTicks
+        return utilization
     }
 }

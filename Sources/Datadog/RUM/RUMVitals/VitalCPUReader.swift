@@ -5,13 +5,43 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 /// A class reading the CPU ticks (_1 second = 600 ticks_) since the start of the process.
 internal class VitalCPUReader: VitalReader {
     /// host_cpu_load_info_count is 4 (tested in iOS 14.4)
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
+    private var totalInactiveTicks: natural_t = 0
+    private var utilizedTicksWhenResigningActive: natural_t? = nil
+
+    init(notificationCenter: NotificationCenter = .default) {
+        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
 
     func readVitalData() -> Double? {
+        if let ticks = readUtilizedTicks() {
+            let ongoingInactiveTicks = ticks - (utilizedTicksWhenResigningActive ?? ticks)
+            let inactiveTicks = totalInactiveTicks + ongoingInactiveTicks
+            return Double(ticks - inactiveTicks)
+        }
+        return nil
+    }
+
+    @objc
+    private func appWillResignActive() {
+        utilizedTicksWhenResigningActive = readUtilizedTicks()
+    }
+    @objc
+    private func appDidBecomeActive() {
+        if let previouslyReadTicks = utilizedTicksWhenResigningActive,
+           let currentTicks = readUtilizedTicks() {
+            utilizedTicksWhenResigningActive = nil
+            totalInactiveTicks += currentTicks - previouslyReadTicks
+        }
+    }
+
+    private func readUtilizedTicks() -> natural_t? {
         // it must be set to host_cpu_load_info_count_size >= host_cpu_load_info_count
         // implementation: https://github.com/opensource-apple/xnu/blob/master/osfmk/kern/host.c#L425
         var host_cpu_load_info_count_size = mach_msg_type_number_t(Self.host_cpu_load_info_count)
@@ -30,6 +60,7 @@ internal class VitalCPUReader: VitalReader {
             }
         }
         if result != KERN_SUCCESS {
+            // TODO: RUMM-1276 use sdkLogger to log errors?
             return nil
         }
 
@@ -37,19 +68,15 @@ internal class VitalCPUReader: VitalReader {
          https://github.com/opensource-apple/xnu/blob/master/osfmk/mach/machine.h#L76
          // machine.h (tested in iOS 14.4)
          #define CPU_STATE_USER          0
-         #define CPU_STATE_SYSTEM        1
+         #define CPU_STATE_SYSTEM        1 // always returns 0 (tested in iOS 14.4)
          #define CPU_STATE_IDLE          2
          #define CPU_STATE_NICE          3
-         */
-        let userTicks = cpuLoadInfo.cpu_ticks.0
-        // systemTicks is always 0 (tested in iOS 14.4)
-        let systemTicks = cpuLoadInfo.cpu_ticks.1
 
-        /*
          cpu_ticks returns UInt32.
          Double type has enough precision within the range of UInt32;
          therefore even at the worst-case, precision isn't lost during this conversion below.
          */
-        return Double(userTicks + systemTicks)
+        let userTicks = cpuLoadInfo.cpu_ticks.0
+        return userTicks
     }
 }
