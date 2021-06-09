@@ -912,32 +912,6 @@ internal class ValueObserverMock<Value>: ValueObserver {
     }
 }
 
-// MARK: - Attributes Mock
-
-/// Creates randomized `[String: Encodable]` attributes
-func mockRandomAttributes() -> [String: Codable] {
-    struct Foo: Codable {
-        var bar: String = .mockRandom()
-        var bizz = Bizz()
-
-        struct Bizz: Codable {
-            var buzz: String = .mockRandom()
-        }
-    }
-
-    return [
-        "string-attribute": String.mockRandom(),
-        "int-attribute": Int.mockRandom(),
-        "uint64-attribute": UInt64.mockRandom(),
-        "double-attribute": Double.mockRandom(),
-        "bool-attribute": Bool.random(),
-        "int-array-attribute": [Int].mockRandom(),
-        "dictionary-attribute": [String: Int].mockRandom(),
-        "url-attribute": URL.mockRandom(),
-        "encodable-struct-attribute": Foo()
-    ]
-}
-
 extension DDError: RandomMockable {
     static func mockRandom() -> DDError {
         return DDError(

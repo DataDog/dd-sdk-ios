@@ -192,6 +192,10 @@
 		614B0A4F24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */; };
 		614B0A5124EBDC8000A2A780 /* RUMConnectivityInfoProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A5024EBDC8000A2A780 /* RUMConnectivityInfoProviderTests.swift */; };
 		614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A5224EBFE5500A2A780 /* DDRUMMonitor.swift */; };
+		614BF37E2670AE9D002379C8 /* AttributesMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614BF37D2670AE9D002379C8 /* AttributesMocks.swift */; };
+		614BF37F2670AEBD002379C8 /* AttributesMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614BF37D2670AE9D002379C8 /* AttributesMocks.swift */; };
+		614BF3802670AEC1002379C8 /* RUMDataModelMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E820425A879AF0084B751 /* RUMDataModelMocks.swift */; };
+		614BF3812670AEC8002379C8 /* EquatableInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AADBDC263C7ECF008ABC6F /* EquatableInTests.swift */; };
 		614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614CADCD250FCA0200B93D2D /* TestScenarios.swift */; };
 		614CADD72510BAC000B93D2D /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614CADD62510BAC000B93D2D /* Environment.swift */; };
 		614D812C24E3EA15004C9C5D /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D812B24E3EA15004C9C5D /* Feature.swift */; };
@@ -798,6 +802,7 @@
 		614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConnectivityInfoProvider.swift; sourceTree = "<group>"; };
 		614B0A5024EBDC8000A2A780 /* RUMConnectivityInfoProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConnectivityInfoProviderTests.swift; sourceTree = "<group>"; };
 		614B0A5224EBFE5500A2A780 /* DDRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDRUMMonitor.swift; sourceTree = "<group>"; };
+		614BF37D2670AE9D002379C8 /* AttributesMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributesMocks.swift; sourceTree = "<group>"; };
 		614CADCD250FCA0200B93D2D /* TestScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScenarios.swift; sourceTree = "<group>"; };
 		614CADD62510BAC000B93D2D /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		614D812B24E3EA15004C9C5D /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
@@ -1575,6 +1580,7 @@
 				61F1879C25FA774C0022CE9A /* InternalMonitoringFeatureMocks.swift */,
 				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
 				61F1A61B2498AD2C00075390 /* SystemFrameworks */,
+				614BF37D2670AE9D002379C8 /* AttributesMocks.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -3810,6 +3816,7 @@
 				61122EE825B1C92500F9C7F5 /* SpanSanitizerTests.swift in Sources */,
 				61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */,
 				617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */,
+				614BF37E2670AE9D002379C8 /* AttributesMocks.swift in Sources */,
 				61F9CABA2513A7F5000A5E61 /* RUMSessionMatcher.swift in Sources */,
 				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
 				61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */,
@@ -4034,6 +4041,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				614BF3802670AEC1002379C8 /* RUMDataModelMocks.swift in Sources */,
 				61441C7A2461A204003D8BB8 /* LoggingBenchmarkTests.swift in Sources */,
 				613BE073256431960015216C /* FoundationMocks.swift in Sources */,
 				61441C7B2461A204003D8BB8 /* LoggingStorageBenchmarkTests.swift in Sources */,
@@ -4044,7 +4052,9 @@
 				613BE04A25640FF80015216C /* BenchmarkTests.swift in Sources */,
 				61EF789B257E2B0200EDCCB3 /* DataMigratorBenchmarkTests.swift in Sources */,
 				61441C7C2461A244003D8BB8 /* TestsDirectory.swift in Sources */,
+				614BF37F2670AEBD002379C8 /* AttributesMocks.swift in Sources */,
 				613BE06225642F790015216C /* RUMStorageBenchmarkTests.swift in Sources */,
+				614BF3812670AEC8002379C8 /* EquatableInTests.swift in Sources */,
 				61D6FF7E24E53D3B00D0E375 /* BenchmarkMocks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

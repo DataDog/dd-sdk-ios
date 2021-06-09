@@ -77,45 +77,9 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
     private func createRandomizedRUMEvent() -> RUMEvent<RUMViewEvent> {
         return RUMEvent(
-            model: RUMViewEvent(
-                dd: .init(documentVersion: .mockAny()),
-                application: .init(id: UUID().uuidString),
-                connectivity: nil,
-                date: Int64.random(in: Int64.min..<Int64.max),
-                service: .mockRandom(length: 20),
-                session: .init(hasReplay: nil, id: UUID().uuidString, type: .user),
-                usr: .init(
-                    email: .mockRandom(length: 10),
-                    id: .mockRandom(length: 10),
-                    name: .mockRandom(length: 10)
-                ),
-                view: .init(
-                    action: .init(count: .mockAny()),
-                    crash: .init(count: .mockAny()),
-                    cumulativeLayoutShift: nil,
-                    customTimings: .mockAny(),
-                    domComplete: nil,
-                    domContentLoaded: nil,
-                    domInteractive: nil,
-                    error: .init(count: .mockAny()),
-                    firstContentfulPaint: nil,
-                    firstInputDelay: nil,
-                    firstInputTime: nil,
-                    id: UUID().uuidString,
-                    isActive: nil,
-                    largestContentfulPaint: nil,
-                    loadEvent: nil,
-                    loadingTime: .mockAny(),
-                    loadingType: nil,
-                    longTask: nil,
-                    referrer: .mockRandom(length: 10),
-                    resource: .init(count: .mockAny()),
-                    timeSpent: .mockAny(),
-                    url: .mockRandom(length: 30)
-                )
-            ),
-            attributes: ["attribute": "value"],
-            userInfoAttributes: ["str": "value", "int": 11_235, "bool": true]
+            model: .mockRandom(),
+            attributes: mockRandomAttributes(),
+            userInfoAttributes: mockRandomAttributes()
         )
     }
 }
