@@ -1295,7 +1295,6 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
-
     // MARK: - Nested Swift Structs and Enums
 
     func testPrintingObjcInteropForSwiftStructWithNestedStructs() throws {

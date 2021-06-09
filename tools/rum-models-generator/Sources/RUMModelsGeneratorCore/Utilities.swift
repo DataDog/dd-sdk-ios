@@ -76,9 +76,9 @@ extension Array where Element: Hashable {
     func asSet() -> Set<Element> {
         return Set(self)
     }
-} 
+}
 
-func withErrorContext<T>(context: String, block: () throws -> T) throws -> T {
+internal func withErrorContext<T>(context: String, block: () throws -> T) throws -> T {
     do {
         return try block()
     } catch let error {

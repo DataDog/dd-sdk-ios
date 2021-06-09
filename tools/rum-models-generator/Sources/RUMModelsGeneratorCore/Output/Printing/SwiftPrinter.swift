@@ -85,8 +85,8 @@ public class SwiftPrinter: BasePrinter {
     /// properties (where `Codable` conformance is printed later in separate `extension`).
     private func printCodingKeys(for properties: [SwiftStruct.Property]) throws {
         let staticallyCodedProperties = properties.filter { $0.codingKey.isStatic }
-        let hasStaticallyCodedProperties = properties.filter { $0.codingKey.isStatic }.count > 0
-        let hasDynamicallyCodedProperties = properties.filter { !$0.codingKey.isStatic }.count > 0
+        let hasStaticallyCodedProperties = properties.contains { $0.codingKey.isStatic }
+        let hasDynamicallyCodedProperties = properties.contains { !$0.codingKey.isStatic }
 
         func printStaticCodingKeys(named codingKeyEnumName: String) throws {
             writeEmptyLine()
@@ -217,7 +217,6 @@ public class SwiftPrinter: BasePrinter {
                     // If the type defines some static properties, treat other properties as dynamic
                     writeLine("let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })")
                     writeLine("let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }")
-
                 } else {
                     // If the type doesn't define any static properties, treat all properties as dynamic
                     writeLine("let dynamicKeys = dynamicContainer.allKeys")

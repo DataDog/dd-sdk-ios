@@ -47,7 +47,7 @@ internal class ObjcInteropTransitiveNestedClass: ObjcInteropClass {
 internal class ObjcInteropReferencedTransitiveClass: ObjcInteropTransitiveNestedClass {}
 
 /// Schema of a non-transitive `@objc class` exposing values of nested `SwiftStruct`.
-internal class ObjcInteropNestedClass: ObjcInteropClass  {
+internal class ObjcInteropNestedClass: ObjcInteropClass {
     /// Property wrapper in the parent class, which stores the definition of this transitive class.
     private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
 

@@ -73,14 +73,14 @@ final class JSONSchemaReaderTests: XCTestCase {
         XCTAssertEqual(property2.description, "Description of `property2`.")
         XCTAssertEqual(property2.items?.type, .string)
         XCTAssertEqual(property2.items?.enum, ["option1", "option2", "option3", "option4"])
-        XCTAssertEqual(property2.readOnly, false)
+        XCTAssertTrue(property2.readOnly == false)
 
         let property3 = try XCTUnwrap(schema.properties?["propertyWithAdditionalProperties"])
         XCTAssertEqual(property3.type, .object)
         XCTAssertEqual(property3.description, "Description of a property with nested additional properties.")
         XCTAssertEqual(property3.additionalProperties?.type, .integer)
         XCTAssertEqual(property3.additionalProperties?.readOnly, true)
-        XCTAssertEqual(property3.readOnly, true)
+        XCTAssertTrue(property3.readOnly == true)
 
         XCTAssertEqual(schema.additionalProperties?.type, .string)
         XCTAssertEqual(schema.additionalProperties?.description, "Additional properties of main schema.")
