@@ -262,7 +262,9 @@ final class SwiftPrinterTests: XCTestCase {
                 init?(intValue: Int) { return nil }
                 init(_ string: String) { self.stringValue = string }
             }
+        }
 
+        extension Foo {
             public func encode(to encoder: Encoder) throws {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
@@ -353,7 +355,9 @@ final class SwiftPrinterTests: XCTestCase {
                 init?(intValue: Int) { return nil }
                 init(_ string: String) { self.stringValue = string }
             }
+        }
 
+        extension Foo {
             public func encode(to encoder: Encoder) throws {
                 // Encode static properties:
                 var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
