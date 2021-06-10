@@ -7,7 +7,7 @@
 import Foundation
 import UIKit.UIApplication
 
-/// A class reading the CPU ticks (_1 second = 600 ticks_) since the start of the process.
+/// A class reading the CPU ticks of the processor.
 internal class VitalCPUReader: VitalReader {
     /// host_cpu_load_info_count is 4 (tested in iOS 14.4)
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
@@ -27,6 +27,9 @@ internal class VitalCPUReader: VitalReader {
         }
         return nil
     }
+
+    // TODO: RUMM-1276 appWillResignActive&appDidBecomeActive are called in main thread
+    // IF readVitalData() is called from non-main threads, they must be synchronized
 
     @objc
     private func appWillResignActive() {
@@ -60,7 +63,13 @@ internal class VitalCPUReader: VitalReader {
             }
         }
         if result != KERN_SUCCESS {
-            // TODO: RUMM-1276 use sdkLogger to log errors?
+            // in case of error, refer to `kern_return.h` (Objc)
+            // as its Swift interface doesn't have integer values
+            //
+            // NOTE: RUMM-1276 consider using sdkLogger.errorOnce(...) to avoid flooding
+            InternalMonitoringFeature.instance?.monitor.sdkLogger.error(
+                "CPU Vital cannot be read! Error code: \(result)"
+            )
             return nil
         }
 

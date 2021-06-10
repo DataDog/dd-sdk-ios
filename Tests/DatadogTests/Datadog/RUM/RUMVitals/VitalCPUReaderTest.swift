@@ -12,12 +12,9 @@ class VitalCPUReaderTest: XCTestCase {
     let testNotificationCenter = NotificationCenter()
     lazy var cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
 
-    func test_whenCPUUnderHeavyLoad_itMeasuresHigherCPUTicks() throws {
+    func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
         let highLoadAverage = try averageCPUTicks {
-            for _ in 0...500_000 {
-                let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
-                _ = tan(random).squareRoot()
-            }
+            heavyLoad()
         }
 
         let lowLoadAverage = try averageCPUTicks {
@@ -27,14 +24,7 @@ class VitalCPUReaderTest: XCTestCase {
         XCTAssertGreaterThan(highLoadAverage, lowLoadAverage)
     }
 
-    func test_whenInactiveAppState_itIggnoresCPUTicks() throws {
-        let heavyLoad = {
-            for _ in 0...500_000 {
-                let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
-                _ = tan(random).squareRoot()
-            }
-        }
-
+    func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         testNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         heavyLoad()
@@ -52,7 +42,9 @@ class VitalCPUReaderTest: XCTestCase {
     private func averageCPUTicks(with block: () -> Void) throws -> Double {
         let startDate = Date()
         let startUtilization = try XCTUnwrap(cpuReader.readVitalData())
+
         block()
+
         let endUtilization = try XCTUnwrap(cpuReader.readVitalData())
         let duration = Date().timeIntervalSince(startDate)
 
@@ -60,5 +52,23 @@ class VitalCPUReaderTest: XCTestCase {
         let utilization = utilizedTicks / duration
 
         return utilization
+    }
+}
+
+fileprivate func heavyLoad() {
+    // cpuTicksResolution is measured by trial&error.
+    // most of the time `readVitalData()` returns incremented data after 0.01sec.
+    // however, sometimes it returns the same value for 1.0sec.
+    // looking at the source code, iOS should update cpu ticks at
+    // every thread scheduling and/or system->user/user->system mode changes in CPU.
+    // but empirically, it gets stuck for 1.0sec randomly.
+    let worstCaseCPUTicksResolution: TimeInterval = 1.0
+    let startDate = Date()
+
+    while Date().timeIntervalSince(startDate) <= worstCaseCPUTicksResolution {
+        for _ in 0...100_000 {
+            let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
+            _ = tan(random).squareRoot()
+        }
     }
 }
