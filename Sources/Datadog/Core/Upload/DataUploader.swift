@@ -15,8 +15,8 @@ internal class UploadURLProvider {
         let value: () -> URLQueryItem
 
         /// Creates `ddsource=ios` query item.
-        static func ddsource() -> QueryItemProvider {
-            let queryItem = URLQueryItem(name: "ddsource", value: Datadog.Constants.ddsource)
+        static func ddsource(source: String) -> QueryItemProvider {
+            let queryItem = URLQueryItem(name: "ddsource", value: source)
             return QueryItemProvider { queryItem }
         }
 
@@ -43,7 +43,6 @@ internal class UploadURLProvider {
 
         guard let url = urlComponents?.url else {
             userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItemProviders)")
-            developerLogger?.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItemProviders)")
             return urlWithClientToken
         }
         return url
@@ -60,11 +59,18 @@ internal final class DataUploader {
     private let urlProvider: UploadURLProvider
     private let httpClient: HTTPClient
     private let httpHeaders: HTTPHeaders
+    private let internalMonitor: InternalMonitor?
 
-    init(urlProvider: UploadURLProvider, httpClient: HTTPClient, httpHeaders: HTTPHeaders) {
+    init(
+        urlProvider: UploadURLProvider,
+        httpClient: HTTPClient,
+        httpHeaders: HTTPHeaders,
+        internalMonitor: InternalMonitor? = nil
+    ) {
         self.urlProvider = urlProvider
         self.httpClient = httpClient
         self.httpHeaders = httpHeaders
+        self.internalMonitor = internalMonitor
     }
 
     /// Uploads data synchronously (will block current thread) and returns upload status.
@@ -75,12 +81,12 @@ internal final class DataUploader {
 
         let semaphore = DispatchSemaphore(value: 0)
 
-        httpClient.send(request: request) { result in
+        httpClient.send(request: request) { [weak self] result in
             switch result {
             case .success(let httpResponse):
                 uploadStatus = DataUploadStatus(from: httpResponse)
             case .failure(let error):
-                developerLogger?.error("🔥 Failed to upload data: \(error)")
+                self?.internalMonitor?.sdkLogger.error("Failed to upload data", error: error)
                 uploadStatus = .networkError
             }
 

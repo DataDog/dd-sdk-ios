@@ -6,11 +6,11 @@
 
 import Foundation
 
-/// Sanitizes `Span` representation received from the user, so it can match Datadog APM constraints.
+/// Sanitizes `SpanEvent` representation received from the user, so it can match Datadog APM constraints.
 internal struct SpanSanitizer {
     private let attributesSanitizer = AttributesSanitizer(featureName: "Span")
 
-    func sanitize(span: Span) -> Span {
+    func sanitize(span: SpanEvent) -> SpanEvent {
         // Sanitize attribute names
         var sanitizedUserExtraInfo = attributesSanitizer.sanitizeKeys(for: span.userInfo.extraInfo)
         var sanitizedTags = attributesSanitizer.sanitizeKeys(for: span.tags)

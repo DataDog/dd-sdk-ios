@@ -12,6 +12,21 @@ extension TrackingConsent {
     static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }
+
+    static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
+        while true {
+            let randomConsent: TrackingConsent = .mockRandom()
+            if randomConsent != consent {
+                return randomConsent
+            }
+        }
+    }
+}
+
+extension ConsentProvider {
+    static func mockAny() -> ConsentProvider {
+        return ConsentProvider(initialConsent: .mockRandom())
+    }
 }
 
 extension Datadog.Configuration {
@@ -24,6 +39,7 @@ extension Datadog.Configuration {
         loggingEnabled: Bool = false,
         tracingEnabled: Bool = false,
         rumEnabled: Bool = false,
+        crashReportingPlugin: DDCrashReportingPluginType? = nil,
         datadogEndpoint: DatadogEndpoint? = nil,
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
@@ -36,8 +52,11 @@ extension Datadog.Configuration {
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false,
+        rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         batchSize: BatchSize = .medium,
-        uploadFrequency: UploadFrequency = .average
+        uploadFrequency: UploadFrequency = .average,
+        additionalConfiguration: [String: Any] = [:],
+        internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -46,6 +65,7 @@ extension Datadog.Configuration {
             loggingEnabled: loggingEnabled,
             tracingEnabled: tracingEnabled,
             rumEnabled: rumEnabled,
+            crashReportingPlugin: crashReportingPlugin,
             datadogEndpoint: datadogEndpoint,
             customLogsEndpoint: customLogsEndpoint,
             customTracesEndpoint: customTracesEndpoint,
@@ -58,8 +78,11 @@ extension Datadog.Configuration {
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
+            rumResourceAttributesProvider: rumResourceAttributesProvider,
             batchSize: batchSize,
-            uploadFrequency: uploadFrequency
+            uploadFrequency: uploadFrequency,
+            additionalConfiguration: additionalConfiguration,
+            internalMonitoringClientToken: internalMonitoringClientToken
         )
     }
 }
@@ -120,14 +143,18 @@ extension FeaturesConfiguration {
         logging: Logging? = .mockAny(),
         tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
+        crashReporting: CrashReporting = .mockAny(),
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
+        internalMonitoring: InternalMonitoring? = nil
     ) -> Self {
         return .init(
             common: common,
             logging: logging,
             tracing: tracing,
             rum: rum,
-            urlSessionAutoInstrumentation: urlSessionAutoInstrumentation
+            urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
+            crashReporting: crashReporting,
+            internalMonitoring: internalMonitoring
         )
     }
 }
@@ -141,7 +168,8 @@ extension FeaturesConfiguration.Common {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+        source: String = .mockAny()
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -149,7 +177,8 @@ extension FeaturesConfiguration.Common {
             applicationBundleIdentifier: applicationBundleIdentifier,
             serviceName: serviceName,
             environment: environment,
-            performance: performance
+            performance: performance,
+            source: source
         )
     }
 }
@@ -170,11 +199,13 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny()
+        uploadURLWithClientToken: URL = .mockAny(),
+        spanEventMapper: SpanEventMapper? = nil
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken
+            uploadURLWithClientToken: uploadURLWithClientToken,
+            spanEventMapper: spanEventMapper
         )
     }
 }
@@ -187,7 +218,10 @@ extension FeaturesConfiguration.RUM {
         uploadURLWithClientToken: URL = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
-        eventMapper: RUMEventsMapper = .mockNoOp(),
+        viewEventMapper: RUMViewEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
     ) -> Self {
         return .init(
@@ -195,8 +229,25 @@ extension FeaturesConfiguration.RUM {
             uploadURLWithClientToken: uploadURLWithClientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
-            eventMapper: eventMapper,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
             autoInstrumentation: autoInstrumentation
+        )
+    }
+}
+
+extension FeaturesConfiguration.CrashReporting {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        crashReportingPlugin: DDCrashReportingPluginType = CrashReportingPluginMock()
+    ) -> Self {
+        return .init(
+            crashReportingPlugin: crashReportingPlugin
         )
     }
 }
@@ -207,14 +258,36 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockWith(
         userDefinedFirstPartyHosts: Set<String> = [],
         sdkInternalURLs: Set<String> = [],
+        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
             sdkInternalURLs: sdkInternalURLs,
+            rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM
+        )
+    }
+}
+
+extension FeaturesConfiguration.InternalMonitoring {
+    static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    static func mockWith(
+        common: FeaturesConfiguration.Common = .mockAny(),
+        sdkServiceName: String = .mockAny(),
+        sdkEnvironment: String = .mockAny(),
+        logsUploadURLWithClientToken: URL = .mockAny()
+    ) -> Self {
+        return .init(
+            common: common,
+            sdkServiceName: sdkServiceName,
+            sdkEnvironment: sdkEnvironment,
+            logsUploadURLWithClientToken: logsUploadURLWithClientToken
         )
     }
 }
@@ -361,10 +434,31 @@ extension FeaturesCommonDependencies {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
     ) -> FeaturesCommonDependencies {
+        let httpClient: HTTPClient
+
+        if let activeServer = ServerMock.activeInstance {
+            httpClient = HTTPClient(session: activeServer.getInterceptedURLSession())
+        } else {
+            class AssertedHTTPClient: HTTPClient {
+                // swiftlint:disable:next unavailable_function
+                override func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+                    preconditionFailure(
+                        """
+                        ⚠️ Request to \(request.url?.absoluteString ?? "null") was sent but there is no `ServerMock` instance set up for its interception.
+                        All unit tests must be configured to either send data to mocked `FeatureStorage` (`XYZFeature.mockByRecordingXYZ(...)`)
+                        or use `ServerMock` instance and `serverMock.getInterceptedURLSession()` for requests interception.
+                        """
+                    )
+                }
+            }
+
+            httpClient = AssertedHTTPClient()
+        }
+
         return FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: performance,
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: httpClient,
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -403,14 +497,6 @@ extension FeaturesCommonDependencies {
     }
 }
 
-struct EventMapperMock: EventMapper {
-    let mappedEvent: Any?
-
-    func map<T>(event: T) -> T? {
-        return mappedEvent as? T
-    }
-}
-
 class FileWriterMock: Writer {
     var dataWritten: Encodable?
 
@@ -419,16 +505,23 @@ class FileWriterMock: Writer {
     }
 }
 
-class NoOpFileWriter: Writer {
+class NoOpFileWriter: AsyncWriter {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func write<T>(value: T) where T: Encodable {}
+    func flushAndCancelSynchronously() {}
 }
 
-class NoOpFileReader: Reader {
+class NoOpFileReader: SyncReader {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
+    func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {}
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
 
 extension DataFormat {
     static func mockAny() -> DataFormat {
@@ -510,13 +603,22 @@ struct LaunchTimeProviderMock: LaunchTimeProviderType {
     var launchTime: TimeInterval? = nil
 }
 
-extension UserInfo {
+extension UserInfo: AnyMockable, RandomMockable {
     static func mockAny() -> UserInfo {
         return mockEmpty()
     }
 
     static func mockEmpty() -> UserInfo {
         return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
+    }
+
+    static func mockRandom() -> UserInfo {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
     }
 }
 
@@ -619,7 +721,13 @@ extension NetworkConnectionInfo.Reachability {
     }
 }
 
-extension NetworkConnectionInfo {
+extension NetworkConnectionInfo.Interface: RandomMockable {
+    static func mockRandom() -> NetworkConnectionInfo.Interface {
+        return allCases.randomElement()!
+    }
+}
+
+extension NetworkConnectionInfo: RandomMockable {
     static func mockAny() -> NetworkConnectionInfo {
         return mockWith()
     }
@@ -641,11 +749,20 @@ extension NetworkConnectionInfo {
             isConstrained: isConstrained
         )
     }
+
+    static func mockRandom() -> NetworkConnectionInfo {
+        return NetworkConnectionInfo(
+            reachability: .mockRandom(),
+            availableInterfaces: .mockRandom(),
+            supportsIPv4: .random(),
+            supportsIPv6: .random(),
+            isExpensive: .random(),
+            isConstrained: .random()
+        )
+    }
 }
 
-extension NetworkConnectionInfo: EquatableInTests {}
-
-class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
+class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType, WrappedNetworkConnectionInfoProvider {
     private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
     private var _current: NetworkConnectionInfo?
 
@@ -663,6 +780,9 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
         queue.sync { _current }
     }
 
+    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
+    }
+
     // MARK: - Mocking
 
     static func mockAny() -> NetworkConnectionInfoProviderMock {
@@ -676,11 +796,15 @@ class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType {
     }
 }
 
-extension CarrierInfo.RadioAccessTechnology {
+extension CarrierInfo.RadioAccessTechnology: RandomMockable {
     static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
+
+    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
+        return allCases.randomElement()!
+    }
 }
 
-extension CarrierInfo {
+extension CarrierInfo: RandomMockable {
     static func mockAny() -> CarrierInfo {
         return mockWith()
     }
@@ -698,11 +822,18 @@ extension CarrierInfo {
             radioAccessTechnology: radioAccessTechnology
         )
     }
+
+    static func mockRandom() -> CarrierInfo {
+        return CarrierInfo(
+            carrierName: .mockRandom(),
+            carrierISOCountryCode: .mockRandom(),
+            carrierAllowsVOIP: .random(),
+            radioAccessTechnology: .mockRandom()
+        )
+    }
 }
 
-extension CarrierInfo: EquatableInTests {}
-
-class CarrierInfoProviderMock: CarrierInfoProviderType {
+class CarrierInfoProviderMock: CarrierInfoProviderType, WrappedCarrierInfoProvider {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
     private var _current: CarrierInfo?
 
@@ -720,6 +851,9 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
         queue.sync { _current }
     }
 
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
+    }
+
     // MARK: - Mocking
 
     static func mockAny() -> CarrierInfoProviderMock {
@@ -733,10 +867,75 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
     }
 }
 
+extension AppStateListener {
+    static func mockAny() -> AppStateListener {
+        return AppStateListener(dateProvider: SystemDateProvider())
+    }
+}
+
 extension EncodableValue {
     static func mockAny() -> EncodableValue {
         return EncodableValue(String.mockAny())
     }
+}
+
+extension ValuePublisher where Value: AnyMockable {
+    static func mockAny() -> ValuePublisher {
+        return .init(initialValue: .mockAny())
+    }
+}
+
+extension ValuePublisher {
+    /// Publishes `newValue` using `publishSync(:_)` or `publishAsync(:_)`.
+    func publishSyncOrAsync(_ newValue: Value) {
+        if Bool.random() {
+            publishSync(newValue)
+        } else {
+            publishAsync(newValue)
+        }
+    }
+}
+
+internal class ValueObserverMock<Value>: ValueObserver {
+    typealias ObservedValue = Value
+
+    private(set) var onValueChange: ((Value, Value) -> Void)?
+    private(set) var lastChange: (oldValue: Value, newValue: Value)?
+
+    init(onValueChange: ((Value, Value) -> Void)? = nil) {
+        self.onValueChange = onValueChange
+    }
+
+    func onValueChanged(oldValue: Value, newValue: Value) {
+        lastChange = (oldValue, newValue)
+        onValueChange?(oldValue, newValue)
+    }
+}
+
+// MARK: - Attributes Mock
+
+/// Creates randomized `[String: Encodable]` attributes
+func mockRandomAttributes() -> [String: Encodable] {
+    struct Foo: Encodable {
+        let bar: String = .mockRandom()
+        let bizz = Bizz()
+
+        struct Bizz: Encodable {
+            let buzz: String = .mockRandom()
+        }
+    }
+
+    return [
+        "string-attribute": String.mockRandom(),
+        "int-attribute": Int.mockRandom(),
+        "uint64-attribute": UInt64.mockRandom(),
+        "double-attribute": Double.mockRandom(),
+        "bool-attribute": Bool.random(),
+        "int-array-attribute": [Int].mockRandom(),
+        "dictionary-attribute": [String: Int].mockRandom(),
+        "url-attribute": URL.mockRandom(),
+        "encodable-struct-attribute": Foo()
+    ]
 }
 
 extension DDError: RandomMockable {
@@ -752,7 +951,7 @@ extension DDError: RandomMockable {
 // MARK: - Global Dependencies Mocks
 
 /// Mock which can be used to intercept messages printed by `developerLogger` or
-/// `userLogger` by overwritting `Datadog.consolePrint` function:
+/// `userLogger` by overwriting `Datadog.consolePrint` function:
 ///
 ///     let printFunction = PrintFunctionMock()
 ///     consolePrint = printFunction.print

@@ -26,5 +26,8 @@ internal extension UIViewController {
 }
 
 internal extension Bundle {
-    var isUIKit: Bool { bundleURL.lastPathComponent == "UIKitCore.framework" }
+    var isUIKit: Bool {
+        return bundleURL.lastPathComponent == "UIKitCore.framework" // on iOS 12+
+            || bundleURL.lastPathComponent == "UIKit.framework" // on iOS 11
+    }
 }

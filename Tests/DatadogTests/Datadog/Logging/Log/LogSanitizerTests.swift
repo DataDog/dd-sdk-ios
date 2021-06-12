@@ -72,9 +72,10 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six"])
         XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven"])
         XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight_nine_ten"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight_nine_ten_eleven"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight_nine_ten_eleven_twelve"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
+        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
     }
 
     func testWhenUserAttributeNameIsInvalid_itIsIgnored() {

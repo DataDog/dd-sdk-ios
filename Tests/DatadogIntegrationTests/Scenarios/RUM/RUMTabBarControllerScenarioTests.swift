@@ -45,12 +45,12 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 9
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 9
         }
 
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.from(requests: recordedRUMRequests))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         let visits = session.viewVisits
 
         XCTAssertEqual(session.viewVisits[0].name, "Screen A")

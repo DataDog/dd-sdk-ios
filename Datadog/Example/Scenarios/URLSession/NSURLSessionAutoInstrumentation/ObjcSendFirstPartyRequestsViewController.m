@@ -20,7 +20,7 @@
 
     self.testScenario = SwiftGlobals.currentTestScenario;
 
-    self.session = [self.testScenario buildURLSession];
+    self.session = [self.testScenario getURLSession];
     assert(self.testScenario != nil);
 }
 

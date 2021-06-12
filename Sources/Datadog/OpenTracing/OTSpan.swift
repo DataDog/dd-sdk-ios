@@ -122,7 +122,6 @@ public extension OTSpan {
     /// - parameter stack: A string detailing the state of the stack when the error was caught. Note that it can also be any details that could help further triaging and investigation of the error downstream, it doesn't have to be an actual stack trace. Also note that an empty string means skipping the `stack` parameter.
     /// - parameter file: A string identifying the file where the error was caught. The default is `#fileID` which means `ModuleName/Filename.extension`, consider an helpful yet concise identifier when overriding the default. Note that an empty string means skipping the `file` and `line` parameters.
     /// - parameter line: The line number in the file where the error was caught.
-    /// - parameter includeFileInStack: Whether or not the `file` and `line` should be included in the stack, the default is `true` and can be overriden if the `file`/`line` are extraneous.
     func setError(
         kind: String,
         message: String,

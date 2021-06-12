@@ -19,11 +19,9 @@ internal protocol ServerDateProvider {
 
 internal class NTPServerDateProvider: ServerDateProvider {
     func synchronize(with ntpPool: String, completion: @escaping (Date?) -> Void) {
-        // swiftlint:disable trailing_closure multiline_arguments_brackets
         Clock.sync(from: ntpPool, completion: { serverTime, _ in
             completion(serverTime)
         })
-        // swiftlint:enable trailing_closure multiline_arguments_brackets
     }
 
     func currentDate() -> Date? {

@@ -56,20 +56,25 @@ internal final class TracingFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(directories: FeatureDirectories, commonDependencies: FeaturesCommonDependencies) -> FeatureStorage {
+    static func createStorage(
+        directories: FeatureDirectories,
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
+    ) -> FeatureStorage {
         return FeatureStorage(
             featureName: TracingFeature.featureName,
             dataFormat: TracingFeature.dataFormat,
             directories: directories,
-            eventMapper: nil,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.Tracing,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: TracingFeature.featureName,
@@ -88,7 +93,8 @@ internal final class TracingFeature {
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: []
             ),
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
@@ -97,10 +103,20 @@ internal final class TracingFeature {
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
-        tracingUUIDGenerator: TracingUUIDGenerator
+        tracingUUIDGenerator: TracingUUIDGenerator,
+        internalMonitor: InternalMonitor? = nil
     ) {
-        let storage = TracingFeature.createStorage(directories: directories, commonDependencies: commonDependencies)
-        let upload = TracingFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
+        let storage = TracingFeature.createStorage(
+            directories: directories,
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
+        )
+        let upload = TracingFeature.createUpload(
+            storage: storage,
+            configuration: configuration,
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
+        )
         self.init(
             storage: storage,
             upload: upload,
@@ -137,4 +153,12 @@ internal final class TracingFeature {
         self.storage = storage
         self.upload = upload
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        storage.flushAndTearDown()
+        upload.flushAndTearDown()
+        TracingFeature.instance = nil
+    }
+#endif
 }

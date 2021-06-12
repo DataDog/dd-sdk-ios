@@ -96,7 +96,7 @@ public class Datadog {
     /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
     /// May be used to debug issues with RUM instrumentation in your app.
     /// Default is `false`.
-    public static var debugRUM: Bool = false {
+    public static var debugRUM = false {
         didSet {
             (Global.rum as? RUMMonitor)?.enableRUMDebugging(debugRUM)
         }
@@ -167,13 +167,14 @@ public class Datadog {
         )
 
         userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
-        developerLogger = createSDKDeveloperLogger(configuration: internalLoggerConfiguration)
 
         // Then, initialize features:
 
+        var internalMonitoring: InternalMonitoringFeature?
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
+        var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumAutoInstrumentation: RUMAutoInstrumentation?
@@ -191,11 +192,20 @@ public class Datadog {
             launchTimeProvider: launchTimeProvider
         )
 
+        if let internalMonitoringConfiguration = configuration.internalMonitoring {
+            internalMonitoring = InternalMonitoringFeature(
+                logDirectories: try obtainInternalMonitoringFeatureLogDirectories(),
+                configuration: internalMonitoringConfiguration,
+                commonDependencies: commonDependencies
+            )
+        }
+
         if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
                 directories: try obtainLoggingFeatureDirectories(),
                 configuration: loggingConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                internalMonitor: internalMonitoring?.monitor
             )
         }
 
@@ -205,7 +215,8 @@ public class Datadog {
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator()
+                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+                internalMonitor: internalMonitoring?.monitor
             )
         }
 
@@ -213,7 +224,8 @@ public class Datadog {
             rum = RUMFeature(
                 directories: try obtainRUMFeatureDirectories(),
                 configuration: rumConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                internalMonitor: internalMonitoring?.monitor
             )
             if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
                 rumAutoInstrumentation = RUMAutoInstrumentation(
@@ -223,16 +235,27 @@ public class Datadog {
             }
         }
 
+        if let crashReportingConfiguration = configuration.crashReporting {
+            crashReporting = CrashReportingFeature(
+                configuration: crashReportingConfiguration,
+                commonDependencies: commonDependencies
+            )
+        }
+
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: dateProvider
+                dateProvider: dateProvider,
+                appStateListener: AppStateListener(dateProvider: dateProvider)
             )
         }
+
+        InternalMonitoringFeature.instance = internalMonitoring
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
+        CrashReportingFeature.instance = crashReporting
 
         RUMAutoInstrumentation.instance = rumAutoInstrumentation
         RUMAutoInstrumentation.instance?.enable()
@@ -246,6 +269,13 @@ public class Datadog {
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider
         )
+
+        // After everything is set up, if the Crash Reporting feature was enabled,
+        // register crash reporter and send crash report if available:
+        if let crashReportingFeature = CrashReportingFeature.instance {
+            Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
+            Global.crashReporter?.sendCrashReportIfFound()
+        }
     }
 
     internal init(
@@ -258,27 +288,38 @@ public class Datadog {
         self.launchTimeProvider = launchTimeProvider
     }
 
-    /// Internal feature made only for tests purpose.
-    static func deinitializeOrThrow() throws {
-        guard Datadog.instance != nil else {
-            throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
-        }
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
+    /// - It flushes all data authorised for each feature by performing its arbitrary upload (without retrying).
+    /// - It completes all pending asynchronous work in each feature.
+    ///
+    /// This is highly experimental API and only supported in tests.
+    public static func flushAndDeinitialize() {
+        assert(Datadog.instance != nil, "SDK must be first initialized.")
 
-        // First, reset internal loggers:
+        // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
-        developerLogger = nil
 
-        // Then, deinitialize features:
-        LoggingFeature.instance = nil
-        TracingFeature.instance = nil
-        RUMFeature.instance = nil
+        // Tear down and deinitialize all features:
+        LoggingFeature.instance?.deinitialize()
+        TracingFeature.instance?.deinitialize()
+        RUMFeature.instance?.deinitialize()
 
-        RUMAutoInstrumentation.instance = nil
-        URLSessionAutoInstrumentation.instance = nil
+        InternalMonitoringFeature.instance?.deinitialize()
+        CrashReportingFeature.instance?.deinitialize()
+
+        RUMAutoInstrumentation.instance?.deinitialize()
+        URLSessionAutoInstrumentation.instance?.deinitialize()
+
+        // Reset Globals:
+        Global.sharedTracer = DDNoopGlobals.tracer
+        Global.rum = DDNoopRUMMonitor()
+        Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil
     }
+#endif
 }
 
 /// Convenience typealias.

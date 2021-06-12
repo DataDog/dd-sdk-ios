@@ -34,18 +34,18 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         // Server session recording `Spans` send to `HTTPServerMock`.
         let tracingServerSession = server.obtainUniqueRecordingSession()
 
-        // Requesting this first party by the app should create the `Span`.
+        // Requesting this first party by the app should create the `SpanEvent`.
         let firstPartyGETResourceURL = URL(
             string: customFirstPartyServerSession.recordingURL.deletingLastPathComponent().absoluteString + "inspect"
         )!
-        // Requesting this first party by the app should create the `Span`.
+        // Requesting this first party by the app should create the `SpanEvent`.
         let firstPartyPOSTResourceURL = customFirstPartyServerSession.recordingURL
-        // Requesting this first party by the app should create the `Span` with error.
+        // Requesting this first party by the app should create the `SpanEvent` with error.
         let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
 
-        // Requesting this third party by the app should NOT create the `Span`.
+        // Requesting this third party by the app should NOT create the `SpanEvent`.
         let thirdPartyGETResourceURL = URL(string: "https://bitrise.io")!
-        // Requesting this third party by the app should NOT create the `Span`.
+        // Requesting this third party by the app should NOT create the `SpanEvent`.
         let thirdPartyPOSTResourceURL = URL(string: "https://bitrise.io/about")!
 
         let app = ExampleApplication()
@@ -78,28 +78,32 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
 
         let taskWithURL = try XCTUnwrap(
             spanMatchers.first { span in try span.resource() == firstPartyGETResourceURL.absoluteString },
-            "`Span` should be send for `firstPartyGETResourceURL`"
+            "`SpanEvent` should be send for `firstPartyGETResourceURL`"
         )
         let taskWithRequest = try XCTUnwrap(
             spanMatchers.first { span in try span.resource() == firstPartyPOSTResourceURL.absoluteString },
-            "`Span` should be send for `firstPartyPOSTResourceURL`"
+            "`SpanEvent` should be send for `firstPartyPOSTResourceURL`"
         )
         let taskWithBadURL = try XCTUnwrap(
             spanMatchers.first { span in try span.resource() == firstPartyBadResourceURL.absoluteString },
-            "`Span` should be send for `firstPartyBadResourceURL`"
+            "`SpanEvent` should be send for `firstPartyBadResourceURL`"
         )
         try XCTAssertFalse(
             spanMatchers.contains { span in try span.resource() == thirdPartyGETResourceURL.absoluteString },
-            "`Span` should NOT bet send for `thirdPartyGETResourceURL`"
+            "`SpanEvent` should NOT bet send for `thirdPartyGETResourceURL`"
         )
         try XCTAssertFalse(
             spanMatchers.contains { span in try span.resource() == thirdPartyPOSTResourceURL.absoluteString },
-            "`Span` should NOT bet send for `thirdPartyPOSTResourceURL`"
+            "`SpanEvent` should NOT bet send for `thirdPartyPOSTResourceURL`"
         )
 
         XCTAssertEqual(try taskWithURL.operationName(), "urlsession.request")
         XCTAssertEqual(try taskWithRequest.operationName(), "urlsession.request")
         XCTAssertEqual(try taskWithBadURL.operationName(), "urlsession.request")
+
+        XCTAssertEqual(try taskWithURL.meta.custom(keyPath: "meta.http.url"), "redacted")
+        XCTAssertEqual(try taskWithRequest.meta.custom(keyPath: "meta.http.url"), "redacted")
+        XCTAssertEqual(try taskWithBadURL.meta.custom(keyPath: "meta.http.url"), "redacted")
 
         XCTAssertEqual(try taskWithURL.metrics.isRootSpan(), 1)
         XCTAssertEqual(try taskWithRequest.metrics.isRootSpan(), 1)

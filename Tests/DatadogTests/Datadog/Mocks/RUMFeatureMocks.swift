@@ -11,7 +11,8 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            eventsMapper: .mockNoOp(),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
@@ -47,7 +48,10 @@ extension RUMFeature {
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        // Tear down the original upload
+        fullFeature.upload.flushAndTearDown()
         return RUMFeature(
+            eventsMapper: fullFeature.eventsMapper,
             storage: observedStorage,
             upload: mockedUpload,
             configuration: configuration,
@@ -84,6 +88,12 @@ struct RUMDataModelMock: RUMDataModel, Equatable {
 
 // MARK: - Component Mocks
 
+extension RUMEvent: AnyMockable where DM == RUMViewEvent {
+    static func mockAny() -> RUMEvent<RUMViewEvent> {
+        return .mockWith(model: RUMViewEvent.mockRandom())
+    }
+}
+
 extension RUMEvent {
     static func mockWith<DM: RUMDataModel>(
         model: DM,
@@ -114,12 +124,12 @@ extension RUMEvent {
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
-        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny())
+        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp())
     }
 }
 
 class RUMEventOutputMock: RUMEventOutput {
-    private var recordedEvents: [Any] = []
+    private(set) var recordedEvents: [Any] = []
 
     func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
         return recordedEvents.compactMap { event in event as? E }
@@ -134,11 +144,20 @@ class RUMEventOutputMock: RUMEventOutput {
 
 extension RUMEventsMapper {
     static func mockNoOp() -> RUMEventsMapper {
+        return mockWith()
+    }
+
+    static func mockWith(
+        viewEventMapper: RUMViewEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil
+    ) -> RUMEventsMapper {
         return RUMEventsMapper(
-            viewEventMapper: nil,
-            errorEventMapper: nil,
-            resourceEventMapper: nil,
-            actionEventMapper: nil
+            viewEventMapper: viewEventMapper,
+            errorEventMapper: errorEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper
         )
     }
 }
@@ -388,7 +407,7 @@ extension RUMScopeDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
-        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny()),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock()
@@ -528,6 +547,68 @@ extension RUMViewScope {
     }
 }
 
+extension RUMResourceScope {
+    static func mockWith(
+        context: RUMContext,
+        dependencies: RUMScopeDependencies,
+        resourceKey: String = .mockAny(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection = .zero,
+        url: String = .mockAny(),
+        httpMethod: RUMMethod = .mockAny(),
+        isFirstPartyResource: Bool? = nil,
+        resourceKindBasedOnRequest: RUMResourceType? = nil,
+        spanContext: RUMSpanContext? = nil,
+        onResourceEventSent: @escaping () -> Void = {},
+        onErrorEventSent: @escaping () -> Void = {}
+    ) -> RUMResourceScope {
+        return RUMResourceScope(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: resourceKey,
+            attributes: attributes,
+            startTime: startTime,
+            dateCorrection: dateCorrection,
+            url: url,
+            httpMethod: httpMethod,
+            isFirstPartyResource: isFirstPartyResource,
+            resourceKindBasedOnRequest: resourceKindBasedOnRequest,
+            spanContext: spanContext,
+            onResourceEventSent: onResourceEventSent,
+            onErrorEventSent: onErrorEventSent
+        )
+    }
+}
+
+extension RUMUserActionScope {
+    // swiftlint:disable function_default_parameter_at_end
+    static func mockWith(
+        parent: RUMContextProvider,
+        dependencies: RUMScopeDependencies = .mockAny(),
+        name: String = .mockAny(),
+        actionType: RUMUserActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection,
+        isContinuous: Bool = .mockAny(),
+        onActionEventSent: @escaping () -> Void = {}
+    ) -> RUMUserActionScope {
+        return RUMUserActionScope(
+                parent: parent,
+                dependencies: dependencies,
+                name: name,
+                actionType: actionType,
+                attributes: attributes,
+                startTime: startTime,
+                dateCorrection: dateCorrection,
+                isContinuous: isContinuous,
+                onActionEventSent: onActionEventSent
+        )
+    }
+    // swiftlint:enable function_default_parameter_at_end
+}
+
 class RUMContextProviderMock: RUMContextProvider {
     init(context: RUMContext = .mockAny()) {
         self.context = context
@@ -590,5 +671,13 @@ class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         onSendEvent?(application, event)
+    }
+}
+
+class VitalListenerMock: VitalListener {
+    var onVitalInfoUpdate: ((VitalInfo) -> Void)?
+
+    func onVitalInfo(info: VitalInfo) {
+        onVitalInfoUpdate?(info)
     }
 }

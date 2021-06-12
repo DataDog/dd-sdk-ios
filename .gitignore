@@ -2,6 +2,7 @@
 /build
 /.build
 /.swiftpm
+Package.resolved
 Carthage/Build
 Carthage/Checkouts
 
@@ -10,3 +11,9 @@ instrumented-tests/DatadogSDKTesting.*
 instrumented-tests/LICENSE
 
 *.local.xcconfig
+
+# Ignore files for Python tools:
+.idea
+venv
+*.pyc
+__pycache__

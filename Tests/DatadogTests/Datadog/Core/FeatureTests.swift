@@ -18,48 +18,39 @@ class FeatureStorageTests: XCTestCase {
         super.tearDown()
     }
 
-    func testGivenAnyFeatureStorage_whenWrittingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
-        let consentProvider = ConsentProvider(initialConsent: randomConsent())
+    func testWhenWrittingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
+        let consentProvider = ConsentProvider(initialConsent: .mockRandom())
 
         // Given
         let storage = FeatureStorage(
             featureName: .mockAny(),
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            eventMapper: nil,
             commonDependencies: .mockWith(consentProvider: consentProvider)
         )
 
         // When
         (0..<100).forEach { _ in
             let currentConsent = consentProvider.currentValue
-            let nextConsent = randomConsent(otherThan: currentConsent)
+            let nextConsent: TrackingConsent = .mockRandom(otherThan: currentConsent)
 
-            let stringValue = "current consent: \(currentConsent), next consent: \(nextConsent)"
-            storage.writer.write(value: stringValue)
+            // We write array because prior to iOS 13 the top-level element passed to JSON encoder must be array or object
+            let data = ["current consent: \(currentConsent), next consent: \(nextConsent)"]
+            storage.writer.write(value: data)
 
             consentProvider.changeConsent(to: nextConsent)
         }
 
         // Then
-        var dataAuthorizedForUpload: [Data] = []
+        let authorizedValues = readAllAuthorizedDataWritten(to: storage, limit: 100)
+            .map { $0.utf8String }
 
-        while true {
-            if let nextBatch = storage.reader.readNextBatch() {
-                dataAuthorizedForUpload.append(nextBatch.data)
-                storage.reader.markBatchAsRead(nextBatch)
-            } else {
-                break
-            }
-        }
-
-        let authorizedValues = dataAuthorizedForUpload.map { $0.utf8String }
         let expectedAuthorizedValues = [
             // Data collected with `.granted` consent is allowed no matter of the next consent
-            "\"current consent: \(TrackingConsent.granted), next consent: \(TrackingConsent.pending)\"",
-            "\"current consent: \(TrackingConsent.granted), next consent: \(TrackingConsent.notGranted)\"",
+            "[\"current consent: \(TrackingConsent.granted), next consent: \(TrackingConsent.pending)\"]",
+            "[\"current consent: \(TrackingConsent.granted), next consent: \(TrackingConsent.notGranted)\"]",
             // Data collected with `.pending` consent is allowed only if the next consent was `.granted`
-            "\"current consent: \(TrackingConsent.pending), next consent: \(TrackingConsent.granted)\"",
+            "[\"current consent: \(TrackingConsent.pending), next consent: \(TrackingConsent.granted)\"]",
         ]
 
         XCTAssertEqual(
@@ -68,15 +59,51 @@ class FeatureStorageTests: XCTestCase {
         )
     }
 
+    func testWhenArbitraryWriterIsUsedInParallelWithRegularWriter_thenAllDataIsWrittenSafely() {
+        // Given
+        let storage = FeatureStorage(
+            featureName: .mockAny(),
+            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
+            directories: temporaryFeatureDirectories,
+            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
+        )
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                // We write arrays because prior to iOS 13 the top-level element passed to JSON encoder must be array or object
+                { storage.writer.write(value: ["regular write"]) },
+                { storage.arbitraryAuthorizedWriter.write(value: ["arbitrary write"]) }
+            ],
+            iterations: 25
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: 50)
+            .map { $0.utf8String }
+        XCTAssertEqual(dataWritten.filter { $0 == "[\"regular write\"]" }.count, 25)
+        XCTAssertEqual(dataWritten.filter { $0 == "[\"arbitrary write\"]" }.count, 25)
+    }
+
     // MARK: - Helpers
 
-    /// Returns random consent value other than the given one.
-    private func randomConsent(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
-        while true {
-            let randomConsent: TrackingConsent = [.granted, .pending, .notGranted].randomElement()!
-            if randomConsent != consent {
-                return randomConsent
+    private func readAllAuthorizedDataWritten(
+        to storage: FeatureStorage,
+        limit: Int,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> [Data] {
+        var dataAuthorizedForUpload: [Data] = []
+
+        (0..<limit).forEach { _ in
+            if let nextBatch = storage.reader.readNextBatch() {
+                dataAuthorizedForUpload.append(nextBatch.data)
+                storage.reader.markBatchAsRead(nextBatch)
             }
         }
+
+        return dataAuthorizedForUpload
     }
 }

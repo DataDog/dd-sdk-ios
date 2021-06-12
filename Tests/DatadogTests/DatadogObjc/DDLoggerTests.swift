@@ -25,7 +25,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentLevels() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let objcLogger = DDLogger.builder().build()
 
@@ -47,7 +47,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingNSError() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let objcLogger = DDLogger.builder().build()
 
@@ -79,7 +79,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingMessageAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let objcLogger = DDLogger.builder().build()
 
@@ -104,7 +104,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLoggerAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let objcLogger = DDLogger.builder().build()
 
@@ -144,7 +144,7 @@ class DDLoggerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "test"))
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let objcLogger = DDLogger.builder().build()
 

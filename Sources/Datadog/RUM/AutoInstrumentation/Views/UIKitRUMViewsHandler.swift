@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal protocol UIKitRUMViewsHandlerType: class {
+internal protocol UIKitRUMViewsHandlerType: AnyObject {
     func subscribe(commandsSubscriber: RUMCommandSubscriber)
     /// Gets called on `super.viewDidAppear()`.
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool)
@@ -22,11 +22,15 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     init(
         predicate: UIKitRUMViewsPredicate,
         dateProvider: DateProvider,
-        inspector: UIKitHierarchyInspectorType = UIKitHierarchyInspector()
+        inspector: UIKitHierarchyInspectorType = UIKitHierarchyInspector(),
+        notificationCenter: NotificationCenter = .default
     ) {
         self.predicate = predicate
         self.dateProvider = dateProvider
         self.inspector = inspector
+
+        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
     // MARK: - UIKitRUMViewsHandlerType
@@ -51,6 +55,19 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
     }
 
     // MARK: - Private
+
+    @objc
+    private func appWillResignActive() {
+        stop(viewController: lastStartedViewController)
+    }
+
+    @objc
+    private func appDidBecomeActive() {
+        if let vc = lastStartedViewController,
+           let rumView = predicate.rumView(for: vc) {
+            start(viewController: vc, rumView: rumView)
+        }
+    }
 
     /// The `UIViewController` recently asked in `UIKitRUMViewsPredicate`.
     private weak var recentlyAskedViewController: UIViewController?
@@ -81,16 +98,13 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
             )
         }
 
-        if let lastStartedViewController = lastStartedViewController {
-            subscriber?.process(
-                command: RUMStopViewCommand(
-                    time: dateProvider.currentDate(),
-                    attributes: rumView.attributes,
-                    identity: lastStartedViewController
-                )
-            )
-        }
+        stop(viewController: lastStartedViewController)
+        start(viewController: viewController, rumView: rumView)
 
+        lastStartedViewController = viewController
+    }
+
+    private func start(viewController: UIViewController, rumView: RUMView) {
         subscriber?.process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
@@ -100,7 +114,17 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
                 attributes: rumView.attributes
             )
         )
+    }
 
-        lastStartedViewController = viewController
+    private func stop(viewController: UIViewController?) {
+        if let vc = viewController {
+            subscriber?.process(
+                command: RUMStopViewCommand(
+                    time: dateProvider.currentDate(),
+                    attributes: [:],
+                    identity: vc
+                )
+            )
+        }
     }
 }

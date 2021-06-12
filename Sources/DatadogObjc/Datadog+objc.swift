@@ -102,8 +102,8 @@ public class DDDatadog: NSObject {
     }
 
     @objc
-    public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil) {
-        Datadog.setUserInfo(id: id, name: name, email: email)
+    public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
+        Datadog.setUserInfo(id: id, name: name, email: email, extraInfo: castAttributesToSwift(extraInfo))
     }
 
     @objc

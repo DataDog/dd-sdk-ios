@@ -106,12 +106,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.from(requests: requests)?.viewVisits.count == 2
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 2
         }
 
         assertRUM(requests: rumRequests)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.from(requests: rumRequests))
+        let session = try XCTUnwrap(try RUMSessionMatcher.singleSession(from: rumRequests))
         XCTAssertEqual(session.viewVisits.count, 2)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
@@ -198,10 +198,24 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "Both 3rd party resources should track download phase"
         )
 
-        // Ensure there were no tracing `Spans` send
+        // Assert there were no tracing `Spans` sent
         _ = try tracingServerSession.pullRecordedRequests(timeout: 1) { requests in
             XCTAssertEqual(requests.count, 0, "There should be no tracing `Spans` send")
             return true
+        }
+
+        // Assert it adds custom RUM attributes to intercepted RUM Resources:
+        session.resourceEventMatchers.forEach { resourceEvent in
+            XCTAssertNotNil(try? resourceEvent.attribute(forKeyPath: "context.response.body.truncated") as String)
+            XCTAssertNotNil(try? resourceEvent.attribute(forKeyPath: "context.response.headers") as String)
+            XCTAssertNil(try? resourceEvent.attribute(forKeyPath: "context.response.error") as String)
+        }
+
+        // Assert it adds custom RUM attributes to intercepted RUM Resources which finished with error:
+        session.errorEventMatchers.forEach { errorEvent in
+            XCTAssertNil(try? errorEvent.attribute(forKeyPath: "context.response.body.truncated") as String)
+            XCTAssertNil(try? errorEvent.attribute(forKeyPath: "context.response.headers") as String)
+            XCTAssertNotNil(try? errorEvent.attribute(forKeyPath: "context.response.error") as String)
         }
     }
 

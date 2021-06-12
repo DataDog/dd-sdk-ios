@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal protocol UIKitRUMUserActionsHandlerType: class {
+internal protocol UIKitRUMUserActionsHandlerType: AnyObject {
     func subscribe(commandsSubscriber: RUMCommandSubscriber)
     func notify_sendEvent(application: UIApplication, event: UIEvent)
 }

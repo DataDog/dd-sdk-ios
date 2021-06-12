@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal protocol RUMContextProvider: class {
+internal protocol RUMContextProvider: AnyObject {
     /// The RUM context local to this provider.
     var context: RUMContext { get }
 }

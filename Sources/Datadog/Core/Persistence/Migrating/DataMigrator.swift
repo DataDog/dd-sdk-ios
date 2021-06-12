@@ -12,21 +12,29 @@ internal protocol DataMigrator {
 internal struct DataMigratorFactory {
     /// Data directories for the feature.
     let directories: FeatureDirectories
+    var internalMonitor: InternalMonitor? = nil
 
     /// Resolves migrator to use when the SDK is started.
     func resolveInitialMigrator() -> DataMigrator {
-        return DeleteAllDataMigrator(directory: directories.unauthorized)
+        return DeleteAllDataMigrator(
+            directory: directories.unauthorized,
+            internalMonitor: internalMonitor
+        )
     }
 
     /// Resolves migrator to use when consent value changes.
     func resolveMigratorForConsentChange(from previousValue: TrackingConsent, to newValue: TrackingConsent) -> DataMigrator? {
         switch (previousValue, newValue) {
         case (.pending, .notGranted):
-            return DeleteAllDataMigrator(directory: directories.unauthorized)
+            return DeleteAllDataMigrator(
+                directory: directories.unauthorized,
+                internalMonitor: internalMonitor
+            )
         case (.pending, .granted):
             return MoveDataMigrator(
                 sourceDirectory: directories.unauthorized,
-                destinationDirectory: directories.authorized
+                destinationDirectory: directories.authorized,
+                internalMonitor: internalMonitor
             )
         default:
             return nil

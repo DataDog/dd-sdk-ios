@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,7 +14,12 @@
 		61C36425243752A600C4D4E6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61C36423243752A600C4D4E6 /* LaunchScreen.storyboard */; };
 		61C36430243752A600C4D4E6 /* CTProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3642F243752A600C4D4E6 /* CTProjectTests.swift */; };
 		61C3643B243752A600C4D4E6 /* CTProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */; };
-		61C3644B2437547A00C4D4E6 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61C3644A2437547A00C4D4E6 /* Datadog.framework */; };
+		9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */; };
+		9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */; };
+		9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */; };
+		9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,10 +39,27 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		9E9D5E8E25F90FC6002F12A0 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */,
+				9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */,
+				9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		615519322461CDB4002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519332461CDB4002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
-		615519342461D121002A85CF /* OpenTracing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenTracing.framework; path = Carthage/Build/iOS/OpenTracing.framework; sourceTree = "<group>"; };
+		615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CrashReporter.xcframework; path = Carthage/Build/CrashReporter.xcframework; sourceTree = "<group>"; };
+		615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogCrashReporting.xcframework; path = Carthage/Build/DatadogCrashReporting.xcframework; sourceTree = "<group>"; };
 		61C36415243752A500C4D4E6 /* CTProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CTProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C36418243752A500C4D4E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61C3641A243752A500C4D4E6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -51,7 +73,9 @@
 		61C36436243752A600C4D4E6 /* CTProjectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CTProjectUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTProjectUITests.swift; sourceTree = "<group>"; };
 		61C3643C243752A600C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		61C3644A2437547A00C4D4E6 /* Datadog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Datadog.framework; path = Carthage/Build/iOS/Datadog.framework; sourceTree = "<group>"; };
+		9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
+		9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogObjc.xcframework; path = Carthage/Build/DatadogObjc.xcframework; sourceTree = "<group>"; };
+		9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Datadog.xcframework; path = Carthage/Build/Datadog.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +83,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61C3644B2437547A00C4D4E6 /* Datadog.framework in Frameworks */,
+				9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */,
+				9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */,
+				9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,8 +172,11 @@
 		61C364492437547A00C4D4E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				615519342461D121002A85CF /* OpenTracing.framework */,
-				61C3644A2437547A00C4D4E6 /* Datadog.framework */,
+				615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */,
+				615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */,
+				9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */,
+				9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */,
+				9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -162,8 +191,8 @@
 				61C36411243752A500C4D4E6 /* Sources */,
 				61C36412243752A500C4D4E6 /* Frameworks */,
 				61C36413243752A500C4D4E6 /* Resources */,
-				61C364482437544F00C4D4E6 /* ⚙️ Carthage */,
 				61C3645C243768FC00C4D4E6 /* ⚙️ Run linter */,
+				9E9D5E8E25F90FC6002F12A0 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -280,27 +309,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		61C364482437544F00C4D4E6 /* ⚙️ Carthage */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/Datadog.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/Kronos.framework",
-			);
-			name = "⚙️ Carthage";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
-			showEnvVarsInLog = 0;
-		};
 		61C3645C243768FC00C4D4E6 /* ⚙️ Run linter */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -442,6 +450,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Debug;
 		};
@@ -497,6 +506,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Release;
 		};
@@ -505,10 +515,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = CTProject/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -526,10 +532,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = CTProject/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

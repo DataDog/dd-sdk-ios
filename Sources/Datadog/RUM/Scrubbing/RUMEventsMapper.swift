@@ -12,14 +12,17 @@ internal typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEve
 internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
 
 /// The `EventMapper` for RUM events.
-internal struct RUMEventsMapper: EventMapper {
+internal struct RUMEventsMapper {
     let viewEventMapper: RUMViewEventMapper?
     let errorEventMapper: RUMErrorEventMapper?
     let resourceEventMapper: RUMResourceEventMapper?
     let actionEventMapper: RUMActionEventMapper?
+    var internalMonitor: InternalMonitor? = nil
 
     // MARK: - EventMapper
 
+    /// Data scrubbing interface.
+    /// It takes an `event` and returns its modified representation or `nil` (for dropping the event).
     func map<T>(event: T) -> T? {
         switch event {
         case let viewEvent as RUMEvent<RUMViewEvent>:
@@ -31,10 +34,12 @@ internal struct RUMEventsMapper: EventMapper {
         case let actionEvent as RUMEvent<RUMActionEvent>:
             return map(rumEvent: actionEvent, using: actionEventMapper) as? T
         default:
-            developerLogger?.warn("No `RUMEventsMapper` is registered for \(type(of: event))")
+            internalMonitor?.sdkLogger.critical("No `RUMEventMapper` is registered for \(type(of: event))")
             return event
         }
     }
+
+    // MARK: - Private
 
     private func map<DM: RUMDataModel>(rumEvent: RUMEvent<DM>, using mapper: ((DM) -> DM?)?) -> RUMEvent<DM>? {
         guard let mapper = mapper else {

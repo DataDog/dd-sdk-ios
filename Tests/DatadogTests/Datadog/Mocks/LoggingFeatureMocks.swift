@@ -10,7 +10,7 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs no writes and no uploads.
     static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader()),
+            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
@@ -46,6 +46,8 @@ extension LoggingFeature {
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        // Tear down the original upload
+        fullFeature.upload.flushAndTearDown()
         return LoggingFeature(
             storage: observedStorage,
             upload: mockedUpload,
@@ -118,11 +120,11 @@ extension Log: RandomMockable {
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
-            userInfo: .init(id: .mockRandom(), name: .mockRandom(), email: .mockRandom(), extraInfo: [:]), // TODO: RUMM-1050 use `.mockRandom()`
-            networkConnectionInfo: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
-            mobileCarrierInfo: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
-            attributes: .mockAny(), // TODO: RUMM-1050 use `.mockRandom()`
-            tags: nil // TODO: RUMM-1050 use `.mockRandom()`
+            userInfo: .mockRandom(),
+            networkConnectionInfo: .mockRandom(),
+            mobileCarrierInfo: .mockRandom(),
+            attributes: .mockRandom(),
+            tags: .mockRandom()
         )
     }
 }
@@ -202,6 +204,13 @@ extension LogAttributes: Equatable {
         )
     }
 
+    static func mockRandom() -> LogAttributes {
+        return .init(
+            userAttributes: mockRandomAttributes(),
+            internalAttributes: mockRandomAttributes()
+        )
+    }
+
     public static func == (lhs: LogAttributes, rhs: LogAttributes) -> Bool {
         let lhsUserAttributesSorted = lhs.userAttributes.sorted { $0.key < $1.key }
         let rhsUserAttributesSorted = rhs.userAttributes.sorted { $0.key < $1.key }
@@ -216,9 +225,14 @@ extension LogAttributes: Equatable {
 
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
+    var onLogRecorded: ((Log) -> Void)?
+
     var recordedLog: Log?
+    var allRecordedLogs: [Log] = []
 
     func write(log: Log) {
         recordedLog = log
+        allRecordedLogs.append(log)
+        onLogRecorded?(log)
     }
 }

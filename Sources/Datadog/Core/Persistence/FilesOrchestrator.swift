@@ -18,15 +18,18 @@ internal class FilesOrchestrator {
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
     /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
     private var lastWritableFileUsesCount: Int = 0
+    private let internalMonitor: InternalMonitor?
 
     init(
         directory: Directory,
         performance: StoragePerformancePreset,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.internalMonitor = internalMonitor
     }
 
     // MARK: - `WritableFile` orchestration
@@ -58,6 +61,10 @@ internal class FilesOrchestrator {
 
     private func reuseLastWritableFileIfPossible(writeSize: UInt64) -> WritableFile? {
         if let lastFileName = lastWritableFileName {
+            if !directory.hasFile(named: lastFileName) {
+                return nil // this is expected if the last writable file was deleted after upload
+            }
+
             do {
                 let lastFile = try directory.file(named: lastFileName)
                 let lastFileCreationDate = fileCreationDateFrom(fileName: lastFile.name)
@@ -71,7 +78,7 @@ internal class FilesOrchestrator {
                     return lastFile
                 }
             } catch {
-                developerLogger?.error("🔥 Failed to read previously used writable file: \(error)")
+                internalMonitor?.sdkLogger.warn("Failed to reuse last writable file", error: error)
             }
         }
 
@@ -94,12 +101,18 @@ internal class FilesOrchestrator {
                 return nil
             }
 
+            #if DD_SDK_COMPILED_FOR_TESTING
+            if ignoreFilesAgeWhenReading {
+                return oldestFile
+            }
+            #endif
+
             let oldestFileAge = dateProvider.currentDate().timeIntervalSince(creationDate)
             let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
-            developerLogger?.error("🔥 Failed to obtain readable file: \(error)")
+            internalMonitor?.sdkLogger.error("Failed to obtain readable file", error: error)
             return nil
         }
     }
@@ -108,9 +121,14 @@ internal class FilesOrchestrator {
         do {
             try readableFile.delete()
         } catch {
-            developerLogger?.error("🔥 Failed to delete file: \(error)")
+            internalMonitor?.sdkLogger.error("Failed to delete file", error: error)
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// If files age should be ignored for obtaining `ReadableFile`.
+    var ignoreFilesAgeWhenReading = false
+#endif
 
     // MARK: - Directory size management
 

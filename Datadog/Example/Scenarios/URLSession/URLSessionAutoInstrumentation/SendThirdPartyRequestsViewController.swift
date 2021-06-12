@@ -10,7 +10,7 @@ import Datadog
 
 internal class SendThirdPartyRequestsViewController: UIViewController {
     private var testScenario: URLSessionBaseScenario!
-    private lazy var session = testScenario.buildURLSession()
+    private lazy var session = testScenario.getURLSession()
 
     override func viewDidLoad() {
         super.viewDidLoad()

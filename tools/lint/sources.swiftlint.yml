@@ -1,6 +1,6 @@
 # Set of Swift Lint rules enforced for Swift code under `Sources/*` directory
 
-whitelist_rules: # we enable lint rules explicitly - only the ones listed below are active
+only_rules: # we enable lint rules explicitly - only the ones listed below are active
   - attributes
   - closing_brace
   - closure_end_indentation
@@ -56,7 +56,6 @@ whitelist_rules: # we enable lint rules explicitly - only the ones listed below 
   - statement_position
   - switch_case_alignment
   - syntactic_sugar
-  - trailing_closure
   - trailing_newline
   - trailing_semicolon
   - trailing_whitespace
@@ -90,12 +89,12 @@ custom_rules:
     severity: error
 
 included:
-  - Sources
-  - instrumented-tests/http-server-mock/Sources
-  - tools/api-surface/Sources
-  - tools/api-surface/Fixtures/Sources
-  - tools/rum-models-generator/Sources
-  - tools/rum-models-generator/Tests/rum-models-generator-coreTests/Fixtures/Output # lint generation fixture
-  - dependency-manager-tests/carthage/CTProject
-  - dependency-manager-tests/cocoapods/CPProject
-  - dependency-manager-tests/spm/SPMProject
+  - ../../Sources
+  - ../../instrumented-tests/http-server-mock/Sources
+  - ../../tools/api-surface/Sources
+  - ../../tools/api-surface/Fixtures/Sources
+  - ../../tools/rum-models-generator/Sources
+  - ../../tools/rum-models-generator/Tests/rum-models-generator-coreTests/Fixtures/Output # lint generation fixture
+  - ../../dependency-manager-tests/carthage/CTProject
+  - ../../dependency-manager-tests/cocoapods/CPProject
+  - ../../dependency-manager-tests/spm/SPMProject

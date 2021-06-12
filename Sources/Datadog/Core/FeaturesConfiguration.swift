@@ -18,6 +18,7 @@ internal struct FeaturesConfiguration {
         let serviceName: String
         let environment: String
         let performance: PerformancePreset
+        let source: String
     }
 
     struct Logging {
@@ -28,6 +29,7 @@ internal struct FeaturesConfiguration {
     struct Tracing {
         let common: Common
         let uploadURLWithClientToken: URL
+        let spanEventMapper: SpanEventMapper?
     }
 
     struct RUM {
@@ -40,7 +42,10 @@ internal struct FeaturesConfiguration {
         let uploadURLWithClientToken: URL
         let applicationID: String
         let sessionSamplingRate: Float
-        let eventMapper: RUMEventsMapper
+        let viewEventMapper: RUMViewEventMapper?
+        let resourceEventMapper: RUMResourceEventMapper?
+        let actionEventMapper: RUMActionEventMapper?
+        let errorEventMapper: RUMErrorEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
     }
@@ -50,11 +55,27 @@ internal struct FeaturesConfiguration {
         let userDefinedFirstPartyHosts: Set<String>
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>
+        /// An optional RUM Resource attributes provider.
+        let rumAttributesProvider: URLSessionRUMAttributesProvider?
 
         /// If the Tracing instrumentation should be enabled.
         let instrumentTracing: Bool
         /// If the RUM instrumentation should be enabled.
         let instrumentRUM: Bool
+    }
+
+    struct CrashReporting {
+        /// The `DDCrashReportingPluginType` implementation provided by `DatadogCrashReporting` library.
+        let crashReportingPlugin: DDCrashReportingPluginType
+    }
+
+    struct InternalMonitoring {
+        let common: Common
+        let sdkServiceName: String
+        let sdkEnvironment: String
+        /// Internal monitoring logger's name.
+        let loggerName = "im-logger"
+        let logsUploadURLWithClientToken: URL
     }
 
     /// Configuration common to all features.
@@ -67,6 +88,10 @@ internal struct FeaturesConfiguration {
     let rum: RUM?
     /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+    /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
+    let crashReporting: CrashReporting?
+    /// Internal Monitoring feature configuration or `nil` if the feature was not enabled.
+    let internalMonitoring: InternalMonitoring?
 }
 
 extension FeaturesConfiguration {
@@ -82,10 +107,14 @@ extension FeaturesConfiguration {
         var tracing: Tracing?
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+        var crashReporting: CrashReporting?
+        var internalMonitoring: InternalMonitoring?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
         var rumEndpoint = configuration.rumEndpoint
+
+        let source = (configuration.additionalConfiguration["_dd.source"] as? String) ?? Datadog.Constants.ddsource
 
         if let datadogEndpoint = configuration.datadogEndpoint {
             // If `.set(endpoint:)` API was used, it should override the values
@@ -120,7 +149,8 @@ extension FeaturesConfiguration {
                 batchSize: configuration.batchSize,
                 uploadFrequency: configuration.uploadFrequency,
                 bundleType: appContext.bundleType
-            )
+            ),
+            source: source
         )
 
         if configuration.loggingEnabled {
@@ -139,7 +169,8 @@ extension FeaturesConfiguration {
                 uploadURLWithClientToken: try ifValid(
                     endpointURLString: tracesEndpoint.url,
                     clientToken: configuration.clientToken
-                )
+                ),
+                spanEventMapper: configuration.spanEventMapper
             )
         }
 
@@ -162,12 +193,10 @@ extension FeaturesConfiguration {
                     ),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
-                    eventMapper: RUMEventsMapper(
-                        viewEventMapper: configuration.rumViewEventMapper,
-                        errorEventMapper: configuration.rumErrorEventMapper,
-                        resourceEventMapper: configuration.rumResourceEventMapper,
-                        actionEventMapper: configuration.rumActionEventMapper
-                    ),
+                    viewEventMapper: configuration.rumViewEventMapper,
+                    resourceEventMapper: configuration.rumResourceEventMapper,
+                    actionEventMapper: configuration.rumActionEventMapper,
+                    errorEventMapper: configuration.rumErrorEventMapper,
                     autoInstrumentation: autoInstrumentation
                 )
             } else {
@@ -190,17 +219,53 @@ extension FeaturesConfiguration {
                         tracesEndpoint.url,
                         rumEndpoint.url
                     ],
+                    rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     instrumentTracing: configuration.tracingEnabled,
                     instrumentRUM: configuration.rumEnabled
                 )
             } else {
                 let error = ProgrammerError(
                     description: """
-                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing should be enabled.
+                    To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
+                    Use: `.enableTracing(true)` or `.enableRUM(true)`.
                     """
                 )
                 consolePrint("\(error)")
             }
+        } else if configuration.rumResourceAttributesProvider != nil {
+            let error = ProgrammerError(
+                description: """
+                To use `.setRUMResourceAttributesProvider(_:)` URLSession tracking must be enabled
+                with `.trackURLSession(firstPartyHosts:)`.
+                """
+            )
+            consolePrint("\(error)")
+        }
+
+        if let crashReportingPlugin = configuration.crashReportingPlugin {
+            if configuration.loggingEnabled || configuration.rumEnabled {
+                crashReporting = CrashReporting(crashReportingPlugin: crashReportingPlugin)
+            } else {
+                let error = ProgrammerError(
+                    description: """
+                    To use `.enableCrashReporting(using:)` either RUM or Logging must be enabled.
+                    Use: `.enableLogging(true)` or `.enableRUM(true)`.
+                    """
+                )
+                consolePrint("\(error)")
+            }
+        }
+
+        if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
+            internalMonitoring = InternalMonitoring(
+                common: common,
+                sdkServiceName: "dd-sdk-ios",
+                sdkEnvironment: "prod",
+                logsUploadURLWithClientToken: try ifValid(
+                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us.logsEndpoint.url,
+                    clientToken: internalMonitoringClientToken
+                )
+            )
         }
 
         self.common = common
@@ -208,6 +273,8 @@ extension FeaturesConfiguration {
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
+        self.crashReporting = crashReporting
+        self.internalMonitoring = internalMonitoring
     }
 }
 

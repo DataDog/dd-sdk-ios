@@ -41,7 +41,7 @@ protocol RandomMockable {
     static func mockRandom() -> Self
 }
 
-extension Data: AnyMockable {
+extension Data: AnyMockable, RandomMockable {
     static func mockAny() -> Data {
         return Data()
     }
@@ -52,6 +52,16 @@ extension Data: AnyMockable {
 
     static func mock(ofSize size: UInt64) -> Data {
         return mockRepeating(byte: 0x41, times: Int(size))
+    }
+
+    static func mockRandom() -> Data {
+        return mockRepeating(byte: .random(in: 0x00...0xFF), times: 256)
+    }
+}
+
+extension Optional: AnyMockable where Wrapped: AnyMockable {
+    static func mockAny() -> Self {
+        return .some(.mockAny())
     }
 }
 
@@ -79,9 +89,21 @@ extension Array {
     }
 }
 
+extension Array: RandomMockable where Element: RandomMockable {
+    static func mockRandom() -> [Element] {
+        return Array(repeating: .mockRandom(), count: 10)
+    }
+}
+
 extension Dictionary: AnyMockable where Key: AnyMockable, Value: AnyMockable {
     static func mockAny() -> Dictionary {
         return [Key.mockAny(): Value.mockAny()]
+    }
+}
+
+extension Dictionary: RandomMockable where Key: RandomMockable, Value: RandomMockable {
+    static func mockRandom() -> Dictionary {
+        return [Key.mockRandom(): Value.mockRandom()]
     }
 }
 
@@ -145,12 +167,16 @@ extension URL: AnyMockable, RandomMockable {
     }
 }
 
-extension String: AnyMockable {
+extension String: AnyMockable, RandomMockable {
     static func mockAny() -> String {
         return "abc"
     }
 
-    static func mockRandom(length: Int = 10) -> String {
+    static func mockRandom() -> String {
+        return mockRandom(length: 10)
+    }
+
+    static func mockRandom(length: Int) -> String {
         return mockRandom(
             among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
             length: length
@@ -167,9 +193,17 @@ extension String: AnyMockable {
     }
 }
 
-extension Int: AnyMockable {
+extension Int: AnyMockable, RandomMockable {
     static func mockAny() -> Int {
         return 0
+    }
+
+    static func mockRandom() -> Int {
+        return mockRandom(min: .min, max: .max)
+    }
+
+    static func mockRandom(min: Int, max: Int) -> Int {
+        return .random(in: min...max)
     }
 }
 
@@ -178,9 +212,13 @@ extension Int64: AnyMockable, RandomMockable {
     static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }
 }
 
-extension UInt64: AnyMockable {
+extension UInt64: AnyMockable, RandomMockable {
     static func mockAny() -> UInt64 {
         return 0
+    }
+
+    static func mockRandom() -> UInt64 {
+        return .random(in: UInt64.min...UInt64.max)
     }
 }
 
@@ -202,7 +240,11 @@ extension Double: AnyMockable, RandomMockable {
     }
 
     static func mockRandom() -> Double {
-        return Double.random(in: 0..<Double.greatestFiniteMagnitude)
+        return mockRandom(min: 0, max: .greatestFiniteMagnitude)
+    }
+
+    static func mockRandom(min: Double, max: Double) -> Double {
+        return .random(in: min...max)
     }
 }
 
@@ -330,6 +372,10 @@ extension URLSession {
 }
 
 extension URLSessionTask {
+    static func mockAny() -> URLSessionTask {
+        return URLSessionTaskMock(request: .mockAny(), response: .mockAny())
+    }
+
     static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
         return URLSessionTaskMock(request: request, response: response)
     }

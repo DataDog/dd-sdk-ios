@@ -1,1 +1,2 @@
-github "lyft/Kronos" "4.1.1"
+github "lyft/Kronos" "4.2.1"
+github "microsoft/plcrashreporter" "1.8.1"

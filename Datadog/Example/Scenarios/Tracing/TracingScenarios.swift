@@ -20,6 +20,13 @@ final class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .enableRUM(false)
+            .setSpanEventMapper { spanEvent in
+                var mutableSpanEvent = spanEvent
+                if mutableSpanEvent.tags[OTTags.httpUrl] != nil {
+                    mutableSpanEvent.tags[OTTags.httpUrl] = "redacted"
+                }
+                return mutableSpanEvent
+            }
 
         super.configureSDK(builder: builder)
     }
@@ -34,6 +41,13 @@ final class TracingNSURLSessionScenario: URLSessionBaseScenario, TestScenario {
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .enableRUM(false)
+            .setSpanEventMapper { spanEvent in
+                var mutableSpanEvent = spanEvent
+                if mutableSpanEvent.tags[OTTags.httpUrl] != nil {
+                    mutableSpanEvent.tags[OTTags.httpUrl] = "redacted"
+                }
+                return mutableSpanEvent
+            }
 
         super.configureSDK(builder: builder)
     }

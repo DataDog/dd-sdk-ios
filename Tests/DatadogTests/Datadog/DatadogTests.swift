@@ -32,27 +32,27 @@ class DatadogTests: XCTestCase {
 
     // MARK: - Initializing with different configurations
 
-    func testGivenDefaultConfiguration_itCanBeInitialized() throws {
+    func testGivenDefaultConfiguration_itCanBeInitialized() {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: defaultBuilder.build()
         )
         XCTAssertNotNil(Datadog.instance)
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 
-    func testGivenDefaultRUMConfiguration_itCanBeInitialized() throws {
+    func testGivenDefaultRUMConfiguration_itCanBeInitialized() {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: rumBuilder.build()
         )
         XCTAssertNotNil(Datadog.instance)
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 
-    func testGivenInvalidConfiguration_itPrintsError() throws {
+    func testGivenInvalidConfiguration_itPrintsError() {
         let invalidConiguration = Datadog.Configuration
             .builderUsing(clientToken: "", environment: "tests")
             .build()
@@ -70,7 +70,7 @@ class DatadogTests: XCTestCase {
         XCTAssertNil(Datadog.instance)
     }
 
-    func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() throws {
+    func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
@@ -87,13 +87,13 @@ class DatadogTests: XCTestCase {
             "🔥 Datadog SDK usage error: SDK is already initialized."
         )
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Toggling features
 
-    func testEnablingAndDisablingFeatures() throws {
-        func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) throws {
+    func testEnablingAndDisablingFeatures() {
+        func verify(configuration: Datadog.Configuration, verificationBlock: () -> Void) {
             Datadog.initialize(
                 appContext: .mockAny(),
                 trackingConsent: .mockRandom(),
@@ -103,7 +103,7 @@ class DatadogTests: XCTestCase {
 
             RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-            try Datadog.deinitializeOrThrow()
+            Datadog.flushAndDeinitialize()
         }
 
         defer {
@@ -111,92 +111,108 @@ class DatadogTests: XCTestCase {
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         }
 
-        try verify(configuration: defaultBuilder.build()) {
+        verify(configuration: defaultBuilder.build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
-        try verify(configuration: rumBuilder.build()) {
+        verify(configuration: rumBuilder.build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
 
-        try verify(configuration: defaultBuilder.enableLogging(false).build()) {
+        verify(configuration: defaultBuilder.enableLogging(false).build()) {
             // verify features:
             XCTAssertFalse(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
-        try verify(configuration: rumBuilder.enableLogging(false).build()) {
+        verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
             XCTAssertFalse(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
 
-        try verify(configuration: defaultBuilder.enableTracing(false).build()) {
+        verify(configuration: defaultBuilder.enableTracing(false).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
         }
-        try verify(configuration: rumBuilder.enableTracing(false).build()) {
+        verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
         }
 
-        try verify(configuration: defaultBuilder.enableRUM(true).build()) {
+        verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
-        try verify(configuration: rumBuilder.enableRUM(false).build()) {
+        verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
             XCTAssertTrue(LoggingFeature.isEnabled)
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
 
-        try verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
+        verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
-        try verify(
+        verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
@@ -204,12 +220,12 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
 
-        try verify(configuration: rumBuilder.trackUIKitActions(true).build()) {
+        verify(configuration: rumBuilder.trackUIKitActions(true).build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.userActions)
         }
-        try verify(
+        verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitActions(true).build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
@@ -217,17 +233,105 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
 
-        try verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {
+        verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {
             XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
         }
-        try verify(configuration: defaultBuilder.trackURLSession().build()) {
+        verify(configuration: defaultBuilder.trackURLSession().build()) {
             XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+        }
+
+        verify(
+            configuration: rumBuilder
+                .enableLogging(true)
+                .enableRUM(false)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertTrue(
+                Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithLoggingIntegration,
+                "When only Logging feature is enabled, the Crash Reporter should send crash reports as Logs"
+            )
+            XCTAssertNil(InternalMonitoringFeature.instance)
+        }
+
+        verify(
+            configuration: rumBuilder
+                .enableLogging(false)
+                .enableRUM(true)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertTrue(
+                Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
+                "When only RUM feature is enabled, the Crash Reporter should send crash reports as RUM Events"
+            )
+            XCTAssertNil(InternalMonitoringFeature.instance)
+        }
+
+        verify(
+            configuration: rumBuilder
+                .enableLogging(true)
+                .enableRUM(true)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertTrue(
+                Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
+                "When both Logging and RUM features are enabled, the Crash Reporter should send crash reports as RUM Events"
+            )
+            XCTAssertNil(InternalMonitoringFeature.instance)
+        }
+
+        verify(
+            configuration: rumBuilder
+                .enableLogging(false)
+                .enableRUM(false)
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNil(CrashReportingFeature.instance)
+            XCTAssertNil(
+                Global.crashReporter,
+                "When both Logging and RUM are disabled, Crash Reporter should not be registered"
+            )
+            XCTAssertNil(InternalMonitoringFeature.instance)
+        }
+
+        verify(
+            configuration: rumBuilder
+                .enableLogging(.random())
+                .enableTracing(.random())
+                .enableRUM(.random())
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .enableInternalMonitoring(clientToken: .mockAny())
+                .build()
+        ) {
+            XCTAssertNotNil(
+                InternalMonitoringFeature.instance,
+                "When client token for internal monitoring is set, the Internal Monitoring feature should be enabled"
+            )
+        }
+        verify(
+            configuration: rumBuilder
+                .enableLogging(.random())
+                .enableTracing(.random())
+                .enableRUM(.random())
+                .enableCrashReporting(using: CrashReportingPluginMock())
+                .build()
+        ) {
+            XCTAssertNil(
+                InternalMonitoringFeature.instance,
+                "When client token for internal monitoring is NOT set, the Internal Monitoring feature should be disabled"
+            )
         }
     }
 
     // MARK: - Global Values
 
-    func testTrackingConsent() throws {
+    func testTrackingConsent() {
         let initialConsent: TrackingConsent = .mockRandom()
         let nextConsent: TrackingConsent = .mockRandom()
 
@@ -243,10 +347,10 @@ class DatadogTests: XCTestCase {
 
         XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent)
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 
-    func testUserInfo() throws {
+    func testUserInfo() {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
@@ -271,7 +375,7 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(Datadog.instance?.userInfoProvider.value.email, "foo@bar.com")
         XCTAssertEqual(Datadog.instance?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 
     func testDefaultVerbosityLevel() {
@@ -282,7 +386,7 @@ class DatadogTests: XCTestCase {
         XCTAssertFalse(Datadog.debugRUM)
     }
 
-    func testDeprecatedAPIs() throws {
+    func testDeprecatedAPIs() {
         (Datadog.self as DatadogDeprecatedAPIs.Type).initialize(
             appContext: .mockAny(),
             configuration: defaultBuilder.build()
@@ -294,7 +398,7 @@ class DatadogTests: XCTestCase {
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 }
 
@@ -312,12 +416,12 @@ class AppContextTests: XCTestCase {
         XCTAssertEqual(AppContext(mainBundle: iOSAppExtensionBundle).bundleType, .iOSAppExtension)
     }
 
-    func testBundleIdentifier() throws {
+    func testBundleIdentifier() {
         XCTAssertEqual(AppContext(mainBundle: .mockWith(bundleIdentifier: "com.abc.app")).bundleIdentifier, "com.abc.app")
         XCTAssertNil(AppContext(mainBundle: .mockWith(bundleIdentifier: nil)).bundleIdentifier)
     }
 
-    func testBundleVersion() throws {
+    func testBundleVersion() {
         XCTAssertEqual(
             AppContext(mainBundle: .mockWith(CFBundleVersion: "1.0", CFBundleShortVersionString: "1.0.0")).bundleVersion,
             "1.0.0"
@@ -335,7 +439,7 @@ class AppContextTests: XCTestCase {
         )
     }
 
-    func testBundleName() throws {
+    func testBundleName() {
         XCTAssertEqual(
             AppContext(mainBundle: .mockWith(bundlePath: .mockAny(), CFBundleExecutable: "FooApp")).bundleName,
             "FooApp"

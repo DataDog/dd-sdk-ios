@@ -29,7 +29,7 @@ public enum LogLevel: Int, Codable {
         }
     }
 
-    internal init(from logStatus: Log.Status) {
+    internal init?(from logStatus: Log.Status) {
         switch logStatus {
         case .debug:    self = .debug
         case .info:     self = .info
@@ -37,6 +37,7 @@ public enum LogLevel: Int, Codable {
         case .warn:     self = .warn
         case .error:    self = .error
         case .critical: self = .critical
+        case .emergency: return nil // unavailable in public `LogLevel` API.
         }
     }
 }

@@ -28,10 +28,16 @@ internal struct Directory {
         return File(url: fileURL)
     }
 
-    /// Returns file with given name.
+    /// Checks if a file with given `fileName` exists in this directory.
+    func hasFile(named fileName: String) -> Bool {
+        let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
+        return FileManager.default.fileExists(atPath: fileURL.path)
+    }
+
+    /// Returns file with given name or throws an error if file does not exist.
     func file(named fileName: String) throws -> File {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+        guard hasFile(named: fileName) else {
             throw InternalError(description: "File does not exist at path: \(fileURL.path)")
         }
         return File(url: fileURL)

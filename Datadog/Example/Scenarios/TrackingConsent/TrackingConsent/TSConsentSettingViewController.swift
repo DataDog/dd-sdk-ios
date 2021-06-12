@@ -11,8 +11,8 @@ internal class TSConsentSettingViewController: UIViewController {
 
     @IBOutlet weak var consentValueControl: UISegmentedControl!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
 
         switch homeViewController.currentConsentValue {
         case .granted: consentValueControl.selectedSegmentIndex = 0

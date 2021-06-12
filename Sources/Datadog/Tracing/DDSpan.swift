@@ -5,7 +5,10 @@
  */
 
 import Foundation
+
+#if SPM_BUILD
 import _Datadog_Private
+#endif
 
 internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
@@ -14,33 +17,23 @@ internal class DDSpan: OTSpan {
     internal let ddContext: DDSpanContext
     /// Span creation date
     internal let startTime: Date
+    /// Builds the `Span` from user input.
+    internal let spanBuilder: SpanEventBuilder
+    /// Writes the `Span` to file.
+    private let spanOutput: SpanOutput
+    /// Writes span logs to output. `nil` if Logging feature is disabled.
+    private let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
 
-    /// Unsynchronized span operation name. Use `self.operationName` setter & getter.
+    /// Queue used for synchronizing mutable properties access.
+    private let queue: DispatchQueue
+    /// Unsynchronized span operation name. Must be accessed on `queue`.
     private var unsafeOperationName: String
-    private(set) var operationName: String {
-        get { ddTracer.queue.sync { unsafeOperationName } }
-        set { ddTracer.queue.async { self.unsafeOperationName = newValue } }
-    }
-
-    /// Unsynchronized span tags. Use `self.tags` setter & getter.
+    /// Unsynchronized span tags.  Must be accessed on `queue`.
     private var unsafeTags: [String: Encodable]
-    var tags: [String: Encodable] {
-        ddTracer.queue.sync { unsafeTags }
-    }
-
-    /// Unsychronized span log fields. Use `self.logFields` setter & getter.
+    /// Unsychronized span log fields.  Must be accessed on `queue`.
     private var unsafeLogFields: [[String: Encodable]]
-    /// A collection of all log fields send for this span.
-    var logFields: [[String: Encodable]] {
-        ddTracer.queue.sync { unsafeLogFields }
-    }
-
-    /// Unsychronized span completion. Use `self.isFinished` setter & getter.
+    /// Unsychronized span completion.  Must be accessed on `queue`.
     private var unsafeIsFinished: Bool
-    private(set) var isFinished: Bool {
-        get { ddTracer.queue.sync { unsafeIsFinished } }
-        set { ddTracer.queue.async { self.unsafeIsFinished = newValue } }
-    }
 
     private var activityReference: ActivityReference?
 
@@ -49,16 +42,19 @@ internal class DDSpan: OTSpan {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Encodable],
-        logFields: [[String: Encodable]] = []
+        tags: [String: Encodable]
     ) {
         self.ddTracer = tracer
         self.ddContext = context
         self.startTime = startTime
+        self.spanBuilder = tracer.spanBuilder
+        self.spanOutput = tracer.spanOutput
+        self.logOutput = tracer.logOutput
+        self.queue = ddTracer.queue // share the queue among all spans
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
+        self.unsafeLogFields = []
         self.unsafeIsFinished = false
-        self.unsafeLogFields = logFields
     }
 
     // MARK: - Open Tracing interface
@@ -72,44 +68,35 @@ internal class DDSpan: OTSpan {
     }
 
     func setOperationName(_ operationName: String) {
-        if warnIfFinished("setOperationName(_:)") {
-            return
+        queue.async {
+            if self.warnIfFinished("setOperationName(_:)") {
+                return
+            }
+            self.unsafeOperationName = operationName
         }
-        self.operationName = operationName
     }
 
     func setTag(key: String, value: Encodable) {
-        if warnIfFinished("setTag(key:value:)") {
-            return
-        }
-        ddTracer.queue.async {
+        queue.async {
+            if self.warnIfFinished("setTag(key:value:)") {
+                return
+            }
             self.unsafeTags[key] = value
         }
     }
 
     func setBaggageItem(key: String, value: String) {
-        if warnIfFinished("setBaggageItem(key:value:)") {
-            return
+        let isFinished = queue.sync { self.warnIfFinished("setBaggageItem(key:value:)") }
+        if !isFinished {
+            // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
+            ddContext.baggageItems.set(key: key, value: value)
         }
-        ddContext.baggageItems.set(key: key, value: value)
     }
 
     func baggageItem(withKey key: String) -> String? {
-        if warnIfFinished("baggageItem(withKey:)") {
-            return nil
-        }
-        return ddContext.baggageItems.get(key: key)
-    }
-
-    func finish(at time: Date) {
-        if warnIfFinished("finish(at:)") {
-            return
-        }
-        isFinished = true
-        if let activity = activityReference {
-            ddTracer.activeSpansPool.removeSpan(activityReference: activity)
-        }
-        ddTracer.write(ddspan: self, finishTime: time)
+        let isFinished = queue.sync { self.warnIfFinished("baggageItem(withKey:)") }
+        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
+        return !isFinished ? ddContext.baggageItems.get(key: key) : nil
     }
 
     @discardableResult
@@ -122,21 +109,73 @@ internal class DDSpan: OTSpan {
     }
 
     func log(fields: [String: Encodable], timestamp: Date) {
-        if warnIfFinished("log(fields:timestamp:)") {
-            return
-        }
-        ddTracer.queue.async {
+        queue.async {
+            if self.warnIfFinished("log(fields:timestamp:)") {
+                return
+            }
             self.unsafeLogFields.append(fields)
         }
-        ddTracer.writeLog(for: self, fields: fields, date: timestamp)
+        sendSpanLogs(fields: fields, date: timestamp)
+    }
+
+    func finish(at time: Date) {
+        let isFinished: Bool = queue.sync {
+            let wasFinished = self.warnIfFinished("finish(at:)")
+            self.unsafeIsFinished = true
+            return wasFinished
+        }
+
+        if !isFinished {
+            if let activity = activityReference {
+                ddTracer.activeSpansPool.removeSpan(activityReference: activity)
+            }
+            sendSpan(finishTime: time)
+        }
+    }
+
+    // MARK: - Writting SpanEvent
+
+    /// Sends span event for given `DDSpan`.
+    private func sendSpan(finishTime: Date) {
+        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
+        let baggageItems = ddContext.baggageItems.all
+
+        // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
+        // the `builder.createSpan()` off the main thread. This is important as the span creation includes
+        // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
+        // as it is very likely to be deallocated after return.
+        queue.async {
+            let span = self.spanBuilder.createSpanEvent(
+                traceID: self.ddContext.traceID,
+                spanID: self.ddContext.spanID,
+                parentSpanID: self.ddContext.parentSpanID,
+                operationName: self.unsafeOperationName,
+                startTime: self.startTime,
+                finishTime: finishTime,
+                tags: self.unsafeTags,
+                baggageItems: baggageItems,
+                logFields: self.unsafeLogFields
+            )
+            self.spanOutput.write(span: span)
+        }
+    }
+
+    private func sendSpanLogs(fields: [String: Encodable], date: Date) {
+        guard let logOutput = logOutput else {
+            queue.async {
+                userLogger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.")
+            }
+            return
+        }
+        logOutput.writeLog(withSpanContext: ddContext, fields: fields, date: date)
     }
 
     // MARK: - Private
 
     private func warnIfFinished(_ methodName: String) -> Bool {
         return warn(
-            if: isFinished,
-            message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."
+            if: unsafeIsFinished,
+            message: "🔥 Calling `\(methodName)` on a finished span (\"\(unsafeOperationName)\") is not allowed."
         )
     }
 }

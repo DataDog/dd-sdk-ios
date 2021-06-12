@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal protocol RUMScope: class {
+internal protocol RUMScope: AnyObject {
     /// Processes given command. Returns:
     /// * `true` if the scope should be kept open.
     /// * `false` if the scope should be closed.

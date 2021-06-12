@@ -48,26 +48,30 @@ internal final class RUMFeature {
     /// RUM upload worker.
     let upload: FeatureUpload
 
+    /// RUM events mapper.
+    let eventsMapper: RUMEventsMapper
+
     // MARK: - Initialization
 
     static func createStorage(
         directories: FeatureDirectories,
-        eventMapper: RUMEventsMapper,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directories: directories,
-            eventMapper: eventMapper,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     static func createUpload(
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
@@ -85,7 +89,7 @@ internal final class RUMFeature {
             uploadURLProvider: UploadURLProvider(
                 urlWithClientToken: configuration.uploadURLWithClientToken,
                 queryItemProviders: [
-                    .ddsource(),
+                    .ddsource(source: configuration.common.source),
                     .ddtags(
                         tags: [
                             "service:\(configuration.common.serviceName)",
@@ -96,22 +100,37 @@ internal final class RUMFeature {
                     )
                 ]
             ),
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
     }
 
     convenience init(
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        internalMonitor: InternalMonitor? = nil
     ) {
+        let eventsMapper = RUMEventsMapper(
+            viewEventMapper: configuration.viewEventMapper,
+            errorEventMapper: configuration.errorEventMapper,
+            resourceEventMapper: configuration.resourceEventMapper,
+            actionEventMapper: configuration.actionEventMapper,
+            internalMonitor: internalMonitor
+        )
         let storage = RUMFeature.createStorage(
             directories: directories,
-            eventMapper: configuration.eventMapper,
-            commonDependencies: commonDependencies
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
         )
-        let upload = RUMFeature.createUpload(storage: storage, configuration: configuration, commonDependencies: commonDependencies)
+        let upload = RUMFeature.createUpload(
+            storage: storage,
+            configuration: configuration,
+            commonDependencies: commonDependencies,
+            internalMonitor: internalMonitor
+        )
         self.init(
+            eventsMapper: eventsMapper,
             storage: storage,
             upload: upload,
             configuration: configuration,
@@ -120,6 +139,7 @@ internal final class RUMFeature {
     }
 
     init(
+        eventsMapper: RUMEventsMapper,
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: FeaturesConfiguration.RUM,
@@ -137,7 +157,16 @@ internal final class RUMFeature {
         self.launchTimeProvider = commonDependencies.launchTimeProvider
 
         // Initialize stacks
+        self.eventsMapper = eventsMapper
         self.storage = storage
         self.upload = upload
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        storage.flushAndTearDown()
+        upload.flushAndTearDown()
+        RUMFeature.instance = nil
+    }
+#endif
 }

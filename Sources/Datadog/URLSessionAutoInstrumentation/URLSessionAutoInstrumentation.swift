@@ -7,25 +7,37 @@
 import Foundation
 
 /// `URLSession` Auto Instrumentation feature.
-internal class URLSessionAutoInstrumentation {
+internal final class URLSessionAutoInstrumentation {
     static var instance: URLSessionAutoInstrumentation?
 
     let swizzler: URLSessionSwizzler
-    let interceptor: URLSessionInterceptor
+    let interceptor: URLSessionInterceptorType
 
-    init?(
+    convenience init?(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        appStateListener: AppStateListening
     ) {
         do {
-            self.interceptor = URLSessionInterceptor(configuration: configuration, dateProvider: dateProvider)
-            self.swizzler = try URLSessionSwizzler()
+            self.init(
+                swizzler: try URLSessionSwizzler(),
+                interceptor: URLSessionInterceptor(
+                    configuration: configuration,
+                    dateProvider: dateProvider,
+                    appStateListener: appStateListener
+                )
+            )
         } catch {
             consolePrint(
                 "🔥 Datadog SDK error: automatic tracking of `URLSession` requests can't be set up due to error: \(error)"
             )
             return nil
         }
+    }
+
+    init(swizzler: URLSessionSwizzler, interceptor: URLSessionInterceptorType) {
+        self.swizzler = swizzler
+        self.interceptor = interceptor
     }
 
     func enable() {
@@ -36,4 +48,12 @@ internal class URLSessionAutoInstrumentation {
         let rumResourceHandler = interceptor.handler as? URLSessionRUMResourcesHandler
         rumResourceHandler?.subscribe(commandsSubscriber: commandSubscriber)
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Removes `URLSession` swizzling and deinitializes this component.
+    func deinitialize() {
+        swizzler.unswizzle()
+        URLSessionAutoInstrumentation.instance = nil
+    }
+#endif
 }

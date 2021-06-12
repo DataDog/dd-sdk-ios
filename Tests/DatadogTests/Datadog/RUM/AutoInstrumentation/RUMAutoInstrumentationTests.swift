@@ -23,7 +23,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
     func testGivenRUMViewsAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsViewsHandler() throws {
         // Given
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
             configuration: .init(
@@ -32,7 +32,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance = nil }
+        defer { RUMAutoInstrumentation.instance?.deinitialize() }
 
         // When
         Global.rum = RUMMonitor.initialize()
@@ -46,7 +46,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
     func testGivenRUMUserActionsAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsUserActionsHandler() throws {
         // Given
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
             configuration: .init(
@@ -55,7 +55,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance = nil }
+        defer { RUMAutoInstrumentation.instance?.deinitialize() }
 
         // When
         Global.rum = RUMMonitor.initialize()
@@ -70,7 +70,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
     func testWhenAllRUMAutoInstrumentationsDisabled_itDoesNotCreateInstrumentationComponents() throws {
         // Given
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         /// This configuration is not allowed by `FeaturesConfiguration` logic. We test it for sanity.
         let notAllowedConfiguration = FeaturesConfiguration.RUM.AutoInstrumentation(
@@ -82,7 +82,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
             configuration: notAllowedConfiguration,
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance = nil }
+        defer { RUMAutoInstrumentation.instance?.deinitialize() }
 
         // Then
         XCTAssertNil(RUMAutoInstrumentation.instance?.views)

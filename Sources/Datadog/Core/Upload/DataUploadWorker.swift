@@ -7,7 +7,12 @@
 import Foundation
 
 /// Abstracts the `DataUploadWorker`, so we can have no-op uploader in tests.
-internal protocol DataUploadWorkerType {}
+internal protocol DataUploadWorkerType {
+#if DD_SDK_COMPILED_FOR_TESTING
+    func flushSynchronously()
+    func cancelSynchronously()
+#endif
+}
 
 internal class DataUploadWorker: DataUploadWorkerType {
     /// Queue to execute uploads.
@@ -29,6 +34,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
 
+    /// Upload work scheduled by this worker.
+    private var uploadWork: DispatchWorkItem?
+
     init(
         queue: DispatchQueue,
         fileReader: Reader,
@@ -44,22 +52,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.delay = delay
         self.featureName = featureName
 
-        scheduleNextUpload(after: self.delay.current)
-    }
-
-    private func scheduleNextUpload(after delay: TimeInterval) {
-        queue.asyncAfter(deadline: .now() + delay) { [weak self] in
+        let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
-
-            developerLogger?.info("⏳ (\(self.featureName)) Checking for next batch...")
 
             let blockersForUpload = self.uploadConditions.blockersForUpload()
             let isSystemReady = blockersForUpload.count == 0
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
-                developerLogger?.info("⏳ (\(self.featureName)) Uploading batch...")
                 userLogger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
@@ -69,17 +70,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     self.fileReader.markBatchAsRead(batch)
                     self.delay.decrease()
 
-                    developerLogger?.info("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                     userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
                 } else {
                     self.delay.increase()
 
-                    developerLogger?.info("  → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                     userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                developerLogger?.info("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
                 userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
@@ -87,7 +85,45 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
             self.scheduleNextUpload(after: self.delay.current)
         }
+
+        self.uploadWork = uploadWork
+
+        scheduleNextUpload(after: self.delay.current)
     }
+
+    private func scheduleNextUpload(after delay: TimeInterval) {
+        guard let work = uploadWork else {
+            return
+        }
+
+        queue.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Sends all unsent data synchronously.
+    /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
+    func flushSynchronously() {
+        queue.sync {
+            while let nextBatch = self.fileReader.readNextBatch() {
+                _ = self.dataUploader.upload(data: nextBatch.data)
+                self.fileReader.markBatchAsRead(nextBatch)
+            }
+        }
+    }
+
+    /// Cancels scheduled uploads and stops scheduling next ones.
+    /// - It does not affect the upload that has already begun.
+    /// - It blocks the caller thread if called in the middle of upload execution.
+    func cancelSynchronously() {
+        queue.sync {
+            // This cancellation must be performed on the `queue` to ensure that it is not called
+            // in the middle of a `DispatchWorkItem` execution - otherwise, as the pending block would be
+            // fully executed, it will schedule another upload by calling `nextScheduledWork(after:)` at the end.
+            self.uploadWork?.cancel()
+            self.uploadWork = nil
+        }
+    }
+#endif
 }
 
 extension DataUploadConditions.Blocker: CustomStringConvertible {

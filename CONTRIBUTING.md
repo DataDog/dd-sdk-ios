@@ -52,6 +52,14 @@ The workspace for SDK development and integration (tests, benchmarks, example ap
 
 `DatadogTests` (unit tests), `DatadogIntegrationTests` (integration tests), and `DatadogBenchmarkTests` (benchmarks) source files
 
+#### Lint
+
+We're using swiftlint to ensure our codebase follows Swift standard syntax. You can run the lint with our custom rules with the following command line:
+
+```shell
+$ ./tools/lint/run-linter.sh
+```
+
 #### Dependency manager tests
 
 Isolated example apps using `cocoapods`, `carthage` and `spm` to ensure SDK is well integrated with all supported dependency managers.

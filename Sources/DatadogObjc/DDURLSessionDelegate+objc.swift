@@ -8,4 +8,31 @@ import Foundation
 import Datadog
 
 @objc
-public class DDNSURLSessionDelegate: DDURLSessionDelegate {}
+open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
+    var swiftDelegate: DDURLSessionDelegate
+    public var ddURLSessionDelegate: DDURLSessionDelegate {
+        return swiftDelegate
+    }
+
+    @objc
+    override public init() {
+        swiftDelegate = DDURLSessionDelegate()
+    }
+
+    @objc
+    public init(additionalFirstPartyHosts: Set<String>) {
+        swiftDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts)
+    }
+
+    open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        swiftDelegate.urlSession(session, task: task, didCompleteWithError: error)
+    }
+
+    open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        swiftDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
+    }
+
+    open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        swiftDelegate.urlSession(session, dataTask: dataTask, didReceive: data)
+    }
+}

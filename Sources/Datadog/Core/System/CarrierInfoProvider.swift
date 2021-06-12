@@ -7,9 +7,9 @@
 import CoreTelephony
 
 /// Network connection details specific to cellular radio access.
-internal struct CarrierInfo {
+public struct CarrierInfo: Equatable {
     // swiftlint:disable identifier_name
-    enum RadioAccessTechnology: String, Encodable, CaseIterable {
+    public enum RadioAccessTechnology: String, Codable, CaseIterable {
         case GPRS
         case Edge
         case WCDMA
@@ -25,14 +25,24 @@ internal struct CarrierInfo {
     }
     // swiftlint:enable identifier_name
 
-    let carrierName: String?
-    let carrierISOCountryCode: String?
-    let carrierAllowsVOIP: Bool
-    let radioAccessTechnology: RadioAccessTechnology
+    /// The name of the user’s home cellular service provider.
+    public let carrierName: String?
+    /// The ISO country code for the user’s cellular service provider.
+    public let carrierISOCountryCode: String?
+    /// Indicates if the carrier allows making VoIP calls on its network.
+    public let carrierAllowsVOIP: Bool
+    /// The radio access technology used for cellular connection.
+    public let radioAccessTechnology: RadioAccessTechnology
 }
+
+/// An observer for `CarrierInfo` value.
+internal typealias CarrierInfoObserver = ValueObserver
 
 internal protocol CarrierInfoProviderType {
     var current: CarrierInfo? { get }
+
+    /// Subscribes for `CarrierInfo` updates.
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo?
 }
 
 extension CarrierInfo.RadioAccessTechnology {
@@ -56,15 +66,60 @@ extension CarrierInfo.RadioAccessTechnology {
     }
 }
 
-internal class CarrierInfoProvider: CarrierInfoProviderType {
-    #if targetEnvironment(macCatalyst)
-    let current: CarrierInfo? = nil
-    #else
-    private let networkInfo: CTTelephonyNetworkInfo
+/// An interface for the target-specific carrier info provider.
+internal protocol WrappedCarrierInfoProvider {
+    var current: CarrierInfo? { get }
+}
 
-    init(networkInfo: CTTelephonyNetworkInfo = CTTelephonyNetworkInfo()) {
-        self.networkInfo = networkInfo
+internal class CarrierInfoProvider: CarrierInfoProviderType {
+    /// The `CarrierInfo` provider for the current platform.
+    private let wrappedProvider: WrappedCarrierInfoProvider
+    /// Publisher for notifying observers on `CarrierInfo` change.
+    private let publisher: ValuePublisher<CarrierInfo?>
+
+    convenience init() {
+        #if targetEnvironment(macCatalyst)
+            self.init(
+                wrappedProvider: MacCatalystCarrierInfoProvider()
+            )
+        #else
+            self.init(
+                wrappedProvider: iOSCarrierInfoProvider(
+                    networkInfo: CTTelephonyNetworkInfo()
+                )
+            )
+        #endif
     }
+
+    init(wrappedProvider: WrappedCarrierInfoProvider) {
+        self.wrappedProvider = wrappedProvider
+        self.publisher = ValuePublisher(initialValue: nil)
+    }
+
+    var current: CarrierInfo? {
+        let nextValue = wrappedProvider.current
+        // `CarrierInfo` subscribers are notified as a side-effect of retrieving the
+        // current `CarrierInfo` value.
+        publisher.publishAsync(nextValue)
+        return nextValue
+    }
+
+    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
+        publisher.subscribe(subscriber)
+    }
+}
+
+#if targetEnvironment(macCatalyst)
+
+internal struct MacCatalystCarrierInfoProvider: WrappedCarrierInfoProvider {
+    /// Carrier info is not supported on macCatalyst
+    var current: CarrierInfo? { return nil }
+}
+
+#else
+
+internal struct iOSCarrierInfoProvider: WrappedCarrierInfoProvider {
+    let networkInfo: CTTelephonyNetworkInfo
 
     var current: CarrierInfo? {
         let carrier: CTCarrier?
@@ -93,5 +148,6 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
             radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
         )
     }
-    #endif
 }
+
+#endif

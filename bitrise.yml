@@ -16,6 +16,34 @@ workflows:
     - check_dependency_managers
     - _deploy_artifacts
 
+  push_to_dogfooding:
+    after_run:
+    - create_dogfooding_pr
+    - _notify_failure_on_slack
+
+  run_nightly_e2e_tests:
+    after_run:
+    - _make_dependencies
+    - run_e2e_tests
+    - _notify_failure_on_slack
+
+  tagged_commit:
+    after_run:
+    - _make_dependencies
+    - run_linter
+    - run_unit_tests
+    - run_integration_tests
+    - check_dependency_managers
+    - ship
+    - _deploy_artifacts
+    - _notify_failure_on_slack
+
+  tagged_commit_part_2:
+    after_run:
+    - ship_part_2
+    - _deploy_artifacts
+    - _notify_failure_on_slack
+
   _make_dependencies:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
@@ -34,10 +62,38 @@ workflows:
     steps:
     - deploy-to-bitrise-io: {}
 
+  _notify_failure_on_slack:
+    description: |-
+        Notifies any (previous) workflow failure on Slack.
+        Should be used to notify failures for workflows which do not report back to GitHub check.
+    steps:
+    - slack:
+        is_always_run: true
+        run_if: .IsBuildFailed
+        inputs:
+        - channel: '#dd-sdk-ios'
+        - buttons: |-
+            See Bitrise log|${BITRISE_BUILD_URL}
+        - pretext: |-
+            ⚠️ Bitrise build failed.
+        - color_on_error: '#FF0000'
+        - author_name: ''
+        - message: ''
+        - message_on_error: ''
+        - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
+        - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
+
   run_linter:
     description: |-
         Runs swiftlint and license check for all source and test files.
     steps:
+    - script:
+        title: Patch linter configuration for swiftlint 0.42.0
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            ./tools/lint/patch_if_swiftlint_0.42.0.sh
     - swiftlint@0.8.0:
         title: Lint Sources/*
         inputs:
@@ -85,7 +141,15 @@ workflows:
         - should_retry_test_on_fail: 'yes' # temporarily mutes flakiness until we collect more info (in RUMM-839) then fix it
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for DatadogCrashReporting - iOS Simulator
+        inputs:
+        - scheme: DatadogCrashReporting
+        - simulator_device: iPhone 11
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         inputs:
@@ -115,7 +179,7 @@ workflows:
         Runs integration tests from Datadog.xcworkspace.
     steps:
     - xcode-test:
-        title: Run integration tests - DatadogIntegrationTests on iOS Simulator
+        title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
         inputs:
         - scheme: DatadogIntegrationTests
         - simulator_device: iPhone 11
@@ -123,7 +187,19 @@ workflows:
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Integration-tests.html"
+        - xcodebuild_test_options: -testPlan DatadogIntegrationTests
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
+    - xcode-test:
+        title: Run integration tests for Crash Reporting (on iOS Simulator)
+        inputs:
+        - scheme: DatadogIntegrationTests
+        - simulator_device: iPhone 11
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcodebuild_test_options: -testPlan DatadogCrashReportingIntegrationTests
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReportingIntegration-tests.html"
 
   check_dependency_managers:
     description: |-
@@ -193,3 +269,58 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
+
+  create_dogfooding_pr:
+    description: |-
+        Creates PRs to repositories using `dd-sdk-ios`.
+    steps:
+    - script:
+        title: Create PR to Datadog mobile app project
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            make dogfood ci=${CI}
+
+  run_e2e_tests:
+    description: |-
+        Runs E2E tests on iOS Simulator.
+    steps:
+    - xcode-test:
+        title: Run E2E tests for manual instrumentation APIs - iOS Simulator
+        inputs:
+        - scheme: E2ETests
+        - simulator_device: iPhone 11
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-tests.html"
+    - xcode-test:
+        title: Run E2E tests for auto instrumentation APIs - iOS Simulator
+        inputs:
+        - scheme: E2EInstrumentationTests
+        - simulator_device: iPhone 11
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
+
+  ship:
+    description: |-
+        Ships the tagged version to Cocoapods trunk and uploads binaries to Github.
+    steps:
+    - script:
+        title: Ship tagged version
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            make ship
+
+  ship_part_2:
+    description: |-
+        Ships the tagged version of DatadogSDKObjc and AlamofireExtension to Cocoapods trunk.
+    steps:
+    - script:
+        title: Ship tagged version of DatadogSDKObjc and AlamofireExtension
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            make ship_part_2

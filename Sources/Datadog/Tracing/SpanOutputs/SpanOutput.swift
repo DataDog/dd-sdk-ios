@@ -8,5 +8,5 @@ import Foundation
 
 /// An interface for writing spans to some destination.
 internal protocol SpanOutput {
-    func write(span: Span)
+    func write(span: SpanEvent)
 }

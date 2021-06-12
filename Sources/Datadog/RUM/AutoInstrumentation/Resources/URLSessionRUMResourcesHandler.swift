@@ -6,13 +6,19 @@
 
 import Foundation
 
+internal typealias URLSessionRUMAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
+
 internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
     private let dateProvider: DateProvider
+    /// Attributes-providing callback.
+    /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
+    let rumAttributesProvider: (URLSessionRUMAttributesProvider)?
 
     // MARK: - Initialization
 
-    init(dateProvider: DateProvider) {
+    init(dateProvider: DateProvider, rumAttributesProvider: (URLSessionRUMAttributesProvider)?) {
         self.dateProvider = dateProvider
+        self.rumAttributesProvider = rumAttributesProvider
     }
 
     // MARK: - Internal
@@ -57,6 +63,14 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
             )
         }
 
+        // Get RUM Resource attributes from the user.
+        let userAttributes = rumAttributesProvider?(
+            interception.request,
+            interception.completion?.httpResponse,
+            interception.data,
+            interception.completion?.error
+        ) ?? [:]
+
         if let resourceMetrics = interception.metrics {
             subscriber?.process(
                 command: RUMAddResourceMetricsCommand(
@@ -73,7 +87,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
                 command: RUMStopResourceCommand(
                     resourceKey: interception.identifier.uuidString,
                     time: dateProvider.currentDate(),
-                    attributes: [:],
+                    attributes: userAttributes,
                     kind: RUMResourceType(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
                     size: interception.metrics?.responseSize
@@ -89,7 +103,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
                     error: error,
                     source: .network,
                     httpStatusCode: interception.completion?.httpResponse?.statusCode,
-                    attributes: [:]
+                    attributes: userAttributes
                 )
             )
         }
