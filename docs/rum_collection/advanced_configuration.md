@@ -1,68 +1,47 @@
-##Configure iOS SDK
-
-If you haven't setup the SDK yet, follow the [in-app setup instructions][1] or find instructions in [iOS RUM setup][2]. 
-
-## Initialization Parameters
+# Troubleshooting FAQs
  
-The following methods in `Datadog.Configuration` can be used to initialize the library:
+
+## Check if Datadog RUM is initialized
+Use the utility method `isInitialized` to check if the SDK is properly initialized:
+
+//TODO code snippet
+
+## Debugging
+When writing your application, you can enable development logs by calling the `setVerbosity` method. All internal messages in the library with a priority equal to or higher than the provided level are then logged to Android's Logcat:
+
+//TODO code snippet
+
+## Set tracking consent (GDPR compliance)
+
+To be compliant with the GDPR regulation, the SDK requires the tracking consent value at initialization.
+The `trackingConsent` can be one of the following values:
+
+1. `TrackingConsent.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
+2. `TrackingConsent.granted` - the SDK starts collecting the data and sends it to Datadog.
+3. `TrackingConsent.notGranted` - the SDK does not collect any data: logs, traces, and RUM events are not sent to Datadog.
+
+To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
+The SDK changes its behavior according to the new value. For example, if the current tracking consent is `.pending`:
+
+- if changed to `.granted`, the SDK will send all current and future data to Datadog;
+- if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
+
+
+## Sample RUM sessions
+
+To control the data your application sends to Datadog RUM, you can specify a sampling rate for RUM sessions while [initializing the RumMonitor][1] as a percentage between 0 and 100.
+
+//TODO code snippet
+
+## Sending data when device is offline
+
+RUM ensures availability of data when your user device is offline. In cases of low-network areas, or when the device battery is too low, all the RUM events are first stored on the local device in batches. Each batch follows the intake specification. They are sent as soon as the network is available, and the battery is high enough to ensure the Datadog SDK does not impact the end user's experience. If the network is not available while your application is in the foreground, or if an upload of data fails, the batch is kept until it can be sent successfully.
  
-| Method                           | Description                                                                                                                                                                                                                                                             |
-|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `set(serviceName: "service-name")` | Set `<SERVICE_NAME>` as default value for the `service` [standard attribute][9] attached to all logs and traces sent to Datadog (this can be overriden in each Logger)    |
-| `trackUIKitActions()` | Enables tracking User interactions (such as Tap, Scroll or Swipe). For privacy reasons, all interactions with the on-screen keyboard are ignored |
-| `trackUIKitRUMViews()` | Enables tracking for `ViewController` as a RUM View. You can also [customize view tracking][10] by using your own implementation of the `predicate` conforming `UIKitRUMViewsPredicate` protocol  |
-| `track(firstPartyHosts: ["your.domain.com"])` | Enables tracking for RUM resources. Requests whose URLs match the `firstPartyHosts` will be tagged as "first party" in the RUM events |
-| `set(endpoint: .eu)` | Switch target endpoints for data to EU for europe users  |
+This means that even if users open your application while offline, no data is lost.
+ 
+**Note**: The data on the disk is automatically discarded if it gets too old to ensure the SDK doesn't use too much disk space.
 
+## Further Reading
+{{< partial name="whats-next/whats-next.html" >}}
 
-## Add Custom Attributes
-
-In addition to the [default RUM attributes][3] captured by the Mobile SDK automatically, you can choose to add additional contextual information as custom attributes to your RUM events to enrich your observability within Datadog. Custom attributes allow you to slice and dice infomation about observed user behavior (cart value, merchant-tier, ad campaign) with code-level infomation (backend services, session timeline, error logs, network health etc).
-
-// TODO Add code snippet
-//Globalrum.addAttribute()
-
-## Add User Info
-
-### Identify user sessions
-Adding user information to your RUM sessions makes it easy to:
-* Follow the journey of a given user
-* Know which users are the most impacted by crashes
-* Monitor performance for your most important users
-
-{{< img src="real_user_monitoring/browser/advanced_configuration/user-api.png" alt="User API in RUM UI"  >}}
-
-The following attributes are **optional** but it is recommended to provide **at least one** of them:
-
-| Attribute  | Type | Description                                                                                              |
-|------------|------|----------------------------------------------------------------------------------------------------|
-| usr.id    | String | Unique user identifier.                                                                                  |
-| usr.name  | String | User friendly name, displayed by default in the RUM UI.                                                  |
-| usr.email | String | User email, displayed in the RUM UI if the user name is not present. It is also used to fetch Gravatars. |
-
-To identify user sessions, use the `setUser` API:
-
-// TODO Add code snippet
-//Datadog.setUserInfo()
-
-### Add your own performance timing
-
-On top of RUM’s default attributes, you may measure where your application is spending its time with greater flexibility. The `addTiming` API provides you with a simple way to add extra performance timing. The timing measure will be relative to the start of the current RUM view. For example, you can add a timing when your hero image has appeared:
-
-   ```kotlin
-       func onHeroImageLoaded() {
-           Global.rum.addTiming(name: "content-ready")
-       } 
-   ```
-
-Once the timing is sent, the timing will be accessible as `@view.custom_timings.<timing_name>` (For example, `@view.custom_timings.hero_image`). You must [create a measure](https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures) before graphing it in RUM analytics or in dashboards. 
-
-## Sample RUM events
-
-To control the data your application sends to Datadog RUM, you can secify a sampling rate for RUM sessions while [initializing the RumMonitor][] as a percentage between 0 and 100.
-//TODO add code snippet
-
-
-[1]: https://app.datadoghq.com/rum/create
-[2]: /real_user_monitoring/ios
-[3]: /real_user_monitoring/ios/data_collected
+[1]:/real_user_monitoring/android/

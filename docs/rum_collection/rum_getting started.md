@@ -1,8 +1,18 @@
-# Getting Started with iOS RUM Collection
+# Getting Started with Android RUM Collection
 
-Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your application's individual users.
+Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the real-time performance and user journeys of your application's individual users.
 
 ## Setup
+
+1. Declare SDK as a dependency.
+2. Specify application details in UI.
+3. Initialize the library with application context.
+4. Initialize RUM Monitor, Interceptor and start sending data.
+
+**Minimum iOS version**: Datadog SDK for iOS supports iOS v11+.
+
+
+### Declare SDK as dependency
 
 1. Declare [dd-sdk-ios][1] as a dependency, depending on your package manager.
 
@@ -19,13 +29,19 @@ Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real
 [3]: https://swift.org/package-manager/
 [4]: https://github.com/Carthage/Carthage
 
-2. [Specify application details in Datadog UI][5] to generate a unique Datadog Application ID, and Client Token.
+
+### Specify application details in UI
+
+1. Select UX Monitoring -> RUM Applications -> New Application
+2. Choose `android` as your Application Type in [Datadog UI][2] and provide a new application name to generate a unique Datadog application ID and client token.
 
 {{< img src="docs/images/screenshot_rum.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}).
 
 To ensure safety of your data, you must use a client token: you cannot use [Datadog API keys][6] to configure the `dd-sdk-android` library as they would be exposed client-side in the Android application APK byte code. For more information about setting up a client token, see the [client token documentation][7]
 
-3. Initialize the library with application context and start sending data:
+
+### Initialize the library with application context
+
 
     {{< tabs >}}
     {{% tab "US" %}}
@@ -33,15 +49,13 @@ To ensure safety of your data, you must use a client token: you cannot use [Data
 ```swift
 Datadog.initialize(
     appContext: .init(),
+    trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
         .builderUsing(
             rumApplicationID: "<rum_application-id>",
             clientToken: "<client_token>",
             environment: "<environment_name>"
         )
-        .trackUIKitRUMViews()
-        .track(firstPartyHosts: ["your.domain.com"])
-        .trackUIKitActions()
         .set(serviceName: "app-name")
         .build()
 )
@@ -53,15 +67,13 @@ Datadog.initialize(
 ```swift
 Datadog.initialize(
     appContext: .init(),
+    trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
         .builderUsing(
             rumApplicationID: "<rum_application-id>",
             clientToken: "<client_token>",
             environment: "<environment_name>"
         )
-        .trackUIKitRUMViews()
-        .track(firstPartyHosts: ["your.domain.com"])
-        .trackUIKitActions()
         .set(serviceName: "app-name")
         .set(endpoint: .eu)
         .build()
@@ -71,9 +83,11 @@ Datadog.initialize(
     {{% /tab %}}
     {{< /tabs >}}
 
-RUM SDK automatically tracks user sessions, depending on options provided at SDK initialization. Learn more about [initialization parameters][8] for SDK configuartion options.
+RUM SDK automatically tracks user sessions, depending on options provided at SDK initialization. Learn more about [`trackingConsent`][8] to add GDPR compliance for your EU users, [initialization parameters][9] for SDK configuartion options.
 
-3. Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
+### Initialize RUM Monitor and URLSesssionDelegate
+
+Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
 
     ```swift
     import Datadog
@@ -81,7 +95,7 @@ RUM SDK automatically tracks user sessions, depending on options provided at SDK
     Global.rum = RUMMonitor.initialize()
     ```
 
-4. To monitor requests sent from `URLSession` instance, assign `DDURLSessionDelegate()` as a `delegate` of that `URLSession`
+To monitor requests sent from `URLSession` instance as resources, assign `DDURLSessionDelegate()` as a `delegate` of that `URLSession`
 
 ```swift
 let session = URLSession(
