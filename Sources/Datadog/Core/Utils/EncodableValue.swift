@@ -33,3 +33,42 @@ internal struct EncodableValue: Encodable {
         }
     }
 }
+
+/// Helper type performing type erasure of encoded JSON types.
+/// It conforms to `Encodable`, so decoded value can be further serialized into exactly the same JSON representation.
+internal struct CodableValue: Codable {
+    private let value: Encodable
+
+    init<T: Encodable>(_ value: T) {
+        self.value = value
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        if let bool = try? container.decode(Bool.self) {
+            self.init(bool)
+        } else if let uint64 = try? container.decode(UInt64.self) {
+            self.init(uint64)
+        } else if let int = try? container.decode(Int.self) {
+            self.init(int)
+        } else if let double = try? container.decode(Double.self) {
+            self.init(double)
+        } else if let string = try? container.decode(String.self) {
+            self.init(string)
+        } else if let array = try? container.decode([CodableValue].self) {
+            self.init(array)
+        } else if let dictionary = try? container.decode([String: CodableValue].self) {
+            self.init(dictionary)
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Custom attribute at \(container.codingPath) cannot is not a `Codable` type supported by the SDK."
+            )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        try value.encode(to: encoder)
+    }
+}

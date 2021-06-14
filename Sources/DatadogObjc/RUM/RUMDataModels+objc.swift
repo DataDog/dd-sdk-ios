@@ -32,6 +32,10 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.connectivity != nil ? DDRUMViewEventRUMConnectivity(root: root) : nil
     }
 
+    @objc public var context: DDRUMViewEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMViewEventRUMEventAttributes(root: root) : nil
+    }
+
     @objc public var date: NSNumber {
         root.swiftModel.date as NSNumber
     }
@@ -190,6 +194,19 @@ public enum DDRUMViewEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMViewEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo
+    }
+}
+
+@objc
 public class DDRUMViewEventSession: NSObject {
     internal let root: DDRUMViewEvent
 
@@ -249,6 +266,10 @@ public class DDRUMViewEventRUMUser: NSObject {
     @objc public var name: String? {
         root.swiftModel.usr!.name
     }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo
+    }
 }
 
 @objc
@@ -261,6 +282,14 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var action: DDRUMViewEventViewAction {
         DDRUMViewEventViewAction(root: root)
+    }
+
+    @objc public var cpuTicksCount: NSNumber? {
+        root.swiftModel.view.cpuTicksCount as NSNumber?
+    }
+
+    @objc public var cpuTicksPerSecond: NSNumber? {
+        root.swiftModel.view.cpuTicksPerSecond as NSNumber?
     }
 
     @objc public var crash: DDRUMViewEventViewCrash? {
@@ -307,6 +336,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]? {
+        root.swiftModel.view.inForegroundPeriods?.map { DDRUMViewEventViewInForegroundPeriods(swiftModel: $0) }
+    }
+
     @objc public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
     }
@@ -331,6 +364,14 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.longTask != nil ? DDRUMViewEventViewLongTask(root: root) : nil
     }
 
+    @objc public var memoryAverage: NSNumber? {
+        root.swiftModel.view.memoryAverage as NSNumber?
+    }
+
+    @objc public var memoryMax: NSNumber? {
+        root.swiftModel.view.memoryMax as NSNumber?
+    }
+
     @objc public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -339,6 +380,14 @@ public class DDRUMViewEventView: NSObject {
     @objc public var referrer: String? {
         set { root.swiftModel.view.referrer = newValue }
         get { root.swiftModel.view.referrer }
+    }
+
+    @objc public var refreshRateAverage: NSNumber? {
+        root.swiftModel.view.refreshRateAverage as NSNumber?
+    }
+
+    @objc public var refreshRateMin: NSNumber? {
+        root.swiftModel.view.refreshRateMin as NSNumber?
     }
 
     @objc public var resource: DDRUMViewEventViewResource {
@@ -391,6 +440,24 @@ public class DDRUMViewEventViewError: NSObject {
 
     @objc public var count: NSNumber {
         root.swiftModel.view.error.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewInForegroundPeriods: NSObject {
+    internal let swiftModel: RUMViewEvent.View.InForegroundPeriods
+    internal var root: DDRUMViewEventViewInForegroundPeriods { self }
+
+    internal init(swiftModel: RUMViewEvent.View.InForegroundPeriods) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var duration: NSNumber {
+        root.swiftModel.duration as NSNumber
+    }
+
+    @objc public var start: NSNumber {
+        root.swiftModel.start as NSNumber
     }
 }
 
@@ -484,6 +551,10 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var connectivity: DDRUMResourceEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMResourceEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var context: DDRUMResourceEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMResourceEventRUMEventAttributes(root: root) : nil
     }
 
     @objc public var date: NSNumber {
@@ -662,6 +733,19 @@ public enum DDRUMResourceEventRUMConnectivityStatus: Int {
     case connected
     case notConnected
     case maybe
+}
+
+@objc
+public class DDRUMResourceEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo
+    }
 }
 
 @objc
@@ -1051,6 +1135,10 @@ public class DDRUMResourceEventRUMUser: NSObject {
     @objc public var name: String? {
         root.swiftModel.usr!.name
     }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo
+    }
 }
 
 @objc
@@ -1104,6 +1192,10 @@ public class DDRUMActionEvent: NSObject {
 
     @objc public var connectivity: DDRUMActionEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMActionEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var context: DDRUMActionEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMActionEventRUMEventAttributes(root: root) : nil
     }
 
     @objc public var date: NSNumber {
@@ -1402,6 +1494,19 @@ public enum DDRUMActionEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMActionEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo
+    }
+}
+
+@objc
 public class DDRUMActionEventSession: NSObject {
     internal let root: DDRUMActionEvent
 
@@ -1461,6 +1566,10 @@ public class DDRUMActionEventRUMUser: NSObject {
     @objc public var name: String? {
         root.swiftModel.usr!.name
     }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo
+    }
 }
 
 @objc
@@ -1473,6 +1582,10 @@ public class DDRUMActionEventView: NSObject {
 
     @objc public var id: String {
         root.swiftModel.view.id
+    }
+
+    @objc public var inForeground: NSNumber? {
+        root.swiftModel.view.inForeground as NSNumber?
     }
 
     @objc public var name: String? {
@@ -1514,6 +1627,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var connectivity: DDRUMErrorEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMErrorEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var context: DDRUMErrorEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMErrorEventRUMEventAttributes(root: root) : nil
     }
 
     @objc public var date: NSNumber {
@@ -1687,11 +1804,28 @@ public enum DDRUMErrorEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMErrorEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo
+    }
+}
+
+@objc
 public class DDRUMErrorEventError: NSObject {
     internal let root: DDRUMErrorEvent
 
     internal init(root: DDRUMErrorEvent) {
         self.root = root
+    }
+
+    @objc public var id: String? {
+        root.swiftModel.error.id
     }
 
     @objc public var isCrash: NSNumber? {
@@ -1954,6 +2088,10 @@ public class DDRUMErrorEventRUMUser: NSObject {
     @objc public var name: String? {
         root.swiftModel.usr!.name
     }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo
+    }
 }
 
 @objc
@@ -1966,6 +2104,10 @@ public class DDRUMErrorEventView: NSObject {
 
     @objc public var id: String {
         root.swiftModel.view.id
+    }
+
+    @objc public var inForeground: NSNumber? {
+        root.swiftModel.view.inForeground as NSNumber?
     }
 
     @objc public var name: String? {
@@ -1986,4 +2128,4 @@ public class DDRUMErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a37c41a4ac1aa3bfdc8d1fcecb35e4d1e07adddc
+// Generated from https://github.com/DataDog/rum-events-format/tree/d40d93a607a2d4483c95bd000a4e8ebd96fdf1fd

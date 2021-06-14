@@ -27,7 +27,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                 isOptional: true,
                                 isMutable: false,
                                 defaultValue: nil,
-                                codingKey: "property1"
+                                codingKey: .static(value: "property1")
                             ),
                             SwiftStruct.Property(
                                 name: "property2",
@@ -36,7 +36,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                 isOptional: false,
                                 isMutable: true,
                                 defaultValue: nil,
-                                codingKey: "property2"
+                                codingKey: .static(value: "property2")
                             )
                         ],
                         conformance: []
@@ -44,7 +44,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: "bar"
+                    codingKey: .static(value: "bar")
                 ),
                 SwiftStruct.Property(
                     name: "property1",
@@ -63,7 +63,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: false,
                     isMutable: false,
                     defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                    codingKey: "property1"
+                    codingKey: .static(value: "property1")
                 ),
                 SwiftStruct.Property(
                     name: "property2",
@@ -84,7 +84,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: true,
                     defaultValue: nil,
-                    codingKey: "property2"
+                    codingKey: .static(value: "property2")
                 ),
                 SwiftStruct.Property(
                     name: "propertiesByNames",
@@ -93,7 +93,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: true,
                     defaultValue: nil,
-                    codingKey: "propertiesByNames"
+                    codingKey: .static(value: "propertiesByNames")
                 )
             ],
             conformance: []
@@ -120,7 +120,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                     isOptional: true,
                                     isMutable: false,
                                     defaultValue: nil,
-                                    codingKey: "property1"
+                                    codingKey: .static(value: "property1")
                                 ),
                                 SwiftStruct.Property(
                                     name: "property2",
@@ -129,7 +129,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                     isOptional: false,
                                     isMutable: true,
                                     defaultValue: nil,
-                                    codingKey: "property2"
+                                    codingKey: .static(value: "property2")
                                 )
                             ],
                             conformance: [codableProtocol]
@@ -137,7 +137,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: true,
                         isMutable: false,
                         defaultValue: nil,
-                        codingKey: "bar"
+                        codingKey: .static(value: "bar")
                     ),
                     SwiftStruct.Property(
                         name: "property1",
@@ -156,7 +156,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: false,
                         isMutable: false,
                         defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                        codingKey: "property1"
+                        codingKey: .static(value: "property1")
                     ),
                     SwiftStruct.Property(
                         name: "property2",
@@ -177,7 +177,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: true,
                         isMutable: true,
                         defaultValue: nil,
-                        codingKey: "property2"
+                        codingKey: .static(value: "property2")
                     ),
                     SwiftStruct.Property(
                         name: "propertiesByNames",
@@ -186,7 +186,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: true,
                         isMutable: true,
                         defaultValue: nil,
-                        codingKey: "propertiesByNames"
+                        codingKey: .static(value: "propertiesByNames")
                     )
                 ],
                 conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
@@ -213,7 +213,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: "connectivity"
+                    codingKey: .static(value: "connectivity")
                 ),
                 SwiftStruct.Property(
                     name: "usr",
@@ -227,7 +227,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: "usr"
+                    codingKey: .static(value: "usr")
                 ),
                 SwiftStruct.Property(
                     name: "method",
@@ -241,7 +241,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     isOptional: true,
                     isMutable: false,
                     defaultValue: nil,
-                    codingKey: "method"
+                    codingKey: .static(value: "method")
                 )
             ],
             conformance: []
@@ -261,7 +261,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: true,
                         isMutable: false,
                         defaultValue: nil,
-                        codingKey: "connectivity"
+                        codingKey: .static(value: "connectivity")
                     ),
                     SwiftStruct.Property(
                         name: "usr",
@@ -270,7 +270,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: true,
                         isMutable: false,
                         defaultValue: nil,
-                        codingKey: "usr"
+                        codingKey: .static(value: "usr")
                     ),
                     SwiftStruct.Property(
                         name: "method",
@@ -279,7 +279,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         isOptional: true,
                         isMutable: false,
                         defaultValue: nil,
-                        codingKey: "method"
+                        codingKey: .static(value: "method")
                     )
                 ],
                 conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]

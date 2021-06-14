@@ -958,6 +958,118 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingObjcInteropForSwiftStructWithStructArrayProperties() throws {
+        func mockStruct(named name: String) -> SwiftStruct {
+            return SwiftStruct(
+                name: name,
+                comment: nil,
+                properties: [
+                    SwiftStruct.Property(
+                        name: "property",
+                        comment: nil,
+                        type: SwiftPrimitive<String>(),
+                        isOptional: false,
+                        isMutable: false,
+                        defaultValue: nil,
+                        codingKey: .static(value: "property")
+                    )
+                ],
+                conformance: []
+            )
+        }
+
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "immutableStructs",
+                    type: SwiftArray(element: mockStruct(named: "Bar")),
+                    isOptional: false,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "optionalImmutableStructs",
+                    type: SwiftArray(element: mockStruct(named: "Bizz")),
+                    isOptional: true,
+                    isMutable: false
+                ),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let immutableStructs: [Bar]
+
+            public let optionalImmutableStructs: [Bizz]?
+
+            public struct Bar {
+                public let property: String
+            }
+
+            public struct Bizz {
+                public let property: String
+            }
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var immutableStructs: [DDFooBar] {
+                root.swiftModel.immutableStructs.map { DDFooBar(swiftModel: $0) }
+            }
+
+            @objc public var optionalImmutableStructs: [DDFooBizz]? {
+                root.swiftModel.optionalImmutableStructs?.map { DDFooBizz(swiftModel: $0) }
+            }
+        }
+
+        @objc
+        public class DDFooBar: NSObject {
+            internal let swiftModel: Foo.Bar
+            internal var root: DDFooBar { self }
+
+            internal init(swiftModel: Foo.Bar) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var property: String {
+                root.swiftModel.property
+            }
+        }
+
+        @objc
+        public class DDFooBizz: NSObject {
+            internal let swiftModel: Foo.Bizz
+            internal var root: DDFooBizz { self }
+
+            internal init(swiftModel: Foo.Bizz) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var property: String {
+                root.swiftModel.property
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
     // MARK: - Property wrappers for Swift Dictionaries
 
     func testPrintingObjcInteropForSwiftStructWithStringDictionaryProperties() throws {
@@ -1116,6 +1228,63 @@ final class ObjcInteropPrinterTests: XCTestCase {
             @objc public var optionalMutableInt64s: [String: NSNumber]? {
                 set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
                 get { root.swiftModel.optionalMutableInt64s as [String: NSNumber]? }
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testPrintingObjcInteropForSwiftStructWithCodableDictionaryProperties() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "immutableCodables",
+                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    isOptional: false,
+                    isMutable: false
+                ),
+                .mock(
+                    propertyName: "optionalImmutableCodables",
+                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    isOptional: true,
+                    isMutable: false
+                ),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let immutableCodables: [String: Codable]
+
+            public let optionalImmutableCodables: [String: Codable]?
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var immutableCodables: [String: Any] {
+                root.swiftModel.immutableCodables
+            }
+
+            @objc public var optionalImmutableCodables: [String: Any]? {
+                root.swiftModel.optionalImmutableCodables
             }
         }
 
@@ -1744,7 +1913,7 @@ extension SwiftStruct.Property {
             isOptional: isOptional,
             isMutable: isMutable,
             defaultValue: nil,
-            codingKey: propertyName
+            codingKey: .static(value: propertyName)
         )
     }
 }

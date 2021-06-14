@@ -19,7 +19,8 @@ extension RUMUser {
         return RUMUser(
             email: .mockRandom(),
             id: .mockRandom(),
-            name: .mockRandom()
+            name: .mockRandom(),
+            usrInfo: mockRandomAttributes()
         )
     }
 }
@@ -43,12 +44,19 @@ extension RUMMethod {
     }
 }
 
+extension RUMEventAttributes: RandomMockable {
+    static func mockRandom() -> RUMEventAttributes {
+        return .init(contextInfo: mockRandomAttributes())
+    }
+}
+
 extension RUMViewEvent {
     static func mockRandom() -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(documentVersion: .mockRandom()),
             application: .init(id: .mockRandom()),
             connectivity: .mockRandom(),
+            context: .mockRandom(),
             date: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -59,6 +67,8 @@ extension RUMViewEvent {
             usr: .mockRandom(),
             view: .init(
                 action: .init(count: .mockRandom()),
+                cpuTicksCount: .mockRandom(),
+                cpuTicksPerSecond: .mockRandom(),
                 crash: .init(count: .mockRandom()),
                 cumulativeLayoutShift: .mockRandom(),
                 customTimings: .mockAny(),
@@ -70,14 +80,24 @@ extension RUMViewEvent {
                 firstInputDelay: .mockRandom(),
                 firstInputTime: .mockRandom(),
                 id: .mockRandom(),
+                inForegroundPeriods: [
+                    .init(
+                        duration: .mockRandom(),
+                        start: .mockRandom()
+                    )
+                ],
                 isActive: .random(),
                 largestContentfulPaint: .mockRandom(),
                 loadEvent: .mockRandom(),
                 loadingTime: .mockRandom(),
                 loadingType: nil,
                 longTask: .init(count: .mockRandom()),
+                memoryAverage: .mockRandom(),
+                memoryMax: .mockRandom(),
                 name: .mockRandom(),
                 referrer: .mockRandom(),
+                refreshRateAverage: .mockRandom(),
+                refreshRateMin: .mockRandom(),
                 resource: .init(count: .mockRandom()),
                 timeSpent: .mockRandom(),
                 url: .mockRandom()
@@ -96,6 +116,7 @@ extension RUMResourceEvent {
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             connectivity: .mockRandom(),
+            context: .mockRandom(),
             date: .mockRandom(),
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
@@ -149,6 +170,7 @@ extension RUMActionEvent {
             ),
             application: .init(id: .mockRandom()),
             connectivity: .mockRandom(),
+            context: .mockRandom(),
             date: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -159,6 +181,7 @@ extension RUMActionEvent {
             usr: .mockRandom(),
             view: .init(
                 id: .mockRandom(),
+                inForeground: .random(),
                 referrer: .mockRandom(),
                 url: .mockRandom()
             )
@@ -173,8 +196,10 @@ extension RUMErrorEvent {
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             connectivity: .mockRandom(),
+            context: .mockRandom(),
             date: .mockRandom(),
             error: .init(
+                id: .mockRandom(),
                 isCrash: .random(),
                 message: .mockRandom(),
                 resource: .init(
@@ -200,6 +225,7 @@ extension RUMErrorEvent {
             usr: .mockRandom(),
             view: .init(
                 id: .mockRandom(),
+                inForeground: .random(),
                 referrer: .mockRandom(),
                 url: .mockRandom()
             )

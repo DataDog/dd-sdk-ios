@@ -22,6 +22,9 @@ extension Int64: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 extension String: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 extension Double: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 
+/// Represents `Swift.Codable` - we need to define utility type because it cannot be declared as `extension` to `Codable`.
+internal struct SwiftCodable: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
+
 internal struct SwiftPrimitive<T: SwiftPrimitiveValue>: SwiftPrimitiveType {}
 
 internal struct SwiftArray: SwiftType {
@@ -47,13 +50,27 @@ internal struct SwiftEnum: SwiftType {
 
 internal struct SwiftStruct: SwiftType {
     struct Property: SwiftType {
+        enum CodingKey {
+            /// Static coding key with fixed value.
+            case `static`(value: String)
+            /// Dynamic coding key with value determined at runtime.
+            case `dynamic`
+
+            var isStatic: Bool {
+                switch self {
+                case .static: return true
+                case .dynamic: return false
+                }
+            }
+        }
+
         var name: String
         var comment: String?
         var type: SwiftType
         var isOptional: Bool
         var isMutable: Bool
         var defaultValue: SwiftPropertyDefaultValue?
-        var codingKey: String
+        var codingKey: CodingKey
     }
 
     var name: String
