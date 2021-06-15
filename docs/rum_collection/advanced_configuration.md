@@ -10,8 +10,6 @@ further_reading:
     text: "Explore Datadog RUM"
 ---
 
-# Configure iOS SDK
-
 If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2].
 
 ## Enrich user sessions
