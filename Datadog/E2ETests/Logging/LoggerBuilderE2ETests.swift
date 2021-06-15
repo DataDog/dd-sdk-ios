@@ -7,7 +7,7 @@
 import Datadog
 
 class LoggerBuilderE2ETests: E2ETests {
-    private var logger: Logger!
+    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func tearDown() {
         logger = nil

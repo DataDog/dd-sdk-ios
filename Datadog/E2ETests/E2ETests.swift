@@ -7,7 +7,6 @@
 import XCTest
 import Datadog
 
-
 /// A base class for all E2E test cases.
 class E2ETests: XCTestCase {
     /// If enabled, the SDK will not be initialized before each test.
@@ -45,7 +44,7 @@ class E2ETests: XCTestCase {
 
     func initializeSDK(
         trackingConsent: TrackingConsent = .granted,
-        configuration: Datadog.Configuration = .builderUsingE2EConfig().build()
+        configuration: Datadog.Configuration = Datadog.Configuration.builderUsingE2EConfig().build()
     ) {
         Datadog.initialize(
             appContext: .init(),

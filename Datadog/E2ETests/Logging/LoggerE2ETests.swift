@@ -7,7 +7,7 @@
 import Datadog
 
 class LoggerE2ETests: E2ETests {
-    private var logger: Logger!
+    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()

@@ -7,7 +7,7 @@
 import Datadog
 
 class LoggingTrackingConsentE2ETests: E2ETests {
-    private var logger: Logger!
+    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         skipSDKInitialization = true // we will initialize it in each test

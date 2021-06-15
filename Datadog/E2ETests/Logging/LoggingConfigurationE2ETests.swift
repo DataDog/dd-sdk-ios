@@ -8,7 +8,7 @@ import Datadog
 import DatadogCrashReporting
 
 class LoggingConfigurationE2ETests: E2ETests {
-    private var logger: Logger!
+    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         skipSDKInitialization = true // we will initialize it in each test
@@ -25,7 +25,7 @@ class LoggingConfigurationE2ETests: E2ETests {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
-                configuration: .builderUsingE2EConfig()
+                configuration: Datadog.Configuration.builderUsingE2EConfig()
                     .enableLogging(true)
                     .enableTracing(true)
                     .enableRUM(true)
@@ -46,7 +46,7 @@ class LoggingConfigurationE2ETests: E2ETests {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
-                configuration: .builderUsingE2EConfig()
+                configuration: Datadog.Configuration.builderUsingE2EConfig()
                     .enableLogging(false)
                     .enableTracing(true)
                     .enableRUM(true)

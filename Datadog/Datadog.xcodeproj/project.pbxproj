@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -3257,6 +3257,7 @@
 				61993628265BA958009D7EA8 /* Frameworks */,
 				61993629265BA958009D7EA8 /* Resources */,
 				61993660265BB6A6009D7EA8 /* ⚙️ Embed Framework Dependencies */,
+				61BACC00267279CB00AB58DC /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3582,6 +3583,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		61BACC00267279CB00AB58DC /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd ${SOURCE_ROOT}/..\n./tools/nightly-e2e-tests/nightly_e2e.py lint --tests-dir ../../Datadog/E2ETests\n";
 			showEnvVarsInLog = 0;
 		};
 		9EA6A53C24489AB100621535 /* ⚙️ Run linter */ = {
