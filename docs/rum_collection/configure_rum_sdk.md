@@ -1,3 +1,15 @@
+---
+title: RUM iOS Advanced Configuration
+kind: documentation
+further_reading:
+  - link: "https://github.com/DataDog/dd-sdk-ios"
+    tag: "Github"
+    text: "dd-sdk-ios Source code"
+  - link: "/real_user_monitoring"
+    tag: "Homepage"
+    text: "Explore Datadog RUM"
+---
+
 # Configure iOS SDK
 
 If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2].
@@ -108,8 +120,8 @@ Adding user information to your RUM sessions makes it easy to:
 
 The following attributes are **optional**, you should provide **at least one** of them:
 
-| Attribute  | Type | Description                                                                                              |
-|------------|------|----------------------------------------------------------------------------------------------------|
+| Attribute | Type   | Description                                                                                              |
+|-----------|--------|----------------------------------------------------------------------------------------------------------|
 | usr.id    | String | Unique user identifier.                                                                                  |
 | usr.name  | String | User friendly name, displayed by default in the RUM UI.                                                  |
 | usr.email | String | User email, displayed in the RUM UI if the user name is not present. It is also used to fetch Gravatars. |
@@ -122,13 +134,13 @@ To identify user sessions, use the `setUser` API, for example:
  
 The following methods in `Datadog.Configuration` can be used to initialize the library:
  
-| Method                           | Description                                                                                                                                                                                                                                                             |
-|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `set(serviceName: "service-name")` | Set `<SERVICE_NAME>` as default value for the `service` [standard attribute][9] attached to all logs and traces sent to Datadog (this can be overriden in each Logger)    |
-| `trackUIKitActions()` | Enables tracking User interactions (such as Tap, Scroll or Swipe). For privacy reasons, all interactions with the on-screen keyboard are ignored |
-| `trackUIKitRUMViews()` | Enables tracking for `ViewController` as a RUM View. You can also [customize view tracking][10] by using your own implementation of the `predicate` conforming `UIKitRUMViewsPredicate` protocol  |
-| `track(firstPartyHosts: ["your.domain.com"])` | Enables tracking for RUM resources. Requests whose URLs match the `firstPartyHosts` will be tagged as "first party" in the RUM events |
-| `set(endpoint: .eu)` | Switch target endpoints for data to EU for europe users  |
+| Method                                        | Description                                                                                                                                                                                      |
+|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `set(serviceName: "service-name")`            | Set `<SERVICE_NAME>` as default value for the `service` [standard attribute][9] attached to all logs and traces sent to Datadog (this can be overriden in each Logger)                           |
+| `trackUIKitActions()`                         | Enables tracking User interactions (such as Tap, Scroll or Swipe). For privacy reasons, all interactions with the on-screen keyboard are ignored                                                 |
+| `trackUIKitRUMViews()`                        | Enables tracking for `ViewController` as a RUM View. You can also [customize view tracking][10] by using your own implementation of the `predicate` conforming `UIKitRUMViewsPredicate` protocol |
+| `track(firstPartyHosts: ["your.domain.com"])` | Enables tracking for RUM resources. Requests whose URLs match the `firstPartyHosts` will be tagged as "first party" in the RUM events                                                            |
+| `set(endpoint: .eu)`                          | Switch target endpoints for data to EU for europe users                                                                                                                                          |
  
 ### Automatically track views
 
@@ -214,22 +226,23 @@ Returning `nil` from the error, resource or action mapper will drop the event en
 
 Depending on a given event's type, only some specific properties can be mutated:
 
-| Event Type        | Attribute key                     | Description                                     |
-|-------------------|-----------------------------------|-------------------------------------------------|
-| RUMViewEvent      | `viewEvent.view.name`             | Name of the view                                 |
-|                   | `viewEvent.view.url`              | URL of the view                                 |
-| RUMActionEvent    | `actionEvent.action.target?.name` | Name of the action                              |
-|                   | `actionEvent.view.url`            | URL of the view linked to this action           |
-| RUMErrorEvent     | `errorEvent.error.message`        | Error message                                   |
-|                   | `errorEvent.error.stack`          | Stacktrace of the error                         |
-|                   | `errorEvent.error.resource?.url`  | URL of the resource the error refers to         |
-|                   | `errorEvent.view.url`             | URL of the view linked to this error            |
-| RUMResourceEvent  | `resourceEvent.resource.url`      | URL of the resource                             |
-|                   | `resourceEvent.view.url`          | URL of the view linked to this resource         |
+| Event Type       | Attribute key                     | Description                             |
+|------------------|-----------------------------------|-----------------------------------------|
+| RUMViewEvent     | `viewEvent.view.name`             | Name of the view                        |
+|                  | `viewEvent.view.url`              | URL of the view                         |
+| RUMActionEvent   | `actionEvent.action.target?.name` | Name of the action                      |
+|                  | `actionEvent.view.url`            | URL of the view linked to this action   |
+| RUMErrorEvent    | `errorEvent.error.message`        | Error message                           |
+|                  | `errorEvent.error.stack`          | Stacktrace of the error                 |
+|                  | `errorEvent.error.resource?.url`  | URL of the resource the error refers to |
+|                  | `errorEvent.view.url`             | URL of the view linked to this error    |
+| RUMResourceEvent | `resourceEvent.resource.url`      | URL of the resource                     |
+|                  | `resourceEvent.view.url`          | URL of the view linked to this resource |
 
-   ## Further Reading
+## Further Reading
 
 {{< partial name="whats-next/whats-next.html" >}}
+
 
 [1]: https://docs.datadoghq.com/real_user_monitoring/data_collected/
 [2]: https://github.com/DataDog/dd-sdk-ios

@@ -1,5 +1,14 @@
-# Troubleshooting FAQs
- 
+---
+title: Troubleshooting
+kind: documentation
+further_reading:
+  - link: "https://github.com/DataDog/dd-sdk-ios"
+    tag: "Github"
+    text: "dd-sdk-ios Source code"
+  - link: "/real_user_monitoring"
+    tag: "Homepage"
+    text: "Explore Datadog RUM"
+---
 
 ## Check if Datadog RUM is initialized
 Use the utility method `isInitialized` to check if the SDK is properly initialized:
@@ -26,7 +35,6 @@ The SDK changes its behavior according to the new value. For example, if the cur
 - if changed to `.granted`, the SDK will send all current and future data to Datadog;
 - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
 
-
 ## Sample RUM sessions
 
 To control the data your application sends to Datadog RUM, you can specify a sampling rate for RUM sessions while [initializing the RumMonitor][1] as a percentage between 0 and 100.
@@ -36,12 +44,13 @@ To control the data your application sends to Datadog RUM, you can specify a sam
 ## Sending data when device is offline
 
 RUM ensures availability of data when your user device is offline. In cases of low-network areas, or when the device battery is too low, all the RUM events are first stored on the local device in batches. Each batch follows the intake specification. They are sent as soon as the network is available, and the battery is high enough to ensure the Datadog SDK does not impact the end user's experience. If the network is not available while your application is in the foreground, or if an upload of data fails, the batch is kept until it can be sent successfully.
- 
+
 This means that even if users open your application while offline, no data is lost.
- 
+
 **Note**: The data on the disk is automatically discarded if it gets too old to ensure the SDK doesn't use too much disk space.
 
 ## Further Reading
+
 {{< partial name="whats-next/whats-next.html" >}}
 
 [1]:/real_user_monitoring/android/
