@@ -3,7 +3,6 @@ title: RUM iOS Monitoring
 kind: documentation
 beta: true
 description: "Collect RUM data from your iOS applications."
-dependencies: ["https://github.com/DataDog/dd-sdk-ios/blob/master/docs/rum_collection/rum_getting_started.md"]
 further_reading:
   - link: "https://github.com/DataDog/dd-sdk-ios"
     tag: "Github"
