@@ -29,26 +29,26 @@ Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the re
 1. Declare [dd-sdk-ios][1] as a dependency, depending on your package manager.
 
 
-|       Package Manager      |                                     Installation Method                                     |
-|:--------------------------:|:-------------------------------------------------------------------------------------------:|
-|       [CocoaPods][2]       |                                      `pod 'DatadogSDK'`                                     |
+| Package manager            | Installation method                                                                         |
+|----------------------------|---------------------------------------------------------------------------------------------|
+| [CocoaPods][2]             | `pod 'DatadogSDK'`                                                                          |
 | [Swift Package Manager][3] | `.package(url: "https://github.com/DataDog/dd-sdk-ios.git", .upToNextMajor(from: "1.0.0"))` |
-|        [Carthage][4]       |                                `github "DataDog/dd-sdk-ios"`                                |
+| [Carthage][4]              | `github "DataDog/dd-sdk-ios"`                                                               |
 
 ### Specify application details in UI
 
 1. Select UX Monitoring -> RUM Applications -> New Application
 2. Choose `android` as your Application Type in [Datadog UI][2] and provide a new application name to generate a unique Datadog application ID and client token.
 
-{{< img src="docs/images/screenshot_rum.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}).
+{{< img src="real_user_monitoring/ios/screenshot_rum.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
 To ensure safety of your data, you must use a client token: you cannot use [Datadog API keys][6] to configure the `dd-sdk-android` library as they would be exposed client-side in the Android application APK byte code. For more information about setting up a client token, see the [client token documentation][7].
 
 ### Initialize the library with application context
 
 
-    {{< tabs >}}
-    {{% tab "US" %}}
+{{< tabs >}}
+{{% tab "US" %}}
 
 ```swift
 Datadog.initialize(
@@ -65,8 +65,8 @@ Datadog.initialize(
 )
 ```
 
-    {{% /tab %}}
-    {{% tab "EU" %}}
+{{% /tab %}}
+{{% tab "EU" %}}
 
 ```swift
 Datadog.initialize(
@@ -84,8 +84,8 @@ Datadog.initialize(
 )
 ```
 
-    {{% /tab %}}
-    {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 RUM SDK automatically tracks user sessions, depending on options provided at SDK initialization. Learn more about [`trackingConsent`][8] to add GDPR compliance for your EU users, [initialization parameters][9] for SDK configuartion options.
 
