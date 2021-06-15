@@ -22,7 +22,7 @@ The Datadog Real User Monitoring SDK generates six types of events:
 
 The following diagram illustrates the RUM event hierarchy:
 
-{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}
+{{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
 ## Default attributes
 
