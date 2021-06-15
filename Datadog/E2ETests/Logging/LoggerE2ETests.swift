@@ -22,6 +22,20 @@ class LoggerE2ETests: E2ETests {
     // MARK: - Logging Method
 
     /// - api-surface: Logger.debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_debug_log_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_debug_log: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_debug_log status:debug\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    ///
+    /// - performance monitor:
+    /// ```apm
+    /// $monitor_id = logs_logger_debug_log_performance
+    /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_debug_log: has a high average execution time"
+    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_debug_log{env:instrumentation,resource_name:logs_logger_debug_log,service:com.datadog.ios.nightly} > 0.024"
+    /// ```
     func test_logs_logger_DEBUG_log() {
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.debug(.mockRandom(), attributes: DD.logAttributes())
@@ -29,6 +43,20 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_debug_log_with_error_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_debug_log_with_error: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_debug_log_with_error status:debug\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    ///
+    /// - performance monitor:
+    /// ```apm
+    /// $monitor_id = logs_logger_debug_log_with_error_performance
+    /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_debug_log_with_error: has a high average execution time"
+    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_debug_log_with_error{env:instrumentation,resource_name:logs_logger_debug_log_with_error*,service:com.datadog.ios.nightly} > 0.024"
+    /// ```
     func test_logs_logger_DEBUG_log_with_error() {
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.debug(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
@@ -36,70 +64,70 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_INFO_log() {
+    func test_logs_logger_INFO_log() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.info(.mockRandom(), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_INFO_log_with_error() {
+    func test_logs_logger_INFO_log_with_error() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.info(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_NOTICE_log() {
+    func test_logs_logger_NOTICE_log() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.notice(.mockRandom(), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_NOTICE_log_with_error() {
+    func test_logs_logger_NOTICE_log_with_error() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.notice(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_WARN_log() {
+    func test_logs_logger_WARN_log() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.warn(.mockRandom(), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_WARN_log_with_error() {
+    func test_logs_logger_WARN_log_with_error() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.warn(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_ERROR_log() {
+    func test_logs_logger_ERROR_log() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.error(.mockRandom(), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_ERROR_log_with_error() {
+    func test_logs_logger_ERROR_log_with_error() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.error(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_CRITICAL_log() {
+    func test_logs_logger_CRITICAL_log() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.critical(.mockRandom(), attributes: DD.logAttributes())
         }
     }
 
     /// - api-surface: Logger.critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-    func test_logs_logger_CRITICAL_log_with_error() {
+    func test_logs_logger_CRITICAL_log_with_error() { // E2E:wip
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.critical(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
@@ -108,7 +136,7 @@ class LoggerE2ETests: E2ETests {
     // MARK: - Adding Attributes
 
     /// - api-surface: Logger.addAttribute(forKey key: AttributeKey, value: AttributeValue)
-    func test_logs_logger_add_STRING_attribute() {
+    func test_logs_logger_add_STRING_attribute() { // E2E:wip
         let attribute = DD.specialStringAttribute()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -119,7 +147,7 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.addAttribute(forKey key: AttributeKey, value: AttributeValue)
-    func test_logs_logger_add_INT_attribute() {
+    func test_logs_logger_add_INT_attribute() { // E2E:wip
         let attribute = DD.specialIntAttribute()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -130,7 +158,7 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.addAttribute(forKey key: AttributeKey, value: AttributeValue)
-    func test_logs_logger_add_DOUBLE_attribute() {
+    func test_logs_logger_add_DOUBLE_attribute() { // E2E:wip
         let attribute = DD.specialDoubleAttribute()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -141,7 +169,7 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.addAttribute(forKey key: AttributeKey, value: AttributeValue)
-    func test_logs_logger_add_BOOL_attribute() {
+    func test_logs_logger_add_BOOL_attribute() { // E2E:wip
         let attribute = DD.specialBoolAttribute()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -154,7 +182,7 @@ class LoggerE2ETests: E2ETests {
     // MARK: - Removing Attributes
 
     /// - api-surface: Logger.removeAttribute(forKey key: AttributeKey)
-    func test_logs_logger_remove_attribute() {
+    func test_logs_logger_remove_attribute() { // E2E:wip
         let possibleAttributes = [
             DD.specialStringAttribute(),
             DD.specialIntAttribute(),
@@ -175,7 +203,7 @@ class LoggerE2ETests: E2ETests {
     // MARK: - Adding Tags
 
     /// - api-surface: Logger.addTag(withKey key: String, value: String)
-    func test_logs_logger_add_tag() {
+    func test_logs_logger_add_tag() { // E2E:wip
         let tag = DD.specialStringTag()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -186,7 +214,7 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.add(tag: String)
-    func test_logs_logger_add_already_formatted_tag() {
+    func test_logs_logger_add_already_formatted_tag() { // E2E:wip
         let tag = DD.specialStringTag()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -199,7 +227,7 @@ class LoggerE2ETests: E2ETests {
     // MARK: - Removing Tags
 
     /// - api-surface: Logger.removeTag(withKey key: String)
-    func test_logs_logger_remove_tag() {
+    func test_logs_logger_remove_tag() { // E2E:wip
         let tag = DD.specialStringTag()
         logger.addTag(withKey: tag.key, value: tag.value)
 
@@ -211,7 +239,7 @@ class LoggerE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.remove(tag: String)
-    func test_logs_logger_remove_already_formatted_tag() {
+    func test_logs_logger_remove_already_formatted_tag() { // E2E:wip
         let tag = DD.specialStringTag()
         logger.add(tag: "\(tag.key):\(tag.value)")
 

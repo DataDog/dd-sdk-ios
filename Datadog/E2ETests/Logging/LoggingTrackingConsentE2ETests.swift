@@ -23,7 +23,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
 
     /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
     /// - api-surface: TrackingConsent.granted
-    func test_logs_config_consent_GRANTED() {
+    func test_logs_config_consent_GRANTED() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
@@ -35,7 +35,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
 
     /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
     /// - api-surface: TrackingConsent.notGranted
-    func test_logs_config_consent_NOT_GRANTED() {
+    func test_logs_config_consent_NOT_GRANTED() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
@@ -47,7 +47,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
 
     /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
     /// - api-surface: TrackingConsent.pending
-    func test_logs_config_consent_PENDING() {
+    func test_logs_config_consent_PENDING() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
@@ -60,7 +60,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     // MARK: - Changing Consent
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_GRANTED_to_NOT_GRANTED() {
+    func test_logs_config_consent_GRANTED_to_NOT_GRANTED() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
@@ -75,7 +75,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_GRANTED_to_PENDING() {
+    func test_logs_config_consent_GRANTED_to_PENDING() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
@@ -90,7 +90,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_NOT_GRANTED_to_GRANTED() {
+    func test_logs_config_consent_NOT_GRANTED_to_GRANTED() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
@@ -105,7 +105,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_NOT_GRANTED_to_PENDING() {
+    func test_logs_config_consent_NOT_GRANTED_to_PENDING() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
@@ -120,7 +120,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_PENDING_to_GRANTED() {
+    func test_logs_config_consent_PENDING_to_GRANTED() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
@@ -136,7 +136,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_PENDING_to_NOT_GRANTED() {
+    func test_logs_config_consent_PENDING_to_NOT_GRANTED() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }

@@ -103,6 +103,10 @@ api-surface:
 		@echo "Generating api-surface-objc"
 		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
 
+# Generate Datadog monitors terraform definition for E2E tests:
+e2e-monitors-generate:
+		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
+
 bump:
 		@read -p "Enter version number: " version;  \
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \

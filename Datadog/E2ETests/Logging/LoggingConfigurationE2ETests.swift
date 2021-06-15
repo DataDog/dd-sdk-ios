@@ -21,7 +21,7 @@ class LoggingConfigurationE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.Configuration.Builder.enableLogging(_ enabled: Bool) -> Builder
-    func test_logs_config_feature_enabled() {
+    func test_logs_config_feature_enabled() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
@@ -42,7 +42,7 @@ class LoggingConfigurationE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.Configuration.Builder.enableLogging(_ enabled: Bool) -> Builder
-    func test_logs_config_feature_disabled() {
+    func test_logs_config_feature_disabled() { // E2E:wip
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
