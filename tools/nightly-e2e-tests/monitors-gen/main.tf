@@ -1661,3 +1661,81 @@ EOT
 
 }
 
+resource "datadog_monitor" sdk_initialize_performance {
+  name               = "[RUM] [iOS] Nightly Performance - sdk_initialize: has a high average execution time"
+  type               = "query alert"
+  tags               = ["service:com.datadog.ios.nightly", "env:instrumentation", "team:rumm", "source:ios", ]
+  message            = <<EOT
+@maciek.grzybowski@datadoghq.com
+@mert.buran@datadoghq.com
+EOT
+  escalation_message = <<EOT
+<nil>
+EOT
+
+  query               = "avg(last_1d):avg:trace.sdk_initialize.duration{env:instrumentation,resource_name:sdk_initialize,service:com.datadog.ios.nightly} > 0.016"
+  notify_no_data      = false
+  renotify_interval   = 0
+  notify_audit        = false
+  timeout_h           = 0
+  include_tags        = true
+  require_full_window = false
+  new_host_delay      = 300
+  monitor_thresholds {
+    critical = 0.016
+  }
+
+}
+
+resource "datadog_monitor" sdk_set_tracking_consent_performance {
+  name               = "[RUM] [iOS] Nightly Performance - sdk_set_tracking_consent: has a high average execution time"
+  type               = "query alert"
+  tags               = ["service:com.datadog.ios.nightly", "env:instrumentation", "team:rumm", "source:ios", ]
+  message            = <<EOT
+@maciek.grzybowski@datadoghq.com
+@mert.buran@datadoghq.com
+EOT
+  escalation_message = <<EOT
+<nil>
+EOT
+
+  query               = "avg(last_1d):avg:trace.sdk_set_tracking_consent.duration{env:instrumentation,resource_name:sdk_set_tracking_consent,service:com.datadog.ios.nightly} > 0.016"
+  notify_no_data      = false
+  renotify_interval   = 0
+  notify_audit        = false
+  timeout_h           = 0
+  include_tags        = true
+  require_full_window = false
+  new_host_delay      = 300
+  monitor_thresholds {
+    critical = 0.016
+  }
+
+}
+
+resource "datadog_monitor" logs_logger_initialize_performance {
+  name               = "[RUM] [iOS] Nightly Performance - logs_logger_initialize: has a high average execution time"
+  type               = "query alert"
+  tags               = ["service:com.datadog.ios.nightly", "env:instrumentation", "team:rumm", "source:ios", ]
+  message            = <<EOT
+@maciek.grzybowski@datadoghq.com
+@mert.buran@datadoghq.com
+EOT
+  escalation_message = <<EOT
+<nil>
+EOT
+
+  query               = "avg(last_1d):avg:trace.logs_logger_initialize.duration{env:instrumentation,resource_name:logs_logger_initialize,service:com.datadog.ios.nightly} > 0.016"
+  notify_no_data      = false
+  renotify_interval   = 0
+  notify_audit        = false
+  timeout_h           = 0
+  include_tags        = true
+  require_full_window = false
+  new_host_delay      = 300
+  monitor_thresholds {
+    critical = 0.016
+  }
+
+}
+

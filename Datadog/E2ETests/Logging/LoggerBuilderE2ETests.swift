@@ -14,6 +14,16 @@ class LoggerBuilderE2ETests: E2ETests {
         super.tearDown()
     }
 
+    // MARK: - Common Monitors
+
+    /// - common performance monitor - measures `Logger.builder.build()` performance:
+    /// ```apm
+    /// $monitor_id = logs_logger_initialize_performance
+    /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_initialize: has a high average execution time"
+    /// $monitor_query = "avg(last_1d):avg:trace.logs_logger_initialize.duration{env:instrumentation,resource_name:logs_logger_initialize,service:com.datadog.ios.nightly} > 0.016"
+    /// $monitor_threshold = 0.016
+    /// ```
+
     // MARK: - Enabling Options
 
     /// - api-surface: Logger.Builder.set(serviceName: String) -> Builder
