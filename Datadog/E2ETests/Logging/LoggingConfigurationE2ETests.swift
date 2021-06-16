@@ -21,7 +21,14 @@ class LoggingConfigurationE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.Configuration.Builder.enableLogging(_ enabled: Bool) -> Builder
-    func test_logs_config_feature_enabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_feature_enabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_feature_enabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_feature_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_config_feature_enabled() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
@@ -42,7 +49,15 @@ class LoggingConfigurationE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.Configuration.Builder.enableLogging(_ enabled: Bool) -> Builder
-    func test_logs_config_feature_disabled() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_feature_disabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_feature_disabled: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_feature_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// ```
+    func test_logs_config_feature_disabled() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,

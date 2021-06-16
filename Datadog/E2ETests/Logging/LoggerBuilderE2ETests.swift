@@ -17,7 +17,14 @@ class LoggerBuilderE2ETests: E2ETests {
     // MARK: - Enabling Options
 
     /// - api-surface: Logger.Builder.set(serviceName: String) -> Builder
-    func test_logs_logger_builder_set_SERVICE_NAME() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_set_service_name_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_set_service_name: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly.custom @test_method_name:logs_logger_builder_set_service_name\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_set_SERVICE_NAME() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.set(serviceName: "com.datadog.ios.nightly.custom").build()
         }
@@ -26,7 +33,14 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.set(loggerName: String) -> Builder
-    func test_logs_logger_builder_set_LOGGER_NAME() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_set_logger_name_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_set_logger_name: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_set_logger_name @logger.name:custom_logger_name\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_set_LOGGER_NAME() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.set(loggerName: "custom_logger_name").build()
         }
@@ -35,7 +49,14 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.sendNetworkInfo(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_SEND_NETWORK_INFO_enabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_send_network_info_enabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_send_network_info_enabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_network_info_enabled @network.client.reachability:*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_SEND_NETWORK_INFO_enabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendNetworkInfo(true).build()
         }
@@ -44,7 +65,15 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.sendNetworkInfo(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_SEND_NETWORK_INFO_disabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_send_network_info_disabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_send_network_info_disabled: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_network_info_disabled @network.client.reachability:*\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// ```
+    func test_logs_logger_builder_SEND_NETWORK_INFO_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendNetworkInfo(false).build()
         }
@@ -55,7 +84,14 @@ class LoggerBuilderE2ETests: E2ETests {
     // MARK: - Choosing Logs Output
 
     /// - api-surface: Logger.Builder.sendLogsToDatadog(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_enabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_send_logs_to_datadog_enabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_send_logs_to_datadog_enabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_logs_to_datadog_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_enabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendLogsToDatadog(true).build()
         }
@@ -64,7 +100,15 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.sendLogsToDatadog(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_disabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_send_logs_to_datadog_disabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_send_logs_to_datadog_disabled: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_logs_to_datadog_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// ```
+    func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendLogsToDatadog(false).build()
         }
@@ -73,7 +117,14 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder
-    func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_enabled() { // E2E:wip
+    ///
+    /// - data monitor - as long as sending logs to Datadog is enabled (which is default), this this monitor should receive data:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_print_logs_to_console_enabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_print_logs_to_console_enabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_print_logs_to_console_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_enabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.printLogsToConsole(true, usingFormat: .random()).build()
         }
@@ -82,7 +133,14 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder
-    func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_disabled() { // E2E:wip
+    ///
+    /// - data monitor - as long as sending logs to Datadog is enabled (which is default), this this monitor should receive data:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_print_logs_to_console_disabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_print_logs_to_console_disabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_print_logs_to_console_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.printLogsToConsole(false, usingFormat: .random()).build()
         }
@@ -93,7 +151,14 @@ class LoggerBuilderE2ETests: E2ETests {
     // MARK: - Bundling With Other Features
 
     /// - api-surface: Logger.Builder.bundleWithRUM(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_BUNDLE_WITH_RUM_enabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_bundle_with_rum_enabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_bundle_with_rum_enabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_rum_enabled @application_id:* @session_id:*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_BUNDLE_WITH_RUM_enabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithRUM(true).build()
         }
@@ -106,7 +171,15 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.bundleWithRUM(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_BUNDLE_WITH_RUM_disabled() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_bundle_with_rum_disabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_bundle_with_rum_disabled: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_rum_disabled @application_id:* @session_id:* view.id:*\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// ```
+    func test_logs_logger_builder_BUNDLE_WITH_RUM_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithRUM(false).build()
         }
@@ -121,7 +194,14 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.bundleWithTrace(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_BUNDLE_WITH_TRACE_enabled() { // E2E:wip
+    ///
+    /// - data monitor - unfortunately we can't assert any APM trait in this monitor, so we just check if the data comes in:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_bundle_with_trace_enabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_bundle_with_trace_enabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_trace_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_BUNDLE_WITH_TRACE_enabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithTrace(true).build()
         }
@@ -134,7 +214,14 @@ class LoggerBuilderE2ETests: E2ETests {
     }
 
     /// - api-surface: Logger.Builder.bundleWithTrace(_ enabled: Bool) -> Builder
-    func test_logs_logger_builder_BUNDLE_WITH_TRACE_disabled() { // E2E:wip
+    ///
+    /// - data monitor - unfortunately we can't assert any APM trait in this monitor, so we just check if the data comes in:
+    /// ```logs
+    /// $monitor_id = logs_logger_builder_bundle_with_trace_disabled_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_bundle_with_trace_disabled: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_trace_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_logger_builder_BUNDLE_WITH_TRACE_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithTrace(false).build()
         }

@@ -4,7 +4,7 @@
 # Copyright 2019-2020 Datadog, Inc.
 # -----------------------------------------------------------
 
-from collections import Counter
+import re
 from src.linter import Linter, linter_context
 from src.test_file_parser import TestMethod, MonitorConfiguration, MonitorVariable
 
@@ -15,7 +15,15 @@ def lint_test_methods(test_methods: [TestMethod]):
             if test_method.monitors:
                 for monitor in test_method.monitors:
                     with linter_context(code_reference=monitor.code_reference):
-                        __monitor_id_has_method_name_prefix(monitor=monitor, test_method_name=test_method.method_name)
+                        # `tested_method_name` is computed from test method name, e.g.:
+                        # for `test_logs_logger_DEBUG_log_with_error` it is `logs_logger_debug_log_with_error`
+                        tested_method_name = __remove_prefix(test_method.method_name.lower(), 'test_')
+                        __monitor_id_has_method_name_prefix(
+                            monitor=monitor, tested_method_name=tested_method_name
+                        )
+                        __method_name_occurs_in_monitor_name_and_query(
+                            monitor=monitor, tested_method_name=tested_method_name
+                        )
             elif not __is_excluded_from_lint(method=test_method):
                 Linter.shared.emit_warning(f'Test method `{test_method.method_name}` defines no E2E monitors.')
 
@@ -28,17 +36,32 @@ def __is_excluded_from_lint(method: TestMethod):
     return method.code_reference.line_text.endswith('// E2E:wip\n')
 
 
-def __monitor_id_has_method_name_prefix(monitor: MonitorConfiguration, test_method_name: str):
+def __monitor_id_has_method_name_prefix(monitor: MonitorConfiguration, tested_method_name: str):
     """
     $monitor_id must start with the test method name, e.g. method:
     `func test_logs_logger_DEBUG_log_with_error() {`
-    must define monitor ID starting with `logs_logger_DEBUG_log_with_error`.
+    must define monitor ID starting with `logs_logger_debug_log_with_error`.
     """
     if monitor_id_variable := __find_monitor_variable(monitor=monitor, variable_name='$monitor_id'):
-        expected_prefix = __remove_prefix(test_method_name.lower(), 'test_')
-        if not monitor_id_variable.value.startswith(expected_prefix):
+        if not monitor_id_variable.value.startswith(tested_method_name):
             with linter_context(code_reference=monitor_id_variable.code_reference):
-                Linter.shared.emit_error(f'$monitor_id must start with method name ({expected_prefix})')
+                Linter.shared.emit_error(f'$monitor_id must start with method name ({tested_method_name})')
+
+
+def __method_name_occurs_in_monitor_name_and_query(monitor: MonitorConfiguration, tested_method_name: str):
+    """
+    The test method name must occur in $monitor_name and $monitor_query.
+    """
+    regex = re.compile(rf"^.*(\W+){tested_method_name}(\W+).*$")
+
+    if monitor_name_variable := __find_monitor_variable(monitor=monitor, variable_name='$monitor_name'):
+        if not re.match(regex, monitor_name_variable.value):
+            with linter_context(code_reference=monitor_name_variable.code_reference):
+                Linter.shared.emit_warning(f'$monitor_name must include method name ({tested_method_name})')
+    if monitor_query_variable := __find_monitor_variable(monitor=monitor, variable_name='$monitor_query'):
+        if not re.match(regex, monitor_query_variable.value):
+            with linter_context(code_reference=monitor_query_variable.code_reference):
+                Linter.shared.emit_warning(f'$monitor_query must include method name ({tested_method_name})')
 
 
 def lint_monitors(monitors: [MonitorConfiguration]):
