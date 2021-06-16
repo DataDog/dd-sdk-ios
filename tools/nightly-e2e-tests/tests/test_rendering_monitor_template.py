@@ -26,7 +26,6 @@ class MonitorTemplateTestCase(unittest.TestCase):
 
         variable = MonitorVariable(name='$argument_value', value=random_string(), code_reference=any_code_reference())
         monitor = MonitorConfiguration(
-            id=random_string(),
             type='',
             variables=[variable],
             code_reference=any_code_reference()
@@ -42,7 +41,6 @@ class MonitorTemplateTestCase(unittest.TestCase):
 
         variable = MonitorVariable(name='$argument_value', value=random_string(), code_reference=any_code_reference())
         monitor = MonitorConfiguration(
-            id=random_string(),
             type='',
             variables=[variable],
             code_reference=any_code_reference()
@@ -57,7 +55,6 @@ class MonitorTemplateTestCase(unittest.TestCase):
         template = MonitorTemplate('argument = ${{argument_value:-"default value"}} # comment')
 
         monitor = MonitorConfiguration(
-            id=random_string(),
             type='',
             variables=[],
             code_reference=any_code_reference()
@@ -81,7 +78,6 @@ class MonitorTemplateTestCase(unittest.TestCase):
         variable1 = MonitorVariable(name='$monitor_id', value=random_string(), code_reference=any_code_reference())
         variable2 = MonitorVariable(name='$argument1_value', value=random_string(), code_reference=any_code_reference())
         monitor = MonitorConfiguration(
-            id=random_string(),
             type='',
             variables=[variable1, variable2],
             code_reference=any_code_reference()
@@ -102,7 +98,6 @@ class MonitorTemplateTestCase(unittest.TestCase):
         template = MonitorTemplate('argument = ${{argument_with_no_default}}')
 
         monitor = MonitorConfiguration(
-            id=random_string(),
             type='',
             variables=[],
             code_reference=any_code_reference()

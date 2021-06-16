@@ -22,7 +22,6 @@ class MonitorVariable:
 
 @dataclass
 class MonitorConfiguration:
-    id: str  # the id of this monitor
     type: str  # a type of monitor (allowed values: 'apm' | 'logs'), used to select monitor template
     variables: [MonitorVariable]  # list of monitor variables
     code_reference: CodeReference
@@ -38,6 +37,7 @@ class TestMethod:
 @dataclass()
 class TestFile:
     test_methods: [TestMethod]
+    independent_monitors: [MonitorConfiguration]  # monitors defined in test file, but not attached to any `TestMethod`
 
 
 def read_test_file(path: str):
@@ -46,10 +46,11 @@ def read_test_file(path: str):
     :return: `TestFile` if the file contains any E2E tests definitions; `None` otherwise.
     """
     with open(path, 'r') as file:
-        comment_regex = r'^[\t ]+(\/\/\/.*)'  # e.g. '    /// Sample comment'
+        comment_regex = r'^[\t ]*(\/\/\/.*)'  # e.g. '    /// Sample comment'
         method_signature_regex = r'^[\s ]+func (test\w*)\(\)( throws)? {'  # e.g. '    func test_sample() throws {'
 
         test_methods: [TestMethod] = []
+        independent_monitors: [MonitorConfiguration] = []
         comment_lines_buffer: [(int, str)] = []
 
         for line_no, line_text in enumerate(file.readlines()):
@@ -57,33 +58,42 @@ def read_test_file(path: str):
                 comment_lines_buffer.append((line_no, comment_match.groups()[0]))
 
             elif method_signature_match := re.match(method_signature_regex, line_text):  # matched test method signature
-                method_code_reference = CodeReference(file_path=path, line_no=line_no + 1, line_text=line_text)
-
                 method_name = method_signature_match.groups()[0]
                 method = TestMethod(
                     method_name=method_name,
                     monitors=read_monitor_configuration(
-                        method_comment_lines=comment_lines_buffer,
-                        method_name=method_name,
-                        method_code_reference=method_code_reference
+                        comment_lines=comment_lines_buffer,
+                        file_path=path
                     ),
-                    code_reference=method_code_reference
+                    code_reference=CodeReference(
+                        file_path=path,
+                        line_no=line_no + 1,
+                        line_text=line_text
+                    )
                 )
                 test_methods.append(method)
-            else:  # matched some other line
+                comment_lines_buffer = []
+            else:  # matched some other line in the file
+                # Check if buffered comments define any additional monitors:
+                additional_monitors = read_monitor_configuration(
+                    comment_lines=comment_lines_buffer,
+                    file_path=path
+                )
+                # Add to the list of independent monitors for this file:
+                independent_monitors += additional_monitors
+
                 comment_lines_buffer = []  # keep the comment lines buffer empty
 
-        if test_methods:
-            return TestFile(test_methods=test_methods)
+        if test_methods or independent_monitors:
+            return TestFile(
+                test_methods=test_methods,
+                independent_monitors=independent_monitors
+            )
         else:
             return None
 
 
-def read_monitor_configuration(
-        method_comment_lines: [(int, str)],
-        method_name: str,
-        method_code_reference: CodeReference
-):
+def read_monitor_configuration(comment_lines: [(int, str)], file_path: str):
     """
     Parses method comment lines and produces one or more `MonitorConfiguration` objects.
 
@@ -114,9 +124,9 @@ def read_monitor_configuration(
     monitors: [MonitorConfiguration] = []
     variables_buffer: [MonitorVariable] = []
 
-    for line_no, line_text in method_comment_lines:
+    for line_no, line_text in comment_lines:
         comment_line_code_reference = CodeReference(
-            file_path=method_code_reference.file_path,
+            file_path=file_path,
             line_no=(line_no + 1),
             line_text=line_text
         )
@@ -136,12 +146,11 @@ def read_monitor_configuration(
                 in_monitor_region = False
 
                 monitor_code_reference = CodeReference(
-                    file_path=method_code_reference.file_path,
+                    file_path=file_path,
                     line_no=(line_no - len(variables_buffer)),  # first line of the monitor definition
                     line_text=line_text
                 )
                 monitor = MonitorConfiguration(
-                    id=method_name,
                     type=monitor_type,
                     variables=variables_buffer,
                     code_reference=monitor_code_reference
@@ -155,7 +164,6 @@ def read_monitor_configuration(
 
         elif in_monitor_region:  # iterating through variables in monitor's definition region
             if variable := read_variable(
-                    line_no=line_no,
                     line_text=line_text,
                     comment_line_code_reference=comment_line_code_reference
             ):
@@ -164,7 +172,7 @@ def read_monitor_configuration(
     return monitors
 
 
-def read_variable(line_no: int, line_text: str, comment_line_code_reference: CodeReference):
+def read_variable(line_text: str, comment_line_code_reference: CodeReference):
     """
     Parses single line of monitor definition.
 
