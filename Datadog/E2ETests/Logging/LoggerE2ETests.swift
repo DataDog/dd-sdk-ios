@@ -69,7 +69,7 @@ class LoggerE2ETests: E2ETests {
     /// ```logs
     /// $monitor_id = logs_logger_info_log_data
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_info_log: number of logs is below expected value"
-    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_info_log status:debug\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_info_log status:info\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     ///
     /// - performance monitor:
@@ -139,7 +139,7 @@ class LoggerE2ETests: E2ETests {
     /// ```apm
     /// $monitor_id = logs_logger_notice_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_notice_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_notice_log{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_notice_log_with_error{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_NOTICE_log_with_error() {
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -418,7 +418,7 @@ class LoggerE2ETests: E2ETests {
     /// ```logs
     /// $monitor_id = logs_logger_add_tag_data
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_add_tag: number of logs is below expected value"
-    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_tag test_special_tag:customTag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_tag test_special_tag:customtag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     ///
     /// - performance monitor:
@@ -428,7 +428,7 @@ class LoggerE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_tag{env:instrumentation,resource_name:logs_logger_add_tag,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_tag() {
-        let tag = DD.specialStringTag()
+        let tag = DD.specialTag()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.addTag(withKey: tag.key, value: tag.value)
@@ -443,7 +443,7 @@ class LoggerE2ETests: E2ETests {
     /// ```logs
     /// $monitor_id = logs_logger_add_already_formatted_tag_data
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_add_already_formatted_tag: number of logs is below expected value"
-    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_already_formatted_tag test_special_tag:customTag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_already_formatted_tag test_special_tag:customtag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     ///
     /// - performance monitor:
@@ -453,7 +453,7 @@ class LoggerE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_already_formatted_tag{env:instrumentation,resource_name:logs_logger_add_already_formatted_tag,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_already_formatted_tag() {
-        let tag = DD.specialStringTag()
+        let tag = DD.specialTag()
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.add(tag: "\(tag.key):\(tag.value)")
@@ -480,7 +480,7 @@ class LoggerE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_tag{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_tag} > 0.024"
     /// ```
     func test_logs_logger_remove_tag() {
-        let tag = DD.specialStringTag()
+        let tag = DD.specialTag()
         logger.addTag(withKey: tag.key, value: tag.value)
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -506,7 +506,7 @@ class LoggerE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_already_formatted_tag{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_already_formatted_tag} > 0.024"
     /// ```
     func test_logs_logger_remove_already_formatted_tag() {
-        let tag = DD.specialStringTag()
+        let tag = DD.specialTag()
         logger.add(tag: "\(tag.key):\(tag.value)")
 
         measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {

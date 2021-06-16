@@ -654,7 +654,7 @@ EOT
 <nil>
 EOT
 
-  query             = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_info_log status:debug\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+  query             = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_info_log status:info\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
   notify_no_data    = false
   renotify_interval = 0
   notify_audit      = false
@@ -832,7 +832,7 @@ EOT
 <nil>
 EOT
 
-  query               = "avg(last_1d):p50:trace.logs_logger_notice_log{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+  query               = "avg(last_1d):p50:trace.logs_logger_notice_log_with_error{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
   notify_no_data      = false
   renotify_interval   = 0
   notify_audit        = false
@@ -1419,7 +1419,7 @@ EOT
 <nil>
 EOT
 
-  query             = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_tag test_special_tag:customTag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+  query             = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_tag test_special_tag:customtag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
   notify_no_data    = false
   renotify_interval = 0
   notify_audit      = false
@@ -1470,7 +1470,7 @@ EOT
 <nil>
 EOT
 
-  query             = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_already_formatted_tag test_special_tag:customTag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+  query             = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_add_already_formatted_tag test_special_tag:customtag*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
   notify_no_data    = false
   renotify_interval = 0
   notify_audit      = false

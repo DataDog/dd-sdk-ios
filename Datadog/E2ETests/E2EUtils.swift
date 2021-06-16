@@ -83,8 +83,8 @@ struct DD {
         }
     }
 
-    static func specialStringTag() -> SpecialTag {
-        let prefix = "customTag" // asserted in monitors (`@test_special_tag:customTag*`)
+    static func specialTag() -> SpecialTag {
+        let prefix = "customtag" // asserted in monitors (`@test_special_tag:customtag*`)
         return .init(key: "test_special_tag", value: prefix + .mockRandom())
     }
 
