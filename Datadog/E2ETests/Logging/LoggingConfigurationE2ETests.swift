@@ -56,6 +56,7 @@ class LoggingConfigurationE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_feature_disabled: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_feature_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_feature_disabled() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {

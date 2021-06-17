@@ -82,6 +82,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_send_network_info_disabled: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_network_info_disabled @network.client.reachability:*\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_logger_builder_SEND_NETWORK_INFO_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
@@ -117,6 +118,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_send_logs_to_datadog_disabled: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_logs_to_datadog_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {
@@ -188,6 +190,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_logger_builder_bundle_with_rum_disabled: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_rum_disabled @application_id:* @session_id:* view.id:*\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_RUM_disabled() {
         measure(spanName: DD.PerfSpanName.loggerInitialize) {

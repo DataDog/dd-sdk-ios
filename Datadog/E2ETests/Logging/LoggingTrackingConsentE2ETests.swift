@@ -59,6 +59,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_not_granted: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_not_granted\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_NOT_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
@@ -79,6 +80,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_pending: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_pending\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_PENDING() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
@@ -100,6 +102,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_granted_to_not_granted: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_granted_to_not_granted\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_GRANTED_to_NOT_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
@@ -123,6 +126,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_granted_to_pending: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_granted_to_pending\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_GRANTED_to_PENDING() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
@@ -168,6 +172,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_not_granted_to_pending: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_not_granted_to_pending\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_NOT_GRANTED_to_PENDING() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
@@ -214,6 +219,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_pending_to_not_granted: number of logs is above expected value"
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_pending_to_not_granted\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
     /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_PENDING_to_NOT_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
