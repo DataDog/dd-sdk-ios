@@ -12,6 +12,7 @@ EOT
 
   query             = ${{monitor_query}}
   notify_no_data    = ${{notify_no_data:-true}}
+  no_data_timeframe = 1440
   renotify_interval = 0
   notify_audit      = false
   timeout_h         = 0
