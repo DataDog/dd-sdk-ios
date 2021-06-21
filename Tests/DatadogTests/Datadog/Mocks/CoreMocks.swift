@@ -44,9 +44,9 @@ extension Datadog.Configuration {
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
-        logsEndpoint: LogsEndpoint = .us,
-        tracesEndpoint: TracesEndpoint = .us,
-        rumEndpoint: RUMEndpoint = .us,
+        logsEndpoint: LogsEndpoint = .us1,
+        tracesEndpoint: TracesEndpoint = .us1,
+        rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: Set<String>? = nil,
         rumSessionsSamplingRate: Float = 100.0,
@@ -113,25 +113,25 @@ extension BundleType: CaseIterable {
 
 extension Datadog.Configuration.DatadogEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov].randomElement()!
     }
 }
 
 extension Datadog.Configuration.LogsEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.TracesEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.RUMEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 

@@ -79,7 +79,7 @@ Datadog.initialize(
             environment: "<environment_name>"
         )
         .set(serviceName: "app-name")
-        .set(endpoint: .eu)
+        .set(endpoint: .eu1)
         .build()
 )
 ```
