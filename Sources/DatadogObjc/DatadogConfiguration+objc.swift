@@ -18,6 +18,18 @@ public class DDEndpoint: NSObject {
     // MARK: - Public
 
     @objc
+    public static func us1() -> DDEndpoint { .init(sdkEndpoint: .us1) }
+
+    @objc
+    public static func us3() -> DDEndpoint { .init(sdkEndpoint: .us3) }
+
+    @objc
+    public static func eu1() -> DDEndpoint { .init(sdkEndpoint: .eu1) }
+
+    @objc
+    public static func us1_fed() -> DDEndpoint { .init(sdkEndpoint: .us1_fed) }
+
+    @objc
     public static func eu() -> DDEndpoint { .init(sdkEndpoint: .eu) }
 
     @objc
@@ -36,6 +48,18 @@ public class DDLogsEndpoint: NSObject {
     }
 
     // MARK: - Public
+
+    @objc
+    public static func us1() -> DDLogsEndpoint { .init(sdkEndpoint: .us1) }
+
+    @objc
+    public static func us3() -> DDLogsEndpoint { .init(sdkEndpoint: .us3) }
+
+    @objc
+    public static func eu1() -> DDLogsEndpoint { .init(sdkEndpoint: .eu1) }
+
+    @objc
+    public static func us1_fed() -> DDLogsEndpoint { .init(sdkEndpoint: .us1_fed) }
 
     @objc
     public static func eu() -> DDLogsEndpoint { .init(sdkEndpoint: .eu) }
@@ -59,6 +83,18 @@ public class DDTracesEndpoint: NSObject {
     }
 
     // MARK: - Public
+
+    @objc
+    public static func us1() -> DDTracesEndpoint { .init(sdkEndpoint: .us1) }
+
+    @objc
+    public static func us3() -> DDTracesEndpoint { .init(sdkEndpoint: .us3) }
+
+    @objc
+    public static func eu1() -> DDTracesEndpoint { .init(sdkEndpoint: .eu1) }
+
+    @objc
+    public static func us1_fed() -> DDTracesEndpoint { .init(sdkEndpoint: .us1_fed) }
 
     @objc
     public static func eu() -> DDTracesEndpoint { .init(sdkEndpoint: .eu) }

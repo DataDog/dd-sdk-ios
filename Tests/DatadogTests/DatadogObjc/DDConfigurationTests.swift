@@ -11,7 +11,7 @@ import XCTest
 extension Datadog.Configuration.LogsEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -21,7 +21,7 @@ extension Datadog.Configuration.LogsEndpoint: Equatable {
 extension Datadog.Configuration.TracesEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.TracesEndpoint, _ rhs: Datadog.Configuration.TracesEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -48,9 +48,9 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertNil(configuration.crashReportingPlugin)
-            XCTAssertEqual(configuration.logsEndpoint, .us)
-            XCTAssertEqual(configuration.tracesEndpoint, .us)
-            XCTAssertEqual(configuration.rumEndpoint, .us)
+            XCTAssertEqual(configuration.logsEndpoint, .us1)
+            XCTAssertEqual(configuration.tracesEndpoint, .us1)
+            XCTAssertEqual(configuration.rumEndpoint, .us1)
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
@@ -90,6 +90,18 @@ class DDConfigurationTests: XCTestCase {
         let crashReportingPlugin = CrashReportingPluginMock()
         objcBuilder.enableCrashReporting(using: crashReportingPlugin)
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.crashReportingPlugin === crashReportingPlugin)
+
+        objcBuilder.set(endpoint: .eu1())
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)
+
+        objcBuilder.set(endpoint: .us1())
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1)
+
+        objcBuilder.set(endpoint: .us3())
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us3)
+
+        objcBuilder.set(endpoint: .us1_fed())
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
 
         objcBuilder.set(endpoint: .eu())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu)
