@@ -93,7 +93,7 @@ def read_test_file(path: str):
             return None
 
 
-def read_monitor_configuration(comment_lines: [(int, str)], file_path: str):
+def read_monitor_configuration(comment_lines: [(int, str)], file_path: str) -> [MonitorConfiguration]:
     """
     Parses method comment lines and produces one or more `MonitorConfiguration` objects.
 
