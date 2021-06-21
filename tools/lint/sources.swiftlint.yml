@@ -90,6 +90,7 @@ custom_rules:
 
 included:
   - ../../Sources
+  - ../../Datadog/E2E
   - ../../instrumented-tests/http-server-mock/Sources
   - ../../tools/api-surface/Sources
   - ../../tools/api-surface/Fixtures/Sources
