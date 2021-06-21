@@ -25,7 +25,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```apm
     /// $monitor_id = sdk_set_tracking_consent_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - sdk_set_tracking_consent: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):avg:trace.sdk_set_tracking_consent.duration{env:instrumentation,resource_name:sdk_set_tracking_consent,service:com.datadog.ios.nightly} > 0.016"
+    /// $monitor_query = "avg(last_1d):avg:trace.sdk_set_tracking_consent{env:instrumentation,resource_name:sdk_set_tracking_consent,service:com.datadog.ios.nightly} > 0.016"
     /// $monitor_threshold = 0.016
     /// ```
 
