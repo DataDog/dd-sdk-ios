@@ -53,12 +53,12 @@ struct DD {
     }
 
     static func specialIntAttribute() -> SpecialAttribute {
-        let min: Int = 11 // asserted in monitors (`@test_special_int_attribute:>11`)
+        let min: Int = 11 // asserted in monitors (`@test_special_int_attribute:>10`)
         return .init(key: "test_special_int_attribute", value: Int.mockRandom(min: min, max: .max))
     }
 
     static func specialDoubleAttribute() -> SpecialAttribute {
-        let min: Double = 11.0 // asserted in monitors (`@test_special_double_attribute:>11.0`)
+        let min: Double = 11.0 // asserted in monitors (`@test_special_double_attribute:>10.0`)
         return .init(key: "test_special_double_attribute", value: Double.mockRandom(min: min, max: .greatestFiniteMagnitude))
     }
 
@@ -83,9 +83,9 @@ struct DD {
         }
     }
 
-    static func specialStringTag() -> SpecialTag {
-        let prefix = "customTag" // asserted in monitors (`@test_special_string_tag:customTag*`)
-        return .init(key: "test_special_string_tag", value: prefix + .mockRandom())
+    static func specialTag() -> SpecialTag {
+        let prefix = "customtag" // asserted in monitors (`@test_special_tag:customtag*`)
+        return .init(key: "test_special_tag", value: prefix + .mockRandom())
     }
 
     // MARK: - Logging-specific Attributes

@@ -44,6 +44,9 @@ def read_all_monitors(tests_dir: str) -> [MonitorConfiguration]:
     # Get monitors from all test methods:
     all_monitors: [MonitorConfiguration] = [monitor for method in all_test_methods for monitor in method.monitors]
 
+    # Add independent monitors from test files:
+    all_monitors += [monitor for test_file in test_files for monitor in test_file.independent_monitors]
+
     # Lint:
     lint_test_methods(test_methods=all_test_methods)
     lint_monitors(monitors=all_monitors)

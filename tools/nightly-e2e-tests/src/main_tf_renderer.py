@@ -43,7 +43,7 @@ class MainTF:
                 apm_monitor_template=apm_monitor_template
             )
 
-    def render(self, monitors: [MonitorConfiguration]):
+    def render(self, monitors: [MonitorConfiguration]) -> str:
         output = '# This file is auto-generated, do not edit it directly\n\n'
         output += f'{self.template_content}\n'
         output += '# Monitors:\n\n'
@@ -69,14 +69,14 @@ class MonitorTemplate:
     def __init__(self, template_content: str):
         self.template_content = template_content
 
-    def render(self, monitor: MonitorConfiguration):
+    def render(self, monitor: MonitorConfiguration) -> str:
         result = ''
         result += self.template_content
         result = MonitorTemplate.render_template_variables(template=result, monitor=monitor)
         return result
 
     @staticmethod
-    def render_template_variables(template: str, monitor: MonitorConfiguration):
+    def render_template_variables(template: str, monitor: MonitorConfiguration) -> str:
         """
         Finds all variables ( ${{variable}} ) in the template and renders them using `monitor.variables`.
         If `monitor.variables` doesn't define the variable, its default value from the template is used.

@@ -19,11 +19,28 @@ class LoggingTrackingConsentE2ETests: E2ETests {
         super.tearDown()
     }
 
+    // MARK: - Common Monitors
+
+    /// - common performance monitor - measures `Datadog.set(trackingConsent:)` performance:
+    /// ```apm
+    /// $monitor_id = sdk_set_tracking_consent_performance
+    /// $monitor_name = "[RUM] [iOS] Nightly Performance - sdk_set_tracking_consent: has a high average execution time"
+    /// $monitor_query = "avg(last_1d):avg:trace.sdk_set_tracking_consent{env:instrumentation,resource_name:sdk_set_tracking_consent,service:com.datadog.ios.nightly} > 0.016"
+    /// $monitor_threshold = 0.016
+    /// ```
+
     // MARK: - Starting With a Consent
 
     /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
     /// - api-surface: TrackingConsent.granted
-    func test_logs_config_consent_GRANTED() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_granted_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_granted: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_granted\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_config_consent_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
@@ -35,7 +52,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
 
     /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
     /// - api-surface: TrackingConsent.notGranted
-    func test_logs_config_consent_NOT_GRANTED() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_not_granted_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_not_granted: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_not_granted\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
+    /// ```
+    func test_logs_config_consent_NOT_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
@@ -47,7 +73,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
 
     /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
     /// - api-surface: TrackingConsent.pending
-    func test_logs_config_consent_PENDING() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_pending_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_pending: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_pending\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
+    /// ```
+    func test_logs_config_consent_PENDING() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
@@ -60,7 +95,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     // MARK: - Changing Consent
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_GRANTED_to_NOT_GRANTED() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_granted_to_not_granted_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_granted_to_not_granted: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_granted_to_not_granted\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
+    /// ```
+    func test_logs_config_consent_GRANTED_to_NOT_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
@@ -75,7 +119,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_GRANTED_to_PENDING() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_granted_to_pending_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_granted_to_pending: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_granted_to_pending\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
+    /// ```
+    func test_logs_config_consent_GRANTED_to_PENDING() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
@@ -90,7 +143,14 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_NOT_GRANTED_to_GRANTED() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_not_granted_to_granted_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_not_granted_to_granted: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_not_granted_to_granted\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_config_consent_NOT_GRANTED_to_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
@@ -105,7 +165,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_NOT_GRANTED_to_PENDING() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_not_granted_to_pending_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_not_granted_to_pending: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_not_granted_to_pending\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
+    /// ```
+    func test_logs_config_consent_NOT_GRANTED_to_PENDING() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
@@ -120,7 +189,14 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_PENDING_to_GRANTED() { // E2E:wip
+    ///
+    /// - data monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_pending_to_granted_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_pending_to_granted: number of logs is below expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_pending_to_granted\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
+    /// ```
+    func test_logs_config_consent_PENDING_to_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
@@ -136,7 +212,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     }
 
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
-    func test_logs_config_consent_PENDING_to_NOT_GRANTED() { // E2E:wip
+    ///
+    /// - data monitor - we assert that no data is delivered in this monitor:
+    /// ```logs
+    /// $monitor_id = logs_config_consent_pending_to_not_granted_data
+    /// $monitor_name = "[RUM] [iOS] Nightly - logs_config_consent_pending_to_not_granted: number of logs is above expected value"
+    /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_pending_to_not_granted\").index(\"*\").rollup(\"count\").last(\"1d\") > 0"
+    /// $monitor_threshold = 0.0
+    /// $notify_no_data = false
+    /// ```
+    func test_logs_config_consent_PENDING_to_NOT_GRANTED() {
         measure(spanName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
