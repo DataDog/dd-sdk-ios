@@ -54,10 +54,10 @@ internal extension RUMResourceType {
             case ("font", _): self = .font
             case ("text", "css"): self = .css
             case ("text", "javascript"): self = .js
-            default: self = .other
+            default: self = .xhr
             }
         } else {
-            self = .other
+            self = .xhr
         }
     }
 }
@@ -464,7 +464,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             resourceKind = RUMResourceType(response: response)
             statusCode = response.statusCode
         } else {
-            resourceKind = .other
+            resourceKind = .xhr
         }
 
         process(
