@@ -55,8 +55,10 @@ internal class ObjcInteropPrinter: BasePrinter {
         switch objcInteropType {
         case let rootClass as ObjcInteropRootClass:
             try print(objcInteropRootClass: rootClass)
-        case let nestedClass as ObjcInteropTransitiveClass:
+        case let nestedClass as ObjcInteropNestedClass:
             try print(objcInteropNestedClass: nestedClass)
+        case let nestedTransitiveClass as ObjcInteropTransitiveNestedClass:
+            try print(objcInteropNestedTransitiveClass: nestedTransitiveClass)
         case let enumeration as ObjcInteropEnum:
             try print(objcInteropEnum: enumeration)
         default:
@@ -85,9 +87,30 @@ internal class ObjcInteropPrinter: BasePrinter {
         writeLine("}")
     }
 
-    private func print(objcInteropNestedClass: ObjcInteropTransitiveClass) throws {
+    private func print(objcInteropNestedClass: ObjcInteropNestedClass) throws {
         let className = objcTypeNamesPrefix + objcInteropNestedClass.objcTypeName
-        let rootClassName = objcTypeNamesPrefix + objcInteropNestedClass.objcRootClass.objcTypeName
+        writeEmptyLine()
+        writeLine("@objc")
+        writeLine("public class \(className): NSObject {")
+        indentRight()
+            writeLine("internal let swiftModel: \(objcInteropNestedClass.swiftTypeName)")
+            writeLine("internal var root: \(className) { self }")
+            writeEmptyLine()
+            writeLine("internal init(swiftModel: \(objcInteropNestedClass.swiftTypeName)) {")
+            indentRight()
+                writeLine("self.swiftModel = swiftModel")
+            indentLeft()
+            writeLine("}")
+            try objcInteropNestedClass.objcPropertyWrappers.forEach { propertyWrapper in
+                try print(objcInteropPropertyWrapper: propertyWrapper)
+            }
+        indentLeft()
+        writeLine("}")
+    }
+
+    private func print(objcInteropNestedTransitiveClass: ObjcInteropTransitiveNestedClass) throws {
+        let className = objcTypeNamesPrefix + objcInteropNestedTransitiveClass.objcTypeName
+        let rootClassName = objcTypeNamesPrefix + objcInteropNestedTransitiveClass.objcRootClass.objcTypeName
         writeEmptyLine()
         writeLine("@objc")
         writeLine("public class \(className): NSObject {")
@@ -99,7 +122,7 @@ internal class ObjcInteropPrinter: BasePrinter {
                 writeLine("self.root = root")
             indentLeft()
             writeLine("}")
-            try objcInteropNestedClass.objcPropertyWrappers.forEach { propertyWrapper in
+            try objcInteropNestedTransitiveClass.objcPropertyWrappers.forEach { propertyWrapper in
                 try print(objcInteropPropertyWrapper: propertyWrapper)
             }
         indentLeft()
@@ -163,6 +186,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             try printPropertyAccessingNestedEnum(wrapper)
         case let wrapper as ObjcInteropPropertyWrapperAccessingNestedEnumsArray:
             try printPropertyAccessingNestedEnumArray(wrapper)
+        case let wrapper as ObjcInteropPropertyWrapperAccessingNestedStructsArray:
+            try printPropertyAccessingNestedStructArray(wrapper)
         case let wrapper as ObjcInteropPropertyWrapperManagingSwiftStructProperty:
             try printPrimitivePropertyWrapper(wrapper)
         default:
@@ -249,7 +274,7 @@ internal class ObjcInteropPrinter: BasePrinter {
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnumArray.objcTypeName
 
         guard swiftProperty.isMutable == false else {
-            throw Exception.unimplemented("Cannot print setter for `ObjcInteropEnumArray`: \(swiftProperty.type).")
+            throw Exception.unimplemented("Generating setter for `ObjcInteropEnumArray` is not supported: \(swiftProperty.type).")
         }
 
         writeLine("@objc public var \(objcPropertyName): [Int]\(objcPropertyOptionality) {")
@@ -259,8 +284,42 @@ internal class ObjcInteropPrinter: BasePrinter {
         writeLine("}")
     }
 
+    private func printPropertyAccessingNestedStructArray(_ propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedStructsArray) throws {
+        let nestedObjcClass = propertyWrapper.objcNestedClass! // swiftlint:disable:this force_unwrapping
+
+        // Generate getter for managed structs array.
+        // ```
+        // @objc public var bars: [DDBar] {
+        //     root.swiftModel.bars.map { DDBar(swiftModel: $0) }
+        // }
+        // ```
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
+        let objcPropertyName = swiftProperty.name
+        let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
+        let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
+
+        guard swiftProperty.isMutable == false else {
+            throw Exception.unimplemented("Generating setter for `ObjcInteropNestedClass` is not supported: \(swiftProperty.type).")
+        }
+
+        writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
+        indentRight()
+            writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcClassName)(swiftModel: $0) }")
+        indentLeft()
+        writeLine("}")
+    }
+
     private func printPrimitivePropertyWrapper(_ propertyWrapper: ObjcInteropPropertyWrapperManagingSwiftStructProperty) throws {
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
+
+        if let swiftDictionary = swiftProperty.type as? SwiftDictionary, swiftDictionary.value is SwiftPrimitive<SwiftCodable> {
+            guard !swiftProperty.isMutable else {
+                throw Exception.unimplemented(
+                    "Generating ObjcInterop for mutable `[Swift: Codable]` is not supported."
+                )
+            }
+        }
+
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
@@ -308,6 +367,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return "NSNumber"
         case _ as ObjcInteropNSString:
             return "String"
+        case _ as ObjcInteropAny:
+            return "Any"
         case let objcArray as ObjcInteropNSArray:
             return "[\(try objcInteropTypeName(for: objcArray.element))]"
         case let objcDictionary as ObjcInteropNSDictionary:
@@ -333,6 +394,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return nil // `[String]` <> `[NSString]` interoperability doesn't require casting
         case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropNSString:
             return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
+        case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropAny:
+            return nil // `[Key: Any]` <> `[Key: Any]` interoperability doesn't require casting
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
         }
@@ -352,6 +415,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             return nil // `[String]` <> `[NSString]` interoperability doesn't require casting
         case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitive<String>:
             return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
+        case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitive<SwiftCodable>:
+            return nil
         case let swiftArray as SwiftArray:
             let elementCast = try objcToSwiftCast(for: swiftArray.element)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftArray` with elements of type: \(type(of: swiftArray.element))"))

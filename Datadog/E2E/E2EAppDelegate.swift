@@ -7,9 +7,8 @@
 import UIKit
 
 @UIApplicationMain
-class E2EAppDelegate: UIResponder, UIApplicationDelegate {
+internal class E2EAppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
         E2EConfig.check()
 
         return true

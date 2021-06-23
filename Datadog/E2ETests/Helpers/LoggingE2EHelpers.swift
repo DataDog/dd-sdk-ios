@@ -11,6 +11,7 @@ extension Logger {
         let message: String = .mockRandom()
         let error: Error? = Bool.random() ? ErrorMock(.mockRandom()) : nil
 
+        // swiftlint:disable opening_brace
         let allMethods = [
             { self.debug(message, error: error, attributes: attributes) },
             { self.info(message, error: error, attributes: attributes) },
@@ -19,6 +20,7 @@ extension Logger {
             { self.error(message, error: error, attributes: attributes) },
             { self.critical(message, error: error, attributes: attributes) },
         ]
+        // swiftlint:enable opening_brace
 
         let randomMethod = allMethods.randomElement()!
         randomMethod()

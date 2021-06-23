@@ -20,23 +20,27 @@ internal class E2EConfig {
     /// Reads Datadog client token authorizing data for 'Mobile - Instrumentation' org.
     static func readClientToken() -> String {
         guard let clientToken = bundle.infoDictionary?[InfoPlistKey.clientToken] as? String, !clientToken.isEmpty else {
-            fatalError("""
-            ✋⛔️ Cannot read `\(InfoPlistKey.clientToken)` from `Info.plist` dictionary.
-            Update `xcconfigs/Datadog.xcconfig` with your own client token obtained on datadoghq.com.
-            You might need to run `Product > Clean Build Folder` before retrying.
-            """)
+            fatalError(
+                """
+                ✋⛔️ Cannot read `\(InfoPlistKey.clientToken)` from `Info.plist` dictionary.
+                Update `xcconfigs/Datadog.xcconfig` with your own client token obtained on datadoghq.com.
+                You might need to run `Product > Clean Build Folder` before retrying.
+                """
+            )
         }
         return clientToken
     }
 
     /// Reads RUM Application ID authorizing data for 'Mobile - Instrumentation' org.
     static func readRUMApplicationID() -> String {
-        guard let rumApplicationID = bundle.infoDictionary![InfoPlistKey.rumApplicationID] as? String, !rumApplicationID.isEmpty else {
-            fatalError("""
-            ✋⛔️ Cannot read `\(InfoPlistKey.rumApplicationID)` from `Info.plist` dictionary.
-            Update `xcconfigs/Datadog.xcconfig` with your own RUM application id obtained on datadoghq.com.
-            You might need to run `Product > Clean Build Folder` before retrying.
-            """)
+        guard let rumApplicationID = bundle.infoDictionary?[InfoPlistKey.rumApplicationID] as? String, !rumApplicationID.isEmpty else {
+            fatalError(
+                """
+                ✋⛔️ Cannot read `\(InfoPlistKey.rumApplicationID)` from `Info.plist` dictionary.
+                Update `xcconfigs/Datadog.xcconfig` with your own RUM application id obtained on datadoghq.com.
+                You might need to run `Product > Clean Build Folder` before retrying.
+                """
+            )
         }
         return rumApplicationID
     }
@@ -44,7 +48,7 @@ internal class E2EConfig {
     /// Reads Datadog ENV for tagging events. Returns `debug` for local builds and `instrumentation` for CI.
     /// This way local debug data is excluded from monitors installed in 'Mobile - Instrumentation' org.
     static func readEnv() -> String {
-        let isCI = bundle.infoDictionary![InfoPlistKey.isRunningOnCI] as? String
+        let isCI = bundle.infoDictionary?[InfoPlistKey.isRunningOnCI] as? String
         return isCI == "true" ? "instrumentation" : "debug"
     }
 

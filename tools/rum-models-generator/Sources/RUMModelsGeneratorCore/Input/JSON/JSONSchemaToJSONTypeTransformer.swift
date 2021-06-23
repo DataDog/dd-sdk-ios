@@ -64,6 +64,8 @@ internal class JSONSchemaToJSONTypeTransformer {
             return JSONPrimitive.double
         case .string:
             return JSONPrimitive.string
+        case .object:
+            return JSONPrimitive.any
         default:
             throw Exception.illegal(
                 "'\(schema.type?.rawValue ?? "(null)")' is not supported `JSONPrimitive`."

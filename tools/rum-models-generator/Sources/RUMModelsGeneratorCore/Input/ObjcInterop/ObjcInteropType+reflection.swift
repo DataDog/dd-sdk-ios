@@ -22,7 +22,7 @@ extension ObjcInteropRootClass: ObjcInteropReflectable {
     var swiftTypeName: String { bridgedSwiftStruct.name }
 }
 
-extension ObjcInteropTransitiveClass: ObjcInteropReflectable {
+extension ObjcInteropTransitiveNestedClass: ObjcInteropReflectable {
     private var parentClass: ObjcInteropClass {
         return parentProperty.owner
     }
@@ -39,6 +39,24 @@ extension ObjcInteropTransitiveClass: ObjcInteropReflectable {
         if self is ObjcInteropReferencedTransitiveClass {
             return bridgedSwiftStruct.name
         }
+        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftStruct.name
+    }
+}
+
+extension ObjcInteropNestedClass: ObjcInteropReflectable {
+    private var parentClass: ObjcInteropClass {
+        return parentProperty.owner
+    }
+
+    var objcRootClass: ObjcInteropRootClass {
+        return (parentClass as! ObjcInteropReflectable).objcRootClass
+    }
+
+    var objcTypeName: String {
+        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftStruct.name
+    }
+
+    var swiftTypeName: String {
         return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftStruct.name
     }
 }
@@ -70,7 +88,7 @@ extension ObjcInteropPropertyWrapper {
     var keyPath: String {
         let swiftPropertyName = bridgedSwiftProperty.name
 
-        if let parentNestedClass = owner as? ObjcInteropTransitiveClass {
+        if let parentNestedClass = owner as? ObjcInteropTransitiveNestedClass {
             let parentProperty = parentNestedClass.parentProperty
             let forceUnwrapping = parentProperty.bridgedSwiftProperty.isOptional ? "!" : ""
             return parentProperty.keyPath + forceUnwrapping + "." + swiftPropertyName

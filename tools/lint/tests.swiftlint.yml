@@ -83,6 +83,8 @@ custom_rules:
 
 included:
   - ../../Tests
+  - ../../Datadog/E2ETests
+  - ../../Datadog/E2EInstrumentationTests
   - ../../instrumented-tests/http-server-mock/Tests
   - ../../tools/api-surface/Tests
   - ../../tools/rum-models-generator/Tests

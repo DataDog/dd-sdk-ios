@@ -7,11 +7,13 @@
 import Foundation
 
 public struct File {
+    internal let name: String
     internal let content: Data
 }
 
 public extension File {
     init(url: URL) throws {
+        self.name = url.lastPathComponent
         self.content = try Data(contentsOf: url)
     }
 }

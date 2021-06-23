@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.8.1
+DD_SDK_SWIFT_TESTING_VERSION = 0.8.2
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -102,6 +102,17 @@ api-surface:
 		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme Datadog --path . > api-surface-swift
 		@echo "Generating api-surface-objc"
 		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
+
+# Generate Datadog monitors terraform definition for E2E tests:
+e2e-monitors-generate:
+		@echo "Deleting previous 'main.tf as it will be soon generated."
+		@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
+		@echo "Deleting previous Terraform state and backup as we don't need to track it."
+		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
+		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
+		@echo "⚙️  Generating 'main.tf':"
+		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
+		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
 
 bump:
 		@read -p "Enter version number: " version;  \
