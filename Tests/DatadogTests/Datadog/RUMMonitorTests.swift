@@ -1356,9 +1356,9 @@ class RUMResourceKindTests: XCTestCase {
         )
     }
 
-    func testWhenInitializingFromHTTPURLResponse_itDefaultsToOther() {
+    func testWhenInitializingFromHTTPURLResponse_itDefaultsToXhr() {
         XCTAssertEqual(
-            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .other
+            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .xhr
         )
     }
 }

@@ -138,6 +138,22 @@ class FeaturesConfigurationTests: XCTestCase {
         }
 
         XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1).logging?.uploadURLWithClientToken.absoluteString,
+            "https://logs.browser-intake-datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us3).logging?.uploadURLWithClientToken.absoluteString,
+            "https://logs.browser-intake-us3-datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu1).logging?.uploadURLWithClientToken.absoluteString,
+            "https://mobile-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1_fed).logging?.uploadURLWithClientToken.absoluteString,
+            "https://logs.browser-intake-ddog-gov.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
             try configuration(datadogEndpoint: .us).logging?.uploadURLWithClientToken.absoluteString,
             "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + clientToken
         )
@@ -151,6 +167,22 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://trace.browser-intake-datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us3).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://trace.browser-intake-us3-datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu1).tracing?.uploadURLWithClientToken.absoluteString,
+            "https:/public-trace-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1_fed).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
             try configuration(datadogEndpoint: .us).tracing?.uploadURLWithClientToken.absoluteString,
             "https://public-trace-http-intake.logs.datadoghq.com/v1/input/" + clientToken
         )
@@ -163,6 +195,22 @@ class FeaturesConfigurationTests: XCTestCase {
             "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum.browser-intake-datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us3).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum.browser-intake-us3-datadoghq.com/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu1).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1_fed).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum.browser-intake-ddog-gov.com/v1/input/" + clientToken
+        )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us).rum?.uploadURLWithClientToken.absoluteString,
             "https://rum-http-intake.logs.datadoghq.com/v1/input/" + clientToken
@@ -543,7 +591,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.sdkEnvironment, "prod", "Internal monitoring data should be available under \"env:prod\"")
         XCTAssertEqual(
             configuration.logsUploadURLWithClientToken.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + internalMonitoringClientToken
+            "https://logs.browser-intake-datadoghq.com/v1/input/" + internalMonitoringClientToken
         )
     }
 
@@ -690,9 +738,9 @@ class FeaturesConfigurationTests: XCTestCase {
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
-        logsEndpoint: Datadog.Configuration.LogsEndpoint = .us,
-        tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us,
-        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us
+        logsEndpoint: Datadog.Configuration.LogsEndpoint = .us1,
+        tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us1,
+        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
             configuration: .mockWith(

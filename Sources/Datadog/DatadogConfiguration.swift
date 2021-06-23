@@ -38,16 +38,35 @@ extension Datadog {
         public enum DatadogEndpoint {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us1
+            /// US based servers.
+            /// Sends data to [app.datadoghq.com](https://us3.datadoghq.com/).
+            case us3
+            /// Europe based servers.
+            /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu1
+            /// US based servers, FedRAMP compatible.
+            /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case us1_fed
+            /// US based servers.
+            /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
+            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
 
             internal var logsEndpoint: LogsEndpoint {
                 switch self {
+                case .us1: return .us1
+                case .us3: return .us3
+                case .eu1: return .eu1
+                case .us1_fed: return .us1_fed
                 case .us: return .us
                 case .eu: return .eu
                 case .gov: return .gov
@@ -56,6 +75,10 @@ extension Datadog {
 
             internal var tracesEndpoint: TracesEndpoint {
                 switch self {
+                case .us1: return .us1
+                case .us3: return .us3
+                case .eu1: return .eu1
+                case .us1_fed: return .us1_fed
                 case .us: return .us
                 case .eu: return .eu
                 case .gov: return .gov
@@ -64,6 +87,10 @@ extension Datadog {
 
             internal var rumEndpoint: RUMEndpoint {
                 switch self {
+                case .us1: return .us1
+                case .us3: return .us3
+                case .eu1: return .eu1
+                case .us1_fed: return .us1_fed
                 case .us: return .us
                 case .eu: return .eu
                 case .gov: return .gov
@@ -75,18 +102,37 @@ extension Datadog {
         public enum LogsEndpoint {
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us1
+            /// US based servers.
+            /// Sends logs to [app.datadoghq.com](https://us3.datadoghq.com/).
+            case us3
+            /// Europe based servers.
+            /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu1
+            /// US based servers, FedRAMP compatible.
+            /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case us1_fed
+            /// US based servers.
+            /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
+            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
 
             internal var url: String {
                 switch self {
+                case .us1: return "https://logs.browser-intake-datadoghq.com/v1/input/"
+                case .us3: return "https://logs.browser-intake-us3-datadoghq.com/v1/input/"
+                case .eu1: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
+                case .us1_fed: return "https://logs.browser-intake-ddog-gov.com/v1/input/"
                 case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
                 case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
                 case .gov: return "https://logs.browser-intake-ddog-gov.com/v1/input/"
@@ -99,18 +145,37 @@ extension Datadog {
         public enum TracesEndpoint {
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us1
+            /// US based servers.
+            /// Sends traces to [app.datadoghq.com](https://us3.datadoghq.com/).
+            case us3
+            /// Europe based servers.
+            /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu1
+            /// US based servers, FedRAMP compatible.
+            /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case us1_fed
+            /// US based servers.
+            /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
+            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
 
             internal var url: String {
                 switch self {
+                case .us1: return "https://trace.browser-intake-datadoghq.com/v1/input/"
+                case .us3: return "https://trace.browser-intake-us3-datadoghq.com/v1/input/"
+                case .eu1: return "https:/public-trace-http-intake.logs.datadoghq.eu/v1/input/"
+                case .us1_fed: return "https://trace.browser-intake-ddog-gov.com/v1/input/"
                 case .us: return "https://public-trace-http-intake.logs.datadoghq.com/v1/input/"
                 case .eu: return "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/"
                 case .gov: return "https://trace.browser-intake-ddog-gov.com/v1/input/"
@@ -123,18 +188,37 @@ extension Datadog {
         public enum RUMEndpoint {
             /// US based servers.
             /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
+            case us1
+            /// US based servers.
+            /// Sends RUM events to [app.datadoghq.com](https://us3.datadoghq.com/).
+            case us3
+            /// Europe based servers.
+            /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            case eu1
+            /// US based servers, FedRAMP compatible.
+            /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            case us1_fed
+            /// US based servers.
+            /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
+            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
+            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
+            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
 
             internal var url: String {
                 switch self {
+                case .us1: return "https://rum.browser-intake-datadoghq.com/v1/input/"
+                case .us3: return "https://rum.browser-intake-us3-datadoghq.com/v1/input/"
+                case .eu1: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
+                case .us1_fed: return "https://rum.browser-intake-ddog-gov.com/v1/input/"
                 case .us: return "https://rum-http-intake.logs.datadoghq.com/v1/input/"
                 case .eu: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
                 case .gov: return "https://rum.browser-intake-ddog-gov.com/v1/input/"
@@ -237,9 +321,9 @@ extension Datadog {
                     customLogsEndpoint: nil,
                     customTracesEndpoint: nil,
                     customRUMEndpoint: nil,
-                    logsEndpoint: .us,
-                    tracesEndpoint: .us,
-                    rumEndpoint: .us,
+                    logsEndpoint: .us1,
+                    tracesEndpoint: .us1,
+                    rumEndpoint: .us1,
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
