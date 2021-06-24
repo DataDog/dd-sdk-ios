@@ -775,12 +775,14 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockView)
         monitor.addTiming(name: "timing1")
         monitor.addTiming(name: "timing2")
+        monitor.addTiming(name: "timing3_.@$-()&+=Д")
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
         let lastViewUpdate = try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing1"), 1_000_000_000)
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
+        XCTAssertEqual(try lastViewUpdate.timing(named: "timing3_.@$-______"), 3_000_000_000)
     }
 
     // MARK: - RUM Events Dates Correction

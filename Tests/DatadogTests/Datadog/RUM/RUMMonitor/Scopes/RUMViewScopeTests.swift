@@ -687,6 +687,57 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(lastEvent.model.view.customTimings, [:])
     }
 
+    func testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        )
+
+        // Given
+        XCTAssertTrue(scope.isActiveView)
+        XCTAssertEqual(scope.customTimings.count, 0)
+
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
+
+        // When
+        currentTime.addTimeInterval(0.5)
+        let originalTimingName = "timing1_.@$-()&+=Д"
+        let sanitizedTimingName = "timing1_.@$-______"
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: originalTimingName)
+            )
+        )
+        XCTAssertEqual(scope.customTimings.count, 1)
+
+        // Then
+        let events = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self))
+
+        XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
+        XCTAssertEqual(events[0].model.view.customTimings, [:])
+        XCTAssertEqual(
+            events[1].model.view.customTimings,
+            [sanitizedTimingName: 500_000_000]
+        )
+        XCTAssertEqual(
+            logOutput.recordedLog?.message,
+            """
+            Custom timing '\(originalTimingName)' was modified to '\(sanitizedTimingName)' to match Datadog constraints.
+            """
+        )
+    }
+
     // MARK: - Dates Correction
 
     func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {

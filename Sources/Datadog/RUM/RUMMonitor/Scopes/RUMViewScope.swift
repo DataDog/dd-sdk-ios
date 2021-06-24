@@ -320,7 +320,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 cpuTicksPerSecond: nil,
                 crash: nil,
                 cumulativeLayoutShift: nil,
-                customTimings: customTimings,
+                customTimings: customTimings.reduce(into: [:]) { acc, element in
+                    acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
+                },
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,
@@ -394,5 +396,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             return true
         }
         return false
+    }
+
+    private func sanitizeCustomTimingName(customTiming: String) -> String {
+        let sanitized = customTiming.replacingOccurrences(of: "[^a-zA-Z0-9_.@$-]", with: "_", options: .regularExpression)
+
+        if customTiming != sanitized {
+            userLogger.warn(
+                """
+                Custom timing '\(customTiming)' was modified to '\(sanitized)' to match Datadog constraints.
+                """
+            )
+        }
+
+        return sanitized
     }
 }
