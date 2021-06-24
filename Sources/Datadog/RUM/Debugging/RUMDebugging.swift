@@ -35,6 +35,7 @@ internal class RUMDebugging {
 
     // MARK: - Initialization
 
+    #if !os(tvOS)
     init() {
         DispatchQueue.main.async {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
@@ -62,6 +63,7 @@ internal class RUMDebugging {
             object: nil
         )
     }
+    #endif
 
     // MARK: - Internal
 

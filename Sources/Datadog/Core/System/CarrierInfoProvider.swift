@@ -4,7 +4,10 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if canImport(CoreTelephony)
 import CoreTelephony
+#endif
+import Foundation
 
 /// Network connection details specific to cellular radio access.
 public struct CarrierInfo: Equatable {
@@ -48,7 +51,7 @@ internal protocol CarrierInfoProviderType {
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
-        #if !targetEnvironment(macCatalyst)
+        #if !targetEnvironment(macCatalyst) && !os(tvOS)
         case CTRadioAccessTechnologyGPRS: self = .GPRS
         case CTRadioAccessTechnologyEdge: self = .Edge
         case CTRadioAccessTechnologyWCDMA: self = .WCDMA
@@ -78,7 +81,7 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     private let publisher: ValuePublisher<CarrierInfo?>
 
     convenience init() {
-        #if targetEnvironment(macCatalyst)
+        #if targetEnvironment(macCatalyst) || os(tvOS)
             self.init(
                 wrappedProvider: MacCatalystCarrierInfoProvider()
             )
@@ -109,7 +112,7 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     }
 }
 
-#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst) || os(tvOS)
 
 internal struct MacCatalystCarrierInfoProvider: WrappedCarrierInfoProvider {
     /// Carrier info is not supported on macCatalyst
