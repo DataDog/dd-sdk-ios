@@ -15,9 +15,9 @@ The Datadog Real User Monitoring SDK generates six types of events:
 | Event Type | Retention | Description                                                                                                                                                                                                                                                                                              |
 |------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Session    | 30 days   | Session represents a real user journey on your mobile application. It begins when the user launches the application, and the session remains live as long as the user stays active. During the user journey, all RUM events generated as part of the session will share the same `session.id` attribute. |
-| View       | 30 days   | iew represents a unique screen (or screen segment) on your mobile application. Individual `ViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`                           |
+| View       | 30 days   | A view represents a unique screen (or screen segment) on your mobile application. Individual `UIViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`                           |
 | Resource   | 15 days   | Resources represents network requests to first-party hosts, APIs, 3rd party providers, and libraries in your mobile application. All requests generated during a user session are attached to the view with a unique `resource.id`                                                                       |
-| Error      | 30 days   | Error represents an exception or crash emitted by the mobile application attached to the view it is generated in.                                                                                                                                                                                        |
+| Error      | 30 days   | Error represents an exception emitted by the mobile application attached to the view it is generated in.                                                                                                                                                                                        |
 | Action     | 30 days   | Action represents user activity in your mobile application (application launch, tap, swipe, back etc). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                      |
 
 The following diagram illustrates the RUM event hierarchy:
@@ -72,9 +72,9 @@ The following attributes are related to the geo-location of IP addresses:
 | Fullname                           | Type   | Description                                                                                                                               |
 |------------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | `geo.country`                      | string | Name of the country                                                                                                                       |
-| `geo.country_iso_code`             | string | [ISO Code][1] of the country (for example, `US` for the United States, `FR` for France).                                                  |
+| `geo.country_iso_code`             | string | ISO Code of the country (for example, `US` for the United States, `FR` for France).                                                  |
 | `geo.country_subdivision`          | string | Name of the first subdivision level of the country (for example, `California` in the United States or the `Sarthe` department in France). |
-| `geo.country_subdivision_iso_code` | string | [ISO Code][1] of the first subdivision level of the country (for example, `CA` in the United States or the `SA` department in France).    |
+| `geo.country_subdivision_iso_code` | string | ISO Code of the first subdivision level of the country (for example, `CA` in the United States or the `SA` department in France).    |
 | `geo.continent_code`               | string | ISO code of the continent (`EU`, `AS`, `NA`, `AF`, `AN`, `SA`, `OC`).                                                                     |
 | `geo.continent`                    | string | Name of the continent (`Europe`, `Australia`, `North America`, `Africa`, `Antartica`, `South America`, `Oceania`).                        |
 | `geo.city`                         | string | The name of the city (example `Paris`, `New York`).                                                                                       |
@@ -233,5 +233,5 @@ Network errors include information about failing HTTP requests. The following fa
 
 {{< partial name="whats-next/whats-next.html" >}}
 
-[1]: /real_user_monitoring/ios#manual-instrumentation
-[2]: /getting_started/tagging/unified_service_tagging/
+[1]: /real_user_monitoring/ios/advanced_configuration/#enrich-user-sessions
+[2]: /real_user_monitoring/ios/advanced_configuration/#track-user-sessions

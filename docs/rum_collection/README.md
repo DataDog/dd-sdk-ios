@@ -18,8 +18,8 @@ Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the re
 
 1. Declare SDK as a dependency.
 2. Specify application details in UI.
-3. Initialize the library with application context.
-4. Initialize RUM Monitor, Interceptor and start sending data.
+3. Initialize the library.
+4. Initialize RUM Monitor, `DDURLSesssionDelegate` and start sending data.
 
 **Minimum iOS version**: Datadog SDK for iOS supports iOS v11+.
 
@@ -37,13 +37,13 @@ Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the re
 ### Specify application details in UI
 
 1. Select UX Monitoring -> RUM Applications -> New Application
-2. Choose `android` as your Application Type in [Datadog UI][2] and provide a new application name to generate a unique Datadog application ID and client token.
+2. Choose `iOS` as your Application Type in [Datadog UI][2] and provide a new application name to generate a unique Datadog application ID and client token.
 
 {{< img src="real_user_monitoring/ios/screenshot_rum.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
-To ensure safety of your data, you must use a client token: you cannot use [Datadog API keys][6] to configure the `dd-sdk-android` library as they would be exposed client-side in the Android application APK byte code. For more information about setting up a client token, see the [client token documentation][7].
+To ensure safety of your data, you must use a client token: you cannot use [Datadog API keys][6] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application byte code. For more information about setting up a client token, see the [client token documentation][7].
 
-### Initialize the library with application context
+### Initialize the library
 
 
 {{< tabs >}}
@@ -55,11 +55,14 @@ Datadog.initialize(
     trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
         .builderUsing(
-            rumApplicationID: "<rum_application-id>",
+            rumApplicationID: "<rum_application_id>",
             clientToken: "<client_token>",
             environment: "<environment_name>"
         )
         .set(serviceName: "app-name")
+        .trackUIKitRUMViews()
+        .trackUIKitActions()
+        .trackURLSession()
         .build()
 )
 ```
@@ -73,12 +76,15 @@ Datadog.initialize(
     trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
         .builderUsing(
-            rumApplicationID: "<rum_application-id>",
+            rumApplicationID: "<rum_application_id>",
             clientToken: "<client_token>",
             environment: "<environment_name>"
         )
         .set(serviceName: "app-name")
         .set(endpoint: .eu)
+        .trackUIKitRUMViews()
+        .trackUIKitActions()
+        .trackURLSession()
         .build()
 )
 ```
@@ -86,17 +92,17 @@ Datadog.initialize(
 {{% /tab %}}
 {{< /tabs >}}
 
-RUM SDK automatically tracks user sessions, depending on options provided at SDK initialization. Learn more about [`trackingConsent`][8] to add GDPR compliance for your EU users, [initialization parameters][9] for SDK configuartion options.
+RUM SDK automatically tracks user sessions, depending on options provided at SDK initialization. Learn more about [`trackingConsent`][8] to add GDPR compliance for your EU users and other [initialization parameters][9] for SDK configuartion.
 
-### Initialize RUM Monitor and URLSesssionDelegate
+### Initialize RUM Monitor and DDURLSesssionDelegate
 
 Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
 
-    ```swift
-    import Datadog
+```swift
+import Datadog
 
-    Global.rum = RUMMonitor.initialize()
-    ```
+Global.rum = RUMMonitor.initialize()
+```
 
 To monitor requests sent from `URLSession` instance as resources, assign `DDURLSessionDelegate()` as a `delegate` of that `URLSession`
 
@@ -106,19 +112,7 @@ let session = URLSession(
     delegate: DDURLSessionDelegate(),
     delegateQueue: nil
 )
-```
-
-## Initialization parameters
- 
-The following methods in `Datadog.Configuration` can be used to initialize the library:
- 
-| Method                                        | Description                                                                                                                                                                                      |
-|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `set(serviceName: "service-name")`            | Set `<SERVICE_NAME>` as default value for the `service` [standard attribute][9] attached to all logs and traces sent to Datadog (this can be overriden in each Logger)                           |
-| `trackUIKitActions()`                         | Enables tracking User interactions (such as Tap, Scroll or Swipe). For privacy reasons, all interactions with the on-screen keyboard are ignored                                                 |
-| `trackUIKitRUMViews()`                        | Enables tracking for `ViewController` as a RUM View. You can also [customize view tracking][10] by using your own implementation of the `predicate` conforming `UIKitRUMViewsPredicate` protocol |
-| `track(firstPartyHosts: ["your.domain.com"])` | Enables tracking for RUM resources. Requests whose URLs match the `firstPartyHosts` will be tagged as "first party" in the RUM events                                                            |
-| `set(endpoint: .eu)`                          | Switch target endpoints for data to EU for europe users                                                                                                                                          |
+``` 
 
 ## Further Reading
 
@@ -132,6 +126,6 @@ The following methods in `Datadog.Configuration` can be used to initialize the l
 [5]: https://app.datadoghq.com/rum/create
 [6]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
-[8]: /real_user_monitoring/ios/advanced_configuration/initialization_parameters
-[9]: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+[8]: /real_user_monitoring/ios/troubleshooting/#set-tracking-consent-gdpr-compliance
+[9]: /real_user_monitoring/ios/advanced_configuration/#initialization-parameters
 [10]: /real_user_monitoring/ios/view_tracking/custom_views
