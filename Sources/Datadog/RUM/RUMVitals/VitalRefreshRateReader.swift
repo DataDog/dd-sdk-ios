@@ -12,7 +12,6 @@ internal class VitalRefreshRateReader {
     private var observers = [VitalObserver]()
     private var displayLink: CADisplayLink?
     private var lastFrameTimestamp: CFTimeInterval?
-    private(set) var isRunning = false
 
     init(notificationCenter: NotificationCenter = .default) {
         notificationCenter.addObserver(
@@ -27,6 +26,8 @@ internal class VitalRefreshRateReader {
             name: UIApplication.didBecomeActiveNotification,
             object: nil
         )
+
+        start()
     }
 
     deinit {
@@ -51,19 +52,6 @@ internal class VitalRefreshRateReader {
         }
     }
 
-    /// Starts listening to frame paints.
-    /// - Throws: only if `UIScreen.main` cannot generate its `CADisplayLink`
-    func start() throws {
-        try private_start()
-        isRunning = true
-    }
-
-    /// Stops listening frame paints. Automatically called at `deinit()`.
-    func stop() {
-        private_stop()
-        isRunning = false
-    }
-
     // MARK: - Private
 
     @objc
@@ -79,34 +67,28 @@ internal class VitalRefreshRateReader {
         lastFrameTimestamp = link.timestamp
     }
 
+    private func start() {
+        if displayLink != nil {
+            return
+        }
+
+        displayLink = CADisplayLink(target: self, selector: #selector(displayTick(link:)))
+        displayLink?.add(to: .main, forMode: .default)
+    }
+
+    private func stop() {
+        displayLink?.invalidate()
+        displayLink = nil
+        lastFrameTimestamp = nil
+    }
+
     @objc
     private func appWillResignActive() {
-        private_stop()
+        stop()
     }
 
     @objc
     private func appDidBecomeActive() {
-        if isRunning {
-            try? private_start()
-        }
-    }
-
-    private func private_start() throws {
-        stop()
-
-        guard let link = UIScreen.main.displayLink(
-            withTarget: self,
-            selector: #selector(displayTick(link:))
-        ) else {
-            throw InternalError(description: "CADisplayLink could not be created!")
-        }
-        link.add(to: .main, forMode: .default)
-        self.displayLink = link
-    }
-
-    private func private_stop() {
-        displayLink?.invalidate()
-        displayLink = nil
-        lastFrameTimestamp = nil
+        start()
     }
 }

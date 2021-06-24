@@ -11,62 +11,61 @@ import UIKit
 class VitalRefreshRateReaderTests: XCTestCase {
     private let mockNotificationCenter = NotificationCenter()
 
-    func testRefreshRateReader() throws {
+    func testHighAndLowRefreshRates() {
         let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
-        XCTAssertFalse(reader.isRunning)
-
         let observer_view1 = VitalObserver(listener: VitalListenerMock())
         let observer_view2 = VitalObserver(listener: VitalListenerMock())
 
-        XCTAssertNoThrow(try reader.start())
-        XCTAssertTrue(reader.isRunning)
-
+        // View1 has simple UI, high FPS expected
         reader.register(observer_view1)
 
+        // Wait without blocking UI thread
         let expectation1 = expectation(description: "async expectation for first observer")
         DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 1.0)
+            Thread.sleep(forTimeInterval: 0.5)
             expectation1.fulfill()
         }
 
-        waitForExpectations(timeout: 3.0) { _ in
+        waitForExpectations(timeout: 1.0) { _ in
             XCTAssertGreaterThan(observer_view1.vitalInfo.sampleCount, 0)
             XCTAssertGreaterThan(UIScreen.main.maximumFramesPerSecond, Int(observer_view1.vitalInfo.maxValue))
             XCTAssertGreaterThan(observer_view1.vitalInfo.minValue, 0.0)
         }
 
-        reader.register(observer_view1)
+        reader.unregister(observer_view1)
+        // View2 has complex UI, lower FPS expected
+        reader.register(observer_view2)
 
+        // Wait without blocking UI thread
         let expectation2 = expectation(description: "async expectation for second observer")
         DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 1.0)
+            Thread.sleep(forTimeInterval: 0.5)
             expectation2.fulfill()
         }
+        waitForExpectations(timeout: 1.0) { _ in }
 
-        waitForExpectations(timeout: 3.0) { _ in
-            XCTAssertGreaterThan(observer_view1.vitalInfo.sampleCount, observer_view2.vitalInfo.sampleCount)
-        }
+        // Block UI thread
+        Thread.sleep(forTimeInterval: 0.5)
+
+        XCTAssertGreaterThan(observer_view2.vitalInfo.sampleCount, 0)
+        XCTAssertGreaterThan(observer_view1.vitalInfo.meanValue, observer_view2.vitalInfo.meanValue)
     }
 
-    func testAppStateHandling() throws {
+    func testAppStateHandling() {
         let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
-        XCTAssertFalse(reader.isRunning)
-
         let observer = VitalObserver(listener: VitalListenerMock())
 
-        XCTAssertNoThrow(try reader.start())
-        XCTAssertTrue(reader.isRunning)
-
+        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
         mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         reader.register(observer)
 
         let expectation1 = expectation(description: "async expectation for first observer")
         DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 1.0)
+            Thread.sleep(forTimeInterval: 0.5)
             expectation1.fulfill()
         }
 
-        waitForExpectations(timeout: 3.0) { _ in
+        waitForExpectations(timeout: 1.0) { _ in
             XCTAssertEqual(observer.vitalInfo.sampleCount, 0)
         }
 
@@ -74,31 +73,12 @@ class VitalRefreshRateReaderTests: XCTestCase {
 
         let expectation2 = expectation(description: "async expectation for second observer")
         DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 1.0)
+            Thread.sleep(forTimeInterval: 0.5)
             expectation2.fulfill()
         }
 
-        waitForExpectations(timeout: 3.0) { _ in
+        waitForExpectations(timeout: 1.0) { _ in
             XCTAssertGreaterThan(observer.vitalInfo.sampleCount, 0)
-        }
-    }
-
-    func testReaderNotRestartIfNotAlreadyRunning() throws {
-        let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
-        XCTAssertFalse(reader.isRunning)
-
-        let observer = VitalObserver(listener: VitalListenerMock())
-
-        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-
-        let expectation1 = expectation(description: "async expectation for second observer")
-        DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 1.0)
-            expectation1.fulfill()
-        }
-
-        waitForExpectations(timeout: 3.0) { _ in
-            XCTAssertEqual(observer.vitalInfo.sampleCount, 0)
         }
     }
 }
