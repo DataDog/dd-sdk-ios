@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class RUMViewScope: RUMScope, RUMContextProvider {
+internal class RUMViewScope: RUMScope, RUMContextProvider, VitalListener {
     struct Constants {
         static let backgroundViewURL = "com/datadog/background/view"
         static let backgroundViewName = "Background"
@@ -88,6 +88,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
         self.crashContextIntegration = RUMWithCrashContextIntegration()
+
+        let vitalObserver = VitalObserver(listener: self)
+        RUMFeature.instance?.refreshRateReader.register(vitalObserver)
+    }
+
+    func onVitalInfo(info: VitalInfo) {
+        print(info.meanValue)
     }
 
     // MARK: - RUMContextProvider

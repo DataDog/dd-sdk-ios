@@ -51,6 +51,8 @@ internal final class RUMFeature {
     /// RUM events mapper.
     let eventsMapper: RUMEventsMapper
 
+    let refreshRateReader = VitalRefreshRateReader(notificationCenter: .default)
+
     // MARK: - Initialization
 
     static func createStorage(
@@ -160,10 +162,13 @@ internal final class RUMFeature {
         self.eventsMapper = eventsMapper
         self.storage = storage
         self.upload = upload
+
+        try! refreshRateReader.start() // swiftlint:disable:this force_try
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
     func deinitialize() {
+        refreshRateReader.stop()
         storage.flushAndTearDown()
         upload.flushAndTearDown()
         RUMFeature.instance = nil
