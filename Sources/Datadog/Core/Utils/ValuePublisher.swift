@@ -7,7 +7,7 @@
 import Foundation
 
 /// An observer subscribing to a `ValuePublisher`.
-internal protocol ValueObserver {
+internal protocol ValueObserver: AnyObject {
     associatedtype ObservedValue
 
     /// Notifies this observer on the value change. Called on the publisher's queue.
@@ -23,8 +23,10 @@ internal class ValuePublisher<Value> {
     /// Type erasure for `ValueObserver` type.
     private struct AnyObserver<ObservedValue> {
         let notifyValueChanged: (ObservedValue, ObservedValue) -> Void
+        let object: AnyObject
 
         init<Observer: ValueObserver>(wrapped: Observer) where Observer.ObservedValue == ObservedValue {
+            self.object = wrapped
             self.notifyValueChanged = wrapped.onValueChanged
         }
     }
@@ -82,12 +84,21 @@ internal class ValuePublisher<Value> {
             self.unsafeObservers.append(AnyObserver(wrapped: distinctObserver))
         }
     }
+
+    /// Removes an observer so that it will not be notified on all value changes anymore.
+    func unsubscribe<Observer: ValueObserver>(_ observer: Observer) where Observer.ObservedValue == Value {
+        concurrentQueue.async(flags: .barrier) {
+            self.unsafeObservers.removeAll { existingObserver in
+                return existingObserver.object === observer
+            }
+        }
+    }
 }
 
 // MARK: - Helpers
 
 /// `ValueObserver` wrapper which notifies the wrapped observer only on distinct changes of the `Equatable` value.
-private struct DistinctValueObserver<EquatableValue: Equatable>: ValueObserver {
+private class DistinctValueObserver<EquatableValue: Equatable>: ValueObserver {
     private let wrappedOnValueChanged: (EquatableValue, EquatableValue) -> Void
 
     init<WrappedObserver: ValueObserver>(wrapped: WrappedObserver) where WrappedObserver.ObservedValue == EquatableValue {

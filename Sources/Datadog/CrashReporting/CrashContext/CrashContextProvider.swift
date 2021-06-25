@@ -24,12 +24,17 @@ internal class CrashContextProvider: CrashContextProviderType {
     }
 
     /// Observes changes to a particular `Value` in the `CrashContext` and manages its updates.
-    private struct ContextValueUpdater<Value>: ValueObserver {
+    private class ContextValueUpdater<Value>: ValueObserver {
         let queue: DispatchQueue
         let update: (Value) -> Void
 
+        init(queue: DispatchQueue, update: @escaping (Value) -> Void) {
+            self.queue = queue
+            self.update = update
+        }
+
         func onValueChanged(oldValue: Value, newValue: Value) {
-            queue.async { update(newValue) }
+            queue.async { self.update(newValue) }
         }
     }
 

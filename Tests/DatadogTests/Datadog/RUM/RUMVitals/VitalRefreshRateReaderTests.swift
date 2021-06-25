@@ -21,8 +21,7 @@ class VitalRefreshRateReaderTests: XCTestCase {
 
         // Wait without blocking UI thread
         let expectation1 = expectation(description: "async expectation for first observer")
-        DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 0.5)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             expectation1.fulfill()
         }
 
@@ -38,14 +37,13 @@ class VitalRefreshRateReaderTests: XCTestCase {
 
         // Wait without blocking UI thread
         let expectation2 = expectation(description: "async expectation for second observer")
-        DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 0.5)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             expectation2.fulfill()
         }
         waitForExpectations(timeout: 1.0) { _ in }
 
         // Block UI thread
-        Thread.sleep(forTimeInterval: 0.5)
+        Thread.sleep(forTimeInterval: 1.5)
 
         XCTAssertGreaterThan(observer_view2.vitalInfo.sampleCount, 0)
         XCTAssertGreaterThan(observer_view1.vitalInfo.meanValue, observer_view2.vitalInfo.meanValue)
@@ -60,25 +58,21 @@ class VitalRefreshRateReaderTests: XCTestCase {
         reader.register(observer)
 
         let expectation1 = expectation(description: "async expectation for first observer")
-        DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 0.5)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             expectation1.fulfill()
         }
 
-        waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertEqual(observer.vitalInfo.sampleCount, 0)
-        }
+        waitForExpectations(timeout: 1.0) { _ in }
+        XCTAssertEqual(observer.vitalInfo.sampleCount, 0)
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
         let expectation2 = expectation(description: "async expectation for second observer")
-        DispatchQueue.global().async {
-            Thread.sleep(forTimeInterval: 0.5)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             expectation2.fulfill()
         }
 
-        waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertGreaterThan(observer.vitalInfo.sampleCount, 0)
-        }
+        waitForExpectations(timeout: 1.0) { _ in }
+        XCTAssertGreaterThan(observer.vitalInfo.sampleCount, 0)
     }
 }
