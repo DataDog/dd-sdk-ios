@@ -32,18 +32,19 @@ class VitalRefreshRateReaderTests: XCTestCase {
         }
 
         reader.unregister(observer_view1)
+
         // View2 has complex UI, lower FPS expected
         reader.register(observer_view2)
 
-        // Wait without blocking UI thread
+        // Block UI thread
+        Thread.sleep(forTimeInterval: 1.0)
+
+        // Wait after blocking UI thread so that reader will read refresh rate before assertions
         let expectation2 = expectation(description: "async expectation for second observer")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
             expectation2.fulfill()
         }
-        waitForExpectations(timeout: 1.0) { _ in }
-
-        // Block UI thread
-        Thread.sleep(forTimeInterval: 1.5)
+        waitForExpectations(timeout: 0.5) { _ in }
 
         XCTAssertGreaterThan(observer_view2.vitalInfo.sampleCount, 0)
         XCTAssertGreaterThan(observer_view1.vitalInfo.meanValue, observer_view2.vitalInfo.meanValue)
