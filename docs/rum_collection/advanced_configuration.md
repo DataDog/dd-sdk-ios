@@ -131,9 +131,9 @@ The following attributes are **optional**, you should provide **at least one** o
 
 | Attribute | Type   | Description                                                                                              |
 |-----------|--------|----------------------------------------------------------------------------------------------------------|
-| usr.id    | String | Unique user identifier.                                                                                  |
-| usr.name  | String | User friendly name, displayed by default in the RUM UI.                                                  |
-| usr.email | String | User email, displayed in the RUM UI if the user name is not present. It is also used to fetch Gravatars. |
+| `usr.id`    | String | Unique user identifier.                                                                                  |
+| `usr.name`  | String | User friendly name, displayed by default in the RUM UI.                                                  |
+| `usr.email` | String | User email, displayed in the RUM UI if the user name is not present. It is also used to fetch Gravatars. |
 
 To identify user sessions, use the `setUserInfo(id:name:email:)` API, for example:
 
@@ -146,7 +146,7 @@ Datadog.setUserInfo(id: "1234", name: "John Doe", email: "john@doe.com")
 You can use the following methods in `Datadog.Configuration.Builder` when creating the Datadog configuration to initialize the library:
 
 `set(endpoint: DatadogEndpoint)`
-: Sets the Datadog server endpoint where data is sent.
+: Sets the Datadog server endpoint that data is sent to.
 
 `set(batchSize: BatchSize)`
 : Sets the preferred size of batched data uploaded to Datadog. This value impacts the size and number of requests performed by the SDK (small batches mean more requests, but each will be smaller in size). Available values are: `.small`, `.medium` and `.large`.
@@ -154,13 +154,13 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 `set(uploadFrequency: UploadFrequency)`
 : Sets the preferred frequency of uploading data to Datadog. Available values are: `.frequent`, `.average` and `.rare`.
 
-RUM configuration:
+### RUM configuration
 
 `enableRUM(_ enabled: Bool)`
 : Enables or disables the RUM feature.
 
 `set(rumSessionsSamplingRate: Float)`
-: Sets the sampling rate for RUM sessions. The `rumSessionsSamplingRate` value must be between `0.0` and `100.0` - a value of `0.0` means no sessions will be sent, `100.0` means all sessions will be kept. If not configured, the default value of `100.0` is used.
+: Sets the sampling rate for RUM sessions. The `rumSessionsSamplingRate` value must be between `0.0` and `100.0`. A value of `0.0` means no sessions will be sent, `100.0` means all sessions will be sent to Datadog. If not configured, the default value of `100.0` is used.
 
 `trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate)`
 : Enables tracking `UIViewControllers` as RUM views. You can use default implementation of `predicate` by calling this API with no parameter (`trackUIKitRUMViews()`) or implement [your own `UIKitRUMViewsPredicate`][4] customized for your app.
@@ -186,12 +186,12 @@ RUM configuration:
 `setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?)`
 : Sets a closure to provide custom attributes for intercepted resources. The `provider` closure is called for each resource collected by the SDK. This closure is called with task information and may return custom resource attributes or `nil` if no attributes should be attached.
 
-Logging configuration:
+### Logging configuration
 
 `enableLogging(_ enabled: Bool)`
 : Enables or disables the Logging feature.
 
-Tracing configuration:
+### Tracing configuration
 
 `enableTracing(_ enabled: Bool)`
 : Enables or disables the Tracing feature.
@@ -237,7 +237,7 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
 }
 ```
 
-**Note**: The SDK calls `rumView(for:)` many times while your app is running. It is recommended to keep its implementation fast, performant and single-threaded.
+**Note**: The SDK calls `rumView(for:)` many times while your app is running. It is recommended to keep its implementation fast and single-threaded.
 
 ### Automatically track network requests
 
@@ -252,14 +252,14 @@ let session = URLSession(
 
 Also, you can configure first party hosts using `.trackURLSession(firstPartyHosts:)`. This will classify resources matching given domain as "first party" in RUM and will propagate tracing information to your backend (if Tracing feature is enabled).
 
-For instance, you can configure `yourdomain.com` as first party host and enable both RUM and Tracing features:
+For instance, you can configure `example.com` as first party host and enable both RUM and Tracing features:
 ```swift
 Datadog.initialize(
     // ...
     configuration: Datadog.Configuration
         .builderUsing(/* ... */)
         .trackUIKitRUMViews()
-        .trackURLSession(firstPartyHosts: ["yourdomain.com"])
+        .trackURLSession(firstPartyHosts: ["example.com"])
         .build()
 )
 
@@ -272,7 +272,7 @@ let session = URLSession(
     delegateQueue: nil
 )
 ```
-This will track all requests sent with the instrumented `session`. Requests matching `yourdomain.com` domain will be marked as "first party" and tracing information will be send to your backend to [connect the RUM resource with its Trace][10].
+This will track all requests sent with the instrumented `session`. Requests matching `example.com` domain will be marked as "first party" and tracing information will be send to your backend to [connect the RUM resource with its Trace][10].
 
 To add custom attributes to resources, use the `.setRUMResourceAttributesProvider(_ :)` option when configuring SDK. By setting attributes provider closure you can return additional attributes to be attached to tracked resource. 
 
@@ -289,7 +289,7 @@ For instance, you may want to add HTTP request and response headers to the RUM r
 
 ### Automatically track RUM errors
 
-All "error" and "critical" logs send with `Logger` are automatically reported as RUM errors and linked to the current RUM view:
+All "error" and "critical" logs sent with `Logger` are automatically reported as RUM errors and linked to the current RUM view:
 ```swift
 let logger = Logger.builder.build()
 
@@ -297,7 +297,7 @@ logger.error("message")
 logger.critical("message")
 ```
 
-Similarly, all finished spans marked as error are be reported as RUM errors:
+Similarly, all finished spans marked as error are reported as RUM errors:
 ```swift
 let span = Global.sharedTracer.startSpan(operationName: "operation")
 // ... capture the `error`
@@ -325,7 +325,7 @@ Datadog.Configuration
     }
     .build()
 ```
-Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it gets sent. For example to redact sensitive information in RUM Resource's `url` you may implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
+Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it is sent. For example, to redact sensitive information in RUM Resource's `url`, implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
 
 ```swift
 .setRUMResourceEventMapper { resourceEvent in
@@ -335,9 +335,9 @@ Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a c
 }
 ```
 
-Returning `nil` from the error, resource or action mapper will drop the event entirely (it won't be sent to Datadog). The value returned from the view event mapper must be not `nil` (to drop views customize your implementation of `UIKitRUMViewsPredicate` - read more in [tracking views automatically][4]).
+Returning `nil` from the error, resource, or action mapper drops the event entirely (it won't be sent to Datadog). The value returned from the view event mapper must be not `nil` (to drop views customize your implementation of `UIKitRUMViewsPredicate`. Read more in [tracking views automatically][4]).
 
-Depending on the event's type, only some specific properties can be mutated:
+Depending on the event's type, only some specific properties can be modified:
 
 | Event Type       | Attribute key                     | Description                             |
 |------------------|-----------------------------------|-----------------------------------------|
