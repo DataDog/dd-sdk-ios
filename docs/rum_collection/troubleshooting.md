@@ -12,10 +12,10 @@ further_reading:
 
 ## Check if Datadog SDK is properly initialized
 
-After configuring Datadog SDK and running the app for the first time this is recommended to look at your debugger console in Xcode. The SDK implements several consistency checks and prints relevant warnings if something is missconfigured.
+After you configure Datadog SDK and run the app for the first time, check your debugger console in Xcode. The SDK implements several consistency checks and outputs relevant warnings if something is misconfigured.
 
 ## Debugging
-When writing your application, you can enable development logs by setting the `verbosityLevel` value. Relevant messages from the SDK with a priority equal to or higher than the provided level are then printed to debugger console in Xcode:
+When writing your application, you can enable development logs by setting the `verbosityLevel` value. Relevant messages from the SDK with a priority equal to or higher than the provided level are output to the debugger console in Xcode:
 
 ```swift
 Datadog.verbosityLevel = .debug
@@ -27,12 +27,12 @@ If all goes well you should see output similar to this saying that a batch of RU
 [DATADOG SDK] 🐶 → 17:23:10.972 [DEBUG]    → (rum) accepted, won't be retransmitted: success
 ```
 
-**Note:** It is recommended to only use `Datadog.verbosityLevel` in `DEBUG` configuration and keep it unset in `RELEASE`.
+**Recommendation:** Use `Datadog.verbosityLevel` in `DEBUG` configuration, and unset it in `RELEASE`.
 
 ## Set tracking consent (GDPR compliance)
 
 To be compliant with the GDPR regulation, the SDK requires the tracking consent value at initialization.
-The `trackingConsent` can be one of the following values:
+The `trackingConsent` setting can be one of the following values:
 
 1. `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
 2. `.granted` - the SDK starts collecting the data and sends it to Datadog.

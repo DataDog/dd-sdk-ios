@@ -41,7 +41,7 @@ Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the re
 
 {{< img src="real_user_monitoring/ios/screenshot_rum.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
-To ensure safety of your data, you must use a client token: you cannot use [Datadog API keys][6] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application byte code. For more information about setting up a client token, see the [client token documentation][7].
+To ensure safety of your data, you must use a client token, **not** [Datadog API keys][6] to configure the `dd-sdk-ios` library because they would be exposed client-side in the iOS application byte code. For more information about setting up a client token, see the [client token documentation][7].
 
 ### Initialize the library
 
@@ -104,7 +104,7 @@ import Datadog
 Global.rum = RUMMonitor.initialize()
 ```
 
-To monitor requests sent from `URLSession` instance as resources, assign `DDURLSessionDelegate()` as a `delegate` of that `URLSession`
+To monitor requests sent from the `URLSession` instance as resources, assign `DDURLSessionDelegate()` as a `delegate` of that `URLSession`:
 
 ```swift
 let session = URLSession(
