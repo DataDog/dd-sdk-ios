@@ -99,6 +99,69 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.dd.spanId, "200")
     }
 
+    func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            attributes: ["_dd.trace_id": "100", "_dd.span_id": "200"],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: nil,
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    kind: .image,
+                    httpStatusCode: 200,
+                    size: 1_024
+                )
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
+        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.model.session.type, .user)
+        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.model.view.url, "FooViewController")
+        XCTAssertEqual(event.model.view.name, "FooViewName")
+        XCTAssertValidRumUUID(event.model.resource.id)
+        XCTAssertEqual(event.model.resource.type, .image)
+        XCTAssertEqual(event.model.resource.method, .post)
+        XCTAssertNil(event.model.resource.provider)
+        XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(event.model.resource.statusCode, 200)
+        XCTAssertEqual(event.model.resource.duration, 2_000_000_000)
+        XCTAssertEqual(event.model.resource.size, 1_024)
+        XCTAssertNil(event.model.resource.redirect)
+        XCTAssertNil(event.model.resource.dns)
+        XCTAssertNil(event.model.resource.connect)
+        XCTAssertNil(event.model.resource.ssl)
+        XCTAssertNil(event.model.resource.firstByte)
+        XCTAssertNil(event.model.resource.download)
+        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.dd.traceId, "100")
+        XCTAssertEqual(event.model.dd.spanId, "200")
+    }
+
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
