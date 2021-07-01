@@ -30,7 +30,7 @@ def remember_cwd():
         os.chdir(previous)
 
 
-def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository_package_resolved_path: str) -> int:
+def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository_package_resolved_paths: [str]) -> int:
     print(f'🐶 Dogfooding: {repository_name}...')
 
     # Read commit information:
@@ -41,7 +41,7 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
     os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
     dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
 
-    # Clone dependant repo to temporary location and update its `Package.resolved` so it points
+    # Clone dependant repo to temporary location and update its `Package.resolved` (one or many) so it points
     # to the current `dd-sdk-ios` commit. After that, push changes to dependant repo and create dogfooding PR.
     with TemporaryDirectory() as temp_dir:
         with remember_cwd():
@@ -52,39 +52,40 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
             )
             repository.create_branch(f'dogfooding-{dd_sdk_ios_commit.hash_short}')
 
-            package = PackageResolvedFile(
-                path=repository_package_resolved_path
+            packages: [PackageResolvedFile] = list(
+                map(lambda path: PackageResolvedFile(path=path), repository_package_resolved_paths)
             )
 
             # Update version of `dd-sdk-ios`:
-            package.update_dependency(
-                package_name='DatadogSDK',
-                new_branch='dogfooding',
-                new_revision=dd_sdk_ios_commit.hash,
-                new_version=None
-            )
+            for package in packages:
+                package.update_dependency(
+                    package_name='DatadogSDK',
+                    new_branch='dogfooding',
+                    new_revision=dd_sdk_ios_commit.hash,
+                    new_version=None
+                )
 
-            # Add or update `dd-sdk-ios` dependencies
-            for dependency_name in dd_sdk_ios_package.read_dependency_names():
-                dependency = dd_sdk_ios_package.read_dependency(package_name=dependency_name)
+                # Add or update `dd-sdk-ios` dependencies
+                for dependency_name in dd_sdk_ios_package.read_dependency_names():
+                    dependency = dd_sdk_ios_package.read_dependency(package_name=dependency_name)
 
-                if package.has_dependency(package_name=dependency_name):
-                    package.update_dependency(
-                        package_name=dependency_name,
-                        new_branch=dependency['state']['branch'],
-                        new_revision=dependency['state']['revision'],
-                        new_version=dependency['state']['version'],
-                    )
-                else:
-                    package.add_dependency(
-                        package_name=dependency_name,
-                        repository_url=dependency['repositoryURL'],
-                        branch=dependency['state']['branch'],
-                        revision=dependency['state']['revision'],
-                        version=dependency['state']['version']
-                    )
+                    if package.has_dependency(package_name=dependency_name):
+                        package.update_dependency(
+                            package_name=dependency_name,
+                            new_branch=dependency['state']['branch'],
+                            new_revision=dependency['state']['revision'],
+                            new_version=dependency['state']['version'],
+                        )
+                    else:
+                        package.add_dependency(
+                            package_name=dependency_name,
+                            repository_url=dependency['repositoryURL'],
+                            branch=dependency['state']['branch'],
+                            revision=dependency['state']['revision'],
+                            version=dependency['state']['version']
+                        )
 
-            package.save()
+                package.save()
 
             # Push changes to dependant repo:
             repository.commit(
@@ -125,7 +126,10 @@ if __name__ == "__main__":
                 dry_run=dry_run,
                 repository_url='git@github.com:DataDog/datadog-ios.git',
                 repository_name='datadog-ios',
-                repository_package_resolved_path='Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+                repository_package_resolved_paths=[
+                    '.package.resolved',
+                    'DatadogApp.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+                ]
             )
 
         # Dogfood in Shopist iOS
@@ -134,7 +138,9 @@ if __name__ == "__main__":
                 dry_run=dry_run,
                 repository_url='git@github.com:DataDog/shopist-ios.git',
                 repository_name='shopist-ios',
-                repository_package_resolved_path='Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+                repository_package_resolved_paths=[
+                    'Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+                ]
             )
 
     except Exception as error:
