@@ -104,6 +104,25 @@ class ValuePublisherTests: XCTestCase {
         waitForExpectations(timeout: 1, handler: nil)
     }
 
+    func testMutation() {
+        let randomInfo = VitalInfo()
+
+        // When
+        let publisher = ValuePublisher<VitalInfo>(initialValue: randomInfo)
+        DispatchQueue.concurrentPerform(iterations: 5) { i in
+            publisher.mutateAsync { info in
+                info.addSample(Double(i + 1)) // 1,2,3,4,5
+            }
+        }
+
+        // Then
+        let retrievedInfo = publisher.currentValue
+        XCTAssertEqual(retrievedInfo.maxValue, 5.0)
+        XCTAssertEqual(retrievedInfo.minValue, 1.0)
+        XCTAssertEqual(retrievedInfo.meanValue, 3.0)
+        XCTAssertEqual(retrievedInfo.sampleCount, 5)
+    }
+
     // MARK: - Thread safety
 
     func testValueCanBeWrittenAndReadOnAnyThread() {

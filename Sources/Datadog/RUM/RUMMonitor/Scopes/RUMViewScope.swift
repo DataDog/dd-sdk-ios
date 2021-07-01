@@ -67,6 +67,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// `nil` if Crash Reporting feature is not enabled.
     private let crashContextIntegration: RUMWithCrashContextIntegration?
 
+    private let vitalInfoSampler: VitalInfoSampler
+
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
@@ -88,6 +90,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
         self.crashContextIntegration = RUMWithCrashContextIntegration()
+
+        self.vitalInfoSampler = VitalInfoSampler(
+            cpuReader: dependencies.vitalCPUReader,
+            memoryReader: dependencies.vitalMemoryReader,
+            refreshRateReader: dependencies.vitalRefreshRateReader
+        )
     }
 
     // MARK: - RUMContextProvider
@@ -305,6 +313,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
+        let timeSpent = command.time.timeIntervalSince(viewStartTime)
+
+        let cpuInfo = vitalInfoSampler.cpu
+        let memoryInfo = vitalInfoSampler.memory
+        let refreshRateInfo = vitalInfoSampler.refreshRate
+
         let eventData = RUMViewEvent(
             dd: .init(documentVersion: version.toInt64),
             application: .init(id: context.rumApplicationID),
@@ -316,8 +330,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
-                cpuTicksCount: nil,
-                cpuTicksPerSecond: nil,
+                cpuTicksCount: cpuInfo.greatestDiff,
+                cpuTicksPerSecond: cpuInfo.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
                 crash: nil,
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
@@ -338,14 +352,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 loadingTime: nil,
                 loadingType: nil,
                 longTask: nil,
-                memoryAverage: nil,
-                memoryMax: nil,
+                memoryAverage: memoryInfo.meanValue,
+                memoryMax: memoryInfo.maxValue,
                 name: viewName,
                 referrer: nil,
-                refreshRateAverage: nil,
-                refreshRateMin: nil,
+                refreshRateAverage: refreshRateInfo.meanValue,
+                refreshRateMin: refreshRateInfo.minValue,
                 resource: .init(count: resourcesCount.toInt64),
-                timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
+                timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath
             )
         )
