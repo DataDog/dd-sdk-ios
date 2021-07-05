@@ -83,7 +83,7 @@ internal struct AppStateHistory: Equatable {
     }
 }
 
-internal protocol AppStateListening: class {
+internal protocol AppStateListening: AnyObject {
     var history: AppStateHistory { get }
 }
 

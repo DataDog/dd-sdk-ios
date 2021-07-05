@@ -288,31 +288,38 @@ public class Datadog {
         self.launchTimeProvider = launchTimeProvider
     }
 
-    /// Internal feature made only for tests purpose.
-    static func deinitializeOrThrow() throws {
-        guard Datadog.instance != nil else {
-            throw ProgrammerError(description: "Attempted to stop SDK before it was initialized.")
-        }
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
+    /// - It flushes all data authorised for each feature by performing its arbitrary upload (without retrying).
+    /// - It completes all pending asynchronous work in each feature.
+    ///
+    /// This is highly experimental API and only supported in tests.
+    public static func flushAndDeinitialize() {
+        assert(Datadog.instance != nil, "SDK must be first initialized.")
 
-        // First, reset internal loggers:
+        // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
 
-        // Then, deinitialize features:
-        InternalMonitoringFeature.instance = nil
-        LoggingFeature.instance = nil
-        TracingFeature.instance = nil
-        RUMFeature.instance = nil
-        CrashReportingFeature.instance = nil
+        // Tear down and deinitialize all features:
+        LoggingFeature.instance?.deinitialize()
+        TracingFeature.instance?.deinitialize()
+        RUMFeature.instance?.deinitialize()
 
-        RUMAutoInstrumentation.instance = nil
-        URLSessionAutoInstrumentation.instance = nil
+        InternalMonitoringFeature.instance?.deinitialize()
+        CrashReportingFeature.instance?.deinitialize()
 
-        // Deinitialize Crash Reporter managed internally by the SDK
+        RUMAutoInstrumentation.instance?.deinitialize()
+        URLSessionAutoInstrumentation.instance?.deinitialize()
+
+        // Reset Globals:
+        Global.sharedTracer = DDNoopGlobals.tracer
+        Global.rum = DDNoopRUMMonitor()
         Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil
     }
+#endif
 }
 
 /// Convenience typealias.

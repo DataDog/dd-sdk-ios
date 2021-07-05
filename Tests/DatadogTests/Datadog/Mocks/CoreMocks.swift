@@ -44,9 +44,9 @@ extension Datadog.Configuration {
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
-        logsEndpoint: LogsEndpoint = .us,
-        tracesEndpoint: TracesEndpoint = .us,
-        rumEndpoint: RUMEndpoint = .us,
+        logsEndpoint: LogsEndpoint = .us1,
+        tracesEndpoint: TracesEndpoint = .us1,
+        rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: Set<String>? = nil,
         rumSessionsSamplingRate: Float = 100.0,
@@ -113,25 +113,25 @@ extension BundleType: CaseIterable {
 
 extension Datadog.Configuration.DatadogEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov].randomElement()!
     }
 }
 
 extension Datadog.Configuration.LogsEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.TracesEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.RUMEndpoint {
     static func mockRandom() -> Self {
-        return [.us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
@@ -434,10 +434,31 @@ extension FeaturesCommonDependencies {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
     ) -> FeaturesCommonDependencies {
+        let httpClient: HTTPClient
+
+        if let activeServer = ServerMock.activeInstance {
+            httpClient = HTTPClient(session: activeServer.getInterceptedURLSession())
+        } else {
+            class AssertedHTTPClient: HTTPClient {
+                // swiftlint:disable:next unavailable_function
+                override func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+                    preconditionFailure(
+                        """
+                        ⚠️ Request to \(request.url?.absoluteString ?? "null") was sent but there is no `ServerMock` instance set up for its interception.
+                        All unit tests must be configured to either send data to mocked `FeatureStorage` (`XYZFeature.mockByRecordingXYZ(...)`)
+                        or use `ServerMock` instance and `serverMock.getInterceptedURLSession()` for requests interception.
+                        """
+                    )
+                }
+            }
+
+            httpClient = AssertedHTTPClient()
+        }
+
         return FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: performance,
-            httpClient: HTTPClient(session: .serverMockURLSession),
+            httpClient: httpClient,
             mobileDevice: mobileDevice,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -484,16 +505,23 @@ class FileWriterMock: Writer {
     }
 }
 
-class NoOpFileWriter: Writer {
+class NoOpFileWriter: AsyncWriter {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func write<T>(value: T) where T: Encodable {}
+    func flushAndCancelSynchronously() {}
 }
 
-class NoOpFileReader: Reader {
+class NoOpFileReader: SyncReader {
+    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
+    func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {}
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
 
 extension DataFormat {
     static func mockAny() -> DataFormat {
@@ -882,32 +910,6 @@ internal class ValueObserverMock<Value>: ValueObserver {
         lastChange = (oldValue, newValue)
         onValueChange?(oldValue, newValue)
     }
-}
-
-// MARK: - Attributes Mock
-
-/// Creates randomized `[String: Encodable]` attributes
-func mockRandomAttributes() -> [String: Encodable] {
-    struct Foo: Encodable {
-        let bar: String = .mockRandom()
-        let bizz = Bizz()
-
-        struct Bizz: Encodable {
-            let buzz: String = .mockRandom()
-        }
-    }
-
-    return [
-        "string-attribute": String.mockRandom(),
-        "int-attribute": Int.mockRandom(),
-        "uint64-attribute": UInt64.mockRandom(),
-        "double-attribute": Double.mockRandom(),
-        "bool-attribute": Bool.random(),
-        "int-array-attribute": [Int].mockRandom(),
-        "dictionary-attribute": [String: Int].mockRandom(),
-        "url-attribute": URL.mockRandom(),
-        "encodable-struct-attribute": Foo()
-    ]
 }
 
 extension DDError: RandomMockable {

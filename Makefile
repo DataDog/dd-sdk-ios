@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.7.0
+DD_SDK_SWIFT_TESTING_VERSION = 0.9.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -15,17 +15,30 @@ endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
 define DD_SDK_BASE_XCCONFIG
-// To enable Internal Monitoring APIs:\n
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_ENABLE_EXPERIMENTAL_APIS\n
+// Active compilation conditions - only enabled on local machine:\n
+// - DD_SDK_ENABLE_INTERNAL_MONITORING - enables Internal Monitoring APIs\n
+// - DD_SDK_ENABLE_EXPERIMENTAL_APIS - enables APIs which are not available in released version of the SDK\n
+// - DD_SDK_COMPILED_FOR_TESTING - conditions the SDK code compiled for testing\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
 \n
 // To build only active architecture for all configurations.\n
 // TODO: RUMM-1200 We can perhaps remove this fix when carthage supports pre-build xcframeworks.\n
 //		 The only "problematic" dependency is `CrashReporter.xcframework` which doesn't produce\n
 //		 the `arm64-simulator` architecture when compiled from source. Its pre-build `CrashReporter.xcframework`\n
 //		 available since `1.8.0` contains the `ios-arm64_i386_x86_64-simulator` slice and should link fine in all configurations.\n
-ONLY_ACTIVE_ARCH = YES
+ONLY_ACTIVE_ARCH = YES\n
+\n
+// If running on CI (can be set empty on local machine):\n
+IS_CI=${ci}\n 
 endef
 export DD_SDK_BASE_XCCONFIG
+
+define DD_SDK_DATADOG_XCCONFIG
+// Datadog secrets provisioning E2E tests data for 'Mobile - Integration' org:\n
+E2E_RUM_APPLICATION_ID=${E2E_RUM_APPLICATION_ID}\n
+E2E_DATADOG_CLIENT_TOKEN=${E2E_DATADOG_CLIENT_TOKEN}\n
+endef
+export DD_SDK_DATADOG_XCCONFIG
 
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
@@ -37,6 +50,7 @@ dependencies:
 		@carthage bootstrap --platform iOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
+		@echo $$DD_SDK_DATADOG_XCCONFIG > xcconfigs/Datadog.local.xcconfig;
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
@@ -89,6 +103,17 @@ api-surface:
 		@echo "Generating api-surface-objc"
 		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
 
+# Generate Datadog monitors terraform definition for E2E tests:
+e2e-monitors-generate:
+		@echo "Deleting previous 'main.tf as it will be soon generated."
+		@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
+		@echo "Deleting previous Terraform state and backup as we don't need to track it."
+		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
+		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
+		@echo "⚙️  Generating 'main.tf':"
+		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
+		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
+
 bump:
 		@read -p "Enter version number: " version;  \
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
@@ -102,11 +127,16 @@ bump:
 ship:
 		pod spec lint --allow-warnings DatadogSDK.podspec
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
-		pod repo update
-		./tools/standalone-binary-distro/make_distro_builds.sh
-		@echo "⚠️ DatadogSDKObjc.podspec needs to be tried after ~1 hour:"
-		@echo "pod spec lint --allow-warnings DatadogSDKObjc.podspec"
-		@echo "pod trunk push --allow-warnings DatadogSDKObjc.podspec"
+		./tools/distribution/make_distro_builds.sh
+ifeq ($$CI, true)
+		@curl -X POST "https://api.bitrise.io/v0.1/apps/$$BITRISE_APP_SLUG/builds" \
+ 			-H "accept: application/json" -H  "Content-Type: application/json" \
+			-H  "Authorization: $$BITRISE_PERSONAL_ACCESS_TOKEN" \
+ 			-d "{\"build_params\":{\"tag\":\"$$BITRISE_GIT_TAG\",\"workflow_id\":\"tagged_commit_part_2\"},\"hook_info\":{\"type\":\"bitrise\"}}"
+endif
+
+ship_part_2:
+		@./tools/distribution/push_podspecs.sh
 
 dogfood:
 		@cd tools/dogfooding && $(MAKE)

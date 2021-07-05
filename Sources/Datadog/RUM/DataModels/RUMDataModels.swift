@@ -19,6 +19,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
+    /// User provided context
+    public let context: RUMEventAttributes?
+
     /// Start of the event in ms from epoch
     public let date: Int64
 
@@ -41,6 +44,7 @@ public struct RUMViewEvent: RUMDataModel {
         case dd = "_dd"
         case application = "application"
         case connectivity = "connectivity"
+        case context = "context"
         case date = "date"
         case service = "service"
         case session = "session"
@@ -102,6 +106,12 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the actions of the view
         public let action: Action
 
+        /// Total number of cpu ticks during the view’s lifetime
+        public let cpuTicksCount: Double?
+
+        /// Average number of cpu ticks per second during the view’s lifetime
+        public let cpuTicksPerSecond: Double?
+
         /// Properties of the crashes of the view
         public let crash: Crash?
 
@@ -135,6 +145,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
+        /// List of the periods of time the user had the view in foreground (focused in the browser)
+        public let inForegroundPeriods: [InForegroundPeriods]?
+
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
@@ -153,11 +166,23 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the long tasks of the view
         public let longTask: LongTask?
 
+        /// Average memory used during the view lifetime (in bytes)
+        public let memoryAverage: Double?
+
+        /// Peak memory used during the view lifetime (in bytes)
+        public let memoryMax: Double?
+
         /// User defined name of the view
         public var name: String?
 
         /// URL that linked to the initial view of the page
         public var referrer: String?
+
+        /// Average refresh rate during the view’s lifetime (in frames per second)
+        public let refreshRateAverage: Double?
+
+        /// Minimum refresh rate during the view’s lifetime (in frames per second)
+        public let refreshRateMin: Double?
 
         /// Properties of the resources of the view
         public let resource: Resource
@@ -170,6 +195,8 @@ public struct RUMViewEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case action = "action"
+            case cpuTicksCount = "cpu_ticks_count"
+            case cpuTicksPerSecond = "cpu_ticks_per_second"
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
             case customTimings = "custom_timings"
@@ -181,14 +208,19 @@ public struct RUMViewEvent: RUMDataModel {
             case firstInputDelay = "first_input_delay"
             case firstInputTime = "first_input_time"
             case id = "id"
+            case inForegroundPeriods = "in_foreground_periods"
             case isActive = "is_active"
             case largestContentfulPaint = "largest_contentful_paint"
             case loadEvent = "load_event"
             case loadingTime = "loading_time"
             case loadingType = "loading_type"
             case longTask = "long_task"
+            case memoryAverage = "memory_average"
+            case memoryMax = "memory_max"
             case name = "name"
             case referrer = "referrer"
+            case refreshRateAverage = "refresh_rate_average"
+            case refreshRateMin = "refresh_rate_min"
             case resource = "resource"
             case timeSpent = "time_spent"
             case url = "url"
@@ -221,6 +253,20 @@ public struct RUMViewEvent: RUMDataModel {
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
+            }
+        }
+
+        /// Properties of the foreground period of the view
+        public struct InForegroundPeriods: Codable {
+            /// Duration in ns of the view foreground period
+            public let duration: Int64
+
+            /// Duration in ns between start of the view and start of foreground period
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
             }
         }
 
@@ -272,6 +318,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
+    /// User provided context
+    public let context: RUMEventAttributes?
+
     /// Start of the event in ms from epoch
     public let date: Int64
 
@@ -298,6 +347,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case connectivity = "connectivity"
+        case context = "context"
         case date = "date"
         case resource = "resource"
         case service = "service"
@@ -602,6 +652,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
+    /// User provided context
+    public let context: RUMEventAttributes?
+
     /// Start of the event in ms from epoch
     public let date: Int64
 
@@ -625,6 +678,7 @@ public struct RUMActionEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case connectivity = "connectivity"
+        case context = "context"
         case date = "date"
         case service = "service"
         case session = "session"
@@ -781,6 +835,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
+        /// Is the action starting in the foreground (focus in browser)
+        public let inForeground: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -792,6 +849,7 @@ public struct RUMActionEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+            case inForeground = "in_foreground"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -812,6 +870,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public let context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -839,6 +900,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case connectivity = "connectivity"
+        case context = "context"
         case date = "date"
         case error = "error"
         case service = "service"
@@ -880,6 +942,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Error properties
     public struct Error: Codable {
+        /// UUID of the error
+        public let id: String?
+
         /// Whether this error crashed the host application
         public let isCrash: Bool?
 
@@ -899,6 +964,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public let type: String?
 
         enum CodingKeys: String, CodingKey {
+            case id = "id"
             case isCrash = "is_crash"
             case message = "message"
             case resource = "resource"
@@ -1006,6 +1072,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
+        /// Is the error starting in the foreground (focus in browser)
+        public let inForeground: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -1017,6 +1086,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+            case inForeground = "in_foreground"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -1075,6 +1145,43 @@ public struct RUMConnectivity: Codable {
     }
 }
 
+/// User provided context
+public struct RUMEventAttributes: Codable {
+    public let contextInfo: [String: Codable]
+
+    struct DynamicCodingKey: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+        init?(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+        init(_ string: String) { self.stringValue = string }
+    }
+}
+
+extension RUMEventAttributes {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try contextInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(EncodableValue($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let dynamicKeys = dynamicContainer.allKeys
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)
+        }
+
+        self.contextInfo = dictionary
+    }
+}
+
 /// User properties
 public struct RUMUser: Codable {
     /// Email of the user
@@ -1086,10 +1193,57 @@ public struct RUMUser: Codable {
     /// Name of the user
     public let name: String?
 
-    enum CodingKeys: String, CodingKey {
+    public let usrInfo: [String: Codable]
+
+    enum StaticCodingKeys: String, CodingKey {
         case email = "email"
         case id = "id"
         case name = "name"
+    }
+
+    struct DynamicCodingKey: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+        init?(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+        init(_ string: String) { self.stringValue = string }
+    }
+}
+
+extension RUMUser {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(email, forKey: .email)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try usrInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(EncodableValue($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.email = try staticContainer.decodeIfPresent(String.self, forKey: .email)
+        self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)
+        }
+
+        self.usrInfo = dictionary
     }
 }
 
@@ -1103,4 +1257,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a37c41a4ac1aa3bfdc8d1fcecb35e4d1e07adddc
+// Generated from https://github.com/DataDog/rum-events-format/tree/d40d93a607a2d4483c95bd000a4e8ebd96fdf1fd

@@ -448,7 +448,12 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(
             scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom()))
         )
-        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
+
+        XCTAssertTrue(
+            scope.process(command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: .mockRandom()))
+        )
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should not change existing pending action when adding custom UA (but this custom action should be recorded anyway).")
 
         XCTAssertTrue(
             scope.process(command: RUMStopUserActionCommand.mockWith(actionType: .swipe))
@@ -459,7 +464,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
         )
         let viewEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(viewEvent.model.view.action.count, 1, "View should record 1 action")
+        XCTAssertEqual(viewEvent.model.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
     func testItManagesDiscreteUserActionScopeLifecycle() throws {
@@ -491,7 +496,12 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(
             scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom()))
         )
-        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next UA if one is pending.")
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
+
+        XCTAssertTrue(
+            scope.process(command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: .mockRandom()))
+        )
+        XCTAssertEqual(scope.userActionScope?.name, actionName, "View should not change existing pending action when adding custom UA (but this custom action should be recorded anyway).")
 
         currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
 
@@ -499,7 +509,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
         )
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(event.model.view.action.count, 1, "View should record 1 action")
+        XCTAssertEqual(event.model.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
     // MARK: - Error Tracking
@@ -677,6 +687,57 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(lastEvent.model.view.customTimings, [:])
     }
 
+    func testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        )
+
+        // Given
+        XCTAssertTrue(scope.isActiveView)
+        XCTAssertEqual(scope.customTimings.count, 0)
+
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
+
+        // When
+        currentTime.addTimeInterval(0.5)
+        let originalTimingName = "timing1_.@$-()&+=Д"
+        let sanitizedTimingName = "timing1_.@$-______"
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: originalTimingName)
+            )
+        )
+        XCTAssertEqual(scope.customTimings.count, 1)
+
+        // Then
+        let events = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self))
+
+        XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
+        XCTAssertEqual(events[0].model.view.customTimings, [:])
+        XCTAssertEqual(
+            events[1].model.view.customTimings,
+            [sanitizedTimingName: 500_000_000]
+        )
+        XCTAssertEqual(
+            logOutput.recordedLog?.message,
+            """
+            Custom timing '\(originalTimingName)' was modified to '\(sanitizedTimingName)' to match Datadog constraints.
+            """
+        )
+    }
+
     // MARK: - Dates Correction
 
     func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {
@@ -848,7 +909,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenNoEventIsSent() throws {
-        // swiftlint:disable trailing_closure
         let eventBuilder = RUMEventBuilder(
             userInfoProvider: UserInfoProvider.mockAny(),
             eventsMapper: RUMEventsMapper.mockWith(
@@ -857,7 +917,6 @@ class RUMViewScopeTests: XCTestCase {
                 }
             )
         )
-        // swiftlint:enable trailing_closure
         let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
 
         let scope = RUMViewScope(

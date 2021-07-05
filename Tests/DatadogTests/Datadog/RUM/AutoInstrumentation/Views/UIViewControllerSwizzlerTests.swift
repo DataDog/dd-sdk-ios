@@ -22,13 +22,6 @@ private class ViewControllerMock: UIViewController {
     }
 }
 
-extension UIViewControllerSwizzler {
-    func unswizzle() {
-        viewDidAppear.unswizzle()
-        viewDidDisappear.unswizzle()
-    }
-}
-
 class UIViewControllerSwizzlerTests: XCTestCase {
     private let handler = UIKitRUMViewsHandlerMock()
     private lazy var swizzler = try! UIViewControllerSwizzler(handler: handler)

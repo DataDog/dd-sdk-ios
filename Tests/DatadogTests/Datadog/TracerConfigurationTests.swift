@@ -31,7 +31,7 @@ class TracerConfigurationTests: XCTestCase {
     }
 
     override func tearDown() {
-        TracingFeature.instance = nil
+        TracingFeature.instance?.deinitialize()
         super.tearDown()
     }
 
@@ -66,7 +66,7 @@ class TracerConfigurationTests: XCTestCase {
 
     func testDefaultTracerWithRUMEnabled() {
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let tracer1 = Tracer.initialize(configuration: .init()).dd
         XCTAssertNotNil(tracer1.rumContextIntegration)

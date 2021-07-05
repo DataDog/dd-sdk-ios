@@ -7,7 +7,7 @@
 import Foundation
 
 /// Client for sending requests over HTTP.
-internal final class HTTPClient {
+internal class HTTPClient {
     private let session: URLSession
 
     convenience init() {

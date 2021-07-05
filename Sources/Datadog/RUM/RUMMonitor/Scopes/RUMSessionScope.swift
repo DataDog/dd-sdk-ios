@@ -105,6 +105,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         switch command {
         case let command as RUMStartViewCommand:
             startView(on: command)
+        case is RUMStartResourceCommand, is RUMAddUserActionCommand, is RUMStartUserActionCommand:
+            handleOrphanStartCommand(command: command)
         default:
             break
         }
@@ -132,7 +134,23 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    // MARK: - Private
+    // MARK: - Private    
+    private func handleOrphanStartCommand(command: RUMCommand) {
+        if viewScopes.isEmpty {
+            viewScopes.append(
+                RUMViewScope(
+                    parent: self,
+                    dependencies: dependencies,
+                    identity: RUMViewScope.Constants.backgroundViewURL,
+                    path: RUMViewScope.Constants.backgroundViewURL,
+                    name: RUMViewScope.Constants.backgroundViewName,
+                    attributes: command.attributes,
+                    customTimings: [:],
+                    startTime: command.time
+                )
+            )
+        }
+    }
 
     private func timedOutOrExpired(currentTime: Date) -> Bool {
         let timeElapsedSinceLastInteraction = currentTime.timeIntervalSince(lastInteractionTime)

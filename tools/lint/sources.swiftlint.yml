@@ -56,7 +56,6 @@ only_rules: # we enable lint rules explicitly - only the ones listed below are a
   - statement_position
   - switch_case_alignment
   - syntactic_sugar
-  - trailing_closure
   - trailing_newline
   - trailing_semicolon
   - trailing_whitespace
@@ -91,6 +90,7 @@ custom_rules:
 
 included:
   - ../../Sources
+  - ../../Datadog/E2E
   - ../../instrumented-tests/http-server-mock/Sources
   - ../../tools/api-surface/Sources
   - ../../tools/api-surface/Fixtures/Sources

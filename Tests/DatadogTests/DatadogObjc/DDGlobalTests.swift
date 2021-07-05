@@ -24,7 +24,7 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenTracerIsSet_itSetsSwiftImplementation() {
         TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let previousGlobal = (
             objc: DatadogObjc.DDGlobal.sharedTracer,
@@ -51,7 +51,7 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() {
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let previousGlobal = (
             objc: DatadogObjc.DDGlobal.rum,

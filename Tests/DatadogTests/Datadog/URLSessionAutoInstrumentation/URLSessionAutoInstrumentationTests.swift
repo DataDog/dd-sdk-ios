@@ -29,7 +29,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         )
         defer {
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-            URLSessionAutoInstrumentation.instance = nil
+            URLSessionAutoInstrumentation.instance?.deinitialize()
         }
 
         // Then
@@ -39,7 +39,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
@@ -48,7 +48,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         )
         defer {
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-            URLSessionAutoInstrumentation.instance = nil
+            URLSessionAutoInstrumentation.instance?.deinitialize()
         }
 
         // When

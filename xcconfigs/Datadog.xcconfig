@@ -1,9 +1,15 @@
 // Include base config
 #include "Base.xcconfig"
 
+DEVELOPMENT_TEAM[sdk=iphoneos*]=// use your own Development Team
+
+// Datadog secrets for running Example app (manual tests, integration tests, benchmarks)
 RUM_APPLICATION_ID=// use your own RUM Application ID obtained on datadoghq.com
 DATADOG_CLIENT_TOKEN=// use your own Client Token, generated for RUM_APPLICATION_ID
-DEVELOPMENT_TEAM[sdk=iphoneos*]=// use your own Development Team
+
+// Datadog secrets for running E2E tests (nightly E2E tests)
+E2E_RUM_APPLICATION_ID=// use your own RUM Application ID obtained on datadoghq.com
+E2E_DATADOG_CLIENT_TOKEN=// use your own Client Token, generated for E2E_RUM_APPLICATION_ID
 
 // Overwrite with secrets
 #include? "Datadog.local.xcconfig"

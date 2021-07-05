@@ -96,7 +96,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingViewEvents() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
@@ -131,7 +131,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingViewEventsWithTiming() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
@@ -160,7 +160,7 @@ class DDRUMMonitorTests: XCTestCase {
         }
 
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
@@ -213,7 +213,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingErrorEvents() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
@@ -281,7 +281,7 @@ class DDRUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
 
@@ -315,7 +315,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingGlobalAttributes() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")

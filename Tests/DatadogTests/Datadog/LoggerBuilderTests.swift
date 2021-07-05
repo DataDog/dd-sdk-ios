@@ -31,7 +31,7 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     override func tearDown() {
-        LoggingFeature.instance = nil
+        LoggingFeature.instance?.deinitialize()
         super.tearDown()
     }
 
@@ -62,7 +62,7 @@ class LoggerBuilderTests: XCTestCase {
 
     func testDefaultLoggerWithRUMEnabled() throws {
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let logger1 = Logger.builder.build()
         XCTAssertNotNil(logger1.rumContextIntegration)
@@ -73,7 +73,7 @@ class LoggerBuilderTests: XCTestCase {
 
     func testDefaultLoggerWithTracingEnabled() throws {
         TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let logger1 = Logger.builder.build()
         XCTAssertNotNil(logger1.activeSpanIntegration)
@@ -84,10 +84,10 @@ class LoggerBuilderTests: XCTestCase {
 
     func testCustomizedLogger() throws {
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")

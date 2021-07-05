@@ -262,7 +262,7 @@ extension FeaturesConfiguration {
                 sdkServiceName: "dd-sdk-ios",
                 sdkEnvironment: "prod",
                 logsUploadURLWithClientToken: try ifValid(
-                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us.logsEndpoint.url,
+                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us1.logsEndpoint.url,
                     clientToken: internalMonitoringClientToken
                 )
             )

@@ -40,7 +40,7 @@ class LoggerTests: XCTestCase {
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message")
@@ -63,7 +63,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogWithCustomizedLogger() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
@@ -99,7 +99,7 @@ class LoggerTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.info("message 1")
@@ -107,16 +107,14 @@ class LoggerTests: XCTestCase {
         logger.info("message 3")
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
-        // swiftlint:disable trailing_closure
         logMatchers[0].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC() })
         logMatchers[1].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1) })
         logMatchers[2].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2) })
-        // swiftlint:enable trailing_closure
     }
 
     func testSendingLogsWithDifferentLevels() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message")
@@ -139,7 +137,7 @@ class LoggerTests: XCTestCase {
 
     func testLoggingError() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         struct TestError: Error {
             var description = "Test description"
@@ -170,7 +168,7 @@ class LoggerTests: XCTestCase {
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
-        defer { Datadog.instance = nil }
+        defer { Datadog.flushAndDeinitialize() }
 
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
@@ -178,7 +176,7 @@ class LoggerTests: XCTestCase {
                 userInfoProvider: Datadog.instance!.userInfoProvider
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message with no user info")
@@ -230,7 +228,7 @@ class LoggerTests: XCTestCase {
                 carrierInfoProvider: carrierInfoProvider
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder
             .sendNetworkInfo(true)
@@ -271,7 +269,7 @@ class LoggerTests: XCTestCase {
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder
             .sendNetworkInfo(true)
@@ -325,7 +323,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
 
@@ -389,7 +387,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingMessageAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
 
@@ -421,7 +419,7 @@ class LoggerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
 
@@ -466,7 +464,7 @@ class LoggerTests: XCTestCase {
                 )
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message")
@@ -484,7 +482,7 @@ class LoggerTests: XCTestCase {
                 )
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message")
@@ -499,10 +497,10 @@ class LoggerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         // given
         let logger = Logger.builder.build()
@@ -534,10 +532,10 @@ class LoggerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -567,10 +565,10 @@ class LoggerTests: XCTestCase {
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
         LoggingFeature.instance = .mockNoOp()
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance = nil }
+        defer { RUMFeature.instance?.deinitialize() }
 
         // given
         let logger = Logger.builder.build()
@@ -607,10 +605,10 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         // given
         let logger = Logger.builder.build()
@@ -639,10 +637,10 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -673,13 +671,13 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithTraceEnabledAndTracerRegisteredAndEnvironmentContext_whenSendingLog_itContainsEnvironmentContextAttributes() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         setenv("x-datadog-trace-id", "111111", 1)
         setenv("x-datadog-parent-id", "222222", 1)
 
         TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance = nil }
+        defer { TracingFeature.instance?.deinitialize() }
 
         // given
         let logger = Logger.builder.build()
@@ -730,7 +728,7 @@ class LoggerTests: XCTestCase {
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message")
@@ -752,7 +750,7 @@ class LoggerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(consentProvider: consentProvider)
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
 
@@ -777,7 +775,7 @@ class LoggerTests: XCTestCase {
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         LoggingFeature.instance = .mockNoOp()
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder
             .sendLogsToDatadog(false)
@@ -827,7 +825,7 @@ class LoggerTests: XCTestCase {
         XCTAssertNil(logger.logOutput)
     }
 
-    func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() throws {
+    func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
         defer { consolePrint = { print($0) } }
@@ -852,7 +850,7 @@ class LoggerTests: XCTestCase {
         XCTAssertNil(logger.logBuilder)
         XCTAssertNil(logger.logOutput)
 
-        try Datadog.deinitializeOrThrow()
+        Datadog.flushAndDeinitialize()
     }
 
     func testDDLoggerIsLoggerTypealias() {

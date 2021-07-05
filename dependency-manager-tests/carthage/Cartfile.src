@@ -1,1 +1,1 @@
-github "DataDog/dd-sdk-ios" "REMOTE_GIT_BRANCH"
+github "DataDog/dd-sdk-ios" "REMOTE_GIT_REFERENCE"

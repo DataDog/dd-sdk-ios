@@ -184,10 +184,10 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
 
         let jsonSchema = try JSONSchemaReader()
             .readJSONSchema(
-                from: File(content: mainSchema.data(using: .utf8)!),
+                from: File(name: "main-schema", content: mainSchema.data(using: .utf8)!),
                 resolvingAgainst: [
-                    File(content: referencedSchema1.data(using: .utf8)!),
-                    File(content: referencedSchema2.data(using: .utf8)!),
+                    File(name: "referenced-schema-1", content: referencedSchema1.data(using: .utf8)!),
+                    File(name: "referenced-schema-2", content: referencedSchema2.data(using: .utf8)!),
                 ]
             )
 

@@ -48,6 +48,8 @@ extension RUMFeature {
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        // Tear down the original upload
+        fullFeature.upload.flushAndTearDown()
         return RUMFeature(
             eventsMapper: fullFeature.eventsMapper,
             storage: observedStorage,
@@ -669,5 +671,13 @@ class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         onSendEvent?(application, event)
+    }
+}
+
+class VitalListenerMock: VitalListener {
+    var onVitalInfoUpdate: ((VitalInfo) -> Void)?
+
+    func onVitalInfo(info: VitalInfo) {
+        onVitalInfoUpdate?(info)
     }
 }

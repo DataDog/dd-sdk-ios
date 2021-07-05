@@ -17,6 +17,12 @@ internal class UIApplicationSwizzler {
         sendEvent.swizzle()
     }
 
+#if DD_SDK_COMPILED_FOR_TESTING
+    func unswizzle() {
+        sendEvent.unswizzle()
+    }
+#endif
+
     // MARK: - Swizzlings
 
     /// Swizzles the `UIApplication.sendEvent(_:)`

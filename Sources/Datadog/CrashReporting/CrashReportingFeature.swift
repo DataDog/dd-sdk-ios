@@ -42,4 +42,10 @@ internal final class CrashReportingFeature {
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
         self.rumViewEventProvider = ValuePublisher(initialValue: nil)
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        CrashReportingFeature.instance = nil
+    }
+#endif
 }

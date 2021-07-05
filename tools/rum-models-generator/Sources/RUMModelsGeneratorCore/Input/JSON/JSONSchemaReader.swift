@@ -17,9 +17,15 @@ internal class JSONSchemaReader {
     }
 
     func readJSONSchema(from schemaFile: File, resolvingAgainst referencedSchemaFiles: [File]) throws -> JSONSchema {
-        let schema = try jsonDecoder.decode(JSONSchema.self, from: schemaFile.content)
+        let schema = try withErrorContext(context: "Error while decoding \(schemaFile.name)") {
+            try jsonDecoder.decode(JSONSchema.self, from: schemaFile.content)
+        }
         let referencedSchemas = try referencedSchemaFiles
-            .map { try jsonDecoder.decode(JSONSchema.self, from: $0.content) }
+            .map { schemaFile in
+                return try withErrorContext(context: "Error while decoding \(schemaFile.name)") {
+                    try jsonDecoder.decode(JSONSchema.self, from: schemaFile.content)
+                }
+            }
 
         // Resolve references to other schemas
         try referencedSchemas.forEach { try schema.resolveReference(to: $0) }

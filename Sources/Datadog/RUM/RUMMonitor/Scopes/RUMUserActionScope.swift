@@ -141,12 +141,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             ),
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                inForeground: nil,
                 name: context.activeViewName,
                 referrer: nil,
                 url: context.activeViewPath ?? ""

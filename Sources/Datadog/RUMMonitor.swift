@@ -54,10 +54,10 @@ internal extension RUMResourceType {
             case ("font", _): self = .font
             case ("text", "css"): self = .css
             case ("text", "javascript"): self = .js
-            default: self = .other
+            default: self = .xhr
             }
         } else {
-            self = .other
+            self = .xhr
         }
     }
 }
@@ -128,7 +128,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Attributes associated with every command.
     private var rumAttributes: [AttributeKey: AttributeValue] = [:]
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
-    internal let queue = DispatchQueue(
+    private let queue = DispatchQueue(
         label: "com.datadoghq.rum-monitor",
         target: .global(qos: .userInteractive)
     )
@@ -464,7 +464,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             resourceKind = RUMResourceType(response: response)
             statusCode = response.statusCode
         } else {
-            resourceKind = .other
+            resourceKind = .xhr
         }
 
         process(
@@ -625,4 +625,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
         return mutableCommand
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Blocks the caller thread until (asynchronous) command processing in `RUMMonitor` is completed.
+    public func flush() {
+        queue.sync {}
+    }
+#endif
 }

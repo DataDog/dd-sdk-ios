@@ -112,6 +112,10 @@ internal class RUMResourceScope: RUMScope {
         let resourceDuration: TimeInterval
         let size: Int64?
 
+        // Check trace attributes
+        let traceId = (attributes.removeValue(forKey: "_dd.trace_id") as? String) ?? spanContext?.traceID
+        let spanId = (attributes.removeValue(forKey: "_dd.span_id") as? String) ?? spanContext?.spanID
+
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
@@ -126,14 +130,15 @@ internal class RUMResourceScope: RUMScope {
 
         let eventData = RUMResourceEvent(
             dd: .init(
-                spanId: spanContext?.spanID,
-                traceId: spanContext?.traceID
+                spanId: spanId,
+                traceId: traceId
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             resource: .init(
                 connect: resourceMetrics?.connect.flatMap { metric in
@@ -209,8 +214,10 @@ internal class RUMResourceScope: RUMScope {
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                id: nil,
                 isCrash: false,
                 message: command.errorMessage,
                 resource: .init(
@@ -228,6 +235,7 @@ internal class RUMResourceScope: RUMScope {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                inForeground: nil,
                 name: context.activeViewName,
                 referrer: nil,
                 url: context.activeViewPath ?? ""

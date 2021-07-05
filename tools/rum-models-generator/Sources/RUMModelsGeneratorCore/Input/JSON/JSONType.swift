@@ -14,6 +14,8 @@ internal enum JSONPrimitive: String, JSONType {
     case double
     case integer
     case string
+    /// A `bool`, `double`, `integer` or `string`
+    case any
 }
 
 internal struct JSONArray: JSONType {

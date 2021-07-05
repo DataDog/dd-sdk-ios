@@ -46,6 +46,8 @@ extension LoggingFeature {
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
         // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
+        // Tear down the original upload
+        fullFeature.upload.flushAndTearDown()
         return LoggingFeature(
             storage: observedStorage,
             upload: mockedUpload,

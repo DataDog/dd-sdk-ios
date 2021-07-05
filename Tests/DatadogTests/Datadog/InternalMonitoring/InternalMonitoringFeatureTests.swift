@@ -39,7 +39,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
-        defer { InternalMonitoringFeature.instance = nil }
+        defer { InternalMonitoringFeature.instance?.deinitialize() }
 
         let sdkLogger = try XCTUnwrap(InternalMonitoringFeature.instance?.monitor.sdkLogger)
         sdkLogger.debug("message")
@@ -71,7 +71,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
-        defer { InternalMonitoringFeature.instance = nil }
+        defer { InternalMonitoringFeature.instance?.deinitialize() }
 
         let sdkLogger = try XCTUnwrap(InternalMonitoringFeature.instance?.monitor.sdkLogger)
         sdkLogger.error("internal error message")

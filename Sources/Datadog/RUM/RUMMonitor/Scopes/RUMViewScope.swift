@@ -7,6 +7,11 @@
 import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
+    struct Constants {
+        static let backgroundViewURL = "com/datadog/background/view"
+        static let backgroundViewName = "Background"
+    }
+
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by .resourceKey.
@@ -33,7 +38,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The name of this View, used as the `VIEW NAME` in RUM Explorer.
     let viewName: String
     /// The start time of this View.
-    private let viewStartTime: Date
+    let viewStartTime: Date
     /// Date correction to server time.
     private let dateCorrection: DateCorrection
     /// Tells if this View is the active one.
@@ -129,7 +134,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true
-
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
@@ -146,6 +150,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddUserActionCommand where isActiveView:
             if userActionScope == nil {
                 addDiscreteUserAction(on: command)
+            } else if command.actionType == .custom {
+                // still let it go, just instantly without any dependencies
+                sendDiscreteCustomUserAction(on: command)
             }
 
         // Error command
@@ -207,7 +214,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     private func startContinuousUserAction(on command: RUMStartUserActionCommand) {
-        // swiftlint:disable trailing_closure
         userActionScope = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
@@ -222,12 +228,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 self?.needsViewUpdate = true
             }
         )
-        // swiftlint:enable trailing_closure
     }
 
-    private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
-        // swiftlint:disable trailing_closure
-        userActionScope = RUMUserActionScope(
+    private func createDiscreteUserActionScope(on command: RUMAddUserActionCommand) -> RUMUserActionScope {
+        return RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
             name: command.name,
@@ -241,7 +245,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 self?.needsViewUpdate = true
             }
         )
-        // swiftlint:enable trailing_closure
+    }
+
+    private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
+        userActionScope = createDiscreteUserActionScope(on: command)
+    }
+
+    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand) {
+        let customActionScope = createDiscreteUserActionScope(on: command)
+        _ = customActionScope.process(
+            command: RUMStopUserActionCommand(
+                                    time: command.time,
+                                    attributes: [:],
+                                    actionType: .custom,
+                                    name: nil
+            )
+        )
     }
 
     // MARK: - Sending RUM Events
@@ -261,12 +280,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
+                inForeground: nil,
                 name: viewName,
                 referrer: nil,
                 url: viewPath
@@ -288,15 +309,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(documentVersion: version.toInt64),
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
+                cpuTicksCount: nil,
+                cpuTicksPerSecond: nil,
                 crash: nil,
                 cumulativeLayoutShift: nil,
-                customTimings: customTimings,
+                customTimings: customTimings.reduce(into: [:]) { acc, element in
+                    acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
+                },
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,
@@ -305,14 +331,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputDelay: nil,
                 firstInputTime: nil,
                 id: viewUUID.toRUMDataFormat,
+                inForegroundPeriods: nil,
                 isActive: isActiveView,
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
                 loadingType: nil,
                 longTask: nil,
+                memoryAverage: nil,
+                memoryMax: nil,
                 name: viewName,
                 referrer: nil,
+                refreshRateAverage: nil,
+                refreshRateMin: nil,
                 resource: .init(count: resourcesCount.toInt64),
                 timeSpent: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds,
                 url: viewPath
@@ -337,8 +368,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
+            context: nil,
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                id: nil,
                 isCrash: nil,
                 message: command.message,
                 resource: nil,
@@ -351,6 +384,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
+                inForeground: nil,
                 name: context.activeViewName,
                 referrer: nil,
                 url: context.activeViewPath ?? ""
@@ -362,5 +396,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             return true
         }
         return false
+    }
+
+    private func sanitizeCustomTimingName(customTiming: String) -> String {
+        let sanitized = customTiming.replacingOccurrences(of: "[^a-zA-Z0-9_.@$-]", with: "_", options: .regularExpression)
+
+        if customTiming != sanitized {
+            userLogger.warn(
+                """
+                Custom timing '\(customTiming)' was modified to '\(sanitized)' to match Datadog constraints.
+                """
+            )
+        }
+
+        return sanitized
     }
 }

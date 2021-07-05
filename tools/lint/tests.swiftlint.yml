@@ -50,7 +50,6 @@ only_rules: # we enable lint rules explicitly - only the ones listed below are a
   - statement_position
   - switch_case_alignment
   - syntactic_sugar
-  - trailing_closure
   - trailing_newline
   - trailing_semicolon
   - trailing_whitespace
@@ -73,9 +72,19 @@ custom_rules:
       - comment
     message: "All TODOs must be followed by JIRA reference, for example: \"TODO: RUMM-123\""
     severity: error
+  unmanaged_deallocation: # prevents from unmanaged singletons deallocation with `.instance = nil`
+    name: "Unmanaged singleton deallocation: `.instance = nil`"
+    regex: '.instance = nil'
+    excluded_match_kinds: 
+      - comment
+      - doccomment
+    message: "All singletons must provide an explicit deinitialization API (e.g. `deinitialize()`) to reset its state and tear down all asynchronous work."
+    severity: error
 
 included:
   - ../../Tests
+  - ../../Datadog/E2ETests
+  - ../../Datadog/E2EInstrumentationTests
   - ../../instrumented-tests/http-server-mock/Tests
   - ../../tools/api-surface/Tests
   - ../../tools/rum-models-generator/Tests

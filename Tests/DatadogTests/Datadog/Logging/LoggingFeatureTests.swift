@@ -39,7 +39,7 @@ class LoggingFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("message")
@@ -78,7 +78,7 @@ class LoggingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { LoggingFeature.instance = nil }
+        defer { LoggingFeature.instance?.deinitialize() }
 
         let logger = Logger.builder.build()
         logger.debug("log 1")
