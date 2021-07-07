@@ -71,7 +71,7 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
 
         let crashRUMError = try XCTUnwrap(crashedSession.viewVisits[0].errorEvents.last)
-        XCTAssertEqual(crashRUMError.error.message, "Illegal instruction")
+        XCTAssertEqual(crashRUMError.error.message, "Application crash: SIGILL (Illegal instruction)")
         XCTAssertEqual(crashRUMError.error.type, "SIGILL (ILL_ILLOPC)")
         XCTAssertNotNil(crashRUMError.error.stack)
 
