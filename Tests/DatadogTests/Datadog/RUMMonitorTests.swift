@@ -72,9 +72,9 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.initialize()
         setGlobalAttributes(of: monitor)
 
-        monitor.startView(key: "view1", name: "View1")
+        monitor.startView(key: "view1-key", name: "View1")
         monitor.stopView(key: "view1")
-        monitor.startView(key: "view2", name: "View2")
+        monitor.startView(key: "view2-key", name: "View2")
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -82,9 +82,9 @@ class RUMMonitorTests: XCTestCase {
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         XCTAssertEqual(session.viewVisits.count, 2)
         XCTAssertEqual(session.viewVisits[0].name, "View1")
-        XCTAssertEqual(session.viewVisits[0].path, "View1")
+        XCTAssertEqual(session.viewVisits[0].path, "view1-key")
         XCTAssertEqual(session.viewVisits[1].name, "View2")
-        XCTAssertEqual(session.viewVisits[1].path, "View2")
+        XCTAssertEqual(session.viewVisits[1].path, "view2-key")
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {

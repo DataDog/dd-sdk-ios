@@ -99,7 +99,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
 
         let view3 = session.viewVisits[2]
         XCTAssertEqual(view3.name, "SendRUMFixture3View")
-        XCTAssertEqual(view3.path, "SendRUMFixture3View")
+        XCTAssertEqual(view3.path, "fixture3-vc")
         XCTAssertEqual(view3.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.error.count, 0)

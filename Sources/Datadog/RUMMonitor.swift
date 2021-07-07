@@ -263,7 +263,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 identity: key,
                 name: name ?? key,
-                path: name ?? key,
+                path: key,
                 attributes: attributes
             )
         )
