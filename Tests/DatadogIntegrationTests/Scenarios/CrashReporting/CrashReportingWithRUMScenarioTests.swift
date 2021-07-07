@@ -74,5 +74,12 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(crashRUMError.error.message, "Illegal instruction")
         XCTAssertEqual(crashRUMError.error.type, "SIGILL (ILL_ILLOPC)")
         XCTAssertNotNil(crashRUMError.error.stack)
+
+        // Assert superficial properties of sending crash information:
+        let lastRUMErrorEventMatcherInCrashedSession = try XCTUnwrap(crashedSession.errorEventMatchers.last)
+        let lastRUMErrorEventJSON = lastRUMErrorEventMatcherInCrashedSession.jsonMatcher
+        XCTAssertNotNil(try? lastRUMErrorEventJSON.value(forKeyPath: "error.meta") as [String: Any], "The error should include crash meta info")
+        XCTAssertNotNil(try? lastRUMErrorEventJSON.value(forKeyPath: "error.threads") as [Any], "The error should include threads info")
+        XCTAssertNotNil(try? lastRUMErrorEventJSON.value(forKeyPath: "error.binary_images") as [Any], "The error should include binary images info")
     }
 }

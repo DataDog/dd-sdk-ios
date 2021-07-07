@@ -115,6 +115,9 @@ extension CrashContext {
 }
 
 extension DDCrashReport: EquatableInTests {}
+extension DDCrashReport.Thread: EquatableInTests {}
+extension DDCrashReport.BinaryImage: EquatableInTests {}
+extension DDCrashReport.Meta: EquatableInTests {}
 
 internal extension DDCrashReport {
     static func mockAny() -> DDCrashReport {
@@ -125,14 +128,22 @@ internal extension DDCrashReport {
         date: Date? = .mockAny(),
         type: String = .mockAny(),
         message: String = .mockAny(),
-        stackTrace: String = .mockAny(),
+        stack: String = .mockAny(),
+        threads: [Thread] = [],
+        binaryImages: [BinaryImage] = [],
+        meta: Meta = .mockAny(),
+        wasTruncated: Bool = .mockAny(),
         context: Data? = .mockAny()
     ) -> DDCrashReport {
         return DDCrashReport(
             date: date,
             type: type,
             message: message,
-            stackTrace: stackTrace,
+            stack: stack,
+            threads: threads,
+            binaryImages: binaryImages,
+            meta: meta,
+            wasTruncated: wasTruncated,
             context: context
         )
     }
@@ -142,8 +153,22 @@ internal extension DDCrashReport {
             date: .mockRandomInThePast(),
             type: .mockRandom(),
             message: .mockRandom(),
-            stackTrace: .mockRandom(),
+            stack: .mockRandom(),
             context: context.data
+        )
+    }
+}
+
+internal extension DDCrashReport.Meta {
+    static func mockAny() -> DDCrashReport.Meta {
+        return DDCrashReport.Meta(
+            incidentIdentifier: nil,
+            processName: nil,
+            parentProcess: nil,
+            path: nil,
+            codeType: nil,
+            exceptionType: nil,
+            exceptionCodes: nil
         )
     }
 }

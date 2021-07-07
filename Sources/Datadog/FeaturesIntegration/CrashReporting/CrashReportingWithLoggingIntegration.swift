@@ -68,6 +68,11 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
     // MARK: - Building Log
 
     private func createLog(from crashReport: DDCrashReport, crashContext: CrashContext, crashDate: Date) -> Log {
+        var errorAttributes: [AttributeKey: AttributeValue] = [:]
+        errorAttributes[DDError.threads] = crashReport.threads
+        errorAttributes[DDError.binaryImages] = crashReport.binaryImages
+        errorAttributes[DDError.meta] = crashReport.meta
+
         return Log(
             date: crashDate,
             status: .emergency,
@@ -75,7 +80,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             error: DDError(
                 type: crashReport.type,
                 message: crashReport.message,
-                stack: crashReport.stackTrace
+                stack: crashReport.stack
             ),
             serviceName: configuration.serviceName,
             environment: configuration.environment,
@@ -86,7 +91,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             userInfo: crashContext.lastUserInfo ?? .empty,
             networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
             mobileCarrierInfo: crashContext.lastCarrierInfo,
-            attributes: .init(userAttributes: [:], internalAttributes: nil),
+            attributes: .init(userAttributes: [:], internalAttributes: errorAttributes),
             tags: nil
         )
     }
