@@ -41,4 +41,18 @@ internal struct VitalInfo {
         // swiftlint:enable force_unwrapping
         sampleCountDouble += 1.0
     }
+
+    func scaledDown(by scaleFactor: Double) -> Self {
+        if let min = minValue,
+           let max = maxValue,
+           let mean = meanValue {
+            return VitalInfo(
+                sampleCountDouble: sampleCountDouble,
+                minValue: min / scaleFactor,
+                maxValue: max / scaleFactor,
+                meanValue: mean / scaleFactor
+            )
+        }
+        return self
+    }
 }

@@ -60,4 +60,20 @@ class VitalInfoTest: XCTestCase {
         XCTAssertEqual(testedInfo.sampleCount, 3)
         XCTAssertEqual(testedInfo.greatestDiff, randomValues[0...2].max()! - randomValues[0...2].min()!)
     }
+
+    func testItScalesDown() {
+        let randomValue = Double.random(in: -65_536.0...65_536.0)
+        var randomInfo = VitalInfo()
+        randomInfo.addSample(randomValue)
+
+        // When
+        let testedInfo = randomInfo.scaledDown(by: 2.0)
+
+        // Then
+        XCTAssertEqual(testedInfo.minValue, randomValue / 2.0)
+        XCTAssertEqual(testedInfo.maxValue, randomValue / 2.0)
+        XCTAssertEqual(testedInfo.meanValue, randomValue / 2.0)
+        XCTAssertEqual(testedInfo.sampleCount, 1)
+        XCTAssertEqual(testedInfo.greatestDiff, 0)
+    }
 }

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import class UIKit.UIScreen
 
 internal protocol SamplingBasedVitalReader {
     func readVitalData() -> Double?
@@ -34,9 +35,11 @@ internal final class VitalInfoSampler {
 
     let refreshRateReader: ContinuousVitalReader
     private let refreshRatePublisher = VitalPublisher(initialValue: VitalInfo())
+    private let maximumRefreshRate: Double
 
     var refreshRate: VitalInfo {
-        return refreshRatePublisher.currentValue
+        let info = refreshRatePublisher.currentValue
+        return info.scaledDown(by: maximumRefreshRate)
     }
 
     private var timer: Timer?
@@ -45,21 +48,27 @@ internal final class VitalInfoSampler {
         cpuReader: SamplingBasedVitalReader,
         memoryReader: SamplingBasedVitalReader,
         refreshRateReader: ContinuousVitalReader,
-        frequency: TimeInterval = VitalInfoSampler.frequency
+        frequency: TimeInterval = VitalInfoSampler.frequency,
+        maximumRefreshRate: Double = Double(UIScreen.main.maximumFramesPerSecond)
     ) {
         self.cpuReader = cpuReader
         self.memoryReader = memoryReader
         self.refreshRateReader = refreshRateReader
         self.refreshRateReader.register(self.refreshRatePublisher)
+        self.maximumRefreshRate = maximumRefreshRate
 
         takeSample()
-        let timer = Timer.scheduledTimer(
+        let timer = Timer(
             timeInterval: frequency,
             target: self,
             selector: #selector(takeSample),
             userInfo: nil,
             repeats: true
         )
+        // NOTE: RUMM-1280 based on my running Example app
+        // non-main run loops don't fire the timer.
+        // Although i can't catch this in unit tests
+        RunLoop.main.add(timer, forMode: .default)
         self.timer = timer
     }
 

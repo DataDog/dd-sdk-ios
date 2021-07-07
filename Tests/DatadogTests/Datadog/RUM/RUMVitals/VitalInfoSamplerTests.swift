@@ -38,7 +38,37 @@ class VitalInfoSamplerTests: XCTestCase {
             XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
             XCTAssertEqual(sampler.memory.meanValue, 321.0)
             XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
-            XCTAssertEqual(sampler.refreshRate.meanValue, 666.0)
+            let maxFPS = Double(UIScreen.main.maximumFramesPerSecond)
+            XCTAssertEqual(sampler.refreshRate.meanValue, 666.0 / maxFPS)
         }
+    }
+
+    func testItSamplesDataFromBackgroundThreads() {
+        // swiftlint:disable implicitly_unwrapped_optional
+        var sampler: VitalInfoSampler!
+        DispatchQueue.global().sync {
+            // in real-world scenarios, sampling will be started from background threads
+            sampler = VitalInfoSampler(
+                cpuReader: VitalCPUReader(),
+                memoryReader: VitalMemoryReader(),
+                refreshRateReader: VitalRefreshRateReader(),
+                frequency: 0.1
+            )
+        }
+
+        let expectation = expectation(description: "sampling expectation")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 0.5) { _ in
+            XCTAssertGreaterThan(sampler.cpu.meanValue!, 0.0)
+            XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
+            XCTAssertGreaterThan(sampler.memory.meanValue!, 0.0)
+            XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
+            XCTAssertGreaterThan(sampler.refreshRate.meanValue!, 0.0)
+            XCTAssertGreaterThan(sampler.refreshRate.sampleCount, 1)
+        }
+        // swiftlint:enable implicitly_unwrapped_optional
     }
 }
