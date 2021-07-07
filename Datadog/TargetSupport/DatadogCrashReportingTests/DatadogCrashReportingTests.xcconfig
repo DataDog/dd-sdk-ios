@@ -2,4 +2,18 @@
 #include "../xcconfigs/Datadog.xcconfig"
 
 // Add DatadogSDKTesting instrumentation (if available in current environment)
-#include "../xcconfigs/DatadogSDKTesting.local.xcconfig"
+//#include "../xcconfigs/DatadogSDKTesting.local.xcconfig"
+//
+// Note: The 'DatadogSDKTesting' instrumentation is temporarily disabled as it causes issues in 'DatadogCrashReportingTests'.
+//       Both 'DatadogSDKTesting' and 'DatadogCrashReporting' link PLCR dependency statically, resulting with these runtime warnings:
+//
+//       """
+//       objc[50310]: Class PLCrashReportThreadInfo is implemented in both
+//       /Users/.../DatadogCrashReporting.framework/DatadogCrashReporting (0x10b727208)
+//       and
+//       /Users/.../DatadogSDKTesting.framework/DatadogSDKTesting (0x10b5ee928).
+//       One of the two will be used. Which one is undefined.
+//       """
+//
+//       Because some mocks in 'DatadogCrashReportingTests' use PLCR type's subclassing, their runtime cast with 'as? <PLCR_TYPE>' fails
+//       resulting with tests failures. Until a workaround or a better solution is found, this instrumentation must be disabled.
