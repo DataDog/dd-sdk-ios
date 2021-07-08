@@ -264,6 +264,7 @@ extension Datadog {
         private(set) var rumActionEventMapper: RUMActionEventMapper?
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
+        private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -335,6 +336,7 @@ extension Datadog {
                     rumActionEventMapper: nil,
                     rumErrorEventMapper: nil,
                     rumResourceAttributesProvider: nil,
+                    rumBackgroundEventTrackingEnabled: false,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -610,6 +612,20 @@ extension Datadog {
             ///                       for the RUM Resource or `nil` if no attributes should be attached.
             public func setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?) -> Builder {
                 configuration.rumResourceAttributesProvider = provider
+                return self
+            }
+
+            /// Enables or disables automatic tracking of background events (events hapenning when no UIViewController is active).
+            ///
+            /// When enabled, the SDK will track RUM Events into an automatically created Background RUM View (named `Background`)
+            ///
+            /// **NOTE:** Enabling this option might increase the number of session tracked, and increase your billing.
+            ///
+            /// Until this option is enabled, automatic tracking of  background event is disabled.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder {
+                configuration.rumBackgroundEventTrackingEnabled = enabled
                 return self
             }
 

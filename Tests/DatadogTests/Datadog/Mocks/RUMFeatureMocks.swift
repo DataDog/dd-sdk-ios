@@ -453,12 +453,14 @@ extension RUMApplicationScope {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100
+        samplingRate: Float = 100,
+        backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
-            samplingRate: samplingRate
+            samplingRate: samplingRate,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
 }
@@ -472,13 +474,15 @@ extension RUMSessionScope {
         parent: RUMApplicationScope = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
         samplingRate: Float = 100,
-        startTime: Date = .mockAny()
+        startTime: Date = .mockAny(),
+        backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             parent: parent,
             dependencies: dependencies,
             samplingRate: samplingRate,
-            startTime: startTime
+            startTime: startTime,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
 }

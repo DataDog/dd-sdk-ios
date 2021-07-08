@@ -53,6 +53,7 @@ extension Datadog.Configuration {
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitActionsTrackingEnabled: Bool = false,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
+        rumBackgroundEventTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -79,6 +80,7 @@ extension Datadog.Configuration {
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
+            rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -222,7 +224,8 @@ extension FeaturesConfiguration.RUM {
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
-        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
+        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
+        backgroundEventTrackingEnabled: Bool = false
     ) -> Self {
         return .init(
             common: common,
@@ -233,7 +236,8 @@ extension FeaturesConfiguration.RUM {
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
-            autoInstrumentation: autoInstrumentation
+            autoInstrumentation: autoInstrumentation,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
 }
