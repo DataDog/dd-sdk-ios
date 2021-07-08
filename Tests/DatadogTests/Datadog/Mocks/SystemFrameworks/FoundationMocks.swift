@@ -219,6 +219,14 @@ extension Int: AnyMockable, RandomMockable {
     }
 }
 
+extension Range where Bound == Int {
+    static func mockRandomBetween(min: Int, max: Int) -> Range<Int> {
+        let bound1: Int = .mockRandom(min: min, max: max)
+        let bound2: Int = .mockRandom(min: min, max: max)
+        return bound1 < bound2 ? bound1..<bound2 : bound2..<bound1
+    }
+}
+
 extension Int64: AnyMockable, RandomMockable {
     static func mockAny() -> Int64 { 0 }
     static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }

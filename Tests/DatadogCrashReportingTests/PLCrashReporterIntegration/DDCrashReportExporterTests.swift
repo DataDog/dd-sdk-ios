@@ -109,10 +109,10 @@ class DDCrashReportExporterTests: XCTestCase {
 
     func testExportingErrorStackFromExceptionInfo() {
         let stackFrames: [StackFrame] = [
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
-            .init(libraryName: "Bar", libraryBaseAddress: 300, instructionPointer: 302),
-            .init(libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
+            .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
+            .init(number: 2, libraryName: "Bar", libraryBaseAddress: 300, instructionPointer: 302),
+            .init(number: 3, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
         ]
 
         crashReport.exceptionInfo = .init(name: .mockAny(), reason: .mockAny(), stackFrames: stackFrames)
@@ -128,14 +128,14 @@ class DDCrashReportExporterTests: XCTestCase {
 
     func testExportingErrorStackFromThreadInfo() {
         let crashedThreadStackFrames: [StackFrame] = [
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
-            .init(libraryName: "Bar", libraryBaseAddress: 300, instructionPointer: 302),
-            .init(libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
+            .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
+            .init(number: 2, libraryName: "Bar", libraryBaseAddress: 300, instructionPointer: 302),
+            .init(number: 3, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
         ]
         let otherThreadStackFrames: [StackFrame] = [
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 110),
-            .init(libraryName: "Bazz", libraryBaseAddress: 500, instructionPointer: 550),
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 110),
+            .init(number: 1, libraryName: "Bazz", libraryBaseAddress: 500, instructionPointer: 550),
         ]
 
         crashReport.exceptionInfo = nil
@@ -164,6 +164,7 @@ class DDCrashReportExporterTests: XCTestCase {
     func testExportingVeryLongErrorStack() {
         let stackFrames: [StackFrame] = (0..<10_024).map { index in
             StackFrame(
+                number: index,
                 libraryName: "VeryLongLibraryName-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-\(index)",
                 libraryBaseAddress: 100,
                 instructionPointer: 102
@@ -180,18 +181,41 @@ class DDCrashReportExporterTests: XCTestCase {
         )
     }
 
+    func testWhenSomeSucceedingFramesInTheStackAreMissing_itPrintsTruncationMark() {
+        let stackFrames: [StackFrame] = [
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
+            .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
+            // missing line number: 2
+            .init(number: 3, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+            // missing line number: 4
+            .init(number: 5, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+        ]
+
+        crashReport.exceptionInfo = .init(name: .mockAny(), reason: .mockAny(), stackFrames: stackFrames)
+        let expectedStack = """
+        0   Foo                                 0x0000000000000066 0x64 + 2
+        1   Foo                                 0x0000000000000070 0x64 + 12
+        ...
+        3   Bizz                                0x00000000000001b0 0x190 + 32
+        ...
+        5   Bizz                                0x00000000000001b0 0x190 + 32
+        """
+
+        XCTAssertEqual(exporter.export(crashReport).stack, expectedStack)
+    }
+
     // MARK: - Formatting threads
 
     func testExportingThreads() {
         let crashedThreadStackFrames: [StackFrame] = [
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
-            .init(libraryName: "Bar", libraryBaseAddress: 300, instructionPointer: 302),
-            .init(libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
+            .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
+            .init(number: 2, libraryName: "Bar", libraryBaseAddress: 300, instructionPointer: 302),
+            .init(number: 3, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
         ]
         let otherThreadStackFrames: [StackFrame] = [
-            .init(libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 110),
-            .init(libraryName: "Bazz", libraryBaseAddress: 500, instructionPointer: 550),
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 110),
+            .init(number: 1, libraryName: "Bazz", libraryBaseAddress: 500, instructionPointer: 550),
         ]
 
         crashReport.threads = [
@@ -325,5 +349,11 @@ class DDCrashReportExporterTests: XCTestCase {
         let randomData: Data = .mockRandom()
         crashReport.contextData = randomData
         XCTAssertEqual(exporter.export(crashReport).context, randomData)
+    }
+
+    func testExportingAdditionalTelemetry() {
+        let randomFlag: Bool = .random()
+        crashReport.wasTruncated = randomFlag
+        XCTAssertEqual(exporter.export(crashReport).wasTruncated, randomFlag)
     }
 }
