@@ -60,11 +60,10 @@ internal final class VitalInfoSampler {
         takeSample()
         let timer = Timer(
             timeInterval: frequency,
-            target: self,
-            selector: #selector(takeSample),
-            userInfo: nil,
             repeats: true
-        )
+        ) { [weak self] _ in
+            self?.takeSample()
+        }
         // NOTE: RUMM-1280 based on my running Example app
         // non-main run loops don't fire the timer.
         // Although i can't catch this in unit tests
@@ -73,10 +72,10 @@ internal final class VitalInfoSampler {
     }
 
     deinit {
-        self.timer?.invalidate()
+        timer?.invalidate()
+        refreshRateReader.unregister(refreshRatePublisher)
     }
 
-    @objc
     private func takeSample() {
         if let newCPUSample = cpuReader.readVitalData() {
             cpuPublisher.mutateAsync { cpuInfo in
