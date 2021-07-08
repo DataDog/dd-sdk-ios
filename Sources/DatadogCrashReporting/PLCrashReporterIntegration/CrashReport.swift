@@ -28,6 +28,8 @@ internal struct CrashReport {
     var binaryImages: [BinaryImageInfo]
     /// Custom user data injected before the crash occured.
     var contextData: Data?
+    /// Additional flag (for telemetry) meaning if any of the stack traces was truncated due to minification.
+    var wasTruncated: Bool
 }
 
 /// Intermediate representation of `PLCrashReportSystemInfo`.
@@ -104,6 +106,9 @@ internal struct BinaryImageInfo {
 
 /// Intermediate representation of `PLCrashReportStackFrameInfo`.
 internal struct StackFrame {
+    /// The number of this frame in the stack trace.
+    /// This must be recorded as less meaningful stack frames might be removed when minifying the `CrashReport`.
+    var number: Int
     /// The name of the library that produced this frame (the "image name" from binary image).
     var libraryName: String?
     /// The load address of the library that produced this frame (the "image base address" from binary image).
@@ -149,6 +154,7 @@ extension CrashReport {
             .compactMap { BinaryImageInfo(from: $0) }
 
         self.contextData = plcr.customData
+        self.wasTruncated = false
     }
 }
 
@@ -200,7 +206,8 @@ extension ExceptionInfo {
         if let stackFrames = exceptionInfo.stackFrames {
             self.stackFrames = stackFrames
                 .compactMap { $0 as? PLCrashReportStackFrameInfo }
-                .map { StackFrame(from: $0, in: plcr) }
+                .enumerated()
+                .map { number, frame in StackFrame(from: frame, number: number, in: plcr) }
         } else {
             self.stackFrames = []
         }
@@ -215,7 +222,8 @@ extension ThreadInfo {
         if let stackFrames = threadInfo.stackFrames {
             self.stackFrames = stackFrames
                 .compactMap { $0 as? PLCrashReportStackFrameInfo }
-                .map { StackFrame(from: $0, in: crashReport) }
+                .enumerated()
+                .map { number, frame in StackFrame(from: frame, number: number, in: crashReport) }
         } else {
             self.stackFrames = []
         }
@@ -276,7 +284,7 @@ extension BinaryImageInfo.CodeType {
 }
 
 extension StackFrame {
-    init(from stackFrame: PLCrashReportStackFrameInfo, in crashReport: PLCrashReport) {
+    init(from stackFrame: PLCrashReportStackFrameInfo, number: Int, in crashReport: PLCrashReport) {
         if let image = crashReport.image(forAddress: stackFrame.instructionPointer),
            let imageInfo = BinaryImageInfo(from: image) {
             self.libraryName = imageInfo.imageName
@@ -288,6 +296,7 @@ extension StackFrame {
             self.libraryBaseAddress = nil
         }
 
+        self.number = number
         self.instructionPointer = stackFrame.instructionPointer
     }
 }

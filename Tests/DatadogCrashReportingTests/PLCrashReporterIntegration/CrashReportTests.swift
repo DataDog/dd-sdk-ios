@@ -298,6 +298,7 @@ class CrashReportTests: XCTestCase {
 
     func testItReadsStackFrameWhenItsBinaryImageIsFound() {
         // Given
+        let stackFrameNumber: Int = .mockRandom()
         let imagePath: URL = .mockRandomPath()
         let mockImage = PLCrashReportMock.BinaryImageInfo()
         mockImage.mockHasImageUUID = true
@@ -312,9 +313,10 @@ class CrashReportTests: XCTestCase {
         let mock = PLCrashReportMock()
         mock.mockImageForAddress[mockStackFrame.mockInstructionPointer] = mockImage  // register mock image
 
-        let stackFrameInfo = StackFrame(from: mockStackFrame, in: mock)
+        let stackFrameInfo = StackFrame(from: mockStackFrame, number: stackFrameNumber, in: mock)
 
         // Then
+        XCTAssertEqual(stackFrameInfo.number, stackFrameNumber)
         XCTAssertEqual(stackFrameInfo.instructionPointer, mockStackFrame.mockInstructionPointer)
         XCTAssertEqual(stackFrameInfo.libraryName, imagePath.lastPathComponent)
         XCTAssertEqual(stackFrameInfo.libraryBaseAddress, mockImage.mockImageBaseAddress)
@@ -322,6 +324,7 @@ class CrashReportTests: XCTestCase {
 
     func testItReadsStackFrameWhenItsBinaryImageIsNotFound() {
         // Given
+        let stackFrameNumber: Int = .mockRandom()
         let mockStackFrame = PLCrashReportMock.StackFrame()
         mockStackFrame.mockInstructionPointer = .mockRandom()
 
@@ -329,9 +332,10 @@ class CrashReportTests: XCTestCase {
         let mock = PLCrashReportMock()
         mock.mockImageForAddress = [:]  // do not register any image
 
-        let stackFrameInfo = StackFrame(from: mockStackFrame, in: mock)
+        let stackFrameInfo = StackFrame(from: mockStackFrame, number: stackFrameNumber, in: mock)
 
         // Then
+        XCTAssertEqual(stackFrameInfo.number, stackFrameNumber)
         XCTAssertEqual(stackFrameInfo.instructionPointer, mockStackFrame.mockInstructionPointer)
         XCTAssertNil(stackFrameInfo.libraryName)
         XCTAssertNil(stackFrameInfo.libraryBaseAddress)

@@ -20,6 +20,8 @@ import Datadog
 internal struct DDCrashReportExporter {
     private let unknown = "<unknown>"
     private let unavailable = "???"
+    /// Truncation mark printed in a stack trace in the place of stack frames that were removed.
+    private let stackTraceTruncationMark = "..."
 
     func export(_ crashReport: CrashReport) -> DDCrashReport {
         return DDCrashReport(
@@ -30,7 +32,7 @@ internal struct DDCrashReportExporter {
             threads: threads(from: crashReport),
             binaryImages: binaryImages(from: crashReport),
             meta: meta(for: crashReport),
-            wasTruncated: false, // TODO: RUMM-1462 Send flag telling if any stack trace was truncated
+            wasTruncated: crashReport.wasTruncated,
             context: crashReport.contextData
         )
     }
@@ -167,8 +169,11 @@ internal struct DDCrashReportExporter {
 
     /// Converts stack frames to newline-separated text format.
     private func string(from stackFrames: [StackFrame]) -> String {
-        let lines: [String] = stackFrames.enumerated().map { index, frame in
-            let frameNumber = "\(index)".addSuffix(repeating: " ", targetLength: 3)
+        var lines: [String] = []
+        var previousFrameNumber: Int? = nil
+
+        stackFrames.forEach { frame in
+            let frameNumber = "\(frame.number)".addSuffix(repeating: " ", targetLength: 3)
             let libraryName = (frame.libraryName ?? unavailable).addSuffix(repeating: " ", targetLength: 35)
 
             // Ref. for this computations:
@@ -182,7 +187,16 @@ internal struct DDCrashReportExporter {
                 instructionOffsetDec = "\(frame.instructionPointer.subtractIfNoOverflow(libraryBaseAddress) ?? 0)"
             }
 
-            return "\(frameNumber) \(libraryName) \(instructionAddressHex) \(imageBaseAddressHex) + \(instructionOffsetDec)"
+            if let previousFrameNumber = previousFrameNumber {
+                let isSucceedingLine = frame.number == previousFrameNumber + 1
+                if !isSucceedingLine {
+                    // If some frames were reduced, insert truncation symbol:
+                    lines.append(stackTraceTruncationMark)
+                }
+            }
+
+            lines.append("\(frameNumber) \(libraryName) \(instructionAddressHex) \(imageBaseAddressHex) + \(instructionOffsetDec)")
+            previousFrameNumber = frame.number
         }
 
         return lines.joined(separator: "\n")

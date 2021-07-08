@@ -197,7 +197,8 @@ extension CrashReport {
         exceptionInfo: ExceptionInfo? = nil,
         threads: [ThreadInfo] = [],
         binaryImages: [BinaryImageInfo] = [],
-        contextData: Data? = nil
+        contextData: Data? = nil,
+        wasTruncated: Bool = false
     ) -> CrashReport {
         return CrashReport(
             incidentIdentifier: incidentIdentifier,
@@ -207,7 +208,8 @@ extension CrashReport {
             exceptionInfo: exceptionInfo,
             threads: threads,
             binaryImages: binaryImages,
-            contextData: contextData
+            contextData: contextData,
+            wasTruncated: wasTruncated
         )
     }
 }
@@ -228,6 +230,26 @@ extension CrashedProcessInfo {
     }
 }
 
+extension ExceptionInfo {
+    static func mockWith(
+        name: String? = .mockAny(),
+        reason: String? = .mockAny(),
+        stackFrames: [StackFrame] = []
+    ) -> ExceptionInfo {
+        return ExceptionInfo(name: name, reason: reason, stackFrames: stackFrames)
+    }
+}
+
+extension ThreadInfo {
+    static func mockWith(
+        threadNumber: Int = .mockAny(),
+        crashed: Bool = .mockAny(),
+        stackFrames: [StackFrame] = []
+    ) -> ThreadInfo {
+        return ThreadInfo(threadNumber: threadNumber, crashed: crashed, stackFrames: stackFrames)
+    }
+}
+
 extension BinaryImageInfo {
     static func mockWith(
         uuid: String = .mockAny(),
@@ -244,6 +266,22 @@ extension BinaryImageInfo {
             codeType: .init(architectureName: architectureName),
             imageBaseAddress: imageBaseAddress,
             imageSize: imageSize
+        )
+    }
+}
+
+extension StackFrame {
+    static func mockWith(
+        number: Int = .mockAny(),
+        libraryName: String? = .mockAny(),
+        libraryBaseAddress: UInt64? = .mockAny(),
+        instructionPointer: UInt64 = .mockAny()
+    ) -> StackFrame {
+        return StackFrame(
+            number: number,
+            libraryName: libraryName,
+            libraryBaseAddress: libraryBaseAddress,
+            instructionPointer: instructionPointer
         )
     }
 }
