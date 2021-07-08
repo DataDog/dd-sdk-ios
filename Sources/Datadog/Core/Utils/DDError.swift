@@ -17,6 +17,9 @@ internal struct DDError: Equatable {
     /// Common error key encoding crash meta information in Crash Reporting.
     /// See "RFC - iOS Crash Reports Minimization" for more context.
     static let meta = "error.meta"
+    /// Common error key encoding boolean flag - `true` if any stack trace was truncated, otherwise `false`.
+    /// See "RFC - iOS Crash Reports Minimization" for more context.
+    static let wasTruncated = "error.was_truncated"
 
     let type: String
     let message: String

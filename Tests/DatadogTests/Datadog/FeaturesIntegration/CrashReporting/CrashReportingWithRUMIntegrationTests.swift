@@ -246,5 +246,6 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(sendRUMEvent.attributes[DDError.threads] as? [DDCrashReport.Thread], crashReport.threads)
         XCTAssertEqual(sendRUMEvent.attributes[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
         XCTAssertEqual(sendRUMEvent.attributes[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
+        XCTAssertEqual(sendRUMEvent.attributes[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
     }
 }
