@@ -72,6 +72,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         errorAttributes[DDError.threads] = crashReport.threads
         errorAttributes[DDError.binaryImages] = crashReport.binaryImages
         errorAttributes[DDError.meta] = crashReport.meta
+        errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
         return Log(
             date: crashDate,

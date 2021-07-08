@@ -38,7 +38,7 @@ internal struct RUMEventEncoder {
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try event.attributes.forEach { attributeName, attributeValue in
             // TODO: RUMM-1463 Remove this condition once new error format is managed through `RUMDataModels`
-            if attributeName == DDError.threads || attributeName == DDError.binaryImages || attributeName == DDError.meta {
+            if attributeName == DDError.threads || attributeName == DDError.binaryImages || attributeName == DDError.meta || attributeName == DDError.wasTruncated {
                 try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey(attributeName))
             } else {
                 try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))

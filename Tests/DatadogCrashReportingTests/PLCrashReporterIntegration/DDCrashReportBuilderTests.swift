@@ -12,7 +12,7 @@ import CrashReporter
 class DDCrashReportBuilderTests: XCTestCase {
     func testItBuildsDDCrashReportFromPLCrashReport() throws {
         // Given
-        let plCrashReport = try generateLiveReport() // live report about current process
+        let plCrashReport = try generateLiveReport() // live report of the current process
 
         // When
         let builder = DDCrashReportBuilder()
