@@ -10,7 +10,7 @@ import Datadog
 
 /// Builds `DDCrashReport` from `PLCrashReport`.
 internal struct DDCrashReportBuilder {
-    private let reducer = CrashReportReducer()
+    private let minifier = CrashReportMinifier()
     private let exporter = DDCrashReportExporter()
 
     func createDDCrashReport(from plCrashReport: PLCrashReport) throws -> DDCrashReport {
@@ -18,7 +18,7 @@ internal struct DDCrashReportBuilder {
         var crashReport = try CrashReport(from: plCrashReport)
 
         // Minify intermediate report:
-        reducer.reduce(crashReport: &crashReport)
+        minifier.minify(crashReport: &crashReport)
 
         // Export DDCrashReport:
         return exporter.export(crashReport)

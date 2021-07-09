@@ -9,7 +9,7 @@ import Foundation
 /// Reduces information in intermediate `CrashReport`:
 /// - it removes binary images which are not necessary for symbolication,
 /// - it removes less important stack frames from stack frames which exceed our limits.
-internal struct CrashReportReducer {
+internal struct CrashReportMinifier {
     struct Constants {
         /// The maximum number of stack frames in each stack trace.
         /// When stack trace exceeds this limit, it will be reduced by dropping less important frames.
@@ -23,7 +23,7 @@ internal struct CrashReportReducer {
         self.stackFramesLimit = stackFramesLimit
     }
 
-    func reduce(crashReport: inout CrashReport) {
+    func minify(crashReport: inout CrashReport) {
         var ifAnyStackFrameWasRemoved = false
 
         // Keep exception stack trace under limit:

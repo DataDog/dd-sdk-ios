@@ -7,7 +7,7 @@
 import XCTest
 @testable import DatadogCrashReporting
 
-class CrashReportReducerTests: XCTestCase {
+class CrashReportMinifierTests: XCTestCase {
     private var crashReport: CrashReport = .mockAny()
 
     // MARK: - Minimizing number of stack frames
@@ -25,8 +25,8 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.threads = (0..<Int.mockRandom(min: 1, max: 10)).map { _ in ThreadInfo.mockWith(stackFrames: stackFrames) }
 
         // Then
-        let reducer = CrashReportReducer(stackFramesLimit: limit)
-        reducer.reduce(crashReport: &crashReport)
+        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        minifier.minify(crashReport: &crashReport)
 
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, limit)
@@ -48,8 +48,8 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.threads = (0..<Int.mockRandom(min: 1, max: 10)).map { _ in ThreadInfo.mockWith(stackFrames: stackFrames) }
 
         // Then
-        let reducer = CrashReportReducer(stackFramesLimit: limit)
-        reducer.reduce(crashReport: &crashReport)
+        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        minifier.minify(crashReport: &crashReport)
 
         XCTAssertFalse(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, stackFrames.count)
@@ -71,8 +71,8 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.threads = (0..<Int.mockRandom(min: 1, max: 10)).map { _ in ThreadInfo.mockWith(stackFrames: stackFrames) }
 
         // Then
-        let reducer = CrashReportReducer(stackFramesLimit: limit)
-        reducer.reduce(crashReport: &crashReport)
+        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        minifier.minify(crashReport: &crashReport)
 
         XCTAssertFalse(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, stackFrames.count)
@@ -86,7 +86,7 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.exceptionInfo = .mockWith(
             stackFrames: (0..<3).map { .mockWith(number: $0) } // 3 frames
         )
-        CrashReportReducer(stackFramesLimit: 2).reduce(crashReport: &crashReport) // remove 1 frames
+        CrashReportMinifier(stackFramesLimit: 2).minify(crashReport: &crashReport) // remove 1 frames
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, 2)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames[0].number, 0)
@@ -96,7 +96,7 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.exceptionInfo = .mockWith(
             stackFrames: (0..<4).map { .mockWith(number: $0) } // 4 frames
         )
-        CrashReportReducer(stackFramesLimit: 2).reduce(crashReport: &crashReport) // remove 2 frames
+        CrashReportMinifier(stackFramesLimit: 2).minify(crashReport: &crashReport) // remove 2 frames
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, 2)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames[0].number, 0)
@@ -106,7 +106,7 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.exceptionInfo = .mockWith(
             stackFrames: (0..<5).map { .mockWith(number: $0) } // 4 frames
         )
-        CrashReportReducer(stackFramesLimit: 3).reduce(crashReport: &crashReport) // remove 2 frames
+        CrashReportMinifier(stackFramesLimit: 3).minify(crashReport: &crashReport) // remove 2 frames
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, 3)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames[0].number, 0)
@@ -133,8 +133,8 @@ class CrashReportReducerTests: XCTestCase {
         crashReport.threads = []
 
         // When
-        let reducer = CrashReportReducer(stackFramesLimit: .max)
-        reducer.reduce(crashReport: &crashReport)
+        let minifier = CrashReportMinifier(stackFramesLimit: .max)
+        minifier.minify(crashReport: &crashReport)
 
         // Then
         XCTAssertEqual(crashReport.binaryImages.count, 2)
@@ -177,8 +177,8 @@ class CrashReportReducerTests: XCTestCase {
         }
 
         // When
-        let reducer = CrashReportReducer(stackFramesLimit: limit)
-        reducer.reduce(crashReport: &crashReport)
+        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        minifier.minify(crashReport: &crashReport)
 
         // Then
         var imageNamesFromStackFrames: Set<String> = []
