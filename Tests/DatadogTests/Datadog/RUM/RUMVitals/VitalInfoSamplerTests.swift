@@ -28,12 +28,12 @@ class VitalInfoSamplerTests: XCTestCase {
             return info
         }()
 
-        let expectation = expectation(description: "sampling expectation")
+        let samplingExpectation = expectation(description: "sampling expectation")
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            expectation.fulfill()
+            samplingExpectation.fulfill()
         }
 
-        waitForExpectations(timeout: 0.5) { _ in
+        waitForExpectations(timeout: 1.0) { _ in
             XCTAssertEqual(sampler.cpu.meanValue, 123.0)
             XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
             XCTAssertEqual(sampler.memory.meanValue, 321.0)
@@ -56,12 +56,12 @@ class VitalInfoSamplerTests: XCTestCase {
             )
         }
 
-        let expectation = expectation(description: "sampling expectation")
+        let samplingExpectation = expectation(description: "sampling expectation")
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            expectation.fulfill()
+            samplingExpectation.fulfill()
         }
 
-        waitForExpectations(timeout: 0.5) { _ in
+        waitForExpectations(timeout: 1.0) { _ in
             XCTAssertGreaterThan(sampler.cpu.meanValue!, 0.0)
             XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
             XCTAssertGreaterThan(sampler.memory.meanValue!, 0.0)

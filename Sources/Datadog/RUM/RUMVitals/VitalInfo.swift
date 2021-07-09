@@ -43,7 +43,8 @@ internal struct VitalInfo {
     }
 
     func scaledDown(by scaleFactor: Double) -> Self {
-        if let min = minValue,
+        if scaleFactor != 0.0,
+           let min = minValue,
            let max = maxValue,
            let mean = meanValue {
             return VitalInfo(
