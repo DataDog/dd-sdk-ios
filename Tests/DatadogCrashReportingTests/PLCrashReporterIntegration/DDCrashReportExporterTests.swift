@@ -51,45 +51,40 @@ class DDCrashReportExporterTests: XCTestCase {
     }
 
     func testExportingErrorMessageFromSignalInfo() throws {
-        let signalDescriptionByName = [
-            "SIGSIGNAL 0": "Signal 0",
-            "SIGHUP": "Hangup",
-            "SIGINT": "Interrupt",
-            "SIGQUIT": "Quit",
-            "SIGILL": "Illegal instruction",
-            "SIGTRAP": "Trace/BPT trap",
-            "SIGABRT": "Abort trap",
-            "SIGEMT": "EMT trap",
-            "SIGFPE": "Floating point exception",
-            "SIGKILL": "Killed",
-            "SIGBUS": "Bus error",
-            "SIGSEGV": "Segmentation fault",
-            "SIGSYS": "Bad system call",
-            "SIGPIPE": "Broken pipe",
-            "SIGALRM": "Alarm clock",
-            "SIGTERM": "Terminated",
-            "SIGURG": "Urgent I/O condition",
-            "SIGSTOP": "Suspended (signal)",
-            "SIGTSTP": "Suspended",
-            "SIGCONT": "Continued",
-            "SIGCHLD": "Child exited",
-            "SIGTTIN": "Stopped (tty input)",
-            "SIGTTOU": "Stopped (tty output)",
-            "SIGIO": "I/O possible",
-            "SIGXCPU": "Cputime limit exceeded",
-            "SIGXFSZ": "Filesize limit exceeded",
-            "SIGVTALRM": "Virtual timer expired",
-            "SIGPROF": "Profiling timer expired",
-            "SIGWINCH": "Window size changes",
-            "SIGINFO": "Information request",
-            "SIGUSR1": "User defined signal 1",
-            "SIGUSR2": "User defined signal 2",
+        let signalNames = [
+            "SIGSIGNAL 0", "SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP",
+            "SIGABRT", "SIGEMT", "SIGFPE", "SIGKILL", "SIGBUS", "SIGSEGV", "SIGSYS",
+            "SIGPIPE", "SIGALRM", "SIGTERM", "SIGURG", "SIGSTOP", "SIGTSTP", "SIGCONT",
+            "SIGCHLD", "SIGTTIN", "SIGTTOU", "SIGIO", "SIGXCPU", "SIGXFSZ", "SIGVTALRM",
+            "SIGPROF", "SIGWINCH", "SIGINFO", "SIGUSR1", "SIGUSR2"
         ]
 
-        signalDescriptionByName.forEach { signalName, signalDescription in
+        func readSignalDescriptionFromOS(signalName: String) -> String? {
+            let knownSignalNames = Mirror(reflecting: sys_signame)
+                .children
+                .compactMap { $0.value as? UnsafePointer<Int8> }
+                .map { String(cString: $0).uppercased() } // [HUP, INT, QUIT, ILL, TRAP, ABRT, ...]
+
+            let knownSignalDescriptions = Mirror(reflecting: sys_siglist)
+                .children
+                .compactMap { $0.value as? UnsafePointer<Int8> }
+                .map { String(cString: $0) } // [Hangup, Interrupt, Quit, Illegal instruction, ...]
+
+            XCTAssertEqual(knownSignalNames.count, knownSignalDescriptions.count) // sanity check
+
+            if let index = knownSignalNames.firstIndex(where: { signalName == "SIG\($0)" }) {
+                return knownSignalDescriptions[index]
+            } else {
+                return nil
+            }
+        }
+
+        signalNames.forEach { signalName in
             crashReport.signalInfo = .init(name: signalName, code: .mockAny(), address: .mockAny())
 
-            let expectedMessage = "Application crash: \(signalName) (\(signalDescription))"
+            let expectedSignalDescription = readSignalDescriptionFromOS(signalName: signalName)
+            let expectedMessage = "Application crash: \(signalName) (\(expectedSignalDescription!))"
+
             XCTAssertEqual(exporter.export(crashReport).message, expectedMessage)
         }
     }

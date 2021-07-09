@@ -21,15 +21,51 @@ internal struct DDCrashReportExporter {
     private let unknown = "<unknown>"
     private let unavailable = "???"
 
+    /// Different signals and their descriptions available in OS.
+    private let knownSignalDescriptionByName = [
+        "SIGSIGNAL 0": "Signal 0",
+        "SIGHUP": "Hangup",
+        "SIGINT": "Interrupt",
+        "SIGQUIT": "Quit",
+        "SIGILL": "Illegal instruction",
+        "SIGTRAP": "Trace/BPT trap",
+        "SIGABRT": "Abort trap",
+        "SIGEMT": "EMT trap",
+        "SIGFPE": "Floating point exception",
+        "SIGKILL": "Killed",
+        "SIGBUS": "Bus error",
+        "SIGSEGV": "Segmentation fault",
+        "SIGSYS": "Bad system call",
+        "SIGPIPE": "Broken pipe",
+        "SIGALRM": "Alarm clock",
+        "SIGTERM": "Terminated",
+        "SIGURG": "Urgent I/O condition",
+        "SIGSTOP": "Suspended (signal)",
+        "SIGTSTP": "Suspended",
+        "SIGCONT": "Continued",
+        "SIGCHLD": "Child exited",
+        "SIGTTIN": "Stopped (tty input)",
+        "SIGTTOU": "Stopped (tty output)",
+        "SIGIO": "I/O possible",
+        "SIGXCPU": "Cputime limit exceeded",
+        "SIGXFSZ": "Filesize limit exceeded",
+        "SIGVTALRM": "Virtual timer expired",
+        "SIGPROF": "Profiling timer expired",
+        "SIGWINCH": "Window size changes",
+        "SIGINFO": "Information request",
+        "SIGUSR1": "User defined signal 1",
+        "SIGUSR2": "User defined signal 2",
+    ]
+
     func export(_ crashReport: CrashReport) -> DDCrashReport {
         return DDCrashReport(
             date: crashReport.systemInfo?.timestamp,
-            type: formatType(for: crashReport),
-            message: formatMessage(for: crashReport),
-            stack: formatStack(for: crashReport),
-            threads: threads(from: crashReport),
-            binaryImages: binaryImages(from: crashReport),
-            meta: meta(for: crashReport),
+            type: formattedType(for: crashReport),
+            message: formattedMessage(for: crashReport),
+            stack: formattedStack(for: crashReport),
+            threads: formattedThreads(from: crashReport),
+            binaryImages: formattedBinaryImages(from: crashReport),
+            meta: formattedMeta(for: crashReport),
             wasTruncated: false, // TODO: RUMM-1462 Send flag telling if any stack trace was truncated
             context: crashReport.contextData
         )
@@ -40,14 +76,14 @@ internal struct DDCrashReportExporter {
     /// Formats the error type - in Datadog Error Tracking this corresponds to `error.type`.
     ///
     /// **Note:** This value is used for building error's fingerprint in Error Tracking, thus its cardinality must be controlled.
-    private func formatType(for crashReport: CrashReport) -> String {
+    private func formattedType(for crashReport: CrashReport) -> String {
         return "\(crashReport.signalInfo?.name ?? unknown) (\(crashReport.signalInfo?.code ?? unknown))"
     }
 
     /// Formats the error message - in Datadog Error Tracking this corresponds to `error.message`.
     ///
     /// **Note:** This value is used for building error's fingerprint in Error Tracking, thus its cardinality must be controlled.
-    private func formatMessage(for crashReport: CrashReport) -> String {
+    private func formattedMessage(for crashReport: CrashReport) -> String {
         if let exception = crashReport.exceptionInfo {
             // If the crash was caused by an uncaught exception
             let exceptionName = exception.name ?? unknown // e.g. `NSInvalidArgumentException`
@@ -59,31 +95,18 @@ internal struct DDCrashReportExporter {
                 return "Application crash: \(unknown)"
             }
 
-            let knownSignalNames = Mirror(reflecting: sys_signame)
-                .children
-                .compactMap { $0.value as? UnsafePointer<Int8> }
-                .map { String(cString: $0).uppercased() } // [HUP, INT, QUIT, ILL, TRAP, ABRT, ...]
-
-            let knownSignalDescriptions = Mirror(reflecting: sys_siglist)
-                .children
-                .compactMap { $0.value as? UnsafePointer<Int8> }
-                .map { String(cString: $0) } // [Hangup, Interrupt, Quit, Illegal instruction, ...]
-
-            if knownSignalNames.count == knownSignalDescriptions.count { // sanity check
-                if let index = knownSignalNames.firstIndex(where: { signalName == "SIG\($0)" }) {
-                    let signalDescription = knownSignalDescriptions[index]
-                    return "Application crash: \(signalName) (\(signalDescription))"
-                }
+            if let signalDescription = knownSignalDescriptionByName[signalName] {
+                return "Application crash: \(signalName) (\(signalDescription))"
+            } else {
+                return "Application crash: \(unknown)"
             }
-
-            return "Application crash: \(unknown)"
         }
     }
 
     /// Formats the error stack - in Datadog Error Tracking this corresponds to `error.stack`.
     ///
     /// **Note:** This produces unsymbolicated stack trace, which is later symbolicated backend-side and used for building error's fingerprint in Error Tracking.
-    private func formatStack(for crashReport: CrashReport) -> String {
+    private func formattedStack(for crashReport: CrashReport) -> String {
         let crashedThread = crashReport.threads.first { $0.crashed }
         let exception = crashReport.exceptionInfo
 
@@ -104,7 +127,7 @@ internal struct DDCrashReportExporter {
 
     // MARK: - Exporting threads and binary images
 
-    private func threads(from crashReport: CrashReport) -> [DDCrashReport.Thread] {
+    private func formattedThreads(from crashReport: CrashReport) -> [DDCrashReport.Thread] {
         return crashReport.threads.map { thread in
             return DDCrashReport.Thread(
                 name: "Thread \(thread.threadNumber)",
@@ -115,7 +138,7 @@ internal struct DDCrashReportExporter {
         }
     }
 
-    private func binaryImages(from crashReport: CrashReport) -> [DDCrashReport.BinaryImage] {
+    private func formattedBinaryImages(from crashReport: CrashReport) -> [DDCrashReport.BinaryImage] {
         return crashReport.binaryImages.map { image in
             // Ref. for this computation:
             // https://github.com/microsoft/plcrashreporter/blob/dbb05c0bc883bde1cfcad83e7add25862c95d11f/Source/PLCrashReportTextFormatter.m#L447
@@ -138,7 +161,7 @@ internal struct DDCrashReportExporter {
 
     // MARK: - Exporting meta information
 
-    private func meta(for crashReport: CrashReport) -> DDCrashReport.Meta {
+    private func formattedMeta(for crashReport: CrashReport) -> DDCrashReport.Meta {
         var parentProcessDescription: String? = nil
 
         if let processInfo = crashReport.processInfo {
