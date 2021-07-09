@@ -258,7 +258,7 @@ extension Datadog {
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
-        private(set) var rumUIKitActionsTrackingEnabled: Bool
+        private(set) var rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate?
         private(set) var rumViewEventMapper: RUMViewEventMapper?
         private(set) var rumResourceEventMapper: RUMResourceEventMapper?
         private(set) var rumActionEventMapper: RUMActionEventMapper?
@@ -330,7 +330,7 @@ extension Datadog {
                     spanEventMapper: nil,
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
-                    rumUIKitActionsTrackingEnabled: false,
+                    rumUIKitUserActionsPredicate: nil,
                     rumViewEventMapper: nil,
                     rumResourceEventMapper: nil,
                     rumActionEventMapper: nil,
@@ -558,8 +558,29 @@ extension Datadog {
             /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
             ///
             /// - Parameter enabled: `true` by default
+            @available(*, deprecated, message: "This option is replaced by `trackUIKitRUMActions(using:)`. Refer to the new API comment for details.")
             public func trackUIKitActions(_ enabled: Bool = true) -> Builder {
-                configuration.rumUIKitActionsTrackingEnabled = enabled
+                if enabled {
+                    return self.trackUIKitRUMActions()
+                }
+                return self
+            }
+
+            /// Enables automatic tracking of `UITouch` events as RUM Actions.
+            ///
+            /// When enabled, the SDK will track `UIEvents` send to the application and capture `UIViews` and `UIControls` that user interacted with.
+            /// It will send RUM Action for each recognized element. Any touch events on the keyboard are ignored for privacy.
+            ///
+            /// The RUM Action will be named by the name of the interacted element's class and will be extended with `accessibilityIdentifier` (if set) for more context.
+            ///
+            /// **NOTE:** Enabling this option will install swizzlings on `UIApplication.sendEvent(_:)` method. Refer
+            /// to `UIApplicationSwizzler.swift` for implementation details.
+            ///
+            /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
+            ///
+            /// - Parameter predicate: predicate deciding if a given action should be recorded and which allows to give custom name and to add custom attributes to the RUM Action.
+            public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder {
+                configuration.rumUIKitUserActionsPredicate = predicate
                 return self
             }
 

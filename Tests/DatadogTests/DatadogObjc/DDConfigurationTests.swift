@@ -56,7 +56,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
-            XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertNil(configuration.rumViewEventMapper)
@@ -130,18 +130,25 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
 
-        objcBuilder.trackUIKitActions()
-        XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitActionsTrackingEnabled)
+        objcBuilder.trackUIKitRUMActions()
+        XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
 
         objcBuilder.trackUIKitRUMViews()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
 
-        class ObjCPredicate: DDUIKitRUMViewsPredicate {
+        class ObjCViewPredicate: DDUIKitRUMViewsPredicate {
             func rumView(for viewController: UIViewController) -> DDRUMView? { nil }
         }
-        let predicate = ObjCPredicate()
-        objcBuilder.trackUIKitRUMViews(using: predicate)
-        XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate === predicate)
+        let viewPredicate = ObjCViewPredicate()
+        objcBuilder.trackUIKitRUMViews(using: viewPredicate)
+        XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate === viewPredicate)
+
+        class ObjCActionPredicate: DDUIKitRUMUserActionsPredicate {
+            func rumAction(targetView: UIView) -> DDRUMAction? { nil }
+        }
+        let actionPredicate = ObjCActionPredicate()
+        objcBuilder.trackUIKitRUMActions(using: actionPredicate)
+        XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate as? UIKitRUMUserActionsPredicateBridge)?.objcPredicate === actionPredicate)
 
         objcBuilder.set(rumSessionsSamplingRate: 42.5)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumSessionsSamplingRate, 42.5)
@@ -248,5 +255,13 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.rumResourceEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))
+    }
+
+    func testDeprecatedTrackUIActions() {
+        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
+
+        objcBuilder.trackUIKitActions()
+
+        XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
     }
 }

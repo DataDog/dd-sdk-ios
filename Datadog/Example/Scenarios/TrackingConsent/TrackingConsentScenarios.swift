@@ -11,7 +11,7 @@ internal class TrackingConsentBaseScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
-            .trackUIKitActions(true)
+            .trackUIKitRUMActions()
             .trackURLSession(firstPartyHosts: ["datadoghq.com"])
     }
 }
