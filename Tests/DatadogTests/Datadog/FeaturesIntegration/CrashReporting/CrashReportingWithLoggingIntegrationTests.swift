@@ -66,7 +66,8 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
                 codeType: "arch",
                 exceptionType: "EXCEPTION_TYPE",
                 exceptionCodes: "EXCEPTION_CODES"
-            )
+            ),
+            wasTruncated: false
         )
         let crashContext: CrashContext = .mockWith(
             lastUserInfo: Bool.random() ? .mockRandom() : .empty,
@@ -110,6 +111,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
                     DDError.threads: crashReport.threads,
                     DDError.binaryImages: crashReport.binaryImages,
                     DDError.meta: crashReport.meta,
+                    DDError.wasTruncated: false
                 ]
             ),
             tags: nil

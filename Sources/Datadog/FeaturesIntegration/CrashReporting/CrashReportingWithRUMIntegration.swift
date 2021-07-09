@@ -92,6 +92,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         errorEventAttributes[DDError.threads] = crashReport.threads
         errorEventAttributes[DDError.binaryImages] = crashReport.binaryImages
         errorEventAttributes[DDError.meta] = crashReport.meta
+        errorEventAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
         let rumError = RUMErrorEvent(
             dd: .init(),

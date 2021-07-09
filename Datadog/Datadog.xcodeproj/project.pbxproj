@@ -448,6 +448,9 @@
 		61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */; };
 		61FC5F4525CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */; };
 		61FC5F4E25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */; };
+		61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */; };
+		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
+		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		61FF281E24B8968D000B3D9B /* RUMEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */; };
 		61FF282124B8981D000B3D9B /* RUMEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */; };
 		61FF282424B8A1C3000B3D9B /* RUMEventFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282324B8A1C3000B3D9B /* RUMEventFileOutput.swift */; };
@@ -1070,6 +1073,9 @@
 		61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextProviderTests.swift; sourceTree = "<group>"; };
 		61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWithCrashContextIntegration.swift; sourceTree = "<group>"; };
 		61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWithCrashContextIntegrationTests.swift; sourceTree = "<group>"; };
+		61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportMinifier.swift; sourceTree = "<group>"; };
+		61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportMinifierTests.swift; sourceTree = "<group>"; };
+		61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportBuilderTests.swift; sourceTree = "<group>"; };
 		61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventBuilder.swift; sourceTree = "<group>"; };
 		61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventBuilderTests.swift; sourceTree = "<group>"; };
 		61FF282324B8A1C3000B3D9B /* RUMEventFileOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutput.swift; sourceTree = "<group>"; };
@@ -2906,9 +2912,10 @@
 			isa = PBXGroup;
 			children = (
 				612556AF268C8D31002BCE74 /* CrashReport.swift */,
+				61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */,
 				612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */,
-				61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */,
 				617247B725DAB0E2007085B3 /* DDCrashReportBuilder.swift */,
+				61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */,
 				615CC40A2694A55D0005F08C /* Utils */,
 			);
 			path = PLCrashReporterIntegration;
@@ -3023,7 +3030,9 @@
 			isa = PBXGroup;
 			children = (
 				615CC4122695957C0005F08C /* CrashReportTests.swift */,
+				61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */,
 				61E95D872695C00200EA3115 /* DDCrashReportExporterTests.swift */,
+				61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */,
 				615CC40E2694A63A0005F08C /* Utils */,
 			);
 			path = PLCrashReporterIntegration;
@@ -4170,6 +4179,7 @@
 			files = (
 				617247B825DAB0E2007085B3 /* DDCrashReportBuilder.swift in Sources */,
 				612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */,
+				61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */,
 				61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */,
 				612556B0268C8D31002BCE74 /* CrashReport.swift in Sources */,
 				615CC40C2694A56D0005F08C /* SwiftExtensions.swift in Sources */,
@@ -4182,8 +4192,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */,
 				612556BC26933228002BCE74 /* FoundationMocks.swift in Sources */,
 				615CC4102694A64D0005F08C /* SwiftExtensionTests.swift in Sources */,
+				61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */,
 				61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */,
 				612556BD2693348F002BCE74 /* EquatableInTests.swift in Sources */,
 				61B7886225C180CB002675B5 /* DDCrashReportingPluginTests.swift in Sources */,
