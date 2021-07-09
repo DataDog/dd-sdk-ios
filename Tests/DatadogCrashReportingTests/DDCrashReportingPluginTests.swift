@@ -110,9 +110,7 @@ class DDCrashReportingPluginTests: XCTestCase {
 
         // Given
         crashReporter.pendingCrashReport = .mockAny()
-        crashReporter.pendingCrashReportError = ErrorMock(
-            description: "Reading error"
-        )
+        crashReporter.pendingCrashReportError = ErrorMock("Reading error")
 
         // When
         plugin.readPendingCrashReport { crashReport in
@@ -137,9 +135,7 @@ class DDCrashReportingPluginTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // When
-        ThirdPartyCrashReporterMock.initializationError = ErrorMock(
-            description: "Initialization error"
-        )
+        ThirdPartyCrashReporterMock.initializationError = ErrorMock("Initialization error")
         defer { ThirdPartyCrashReporterMock.initializationError = nil }
 
         // Then

@@ -165,6 +165,18 @@ extension URL: AnyMockable, RandomMockable {
                 )
             )
     }
+
+    static func mockRandomPath(containing subpathComponents: [String] = []) -> URL {
+        let count: Int = .mockRandom(min: 2, max: 10)
+        var components: [String] = (0..<count).map { _ in
+            .mockRandom(
+                among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                length: .mockRandom(min: 3, max: 10)
+            )
+        }
+        components.insert(contentsOf: subpathComponents, at: .random(in: 0..<count))
+        return URL(fileURLWithPath: "/\(components.joined(separator: "/"))")
+    }
 }
 
 extension String: AnyMockable, RandomMockable {
@@ -212,13 +224,29 @@ extension Int64: AnyMockable, RandomMockable {
     static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }
 }
 
+extension UInt: RandomMockable {
+    static func mockRandom() -> UInt {
+        return .random(in: UInt.min...UInt.max)
+    }
+}
+
 extension UInt64: AnyMockable, RandomMockable {
     static func mockAny() -> UInt64 {
         return 0
     }
 
     static func mockRandom() -> UInt64 {
-        return .random(in: UInt64.min...UInt64.max)
+        return .mockRandom(min: .min, max: .max)
+    }
+
+    static func mockRandom(min: UInt64 = .min, max: UInt64 = .max) -> UInt64 {
+        return .random(in: min...max)
+    }
+
+    static func mockRandom(otherThan value: UInt64) -> UInt64 {
+        var random: UInt64 = .mockRandom()
+        while random == value { random = .mockRandom() }
+        return random
     }
 }
 
