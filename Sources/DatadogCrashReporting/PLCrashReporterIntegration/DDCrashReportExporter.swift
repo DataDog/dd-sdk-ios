@@ -24,7 +24,7 @@ internal struct DDCrashReportExporter {
     private let stackTraceTruncationMark = "..."
 
     func export(_ crashReport: CrashReport) -> DDCrashReport {
-        return DDCrashReport(
+        let ddCrashReport = DDCrashReport(
             date: crashReport.systemInfo?.timestamp,
             type: formatType(for: crashReport),
             message: formatMessage(for: crashReport),
@@ -35,6 +35,30 @@ internal struct DDCrashReportExporter {
             wasTruncated: crashReport.wasTruncated,
             context: crashReport.contextData
         )
+
+        // Dump in Apple format for testing symbolicator:
+        var appleFormat = ""
+        appleFormat += "Main stack:\n"
+        appleFormat += ddCrashReport.stack
+        appleFormat += "\n\n"
+
+        for thread in ddCrashReport.threads {
+            appleFormat += "Thread \(thread.name):\n"
+            appleFormat += thread.stack
+            appleFormat += "\n\n"
+        }
+
+        appleFormat += "Binary Images:\n"
+        for image in ddCrashReport.binaryImages {
+            appleFormat += "\(image.loadAddress) - \(image.maxAddress) \(image.libraryName) \(image.architecture) <\(image.uuid)> /image/path"
+            appleFormat += "\n"
+        }
+
+        print("⚡️⚡️⚡️")
+        print(appleFormat)
+        print("⚡️⚡️⚡️")
+
+        return ddCrashReport
     }
 
     // MARK: - Formatting `error.type`, `error.message` and `error.stack`

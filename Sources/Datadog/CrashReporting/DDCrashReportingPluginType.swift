@@ -12,13 +12,13 @@ import Foundation
 public class DDCrashReport: NSObject {
     public struct Thread: Encodable {
         /// The name of the thread, e.g. `"Thread 0"`
-        internal let name: String
+        public let name: String
         /// Unsymbolicated stack trace of the crash.
-        internal let stack: String
+        public let stack: String
         /// If the thread was halted.
-        internal let crashed: Bool
+        public let crashed: Bool
         /// Thread state (CPU registers dump), only available for halted thread.
-        internal let state: String?
+        public let state: String?
 
         public init(
             name: String,
@@ -43,12 +43,12 @@ public class DDCrashReport: NSObject {
     }
 
     public struct BinaryImage: Encodable {
-        internal let libraryName: String
-        internal let uuid: String
-        internal let architecture: String
-        internal let isSystemLibrary: Bool
-        internal let loadAddress: String
-        internal let maxAddress: String
+        public let libraryName: String
+        public let uuid: String
+        public let architecture: String
+        public let isSystemLibrary: Bool
+        public let loadAddress: String
+        public let maxAddress: String
 
         public init(
             libraryName: String,
@@ -82,19 +82,19 @@ public class DDCrashReport: NSObject {
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
     public struct Meta: Encodable {
         /// A client-generated 16-byte UUID of the incident.
-        internal let incidentIdentifier: String?
+        public let incidentIdentifier: String?
         /// The name of the crashed process.
-        internal let processName: String?
+        public let processName: String?
         /// Parent process information.
-        internal let parentProcess: String?
+        public let parentProcess: String?
         /// The location of the executable on disk.
-        internal let path: String?
+        public let path: String?
         /// The CPU architecture of the process that crashed.
-        internal let codeType: String?
+        public let codeType: String?
         /// The name of the corresponding BSD termination signal.
-        internal let exceptionType: String?
+        public let exceptionType: String?
         /// CPU specific information about the exception encoded into 64-bit hexadecimal number preceded by the signal code.
-        internal let exceptionCodes: String?
+        public let exceptionCodes: String?
 
         public init(
             incidentIdentifier: String?,
@@ -126,26 +126,26 @@ public class DDCrashReport: NSObject {
     }
 
     /// The date of the crash occurrence.
-    internal let date: Date?
+    public let date: Date?
     /// Crash report type - used to group similar crash reports.
     /// In Datadog Error Tracking this corresponds to `error.type`.
-    internal let type: String
+    public let type: String
     /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
     /// In Datadog Error Tracking this corresponds to `error.message`.
-    internal let message: String
+    public let message: String
     /// Unsymbolicated stack trace related to the crash (this can be either uncaugh exception backtrace or stack trace of the halted thread).
     /// In Datadog Error Tracking this corresponds to `error.stack`.
-    internal let stack: String
+    public let stack: String
     /// All threads running in the process.
-    internal let threads: [Thread]
+    public let threads: [Thread]
     /// List of binary images referenced from all stack traces.
-    internal let binaryImages: [BinaryImage]
+    public let binaryImages: [BinaryImage]
     /// Meta information about the crash and process.
-    internal let meta: Meta
+    public let meta: Meta
     /// If any stack trace information was truncated due to crash report minimization.
-    internal let wasTruncated: Bool
+    public let wasTruncated: Bool
     /// The last context injected through `inject(context:)`
-    internal let context: Data?
+    public let context: Data?
 
     #if DD_SDK_ENABLE_INTERNAL_MONITORING
     /// Additional diagnostic information about the crash report, collected for `DatadogCrashReporting` observability.
@@ -208,15 +208,15 @@ internal class DDCrashReport: NSObject {
     internal struct BinaryImage: Encodable {}
     internal struct Meta: Encodable {}
 
-    internal let date: Date?
-    internal let type: String
-    internal let message: String
-    internal let stack: String
-    internal let threads: [Thread]
-    internal let binaryImages: [BinaryImage]
-    internal let meta: Meta
-    internal let wasTruncated: Bool
-    internal let context: Data?
+    public let date: Date?
+    public let type: String
+    public let message: String
+    public let stack: String
+    public let threads: [Thread]
+    public let binaryImages: [BinaryImage]
+    public let meta: Meta
+    public let wasTruncated: Bool
+    public let context: Data?
 
     #if DD_SDK_ENABLE_INTERNAL_MONITORING
     internal var diagnosticInfo: [String: Encodable] = [:]
