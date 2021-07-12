@@ -665,6 +665,19 @@ class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
     }
 }
 
+class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
+    var resultByView: [UIView: RUMAction] = [:]
+    var result: RUMAction?
+
+    init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    func rumAction(targetView: UIView) -> RUMAction? {
+        return resultByView[targetView] ?? result
+    }
+}
+
 class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
     var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     var onSendEvent: ((UIApplication, UIEvent) -> Void)?

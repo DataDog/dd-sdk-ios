@@ -115,7 +115,7 @@ final class RUMTapActionScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
-            .trackUIKitActions(true)
+            .trackUIKitRUMActions()
             .enableLogging(false)
             .enableTracing(false)
     }

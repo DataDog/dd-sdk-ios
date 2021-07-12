@@ -11,11 +11,13 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private lazy var handler: UIKitRUMUserActionsHandler = {
-        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider)
+    private func createHandler(userActionsPredicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
+        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, userActionsPredicate: userActionsPredicate)
         handler.subscribe(commandsSubscriber: commandSubscriber)
         return handler
-    }()
+    }
+
+    private lazy var handler = createHandler()
 
     private var mockAppWindow: UIWindow! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -209,6 +211,51 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         // Then
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
+
+    func testItAppliesUserAttributesAndCustomName() {
+        // Given
+        let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
+        let handler = createHandler(
+            userActionsPredicate: MockUIKitRUMUserActionsPredicate(
+                actionOverride: (name: "foobar", attributes: mockAttributes)
+            )
+        )
+        let view = UIButton()
+            .attached(to: mockAppWindow)
+            .with(accessibilityIdentifier: "Some Button")
+        let event = UIEvent.mockWith(touches: [.mockWith(phase: .ended, view: view)])
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: event
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.name, "foobar")
+        AssertDictionariesEqual(command!.attributes, mockAttributes)
+    }
+
+    func testGivenUserActionPredicateReturnsNil_itDoesntSendAction() {
+        // Given
+        let handler = createHandler(
+            userActionsPredicate: MockUIKitRUMUserActionsPredicate(actionOverride: nil)
+        )
+        let view = UIButton()
+            .attached(to: mockAppWindow)
+            .with(accessibilityIdentifier: "Some Button")
+        let event = UIEvent.mockWith(touches: [.mockWith(phase: .ended, view: view)])
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: event
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+    }
 }
 
 // MARK: - Helpers
@@ -227,3 +274,19 @@ private extension UIView {
 
 /// The mock the keyboard window by having the class name contain "UIRemoteKeyboardWindow" string.
 private class MockUIRemoteKeyboardWindow: UIWindow {}
+
+private class MockUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate {
+    private let actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?
+
+    init(actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?) {
+        self.actionOverride = actionOverride
+    }
+
+    func rumAction(targetView: UIView) -> RUMAction? {
+        if let action = actionOverride {
+            return RUMAction(name: action.name, attributes: action.attributes)
+        } else {
+            return nil
+        }
+    }
+}

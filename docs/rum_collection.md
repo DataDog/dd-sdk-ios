@@ -164,11 +164,11 @@ This will make the SDK track requests sent from this instance of the `URLSession
 
 ### RUM actions
 
-To enable RUM actions tracking, use the `.trackUIKitActions()` option when configuring the SDK:
+To enable RUM actions tracking, use the `.trackUIKitRUMActions()` option when configuring the SDK:
 ```
 Datadog.Configuration
    .builderUsing(...)
-   .trackUIKitActions()
+   .trackUIKitRUMActions()
    .build()
 
 Global.rum = RUMMonitor.initialize()
