@@ -46,6 +46,7 @@ internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
                 """
             )
+            return
         }
 
         if let rumAction = userActionsPredicate.rumAction(targetView: actionTargetView) {
