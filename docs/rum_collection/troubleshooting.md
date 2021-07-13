@@ -6,8 +6,8 @@ further_reading:
     tag: "Github"
     text: "dd-sdk-ios Source code"
   - link: "/real_user_monitoring"
-    tag: "Homepage"
-    text: "Explore Datadog RUM"
+    tag: "Documentation"
+    text: "Datadog Real User Monitoring"
 ---
 
 ## Check if Datadog SDK is properly initialized

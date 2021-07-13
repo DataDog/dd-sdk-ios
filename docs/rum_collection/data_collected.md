@@ -6,8 +6,8 @@ further_reading:
     tag: "Github"
     text: "dd-sdk-ios Source code"
   - link: "/real_user_monitoring"
-    tag: "Homepage"
-    text: "Explore Datadog RUM"
+    tag: "Documentation"
+    text: "Datadog Real User Monitoring"
 ---
 
 The Datadog Real User Monitoring SDK generates six types of events:

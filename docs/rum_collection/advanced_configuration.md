@@ -6,8 +6,8 @@ further_reading:
     tag: "Github"
     text: "dd-sdk-ios Source code"
   - link: "/real_user_monitoring"
-    tag: "Homepage"
-    text: "Explore Datadog RUM"
+    tag: "Documentation"
+    text: "Datadog Real User Monitoring"
 ---
 
 If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2].
@@ -79,7 +79,7 @@ Find more details and available options in `DDRUMMonitor` class.
 
 ### Custom Resources
 
-In addition to [tracking resources automatically][7], you can also track specific custom resources (network requests, third party provider APIs, etc.). Use the following methods on `Global.rum` to manually collect RUM resources:
+In addition to [tracking resources automatically][7], you can also track specific custom resources, such as network requests or third party provider APIs. Use the following methods on `Global.rum` to manually collect RUM resources:
 - `.startResourceLoading(resourceKey:request:)`
 - `.stopResourceLoading(resourceKey:response:)`
 - `.stopResourceLoadingWithError(resourceKey:error:)`
