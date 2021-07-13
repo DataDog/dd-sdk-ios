@@ -9,20 +9,13 @@ further_reading:
     tag: "Documentation"
     text: "Datadog Real User Monitoring"
 ---
+The RUM SDK generates events that have associated metrics and attributes. Metrics are quantifiable values that can be used for measurements related to the event. Attributes are non-quantifiable values used to slice metrics data (group by) in analytics. 
 
-The Datadog Real User Monitoring SDK generates six types of events:
+Every RUM event has all of the [default attributes](#default-attributes), for example, the device type (`device.type`) and user information such as their name (`usr.name`) and their country (`geo.country`). 
 
-| Event Type | Retention | Description                                                                                                                                                                                                                                                                                              |
-|------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Session    | 30 days   | Session represents a real user journey on your mobile application. It begins when the user launches the application, and the session remains live as long as the user stays active. During the user journey, all RUM events generated as part of the session will share the same `session.id` attribute. |
-| View       | 30 days   | A view represents a unique screen (or screen segment) on your mobile application. Individual `UIViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`                           |
-| Resource   | 15 days   | Resources represents network requests to first-party hosts, APIs, 3rd party providers, and libraries in your mobile application. All requests generated during a user session are attached to the view with a unique `resource.id`                                                                       |
-| Error      | 30 days   | Error represents an exception emitted by the mobile application attached to the view it is generated in.                                                                                                                                                                                        |
-| Action     | 30 days   | Action represents user activity in your mobile application (application launch, tap, swipe, back etc). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                      |
+There are additional [metrics and attributes that are specific to a given event type](#event-specific-metrics-and-attributes). For example, the metric `view.time_spent` is associated with "view" events and the attribute `resource.method` is associated with "resource" events. 
 
-The following diagram illustrates the RUM event hierarchy:
-
-{{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
+This page provides descriptions of each of the metrics and attributes collected.
 
 ## Default attributes
 
@@ -93,10 +86,19 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 
 ## Event specific metrics and attributes
 
-Metrics are quantifiable values that can be used for measurements related to the event. Attributes are non-quantifiable values used to slice metrics data (group by) in analytics. 
+The Datadog Real User Monitoring SDK generates six types of events:
 
-{{< tabs >}}
-{{% tab "Session" %}}
+| Event Type | Retention | Description                         |
+|------------|-----------|-------------------------------------|
+| Session    | 30 days   | Session represents a real user journey on your mobile application. It begins when the user launches the application, and the session remains live as long as the user stays active. During the user journey, all RUM events generated as part of the session will share the same `session.id` attribute. |
+| View       | 30 days   | A view represents a unique screen (or screen segment) on your mobile application. Individual `UIViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`                           |
+| Resource   | 15 days   | Resources represents network requests to first-party hosts, APIs, 3rd party providers, and libraries in your mobile application. All requests generated during a user session are attached to the view with a unique `resource.id`                                                                       |
+| Error      | 30 days   | Error represents an exception emitted by the mobile application attached to the view it is generated in.                                                                                                                                                                                        |
+| Action     | 30 days   | Action represents user activity in your mobile application (application launch, tap, swipe, back etc). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                      |
+
+The following diagram illustrates the RUM event hierarchy:
+
+{{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
 ### Session metrics
 
@@ -124,8 +126,6 @@ Metrics are quantifiable values that can be used for measurements related to the
 | `session.ip`                 | string | IP address of the session extracted from the TCP connectiion of the intake |
 | `session.useragent`          | string | System user agent info to interpret device info                            |
 
-{{% /tab %}}
-{{% tab "View" %}}
 
 ### View metrics
 
@@ -147,9 +147,6 @@ RUM action, error, resource and long task events contain information about the a
 | `view.url`     | string | URL of the `UIViewController` class corresponding to the event. |
 | `view.name`    | string | Customizable name of the view corresponding to the event.       |
 
-
-{{% /tab %}}
-{{% tab "Resource" %}}
 
 ### Resource metrics
 
@@ -177,12 +174,10 @@ RUM action, error, resource and long task events contain information about the a
 | `resource.provider.domain` | string | The resource provider domain.                                                            |
 | `resource.provider.type`   | string | The resource provider type (for example `first-party`, `cdn`, `ad`, `analytics`).        |
 
-{{% /tab %}}
-{{% tab "Error" %}}
-
-Front-end errors are collected with Real User Monitoring (RUM). The error message and stack trace are included when available.
 
 ### Error attributes
+
+Front-end errors are collected with Real User Monitoring (RUM). The error message and stack trace are included when available.
 
 | Attribute        | Type   | Description                                                                      |
 |------------------|--------|----------------------------------------------------------------------------------|
@@ -205,8 +200,6 @@ Network errors include information about failing HTTP requests. The following fa
 | `error.resource.provider.domain` | string | The resource provider domain.                                                     |
 | `error.resource.provider.type`   | string | The resource provider type (for example `first-party`, `cdn`, `ad`, `analytics`). |
 
-{{% /tab %}}
-{{% tab "User Action" %}}
 
 ### Action metrics
 
@@ -225,8 +218,6 @@ Network errors include information about failing HTTP requests. The following fa
 | `action.name`        | string | Name of the user action.                                                        |
 | `action.target.name` | string | Element that the user interacted with. Only for automatically collected actions |
 
-{{% /tab %}}
-{{< /tabs >}}
 
 
 ## Further Reading
