@@ -112,6 +112,10 @@ internal class RUMResourceScope: RUMScope {
         let resourceDuration: TimeInterval
         let size: Int64?
 
+        // Check trace attributes
+        let traceId = (attributes.removeValue(forKey: "_dd.trace_id") as? String) ?? spanContext?.traceID
+        let spanId = (attributes.removeValue(forKey: "_dd.span_id") as? String) ?? spanContext?.spanID
+
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
@@ -126,8 +130,8 @@ internal class RUMResourceScope: RUMScope {
 
         let eventData = RUMResourceEvent(
             dd: .init(
-                spanId: spanContext?.spanID,
-                traceId: spanContext?.traceID
+                spanId: spanId,
+                traceId: traceId
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)

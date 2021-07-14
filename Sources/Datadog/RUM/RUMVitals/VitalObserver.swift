@@ -10,7 +10,7 @@ import Foundation
 internal class VitalObserver: ValueObserver {
     let listener: VitalListener
 
-    private var vitalInfo = VitalInfo(
+    private(set) var vitalInfo = VitalInfo(
         sampleCount: 0,
         minValue: Double.greatestFiniteMagnitude,
         maxValue: -Double.greatestFiniteMagnitude,

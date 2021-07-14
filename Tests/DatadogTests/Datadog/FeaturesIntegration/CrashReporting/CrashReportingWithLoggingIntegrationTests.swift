@@ -47,7 +47,27 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             date: .mockDecember15th2019At10AMUTC(),
             type: .mockRandom(),
             message: .mockRandom(),
-            stackTrace: .mockRandom()
+            stack: .mockRandom(),
+            threads: [
+                .init(name: "Thread 0", stack: "thread 0 stack", crashed: true, state: nil),
+                .init(name: "Thread 1", stack: "thread 1 stack", crashed: false, state: nil),
+                .init(name: "Thread 2", stack: "thread 2 stack", crashed: false, state: nil),
+            ],
+            binaryImages: [
+                .init(libraryName: "library1", uuid: "uuid1", architecture: "arch", isSystemLibrary: true, loadAddress: "0xLoad1", maxAddress: "0xMax1"),
+                .init(libraryName: "library2", uuid: "uuid2", architecture: "arch", isSystemLibrary: true, loadAddress: "0xLoad2", maxAddress: "0xMax2"),
+                .init(libraryName: "library3", uuid: "uuid3", architecture: "arch", isSystemLibrary: false, loadAddress: "0xLoad3", maxAddress: "0xMax3"),
+            ],
+            meta: .init(
+                incidentIdentifier: "incident-identifier",
+                processName: "process-name",
+                parentProcess: "parent-process",
+                path: "process/path",
+                codeType: "arch",
+                exceptionType: "EXCEPTION_TYPE",
+                exceptionCodes: "EXCEPTION_CODES"
+            ),
+            wasTruncated: false
         )
         let crashContext: CrashContext = .mockWith(
             lastUserInfo: Bool.random() ? .mockRandom() : .empty,
@@ -74,7 +94,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             error: DDError(
                 type: crashReport.type,
                 message: crashReport.message,
-                stack: crashReport.stackTrace
+                stack: crashReport.stack
             ),
             serviceName: configuration.serviceName,
             environment: configuration.environment,
@@ -85,7 +105,15 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             userInfo: crashContext.lastUserInfo!,
             networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
             mobileCarrierInfo: crashContext.lastCarrierInfo,
-            attributes: .init(userAttributes: [:], internalAttributes: nil),
+            attributes: .init(
+                userAttributes: [:],
+                internalAttributes: [
+                    DDError.threads: crashReport.threads,
+                    DDError.binaryImages: crashReport.binaryImages,
+                    DDError.meta: crashReport.meta,
+                    DDError.wasTruncated: false
+                ]
+            ),
             tags: nil
         )
 

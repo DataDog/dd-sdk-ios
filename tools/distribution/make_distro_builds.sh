@@ -56,6 +56,11 @@ cleanup
 
 # zip artifacts
 cd Carthage/Build/
+
+# skip crash reporting artifacts
+rm -rf DatadogCrashReporting.xcframework
+rm -rf CrashReporter.xcframework
+
 zip --symlinks -r $OUT_FILENAME *.xcframework
 
 # upload zip

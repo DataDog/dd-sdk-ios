@@ -231,6 +231,155 @@ class DataUploadWorkerTests: XCTestCase {
 
         worker.cancelSynchronously()
     }
+
+    func testGivenDataToUpload_whenUploadFinishesWithSuccessStatusCode_thenDataIsDeleted() {
+        let statusCode = (200...299).randomElement()!
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpHeaders: .mockAny()
+        )
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
+        worker.cancelSynchronously()
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
+    }
+
+    func testGivenDataToUpload_whenUploadFinishesWithRedirectStatusCode_thenDataIsDeleted() {
+        let statusCode = (300...399).randomElement()!
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpHeaders: .mockAny()
+        )
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
+        worker.cancelSynchronously()
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
+    }
+
+    func testGivenDataToUpload_whenUploadFinishesWithClientErrorStatusCode_thenDataIsDeleted() {
+        let statusCode = (400...499).randomElement()!
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpHeaders: .mockAny()
+        )
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
+        worker.cancelSynchronously()
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
+    }
+
+    func testGivenDataToUpload_whenUploadFinishesWithClientTokenErrorStatusCode_thenDataIsDeleted() {
+        let statusCode = 403
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpHeaders: .mockAny()
+        )
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
+        worker.cancelSynchronously()
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
+    }
+
+    func testGivenDataToUpload_whenUploadFinishesWithServerErrorStatusCode_thenDataIsPreserved() {
+        let statusCode = (500...599).randomElement()!
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
+        let dataUploader = DataUploader(
+            urlProvider: .mockAny(),
+            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpHeaders: .mockAny()
+        )
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
+        worker.cancelSynchronously()
+        XCTAssertEqual(try temporaryDirectory.files().count, 1, "When status code \(statusCode) is received, data should be preserved")
+    }
 }
 
 struct MockDelay: Delay {

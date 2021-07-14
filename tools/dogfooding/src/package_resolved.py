@@ -64,11 +64,11 @@ class PackageResolvedFile:
         diff = old_state.items() ^ new_state.items()
 
         if len(diff) > 0:
-            print(f'✏️️ Updated "{package_name}":')
+            print(f'✏️️ Updated "{package_name}" in {self.path}:')
             print(f'    → old: {old_state}')
             print(f'    → new: {new_state}')
         else:
-            print(f'✏️️ "{package_name}" is up-to-date')
+            print(f'✏️️ "{package_name}" is up-to-date in {self.path}')
 
     def add_dependency(self, package_name: str, repository_url: str, branch: str, revision: str, version):
         """
@@ -105,7 +105,7 @@ class PackageResolvedFile:
 
         pins.insert(index, new_pin)
 
-        print(f'✏️️ Added "{package_name}" at index {index}:')
+        print(f'✏️️ Added "{package_name}" at index {index} in {self.path}:')
         print(f'    → branch: {branch}')
         print(f'    → revision: {revision}')
         print(f'    → version: {version}')

@@ -16,7 +16,8 @@ class RUMDebuggingTests: XCTestCase {
         let applicationScope = RUMApplicationScope(
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
-            samplingRate: 100
+            samplingRate: 100,
+            backgroundEventTrackingEnabled: .mockAny()
         )
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockView, name: "FirstView")
@@ -47,7 +48,8 @@ class RUMDebuggingTests: XCTestCase {
         let applicationScope = RUMApplicationScope(
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
-            samplingRate: 100
+            samplingRate: 100,
+            backgroundEventTrackingEnabled: .mockAny()
         )
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockView, name: "FirstView")

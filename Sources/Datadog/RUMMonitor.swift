@@ -185,7 +185,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     rumUUIDGenerator: DefaultRUMUUIDGenerator(),
                     dateCorrector: rumFeature.dateCorrector
                 ),
-                samplingRate: rumFeature.configuration.sessionSamplingRate
+                samplingRate: rumFeature.configuration.sessionSamplingRate,
+                backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider
         )
@@ -263,7 +264,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 identity: key,
                 name: name ?? key,
-                path: name ?? key,
+                path: key,
                 attributes: attributes
             )
         )
