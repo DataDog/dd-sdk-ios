@@ -16,6 +16,6 @@
 OTHER_LDFLAGS= $(inherited) -framework DatadogCrashReporting
 
 // Add DatadogSDKTesting instrumentation (if available in current environment)
- #include "../xcconfigs/DatadogSDKTesting.local.xcconfig"
+ #include? "../xcconfigs/DatadogSDKTesting.local.xcconfig"
 
 
