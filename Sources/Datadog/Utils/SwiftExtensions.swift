@@ -16,6 +16,15 @@ extension Optional {
     }
 }
 
+extension Double {
+    func divideIfNotZero(by divider: Self) -> Self? {
+        if divider == 0 {
+            return nil
+        }
+        return self / divider
+    }
+}
+
 // MARK: - TimeInterval
 
 extension TimeInterval {

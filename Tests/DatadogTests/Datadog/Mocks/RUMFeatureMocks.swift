@@ -15,7 +15,10 @@ extension RUMFeature {
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            commonDependencies: .mockAny(),
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 
@@ -55,7 +58,10 @@ extension RUMFeature {
             storage: observedStorage,
             upload: mockedUpload,
             configuration: configuration,
-            commonDependencies: dependencies
+            commonDependencies: dependencies,
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 
@@ -419,7 +425,10 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 
@@ -440,7 +449,10 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
-            dateCorrector: dateCorrector ?? self.dateCorrector
+            dateCorrector: dateCorrector ?? self.dateCorrector,
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 }
@@ -691,10 +703,31 @@ class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
     }
 }
 
-class VitalListenerMock: VitalListener {
-    var onVitalInfoUpdate: ((VitalInfo) -> Void)?
+class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
+    var vitalData: Double?
 
-    func onVitalInfo(info: VitalInfo) {
-        onVitalInfoUpdate?(info)
+    func readVitalData() -> Double? {
+        return vitalData
+    }
+}
+
+class ContinuousVitalReaderMock: ContinuousVitalReader {
+    var vitalInfo = VitalInfo() {
+        didSet {
+            publishers.forEach {
+                $0.publishAsync(vitalInfo)
+            }
+        }
+    }
+    var publishers = [VitalPublisher]()
+
+    func register(_ valuePublisher: VitalPublisher) {
+        publishers.append(valuePublisher)
+    }
+
+    func unregister(_ valuePublisher: VitalPublisher) {
+        publishers.removeAll { existingPublisher in
+            return existingPublisher === valuePublisher
+        }
     }
 }

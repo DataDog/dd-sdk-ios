@@ -13,11 +13,11 @@ class VitalRefreshRateReaderTests: XCTestCase {
 
     func testHighAndLowRefreshRates() {
         let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
-        let observer_view1 = VitalObserver(listener: VitalListenerMock())
-        let observer_view2 = VitalObserver(listener: VitalListenerMock())
+        let registrar_view1 = VitalPublisher(initialValue: VitalInfo())
+        let registrar_view2 = VitalPublisher(initialValue: VitalInfo())
 
         // View1 has simple UI, high FPS expected
-        reader.register(observer_view1)
+        reader.register(registrar_view1)
 
         // Wait without blocking UI thread
         let expectation1 = expectation(description: "async expectation for first observer")
@@ -26,15 +26,15 @@ class VitalRefreshRateReaderTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertGreaterThan(observer_view1.vitalInfo.sampleCount, 0)
-            XCTAssertGreaterThan(UIScreen.main.maximumFramesPerSecond, Int(observer_view1.vitalInfo.maxValue))
-            XCTAssertGreaterThan(observer_view1.vitalInfo.minValue, 0.0)
+            XCTAssertGreaterThan(registrar_view1.currentValue.sampleCount, 0)
+            XCTAssertGreaterThan(UIScreen.main.maximumFramesPerSecond, Int(registrar_view1.currentValue.maxValue!))
+            XCTAssertGreaterThan(registrar_view1.currentValue.minValue!, 0.0)
         }
 
-        reader.unregister(observer_view1)
+        reader.unregister(registrar_view1)
 
         // View2 has complex UI, lower FPS expected
-        reader.register(observer_view2)
+        reader.register(registrar_view2)
 
         // Block UI thread
         Thread.sleep(forTimeInterval: 1.0)
@@ -46,17 +46,17 @@ class VitalRefreshRateReaderTests: XCTestCase {
         }
         waitForExpectations(timeout: 0.5) { _ in }
 
-        XCTAssertGreaterThan(observer_view2.vitalInfo.sampleCount, 0)
-        XCTAssertGreaterThan(observer_view1.vitalInfo.meanValue, observer_view2.vitalInfo.meanValue)
+        XCTAssertGreaterThan(registrar_view2.currentValue.sampleCount, 0)
+        XCTAssertGreaterThan(registrar_view1.currentValue.meanValue!, registrar_view2.currentValue.meanValue!)
     }
 
     func testAppStateHandling() {
         let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
-        let observer = VitalObserver(listener: VitalListenerMock())
+        let registrar = VitalPublisher(initialValue: VitalInfo())
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
         mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
-        reader.register(observer)
+        reader.register(registrar)
 
         let expectation1 = expectation(description: "async expectation for first observer")
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
@@ -64,7 +64,7 @@ class VitalRefreshRateReaderTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0) { _ in }
-        XCTAssertEqual(observer.vitalInfo.sampleCount, 0)
+        XCTAssertEqual(registrar.currentValue.sampleCount, 0)
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
@@ -74,6 +74,6 @@ class VitalRefreshRateReaderTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0) { _ in }
-        XCTAssertGreaterThan(observer.vitalInfo.sampleCount, 0)
+        XCTAssertGreaterThan(registrar.currentValue.sampleCount, 0)
     }
 }
