@@ -1,11 +1,7 @@
 // Add common settings from Datadog.xcconfig
 #include "../xcconfigs/Datadog.xcconfig"
 
-// Add DatadogSDKTesting instrumentation (if available in current environment)
-//#include "../xcconfigs/DatadogSDKTesting.local.xcconfig"
-//
-// Note: The 'DatadogSDKTesting' instrumentation is temporarily disabled as it causes issues in 'DatadogCrashReportingTests'.
-//       Both 'DatadogSDKTesting' and 'DatadogCrashReporting' link PLCR dependency statically, resulting with these runtime warnings:
+// Both 'DatadogSDKTesting' and 'DatadogCrashReporting' link PLCR dependency statically, resulting with these runtime warnings:
 //
 //       """
 //       objc[50310]: Class PLCrashReportThreadInfo is implemented in both
@@ -15,5 +11,11 @@
 //       One of the two will be used. Which one is undefined.
 //       """
 //
-//       Because some mocks in 'DatadogCrashReportingTests' use PLCR type's subclassing, their runtime cast with 'as? <PLCR_TYPE>' fails
-//       resulting with tests failures. Until a workaround or a better solution is found, this instrumentation must be disabled.
+//       Because some mocks in 'DatadogCrashReportingTests' use PLCR type's subclassing, their runtime cast with 'as? <PLCR_TYPE>' could fail depending in which library is found first
+// We force 'DatadogCrashReporting' to be linked before linking 'DatadogSDKTesting' so PLCR symbols are found in that library.
+OTHER_LDFLAGS= $(inherited) -framework DatadogCrashReporting
+
+// Add DatadogSDKTesting instrumentation (if available in current environment)
+ #include? "../xcconfigs/DatadogSDKTesting.local.xcconfig"
+
+
