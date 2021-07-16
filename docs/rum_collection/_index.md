@@ -8,22 +8,22 @@ aliases:
 further_reading:
   - link: "https://github.com/DataDog/dd-sdk-ios"
     tag: "Github"
-    text: "dd-sdk-ios Source code"
+    text: "dd-sdk-ios Source Code"
   - link: "/real_user_monitoring"
     tag: "Documentation"
-    text: "Datadog Real User Monitoring"
+    text: "Learn how to explore your RUM data"
 ---
 
-Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the real-time performance and user journeys of your application's individual users.
+Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your application's individual users.
 
 ## Setup
 
-1. Declare SDK as a dependency.
-2. Specify application details in UI.
+1. Declare the SDK as a dependency.
+2. Specify application details in the UI.
 3. Initialize the library.
-4. Initialize RUM Monitor, `DDURLSesssionDelegate` and start sending data.
+4. Initialize the RUM Monitor, `DDURLSessionDelegate`, and start sending data.
 
-**Minimum iOS version**: Datadog SDK for iOS supports iOS v11+.
+**Note:** The minimum supported version for the Datadog iOS SDK is iOS v11+.
 
 ### Declare SDK as dependency
 
@@ -38,12 +38,14 @@ Datadog *Real User Monitoring (RUM)* enables you to visualize and analyze the re
 
 ### Specify application details in UI
 
-1. Select UX Monitoring -> RUM Applications -> New Application
-2. Choose `iOS` as your Application Type in [Datadog UI][2] and provide a new application name to generate a unique Datadog application ID and client token.
+1. In **UX Monitoring** > **RUM Applications**, click **New Application**.
+2. Select `iOS` as your **Application Type** in the [Datadog UI][5] and provide a new application name to generate a unique Datadog application ID and client token.
 
-{{< img src="real_user_monitoring/ios/screenshot_rum.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
+{{< img src="real_user_monitoring/ios/screenshot_rum.png" alt="RUM Event hierarchy" style="width:100%;border:none" >}}
 
-To ensure safety of your data, you must use a client token, **not** [Datadog API keys][6] to configure the `dd-sdk-ios` library because they would be exposed client-side in the iOS application byte code. For more information about setting up a client token, see the [client token documentation][7].
+To keep your data safe, do not use a [Datadog API key][6] to configure the `dd-sdk-ios` library. Instead, use the client token to prevent your API key from being publicly exposed on the client side in the iOS application byte code.
+
+For more information about setting up a client token, see the [Client token documentation][7].
 
 ### Initialize the library
 
@@ -94,9 +96,9 @@ Datadog.initialize(
 {{% /tab %}}
 {{< /tabs >}}
 
-RUM SDK automatically tracks user sessions, depending on options provided at SDK initialization. Learn more about [`trackingConsent`][8] to add GDPR compliance for your EU users and other [initialization parameters][9] for SDK configuartion.
+The RUM SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
 
-### Initialize RUM Monitor and DDURLSesssionDelegate
+### Initialize RUM Monitor and `DDURLSessionDelegate`
 
 Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
 
