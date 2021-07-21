@@ -241,7 +241,8 @@ extension BinaryImageInfo {
 
         self.uuid = imageUUID
         self.imageName = URL(string: imagePath)?.lastPathComponent
-        self.isSystemImage = !imagePath.contains("/Bundle/Application/")
+        // NOTE: RUMM-1492 refer to JIRA ticket or `CrashReportTests.swift` to see imagePath examples
+        self.isSystemImage = !imagePath.contains("/Bundle/Application/") || imagePath.contains("/Contents/Developer/Platforms/")
 
         if let codeType = imageInfo.codeType {
             self.codeType = CodeType(from: codeType)
