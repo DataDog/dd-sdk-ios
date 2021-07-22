@@ -433,6 +433,10 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: Date()
         )
+
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
+
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         )
@@ -445,10 +449,17 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNotNil(scope.userActionScope)
         XCTAssertEqual(scope.userActionScope?.name, actionName)
 
+        let secondAction = RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom())
         XCTAssertTrue(
-            scope.process(command: RUMStartUserActionCommand.mockWith(actionType: .swipe, name: .mockRandom()))
+            scope.process(command: secondAction)
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
+        XCTAssertEqual(
+            logOutput.recordedLog?.message,
+            """
+            RUM Action '\(secondAction.actionType)' on '\(secondAction.name)' was dropped, because another action is still active for the same view.
+            """
+        )
 
         XCTAssertTrue(
             scope.process(command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: .mockRandom()))
@@ -479,6 +490,10 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime
         )
+
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
+
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
         )
@@ -493,10 +508,17 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNotNil(scope.userActionScope)
         XCTAssertEqual(scope.userActionScope?.name, actionName)
 
+        let secondAction = RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom())
         XCTAssertTrue(
-            scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: .mockRandom()))
+            scope.process(command: secondAction)
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
+        XCTAssertEqual(
+            logOutput.recordedLog?.message,
+            """
+            RUM Action '\(secondAction.actionType)' on '\(secondAction.name)' was dropped, because another action is still active for the same view.
+            """
+        )
 
         XCTAssertTrue(
             scope.process(command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: .mockRandom()))

@@ -146,6 +146,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStartUserActionCommand where isActiveView:
             if userActionScope == nil {
                 startContinuousUserAction(on: command)
+            } else {
+                reportActionDropped(type: command.actionType, name: command.name)
             }
         case let command as RUMAddUserActionCommand where isActiveView:
             if userActionScope == nil {
@@ -153,6 +155,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             } else if command.actionType == .custom {
                 // still let it go, just instantly without any dependencies
                 sendDiscreteCustomUserAction(on: command)
+            } else {
+                reportActionDropped(type: command.actionType, name: command.name)
             }
 
         // Error command
@@ -260,6 +264,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                                     actionType: .custom,
                                     name: nil
             )
+        )
+    }
+
+    private func reportActionDropped(type: RUMUserActionType, name: String) {
+        userLogger.warn(
+            """
+            RUM Action '\(type)' on '\(name)' was dropped, because another action is still active for the same view.
+            """
         )
     }
 
