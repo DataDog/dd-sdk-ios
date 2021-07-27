@@ -613,7 +613,6 @@ extension Datadog {
                 return self
             }
 
-#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
             // MARK: - Crash Reporting Configuration
 
             /// Enables the crash reporting feature.
@@ -630,7 +629,6 @@ extension Datadog {
                 configuration.crashReportingPlugin = crashReportingPlugin
                 return self
             }
-#endif
 
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
             // MARK: - Internal Monitoring Configuration

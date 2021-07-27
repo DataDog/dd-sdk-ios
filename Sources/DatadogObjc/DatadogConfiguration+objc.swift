@@ -190,12 +190,10 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.enableRUM(enabled)
     }
 
-#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
     @objc
     public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) {
         _ = sdkBuilder.enableCrashReporting(using: crashReportingPlugin)
     }
-#endif
 
     @objc
     public func set(endpoint: DDEndpoint) {

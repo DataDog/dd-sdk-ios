@@ -17,9 +17,8 @@ export DD_SDK_TESTING_XCCONFIG_CI
 define DD_SDK_BASE_XCCONFIG
 // Active compilation conditions - only enabled on local machine:\n
 // - DD_SDK_ENABLE_INTERNAL_MONITORING - enables Internal Monitoring APIs\n
-// - DD_SDK_ENABLE_EXPERIMENTAL_APIS - enables APIs which are not available in released version of the SDK\n
 // - DD_SDK_COMPILED_FOR_TESTING - conditions the SDK code compiled for testing\n
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_COMPILED_FOR_TESTING\n
 \n
 // To build only active architecture for all configurations.\n
 // TODO: RUMM-1200 We can perhaps remove this fix when carthage supports pre-build xcframeworks.\n
@@ -43,7 +42,6 @@ export DD_SDK_DATADOG_XCCONFIG
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
-		@./tools/crash-reporting-patch/enable-crash-reporting.sh
 		@echo "⚙️  Installing dependencies..."
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
