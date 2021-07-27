@@ -85,9 +85,12 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
         _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime))
 
         XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
         XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
@@ -99,9 +102,12 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
         _ = scope.process(command: RUMStartUserActionCommand.mockWith(time: currentTime))
 
         XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
         XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
@@ -113,9 +119,12 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
 
         XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
         XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
@@ -182,6 +191,32 @@ class RUMSessionScopeTests: XCTestCase {
             "Sampled session should be kept until it expires or reaches the timeout."
         )
         XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testWhenNoActiveViewScopes_itLogsWarning() {
+        // Given
+        let parent = RUMContextProviderMock()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
+        XCTAssertEqual(scope.viewScopes.count, 0)
+
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
+        let command = generateRandomNotValidStartCommand()
+
+        // When
+        _ = scope.process(command: command)
+
+        // Then
+        XCTAssertEqual(scope.viewScopes.count, 0)
+        XCTAssertEqual(
+            logOutput.recordedLog?.message,
+            """
+            \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+            DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+            the RumMonitor.startView() and RumMonitor.stopView() methods.
+            """
+        )
     }
 
     // MARK: - Private

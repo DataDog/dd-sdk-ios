@@ -118,7 +118,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate command
-        viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
+        if !viewScopes.isEmpty {
+            viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
+        } else {
+            userLogger.warn(
+                """
+                \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+                DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+                the RumMonitor.startView() and RumMonitor.stopView() methods.
+                """
+            )
+        }
 
         return true
     }
