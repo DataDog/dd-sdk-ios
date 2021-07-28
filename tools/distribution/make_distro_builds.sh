@@ -5,8 +5,8 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
-SDK_VERSION=$(git describe --exact-match --tags)
-if [[ $? != 0 ]]; then
+SDK_VERSION="${BITRISE_GIT_TAG:=$(git describe --exact-match --tags)}"
+if [[ -z $SDK_VERSION ]]; then
   echo "❌ Aborting: HEAD doesn't have a tag!"  
   exit 2
 elif [[ `git status --porcelain` ]]; then
@@ -56,10 +56,6 @@ cleanup
 
 # zip artifacts
 cd Carthage/Build/
-
-# skip crash reporting artifacts
-rm -rf DatadogCrashReporting.xcframework
-rm -rf CrashReporter.xcframework
 
 zip --symlinks -r $OUT_FILENAME *.xcframework
 
