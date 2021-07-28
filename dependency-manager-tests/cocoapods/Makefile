@@ -10,5 +10,5 @@ test:
 		@echo "⚙️  Configuring CPProject with remote branch: '${GIT_REFERENCE}'..."
 		@sed "s|REMOTE_GIT_REFERENCE|${GIT_REFERENCE}|g" Podfile.src > Podfile
 		@rm -rf Pods/
-		pod update
+		pod install
 		@echo "OK 👌"
