@@ -46,7 +46,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.spanEventMapper)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
-            XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
+            XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
             XCTAssertNil(configuration.rumViewEventMapper)
             XCTAssertNil(configuration.rumResourceEventMapper)
             XCTAssertNil(configuration.rumActionEventMapper)
@@ -81,7 +81,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .setSpanEventMapper { _ in mockSpanEvent }
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
-                .trackUIKitActions(false)
+                .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
+                .trackBackgroundEvents(false)
                 .setRUMViewEventMapper { _ in mockRUMViewEvent }
                 .setRUMErrorEventMapper { _ in mockRUMErrorEvent }
                 .setRUMResourceEventMapper { _ in mockRUMResourceEvent }
@@ -101,7 +102,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         let rumBuilderWithDefaultValues = Datadog.Configuration
             .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
             .trackUIKitRUMViews()
-            .trackUIKitActions()
+            .trackUIKitRUMActions()
+            .trackBackgroundEvents()
 
         let configuration = customized(defaultBuilder).build()
         let rumConfiguration = customized(defaultRUMBuilder).build()
@@ -125,13 +127,14 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
+            XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
-            XCTAssertFalse(configuration.rumUIKitActionsTrackingEnabled)
             XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
             XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
             XCTAssertEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
             XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
+            XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
@@ -139,7 +142,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
-        XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitActionsTrackingEnabled)
+        XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
+        XCTAssertTrue(rumConfigurationWithDefaultValues.rumBackgroundEventTrackingEnabled)
     }
 
     func testDeprecatedAPIs() {
@@ -148,6 +152,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(logsEndpoint: .eu1)
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracesEndpoint: .eu1)
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(rumEndpoint: .eu1)
+        _ = (builder as ConfigurationBuilderDeprecatedAPIs).trackUIKitActions(true)
 
         let configuration = builder.build()
 
@@ -155,6 +160,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         XCTAssertEqual(configuration.logsEndpoint, .eu1)
         XCTAssertEqual(configuration.tracesEndpoint, .eu1)
         XCTAssertEqual(configuration.rumEndpoint, .eu1)
+        XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
     }
 }
 
@@ -164,5 +170,6 @@ private protocol ConfigurationBuilderDeprecatedAPIs {
     func set(logsEndpoint: Datadog.Configuration.LogsEndpoint) -> Datadog.Configuration.Builder
     func set(tracesEndpoint: Datadog.Configuration.TracesEndpoint) -> Datadog.Configuration.Builder
     func set(rumEndpoint: Datadog.Configuration.RUMEndpoint) -> Datadog.Configuration.Builder
+    func trackUIKitActions(_ enabled: Bool) -> Datadog.Configuration.Builder
 }
 extension Datadog.Configuration.Builder: ConfigurationBuilderDeprecatedAPIs {}

@@ -12,7 +12,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testDefaultContext() {
         let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: .mockAny())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: .mockAny(), backgroundEventTrackingEnabled: .mockAny())
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertNotEqual(scope.context.sessionID, .nullUUID)
@@ -23,7 +23,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testContextWhenSessionIsSampled() {
         let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: .mockAny())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: .mockAny(), backgroundEventTrackingEnabled: .mockAny())
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, .nullUUID)
@@ -35,7 +35,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         var currentTime = Date()
         let parent = RUMContextProviderMock()
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime)
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime, backgroundEventTrackingEnabled: .mockAny())
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -48,7 +48,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         var currentTime = Date()
         let parent = RUMContextProviderMock()
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime)
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 50, startTime: currentTime, backgroundEventTrackingEnabled: .mockAny())
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -66,7 +66,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testItManagesViewScopeLifecycle() {
         let parent = RUMContextProviderMock()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
         XCTAssertEqual(scope.viewScopes.count, 0)
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 1)
@@ -83,11 +83,14 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMContextProviderMock()
         let currentTime = Date()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
         _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime))
 
-        XCTAssertEqual(scope.viewScopes.count,1)
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
         XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
@@ -97,11 +100,14 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMContextProviderMock()
         let currentTime = Date()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
         _ = scope.process(command: RUMStartUserActionCommand.mockWith(time: currentTime))
 
-        XCTAssertEqual(scope.viewScopes.count,1)
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
         XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
@@ -111,30 +117,66 @@ class RUMSessionScopeTests: XCTestCase {
         let parent = RUMContextProviderMock()
         let currentTime = Date()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
 
-        XCTAssertEqual(scope.viewScopes.count,1)
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
         XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
+    }
+
+    func testWhenNoViewScope_andReceivedStartResourceCommand_andBackgroundDisabled_itDoesNotCreateNewViewScope() {
+        let parent = RUMContextProviderMock()
+        let currentTime = Date()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: false)
+
+        _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime))
+
+        XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testWhenNoViewScope_andReceivedStartActionCommand_andBackgroundDisabled_itDoesNotCreateNewViewScope() {
+        let parent = RUMContextProviderMock()
+        let currentTime = Date()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: false)
+
+        _ = scope.process(command: RUMStartUserActionCommand.mockWith(time: currentTime))
+
+        XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testWhenNoViewScope_andReceivedAddUserActionCommand_andBackgroundDisabled_itDoesNotCreateNewViewScope() {
+        let parent = RUMContextProviderMock()
+        let currentTime = Date()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: false)
+
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
+
+        XCTAssertEqual(scope.viewScopes.count, 0)
     }
 
     func testWhenActiveViewScope_andReceivingStartCommand_itDoesNotCreateNewViewScope() {
         let parent = RUMContextProviderMock()
         let currentTime = Date()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
         _ = scope.process(command: generateRandomNotValidStartCommand())
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
-        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertEqual(scope.viewScopes.count, 0)
     }
 
     func testWhenNoActiveViewScope_andReceivingNotValidStartCommand_itDoesNotCreateNewViewScope() {
         let parent = RUMContextProviderMock()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
         _ = scope.process(command: generateRandomNotValidStartCommand())
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
@@ -142,13 +184,39 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionIsSampled_itDoesNotCreateViewScopes() {
         let parent = RUMContextProviderMock()
 
-        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: Date())
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 0, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
         XCTAssertEqual(scope.viewScopes.count, 0)
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
             "Sampled session should be kept until it expires or reaches the timeout."
         )
         XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testWhenNoActiveViewScopes_itLogsWarning() {
+        // Given
+        let parent = RUMContextProviderMock()
+
+        let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
+        XCTAssertEqual(scope.viewScopes.count, 0)
+
+        let logOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: logOutput)
+        let command = generateRandomNotValidStartCommand()
+
+        // When
+        _ = scope.process(command: command)
+
+        // Then
+        XCTAssertEqual(scope.viewScopes.count, 0)
+        XCTAssertEqual(
+            logOutput.recordedLog?.message,
+            """
+            \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+            DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+            the RumMonitor.startView() and RumMonitor.stopView() methods.
+            """
+        )
     }
 
     // MARK: - Private

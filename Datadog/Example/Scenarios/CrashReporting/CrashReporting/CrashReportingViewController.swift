@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import Datadog
 
 internal class CrashReportingViewController: UIViewController {
     @IBOutlet weak var sendingCrashReportLabel: UILabel!
@@ -18,7 +19,13 @@ internal class CrashReportingViewController: UIViewController {
         let testScenario = (appConfiguration.testScenario as! CrashReportingBaseScenario)
         sendingCrashReportLabel.isHidden = !testScenario.hadPendingCrashReportDataOnStartup
 
-        addCrashVariantButtons()
+        if testScenario.hadPendingCrashReportDataOnStartup {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                Datadog.flushAndDeinitialize()
+            }
+        } else {
+            addCrashVariantButtons()
+        }
     }
 
     private func addCrashVariantButtons() {

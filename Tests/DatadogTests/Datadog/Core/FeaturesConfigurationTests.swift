@@ -264,7 +264,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             configuration.logging?.uploadURLWithClientToken,
             randomCustomEndpoint.appendingPathComponent(clientToken),
-            "When custom endpoint is set it shuold override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
 
@@ -291,7 +291,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             configuration.tracing?.uploadURLWithClientToken,
             randomCustomEndpoint.appendingPathComponent(clientToken),
-            "When custom endpoint is set it shuold override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
 
@@ -318,7 +318,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             configuration.rum?.uploadURLWithClientToken,
             randomCustomEndpoint.appendingPathComponent(clientToken),
-            "When custom endpoint is set it shuold override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
 
@@ -340,35 +340,36 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 rumEnabled: true,
                 rumUIKitViewsPredicate: UIKitRUMViewsPredicateMock(),
-                rumUIKitActionsTrackingEnabled: false
+                rumUIKitUserActionsPredicate: nil
             ),
             appContext: .mockAny()
         )
         XCTAssertNotNil(viewsConfigured.rum!.autoInstrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertFalse(viewsConfigured.rum!.autoInstrumentation!.uiKitActionsTrackingEnabled)
+        XCTAssertNil(viewsConfigured.rum!.autoInstrumentation!.uiKitRUMUserActionsPredicate)
 
         let actionsConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
                 rumEnabled: true,
                 rumUIKitViewsPredicate: nil,
-                rumUIKitActionsTrackingEnabled: true
+                rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicateMock()
             ),
             appContext: .mockAny()
         )
+
+        XCTAssertNotNil(actionsConfigured.rum!.autoInstrumentation!.uiKitRUMUserActionsPredicate)
         XCTAssertNil(actionsConfigured.rum!.autoInstrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertTrue(actionsConfigured.rum!.autoInstrumentation!.uiKitActionsTrackingEnabled)
 
         let viewsAndActionsNotConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
                 rumEnabled: true,
                 rumUIKitViewsPredicate: nil,
-                rumUIKitActionsTrackingEnabled: false
+                rumUIKitUserActionsPredicate: nil
             ),
             appContext: .mockAny()
         )
         XCTAssertNil(
             viewsAndActionsNotConfigured.rum!.autoInstrumentation,
-            "When neither Views nor Actions are configured, the auto instrumentation config shuld be `nil`"
+            "When neither Views nor Actions are configured, the auto instrumentation config should be `nil`"
         )
     }
 
@@ -500,7 +501,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
         XCTAssertNil(
             configuration.urlSessionAutoInstrumentation,
-            "When `firstPartyHosts` are not set, the URLSession auto instrumentation config shuld be `nil`"
+            "When `firstPartyHosts` are not set, the URLSession auto instrumentation config should be `nil`"
         )
 
         // When `firstPartyHosts` are set empty

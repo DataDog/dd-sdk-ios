@@ -53,16 +53,20 @@
         "value" : "1"
       },
       {
-        "key" : "GIT_REPOSITORY_URL",
-        "value" : "$(GIT_REPOSITORY_URL)"
-      },
-      {
-        "key" : "BITRISE_GIT_COMMIT",
-        "value" : "$(BITRISE_GIT_COMMIT)"
+        "key" : "SRCROOT",
+        "value" : "$(SRCROOT)"
       },
       {
         "key" : "BITRISE_SOURCE_DIR",
         "value" : "$(BITRISE_SOURCE_DIR)"
+      },
+      {
+        "key" : "BITRISE_TRIGGERED_WORKFLOW_ID",
+        "value" : "$(BITRISE_TRIGGERED_WORKFLOW_ID)"
+      },
+      {
+        "key" : "BITRISE_BUILD_SLUG",
+        "value" : "$(BITRISE_BUILD_SLUG)"
       },
       {
         "key" : "BITRISE_BUILD_NUMBER",
@@ -71,58 +75,6 @@
       {
         "key" : "BITRISE_BUILD_URL",
         "value" : "$(BITRISE_BUILD_URL)"
-      },
-      {
-        "key" : "BITRISE_GIT_BRANCH",
-        "value" : "$(BITRISE_GIT_BRANCH)"
-      },
-      {
-        "key" : "BITRISEIO_GIT_BRANCH_DEST",
-        "value" : "$(BITRISEIO_GIT_BRANCH_DEST)"
-      },
-      {
-        "key" : "BITRISE_GIT_TAG",
-        "value" : "$(BITRISE_GIT_TAG)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_HASH",
-        "value" : "$(GIT_CLONE_COMMIT_HASH)"
-      },
-      {
-        "key" : "BITRISE_APP_TITLE",
-        "value" : "$(BITRISE_APP_TITLE)"
-      },
-      {
-        "key" : "BITRISE_BUILD_SLUG",
-        "value" : "$(BITRISE_BUILD_SLUG)"
-      },
-      {
-        "key" : "BITRISE_GIT_MESSAGE",
-        "value" : "$(BITRISE_GIT_MESSAGE)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_MESSAGE_SUBJECT",
-        "value" : "$(GIT_CLONE_COMMIT_MESSAGE_SUBJECT)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_MESSAGE_BODY",
-        "value" : "$(GIT_CLONE_COMMIT_MESSAGE_BODY)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_AUTHOR_NAME",
-        "value" : "$(GIT_CLONE_COMMIT_AUTHOR_NAME)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_AUTHOR_EMAIL",
-        "value" : "$(GIT_CLONE_COMMIT_AUTHOR_EMAIL)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_COMMITER_NAME",
-        "value" : "$(GIT_CLONE_COMMIT_COMMITER_NAME)"
-      },
-      {
-        "key" : "GIT_CLONE_COMMIT_COMMITER_EMAIL",
-        "value" : "$(GIT_CLONE_COMMIT_COMMITER_EMAIL)"
       }
     ],
     "targetForVariableExpansion" : {

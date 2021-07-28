@@ -36,8 +36,8 @@ internal final class RUMAutoInstrumentation {
         let swizzler: UIApplicationSwizzler
         let handler: UIKitRUMUserActionsHandlerType
 
-        init(dateProvider: DateProvider) throws {
-            handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider)
+        init(dateProvider: DateProvider, rumUserActionsPredicate: UIKitRUMUserActionsPredicate) throws {
+            handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, userActionsPredicate: rumUserActionsPredicate)
             swizzler = try UIApplicationSwizzler(handler: handler)
         }
 
@@ -63,8 +63,8 @@ internal final class RUMAutoInstrumentation {
             } else {
                 views = nil
             }
-            if configuration.uiKitActionsTrackingEnabled {
-                userActions = try UserActions(dateProvider: dateProvider)
+            if let uiKitUserActionsPredicate = configuration.uiKitRUMUserActionsPredicate {
+                userActions = try UserActions(dateProvider: dateProvider, rumUserActionsPredicate: uiKitUserActionsPredicate)
             } else {
                 userActions = nil
             }

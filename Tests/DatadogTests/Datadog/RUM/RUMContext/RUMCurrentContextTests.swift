@@ -13,7 +13,7 @@ class RUMCurrentContextTests: XCTestCase {
     private let queue = DispatchQueue(label: "\(#file)")
 
     func testContextAfterInitializingTheApplication() {
-        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: .mockAny())
+        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: .mockAny(), backgroundEventTrackingEnabled: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         XCTAssertEqual(
@@ -30,7 +30,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextAfterStartingView() throws {
-        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100)
+        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
@@ -49,7 +49,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextWhilePendingUserAction() throws {
-        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100)
+        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
@@ -69,7 +69,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextChangeWhenNavigatingBetweenViews() throws {
-        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100)
+        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let firstView = createMockViewInWindow()
@@ -97,7 +97,7 @@ class RUMCurrentContextTests: XCTestCase {
 
     func testContextChangeWhenSessionIsRenewed() throws {
         var currentTime = Date()
-        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100)
+        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let view = createMockViewInWindow()
@@ -140,7 +140,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextWhenSessionIsSampled() throws {
-        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 0)
+        let applicationScope = RUMApplicationScope(rumApplicationID: "rum-123", dependencies: .mockAny(), samplingRate: 0, backgroundEventTrackingEnabled: .mockAny())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))

@@ -35,7 +35,7 @@ internal struct FeaturesConfiguration {
     struct RUM {
         struct AutoInstrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
-            let uiKitActionsTrackingEnabled: Bool
+            let uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate?
         }
 
         let common: Common
@@ -48,6 +48,7 @@ internal struct FeaturesConfiguration {
         let errorEventMapper: RUMErrorEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
+        let backgroundEventTrackingEnabled: Bool
     }
 
     struct URLSessionAutoInstrumentation {
@@ -177,10 +178,10 @@ extension FeaturesConfiguration {
         if configuration.rumEnabled {
             var autoInstrumentation: RUM.AutoInstrumentation?
 
-            if configuration.rumUIKitViewsPredicate != nil || configuration.rumUIKitActionsTrackingEnabled {
+            if configuration.rumUIKitViewsPredicate != nil || configuration.rumUIKitUserActionsPredicate != nil {
                 autoInstrumentation = RUM.AutoInstrumentation(
                     uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
-                    uiKitActionsTrackingEnabled: configuration.rumUIKitActionsTrackingEnabled
+                    uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate
                 )
             }
 
@@ -197,7 +198,8 @@ extension FeaturesConfiguration {
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,
                     errorEventMapper: configuration.rumErrorEventMapper,
-                    autoInstrumentation: autoInstrumentation
+                    autoInstrumentation: autoInstrumentation,
+                    backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled
                 )
             } else {
                 let error = ProgrammerError(
