@@ -28,9 +28,15 @@ let package = Package(
             type: .static,
             targets: ["DatadogObjc"]
         ),
+        .library(
+            name: "DatadogCrashReporting",
+            type: .static,
+            targets: ["DatadogCrashReporting"]
+        ),
     ],
     dependencies: [
         .package(name: "Kronos", url: "https://github.com/lyft/Kronos.git", from: "4.2.1"),
+        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.8.1"),
     ],
     targets: [
         .target(
@@ -50,5 +56,12 @@ let package = Package(
         .target(
             name: "_Datadog_Private"
         ),
+        .target(
+            name: "DatadogCrashReporting",
+            dependencies: [
+                "Datadog",
+                .product(name: "CrashReporter", package: "PLCrashReporter"),
+            ]
+        )
     ]
 )

@@ -20,6 +20,9 @@
 		9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */; };
 		9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9EF87B8C26B04E1F00998076 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; };
+		9EF87B8D26B04E1F00998076 /* CrashReporter.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9EF87B8E26B04E1F00998076 /* DatadogCrashReporting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +49,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				9EF87B8D26B04E1F00998076 /* CrashReporter.xcframework in Embed Frameworks */,
 				9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */,
 				9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */,
 				9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */,
@@ -83,9 +87,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9EF87B8C26B04E1F00998076 /* CrashReporter.xcframework in Frameworks */,
 				9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */,
 				9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */,
 				9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */,
+				9EF87B8E26B04E1F00998076 /* DatadogCrashReporting.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogCrashReporting
 
 internal class ViewController: UIViewController {
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -18,6 +19,7 @@ internal class ViewController: UIViewController {
             trackingConsent: .granted,
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: "abc", environment: "tests")
+                .enableCrashReporting(using: DDCrashReportingPlugin())
                 .build()
         )
 
