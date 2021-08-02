@@ -114,15 +114,12 @@ extension Datadog {
             case us1_fed
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
@@ -157,15 +154,12 @@ extension Datadog {
             case us1_fed
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
@@ -200,15 +194,12 @@ extension Datadog {
             case us1_fed
             /// US based servers.
             /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
