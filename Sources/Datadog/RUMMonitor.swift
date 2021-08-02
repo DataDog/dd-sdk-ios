@@ -183,7 +183,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         fileWriter: rumFeature.storage.writer
                     ),
                     rumUUIDGenerator: DefaultRUMUUIDGenerator(),
-                    dateCorrector: rumFeature.dateCorrector
+                    dateCorrector: rumFeature.dateCorrector,
+                    vitalCPUReader: rumFeature.vitalCPUReader,
+                    vitalMemoryReader: rumFeature.vitalMemoryReader,
+                    vitalRefreshRateReader: rumFeature.vitalRefreshRateReader
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
