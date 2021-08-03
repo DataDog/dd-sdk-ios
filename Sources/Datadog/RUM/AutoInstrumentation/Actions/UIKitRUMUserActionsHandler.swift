@@ -13,9 +13,11 @@ internal protocol UIKitRUMUserActionsHandlerType: AnyObject {
 
 internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
     private let dateProvider: DateProvider
+    let userActionsPredicate: UIKitRUMUserActionsPredicate
 
-    init(dateProvider: DateProvider) {
+    init(dateProvider: DateProvider, userActionsPredicate: UIKitRUMUserActionsPredicate) {
         self.dateProvider = dateProvider
+        self.userActionsPredicate = userActionsPredicate
     }
 
     // MARK: - UIKitRUMUserActionsHandlerType
@@ -44,16 +46,19 @@ internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
                 """
             )
+            return
         }
 
-        subscriber?.process(
-            command: RUMAddUserActionCommand(
-                time: dateProvider.currentDate(),
-                attributes: [:],
-                actionType: .tap,
-                name: targetName(for: actionTargetView)
+        if let rumAction = userActionsPredicate.rumAction(targetView: actionTargetView) {
+            subscriber?.process(
+                command: RUMAddUserActionCommand(
+                    time: dateProvider.currentDate(),
+                    attributes: rumAction.attributes,
+                    actionType: .tap,
+                    name: rumAction.name
+                )
             )
-        )
+        }
     }
 
     // MARK: - Events Filtering
@@ -104,17 +109,6 @@ internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
                     || parent is UICollectionViewCell
             }
             return bestParent // best parent or `nil`
-        }
-    }
-
-    /// Builds the RUM Action's `target` name for given `UIView`.
-    private func targetName(for view: UIView) -> String {
-        let className = NSStringFromClass(type(of: view))
-
-        if let accessibilityIdentifier = view.accessibilityIdentifier {
-            return "\(className)(\(accessibilityIdentifier))"
-        } else {
-            return className
         }
     }
 }

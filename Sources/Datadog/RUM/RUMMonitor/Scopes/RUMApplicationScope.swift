@@ -16,6 +16,10 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Adjusts RUM events time (device time) to server time.
     let dateCorrector: DateCorrectorType
+
+    let vitalCPUReader: SamplingBasedVitalReader
+    let vitalMemoryReader: SamplingBasedVitalReader
+    let vitalRefreshRateReader: ContinuousVitalReader
 }
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
@@ -27,6 +31,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// RUM Sessions sampling rate.
     internal let samplingRate: Float
 
+    /// Automatically detect background events
+    internal let backgroundEventTrackingEnabled: Bool
+
     // MARK: - Initialization
 
     let dependencies: RUMScopeDependencies
@@ -34,10 +41,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     init(
         rumApplicationID: String,
         dependencies: RUMScopeDependencies,
-        samplingRate: Float
+        samplingRate: Float,
+        backgroundEventTrackingEnabled: Bool
     ) {
         self.dependencies = dependencies
         self.samplingRate = samplingRate
+        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: .nullUUID,
@@ -89,7 +98,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             parent: self,
             dependencies: dependencies,
             samplingRate: samplingRate,
-            startTime: command.time
+            startTime: command.time,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
 
         sessionScope = initialSession

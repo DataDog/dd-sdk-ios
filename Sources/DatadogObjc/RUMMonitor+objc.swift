@@ -14,6 +14,8 @@ import typealias Datadog.RUMResourceType
 import enum Datadog.RUMMethod
 import struct Datadog.RUMView
 import protocol Datadog.UIKitRUMViewsPredicate
+import struct Datadog.RUMAction
+import protocol Datadog.UIKitRUMUserActionsPredicate
 
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
@@ -48,6 +50,41 @@ public protocol DDUIKitRUMViewsPredicate: AnyObject {
     /// - Parameter viewController: an instance of the view controller noticed by the SDK.
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
     func rumView(for viewController: UIViewController) -> DDRUMView?
+}
+
+internal struct UIKitRUMUserActionsPredicateBridge: UIKitRUMUserActionsPredicate {
+    let objcPredicate: DDUIKitRUMUserActionsPredicate?
+
+    func rumAction(targetView: UIView) -> RUMAction? {
+        return objcPredicate?.rumAction(targetView: targetView)?.swiftAction
+    }
+}
+
+@objc
+public class DDRUMAction: NSObject {
+    let swiftAction: RUMAction
+
+    @objc public var name: String { swiftAction.name }
+    @objc public var attributes: [String: Any] { swiftAction.attributes }
+
+    /// Initializes the RUM Action description.
+    /// - Parameters:
+    ///   - name: the RUM Action name, appearing as `ACTION NAME` in RUM Explorer.
+    ///   - attributes: additional attributes to associate with the RUM Action.
+    public init(name: String, attributes: [String: Any]) {
+        swiftAction = RUMAction(
+            name: name,
+            attributes: castAttributesToSwift(attributes)
+        )
+    }
+}
+
+@objc
+public protocol DDUIKitRUMUserActionsPredicate: AnyObject {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameter targetView: an instance of the `UIView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(targetView: UIView) -> DDRUMAction?
 }
 
 @objc

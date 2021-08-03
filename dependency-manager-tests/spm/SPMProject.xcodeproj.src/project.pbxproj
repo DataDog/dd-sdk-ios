@@ -14,7 +14,7 @@
 		61C363E624374D6000C4D4E6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61C363E424374D6000C4D4E6 /* LaunchScreen.storyboard */; };
 		61C363F124374D6100C4D4E6 /* SPMProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363F024374D6100C4D4E6 /* SPMProjectTests.swift */; };
 		61C363FC24374D6100C4D4E6 /* SPMProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* SPMProjectUITests.swift */; };
-		61DA9CB6260BA1FA00366408 /* DatadogStatic in Frameworks */ = {isa = PBXBuildFile; productRef = 61DA9CB5260BA1FA00366408 /* DatadogStatic */; };
+		9E73374026B0123500917C24 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 9E73373F26B0123500917C24 /* DatadogCrashReporting */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,7 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61DA9CB6260BA1FA00366408 /* DatadogStatic in Frameworks */,
+				9E73374026B0123500917C24 /* DatadogCrashReporting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,7 +180,7 @@
 			);
 			name = SPMProject;
 			packageProductDependencies = (
-				61DA9CB5260BA1FA00366408 /* DatadogStatic */,
+				9E73373F26B0123500917C24 /* DatadogCrashReporting */,
 			);
 			productName = SPMProject;
 			productReference = 61C363D624374D5F00C4D4E6 /* SPMProject.app */;
@@ -255,7 +255,7 @@
 			);
 			mainGroup = 61C363CD24374D5F00C4D4E6;
 			packageReferences = (
-				61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
+				9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
 			);
 			productRefGroup = 61C363D724374D5F00C4D4E6 /* Products */;
 			projectDirPath = "";
@@ -676,9 +676,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
+		9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
+			repositoryURL = "https://github.com/DataDog/dd-sdk-ios/";
 			requirement = {
 				branch = REMOTE_GIT_REFERENCE;
 				kind = branch;
@@ -687,10 +687,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		61DA9CB5260BA1FA00366408 /* DatadogStatic */ = {
+		9E73373F26B0123500917C24 /* DatadogCrashReporting */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 61C3640924374DF200C4D4E6 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogStatic;
+			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogCrashReporting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

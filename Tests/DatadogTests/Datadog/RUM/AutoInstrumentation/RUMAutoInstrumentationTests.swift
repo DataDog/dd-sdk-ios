@@ -28,7 +28,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-                uiKitActionsTrackingEnabled: false
+                uiKitRUMUserActionsPredicate: nil
             ),
             dateProvider: SystemDateProvider()
         )
@@ -51,7 +51,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
-                uiKitActionsTrackingEnabled: true
+                uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicateMock()
             ),
             dateProvider: SystemDateProvider()
         )
@@ -75,7 +75,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
         /// This configuration is not allowed by `FeaturesConfiguration` logic. We test it for sanity.
         let notAllowedConfiguration = FeaturesConfiguration.RUM.AutoInstrumentation(
             uiKitRUMViewsPredicate: nil,
-            uiKitActionsTrackingEnabled: false
+            uiKitRUMUserActionsPredicate: nil
         )
 
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(

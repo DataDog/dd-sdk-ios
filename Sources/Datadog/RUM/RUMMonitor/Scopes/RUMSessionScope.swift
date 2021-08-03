@@ -25,6 +25,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
+    /// Automatically detect background events
+    internal let backgroundEventTrackingEnabled: Bool
+
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
     /// RUM Session sampling rate.
@@ -40,7 +43,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         samplingRate: Float,
-        startTime: Date
+        startTime: Date,
+        backgroundEventTrackingEnabled: Bool
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -49,6 +53,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionUUID = shouldBeSampledOut ? .nullUUID : dependencies.rumUUIDGenerator.generateUnique()
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
+        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -60,7 +65,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             parent: expiredSession.parent,
             dependencies: expiredSession.dependencies,
             samplingRate: expiredSession.samplingRate,
-            startTime: startTime
+            startTime: startTime,
+            backgroundEventTrackingEnabled: expiredSession.backgroundEventTrackingEnabled
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
@@ -112,7 +118,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate command
-        viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
+        if !viewScopes.isEmpty {
+            viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
+        } else {
+            userLogger.warn(
+                """
+                \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+                DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+                the RumMonitor.startView() and RumMonitor.stopView() methods.
+                """
+            )
+        }
 
         return true
     }
@@ -136,7 +152,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Private    
     private func handleOrphanStartCommand(command: RUMCommand) {
-        if viewScopes.isEmpty {
+        if viewScopes.isEmpty && backgroundEventTrackingEnabled {
             viewScopes.append(
                 RUMViewScope(
                     parent: self,

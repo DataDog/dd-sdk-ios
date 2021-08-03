@@ -183,9 +183,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         fileWriter: rumFeature.storage.writer
                     ),
                     rumUUIDGenerator: DefaultRUMUUIDGenerator(),
-                    dateCorrector: rumFeature.dateCorrector
+                    dateCorrector: rumFeature.dateCorrector,
+                    vitalCPUReader: rumFeature.vitalCPUReader,
+                    vitalMemoryReader: rumFeature.vitalMemoryReader,
+                    vitalRefreshRateReader: rumFeature.vitalRefreshRateReader
                 ),
-                samplingRate: rumFeature.configuration.sessionSamplingRate
+                samplingRate: rumFeature.configuration.sessionSamplingRate,
+                backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider
         )
@@ -263,7 +267,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 time: dateProvider.currentDate(),
                 identity: key,
                 name: name ?? key,
-                path: name ?? key,
+                path: key,
                 attributes: attributes
             )
         )

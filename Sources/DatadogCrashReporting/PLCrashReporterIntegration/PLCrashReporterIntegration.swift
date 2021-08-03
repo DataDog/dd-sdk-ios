@@ -9,7 +9,7 @@ import Datadog
 
 internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let crashReporter: PLCrashReporter
-    private let formatter = PLCrashReportFormatter()
+    private let builder = DDCrashReportBuilder()
 
     init() throws {
         self.crashReporter = PLCrashReporter(
@@ -31,7 +31,7 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     func loadPendingCrashReport() throws -> DDCrashReport {
         let crashReportData = try crashReporter.loadPendingCrashReportDataAndReturnError()
         let crashReport = try PLCrashReport(data: crashReportData)
-        let ddCrashReport = formatter.ddCrashReport(from: crashReport)
+        let ddCrashReport = try builder.createDDCrashReport(from: crashReport)
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
         ddCrashReport.diagnosticInfo = [
             "diagnostic-info": PLCrashReportDiagnosticInfo(crashReport)
@@ -80,7 +80,7 @@ private struct PLCrashReportDiagnosticInfo: Encodable {
         self.numberOfUserImages = userImagesCount
         self.numberOfSystemImages = systemImagesCount
 
-        self.hasCrashDate = crashReport.timestamp != nil
+        self.hasCrashDate = crashReport.systemInfo?.timestamp != nil
 
         let threads = crashReport.threads?.compactMap { $0 as? PLCrashReportThreadInfo }
         self.numberOfThreads = threads?.count ?? -1
