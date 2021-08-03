@@ -54,11 +54,11 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
 
         // Assert crash report info
         crashLog.assertStatus(equals: "emergency")
-        crashLog.assertMessage(equals: "Illegal instruction")
+        crashLog.assertMessage(equals: "Application crash: SIGILL (Illegal instruction)")
         crashLog.assertAttributes(
             equal: [
                 LogMatcher.JSONKey.errorKind: "SIGILL (ILL_ILLOPC)",
-                LogMatcher.JSONKey.errorMessage: "Illegal instruction",
+                LogMatcher.JSONKey.errorMessage: "Application crash: SIGILL (Illegal instruction)",
             ]
         )
         crashLog.assertValue(

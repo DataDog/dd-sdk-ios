@@ -104,6 +104,26 @@ class ValuePublisherTests: XCTestCase {
         waitForExpectations(timeout: 1, handler: nil)
     }
 
+    func testWhenValueMutates_itStoresMutatedValue() {
+        struct MutableData {
+            var array = [Int]()
+        }
+
+        let randomInfo = MutableData()
+
+        // When
+        let publisher = ValuePublisher<MutableData>(initialValue: randomInfo)
+        DispatchQueue.concurrentPerform(iterations: 5) { i in
+            publisher.mutateAsync { info in
+                info.array.append(i)
+            }
+        }
+
+        // Then
+        let retrievedData = publisher.currentValue
+        XCTAssertEqual(Set(retrievedData.array), Set(0..<5))
+    }
+
     // MARK: - Thread safety
 
     func testValueCanBeWrittenAndReadOnAnyThread() {

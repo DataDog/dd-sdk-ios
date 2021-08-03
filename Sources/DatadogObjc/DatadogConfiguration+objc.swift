@@ -190,12 +190,10 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.enableRUM(enabled)
     }
 
-#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
     @objc
     public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) {
         _ = sdkBuilder.enableCrashReporting(using: crashReportingPlugin)
     }
-#endif
 
     @objc
     public func set(endpoint: DDEndpoint) {
@@ -268,9 +266,22 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.trackUIKitRUMViews(using: predicateBridge)
     }
 
+    @available(*, deprecated, message: "This option is replaced by `trackUIKitRUMActions(using:)`. Refer to the new API comment for details.")
     @objc
     public func trackUIKitActions() {
-        _ = sdkBuilder.trackUIKitActions(true)
+        self.trackUIKitRUMActions()
+    }
+
+    @objc
+    public func trackUIKitRUMActions() {
+        let defaultPredicate = DefaultUIKitRUMUserActionsPredicate()
+        _ = sdkBuilder.trackUIKitRUMActions(using: defaultPredicate)
+    }
+
+    @objc
+    public func trackUIKitRUMActions(using predicate: DDUIKitRUMUserActionsPredicate) {
+        let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: predicate)
+        _ = sdkBuilder.trackUIKitRUMActions(using: predicateBridge)
     }
 
     @objc

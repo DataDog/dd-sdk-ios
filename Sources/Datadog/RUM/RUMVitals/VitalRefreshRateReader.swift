@@ -8,8 +8,8 @@ import Foundation
 import UIKit
 
 /// A class reading the refresh rate (frames per second) of the main screen
-internal class VitalRefreshRateReader {
-    private let valuePublisher = ValuePublisher(initialValue: 0.0)
+internal class VitalRefreshRateReader: ContinuousVitalReader {
+    private var valuePublishers = [VitalPublisher]()
 
     private var displayLink: CADisplayLink?
     private var lastFrameTimestamp: CFTimeInterval?
@@ -37,14 +37,20 @@ internal class VitalRefreshRateReader {
 
     /// `VitalRefreshRateReader` keeps pushing data to its `observers` at every new frame.
     /// - Parameter observer: receiver of refresh rate per frame.
-    func register(_ observer: VitalObserver) {
-        valuePublisher.subscribe(observer)
+    func register(_ valuePublisher: VitalPublisher) {
+        DispatchQueue.main.async {
+            self.valuePublishers.append(valuePublisher)
+        }
     }
 
     /// `VitalRefreshRateReader` stops pushing data to `observer` once unregistered.
     /// - Parameter observer: already added observer; otherwise nothing happens.
-    func unregister(_ observer: VitalObserver) {
-        valuePublisher.unsubscribe(observer)
+    func unregister(_ valuePublisher: VitalPublisher) {
+        DispatchQueue.main.async {
+            self.valuePublishers.removeAll { existingPublisher in
+                return existingPublisher === valuePublisher
+            }
+        }
     }
 
     // MARK: - Private
@@ -54,7 +60,12 @@ internal class VitalRefreshRateReader {
         if let lastTimestamp = self.lastFrameTimestamp {
             let frameDuration = link.timestamp - lastTimestamp
             let currentFPS = 1.0 / frameDuration
-            valuePublisher.publishAsync(currentFPS)
+
+            for publisher in valuePublishers {
+                publisher.mutateAsync { currentInfo in
+                    currentInfo.addSample(currentFPS)
+                }
+            }
         }
         lastFrameTimestamp = link.timestamp
     }

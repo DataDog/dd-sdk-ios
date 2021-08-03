@@ -8,7 +8,7 @@ import Foundation
 import UIKit.UIApplication
 
 /// A class reading the CPU ticks of the processor.
-internal class VitalCPUReader: VitalReader {
+internal class VitalCPUReader: SamplingBasedVitalReader {
     /// host_cpu_load_info_count is 4 (tested in iOS 14.4)
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
     private var totalInactiveTicks: natural_t = 0

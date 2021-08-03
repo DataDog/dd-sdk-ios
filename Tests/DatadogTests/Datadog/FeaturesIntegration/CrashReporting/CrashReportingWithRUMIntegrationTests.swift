@@ -170,11 +170,30 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             date: crashDate,
             type: "SIG_CODE (SIG_NAME)",
             message: "Signal details",
-            stackTrace: """
+            stack: """
             0: stack-trace line 0
             1: stack-trace line 1
             2: stack-trace line 2
-            """
+            """,
+            threads: [
+                .init(name: "Thread 0", stack: "thread 0 stack", crashed: true, state: nil),
+                .init(name: "Thread 1", stack: "thread 1 stack", crashed: false, state: nil),
+                .init(name: "Thread 2", stack: "thread 2 stack", crashed: false, state: nil),
+            ],
+            binaryImages: [
+                .init(libraryName: "library1", uuid: "uuid1", architecture: "arch", isSystemLibrary: true, loadAddress: "0xLoad1", maxAddress: "0xMax1"),
+                .init(libraryName: "library2", uuid: "uuid2", architecture: "arch", isSystemLibrary: true, loadAddress: "0xLoad2", maxAddress: "0xMax2"),
+                .init(libraryName: "library3", uuid: "uuid3", architecture: "arch", isSystemLibrary: false, loadAddress: "0xLoad3", maxAddress: "0xMax3"),
+            ],
+            meta: .init(
+                incidentIdentifier: "incident-identifier",
+                processName: "process-name",
+                parentProcess: "parent-process",
+                path: "process/path",
+                codeType: "arch",
+                exceptionType: "EXCEPTION_TYPE",
+                exceptionCodes: "EXCEPTION_CODES"
+            )
         )
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
@@ -191,7 +210,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        let sendRUMErrorEvent = try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self)[0].model
+        let sendRUMEvent = try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self)[0]
+        let sendRUMErrorEvent = sendRUMEvent.model
 
         XCTAssertTrue(
             sendRUMErrorEvent.application.id == lastRUMViewEvent.application.id
@@ -223,5 +243,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             2: stack-trace line 2
             """
         )
+        XCTAssertEqual(sendRUMEvent.attributes[DDError.threads] as? [DDCrashReport.Thread], crashReport.threads)
+        XCTAssertEqual(sendRUMEvent.attributes[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
+        XCTAssertEqual(sendRUMEvent.attributes[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
+        XCTAssertEqual(sendRUMEvent.attributes[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
     }
 }

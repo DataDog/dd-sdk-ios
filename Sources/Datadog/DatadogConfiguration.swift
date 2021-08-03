@@ -114,15 +114,12 @@ extension Datadog {
             case us1_fed
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
@@ -157,15 +154,12 @@ extension Datadog {
             case us1_fed
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
@@ -200,15 +194,12 @@ extension Datadog {
             case us1_fed
             /// US based servers.
             /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
             case us
             /// Europe based servers.
             /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
             case eu
             /// Gov servers.
             /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
             case gov
             /// User-defined server.
             case custom(url: String)
@@ -258,12 +249,13 @@ extension Datadog {
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
-        private(set) var rumUIKitActionsTrackingEnabled: Bool
+        private(set) var rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate?
         private(set) var rumViewEventMapper: RUMViewEventMapper?
         private(set) var rumResourceEventMapper: RUMResourceEventMapper?
         private(set) var rumActionEventMapper: RUMActionEventMapper?
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
+        private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -329,12 +321,13 @@ extension Datadog {
                     spanEventMapper: nil,
                     rumSessionsSamplingRate: 100.0,
                     rumUIKitViewsPredicate: nil,
-                    rumUIKitActionsTrackingEnabled: false,
+                    rumUIKitUserActionsPredicate: nil,
                     rumViewEventMapper: nil,
                     rumResourceEventMapper: nil,
                     rumActionEventMapper: nil,
                     rumErrorEventMapper: nil,
                     rumResourceAttributesProvider: nil,
+                    rumBackgroundEventTrackingEnabled: false,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -556,8 +549,29 @@ extension Datadog {
             /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
             ///
             /// - Parameter enabled: `true` by default
+            @available(*, deprecated, message: "This option is replaced by `trackUIKitRUMActions(using:)`. Refer to the new API comment for details.")
             public func trackUIKitActions(_ enabled: Bool = true) -> Builder {
-                configuration.rumUIKitActionsTrackingEnabled = enabled
+                if enabled {
+                    return self.trackUIKitRUMActions()
+                }
+                return self
+            }
+
+            /// Enables automatic tracking of `UITouch` events as RUM Actions.
+            ///
+            /// When enabled, the SDK will track `UIEvents` send to the application and capture `UIViews` and `UIControls` that user interacted with.
+            /// It will send RUM Action for each recognized element. Any touch events on the keyboard are ignored for privacy.
+            ///
+            /// The RUM Action will be named by the name of the interacted element's class and will be extended with `accessibilityIdentifier` (if set) for more context.
+            ///
+            /// **NOTE:** Enabling this option will install swizzlings on `UIApplication.sendEvent(_:)` method. Refer
+            /// to `UIApplicationSwizzler.swift` for implementation details.
+            ///
+            /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
+            ///
+            /// - Parameter predicate: predicate deciding if a given action should be recorded and which allows to give custom name and to add custom attributes to the RUM Action.
+            public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder {
+                configuration.rumUIKitUserActionsPredicate = predicate
                 return self
             }
 
@@ -613,7 +627,20 @@ extension Datadog {
                 return self
             }
 
-#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
+            /// Enables or disables automatic tracking of background events (events hapenning when no UIViewController is active).
+            ///
+            /// When enabled, the SDK will track RUM Events into an automatically created Background RUM View (named `Background`)
+            ///
+            /// **NOTE:** Enabling this option might increase the number of session tracked, and increase your billing.
+            ///
+            /// Until this option is enabled, automatic tracking of  background event is disabled.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder {
+                configuration.rumBackgroundEventTrackingEnabled = enabled
+                return self
+            }
+
             // MARK: - Crash Reporting Configuration
 
             /// Enables the crash reporting feature.
@@ -630,7 +657,6 @@ extension Datadog {
                 configuration.crashReportingPlugin = crashReportingPlugin
                 return self
             }
-#endif
 
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
             // MARK: - Internal Monitoring Configuration

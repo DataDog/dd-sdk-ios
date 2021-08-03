@@ -15,7 +15,10 @@ extension RUMFeature {
             storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
             upload: .init(uploader: NoOpDataUploadWorker()),
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            commonDependencies: .mockAny(),
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 
@@ -55,7 +58,10 @@ extension RUMFeature {
             storage: observedStorage,
             upload: mockedUpload,
             configuration: configuration,
-            commonDependencies: dependencies
+            commonDependencies: dependencies,
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 
@@ -419,7 +425,10 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 
@@ -440,7 +449,10 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
-            dateCorrector: dateCorrector ?? self.dateCorrector
+            dateCorrector: dateCorrector ?? self.dateCorrector,
+            vitalCPUReader: SamplingBasedVitalReaderMock(),
+            vitalMemoryReader: SamplingBasedVitalReaderMock(),
+            vitalRefreshRateReader: ContinuousVitalReaderMock()
         )
     }
 }
@@ -453,12 +465,14 @@ extension RUMApplicationScope {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100
+        samplingRate: Float = 100,
+        backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
-            samplingRate: samplingRate
+            samplingRate: samplingRate,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
 }
@@ -472,13 +486,15 @@ extension RUMSessionScope {
         parent: RUMApplicationScope = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
         samplingRate: Float = 100,
-        startTime: Date = .mockAny()
+        startTime: Date = .mockAny(),
+        backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             parent: parent,
             dependencies: dependencies,
             samplingRate: samplingRate,
-            startTime: startTime
+            startTime: startTime,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
 }
@@ -661,6 +677,19 @@ class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
     }
 }
 
+class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
+    var resultByView: [UIView: RUMAction] = [:]
+    var result: RUMAction?
+
+    init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    func rumAction(targetView: UIView) -> RUMAction? {
+        return resultByView[targetView] ?? result
+    }
+}
+
 class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
     var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     var onSendEvent: ((UIApplication, UIEvent) -> Void)?
@@ -674,10 +703,31 @@ class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
     }
 }
 
-class VitalListenerMock: VitalListener {
-    var onVitalInfoUpdate: ((VitalInfo) -> Void)?
+class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
+    var vitalData: Double?
 
-    func onVitalInfo(info: VitalInfo) {
-        onVitalInfoUpdate?(info)
+    func readVitalData() -> Double? {
+        return vitalData
+    }
+}
+
+class ContinuousVitalReaderMock: ContinuousVitalReader {
+    var vitalInfo = VitalInfo() {
+        didSet {
+            publishers.forEach {
+                $0.publishAsync(vitalInfo)
+            }
+        }
+    }
+    var publishers = [VitalPublisher]()
+
+    func register(_ valuePublisher: VitalPublisher) {
+        publishers.append(valuePublisher)
+    }
+
+    func unregister(_ valuePublisher: VitalPublisher) {
+        publishers.removeAll { existingPublisher in
+            return existingPublisher === valuePublisher
+        }
     }
 }

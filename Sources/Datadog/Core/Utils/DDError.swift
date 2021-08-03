@@ -8,6 +8,19 @@ import Foundation
 
 /// Common representation of Swift `Error` used by different features.
 internal struct DDError: Equatable {
+    /// Common error key encoding threads information in Crash Reporting.
+    /// See "RFC - iOS Crash Reports Minimization" for more context.
+    static let threads = "error.threads"
+    /// Common error key encoding binary images information in Crash Reporting.
+    /// See "RFC - iOS Crash Reports Minimization" for more context.
+    static let binaryImages = "error.binary_images"
+    /// Common error key encoding crash meta information in Crash Reporting.
+    /// See "RFC - iOS Crash Reports Minimization" for more context.
+    static let meta = "error.meta"
+    /// Common error key encoding boolean flag - `true` if any stack trace was truncated, otherwise `false`.
+    /// See "RFC - iOS Crash Reports Minimization" for more context.
+    static let wasTruncated = "error.was_truncated"
+
     let type: String
     let message: String
     let stack: String

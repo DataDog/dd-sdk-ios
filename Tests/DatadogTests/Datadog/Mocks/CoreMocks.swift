@@ -51,8 +51,9 @@ extension Datadog.Configuration {
         firstPartyHosts: Set<String>? = nil,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        rumUIKitActionsTrackingEnabled: Bool = false,
+        rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
+        rumBackgroundEventTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -77,8 +78,9 @@ extension Datadog.Configuration {
             firstPartyHosts: firstPartyHosts,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
-            rumUIKitActionsTrackingEnabled: rumUIKitActionsTrackingEnabled,
+            rumUIKitUserActionsPredicate: rumUIKitUserActionsPredicate,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
+            rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -222,7 +224,8 @@ extension FeaturesConfiguration.RUM {
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
-        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil
+        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
+        backgroundEventTrackingEnabled: Bool = false
     ) -> Self {
         return .init(
             common: common,
@@ -233,7 +236,8 @@ extension FeaturesConfiguration.RUM {
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
-            autoInstrumentation: autoInstrumentation
+            autoInstrumentation: autoInstrumentation,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
 }

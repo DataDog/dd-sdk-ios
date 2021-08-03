@@ -26,7 +26,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// For each file upload, the status is checked against this list of acceptable statuses.
     /// If it's there, the file will be deleted. If not, it will be retried in next upload.
     private let acceptableUploadStatuses: Set<DataUploadStatus> = [
-        .success, .redirection, .clientError, .unknown
+        .success, .redirection, .clientError, .clientTokenError, .unknown
     ]
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String

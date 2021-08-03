@@ -37,6 +37,35 @@ class DDRUMViewTests: XCTestCase {
     }
 }
 
+class UIKitRUMUserActionsPredicateBridgeTests: XCTestCase {
+    func testItForwardsCallToObjcPredicate() {
+        class MockPredicate: DDUIKitRUMUserActionsPredicate {
+            var didCallRUMAction = false
+            func rumAction(targetView: UIView) -> DDRUMAction? {
+                didCallRUMAction = true
+                return nil
+            }
+        }
+
+        let objcPredicate = MockPredicate()
+
+        let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: objcPredicate)
+        _ = predicateBridge.rumAction(targetView: UIView())
+
+        XCTAssertTrue(objcPredicate.didCallRUMAction)
+    }
+}
+
+class DDRUMActionTests: XCTestCase {
+    func testItCreatesSwiftRUMAction() {
+        let objcRUMAction = DDRUMAction(name: "name", attributes: ["foo": "bar"])
+        XCTAssertEqual(objcRUMAction.swiftAction.name, "name")
+        XCTAssertEqual((objcRUMAction.swiftAction.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
+        XCTAssertEqual(objcRUMAction.name, "name")
+        XCTAssertEqual((objcRUMAction.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
+    }
+}
+
 class DDRUMUserActionTypeTests: XCTestCase {
     func testMappingToSwiftRUMUserActionType() {
         XCTAssertEqual(DDRUMUserActionType.tap.swiftType, .tap)
@@ -120,9 +149,9 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event2.view.name, "FirstView")
         XCTAssertEqual(event2.view.url, "FirstViewController")
         XCTAssertEqual(event3.view.name, "SecondView")
-        XCTAssertEqual(event3.view.url, "SecondView")
+        XCTAssertEqual(event3.view.url, "view2")
         XCTAssertEqual(event4.view.name, "SecondView")
-        XCTAssertEqual(event4.view.url, "SecondView")
+        XCTAssertEqual(event4.view.url, "view2")
         XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
         XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute1"), "bar1")

@@ -68,6 +68,11 @@ internal class ValuePublisher<Value> {
         concurrentQueue.async(flags: .barrier) { self.unsafeValue = newValue }
     }
 
+    /// Updates the `currentValue` asynchronously, without blocking the caller thread.
+    func mutateAsync(block: @escaping (inout Value) -> Void) {
+        concurrentQueue.async(flags: .barrier) { block(&self.unsafeValue) }
+    }
+
     /// Registers an observer that will be notified on all value changes.
     /// All calls to the `observer` will be synchronised using internal concurrent queue.
     func subscribe<Observer: ValueObserver>(_ observer: Observer) where Observer.ObservedValue == Value {
