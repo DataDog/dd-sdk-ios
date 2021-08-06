@@ -6,10 +6,16 @@
 
 import Foundation
 
-/// Helper type performing type erasure of encoded JSON types.
-/// It conforms to `Encodable`, so decoded value can be further serialized into exactly the same JSON representation.
+/// `Encodable` type erasure used for encoding and decoding user attributes.
 internal struct CodableValue: Codable {
-    struct CodableNull: Encodable {}
+    /// A private representation of `null` JSON value used for decoding and encoding.
+    ///
+    /// In JSON `null` represents an absent value for an `Encodable` optional (e.g. encoding `Optional<String>.none` will produce `null`).
+    /// To decode `null` as `CodableValue`, in `init(from:)` the value of `CodableNull()` is assigned to `value: Encodable` property.
+    /// It is later recognized in `encode(to:)` to encode the `null` back into produced JSON data.
+    ///
+    /// This way, after deserializing user attributes we can encode them again without altering the original data representation.
+    private struct CodableNull: Encodable {}
 
     let value: Encodable
 
