@@ -102,7 +102,7 @@ internal struct SpanEventBuilder {
                 casted[key] = urlValue.absoluteString
             } else {
                 do {
-                    let encodable = EncodableValue(value)
+                    let encodable = CodableValue(value)
                     let jsonData: Data
 
                     if #available(iOS 13.0, *) {

@@ -155,8 +155,12 @@ internal class CrashReporter {
                 Error details: \(error)
                 """
             )
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+            let contextUTF8String = String(data: crashContextData, encoding: .utf8)
+            let attributes = ["context_utf8_string": contextUTF8String ?? "none"]
             InternalMonitoringFeature.instance?.monitor.sdkLogger
-                .error("Failed to decode crash report context", error: error)
+                .error("Failed to decode crash report context", error: error, attributes: attributes)
+#endif
             return nil
         }
     }

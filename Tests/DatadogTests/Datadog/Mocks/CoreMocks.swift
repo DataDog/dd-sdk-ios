@@ -877,9 +877,9 @@ extension AppStateListener {
     }
 }
 
-extension EncodableValue {
-    static func mockAny() -> EncodableValue {
-        return EncodableValue(String.mockAny())
+extension CodableValue {
+    static func mockAny() -> CodableValue {
+        return CodableValue(String.mockAny())
     }
 }
 

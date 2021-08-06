@@ -17,6 +17,21 @@ func mockRandomAttributes() -> [String: Codable] {
         }
     }
 
+    // Produces a `.none` value for optional of a random type.
+    let randomAbsentOptional: () -> Codable = [
+        // swiftlint:disable opening_brace syntactic_sugar
+        { Optional<String>.none },
+        { Optional<Int>.none },
+        { Optional<UInt64>.none },
+        { Optional<Double>.none },
+        { Optional<Bool>.none },
+        { Optional<[Int]>.none },
+        { Optional<[String: Int]>.none },
+        { Optional<URL>.none },
+        { Optional<Foo>.none },
+        // swiftlint:enable opening_brace syntactic_sugar
+    ].randomElement()!
+
     return [
         "string-attribute": String.mockRandom(),
         "int-attribute": Int.mockRandom(),
@@ -26,6 +41,7 @@ func mockRandomAttributes() -> [String: Codable] {
         "int-array-attribute": [Int].mockRandom(),
         "dictionary-attribute": [String: Int].mockRandom(),
         "url-attribute": URL.mockRandom(),
-        "encodable-struct-attribute": Foo()
+        "encodable-struct-attribute": Foo(),
+        "absent-attribute": randomAbsentOptional() // when JSON-encoding: `"absent-attribute": null`
     ]
 }

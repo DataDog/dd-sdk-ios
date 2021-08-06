@@ -1164,7 +1164,7 @@ extension RUMEventAttributes {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try contextInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(EncodableValue($1), forKey: key)
+            try dynamicContainer.encode(CodableValue($1), forKey: key)
         }
     }
 
@@ -1175,7 +1175,7 @@ extension RUMEventAttributes {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
         }
 
         self.contextInfo = dictionary
@@ -1222,7 +1222,7 @@ extension RUMUser {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try usrInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(EncodableValue($1), forKey: key)
+            try dynamicContainer.encode(CodableValue($1), forKey: key)
         }
     }
 
@@ -1240,7 +1240,7 @@ extension RUMUser {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
         }
 
         self.usrInfo = dictionary
