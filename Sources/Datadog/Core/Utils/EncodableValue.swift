@@ -6,40 +6,17 @@
 
 import Foundation
 
-/// Type erasure `Encodable` wrapper. 
-internal struct EncodableValue: Encodable {
-    let value: Encodable
-
-    init(_ value: Encodable) {
-        self.value = value
-    }
-
-    func encode(to encoder: Encoder) throws {
-        if let urlValue = value as? URL {
-            /**
-             "URL itself prefers a keyed container which allows it to encode its base and relative string separately (...)"
-             Discussion: https:forums.swift.org/t/how-to-encode-objects-of-unknown-type/12253/11
-
-             It means that following code:
-             ```
-             try EncodableValue(URL(string: "https:example.com")!).encode(to: encoder)
-             ```
-             encodes the KVO representation of the URL: `{"relative":"https:example.com"}`.
-             As we very much prefer `"https:example.com"`, here we switch to encode `.absoluteString` directly.
-             */
-            try urlValue.absoluteString.encode(to: encoder)
-        } else {
-            try value.encode(to: encoder)
-        }
-    }
-}
+internal typealias EncodableValue = CodableValue
+internal typealias DecodableValue = CodableValue
 
 /// Helper type performing type erasure of encoded JSON types.
 /// It conforms to `Encodable`, so decoded value can be further serialized into exactly the same JSON representation.
 internal struct CodableValue: Codable {
-    private let value: Encodable
+    struct CodableNull: Encodable {}
 
-    init<T: Encodable>(_ value: T) {
+    let value: Encodable
+
+    init(_ value: Encodable) {
         self.value = value
     }
 
@@ -60,15 +37,35 @@ internal struct CodableValue: Codable {
             self.init(array)
         } else if let dictionary = try? container.decode([String: CodableValue].self) {
             self.init(dictionary)
+        } else if container.decodeNil() {
+            self.init(CodableNull())
         } else {
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Custom attribute at \(container.codingPath) cannot is not a `Codable` type supported by the SDK."
+                debugDescription: "Custom attribute at \(container.codingPath) is not a `Codable` type supported by the SDK."
             )
         }
     }
 
     func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
+        if let urlValue = value as? URL {
+            /**
+             "URL itself prefers a keyed container which allows it to encode its base and relative string separately (...)"
+             Discussion: https:forums.swift.org/t/how-to-encode-objects-of-unknown-type/12253/11
+
+             It means that following code:
+             ```
+             try EncodableValue(URL(string: "https:example.com")!).encode(to: encoder)
+             ```
+             encodes the KVO representation of the URL: `{"relative":"https:example.com"}`.
+             As we very much prefer `"https:example.com"`, here we switch to encode `.absoluteString` directly.
+             */
+            try urlValue.absoluteString.encode(to: encoder)
+        } else if value is CodableNull {
+            var container = encoder.singleValueContainer()
+            try container.encodeNil()
+        } else {
+            try value.encode(to: encoder)
+        }
     }
 }
