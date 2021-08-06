@@ -76,7 +76,8 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
         }
 
         displayLink = CADisplayLink(target: self, selector: #selector(displayTick(link:)))
-        displayLink?.add(to: .main, forMode: .default)
+        // NOTE: RUMM-1544 `.default` mode doesn't get fired while scrolling the UI, `.common` does.
+        displayLink?.add(to: .main, forMode: .common)
     }
 
     private func stop() {
