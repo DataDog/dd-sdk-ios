@@ -7,25 +7,25 @@
 import XCTest
 @testable import Datadog
 
-class EncodableValueTests: XCTestCase {
+class CodableValueTests: XCTestCase {
     func testItEncodesDifferentEncodableValues() throws {
         let encoder = JSONEncoder()
 
         XCTAssertEqual(
-            try encoder.encode(EncodingContainer(EncodableValue("string"))).utf8String,
+            try encoder.encode(EncodingContainer(CodableValue("string"))).utf8String,
             #"{"value":"string"}"#
         )
         XCTAssertEqual(
-            try encoder.encode(EncodingContainer(EncodableValue(123))).utf8String,
+            try encoder.encode(EncodingContainer(CodableValue(123))).utf8String,
             #"{"value":123}"#
         )
         XCTAssertEqual(
-            try encoder.encode(EncodableValue(["a", "b", "c"])).utf8String,
+            try encoder.encode(CodableValue(["a", "b", "c"])).utf8String,
             #"["a","b","c"]"#
         )
         XCTAssertEqual(
             try encoder.encode(
-                EncodingContainer(EncodableValue(URL(string: "https://example.com/image.png")!))
+                EncodingContainer(CodableValue(URL(string: "https://example.com/image.png")!))
             ).utf8String,
             #"{"value":"https:\/\/example.com\/image.png"}"#
         )
@@ -34,7 +34,7 @@ class EncodableValueTests: XCTestCase {
             let bizz = "bizz_"
         }
         XCTAssertEqual(
-            try encoder.encode(EncodableValue(Foo())).utf8String,
+            try encoder.encode(CodableValue(Foo())).utf8String,
             #"{"bar":"bar_","bizz":"bizz_"}"#
         )
     }

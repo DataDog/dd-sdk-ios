@@ -6,9 +6,6 @@
 
 import Foundation
 
-internal typealias EncodableValue = CodableValue
-internal typealias DecodableValue = CodableValue
-
 /// Helper type performing type erasure of encoded JSON types.
 /// It conforms to `Encodable`, so decoded value can be further serialized into exactly the same JSON representation.
 internal struct CodableValue: Codable {

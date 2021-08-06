@@ -39,13 +39,13 @@ internal struct RUMEventEncoder {
         try event.attributes.forEach { attributeName, attributeValue in
             // TODO: RUMM-1463 Remove this condition once new error format is managed through `RUMDataModels`
             if attributeName == DDError.threads || attributeName == DDError.binaryImages || attributeName == DDError.meta || attributeName == DDError.wasTruncated {
-                try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey(attributeName))
+                try attributesContainer.encode(CodableValue(attributeValue), forKey: DynamicCodingKey(attributeName))
             } else {
-                try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))
+                try attributesContainer.encode(CodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))
             }
         }
         try event.userInfoAttributes.forEach { attributeName, attributeValue in
-            try attributesContainer.encode(EncodableValue(attributeValue), forKey: DynamicCodingKey("usr.\(attributeName)"))
+            try attributesContainer.encode(CodableValue(attributeValue), forKey: DynamicCodingKey("usr.\(attributeName)"))
         }
 
         // Encode `RUMDataModel`
