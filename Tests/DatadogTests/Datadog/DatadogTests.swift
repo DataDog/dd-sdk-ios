@@ -207,26 +207,26 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
 
-        verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
+        verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
         verify(
-            configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()
+            configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
 
-        verify(configuration: rumBuilder.trackUIKitActions(true).build()) {
+        verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.userActions)
         }
         verify(
-            configuration: rumBuilder.enableRUM(false).trackUIKitActions(true).build()
+            configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)

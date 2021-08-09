@@ -260,8 +260,14 @@ class DDConfigurationTests: XCTestCase {
     func testDeprecatedTrackUIActions() {
         let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
 
-        objcBuilder.trackUIKitActions()
+        (objcBuilder as DDConfigurationBuilderDeprecatedAPIs).trackUIKitActions()
 
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
     }
 }
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol DDConfigurationBuilderDeprecatedAPIs {
+    func trackUIKitActions()
+}
+extension DDConfigurationBuilder: DDConfigurationBuilderDeprecatedAPIs {}

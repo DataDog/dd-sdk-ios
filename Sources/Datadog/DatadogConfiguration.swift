@@ -570,6 +570,7 @@ extension Datadog {
             /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
             ///
             /// - Parameter predicate: predicate deciding if a given action should be recorded and which allows to give custom name and to add custom attributes to the RUM Action.
+            /// Defaults to `DefaultUIKitRUMUserActionsPredicate` instance.
             public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder {
                 configuration.rumUIKitUserActionsPredicate = predicate
                 return self
