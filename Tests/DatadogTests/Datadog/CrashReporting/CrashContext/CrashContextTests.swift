@@ -101,22 +101,6 @@ class CrashContextTests: XCTestCase {
 
     // MARK: - Helpers
 
-    /// Asserts that JSON representations of two `Encodable` values are equal.
-    /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
-    private func AssertEncodedRepresentationsEqual<V: Encodable>(
-        value1: V,
-        value2: V,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) throws {
-        let prettyEncoder = JSONEncoder()
-        prettyEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let encodedValue1 = try prettyEncoder.encode(value1)
-        let encodedValue2 = try prettyEncoder.encode(value2)
-
-        XCTAssertEqual(encodedValue1.utf8String, encodedValue2.utf8String, file: file, line: line)
-    }
-
     /// Asserts that JSON representations of two `[String: Encodable]` dictionaries are equal.
     /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
     private func AssertEncodedRepresentationsEqual(
@@ -126,8 +110,8 @@ class CrashContextTests: XCTestCase {
         line: UInt = #line
     ) throws {
         try AssertEncodedRepresentationsEqual(
-            value1: dictionary1.mapValues { EncodableValue($0) },
-            value2: dictionary2.mapValues { EncodableValue($0) }
+            value1: dictionary1.mapValues { CodableValue($0) },
+            value2: dictionary2.mapValues { CodableValue($0) }
         )
     }
 }

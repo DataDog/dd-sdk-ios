@@ -270,7 +270,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
                     let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(EncodableValue($1), forKey: key)
+                    try dynamicContainer.encode(CodableValue($1), forKey: key)
                 }
             }
 
@@ -281,7 +281,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dictionary: [String: Codable] = [:]
 
                 try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)
+                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
                 }
 
                 self.context = dictionary
@@ -368,7 +368,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
                     let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(EncodableValue($1), forKey: key)
+                    try dynamicContainer.encode(CodableValue($1), forKey: key)
                 }
             }
 
@@ -385,7 +385,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dictionary: [String: Codable] = [:]
 
                 try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)
+                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
                 }
 
                 self.context = dictionary

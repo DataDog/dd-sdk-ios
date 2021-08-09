@@ -178,7 +178,7 @@ public class SwiftPrinter: BasePrinter {
                 writeLine("try \(dynamicProperty.name).forEach {") // dynamic properties are dictionaries
                 indentRight()
                     writeLine("let key = DynamicCodingKey($0)") // dictionary key is used as coding key
-                    writeLine("try dynamicContainer.encode(EncodableValue($1), forKey: key)") // encode value
+                    writeLine("try dynamicContainer.encode(CodableValue($1), forKey: key)") // encode value
                 indentLeft()
                 writeLine("}")
             }
@@ -227,7 +227,11 @@ public class SwiftPrinter: BasePrinter {
 
                 writeLine("try dynamicKeys.forEach { codingKey in")
                 indentRight()
-                writeLine("dictionary[codingKey.stringValue] = try dynamicContainer.decodeIfPresent(CodableValue.self, forKey: codingKey)")
+                // We use `dynamicContainer.decode()` instead of `dynamicContainer.decodeIfPresent()` to not lose
+                // the information of decoded `null` value. Our `CodableValue` implementation recognizes `null` and preserves
+                // it for eventual encoding. This guarantees no difference in serialized payload even if we deserialize it
+                // and encode again.
+                writeLine("dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)")
                 indentLeft()
                 writeLine("}")
 

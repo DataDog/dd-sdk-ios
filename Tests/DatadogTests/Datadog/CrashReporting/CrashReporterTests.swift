@@ -34,8 +34,9 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(integration.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
+        let sentCrashContext = try XCTUnwrap(integration.sentCrashContext, "It should send the crash context")
         AssertDictionariesEqual(
-            try integration.sentCrashContext!.data.toJSONObject(),
+            try sentCrashContext.data.toJSONObject(),
             try crashContext.data.toJSONObject(),
             "It should send the crash context retrieved from the `plugin`"
         )

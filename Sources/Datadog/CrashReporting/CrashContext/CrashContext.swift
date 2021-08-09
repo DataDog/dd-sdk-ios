@@ -139,7 +139,7 @@ private struct CodableUserInfo: Codable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        let encodedExtraInfo = extraInfo.mapValues { EncodableValue($0) }
+        let encodedExtraInfo = extraInfo.mapValues { CodableValue($0) }
 
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
@@ -185,8 +185,8 @@ private struct CodableRUMViewEvent: Codable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        let encodedAttributes = attributes.mapValues { EncodableValue($0) }
-        let encodedUserInfoAttributes = userInfoAttributes.mapValues { EncodableValue($0) }
+        let encodedAttributes = attributes.mapValues { CodableValue($0) }
+        let encodedUserInfoAttributes = userInfoAttributes.mapValues { CodableValue($0) }
 
         try container.encode(model, forKey: .model)
         try container.encode(encodedAttributes, forKey: .attributes)

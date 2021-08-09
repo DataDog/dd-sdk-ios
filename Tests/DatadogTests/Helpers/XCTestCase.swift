@@ -123,4 +123,22 @@ extension XCTestCase {
             }
         }
     }
+
+    /// Asserts that JSON representations of two `Encodable` values are equal.
+    /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
+    func AssertEncodedRepresentationsEqual<V: Encodable>(
+        value1: V,
+        value2: V,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        let prettyEncoder = JSONEncoder()
+        prettyEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let encodedValue1 = try prettyEncoder.encode(value1)
+        let encodedValue2 = try prettyEncoder.encode(value2)
+
+        let value1JSONString = encodedValue1.utf8String
+        let value2JSONString = encodedValue2.utf8String
+        XCTAssertEqual(value1JSONString, value2JSONString, file: file, line: line)
+    }
 }
