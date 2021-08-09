@@ -402,12 +402,6 @@ class DatadogTests: XCTestCase {
     }
 }
 
-/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
-private protocol DatadogDeprecatedAPIs {
-    static func initialize(appContext: AppContext, configuration: Datadog.Configuration)
-}
-extension Datadog: DatadogDeprecatedAPIs {}
-
 class AppContextTests: XCTestCase {
     func testBundleType() {
         let iOSAppBundle: Bundle = .mockWith(bundlePath: "mock.app")
@@ -446,3 +440,11 @@ class AppContextTests: XCTestCase {
         )
     }
 }
+
+// MARK: - Deprecation Helpers
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol DatadogDeprecatedAPIs {
+    static func initialize(appContext: AppContext, configuration: Datadog.Configuration)
+}
+extension Datadog: DatadogDeprecatedAPIs {}

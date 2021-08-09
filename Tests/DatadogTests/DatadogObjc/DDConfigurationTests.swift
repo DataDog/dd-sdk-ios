@@ -104,13 +104,13 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
 
         objcBuilder.set(endpoint: .eu())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)
 
         objcBuilder.set(endpoint: .us())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1)
 
         objcBuilder.set(endpoint: .gov())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .gov)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
 
         let customLogsEndpoint = URL(string: "https://api.example.com/v1/logs")!
         objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
