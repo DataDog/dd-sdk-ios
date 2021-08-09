@@ -190,9 +190,10 @@ extension FeaturesConfiguration.Logging {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny()
+        uploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny()
     ) -> Self {
-        return .init(common: common, uploadURLWithClientToken: uploadURLWithClientToken)
+        return .init(common: common, uploadURL: uploadURL, clientToken: clientToken)
     }
 }
 
@@ -201,12 +202,14 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
-        spanEventMapper: SpanEventMapper? = nil
+        uploadURL: URL = .mockAny(),
+        spanEventMapper: SpanEventMapper? = nil,
+        clientToken: String = .mockAny()
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
             spanEventMapper: spanEventMapper
         )
     }
@@ -217,7 +220,8 @@ extension FeaturesConfiguration.RUM {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
+        uploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
         viewEventMapper: RUMViewEventMapper? = nil,
@@ -229,7 +233,8 @@ extension FeaturesConfiguration.RUM {
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
             viewEventMapper: viewEventMapper,
@@ -285,13 +290,15 @@ extension FeaturesConfiguration.InternalMonitoring {
         common: FeaturesConfiguration.Common = .mockAny(),
         sdkServiceName: String = .mockAny(),
         sdkEnvironment: String = .mockAny(),
-        logsUploadURLWithClientToken: URL = .mockAny()
+        logsUploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny()
     ) -> Self {
         return .init(
             common: common,
             sdkServiceName: sdkServiceName,
             sdkEnvironment: sdkEnvironment,
-            logsUploadURLWithClientToken: logsUploadURLWithClientToken
+            logsUploadURL: logsUploadURL,
+            clientToken: clientToken
         )
     }
 }
@@ -643,8 +650,8 @@ extension UserInfoProvider {
 extension UploadURLProvider {
     static func mockAny() -> UploadURLProvider {
         return UploadURLProvider(
-            urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
-            queryItemProviders: []
+            url: URL(string: "https://app.example.com/v2/api/feature")!,
+            queryItems: []
         )
     }
 }

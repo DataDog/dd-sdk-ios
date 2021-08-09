@@ -90,8 +90,8 @@ internal final class TracingFeature {
                 ]
             ),
             uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: []
+                url: configuration.uploadURL,
+                queryItems: []
             ),
             commonDependencies: commonDependencies,
             internalMonitor: internalMonitor

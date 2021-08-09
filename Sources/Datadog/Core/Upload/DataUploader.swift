@@ -6,51 +6,38 @@
 
 import Foundation
 
-/// Creates URL and adds query items before providing them
+/// Creates the upload url with given query items.
 internal class UploadURLProvider {
-    private let urlWithClientToken: URL
-    private let queryItemProviders: [QueryItemProvider]
+    enum QueryItem {
+        /// `ddsource={source}` query item
+        case ddsource(source: String)
+        /// `ddtags={tag1},{tag2},...` query item
+        case ddtags(tags: [String])
 
-    class QueryItemProvider {
-        let value: () -> URLQueryItem
-
-        /// Creates `ddsource=ios` query item.
-        static func ddsource(source: String) -> QueryItemProvider {
-            let queryItem = URLQueryItem(name: "ddsource", value: source)
-            return QueryItemProvider { queryItem }
-        }
-
-        /// Creates `ddtags=tag1,tag2,...` query item.
-        static func ddtags(tags: [String]) -> QueryItemProvider {
-            let queryItem = URLQueryItem(name: "ddtags", value: tags.joined(separator: ","))
-            return QueryItemProvider { queryItem }
-        }
-
-        private init(value: @escaping () -> URLQueryItem) {
-            self.value = value
+        var urlQueryItem: URLQueryItem {
+            switch self {
+            case .ddsource(let source):
+                return URLQueryItem(name: "ddsource", value: source)
+            case .ddtags(let tags):
+                return URLQueryItem(name: "ddtags", value: tags.joined(separator: ","))
+            }
         }
     }
 
-    var url: URL {
-        // In RUMM-655 we've removed the last dynamic query item and this `url` may just become constant
-        // in the future.
+    let url: URL
 
-        var urlComponents = URLComponents(url: urlWithClientToken, resolvingAgainstBaseURL: false)
+    init(url: URL, queryItems: [QueryItem]) {
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
 
-        if !queryItemProviders.isEmpty {
-            urlComponents?.queryItems = queryItemProviders.map { $0.value() }
+        if !queryItems.isEmpty {
+            urlComponents?.queryItems = queryItems.map { $0.urlQueryItem }
         }
 
-        guard let url = urlComponents?.url else {
-            userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItemProviders)")
-            return urlWithClientToken
+        if urlComponents?.url == nil { // sanity check - should not happen
+            userLogger.error("🔥 Failed to create upload URL from \(url) and \(queryItems)")
         }
-        return url
-    }
 
-    init(urlWithClientToken: URL, queryItemProviders: [QueryItemProvider]) {
-        self.urlWithClientToken = urlWithClientToken
-        self.queryItemProviders = queryItemProviders
+        self.url = urlComponents?.url ?? url
     }
 }
 

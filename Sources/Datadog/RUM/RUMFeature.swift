@@ -91,8 +91,8 @@ internal final class RUMFeature {
                 ]
             ),
             uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: [
+                url: configuration.uploadURL,
+                queryItems: [
                     .ddsource(source: configuration.common.source),
                     .ddtags(
                         tags: [
