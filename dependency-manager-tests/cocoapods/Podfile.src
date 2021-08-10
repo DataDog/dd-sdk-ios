@@ -9,14 +9,14 @@ target 'CPProject' do
   pod 'Alamofire'
 
   target 'CPProjectTests' do
-    inherit! :search_paths
+    inherit! :complete
   end
   target 'CPProjectUITests' do
-    inherit! :search_paths
+    inherit! :complete
   end
 end
 
-static_frameworks = ['DatadogSDKCrashReporting']
+static_frameworks = ['DatadogSDKCrashReporting','PLCrashReporter']
 pre_install do |installer|
   installer.pod_targets.each do |pod|
     if static_frameworks.include?(pod.name)
