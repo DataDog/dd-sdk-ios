@@ -21,5 +21,5 @@ Pod::Spec.new do |s|
 
   s.source_files = "Sources/DatadogCrashReporting/**/*.swift"
   s.dependency 'DatadogSDK', '1.7.0-beta2'
-  s.dependency 'PLCrashReporter'
+  s.dependency 'PLCrashReporter', '~> 1.8.1'
 end
