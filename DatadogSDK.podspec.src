@@ -10,8 +10,7 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
-    "Mert Buran" => "mert.buran@datadoghq.com",
-    "Alexandre Costanza" => "alexandre.costanza@datadoghq.com"
+    "Mert Buran" => "mert.buran@datadoghq.com"
   }
 
   s.swift_version      = '5.1'
