@@ -16,6 +16,15 @@ while [[ $alamofireRetVal -ne 0 ]] ; do
    	alamofireRetVal=$? ;
 done
 
+crashReportingRetVal=1
+while [[ $crashReportingRetVal -ne 0 ]] ; do
+   sleep 30s ;
+   pod repo update ;
+   pod spec lint --allow-warnings DatadogSDKCrashReporting.podspec ;
+   crashReportingRetVal=$? ;
+done
+
 pod trunk me
 pod trunk push --allow-warnings DatadogSDKObjc.podspec
 pod trunk push --allow-warnings DatadogSDKAlamofireExtension.podspec
+pod trunk push --allow-warnings DatadogSDKCrashReporting.podspec
