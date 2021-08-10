@@ -18,10 +18,10 @@ done
 
 crashReportingRetVal=1
 while [[ $crashReportingRetVal -ne 0 ]] ; do
-	sleep 30s ;
-	pod repo update ;
-    pod spec lint --allow-warnings DatadogSDKCrashReporting.podspec ;
-   	crashReportingRetVal=$? ;
+   sleep 30s ;
+   pod repo update ;
+   pod spec lint --allow-warnings DatadogSDKCrashReporting.podspec ;
+   crashReportingRetVal=$? ;
 done
 
 pod trunk me
