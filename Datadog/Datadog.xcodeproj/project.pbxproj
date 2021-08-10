@@ -40,7 +40,7 @@
 		61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB12423979B00786299 /* DataUploadWorker.swift */; };
 		61133BD82423979B00786299 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB22423979B00786299 /* HTTPClient.swift */; };
 		61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB32423979B00786299 /* DataUploadDelay.swift */; };
-		61133BDA2423979B00786299 /* HTTPHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB42423979B00786299 /* HTTPHeaders.swift */; };
+		61133BDA2423979B00786299 /* HTTPHeadersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB42423979B00786299 /* HTTPHeadersProvider.swift */; };
 		61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB52423979B00786299 /* DatadogConfiguration.swift */; };
 		61133BDC2423979B00786299 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB62423979B00786299 /* Logger.swift */; };
 		61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB82423979B00786299 /* InternalLoggers.swift */; };
@@ -663,7 +663,7 @@
 		61133BB12423979B00786299 /* DataUploadWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadWorker.swift; sourceTree = "<group>"; };
 		61133BB22423979B00786299 /* HTTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		61133BB32423979B00786299 /* DataUploadDelay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUploadDelay.swift; sourceTree = "<group>"; };
-		61133BB42423979B00786299 /* HTTPHeaders.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaders.swift; sourceTree = "<group>"; };
+		61133BB42423979B00786299 /* HTTPHeadersProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersProvider.swift; sourceTree = "<group>"; };
 		61133BB52423979B00786299 /* DatadogConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogConfiguration.swift; sourceTree = "<group>"; };
 		61133BB62423979B00786299 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		61133BB82423979B00786299 /* InternalLoggers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLoggers.swift; sourceTree = "<group>"; };
@@ -1421,7 +1421,7 @@
 				61133BB02423979B00786299 /* DataUploader.swift */,
 				61133BB12423979B00786299 /* DataUploadWorker.swift */,
 				61133BB22423979B00786299 /* HTTPClient.swift */,
-				61133BB42423979B00786299 /* HTTPHeaders.swift */,
+				61133BB42423979B00786299 /* HTTPHeadersProvider.swift */,
 			);
 			path = Upload;
 			sourceTree = "<group>";
@@ -3805,7 +3805,7 @@
 				6161249E25CAB340009901BE /* CrashContext.swift in Sources */,
 				61D447E224917F8F00649287 /* DateFormatting.swift in Sources */,
 				61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */,
-				61133BDA2423979B00786299 /* HTTPHeaders.swift in Sources */,
+				61133BDA2423979B00786299 /* HTTPHeadersProvider.swift in Sources */,
 				61C3E63924BF19B4008053F2 /* RUMContext.swift in Sources */,
 				61133BE82423979B00786299 /* LogFileOutput.swift in Sources */,
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,

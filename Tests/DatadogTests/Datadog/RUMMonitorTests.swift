@@ -1194,6 +1194,8 @@ class RUMMonitorTests: XCTestCase {
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
+        Global.rum.addError(message: "error message", attributes: ["attribute1": "value1"])
+
         // Given
         let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
         let viewsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.views?.handler)

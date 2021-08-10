@@ -45,13 +45,13 @@ internal class UploadURLProvider {
 internal final class DataUploader {
     private let urlProvider: UploadURLProvider
     private let httpClient: HTTPClient
-    private let httpHeaders: HTTPHeaders
+    private let httpHeaders: HTTPHeadersProvider
     private let internalMonitor: InternalMonitor?
 
     init(
         urlProvider: UploadURLProvider,
         httpClient: HTTPClient,
-        httpHeaders: HTTPHeaders,
+        httpHeaders: HTTPHeadersProvider,
         internalMonitor: InternalMonitor? = nil
     ) {
         self.urlProvider = urlProvider
@@ -88,7 +88,7 @@ internal final class DataUploader {
     private func createRequestWith(data: Data) -> URLRequest {
         var request = URLRequest(url: urlProvider.url)
         request.httpMethod = "POST"
-        request.allHTTPHeaderFields = httpHeaders.all
+        request.allHTTPHeaderFields = httpHeaders.headers
         request.httpBody = data
         return request
     }

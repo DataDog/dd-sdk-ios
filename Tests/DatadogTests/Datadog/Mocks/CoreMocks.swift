@@ -662,9 +662,9 @@ extension HTTPClient {
     }
 }
 
-extension HTTPHeaders {
-    static func mockAny() -> HTTPHeaders {
-        return HTTPHeaders(headers: [])
+extension HTTPHeadersProvider {
+    static func mockAny() -> HTTPHeadersProvider {
+        return HTTPHeadersProvider(headers: [])
     }
 }
 

@@ -25,30 +25,56 @@ class InternalMonitoringFeatureTests: XCTestCase {
     // MARK: - HTTP Message
 
     func testItUsesExpectedHTTPMessage() throws {
+        let randomApplicationName: String = .mockRandom()
+        let randomApplicationVersion: String = .mockRandom()
+        let randomSource: String = .mockRandom(among: .alphanumerics)
+        let randomUploadURL: URL = .mockRandom()
+        let randomClientToken: String = .mockRandom()
+        let randomDeviceModel: String = .mockRandom()
+        let randomDeviceOSName: String = .mockRandom()
+        let randomDeviceOSVersion: String = .mockRandom()
+
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+
+        // Given
         InternalMonitoringFeature.instance = .mockWith(
             logDirectories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
-                    applicationName: "FoobarApp",
-                    applicationVersion: "2.1.0",
-                    source: "abc"
-                )
+                    applicationName: randomApplicationName,
+                    applicationVersion: randomApplicationVersion,
+                    source: randomSource
+                ),
+                logsUploadURL: randomUploadURL,
+                clientToken: randomClientToken
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+                mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
         defer { InternalMonitoringFeature.instance?.deinitialize() }
 
+        // When
         let sdkLogger = try XCTUnwrap(InternalMonitoringFeature.instance?.monitor.sdkLogger)
-        sdkLogger.debug("message")
+        sdkLogger.debug(.mockAny())
 
+        // Then
         let request = server.waitAndReturnRequests(count: 1)[0]
+        let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertEqual(request.url?.query, "ddsource=abc")
-        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
+        XCTAssertTrue(requestURL.absoluteString.starts(with: randomUploadURL.absoluteString + "?"))
+        XCTAssertEqual(requestURL.query, "ddsource=\(randomSource)")
+        XCTAssertEqual(
+            request.allHTTPHeaderFields?["User-Agent"],
+            """
+            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceModel); \(randomDeviceOSName)/\(randomDeviceOSVersion))
+            """
+        )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
     // MARK: - Sending SDK Logs

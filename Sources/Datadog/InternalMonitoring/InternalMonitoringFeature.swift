@@ -66,14 +66,18 @@ internal final class InternalMonitoringFeature {
         return FeatureUpload(
             featureName: InternalMonitoringFeature.featureName,
             storage: storage,
-            uploadHTTPHeaders: HTTPHeaders(
+            uploadHTTPHeadersProvider: HTTPHeadersProvider(
                 headers: [
                     .contentTypeHeader(contentType: .applicationJSON),
                     .userAgentHeader(
                         appName: configuration.common.applicationName,
                         appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
-                    )
+                    ),
+                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginVersionHeader(),
+                    .ddRequestIDHeader(),
                 ]
             ),
             uploadURLProvider: UploadURLProvider(

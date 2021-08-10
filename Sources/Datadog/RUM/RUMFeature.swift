@@ -80,14 +80,18 @@ internal final class RUMFeature {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
             storage: storage,
-            uploadHTTPHeaders: HTTPHeaders(
+            uploadHTTPHeadersProvider: HTTPHeadersProvider(
                 headers: [
                     .contentTypeHeader(contentType: .textPlainUTF8),
                     .userAgentHeader(
                         appName: configuration.common.applicationName,
                         appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
-                    )
+                    ),
+                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginVersionHeader(),
+                    .ddRequestIDHeader(),
                 ]
             ),
             uploadURLProvider: UploadURLProvider(
