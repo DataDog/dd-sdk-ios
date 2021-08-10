@@ -9,14 +9,14 @@ import XCTest
 
 class UploadURLProviderTests: XCTestCase {
     func testDDSourceQueryItem() {
-        let item: UploadURLProvider.QueryItem = .ddsource(source: "abc")
+        let item: UploadURL.QueryItem = .ddsource(source: "abc")
 
         XCTAssertEqual(item.urlQueryItem.name, "ddsource")
         XCTAssertEqual(item.urlQueryItem.value, "abc")
     }
 
     func testItBuildsValidURLUsingNoQueryItems() throws {
-        let urlProvider = UploadURLProvider(
+        let urlProvider = UploadURL(
             url: URL(string: "https://api.example.com/v1/endpoint/abc")!,
             queryItems: []
         )
@@ -25,7 +25,7 @@ class UploadURLProviderTests: XCTestCase {
     }
 
     func testItBuildsValidURLUsingAllQueryItems() throws {
-        let urlProvider = UploadURLProvider(
+        let urlProvider = UploadURL(
             url: URL(string: "https://api.example.com/v1/endpoint/feature")!,
             queryItems: [.ddsource(source: "abc"), .ddtags(tags: ["abc:def"])]
         )
@@ -35,7 +35,7 @@ class UploadURLProviderTests: XCTestCase {
     }
 
     func testItEscapesWhitespacesInQueryItems() throws {
-        let urlProvider = UploadURLProvider(
+        let urlProvider = UploadURL(
             url: URL(string: "https://api.example.com/v1/endpoint/feature")!,
             queryItems: [.ddtags(tags: ["some string with whitespace"])]
         )
@@ -50,9 +50,9 @@ class DataUploaderTests: XCTestCase {
     func testWhenDataIsSentWith200Code_itReturnsDataUploadStatus_success() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
@@ -63,9 +63,9 @@ class DataUploaderTests: XCTestCase {
     func testWhenDataIsSentWith300Code_itReturnsDataUploadStatus_redirection() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 300)))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
@@ -76,9 +76,9 @@ class DataUploaderTests: XCTestCase {
     func testWhenDataIsSentWith400Code_itReturnsDataUploadStatus_clientError() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 400)))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
@@ -89,9 +89,9 @@ class DataUploaderTests: XCTestCase {
     func testWhenDataIsSentWith403Code_itReturnsDataUploadStatus_clientTokenError() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 403)))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
@@ -102,9 +102,9 @@ class DataUploaderTests: XCTestCase {
     func testWhenDataIsSentWith500Code_itReturnsDataUploadStatus_serverError() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
@@ -116,9 +116,9 @@ class DataUploaderTests: XCTestCase {
         let mockError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let server = ServerMock(delivery: .failure(error: mockError))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 
@@ -129,9 +129,9 @@ class DataUploaderTests: XCTestCase {
     func testWhenDataIsNotSentDueToUnknownStatusCode_itReturnsDataUploadStatus_unknown() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: -1)))
         let uploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            uploadURL: .mockAny(),
+            httpHeadersProvider: .mockAny()
         )
         let status = uploader.upload(data: .mockAny())
 

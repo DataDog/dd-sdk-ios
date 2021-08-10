@@ -25,9 +25,9 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
     /// `DataUploader` leaves no memory footprint (the memory peak after upload is less or equal `0kB`).
     func testUploadingDataToServer_leavesNoMemoryFootprint() throws {
         let dataUploader = DataUploader(
-            urlProvider: mockUploadURLProvider(),
             httpClient: HTTPClient(),
-            httpHeaders: HTTPHeaders(headers: [])
+            uploadURL: mockUploadURL(),
+            httpHeadersProvider: HTTPHeadersProvider(headers: [])
         )
 
         // `measure` runs 5 iterations
@@ -42,10 +42,10 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
         }
     }
 
-    private func mockUploadURLProvider() -> UploadURLProvider {
-        return UploadURLProvider(
-            urlWithClientToken: server.obtainUniqueRecordingSession().recordingURL,
-            queryItemProviders: [.ddtags(tags: ["foo:bar"])]
+    private func mockUploadURL() -> UploadURL {
+        return UploadURL(
+            url: server.obtainUniqueRecordingSession().recordingURL,
+            queryItems: [.ddtags(tags: ["foo:bar"])]
         )
     }
 }

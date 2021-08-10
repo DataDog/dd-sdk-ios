@@ -93,7 +93,7 @@ internal final class TracingFeature {
                     .ddRequestIDHeader(),
                 ]
             ),
-            uploadURLProvider: UploadURLProvider(
+            uploadURL: UploadURL(
                 url: configuration.uploadURL,
                 queryItems: []
             ),

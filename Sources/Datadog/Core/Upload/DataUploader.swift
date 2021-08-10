@@ -7,7 +7,7 @@
 import Foundation
 
 /// Creates the upload url with given query items.
-internal class UploadURLProvider {
+internal class UploadURL {
     enum QueryItem {
         /// `ddsource={source}` query item
         case ddsource(source: String)
@@ -43,20 +43,20 @@ internal class UploadURLProvider {
 
 /// Synchronously uploads data to server using `HTTPClient`.
 internal final class DataUploader {
-    private let urlProvider: UploadURLProvider
     private let httpClient: HTTPClient
-    private let httpHeaders: HTTPHeadersProvider
+    private let uploadURL: UploadURL
+    private let httpHeadersProvider: HTTPHeadersProvider
     private let internalMonitor: InternalMonitor?
 
     init(
-        urlProvider: UploadURLProvider,
         httpClient: HTTPClient,
-        httpHeaders: HTTPHeadersProvider,
+        uploadURL: UploadURL,
+        httpHeadersProvider: HTTPHeadersProvider,
         internalMonitor: InternalMonitor? = nil
     ) {
-        self.urlProvider = urlProvider
         self.httpClient = httpClient
-        self.httpHeaders = httpHeaders
+        self.uploadURL = uploadURL
+        self.httpHeadersProvider = httpHeadersProvider
         self.internalMonitor = internalMonitor
     }
 
@@ -86,9 +86,9 @@ internal final class DataUploader {
     }
 
     private func createRequestWith(data: Data) -> URLRequest {
-        var request = URLRequest(url: urlProvider.url)
+        var request = URLRequest(url: uploadURL.url)
         request.httpMethod = "POST"
-        request.allHTTPHeaderFields = httpHeaders.headers
+        request.allHTTPHeaderFields = httpHeadersProvider.headers
         request.httpBody = data
         return request
     }

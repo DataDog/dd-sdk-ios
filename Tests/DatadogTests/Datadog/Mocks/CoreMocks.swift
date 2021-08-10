@@ -647,9 +647,9 @@ extension UserInfoProvider {
     }
 }
 
-extension UploadURLProvider {
-    static func mockAny() -> UploadURLProvider {
-        return UploadURLProvider(
+extension UploadURL {
+    static func mockAny() -> UploadURL {
+        return UploadURL(
             url: URL(string: "https://app.example.com/v2/api/feature")!,
             queryItems: []
         )

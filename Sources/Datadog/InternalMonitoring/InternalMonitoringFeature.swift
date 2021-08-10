@@ -80,7 +80,7 @@ internal final class InternalMonitoringFeature {
                     .ddRequestIDHeader(),
                 ]
             ),
-            uploadURLProvider: UploadURLProvider(
+            uploadURL: UploadURL(
                 url: configuration.logsUploadURL,
                 queryItems: [
                     .ddsource(source: configuration.common.source)

@@ -144,7 +144,7 @@ internal struct FeatureUpload {
         featureName: String,
         storage: FeatureStorage,
         uploadHTTPHeadersProvider: HTTPHeadersProvider,
-        uploadURLProvider: UploadURLProvider,
+        uploadURL: UploadURL,
         commonDependencies: FeaturesCommonDependencies,
         internalMonitor: InternalMonitor? = nil
     ) {
@@ -159,9 +159,9 @@ internal struct FeatureUpload {
         )
 
         let dataUploader = DataUploader(
-            urlProvider: uploadURLProvider,
             httpClient: commonDependencies.httpClient,
-            httpHeaders: uploadHTTPHeadersProvider,
+            uploadURL: uploadURL,
+            httpHeadersProvider: uploadHTTPHeadersProvider,
             internalMonitor: internalMonitor
         )
 

@@ -86,7 +86,7 @@ internal final class LoggingFeature {
                     .ddRequestIDHeader(),
                 ]
             ),
-            uploadURLProvider: UploadURLProvider(
+            uploadURL: UploadURL(
                 url: configuration.uploadURL,
                 queryItems: [
                     .ddsource(source: configuration.common.source)
