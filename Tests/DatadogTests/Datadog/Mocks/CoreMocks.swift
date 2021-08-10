@@ -115,7 +115,7 @@ extension BundleType: CaseIterable {
 
 extension Datadog.Configuration.DatadogEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov].randomElement()!
+        return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
 }
 

@@ -137,6 +137,8 @@ class FeaturesConfigurationTests: XCTestCase {
             )
         }
 
+        typealias DeprecatedEndpoints = Deprecated<Datadog.Configuration.DatadogEndpoint>
+
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1).logging?.uploadURLWithClientToken.absoluteString,
             "https://logs.browser-intake-datadoghq.com/v1/input/" + clientToken
@@ -154,15 +156,15 @@ class FeaturesConfigurationTests: XCTestCase {
             "https://logs.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us).logging?.uploadURLWithClientToken.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.us).logging?.uploadURLWithClientToken.absoluteString,
+            "https://logs.browser-intake-datadoghq.com/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu).logging?.uploadURLWithClientToken.absoluteString,
+            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).logging?.uploadURLWithClientToken.absoluteString,
             "https://mobile-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .gov).logging?.uploadURLWithClientToken.absoluteString,
+            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).logging?.uploadURLWithClientToken.absoluteString,
             "https://logs.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
@@ -183,15 +185,15 @@ class FeaturesConfigurationTests: XCTestCase {
             "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://public-trace-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.us).tracing?.uploadURLWithClientToken.absoluteString,
+            "https://trace.browser-intake-datadoghq.com/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).tracing?.uploadURLWithClientToken.absoluteString,
+            "https:/public-trace-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .gov).tracing?.uploadURLWithClientToken.absoluteString,
+            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).tracing?.uploadURLWithClientToken.absoluteString,
             "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
@@ -212,15 +214,15 @@ class FeaturesConfigurationTests: XCTestCase {
             "https://rum.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.us).rum?.uploadURLWithClientToken.absoluteString,
+            "https://rum.browser-intake-datadoghq.com/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu).rum?.uploadURLWithClientToken.absoluteString,
+            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).rum?.uploadURLWithClientToken.absoluteString,
             "https://rum-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .gov).rum?.uploadURLWithClientToken.absoluteString,
+            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).rum?.uploadURLWithClientToken.absoluteString,
             "https://rum.browser-intake-ddog-gov.com/v1/input/" + clientToken
         )
 
@@ -760,4 +762,21 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
     }
+}
+
+// MARK: - Deprecation Helpers
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol DeprecatedDatadogEndpoints {
+    static var us: Self { get }
+    static var eu: Self { get }
+    static var gov: Self { get }
+}
+extension Datadog.Configuration.DatadogEndpoint: DeprecatedDatadogEndpoints {}
+
+/// An assistant shim to access `Datadog.Configuration.DatadogEndpoint` deprecated APIs with no warning.
+private struct Deprecated<T: DeprecatedDatadogEndpoints> {
+    static var us: T { T.us }
+    static var eu: T { T.eu }
+    static var gov: T { T.gov }
 }

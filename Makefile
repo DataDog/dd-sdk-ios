@@ -26,18 +26,24 @@ SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITO
 //		 the `arm64-simulator` architecture when compiled from source. Its pre-build `CrashReporter.xcframework`\n
 //		 available since `1.8.0` contains the `ios-arm64_i386_x86_64-simulator` slice and should link fine in all configurations.\n
 ONLY_ACTIVE_ARCH = YES\n
-\n
-// If running on CI (can be set empty on local machine):\n
-IS_CI=${ci}\n 
 endef
 export DD_SDK_BASE_XCCONFIG
 
-define DD_SDK_DATADOG_XCCONFIG
+define DD_SDK_BASE_XCCONFIG_CI
+// To ensure no build time warnings slip in without being resolved, treat them as CI build errors:\n
+SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
+\n
+// If running on CI. This value is injected to some targets through their `Info.plist`:\n
+IS_CI = true\n 
+endef
+export DD_SDK_BASE_XCCONFIG_CI
+
+define DD_SDK_DATADOG_XCCONFIG_CI
 // Datadog secrets provisioning E2E tests data for 'Mobile - Integration' org:\n
 E2E_RUM_APPLICATION_ID=${E2E_RUM_APPLICATION_ID}\n
 E2E_DATADOG_CLIENT_TOKEN=${E2E_DATADOG_CLIENT_TOKEN}\n
 endef
-export DD_SDK_DATADOG_XCCONFIG
+export DD_SDK_DATADOG_XCCONFIG_CI
 
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
@@ -48,7 +54,8 @@ dependencies:
 		@carthage bootstrap --platform iOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
-		@echo $$DD_SDK_DATADOG_XCCONFIG > xcconfigs/Datadog.local.xcconfig;
+		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
+		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
