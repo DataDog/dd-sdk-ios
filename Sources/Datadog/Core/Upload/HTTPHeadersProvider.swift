@@ -14,6 +14,13 @@ internal struct HTTPHeadersProvider {
     }
 
     struct HTTPHeader {
+        static let contentTypeHeaderField = "Content-Type"
+        static let userAgentHeaderField = "User-Agent"
+        static let ddAPIKeyHeaderField = "DD-API-KEY"
+        static let ddEVPOriginHeaderField = "DD-EVP-ORIGIN"
+        static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
+        static let ddRequestIDHeaderField = "DD-REQUEST-ID"
+
         enum Value {
             /// If the header's value is constant.
             case constant(_ value: String)
@@ -26,44 +33,39 @@ internal struct HTTPHeadersProvider {
 
         // MARK: - Standard Headers
 
+        /// Standard "Content-Type" header.
         static func contentTypeHeader(contentType: ContentType) -> HTTPHeader {
-            return HTTPHeader(field: "Content-Type", value: .constant(contentType.rawValue))
+            return HTTPHeader(field: contentTypeHeaderField, value: .constant(contentType.rawValue))
         }
 
+        /// Standard "User-Agent" header.
         static func userAgentHeader(appName: String, appVersion: String, device: MobileDevice) -> HTTPHeader {
             return HTTPHeader(
-                field: "User-Agent",
+                field: userAgentHeaderField,
                 value: .constant("\(appName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))")
             )
         }
 
         // MARK: - Datadog Headers
 
-        /// Request authentication header.
+        /// Datadog request authentication header.
         static func ddAPIKeyHeader(clientToken: String) -> HTTPHeader {
-            return HTTPHeader(field: "DD-API-KEY", value: .constant(clientToken))
+            return HTTPHeader(field: ddAPIKeyHeaderField, value: .constant(clientToken))
         }
 
-        /// An observability and troubleshooting header for tracking the origin which is sending the request.
+        /// An observability and troubleshooting Datadog header for tracking the origin which is sending the request.
         static func ddEVPOriginHeader(source: String) -> HTTPHeader {
-            return HTTPHeader(field: "DD-EVP-ORIGIN", value: .constant(source))
+            return HTTPHeader(field: ddEVPOriginHeaderField, value: .constant(source))
         }
 
-        /// An observability and troubleshooting header for tracking the origin which is sending the request.
+        /// An observability and troubleshooting Datadog header for tracking the origin which is sending the request.
         static func ddEVPOriginVersionHeader() -> HTTPHeader {
-            return HTTPHeader(field: "DD-EVP-ORIGIN-VERSION", value: .constant(sdkVersion))
+            return HTTPHeader(field: ddEVPOriginVersionHeaderField, value: .constant(sdkVersion))
         }
 
-        /// An optional header for debugging Intake requests by their ID.
+        /// An optional Datadog header for debugging Intake requests by their ID.
         static func ddRequestIDHeader() -> HTTPHeader {
-            return HTTPHeader(field: "DD-REQUEST-ID", value: .dynamic({ UUID().uuidString }))
-        }
-
-        // MARK: - Initialization
-
-        private init(field: String, value: Value) {
-            self.field = field
-            self.value = value
+            return HTTPHeader(field: ddRequestIDHeaderField, value: .dynamic({ UUID().uuidString }))
         }
     }
 

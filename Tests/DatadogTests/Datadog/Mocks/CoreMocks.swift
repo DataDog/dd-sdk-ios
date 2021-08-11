@@ -529,11 +529,6 @@ class NoOpFileReader: SyncReader {
     func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {
-    func flushSynchronously() {}
-    func cancelSynchronously() {}
-}
-
 extension DataFormat {
     static func mockAny() -> DataFormat {
         return mockWith()
@@ -665,6 +660,47 @@ extension HTTPClient {
 extension HTTPHeadersProvider {
     static func mockAny() -> HTTPHeadersProvider {
         return HTTPHeadersProvider(headers: [])
+    }
+}
+
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
+
+struct DataUploaderMock: DataUploaderType {
+    let uploadStatus: DataUploadStatus
+
+    var onUpload: (() -> Void)? = nil
+
+    func upload(data: Data) -> DataUploadStatus {
+        onUpload?()
+        return uploadStatus
+    }
+}
+
+extension DataUploadStatus: RandomMockable {
+    static func mockRandom() -> DataUploadStatus {
+        return DataUploadStatus(
+            needsRetry: .random(),
+            userDebugDescription: .mockRandom(),
+            userErrorMessage: .mockRandom(),
+            internalMonitoringError: (.mockRandom(), ErrorMock(), .mockRandom())
+        )
+    }
+
+    static func mockWith(
+        needsRetry: Bool = .mockAny(),
+        userDebugDescription: String = .mockAny(),
+        userErrorMessage: String? = nil,
+        internalMonitoringError: (message: String, error: Error?, attributes: [String: String]?)? = nil
+    ) -> DataUploadStatus {
+        return DataUploadStatus(
+            needsRetry: needsRetry,
+            userDebugDescription: userDebugDescription,
+            userErrorMessage: userErrorMessage,
+            internalMonitoringError: internalMonitoringError
+        )
     }
 }
 

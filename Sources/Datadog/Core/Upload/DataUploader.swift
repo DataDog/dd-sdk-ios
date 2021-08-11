@@ -41,40 +41,49 @@ internal class UploadURL {
     }
 }
 
+/// A type that performs data uploads.
+internal protocol DataUploaderType {
+    func upload(data: Data) -> DataUploadStatus
+}
+
 /// Synchronously uploads data to server using `HTTPClient`.
-internal final class DataUploader {
+internal final class DataUploader: DataUploaderType {
+    /// An unreachable upload status - mean to only satisfy compiler.
+    private static let unreachableUploadStatus = DataUploadStatus(
+        needsRetry: false,
+        userDebugDescription: "",
+        userErrorMessage: nil,
+        internalMonitoringError: nil
+    )
+
     private let httpClient: HTTPClient
     private let uploadURL: UploadURL
     private let httpHeadersProvider: HTTPHeadersProvider
-    private let internalMonitor: InternalMonitor?
 
     init(
         httpClient: HTTPClient,
         uploadURL: UploadURL,
-        httpHeadersProvider: HTTPHeadersProvider,
-        internalMonitor: InternalMonitor? = nil
+        httpHeadersProvider: HTTPHeadersProvider
     ) {
         self.httpClient = httpClient
         self.uploadURL = uploadURL
         self.httpHeadersProvider = httpHeadersProvider
-        self.internalMonitor = internalMonitor
     }
 
-    /// Uploads data synchronously (will block current thread) and returns upload status.
+    /// Uploads data synchronously (will block current thread) and returns the upload status.
     /// Uses timeout configured for `HTTPClient`.
     func upload(data: Data) -> DataUploadStatus {
-        let request = createRequestWith(data: data)
+        let (request, ddRequestID) = createRequestWith(data: data)
         var uploadStatus: DataUploadStatus?
 
         let semaphore = DispatchSemaphore(value: 0)
 
-        httpClient.send(request: request) { [weak self] result in
+        httpClient.send(request: request) { result in
             switch result {
             case .success(let httpResponse):
-                uploadStatus = DataUploadStatus(from: httpResponse)
+                uploadStatus = DataUploadStatus(httpResponse: httpResponse, ddRequestID: ddRequestID)
             case .failure(let error):
-                self?.internalMonitor?.sdkLogger.error("Failed to upload data", error: error)
-                uploadStatus = .networkError
+                uploadStatus = DataUploadStatus(networkError: error)
             }
 
             semaphore.signal()
@@ -82,43 +91,15 @@ internal final class DataUploader {
 
         _ = semaphore.wait(timeout: .distantFuture)
 
-        return uploadStatus ?? .unknown
+        return uploadStatus ?? DataUploader.unreachableUploadStatus
     }
 
-    private func createRequestWith(data: Data) -> URLRequest {
+    private func createRequestWith(data: Data) -> (request: URLRequest, ddRequestID: String?) {
         var request = URLRequest(url: uploadURL.url)
+        let headers = httpHeadersProvider.headers
         request.httpMethod = "POST"
-        request.allHTTPHeaderFields = httpHeadersProvider.headers
+        request.allHTTPHeaderFields = headers
         request.httpBody = data
-        return request
-    }
-}
-
-internal enum DataUploadStatus: Equatable, Hashable {
-    /// Corresponds to HTTP 2xx response status codes.
-    case success
-    /// Corresponds to HTTP 3xx response status codes.
-    case redirection
-    /// Corresponds to HTTP 403 response status codes,
-    /// which means client token is invalid
-    case clientTokenError
-    /// Corresponds to HTTP 4xx response status codes.
-    case clientError
-    /// Corresponds to HTTP 5xx response status codes.
-    case serverError
-    /// Means transportation error and no delivery at all.
-    case networkError
-    /// Corresponds to unknown HTTP response status code.
-    case unknown
-
-    init(from httpResponse: HTTPURLResponse) {
-        switch httpResponse.statusCode {
-        case 200...299: self = .success
-        case 300...399: self = .redirection
-        case 403: self = .clientTokenError
-        case 400...499: self = .clientError
-        case 500...599: self = .serverError
-        default:        self = .unknown
-        }
+        return (request: request, ddRequestID: headers[HTTPHeadersProvider.HTTPHeader.ddRequestIDHeaderField])
     }
 }
