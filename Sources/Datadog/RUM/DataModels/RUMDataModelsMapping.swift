@@ -27,6 +27,7 @@ internal extension RUMInternalErrorSource {
         case .source: return .source
         case .network: return .network
         case .webview: return .webview
+        case .console: return .console
         case .logger: return .logger
         }
     }

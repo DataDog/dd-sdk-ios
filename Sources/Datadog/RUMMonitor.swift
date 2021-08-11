@@ -78,6 +78,8 @@ public enum RUMErrorSource {
     case network
     /// Error originated in a webview.
     case webview
+    /// Error originated in a web console (used by bridges).
+    case console
     /// Custom error source.
     case custom
 }
@@ -88,6 +90,7 @@ internal enum RUMInternalErrorSource {
     case network
     case webview
     case logger
+    case console
 
     init(_ errorSource: RUMErrorSource) {
         switch errorSource {
@@ -95,6 +98,7 @@ internal enum RUMInternalErrorSource {
         case .source: self = .source
         case .network: self = .network
         case .webview: self = .webview
+        case .console: self = .console
         }
     }
 }
