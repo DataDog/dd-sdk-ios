@@ -71,13 +71,13 @@ internal class JSONSchema: Decodable {
             self.additionalProperties = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
             self.required = try keyedContainer.decodeIfPresent([String].self, forKey: .required)
             self.type = try keyedContainer.decodeIfPresent(SchemaType.self, forKey: .type)
-            self.enum = try keyedContainer.decodeIfPresent([String].self, forKey: .enum)
+            self.enum = try keyedContainer.decodeIfPresent([EnumValue].self, forKey: .enum)
             self.const = try keyedContainer.decodeIfPresent(SchemaConstant.self, forKey: .const)
             self.items = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .items)
             self.readOnly = try keyedContainer.decodeIfPresent(Bool.self, forKey: .readOnly)
             self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
             self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
-        } catch let keyedContainerError {
+        } catch let keyedContainerError as DecodingError {
             // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
             // a single value. Check known schema values:
             do {
