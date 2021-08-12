@@ -76,6 +76,43 @@ public class DDRUMViewEventDD: NSObject {
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
+
+    @objc public var session: DDRUMViewEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMViewEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMViewEventDDSession: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var plan: DDRUMViewEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+}
+
+@objc
+public enum DDRUMViewEventDDSessionPlan: Int {
+    internal init(swift: RUMViewEvent.DD.Session.Plan) {
+        switch swift {
+        case .plan1: self = .plan1
+        case .plan2: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.DD.Session.Plan {
+        switch self {
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case plan1
+    case plan2
 }
 
 @objc
@@ -598,6 +635,10 @@ public class DDRUMResourceEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var session: DDRUMResourceEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMResourceEventDDSession(root: root) : nil
+    }
+
     @objc public var spanId: String? {
         root.swiftModel.dd.spanId
     }
@@ -605,6 +646,39 @@ public class DDRUMResourceEventDD: NSObject {
     @objc public var traceId: String? {
         root.swiftModel.dd.traceId
     }
+}
+
+@objc
+public class DDRUMResourceEventDDSession: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var plan: DDRUMResourceEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+}
+
+@objc
+public enum DDRUMResourceEventDDSessionPlan: Int {
+    internal init(swift: RUMResourceEvent.DD.Session.Plan) {
+        switch swift {
+        case .plan1: self = .plan1
+        case .plan2: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.DD.Session.Plan {
+        switch self {
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case plan1
+    case plan2
 }
 
 @objc
@@ -1234,6 +1308,43 @@ public class DDRUMActionEventDD: NSObject {
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
+
+    @objc public var session: DDRUMActionEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMActionEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMActionEventDDSession: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var plan: DDRUMActionEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+}
+
+@objc
+public enum DDRUMActionEventDDSessionPlan: Int {
+    internal init(swift: RUMActionEvent.DD.Session.Plan) {
+        switch swift {
+        case .plan1: self = .plan1
+        case .plan2: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.DD.Session.Plan {
+        switch self {
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case plan1
+    case plan2
 }
 
 @objc
@@ -1673,6 +1784,43 @@ public class DDRUMErrorEventDD: NSObject {
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
+
+    @objc public var session: DDRUMErrorEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMErrorEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMErrorEventDDSession: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var plan: DDRUMErrorEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventDDSessionPlan: Int {
+    internal init(swift: RUMErrorEvent.DD.Session.Plan) {
+        switch swift {
+        case .plan1: self = .plan1
+        case .plan2: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.DD.Session.Plan {
+        switch self {
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case plan1
+    case plan2
 }
 
 @objc
@@ -1824,6 +1972,14 @@ public class DDRUMErrorEventError: NSObject {
         self.root = root
     }
 
+    @objc public var handling: DDRUMErrorEventErrorHandling {
+        .init(swift: root.swiftModel.error.handling)
+    }
+
+    @objc public var handlingStack: String? {
+        root.swiftModel.error.handlingStack
+    }
+
     @objc public var id: String? {
         root.swiftModel.error.id
     }
@@ -1853,6 +2009,29 @@ public class DDRUMErrorEventError: NSObject {
     @objc public var type: String? {
         root.swiftModel.error.type
     }
+}
+
+@objc
+public enum DDRUMErrorEventErrorHandling: Int {
+    internal init(swift: RUMErrorEvent.Error.Handling?) {
+        switch swift {
+        case nil: self = .none
+        case .handled?: self = .handled
+        case .unhandled?: self = .unhandled
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Handling? {
+        switch self {
+        case .none: return nil
+        case .handled: return .handled
+        case .unhandled: return .unhandled
+        }
+    }
+
+    case none
+    case handled
+    case unhandled
 }
 
 @objc
@@ -2128,4 +2307,4 @@ public class DDRUMErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d40d93a607a2d4483c95bd000a4e8ebd96fdf1fd
+// Generated from https://github.com/DataDog/rum-events-format/tree/2ea84b56a4e0670b2d6e3e0c6a5fd27774ce4a3d
