@@ -42,7 +42,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .mockAny()
+            headersProvider: .mockAny()
         )
 
         // Given
@@ -144,7 +144,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .mockAny()
+            headersProvider: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -178,7 +178,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .mockAny()
+            headersProvider: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -212,7 +212,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .mockAny()
+            headersProvider: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -301,7 +301,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .mockAny()
+            headersProvider: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -326,7 +326,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .mockAny()
+            headersProvider: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,

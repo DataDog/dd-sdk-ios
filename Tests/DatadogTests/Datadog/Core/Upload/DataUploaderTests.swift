@@ -59,7 +59,7 @@ class DataUploaderTests: XCTestCase {
         let uploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .init(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
+            headersProvider: .init(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
         )
 
         // When
@@ -81,7 +81,7 @@ class DataUploaderTests: XCTestCase {
         let uploader = DataUploader(
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             uploadURL: .mockAny(),
-            httpHeadersProvider: .init(headers: [])
+            headersProvider: .init(headers: [])
         )
 
         // When

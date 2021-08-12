@@ -33,10 +33,6 @@ internal class UploadURL {
             urlComponents?.queryItems = queryItems.map { $0.urlQueryItem }
         }
 
-        if urlComponents?.url == nil { // sanity check - should not happen
-            userLogger.error("🔥 Failed to create upload URL from \(url) and \(queryItems)")
-        }
-
         self.url = urlComponents?.url ?? url
     }
 }
@@ -48,26 +44,21 @@ internal protocol DataUploaderType {
 
 /// Synchronously uploads data to server using `HTTPClient`.
 internal final class DataUploader: DataUploaderType {
-    /// An unreachable upload status - mean to only satisfy compiler.
-    private static let unreachableUploadStatus = DataUploadStatus(
-        needsRetry: false,
-        userDebugDescription: "",
-        userErrorMessage: nil,
-        internalMonitoringError: nil
-    )
+    /// An unreachable upload status - only meant to satisfy the compiler.
+    private static let unreachableUploadStatus = DataUploadStatus(needsRetry: false, userDebugDescription: "", userErrorMessage: nil, internalMonitoringError: nil)
 
     private let httpClient: HTTPClient
     private let uploadURL: UploadURL
-    private let httpHeadersProvider: HTTPHeadersProvider
+    private let headersProvider: HTTPHeadersProvider
 
     init(
         httpClient: HTTPClient,
         uploadURL: UploadURL,
-        httpHeadersProvider: HTTPHeadersProvider
+        headersProvider: HTTPHeadersProvider
     ) {
         self.httpClient = httpClient
         self.uploadURL = uploadURL
-        self.httpHeadersProvider = httpHeadersProvider
+        self.headersProvider = headersProvider
     }
 
     /// Uploads data synchronously (will block current thread) and returns the upload status.
@@ -96,7 +87,7 @@ internal final class DataUploader: DataUploaderType {
 
     private func createRequestWith(data: Data) -> (request: URLRequest, ddRequestID: String?) {
         var request = URLRequest(url: uploadURL.url)
-        let headers = httpHeadersProvider.headers
+        let headers = headersProvider.headers
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = headers
         request.httpBody = data

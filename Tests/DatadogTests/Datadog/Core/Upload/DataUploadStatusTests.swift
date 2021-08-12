@@ -29,21 +29,15 @@ class DataUploadStatusTests: XCTestCase {
 
     func testWhenUploadFinishesWithResponse_andStatusCodeNeedsNoRetry_itSetsNeedsRetryFlagToFalse() {
         statusCodesExpectingNoRetry.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: .mockAny()
-            )
-            XCTAssertFalse(uploadStatus.needsRetry, "Upload should not be retried for status code \(statusCode)")
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockAny())
+            XCTAssertFalse(status.needsRetry, "Upload should not be retried for status code \(statusCode)")
         }
     }
 
     func testWhenUploadFinishesWithResponse_andStatusCodeNeedsRetry_itSetsNeedsRetryFlagToTrue() {
         statusCodesExpectingRetry.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: .mockAny()
-            )
-            XCTAssertTrue(uploadStatus.needsRetry, "Upload should be retried for status code \(statusCode)")
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockAny())
+            XCTAssertTrue(status.needsRetry, "Upload should be retried for status code \(statusCode)")
         }
     }
 
@@ -52,17 +46,14 @@ class DataUploadStatusTests: XCTestCase {
         let unexpectedStatusCodes = allStatusCodes.subtracting(Set(expectedStatusCodes))
 
         unexpectedStatusCodes.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: .mockAny()
-            )
-            XCTAssertFalse(uploadStatus.needsRetry, "Upload should not be retried for status code \(statusCode)")
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockAny())
+            XCTAssertFalse(status.needsRetry, "Upload should not be retried for status code \(statusCode)")
         }
     }
 
     func testWhenUploadFinishesWithError_itSetsNeedsRetryFlagToTrue() {
-        let uploadStatus = DataUploadStatus(networkError: ErrorMock())
-        XCTAssertTrue(uploadStatus.needsRetry, "Upload should be retried if it finished with error")
+        let status = DataUploadStatus(networkError: ErrorMock())
+        XCTAssertTrue(status.needsRetry, "Upload should be retried if it finished with error")
     }
 
     // MARK: - Test `.userDebugDescription`
@@ -70,75 +61,52 @@ class DataUploadStatusTests: XCTestCase {
     func testWhenUploadFinishesWithResponse_andRequestIDIsAvailable_itCreatesUserDebugDescription() {
         expectedStatusCodes.forEach { statusCode in
             let requestID: String = .mockRandom(among: .alphanumerics)
-
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: requestID
-            )
-
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: requestID)
             XCTAssertTrue(
-                uploadStatus.userDebugDescription.matches(
+                status.userDebugDescription.matches(
                     regex: "\\[response code: [0-9]{3} \\([a-zA-Z]+\\), request ID: \(requestID)\\]"
                 ),
-                "'\(uploadStatus.userDebugDescription)' is not expected description for status code '\(statusCode)' and request id '\(requestID)'"
+                "'\(status.userDebugDescription)' is not an expected description for status code '\(statusCode)' and request id '\(requestID)'"
             )
         }
     }
 
     func testWhenUploadFinishesWithResponse_andRequestIDIsNotAvailable_itCreatesUserDebugDescription() {
         expectedStatusCodes.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: nil
-            )
-
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
             XCTAssertTrue(
-                uploadStatus.userDebugDescription.matches(
+                status.userDebugDescription.matches(
                     regex: "\\[response code: [0-9]{3} \\([a-zA-Z]+\\), request ID: \\(\\?\\?\\?\\)\\]"
                 ),
-                "'\(uploadStatus.userDebugDescription)' is not expected description for status code '\(statusCode)' and no request id"
+                "'\(status.userDebugDescription)' is not an expected description for status code '\(statusCode)' and no request id"
             )
         }
     }
 
     func testWhenUploadFinishesWithError_itCreatesUserDebugDescription() {
         let randomErrorDescription: String = .mockRandom()
-
-        let uploadStatus = DataUploadStatus(
-            networkError: ErrorMock(randomErrorDescription)
-        )
-
-        XCTAssertEqual(uploadStatus.userDebugDescription, "[error: \(randomErrorDescription)]")
+        let status = DataUploadStatus(networkError: ErrorMock(randomErrorDescription))
+        XCTAssertEqual(status.userDebugDescription, "[error: \(randomErrorDescription)]")
     }
 
     // MARK: - Test `.userErrorMessage`
 
     func testWhenUploadFinishesWithResponse_andStatusCodeIs403_itCreatesClientTokenErrorMessage() {
-        let uploadStatus = DataUploadStatus(
-            httpResponse: .mockResponseWith(statusCode: 403),
-            ddRequestID: nil
-        )
-
-        XCTAssertEqual(uploadStatus.userErrorMessage, "⚠️ The client token you provided seems to be invalid.")
+        let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 403), ddRequestID: nil)
+        XCTAssertEqual(status.userErrorMessage, "⚠️ The client token you provided seems to be invalid.")
     }
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan401_itDoesNotCreateAnyUserErrorMessage() {
-        var statusCodes = Set((100...599))
-        statusCodes.remove(403)
-
+    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan403_itDoesNotCreateAnyUserErrorMessage() {
+        let statusCodes = Set((100...599)).subtracting([403])
         statusCodes.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: nil
-            )
-
-            XCTAssertNil(uploadStatus.userErrorMessage)
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
+            XCTAssertNil(status.userErrorMessage)
         }
     }
 
     func testWhenUploadFinishesWithError_itDoesNotCreateAnyUserErrorMessage() {
-        let uploadStatus = DataUploadStatus(networkError: ErrorMock(.mockRandom()))
-        XCTAssertNil(uploadStatus.userErrorMessage)
+        let status = DataUploadStatus(networkError: ErrorMock(.mockRandom()))
+        XCTAssertNil(status.userErrorMessage)
     }
 
     // MARK: - Test `.internalMonitoringError`
@@ -152,13 +120,8 @@ class DataUploadStatusTests: XCTestCase {
     func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesInternalMonitoringError() throws {
         try alertingStatusCodes.forEach { statusCode in
             let requestID: String = .mockRandom()
-
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: requestID
-            )
-
-            let error = try XCTUnwrap(uploadStatus.internalMonitoringError, "Internal Monitoring error should be created for status code \(statusCode)")
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: requestID)
+            let error = try XCTUnwrap(status.internalMonitoringError, "Internal Monitoring error should be created for status code \(statusCode)")
             XCTAssertEqual(error.message, "Data upload finished with status code: \(statusCode)")
             XCTAssertEqual(error.attributes?["dd_request_id"], requestID)
         }
@@ -166,38 +129,25 @@ class DataUploadStatusTests: XCTestCase {
 
     func testWhenUploadFinishesWithResponse_andStatusCodeMeansClientIssue_itDoesNotCreateInternalMonitoringError() {
         let clientIssueStatusCodes = Set(expectedStatusCodes).subtracting(Set(alertingStatusCodes))
-
         clientIssueStatusCodes.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: nil
-            )
-
-            XCTAssertNil(
-                uploadStatus.internalMonitoringError,
-                "Internal Monitoring error should not be created for status code \(statusCode)"
-            )
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
+            XCTAssertNil(status.internalMonitoringError, "Internal Monitoring error should not be created for status code \(statusCode)")
         }
     }
 
     func testWhenUploadFinishesWithResponse_andUnexpectedStatusCodeMeansClientIssue_itDoesNotCreateInternalMonitoringError() {
         let unexpectedStatusCodes = Set((100...599)).subtracting(Set(expectedStatusCodes))
-
         unexpectedStatusCodes.forEach { statusCode in
-            let uploadStatus = DataUploadStatus(
-                httpResponse: .mockResponseWith(statusCode: statusCode),
-                ddRequestID: nil
-            )
-
-            XCTAssertNil(uploadStatus.internalMonitoringError)
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
+            XCTAssertNil(status.internalMonitoringError)
         }
     }
 
     func testWhenUploadFinishesWithError_andErrorCodeMeansSDKIssue_itCreatesInternalMonitoringError() throws {
         let alertingNSURLErrorCode = NSURLErrorBadURL
-        let uploadStatus = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: alertingNSURLErrorCode, userInfo: nil))
+        let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: alertingNSURLErrorCode, userInfo: nil))
 
-        let error = try XCTUnwrap(uploadStatus.internalMonitoringError, "Internal Monitoring error should be created for NSURLError code: \(alertingNSURLErrorCode)")
+        let error = try XCTUnwrap(status.internalMonitoringError, "Internal Monitoring error should be created for NSURLError code: \(alertingNSURLErrorCode)")
         XCTAssertEqual(error.message, "Data upload finished with error")
         let nsError = try XCTUnwrap(error.error) as NSError
         XCTAssertEqual(nsError.code, alertingNSURLErrorCode)
@@ -205,7 +155,7 @@ class DataUploadStatusTests: XCTestCase {
 
     func testWhenUploadFinishesWithError_andErrorCodeMeansExternalFactors_itDoesNotCreateInternalMonitoringError() {
         let notAlertingNSURLErrorCode = NSURLErrorNetworkConnectionLost
-        let uploadStatus = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: notAlertingNSURLErrorCode, userInfo: nil))
-        XCTAssertNil(uploadStatus.internalMonitoringError, "Internal Monitoring error should be created for NSURLError code: \(notAlertingNSURLErrorCode)")
+        let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: notAlertingNSURLErrorCode, userInfo: nil))
+        XCTAssertNil(status.internalMonitoringError, "Internal Monitoring error should be created for NSURLError code: \(notAlertingNSURLErrorCode)")
     }
 }

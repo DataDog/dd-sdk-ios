@@ -83,12 +83,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
 
                 // Send internal monitoring error (if any and if Internal Monitoring is enabled)
-                if let internalMonitoringError = uploadStatus.internalMonitoringError {
-                    self.internalMonitor?.sdkLogger.error(
-                        internalMonitoringError.message,
-                        error: internalMonitoringError.error,
-                        attributes: internalMonitoringError.attributes
-                    )
+                if let sdkError = uploadStatus.internalMonitoringError {
+                    self.internalMonitor?.sdkLogger.error(sdkError.message, error: sdkError.error, attributes: sdkError.attributes)
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")

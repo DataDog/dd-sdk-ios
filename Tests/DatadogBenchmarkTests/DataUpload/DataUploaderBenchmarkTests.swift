@@ -27,7 +27,7 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(),
             uploadURL: mockUploadURL(),
-            httpHeadersProvider: HTTPHeadersProvider(headers: [])
+            headersProvider: HTTPHeadersProvider(headers: [])
         )
 
         // `measure` runs 5 iterations

@@ -39,14 +39,12 @@ class HTTPHeadersProviderTests: XCTestCase {
     func testUsingDDAPIKeyHeader() {
         let randomClientToken: String = .mockRandom()
         let provider = HTTPHeadersProvider(headers: [.ddAPIKeyHeader(clientToken: randomClientToken)])
-
         XCTAssertEqual(provider.headers["DD-API-KEY"], randomClientToken)
     }
 
     func testUsingDDEVPOriginHeader() {
         let randomSource: String = .mockRandom()
         let provider = HTTPHeadersProvider(headers: [.ddEVPOriginHeader(source: randomSource)])
-
         XCTAssertEqual(provider.headers["DD-EVP-ORIGIN"], randomSource)
     }
 

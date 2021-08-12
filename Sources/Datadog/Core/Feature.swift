@@ -161,7 +161,7 @@ internal struct FeatureUpload {
         let dataUploader = DataUploader(
             httpClient: commonDependencies.httpClient,
             uploadURL: uploadURL,
-            httpHeadersProvider: uploadHTTPHeadersProvider
+            headersProvider: uploadHTTPHeadersProvider
         )
 
         self.init(

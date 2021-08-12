@@ -128,6 +128,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.logging?.clientToken, clientToken)
         XCTAssertEqual(configuration.tracing?.clientToken, clientToken)
         XCTAssertEqual(configuration.rum?.clientToken, clientToken)
+        XCTAssertNotEqual(configuration.internalMonitoring?.clientToken, clientToken)
     }
 
     func testEndpoint() throws {
@@ -579,13 +580,16 @@ class FeaturesConfigurationTests: XCTestCase {
     func testWhenInternalMonitoringClientTokenIsSet_thenInternalMonitoringConfigurationIsEnabled() throws {
         // When
         let internalMonitoringClientToken: String = .mockRandom(among: "abcdef")
+        let featuresClientToken: String = .mockRandom(among: "ghijkl")
         let featuresConfiguration = try FeaturesConfiguration(
-            configuration: .mockWith(internalMonitoringClientToken: internalMonitoringClientToken),
-            appContext: .mockWith(
-                bundleIdentifier: "com.bundle.identifier",
-                bundleVersion: "1.2.3",
-                bundleName: "AppName"
-            )
+            configuration: .mockWith(
+                clientToken: featuresClientToken,
+                loggingEnabled: true,
+                tracingEnabled: true,
+                rumEnabled: true,
+                internalMonitoringClientToken: internalMonitoringClientToken
+            ),
+            appContext: .mockAny()
         )
 
         // Then
@@ -597,7 +601,10 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration.logsUploadURL.absoluteString,
             "https://logs.browser-intake-datadoghq.com/api/v2/logs"
         )
-        XCTAssertEqual(configuration.clientToken, internalMonitoringClientToken)
+        XCTAssertEqual(configuration.clientToken, internalMonitoringClientToken, "Internal Monitoring must use monitoring token")
+        XCTAssertEqual(featuresConfiguration.logging!.clientToken, featuresClientToken, "Logging must use feature token")
+        XCTAssertEqual(featuresConfiguration.tracing!.clientToken, featuresClientToken, "Tracing must use feature token")
+        XCTAssertEqual(featuresConfiguration.rum!.clientToken, featuresClientToken, "RUM must use feature token")
     }
 
     // MARK: - Invalid Configurations
