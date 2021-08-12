@@ -38,8 +38,12 @@ internal struct SwiftDictionary: SwiftType {
 
 internal struct SwiftEnum: SwiftType {
     struct Case: SwiftType, SwiftPropertyDefaultValue {
+        enum RawValue {
+            case string(value: String)
+            case integer(value: Int)
+        }
         var label: String
-        var rawValue: String
+        var rawValue: RawValue
     }
 
     var name: String

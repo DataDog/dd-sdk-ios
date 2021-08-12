@@ -53,16 +53,16 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         name: "property1",
                         comment: "Description of FooBar's `property1`.",
                         cases: [
-                            SwiftEnum.Case(label: "case 1", rawValue: "case 1"),
-                            SwiftEnum.Case(label: "case 2", rawValue: "case 2"),
-                            SwiftEnum.Case(label: "case 3", rawValue: "case 3"),
-                            SwiftEnum.Case(label: "case 4", rawValue: "case 4"),
+                            SwiftEnum.Case(label: "case 1", rawValue: .string(value: "case 1")),
+                            SwiftEnum.Case(label: "case 2", rawValue: .string(value: "case 2")),
+                            SwiftEnum.Case(label: "case 3", rawValue: .string(value: "case 3")),
+                            SwiftEnum.Case(label: "case 4", rawValue: .string(value: "case 4")),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
                     isMutable: false,
-                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "property1")
                 ),
                 SwiftStruct.Property(
@@ -73,10 +73,10 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                             name: "property2",
                             comment: nil,
                             cases: [
-                                SwiftEnum.Case(label: "option-1", rawValue: "option-1"),
-                                SwiftEnum.Case(label: "option-2", rawValue: "option-2"),
-                                SwiftEnum.Case(label: "option-3", rawValue: "option-3"),
-                                SwiftEnum.Case(label: "option-4", rawValue: "option-4"),
+                                SwiftEnum.Case(label: "option-1", rawValue: .string(value: "option-1")),
+                                SwiftEnum.Case(label: "option-2", rawValue: .string(value: "option-2")),
+                                SwiftEnum.Case(label: "option-3", rawValue: .string(value: "option-3")),
+                                SwiftEnum.Case(label: "option-4", rawValue: .string(value: "option-4")),
                             ],
                             conformance: []
                         )
@@ -146,16 +146,16 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                             name: "Property1",
                             comment: "Description of FooBar's `property1`.",
                             cases: [
-                                SwiftEnum.Case(label: "case1", rawValue: "case 1"),
-                                SwiftEnum.Case(label: "case2", rawValue: "case 2"),
-                                SwiftEnum.Case(label: "case3", rawValue: "case 3"),
-                                SwiftEnum.Case(label: "case4", rawValue: "case 4"),
+                                SwiftEnum.Case(label: "case1", rawValue: .string(value: "case 1")),
+                                SwiftEnum.Case(label: "case2", rawValue: .string(value: "case 2")),
+                                SwiftEnum.Case(label: "case3", rawValue: .string(value: "case 3")),
+                                SwiftEnum.Case(label: "case4", rawValue: .string(value: "case 4")),
                             ],
                             conformance: [codableProtocol]
                         ),
                         isOptional: false,
                         isMutable: false,
-                        defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                        defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                         codingKey: .static(value: "property1")
                     ),
                     SwiftStruct.Property(
@@ -166,10 +166,10 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                 name: "Property2",
                                 comment: nil,
                                 cases: [
-                                    SwiftEnum.Case(label: "option1", rawValue: "option-1"),
-                                    SwiftEnum.Case(label: "option2", rawValue: "option-2"),
-                                    SwiftEnum.Case(label: "option3", rawValue: "option-3"),
-                                    SwiftEnum.Case(label: "option4", rawValue: "option-4"),
+                                    SwiftEnum.Case(label: "option1", rawValue: .string(value: "option-1")),
+                                    SwiftEnum.Case(label: "option2", rawValue: .string(value: "option-2")),
+                                    SwiftEnum.Case(label: "option3", rawValue: .string(value: "option-3")),
+                                    SwiftEnum.Case(label: "option4", rawValue: .string(value: "option-4")),
                                 ],
                                 conformance: [codableProtocol]
                             )
