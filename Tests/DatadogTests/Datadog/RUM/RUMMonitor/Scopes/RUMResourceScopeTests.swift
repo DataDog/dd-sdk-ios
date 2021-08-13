@@ -97,6 +97,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.traceId, "100")
         XCTAssertEqual(event.model.dd.spanId, "200")
+        XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -213,6 +214,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
