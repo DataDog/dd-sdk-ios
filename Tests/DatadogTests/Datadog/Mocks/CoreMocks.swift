@@ -642,24 +642,55 @@ extension UserInfoProvider {
     }
 }
 
-extension UploadURL {
-    static func mockAny() -> UploadURL {
-        return UploadURL(
-            url: URL(string: "https://app.example.com/v2/api/feature")!,
-            queryItems: []
-        )
+extension RequestBuilder.QueryItem: RandomMockable, AnyMockable {
+    static func mockRandom() -> RequestBuilder.QueryItem {
+        let all: [RequestBuilder.QueryItem] = [
+            .ddsource(source: .mockRandom()),
+            .ddtags(tags: .mockRandom()),
+        ]
+        return all.randomElement()!
+    }
+
+    static func mockAny() -> RequestBuilder.QueryItem {
+        return .ddsource(source: .mockRandom(among: .alphanumerics))
+    }
+}
+
+extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
+    static func mockRandom() -> RequestBuilder.HTTPHeader {
+        let all: [RequestBuilder.HTTPHeader] = [
+            .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
+            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
+            .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
+            .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
+            .ddEVPOriginVersionHeader(),
+            .ddRequestIDHeader()
+        ]
+        return all.randomElement()!
+    }
+
+    static func mockAny() -> RequestBuilder.HTTPHeader {
+        return .ddEVPOriginVersionHeader()
+    }
+}
+
+extension RequestBuilder: AnyMockable {
+    static func mockAny() -> RequestBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        url: URL = .mockAny(),
+        queryItems: [QueryItem] = [],
+        headers: [HTTPHeader] = []
+    ) -> RequestBuilder {
+        return RequestBuilder(url: url, queryItems: queryItems, headers: headers)
     }
 }
 
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
         return HTTPClient(session: URLSession())
-    }
-}
-
-extension HTTPHeadersProvider {
-    static func mockAny() -> HTTPHeadersProvider {
-        return HTTPHeadersProvider(headers: [])
     }
 }
 

@@ -26,8 +26,7 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
     func testUploadingDataToServer_leavesNoMemoryFootprint() throws {
         let dataUploader = DataUploader(
             httpClient: HTTPClient(),
-            uploadURL: mockUploadURL(),
-            headersProvider: HTTPHeadersProvider(headers: [])
+            requestBuilder: RequestBuilder(url: .mockAny(), queryItems: [.ddtags(tags: ["foo:bar"])], headers: [])
         )
 
         // `measure` runs 5 iterations
@@ -40,12 +39,5 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
             // After all, the baseline asserts `0kB` or less grow in Physical Memory.
             // This makes sure that no request data is leaked (e.g. due to internal caching).
         }
-    }
-
-    private func mockUploadURL() -> UploadURL {
-        return UploadURL(
-            url: server.obtainUniqueRecordingSession().recordingURL,
-            queryItems: [.ddtags(tags: ["foo:bar"])]
-        )
     }
 }

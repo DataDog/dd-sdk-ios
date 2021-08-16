@@ -6,37 +6,6 @@
 
 import Foundation
 
-/// Creates the upload url with given query items.
-internal class UploadURL {
-    enum QueryItem {
-        /// `ddsource={source}` query item
-        case ddsource(source: String)
-        /// `ddtags={tag1},{tag2},...` query item
-        case ddtags(tags: [String])
-
-        var urlQueryItem: URLQueryItem {
-            switch self {
-            case .ddsource(let source):
-                return URLQueryItem(name: "ddsource", value: source)
-            case .ddtags(let tags):
-                return URLQueryItem(name: "ddtags", value: tags.joined(separator: ","))
-            }
-        }
-    }
-
-    let url: URL
-
-    init(url: URL, queryItems: [QueryItem]) {
-        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
-
-        if !queryItems.isEmpty {
-            urlComponents?.queryItems = queryItems.map { $0.urlQueryItem }
-        }
-
-        self.url = urlComponents?.url ?? url
-    }
-}
-
 /// A type that performs data uploads.
 internal protocol DataUploaderType {
     func upload(data: Data) -> DataUploadStatus
@@ -48,23 +17,17 @@ internal final class DataUploader: DataUploaderType {
     private static let unreachableUploadStatus = DataUploadStatus(needsRetry: false, userDebugDescription: "", userErrorMessage: nil, internalMonitoringError: nil)
 
     private let httpClient: HTTPClient
-    private let uploadURL: UploadURL
-    private let headersProvider: HTTPHeadersProvider
+    private let requestBuilder: RequestBuilder
 
-    init(
-        httpClient: HTTPClient,
-        uploadURL: UploadURL,
-        headersProvider: HTTPHeadersProvider
-    ) {
+    init(httpClient: HTTPClient, requestBuilder: RequestBuilder) {
         self.httpClient = httpClient
-        self.uploadURL = uploadURL
-        self.headersProvider = headersProvider
+        self.requestBuilder = requestBuilder
     }
 
     /// Uploads data synchronously (will block current thread) and returns the upload status.
     /// Uses timeout configured for `HTTPClient`.
     func upload(data: Data) -> DataUploadStatus {
-        let (request, ddRequestID) = createRequestWith(data: data)
+        let (request, ddRequestID) = createRequest(with: data)
         var uploadStatus: DataUploadStatus?
 
         let semaphore = DispatchSemaphore(value: 0)
@@ -85,12 +48,9 @@ internal final class DataUploader: DataUploaderType {
         return uploadStatus ?? DataUploader.unreachableUploadStatus
     }
 
-    private func createRequestWith(data: Data) -> (request: URLRequest, ddRequestID: String?) {
-        var request = URLRequest(url: uploadURL.url)
-        let headers = headersProvider.headers
-        request.httpMethod = "POST"
-        request.allHTTPHeaderFields = headers
-        request.httpBody = data
-        return (request: request, ddRequestID: headers[HTTPHeadersProvider.HTTPHeader.ddRequestIDHeaderField])
+    private func createRequest(with data: Data) -> (request: URLRequest, ddRequestID: String?) {
+        let request = requestBuilder.uploadRequest(with: data)
+        let requestID = request.value(forHTTPHeaderField: RequestBuilder.HTTPHeader.ddRequestIDHeaderField)
+        return (request: request, ddRequestID: requestID)
     }
 }

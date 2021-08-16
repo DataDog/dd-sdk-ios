@@ -6,8 +6,24 @@
 
 import Foundation
 
-/// Provides HTTP headers associated with SDK requests.
-internal struct HTTPHeadersProvider {
+/// Builds `URLRequest` for sending data to Datadog.
+internal struct RequestBuilder {
+    enum QueryItem {
+        /// `ddsource={source}` query item
+        case ddsource(source: String)
+        /// `ddtags={tag1},{tag2},...` query item
+        case ddtags(tags: [String])
+
+        var urlQueryItem: URLQueryItem {
+            switch self {
+            case .ddsource(let source):
+                return URLQueryItem(name: "ddsource", value: source)
+            case .ddtags(let tags):
+                return URLQueryItem(name: "ddtags", value: tags.joined(separator: ","))
+            }
+        }
+    }
+
     enum ContentType: String {
         case applicationJSON = "application/json"
         case textPlainUTF8 = "text/plain;charset=UTF-8"
@@ -69,28 +85,50 @@ internal struct HTTPHeadersProvider {
         }
     }
 
-    /// Headers which value does not change.
-    private var constantHeaders: [String: String] = [:]
-    /// Headers which value does change over time.
-    private var dynamicHeaders: [String: () -> String] = [:]
-
-    /// Computes and returns headers to be associated with SDK request.
-    var headers: [String: String] {
-        var all = constantHeaders
-        dynamicHeaders.forEach { field, value in all[field] = value() }
-        return all
-    }
+    /// Upload `URL`.
+    private let url: URL
+    /// Pre-computed HTTP headers (they do not change in succeeding requests).
+    private let precomputedHeaders: [String: String]
+    /// Computed HTTP headers (their value is different in succeeding requests).
+    private let computedHeaders: [String: () -> String]
 
     // MARK: - Initialization
 
-    init(headers: [HTTPHeader]) {
+    init(url: URL, queryItems: [QueryItem], headers: [HTTPHeader]) {
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
+
+        if !queryItems.isEmpty {
+            urlComponents?.queryItems = queryItems.map { $0.urlQueryItem }
+        }
+
+        var precomputedHeaders: [String: String] = [:]
+        var computedHeaders: [String: () -> String] = [:]
         headers.forEach { header in
             switch header.value {
             case .constant(let value):
-                constantHeaders[header.field] = value
+                precomputedHeaders[header.field] = value
             case .dynamic(let value):
-                dynamicHeaders[header.field] = value
+                computedHeaders[header.field] = value
             }
         }
+
+        self.url = urlComponents?.url ?? url
+        self.precomputedHeaders = precomputedHeaders
+        self.computedHeaders = computedHeaders
+    }
+
+    /// Creates `URLRequest` for uploading given `data` to Datadog.
+    /// - Parameter data: data to be uploaded
+    /// - Returns: the `URLRequest` object and `DD-REQUEST-ID` header value (for debugging).
+    func uploadRequest(with data: Data) -> URLRequest {
+        var request = URLRequest(url: url)
+        var headers = precomputedHeaders
+        computedHeaders.forEach { field, value in headers[field] = value() }
+
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = headers
+        request.httpBody = data
+
+        return request
     }
 }

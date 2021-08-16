@@ -80,21 +80,7 @@ internal final class RUMFeature {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
             storage: storage,
-            uploadHTTPHeadersProvider: HTTPHeadersProvider(
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: configuration.common.applicationName,
-                        appVersion: configuration.common.applicationVersion,
-                        device: commonDependencies.mobileDevice
-                    ),
-                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
-                    .ddEVPOriginHeader(source: configuration.common.source),
-                    .ddEVPOriginVersionHeader(),
-                    .ddRequestIDHeader(),
-                ]
-            ),
-            uploadURL: UploadURL(
+            requestBuilder: RequestBuilder(
                 url: configuration.uploadURL,
                 queryItems: [
                     .ddsource(source: configuration.common.source),
@@ -106,6 +92,18 @@ internal final class RUMFeature {
                             "env:\(configuration.common.environment)"
                         ]
                     )
+                ],
+                headers: [
+                    .contentTypeHeader(contentType: .textPlainUTF8),
+                    .userAgentHeader(
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
+                        device: commonDependencies.mobileDevice
+                    ),
+                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginVersionHeader(),
+                    .ddRequestIDHeader(),
                 ]
             ),
             commonDependencies: commonDependencies,

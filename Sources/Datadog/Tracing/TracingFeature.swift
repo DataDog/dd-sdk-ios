@@ -79,7 +79,9 @@ internal final class TracingFeature {
         return FeatureUpload(
             featureName: TracingFeature.featureName,
             storage: storage,
-            uploadHTTPHeadersProvider: HTTPHeadersProvider(
+            requestBuilder: RequestBuilder(
+                url: configuration.uploadURL,
+                queryItems: [],
                 headers: [
                     .contentTypeHeader(contentType: .textPlainUTF8),
                     .userAgentHeader(
@@ -92,10 +94,6 @@ internal final class TracingFeature {
                     .ddEVPOriginVersionHeader(),
                     .ddRequestIDHeader(),
                 ]
-            ),
-            uploadURL: UploadURL(
-                url: configuration.uploadURL,
-                queryItems: []
             ),
             commonDependencies: commonDependencies,
             internalMonitor: internalMonitor
