@@ -75,7 +75,7 @@ extension DataUploadStatus {
         self.init(
             needsRetry: statusCode.needsRetry,
             userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")]",
-            userErrorMessage: statusCode == .forbidden ? "⚠️ The client token you provided seems to be invalid." : nil,
+            userErrorMessage: statusCode == .unauthorized ? "⚠️ The client token you provided seems to be invalid." : nil,
             internalMonitoringError: createInternalMonitoringErrorIfNeeded(for: httpResponse.statusCode, requestID: ddRequestID)
         )
     }

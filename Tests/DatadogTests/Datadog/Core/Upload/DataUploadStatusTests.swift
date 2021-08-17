@@ -91,13 +91,13 @@ class DataUploadStatusTests: XCTestCase {
 
     // MARK: - Test `.userErrorMessage`
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeIs403_itCreatesClientTokenErrorMessage() {
-        let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 403), ddRequestID: nil)
+    func testWhenUploadFinishesWithResponse_andStatusCodeIs401_itCreatesClientTokenErrorMessage() {
+        let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 401), ddRequestID: nil)
         XCTAssertEqual(status.userErrorMessage, "⚠️ The client token you provided seems to be invalid.")
     }
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan403_itDoesNotCreateAnyUserErrorMessage() {
-        let statusCodes = Set((100...599)).subtracting([403])
+    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan401_itDoesNotCreateAnyUserErrorMessage() {
+        let statusCodes = Set((100...599)).subtracting([401])
         statusCodes.forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
             XCTAssertNil(status.userErrorMessage)
