@@ -107,10 +107,10 @@ private func createInternalMonitoringErrorIfNeeded(
     case .accepted, .unauthorized, .forbidden:
         // These codes mean either success or the user configuration mistake - do not produce error.
         return nil
-    case .tooManyRequests, .internalServerError, .serviceUnavailable:
+    case .internalServerError, .serviceUnavailable:
         // These codes mean Datadog service issue - do not produce SDK error as this is already monitored by other means.
         return nil
-    case .badRequest, .payloadTooLarge, .requestTimeout:
+    case .badRequest, .payloadTooLarge, .tooManyRequests, .requestTimeout:
         // These codes mean that something wrong is happening either in the SDK or on the server - produce an error.
         return (
             message: "Data upload finished with status code: \(statusCode)",

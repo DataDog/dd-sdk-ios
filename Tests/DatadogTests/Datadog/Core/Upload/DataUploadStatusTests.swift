@@ -115,6 +115,7 @@ class DataUploadStatusTests: XCTestCase {
         400, // BAD REQUEST
         413, // PAYLOAD TOO LARGE
         408, // REQUEST TIMEOUT
+        429, // TOO MANY REQUESTS
     ]
 
     func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesInternalMonitoringError() throws {
