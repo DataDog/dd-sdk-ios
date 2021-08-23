@@ -35,12 +35,13 @@ class DataUploadWorkerTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Data Uploads
+
     func testItUploadsAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            requestBuilder: .mockAny()
         )
 
         // Given
@@ -69,6 +70,62 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
 
+    func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {
+        let startUploadExpectation = self.expectation(description: "Upload has started")
+
+        var mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: false))
+        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+
+        wait(for: [startUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When upload finishes with `needsRetry: false`, data should be deleted")
+    }
+
+    func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenDataIsPreserved() {
+        let startUploadExpectation = self.expectation(description: "Upload has started")
+
+        var mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
+        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny()
+        )
+
+        wait(for: [startUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(try temporaryDirectory.files().count, 1, "When upload finishes with `needsRetry: true`, data should be preserved")
+    }
+
+    // MARK: - Upload Interval Changes
+
     func testWhenThereIsNoBatch_thenIntervalIncreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
         let mockDelay = MockDelay { command in
@@ -84,9 +141,8 @@ class DataUploadWorkerTests: XCTestCase {
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            requestBuilder: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -118,9 +174,8 @@ class DataUploadWorkerTests: XCTestCase {
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
         let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            requestBuilder: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -152,9 +207,8 @@ class DataUploadWorkerTests: XCTestCase {
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            requestBuilder: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -171,13 +225,78 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
+    // MARK: - Notifying Upload Progress
+
+    func testWhenDataIsBeingUploaded_itPrintsUploadProgressInformationAndSendsErrorsThroughInternalMonitoring() {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let mockUserLoggerOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+
+        let mockSDKLoggerOutput = LogOutputMock()
+
+        // Given
+        writer.write(value: ["key": "value"])
+
+        let randomUploadStatus: DataUploadStatus = .mockRandom()
+        let randomFeatureName: String = .mockRandom()
+
+        // When
+        let startUploadExpectation = self.expectation(description: "Upload has started")
+        var mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: randomFeatureName,
+            internalMonitor: InternalMonitor(
+                sdkLogger: .mockWith(logOutput: mockSDKLoggerOutput)
+            )
+        )
+
+        wait(for: [startUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
+        let expectedSummary = randomUploadStatus.needsRetry ? "not delivered, will be retransmitted" : "accepted, won't be retransmitted"
+        XCTAssertEqual(mockUserLoggerOutput.allRecordedLogs.count, 3)
+        XCTAssertEqual(
+            mockUserLoggerOutput.allRecordedLogs[0].message,
+            "⏳ (\(randomFeatureName)) Uploading batch...",
+            "Batch start information should be printed to `userLogger`"
+        )
+        XCTAssertEqual(
+            mockUserLoggerOutput.allRecordedLogs[1].message,
+            "   → (\(randomFeatureName)) \(expectedSummary): \(randomUploadStatus.userDebugDescription)",
+            "Batch completion information should be printed to `userLogger`"
+        )
+        XCTAssertEqual(
+            mockUserLoggerOutput.allRecordedLogs[2].message,
+            randomUploadStatus.userErrorMessage,
+            "An error should be printed to `userLogger`"
+        )
+
+        XCTAssertEqual(mockSDKLoggerOutput.allRecordedLogs.count, 1)
+        XCTAssertEqual(
+            mockSDKLoggerOutput.allRecordedLogs[0].message,
+            randomUploadStatus.internalMonitoringError?.message,
+            "An error should be send to `sdkLogger` for internal monitoring"
+        )
+    }
+
+    // MARK: - Tearing Down
+
     func testWhenCancelled_itPerformsNoMoreUploads() {
         // Given
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            requestBuilder: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -200,9 +319,8 @@ class DataUploadWorkerTests: XCTestCase {
     func testItFlushesAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
+            requestBuilder: .mockAny()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -230,155 +348,6 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
 
         worker.cancelSynchronously()
-    }
-
-    func testGivenDataToUpload_whenUploadFinishesWithSuccessStatusCode_thenDataIsDeleted() {
-        let statusCode = (200...299).randomElement()!
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
-        let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
-        )
-
-        // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        // When
-        let worker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
-        )
-        _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        worker.cancelSynchronously()
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
-    }
-
-    func testGivenDataToUpload_whenUploadFinishesWithRedirectStatusCode_thenDataIsDeleted() {
-        let statusCode = (300...399).randomElement()!
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
-        let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
-        )
-
-        // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        // When
-        let worker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
-        )
-        _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        worker.cancelSynchronously()
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
-    }
-
-    func testGivenDataToUpload_whenUploadFinishesWithClientErrorStatusCode_thenDataIsDeleted() {
-        let statusCode = (400...499).randomElement()!
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
-        let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
-        )
-
-        // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        // When
-        let worker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
-        )
-        _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        worker.cancelSynchronously()
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
-    }
-
-    func testGivenDataToUpload_whenUploadFinishesWithClientTokenErrorStatusCode_thenDataIsDeleted() {
-        let statusCode = 403
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
-        let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
-        )
-
-        // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        // When
-        let worker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
-        )
-        _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        worker.cancelSynchronously()
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When status code \(statusCode) is received, data should be deleted")
-    }
-
-    func testGivenDataToUpload_whenUploadFinishesWithServerErrorStatusCode_thenDataIsPreserved() {
-        let statusCode = (500...599).randomElement()!
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: statusCode)))
-        let dataUploader = DataUploader(
-            urlProvider: .mockAny(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            httpHeaders: .mockAny()
-        )
-
-        // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-
-        // When
-        let worker = DataUploadWorker(
-            queue: uploaderQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
-        )
-        _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        worker.cancelSynchronously()
-        XCTAssertEqual(try temporaryDirectory.files().count, 1, "When status code \(statusCode) is received, data should be preserved")
     }
 }
 

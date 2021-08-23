@@ -190,9 +190,10 @@ extension FeaturesConfiguration.Logging {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny()
+        uploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny()
     ) -> Self {
-        return .init(common: common, uploadURLWithClientToken: uploadURLWithClientToken)
+        return .init(common: common, uploadURL: uploadURL, clientToken: clientToken)
     }
 }
 
@@ -201,12 +202,14 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
-        spanEventMapper: SpanEventMapper? = nil
+        uploadURL: URL = .mockAny(),
+        spanEventMapper: SpanEventMapper? = nil,
+        clientToken: String = .mockAny()
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
             spanEventMapper: spanEventMapper
         )
     }
@@ -217,7 +220,8 @@ extension FeaturesConfiguration.RUM {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
+        uploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
         viewEventMapper: RUMViewEventMapper? = nil,
@@ -229,7 +233,8 @@ extension FeaturesConfiguration.RUM {
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
             viewEventMapper: viewEventMapper,
@@ -285,13 +290,15 @@ extension FeaturesConfiguration.InternalMonitoring {
         common: FeaturesConfiguration.Common = .mockAny(),
         sdkServiceName: String = .mockAny(),
         sdkEnvironment: String = .mockAny(),
-        logsUploadURLWithClientToken: URL = .mockAny()
+        logsUploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny()
     ) -> Self {
         return .init(
             common: common,
             sdkServiceName: sdkServiceName,
             sdkEnvironment: sdkEnvironment,
-            logsUploadURLWithClientToken: logsUploadURLWithClientToken
+            logsUploadURL: logsUploadURL,
+            clientToken: clientToken
         )
     }
 }
@@ -522,11 +529,6 @@ class NoOpFileReader: SyncReader {
     func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {
-    func flushSynchronously() {}
-    func cancelSynchronously() {}
-}
-
 extension DataFormat {
     static func mockAny() -> DataFormat {
         return mockWith()
@@ -640,12 +642,49 @@ extension UserInfoProvider {
     }
 }
 
-extension UploadURLProvider {
-    static func mockAny() -> UploadURLProvider {
-        return UploadURLProvider(
-            urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
-            queryItemProviders: []
-        )
+extension RequestBuilder.QueryItem: RandomMockable, AnyMockable {
+    static func mockRandom() -> RequestBuilder.QueryItem {
+        let all: [RequestBuilder.QueryItem] = [
+            .ddsource(source: .mockRandom()),
+            .ddtags(tags: .mockRandom()),
+        ]
+        return all.randomElement()!
+    }
+
+    static func mockAny() -> RequestBuilder.QueryItem {
+        return .ddsource(source: .mockRandom(among: .alphanumerics))
+    }
+}
+
+extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
+    static func mockRandom() -> RequestBuilder.HTTPHeader {
+        let all: [RequestBuilder.HTTPHeader] = [
+            .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
+            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
+            .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
+            .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
+            .ddEVPOriginVersionHeader(),
+            .ddRequestIDHeader()
+        ]
+        return all.randomElement()!
+    }
+
+    static func mockAny() -> RequestBuilder.HTTPHeader {
+        return .ddEVPOriginVersionHeader()
+    }
+}
+
+extension RequestBuilder: AnyMockable {
+    static func mockAny() -> RequestBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        url: URL = .mockAny(),
+        queryItems: [QueryItem] = [],
+        headers: [HTTPHeader] = []
+    ) -> RequestBuilder {
+        return RequestBuilder(url: url, queryItems: queryItems, headers: headers)
     }
 }
 
@@ -655,9 +694,44 @@ extension HTTPClient {
     }
 }
 
-extension HTTPHeaders {
-    static func mockAny() -> HTTPHeaders {
-        return HTTPHeaders(headers: [])
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
+
+struct DataUploaderMock: DataUploaderType {
+    let uploadStatus: DataUploadStatus
+
+    var onUpload: (() -> Void)? = nil
+
+    func upload(data: Data) -> DataUploadStatus {
+        onUpload?()
+        return uploadStatus
+    }
+}
+
+extension DataUploadStatus: RandomMockable {
+    static func mockRandom() -> DataUploadStatus {
+        return DataUploadStatus(
+            needsRetry: .random(),
+            userDebugDescription: .mockRandom(),
+            userErrorMessage: .mockRandom(),
+            internalMonitoringError: (.mockRandom(), ErrorMock(), .mockRandom())
+        )
+    }
+
+    static func mockWith(
+        needsRetry: Bool = .mockAny(),
+        userDebugDescription: String = .mockAny(),
+        userErrorMessage: String? = nil,
+        internalMonitoringError: (message: String, error: Error?, attributes: [String: String]?)? = nil
+    ) -> DataUploadStatus {
+        return DataUploadStatus(
+            needsRetry: needsRetry,
+            userDebugDescription: userDebugDescription,
+            userErrorMessage: userErrorMessage,
+            internalMonitoringError: internalMonitoringError
+        )
     }
 }
 
