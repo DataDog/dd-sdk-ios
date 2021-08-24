@@ -48,7 +48,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     type: JSONEnumeration(
                         name: "property1",
                         comment: "Description of Foo's `property1`.",
-                        values: ["case1", "case2", "case3", "case4"]
+                        values: [.string(value: "case1"), .string(value: "case2"), .string(value: "case3"), .string(value: "case4")]
                     ),
                     defaultValue: JSONObject.Property.DefaultValue.string(value: "case2"),
                     isRequired: true,
@@ -61,7 +61,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         element: JSONEnumeration(
                             name: "property2",
                             comment: nil,
-                            values: ["option1", "option2", "option3", "option4"]
+                            values: [.string(value: "option1"), .string(value: "option2"), .string(value: "option3"), .string(value: "option4")]
                         )
                     ),
                     defaultValue: nil,
@@ -115,16 +115,16 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         name: "property1",
                         comment: "Description of Foo's `property1`.",
                         cases: [
-                            SwiftEnum.Case(label: "case1", rawValue: "case1"),
-                            SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                            SwiftEnum.Case(label: "case3", rawValue: "case3"),
-                            SwiftEnum.Case(label: "case4", rawValue: "case4"),
+                            SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                            SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                            SwiftEnum.Case(label: "case3", rawValue: .string(value: "case3")),
+                            SwiftEnum.Case(label: "case4", rawValue: .string(value: "case4")),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
                     isMutable: false,
-                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "property1")
                 ),
                 SwiftStruct.Property(
@@ -135,10 +135,10 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                             name: "property2",
                             comment: nil,
                             cases: [
-                                SwiftEnum.Case(label: "option1", rawValue: "option1"),
-                                SwiftEnum.Case(label: "option2", rawValue: "option2"),
-                                SwiftEnum.Case(label: "option3", rawValue: "option3"),
-                                SwiftEnum.Case(label: "option4", rawValue: "option4"),
+                                SwiftEnum.Case(label: "option1", rawValue: .string(value: "option1")),
+                                SwiftEnum.Case(label: "option2", rawValue: .string(value: "option2")),
+                                SwiftEnum.Case(label: "option3", rawValue: .string(value: "option3")),
+                                SwiftEnum.Case(label: "option4", rawValue: .string(value: "option4")),
                             ],
                             conformance: []
                         )

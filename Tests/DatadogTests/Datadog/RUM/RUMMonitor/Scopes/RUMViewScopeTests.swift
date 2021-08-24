@@ -92,6 +92,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertValidRumUUID(event.model.action.id)
         XCTAssertEqual(event.model.action.type, .applicationStart)
         XCTAssertEqual(event.model.action.loadingTime, 2_000_000_000) // 2e+9 ns
+        XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
     func testWhenInitialViewIsStarted_itSendsViewUpdateEvent() throws {
@@ -129,6 +130,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
     func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
@@ -581,6 +583,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.error.resource)
         XCTAssertNil(error.model.action)
         XCTAssertEqual(error.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(error.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)

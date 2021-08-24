@@ -110,7 +110,10 @@ internal class RUMSessionMatcher {
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually
+        try validate(rumViewEvents: viewEvents)
+        try validate(rumActionEvents: actionEvents)
         try validate(rumResourceEvents: resourceEvents)
+        try validate(rumErrorEvents: errorEvents)
 
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
@@ -215,12 +218,54 @@ internal class RUMSessionMatcher {
     }
 }
 
+private func validate(rumViewEvents: [RUMViewEvent]) throws {
+    // All view events must use `session.plan` "lite"
+    try rumViewEvents.forEach { viewEvent in
+        if viewEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad view event: \(viewEvent)"
+            )
+        }
+    }
+}
+
+private func validate(rumActionEvents: [RUMActionEvent]) throws {
+    // All action events must use `session.plan` "lite"
+    try rumActionEvents.forEach { actionEvent in
+        if actionEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad action event: \(actionEvent)"
+            )
+        }
+    }
+}
+
 private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
-    // Each `RUMResourceEvent` should have unique ID
+    // All resource events must have unique ID
     let ids = Set(rumResourceEvents.map { $0.resource.id })
     if ids.count != rumResourceEvents.count {
         throw RUMSessionConsistencyException(
             description: "`resource.id` should be unique - found at least two RUMResourceEvents with the same `resource.id`."
         )
+    }
+
+    // All resource events must use `session.plan` "lite"
+    try rumResourceEvents.forEach { resourceEvent in
+        if resourceEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad resource event: \(resourceEvent)"
+            )
+        }
+    }
+}
+
+private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
+    // All error events must use `session.plan` "lite"
+    try rumErrorEvents.forEach { errorEvent in
+        if errorEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad error event: \(errorEvent)"
+            )
+        }
     }
 }

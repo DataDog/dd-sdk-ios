@@ -53,7 +53,10 @@ extension RUMEventAttributes: RandomMockable {
 extension RUMViewEvent {
     static func mockRandom() -> RUMViewEvent {
         return RUMViewEvent(
-            dd: .init(documentVersion: .mockRandom()),
+            dd: .init(
+                documentVersion: .mockRandom(),
+                session: .init(plan: .plan1)
+            ),
             application: .init(id: .mockRandom()),
             connectivity: .mockRandom(),
             context: .mockRandom(),
@@ -110,6 +113,7 @@ extension RUMResourceEvent {
     static func mockRandom() -> RUMResourceEvent {
         return RUMResourceEvent(
             dd: .init(
+                session: .init(plan: .plan1),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
@@ -157,7 +161,9 @@ extension RUMResourceEvent {
 extension RUMActionEvent {
     static func mockRandom() -> RUMActionEvent {
         return RUMActionEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
@@ -192,13 +198,17 @@ extension RUMActionEvent {
 extension RUMErrorEvent {
     static func mockRandom() -> RUMErrorEvent {
         return RUMErrorEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
             error: .init(
+                handling: nil,
+                handlingStack: nil,
                 id: .mockRandom(),
                 isCrash: .random(),
                 message: .mockRandom(),

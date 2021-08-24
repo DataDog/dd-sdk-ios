@@ -128,7 +128,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         }
 
         let eventData = RUMActionEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: .init(
                 crash: nil,
                 error: .init(count: errorsCount.toInt64),

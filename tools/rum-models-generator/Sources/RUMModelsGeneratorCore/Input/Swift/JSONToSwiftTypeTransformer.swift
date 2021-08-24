@@ -59,7 +59,12 @@ internal class JSONToSwiftTypeTransformer {
             name: jsonEnumeration.name,
             comment: jsonEnumeration.comment,
             cases: jsonEnumeration.values.map { value in
-                SwiftEnum.Case(label: value, rawValue: value)
+                switch value {
+                case .string(let value):
+                    return SwiftEnum.Case(label: value, rawValue: .string(value: value))
+                case .integer(let value):
+                    return SwiftEnum.Case(label: "\(jsonEnumeration.name)\(value)", rawValue: .integer(value: value))
+                }
             },
             conformance: []
         )
@@ -111,7 +116,7 @@ internal class JSONToSwiftTypeTransformer {
                         return intValue
                     case .string(let stringValue):
                         if objectProperty.type is JSONEnumeration {
-                            return SwiftEnum.Case(label: stringValue, rawValue: stringValue)
+                            return SwiftEnum.Case(label: stringValue, rawValue: .string(value: stringValue))
                         } else {
                             return stringValue
                         }

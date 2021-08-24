@@ -61,9 +61,29 @@ public struct RUMViewEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         enum CodingKeys: String, CodingKey {
             case documentVersion = "document_version"
             case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -362,6 +382,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         /// span identifier in decimal format
         public let spanId: String?
 
@@ -370,8 +393,25 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
+            case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -692,8 +732,28 @@ public struct RUMActionEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -915,8 +975,28 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -942,6 +1022,12 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Error properties
     public struct Error: Codable {
+        /// Whether the error has been handled manually in the source code or not
+        public let handling: Handling?
+
+        /// Handling call stack
+        public let handlingStack: String?
+
         /// UUID of the error
         public let id: String?
 
@@ -964,6 +1050,8 @@ public struct RUMErrorEvent: RUMDataModel {
         public let type: String?
 
         enum CodingKeys: String, CodingKey {
+            case handling = "handling"
+            case handlingStack = "handling_stack"
             case id = "id"
             case isCrash = "is_crash"
             case message = "message"
@@ -971,6 +1059,12 @@ public struct RUMErrorEvent: RUMDataModel {
             case source = "source"
             case stack = "stack"
             case type = "type"
+        }
+
+        /// Whether the error has been handled manually in the source code or not
+        public enum Handling: String, Codable {
+            case handled = "handled"
+            case unhandled = "unhandled"
         }
 
         /// Resource properties of the error
@@ -1257,4 +1351,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d40d93a607a2d4483c95bd000a4e8ebd96fdf1fd
+// Generated from https://github.com/DataDog/rum-events-format/tree/2ea84b56a4e0670b2d6e3e0c6a5fd27774ce4a3d

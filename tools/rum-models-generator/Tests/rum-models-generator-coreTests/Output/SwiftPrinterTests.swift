@@ -53,16 +53,16 @@ final class SwiftPrinterTests: XCTestCase {
                         name: "Bizz",
                         comment: "Description of FooBar's `bizz`.",
                         cases: [
-                            SwiftEnum.Case(label: "case1", rawValue: "case 1"),
-                            SwiftEnum.Case(label: "case2", rawValue: "case 2"),
-                            SwiftEnum.Case(label: "case3", rawValue: "case 3"),
-                            SwiftEnum.Case(label: "case4", rawValue: "case 4"),
+                            SwiftEnum.Case(label: "case1", rawValue: .string(value: "case 1")),
+                            SwiftEnum.Case(label: "case2", rawValue: .string(value: "case 2")),
+                            SwiftEnum.Case(label: "case3", rawValue: .string(value: "case 3")),
+                            SwiftEnum.Case(label: "case4", rawValue: .string(value: "case 4")),
                         ],
                         conformance: [codableProtocol]
                     ),
                     isOptional: false,
                     isMutable: false,
-                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "bizz")
                 ),
                 SwiftStruct.Property(
@@ -73,10 +73,10 @@ final class SwiftPrinterTests: XCTestCase {
                             name: "Buzz",
                             comment: nil,
                             cases: [
-                                SwiftEnum.Case(label: "option1", rawValue: "option-1"),
-                                SwiftEnum.Case(label: "option2", rawValue: "option-2"),
-                                SwiftEnum.Case(label: "option3", rawValue: "option-3"),
-                                SwiftEnum.Case(label: "option4", rawValue: "option-4"),
+                                SwiftEnum.Case(label: "option1", rawValue: .string(value: "option-1")),
+                                SwiftEnum.Case(label: "option2", rawValue: .string(value: "option-2")),
+                                SwiftEnum.Case(label: "option3", rawValue: .string(value: "option-3")),
+                                SwiftEnum.Case(label: "option4", rawValue: .string(value: "option-4")),
                             ],
                             conformance: [codableProtocol]
                         )
@@ -99,19 +99,8 @@ final class SwiftPrinterTests: XCTestCase {
             conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
         )
 
-        let `enum` = SwiftEnum(
-            name: "BizzBuzz",
-            comment: nil,
-            cases: [
-                SwiftEnum.Case(label: "case1", rawValue: "case 1"),
-                SwiftEnum.Case(label: "case2", rawValue: "case 2"),
-                SwiftEnum.Case(label: "case3", rawValue: "case 3"),
-            ],
-            conformance: [codableProtocol]
-        )
-
         let printer = SwiftPrinter()
-        let actual = try printer.print(swiftTypes: [`struct`, `enum`])
+        let actual = try printer.print(swiftTypes: [`struct`])
 
         let expected = """
 
@@ -166,10 +155,49 @@ final class SwiftPrinterTests: XCTestCase {
             }
         }
 
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testPrintingSwiftEnum() throws {
+        let enumWithStringRawValue = SwiftEnum(
+            name: "BizzBuzz",
+            comment: nil,
+            cases: [
+                SwiftEnum.Case(label: "case1", rawValue: .string(value: "case 1")),
+                SwiftEnum.Case(label: "case2", rawValue: .string(value: "case 2")),
+                SwiftEnum.Case(label: "case3", rawValue: .string(value: "case 3")),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let enumWithIntegerRawValue = SwiftEnum(
+            name: "FizzBazz",
+            comment: nil,
+            cases: [
+                SwiftEnum.Case(label: "value1", rawValue: .integer(value: 1)),
+                SwiftEnum.Case(label: "value2", rawValue: .integer(value: 2)),
+                SwiftEnum.Case(label: "value3", rawValue: .integer(value: 3)),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let printer = SwiftPrinter()
+        let actual = try printer.print(swiftTypes: [enumWithStringRawValue, enumWithIntegerRawValue])
+
+        let expected = """
+
         public enum BizzBuzz: String, Codable {
             case case1 = "case 1"
             case case2 = "case 2"
             case case3 = "case 3"
+        }
+
+        public enum FizzBazz: Int, Codable {
+            case value1 = 1
+            case value2 = 2
+            case value3 = 3
         }
 
         """

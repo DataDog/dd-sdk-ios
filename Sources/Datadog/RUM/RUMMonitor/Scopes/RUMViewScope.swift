@@ -287,7 +287,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendApplicationStartAction(on command: RUMCommand) -> Bool {
         let eventData = RUMActionEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: .init(
                 crash: nil,
                 error: nil,
@@ -332,7 +334,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let refreshRateInfo = vitalInfoSampler.refreshRate
 
         let eventData = RUMViewEvent(
-            dd: .init(documentVersion: version.toInt64),
+            dd: .init(
+                documentVersion: version.toInt64,
+                session: .init(plan: .plan1)
+            ),
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
             context: nil,
@@ -388,7 +393,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMErrorEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
@@ -397,6 +404,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             context: nil,
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                handling: nil,
+                handlingStack: nil,
                 id: nil,
                 isCrash: nil,
                 message: command.message,

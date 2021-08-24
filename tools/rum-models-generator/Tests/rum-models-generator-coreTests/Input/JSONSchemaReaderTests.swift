@@ -16,15 +16,21 @@ final class JSONSchemaReaderTests: XCTestCase {
             "title": "Schema title",
             "description": "Schema description.",
             "properties": {
-                "property1": {
+                "stringEnumProperty": {
                     "type": "string",
-                    "description": "Description of `property1`.",
+                    "description": "Description of `stringEnumProperty`.",
                     "enum": ["case1", "case2", "case3", "case4"],
                     "const": "case2"
                 },
-                "property2": {
+                "integerEnumProperty": {
+                    "type": "number",
+                    "description": "Description of `integerEnumProperty`.",
+                    "enum": [1, 2, 3, 4],
+                    "const": 3
+                },
+                "arrayProperty": {
                     "type": "array",
-                    "description": "Description of `property2`.",
+                    "description": "Description of `arrayProperty`.",
                     "items": {
                         "type": "string",
                         "enum": ["option1", "option2", "option3", "option4"]
@@ -60,27 +66,33 @@ final class JSONSchemaReaderTests: XCTestCase {
         XCTAssertEqual(schema.title, "Schema title")
         XCTAssertEqual(schema.description, "Schema description.")
 
-        XCTAssertEqual(schema.properties?.count, 3)
+        XCTAssertEqual(schema.properties?.count, 4)
 
-        let property1 = try XCTUnwrap(schema.properties?["property1"])
+        let property1 = try XCTUnwrap(schema.properties?["stringEnumProperty"])
         XCTAssertEqual(property1.type, .string)
-        XCTAssertEqual(property1.description, "Description of `property1`.")
-        XCTAssertEqual(property1.enum, ["case1", "case2", "case3", "case4"])
+        XCTAssertEqual(property1.description, "Description of `stringEnumProperty`.")
+        XCTAssertEqual(property1.enum, [.string("case1"), .string("case2"), .string("case3"), .string("case4")])
         XCTAssertEqual(property1.const!.value, .string(value: "case2"))
 
-        let property2 = try XCTUnwrap(schema.properties?["property2"])
-        XCTAssertEqual(property2.type, .array)
-        XCTAssertEqual(property2.description, "Description of `property2`.")
-        XCTAssertEqual(property2.items?.type, .string)
-        XCTAssertEqual(property2.items?.enum, ["option1", "option2", "option3", "option4"])
-        XCTAssertTrue(property2.readOnly == false)
+        let property2 = try XCTUnwrap(schema.properties?["integerEnumProperty"])
+        XCTAssertEqual(property2.type, .number)
+        XCTAssertEqual(property2.description, "Description of `integerEnumProperty`.")
+        XCTAssertEqual(property2.enum, [.integer(1), .integer(2), .integer(3), .integer(4)])
+        XCTAssertEqual(property2.const!.value, .integer(value: 3))
 
-        let property3 = try XCTUnwrap(schema.properties?["propertyWithAdditionalProperties"])
-        XCTAssertEqual(property3.type, .object)
-        XCTAssertEqual(property3.description, "Description of a property with nested additional properties.")
-        XCTAssertEqual(property3.additionalProperties?.type, .integer)
-        XCTAssertEqual(property3.additionalProperties?.readOnly, true)
-        XCTAssertTrue(property3.readOnly == true)
+        let property3 = try XCTUnwrap(schema.properties?["arrayProperty"])
+        XCTAssertEqual(property3.type, .array)
+        XCTAssertEqual(property3.description, "Description of `arrayProperty`.")
+        XCTAssertEqual(property3.items?.type, .string)
+        XCTAssertEqual(property3.items?.enum, [.string("option1"), .string("option2"), .string("option3"), .string("option4")])
+        XCTAssertTrue(property3.readOnly == false)
+
+        let property4 = try XCTUnwrap(schema.properties?["propertyWithAdditionalProperties"])
+        XCTAssertEqual(property4.type, .object)
+        XCTAssertEqual(property4.description, "Description of a property with nested additional properties.")
+        XCTAssertEqual(property4.additionalProperties?.type, .integer)
+        XCTAssertEqual(property4.additionalProperties?.readOnly, true)
+        XCTAssertTrue(property4.readOnly == true)
 
         XCTAssertEqual(schema.additionalProperties?.type, .string)
         XCTAssertEqual(schema.additionalProperties?.description, "Additional properties of main schema.")
