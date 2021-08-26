@@ -125,7 +125,7 @@ class RUMViewScopeTests: XCTestCase {
         let viewIsActive = try XCTUnwrap(event.model.view.isActive)
         XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.model.view.timeSpent, 0)
-        XCTAssertEqual(event.model.view.action.count, 1, "The initial view udate must have come with `application_start` action sent.")
+        XCTAssertEqual(event.model.view.action.count, 1, "The initial view update must have come with `application_start` action sent.")
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
@@ -374,7 +374,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
         )
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
+        XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
     }
 
@@ -404,13 +404,13 @@ class RUMViewScopeTests: XCTestCase {
         // when
         XCTAssertTrue(
             scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)),
-            "The View should be kept alive as its Resources havent yet finished loading"
+            "The View should be kept alive as its Resources haven't yet finished loading"
         )
 
         // then
         XCTAssertTrue(
             scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")),
-            "The View should be kept alive as all its Resources havent yet finished loading"
+            "The View should be kept alive as all its Resources haven't yet finished loading"
         )
         XCTAssertFalse(
             scope.process(command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")),
@@ -418,7 +418,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
-        XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successfull Resource")
+        XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
     }
 

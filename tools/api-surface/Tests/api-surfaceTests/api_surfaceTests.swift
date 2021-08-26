@@ -113,5 +113,5 @@ private func resolveSwiftPackageFolder() -> URL {
         }
     }
 
-    fatalError("Cannot resolve the URL to folder containing `Package.swif`.")
+    fatalError("Cannot resolve the URL to folder containing `Package.swift`.")
 }

@@ -26,7 +26,7 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - Initializing with configuration
 
-    func testItFowardsInitializationToSwift() {
+    func testItForwardsInitializationToSwift() {
         let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
         configBuilder.trackURLSession(firstPartyHosts: ["example.com"])
 

@@ -53,14 +53,14 @@ class DatadogTests: XCTestCase {
     }
 
     func testGivenInvalidConfiguration_itPrintsError() {
-        let invalidConiguration = Datadog.Configuration
+        let invalidConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "", environment: "tests")
             .build()
 
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: invalidConiguration
+            configuration: invalidConfiguration
         )
 
         XCTAssertEqual(

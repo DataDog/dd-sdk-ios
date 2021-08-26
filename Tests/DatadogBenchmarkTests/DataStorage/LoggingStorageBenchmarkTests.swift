@@ -42,7 +42,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWrittingLogsOnDisc() throws {
+    func testWritingLogsOnDisc() throws {
         let log = createRandomizedLog()
 
         measure {

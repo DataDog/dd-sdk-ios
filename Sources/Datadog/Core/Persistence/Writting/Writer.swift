@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// A type, writting data.
+/// A type, writing data.
 internal protocol Writer {
     func write<T: Encodable>(value: T)
 }

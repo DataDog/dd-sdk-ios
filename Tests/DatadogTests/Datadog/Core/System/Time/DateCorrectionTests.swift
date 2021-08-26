@@ -45,15 +45,15 @@ class DateCorrectorTests: XCTestCase {
         let serverDateProvider = ServerDateProviderMock()
         let deviceDateProvider = SystemDateProvider()
 
-        var randomlyChoosenServers: Set<String> = []
+        var randomlyChosenServers: Set<String> = []
 
         (0..<100).forEach { _ in
             _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
-            randomlyChoosenServers.insert(serverDateProvider.synchronizedNTPPool!)
+            randomlyChosenServers.insert(serverDateProvider.synchronizedNTPPool!)
         }
 
         let allAvailableServers = Set(DateCorrector.datadogNTPServers)
-        XCTAssertEqual(randomlyChoosenServers, allAvailableServers, "Each time Datadog NTP server should be picked randomly.")
+        XCTAssertEqual(randomlyChosenServers, allAvailableServers, "Each time Datadog NTP server should be picked randomly.")
     }
 
     func testWhenNTPSynchronizationSucceeds_itPrintsInfoMessage() throws {
@@ -145,7 +145,7 @@ class DateCorrectorTests: XCTestCase {
         )
     }
 
-    /// As we randomize dates in this tests, they must be compared using some granularity, otherwise comparison may fail due to precission error.
+    /// As we randomize dates in this tests, they must be compared using some granularity, otherwise comparison may fail due to precision error.
     private func datesEqual(_ date1: Date, _ date2: Date) -> Bool {
         let calendar = Calendar.current
         return calendar.compare(date1, to: date2, toGranularity: .nanosecond) == .orderedSame

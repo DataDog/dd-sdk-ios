@@ -22,7 +22,7 @@ func obtainUniqueTemporaryDirectory() -> Directory {
 let temporaryDirectory = obtainUniqueTemporaryDirectory()
 
 /// Extends `Directory` with set of utilities for convenient work with files in tests.
-/// Provides handy methods to create / delete files and directires.
+/// Provides handy methods to create / delete files and directories.
 extension Directory {
     /// Creates empty directory with given attributes .
     func create(attributes: [FileAttributeKey: Any]? = nil, file: StaticString = #file, line: UInt = #line) {

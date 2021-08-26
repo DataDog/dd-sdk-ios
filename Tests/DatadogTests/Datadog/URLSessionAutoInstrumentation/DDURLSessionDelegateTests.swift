@@ -72,8 +72,8 @@ class DDURLSessionDelegateTests: XCTestCase {
 
     // MARK: - Interception Values
 
-    func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithFailure_itPassessAllValuesToTheInterceptor() throws {
-        let noTaskShouldReceiveData = expectation(description: "None of tasks should recieve data")
+    func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithFailure_itPassesAllValuesToTheInterceptor() throws {
+        let noTaskShouldReceiveData = expectation(description: "None of tasks should receive data")
         let notifyTaskCompleted = expectation(description: "Notify task completion")
         let notifyTaskMetricsCollected = expectation(description: "Notify task metrics collection")
         noTaskShouldReceiveData.isInverted = true
@@ -119,7 +119,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "When tasks complete with failure, they should not receive data")
     }
 
-    func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithSuccess_itPassessAllValuesToTheInterceptor() throws {
+    func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithSuccess_itPassesAllValuesToTheInterceptor() throws {
         let notifyTaskReceivedData = expectation(description: "Notify 2 tasks received data")
         let notifyTaskCompleted = expectation(description: "Notify 2 tasks completion")
         let notifyTaskMetricsCollected = expectation(description: "Notify 2 tasks metrics collection")

@@ -7,7 +7,7 @@
 import Foundation
 
 /// Utility protocol adding `Equatable` conformance to any arbitrary type.
-/// The equatabiliity is determined based on comparing type mirrors and values.
+/// The equatability is determined based on comparing type mirrors and values.
 protocol EquatableInTests: Equatable {}
 
 extension EquatableInTests {

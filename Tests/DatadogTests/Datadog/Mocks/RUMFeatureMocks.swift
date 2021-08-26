@@ -49,7 +49,7 @@ extension RUMFeature {
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.upload.flushAndTearDown()
@@ -526,7 +526,7 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
     return viewController
 }
 
-/// Holds the `mockView` object so it can be weakily referenced by `RUMViewScope` mocks.
+/// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockViewInWindow()
 
 extension RUMViewScope {

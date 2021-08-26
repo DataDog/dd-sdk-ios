@@ -102,7 +102,7 @@ internal class RUMEventMatcher {
 }
 
 extension RUMEventMatcher: CustomStringConvertible {
-    /// Returns prety JSON representation of this matcher. Handy for debugging with `po matcher`.
+    /// Returns pretty JSON representation of this matcher. Handy for debugging with `po matcher`.
     var description: String {
         do {
             let jsonObject = try jsonData.toJSONObject()

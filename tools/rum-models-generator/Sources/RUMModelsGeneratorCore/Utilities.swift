@@ -108,7 +108,7 @@ internal func withErrorContext<T>(context: String, block: () throws -> T) throws
 
 // MARK: - `Swift.DecodingError` pretty formatting
 
-/// Returns pretty descrpition of given `DecodingError`.
+/// Returns pretty description of given `DecodingError`.
 private func pretty(error: DecodingError) -> String {
     var description = "✋ description is unavailable"
     var context: DecodingError.Context?
@@ -132,7 +132,7 @@ private func pretty(error: DecodingError) -> String {
     return "\n→ \(description)" + (context.flatMap { pretty(context: $0) } ?? "")
 }
 
-/// Returns pretty descrpition of given `DecodingError.Context`.
+/// Returns pretty description of given `DecodingError.Context`.
 private func pretty(context: DecodingError.Context) -> String {
     let codingPath: [String] = context.codingPath.map { codingKey in
         if let intValue = codingKey.intValue {

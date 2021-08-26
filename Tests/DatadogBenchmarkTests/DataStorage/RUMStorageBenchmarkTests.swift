@@ -42,7 +42,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWrittingRUMEventsOnDisc() throws {
+    func testWritingRUMEventsOnDisc() throws {
         let event = createRandomizedRUMEvent()
 
         measure {

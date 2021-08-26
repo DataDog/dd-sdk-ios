@@ -626,7 +626,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
 
         if let customTimestampInMiliseconds = combinedUserAttributes.removeValue(forKey: RUMAttribute.internalTimestamp) as? Int64 {
-            let customTimeInterval = TimeInterval(fromMiliseconds: customTimestampInMiliseconds)
+            let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMiliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }
         mutableCommand.attributes = combinedUserAttributes
