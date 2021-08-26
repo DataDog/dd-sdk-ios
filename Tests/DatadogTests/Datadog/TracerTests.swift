@@ -1183,5 +1183,42 @@ class TracerTests: XCTestCase {
         unsetenv("x-datadog-trace-id")
         unsetenv("x-datadog-parent-id")
     }
+
+    func testNoOpTracerWarnings() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: .mockAny()
+        )
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        let context = DDSpanContext(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        // Produce warning 0
+        Global.sharedTracer.inject(spanContext: context, writer: HTTPHeadersWriter())
+        // Produce warning 1
+        _ = Global.sharedTracer.extract(reader: HTTPHeadersReader(httpHeaderFields: [:]))
+        // Produce warning 2
+        let root = Global.sharedTracer.startRootSpan(operationName: "root operation").setActive()
+        // Produce warning 3
+        let child = Global.sharedTracer.startSpan(operationName: "child operation")
+        child.finish()
+
+        root.finish()
+
+        let expectedWarningMessage = """
+        The `Global.sharedTracer` was called but no `Tracer` is registered. Configure and register the `Tracer` globally before invoking the feature:
+                Global.sharedTracer = Tracer.initialize()
+            See https://docs.datadoghq.com/tracing/setup/ios
+        """
+
+        XCTAssertEqual(output.allRecordedLogs.count, 4)
+        XCTAssertEqual(output.recordedLog?.status, .warn)
+        XCTAssertEqual(output.recordedLog?.message, expectedWarningMessage)
+
+        Datadog.flushAndDeinitialize()
+    }
 }
 // swiftlint:enable multiline_arguments_brackets
