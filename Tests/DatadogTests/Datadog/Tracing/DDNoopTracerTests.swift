@@ -9,6 +9,9 @@ import XCTest
 
 class DDNoopTracerTests: XCTestCase {
     func testWhenUsingDDNoopTracerAPIs_itPrintsWarning() {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
@@ -16,7 +19,7 @@ class DDNoopTracerTests: XCTestCase {
         let noop = DDNoopTracer()
 
         // When
-        let context = DDSpanContext(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let context = DDSpanContext.mockAny()
         noop.inject(spanContext: context, writer: HTTPHeadersWriter())
         _ = noop.extract(reader: HTTPHeadersReader(httpHeaderFields: [:]))
         let root = noop.startRootSpan(operationName: "root operation").setActive()

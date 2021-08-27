@@ -9,6 +9,9 @@ import XCTest
 
 class DDNoopRUMMonitorTests: XCTestCase {
     func testWhenUsingDDNoopRUMMonitorAPIs_itPrintsWarning() {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
