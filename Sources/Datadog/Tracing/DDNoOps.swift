@@ -19,8 +19,8 @@ internal struct DDNoopTracer: OTTracer {
         userLogger.warn(
             """
             The `Global.sharedTracer` was called but no `Tracer` is registered. Configure and register the `Tracer` globally before invoking the feature:
-                    Global.sharedTracer = Tracer.initialize()
-                See https://docs.datadoghq.com/tracing/setup/ios
+                Global.sharedTracer = Tracer.initialize()
+            See https://docs.datadoghq.com/tracing/setup/ios
             """
         )
     }
