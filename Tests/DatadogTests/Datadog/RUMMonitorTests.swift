@@ -423,38 +423,6 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_NoOpMonitor() {
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: .mockAny()
-        )
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
-
-        // Produce warning 0
-        Global.rum.startView(viewController: mockView)
-        // Produce warning 1
-        Global.rum.startView(key: "view-key", name: "View")
-        // No warnings
-        Global.rum.stopView(viewController: mockView)
-        // No warnings
-        Global.rum.stopView(key: "view-key")
-
-        let expectedWarningMessage = """
-        The `Global.rum` was called but no `RUMMonitor` is registered. Configure and register the RUM Monitor globally before invoking the feature:
-            Global.rum = RUMMonitor.initialize()
-        See https://docs.datadoghq.com/real_user_monitoring/ios
-        """
-
-        XCTAssertEqual(output.allRecordedLogs.count, 2)
-        XCTAssertEqual(output.recordedLog?.status, .warn)
-        XCTAssertEqual(output.recordedLog?.message, expectedWarningMessage)
-
-        Datadog.flushAndDeinitialize()
-    }
-
     func testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
