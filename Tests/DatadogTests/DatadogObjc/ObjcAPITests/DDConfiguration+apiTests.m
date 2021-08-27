@@ -54,6 +54,7 @@
     [DDEndpoint us1];
     [DDEndpoint us1_fed];
     [DDEndpoint us3];
+    [DDEndpoint us5];
 }
 
 - (void)testDDBatchSizeAPI {
