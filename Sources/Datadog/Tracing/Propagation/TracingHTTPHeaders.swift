@@ -6,13 +6,27 @@
 
 import Foundation
 
+/// Trace propagation headers as explained in
+/// https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces/?tab=browserrum#how-are-rum-resources-linked-to-traces
 internal struct TracingHTTPHeaders {
+    /// Trace propagation header.
+    /// It is used both in Tracing and RUM features.
     static let traceIDField = "x-datadog-trace-id"
-    static let parentSpanIDField = "x-datadog-parent-id"
-    static let originField = "x-datadog-origin"
-    /// Value for `originField` header field, indicating that the request is tracked as RUM Resource by the client.
-    static let rumOriginValue = "rum"
 
-    // TODO: RUMM-338 support `x-datadog-sampling-priority`. `dd-trace-ot` reference:
-    // https://github.com/DataDog/dd-trace-java/blob/4ba0ca0f9da748d4018310d026b1a72b607947f1/dd-trace-ot/src/main/java/datadog/opentracing/propagation/DatadogHttpCodec.java#L23
+    /// Trace propagation header.
+    /// In RUM - it allows Datadog to generate the first span from the trace.
+    /// In Tracing - it injects the `spanID` of mobile span so downstream spans can be properly linked in distributed tracing.
+    static let parentSpanIDField = "x-datadog-parent-id"
+
+    /// To make sure that the Agent keeps the trace.
+    /// It is used both in Tracing and RUM features.
+    static let ddSamplingPriority = (field: "x-datadog-sampling-priority", value: "1")
+
+    /// Indicates this request is selected for sampling.
+    /// It is used both in Tracing and RUM features.
+    static let ddSampled = (field: "x-datadog-sampled", value: "1")
+
+    /// To make sure the generated traces from RUM don’t affect APM Index Spans counts.
+    /// **Note:** it is only added to requests that we create RUM Resource for (it is not injected when RUM feature is disabled and only Tracing is used).
+    static let ddOrigin = (field: "x-datadog-origin", value: "rum")
 }

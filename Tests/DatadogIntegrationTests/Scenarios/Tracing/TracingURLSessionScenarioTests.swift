@@ -124,19 +124,27 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         XCTAssertEqual(firstPartyRequests.count, 1)
 
         let firstPartyRequest = firstPartyRequests[0]
-        let expectedTraceIDHeader = "x-datadog-trace-id: \(try taskWithRequest.traceID().hexadecimalNumberToDecimal)"
-        let expectedSpanIDHeader = "x-datadog-parent-id: \(try taskWithRequest.spanID().hexadecimalNumberToDecimal)"
-        XCTAssertTrue(
-            firstPartyRequest.httpHeaders.contains(expectedTraceIDHeader),
+        let expectedHeaders = [
+            "x-datadog-trace-id: \(try taskWithRequest.traceID().hexadecimalNumberToDecimal)",
+            "x-datadog-parent-id: \(try taskWithRequest.spanID().hexadecimalNumberToDecimal)",
+            "x-datadog-sampling-priority: 1",
+            "x-datadog-sampled: 1"
+        ]
+
+        expectedHeaders.forEach { expectedHeader in
+            XCTAssertTrue(
+                firstPartyRequest.httpHeaders.contains(expectedHeader),
+                """
+                Request `\(firstPartyRequest.path)` must contain `\(expectedHeader)` header.
+                - request.headers: \(firstPartyRequest.httpHeaders)
+                """
+            )
+        }
+
+        XCTAssertFalse(
+            firstPartyRequest.httpHeaders.contains("x-datadog-origin: rum"),
             """
-            Request `\(firstPartyRequest.path)` does not contain `\(expectedTraceIDHeader)` header.
-            - request.headers: \(firstPartyRequest.httpHeaders)
-            """
-        )
-        XCTAssertTrue(
-            firstPartyRequest.httpHeaders.contains(expectedSpanIDHeader),
-            """
-            Request `\(firstPartyRequest.path)` does not contain `\(expectedSpanIDHeader)` header.
+            Request `\(firstPartyRequest.path)` must not contain `x-datadog-origin: rum` header.
             - request.headers: \(firstPartyRequest.httpHeaders)
             """
         )
