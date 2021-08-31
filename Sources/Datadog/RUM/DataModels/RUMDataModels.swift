@@ -20,7 +20,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -35,7 +35,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let type: String = "view"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -339,7 +339,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -357,7 +357,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let type: String = "resource"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -693,7 +693,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -708,7 +708,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let type: String = "action"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -932,7 +932,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -950,7 +950,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let type: String = "error"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -1241,7 +1241,7 @@ public struct RUMConnectivity: Codable {
 
 /// User provided context
 public struct RUMEventAttributes: Codable {
-    public let contextInfo: [String: Codable]
+    public internal(set) var contextInfo: [String: Codable]
 
     struct DynamicCodingKey: CodingKey {
         var stringValue: String
@@ -1287,7 +1287,7 @@ public struct RUMUser: Codable {
     /// Name of the user
     public let name: String?
 
-    public let usrInfo: [String: Codable]
+    public internal(set) var usrInfo: [String: Codable]
 
     enum StaticCodingKeys: String, CodingKey {
         case email = "email"
