@@ -241,7 +241,7 @@ internal class ObjcInteropPrinter: BasePrinter {
         let objcPropertyName = swiftProperty.name
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnum.objcTypeName
 
-        if swiftProperty.isMutable {
+        if swiftProperty.mutability == .mutable {
             writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
             indentRight()
                 writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue.toSwift }")
@@ -273,7 +273,7 @@ internal class ObjcInteropPrinter: BasePrinter {
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnumArray.objcTypeName
 
-        guard swiftProperty.isMutable == false else {
+        if swiftProperty.mutability == .mutable {
             throw Exception.unimplemented("Generating setter for `ObjcInteropEnumArray` is not supported: \(swiftProperty.type).")
         }
 
@@ -298,7 +298,7 @@ internal class ObjcInteropPrinter: BasePrinter {
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
 
-        guard swiftProperty.isMutable == false else {
+        if swiftProperty.mutability == .mutable {
             throw Exception.unimplemented("Generating setter for `ObjcInteropNestedClass` is not supported: \(swiftProperty.type).")
         }
 
@@ -313,7 +313,7 @@ internal class ObjcInteropPrinter: BasePrinter {
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
 
         if let swiftDictionary = swiftProperty.type as? SwiftDictionary, swiftDictionary.value is SwiftPrimitive<SwiftCodable> {
-            guard !swiftProperty.isMutable else {
+            if swiftProperty.mutability == .mutable {
                 throw Exception.unimplemented(
                     "Generating ObjcInterop for mutable `[Swift: Codable]` is not supported."
                 )
@@ -327,7 +327,7 @@ internal class ObjcInteropPrinter: BasePrinter {
             asObjcCast + objcPropertyOptionality
         } ?? ""
 
-        if swiftProperty.isMutable {
+        if swiftProperty.mutability == .mutable {
             // Generate getter and setter for the managed value, e.g.:
             // ```
             // @objc public var propertyX: String? {

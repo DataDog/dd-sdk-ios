@@ -78,6 +78,7 @@ internal class JSONToSwiftTypeTransformer {
                 // In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
                 // properties encoded in JSON.
                 let additionalPropertyName = jsonObject.name + "Info"
+                let mutability: SwiftStruct.Property.Mutability = additionalProperties.isReadOnly ? .mutableInternally : .mutable
                 var `struct` = try transformJSONToStruct(jsonObject)
                 `struct`.properties.append(
                     SwiftStruct.Property(
@@ -87,7 +88,7 @@ internal class JSONToSwiftTypeTransformer {
                             value: SwiftPrimitive<SwiftCodable>()
                         ),
                         isOptional: false,
-                        isMutable: !additionalProperties.isReadOnly,
+                        mutability: mutability,
                         defaultValue: nil,
                         codingKey: .dynamic
                     )
@@ -125,12 +126,13 @@ internal class JSONToSwiftTypeTransformer {
             }
 
             return try objectProperties.map { jsonProperty in
+                let mutability: SwiftStruct.Property.Mutability = jsonProperty.isReadOnly ? .immutable : .mutable
                 return SwiftStruct.Property(
                     name: jsonProperty.name,
                     comment: jsonProperty.comment,
                     type: try transformJSONToAnyType(jsonProperty.type),
                     isOptional: !jsonProperty.isRequired,
-                    isMutable: !jsonProperty.isReadOnly,
+                    mutability: mutability,
                     defaultValue: try readDefaultValue(for: jsonProperty),
                     codingKey: .static(value: jsonProperty.name)
                 )
@@ -175,7 +177,7 @@ internal class JSONToSwiftTypeTransformer {
 
         `struct`.properties = `struct`.properties.map { property in
             var property = property
-            property.isMutable = property.isMutable || hasTransitiveMutableProperty(type: property.type)
+            property.mutability = transitiveMutability(property: property)
 
             if let nestedStruct = property.type as? SwiftStruct {
                 property.type = resolveTransitiveMutableProperties(in: nestedStruct)
@@ -188,16 +190,26 @@ internal class JSONToSwiftTypeTransformer {
     }
 
     /// Returns `true` if the given `SwiftType` contains a mutable property (`var`) or any of its nested types does.
-    private func hasTransitiveMutableProperty(type: SwiftType) -> Bool {
+    private func transitiveMutableProperty(type: SwiftType) -> SwiftStruct.Property.Mutability {
         switch type {
         case let array as SwiftArray:
-            return hasTransitiveMutableProperty(type: array.element)
+            return transitiveMutableProperty(type: array.element)
         case let `struct` as SwiftStruct:
-            return `struct`.properties.contains { property in
-                property.isMutable || hasTransitiveMutableProperty(type: property.type)
+            return `struct`.properties.reduce(.immutable) {
+                let transitiveMutability = transitiveMutability(property: $1)
+                return transitiveMutability.rawValue > $0.rawValue ? transitiveMutability : $0
             }
         default:
-            return false
+            return .immutable
         }
+    }
+
+    /// Returns `true` if the given `SwiftStruct.Property` contains a mutable property (`var`) or any of its nested types does.
+    private func transitiveMutability(property: SwiftStruct.Property) -> SwiftStruct.Property.Mutability {
+        let transitiveMutability = transitiveMutableProperty(type: property.type)
+        if property.mutability.rawValue > transitiveMutability.rawValue {
+            return property.mutability
+        }
+        return transitiveMutability
     }
 }

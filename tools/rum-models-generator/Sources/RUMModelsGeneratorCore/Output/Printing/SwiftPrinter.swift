@@ -53,7 +53,12 @@ public class SwiftPrinter: BasePrinter {
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
             let accessLevel = "public"
-            let kind = property.isMutable ? "var" : "let"
+            let kind: String
+            switch property.mutability {
+            case .mutable: kind = "var"
+            case .mutableInternally: kind = "internal(set) var"
+            default: kind = "let"
+            }
             let name = property.name
             let type = try typeDeclaration(property.type)
             let optionality = property.isOptional ? "?" : ""
