@@ -46,4 +46,23 @@ class HTTPClientTests: XCTestCase {
         waitForExpectations(timeout: 1, handler: nil)
         server.waitFor(requestsCompletion: 1)
     }
+
+    func testWhenProxyConfigurationIsSet_itUsesProxyConfiguration() {
+        let proxyConfiguration: [AnyHashable: Any] = [
+            kCFNetworkProxiesHTTPEnable as AnyHashable: true,
+            kCFNetworkProxiesHTTPPort as AnyHashable: 123,
+            kCFNetworkProxiesHTTPProxy as AnyHashable: "www.example.com",
+            kCFProxyUsernameKey as AnyHashable: "proxyuser",
+            kCFProxyPasswordKey as AnyHashable: "proxypass",
+        ]
+
+        let client = HTTPClient(proxyConfiguration: proxyConfiguration)
+
+        let actualProxy: [AnyHashable: Any] = client.session.configuration.connectionProxyDictionary!
+        XCTAssertEqual(actualProxy[kCFNetworkProxiesHTTPEnable as AnyHashable] as? Bool, true)
+        XCTAssertEqual(actualProxy[kCFNetworkProxiesHTTPPort as AnyHashable] as? Int, 123)
+        XCTAssertEqual(actualProxy[kCFNetworkProxiesHTTPProxy as AnyHashable] as? String, "www.example.com")
+        XCTAssertEqual(actualProxy[kCFProxyUsernameKey as AnyHashable] as? String, "proxyuser")
+        XCTAssertEqual(actualProxy[kCFProxyPasswordKey as AnyHashable] as? String, "proxypass")
+    }
 }

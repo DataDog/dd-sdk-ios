@@ -91,6 +91,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
                 .set(additionalConfiguration: ["foo": 42, "bar": "something"])
+                .set(proxyConfiguration: [
+                    kCFNetworkProxiesHTTPEnable as AnyHashable: true,
+                    kCFNetworkProxiesHTTPPort as AnyHashable: 123,
+                    kCFNetworkProxiesHTTPProxy as AnyHashable: "www.example.com",
+                    kCFProxyUsernameKey as AnyHashable: "proxyuser",
+                    kCFProxyPasswordKey as AnyHashable: "proxypass",
+                ])
 
             return builder
         }
@@ -139,6 +146,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
             XCTAssertEqual(configuration.additionalConfiguration["bar"] as? String, "something")
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable as AnyHashable] as? Bool, true)
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFNetworkProxiesHTTPPort as AnyHashable] as? Int, 123)
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy as AnyHashable] as? String, "www.example.com")
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyUsernameKey as AnyHashable] as? String, "proxyuser")
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey as AnyHashable] as? String, "proxypass")
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

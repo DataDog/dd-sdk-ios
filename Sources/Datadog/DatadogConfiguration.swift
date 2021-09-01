@@ -244,6 +244,7 @@ extension Datadog {
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
+        private(set) var proxyConfiguration: [AnyHashable: Any]?
 
         /// The client token autorizing internal monitoring data to be sent to Datadog org.
         private(set) var internalMonitoringClientToken: String?
@@ -316,6 +317,7 @@ extension Datadog {
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
+                    proxyConfiguration: nil,
                     internalMonitoringClientToken: nil
                 )
             }
@@ -689,6 +691,14 @@ extension Datadog {
             /// - Parameter uploadFrequency: `.average` by default.
             public func set(uploadFrequency: UploadFrequency) -> Builder {
                 configuration.uploadFrequency = uploadFrequency
+                return self
+            }
+
+            /// Sets proxy configuration attributes.
+            /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+            /// - Parameter proxyConfiguration: `nil` by default.
+            public func set(proxyConfiguration: [AnyHashable: Any]?) -> Builder {
+                configuration.proxyConfiguration = proxyConfiguration
                 return self
             }
 

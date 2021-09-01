@@ -19,6 +19,7 @@ internal struct FeaturesConfiguration {
         let environment: String
         let performance: PerformancePreset
         let source: String
+        let proxyConfiguration: [AnyHashable: Any]?
     }
 
     struct Logging {
@@ -156,7 +157,8 @@ extension FeaturesConfiguration {
                 uploadFrequency: configuration.uploadFrequency,
                 bundleType: appContext.bundleType
             ),
-            source: source
+            source: source,
+            proxyConfiguration: configuration.proxyConfiguration
         )
 
         if configuration.loggingEnabled {
