@@ -57,7 +57,7 @@ public class SwiftPrinter: BasePrinter {
             switch property.mutability {
             case .mutable: kind = "var"
             case .mutableInternally: kind = "internal(set) var"
-            default: kind = "let"
+            case .immutable: kind = "let"
             }
             let name = property.name
             let type = try typeDeclaration(property.type)
