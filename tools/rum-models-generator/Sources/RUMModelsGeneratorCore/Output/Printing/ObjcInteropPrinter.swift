@@ -242,19 +242,19 @@ internal class ObjcInteropPrinter: BasePrinter {
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnum.objcTypeName
 
         switch swiftProperty.mutability {
-           case .mutable:
-                writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
-                indentRight()
-                    writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue.toSwift }")
-                    writeLine("get { .init(swift: root.swiftModel.\(propertyWrapper.keyPath)) }")
-                indentLeft()
-                writeLine("}")
-           case .immutable, .mutableInternally:
-                writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
-                indentRight()
-                    writeLine(".init(swift: root.swiftModel.\(propertyWrapper.keyPath))")
-                indentLeft()
-                writeLine("}")
+        case .mutable:
+            writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
+            indentRight()
+                writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue.toSwift }")
+                writeLine("get { .init(swift: root.swiftModel.\(propertyWrapper.keyPath)) }")
+            indentLeft()
+            writeLine("}")
+        case .immutable, .mutableInternally:
+            writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
+            indentRight()
+                writeLine(".init(swift: root.swiftModel.\(propertyWrapper.keyPath))")
+            indentLeft()
+            writeLine("}")
         }
     }
 
