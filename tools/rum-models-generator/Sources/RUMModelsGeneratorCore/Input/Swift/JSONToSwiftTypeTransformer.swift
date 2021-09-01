@@ -177,7 +177,7 @@ internal class JSONToSwiftTypeTransformer {
 
         `struct`.properties = `struct`.properties.map { property in
             var property = property
-            property.mutability = transitiveMutability(property: property)
+            property.mutability = transitiveMutability(of: property)
 
             if let nestedStruct = property.type as? SwiftStruct {
                 property.type = resolveTransitiveMutableProperties(in: nestedStruct)
@@ -189,27 +189,27 @@ internal class JSONToSwiftTypeTransformer {
         return `struct`
     }
 
+    /// Returns `true` if the given `SwiftStruct.Property` contains a mutable property (`var`) or any of its nested types does.
+    private func transitiveMutability(of property: SwiftStruct.Property) -> SwiftStruct.Property.Mutability {
+        let innerMutability = transitiveMutableProperty(of: property.type)
+        if property.mutability.rawValue > innerMutability.rawValue {
+            return property.mutability
+        }
+        return innerMutability
+    }
+
     /// Returns `true` if the given `SwiftType` contains a mutable property (`var`) or any of its nested types does.
-    private func transitiveMutableProperty(type: SwiftType) -> SwiftStruct.Property.Mutability {
+    private func transitiveMutableProperty(of type: SwiftType) -> SwiftStruct.Property.Mutability {
         switch type {
         case let array as SwiftArray:
-            return transitiveMutableProperty(type: array.element)
+            return transitiveMutableProperty(of: array.element)
         case let `struct` as SwiftStruct:
-            return `struct`.properties.reduce(.immutable) {
-                let transitiveMutability = transitiveMutability(property: $1)
-                return transitiveMutability.rawValue > $0.rawValue ? transitiveMutability : $0
+            return `struct`.properties.reduce(.immutable) { max, property in
+                let innerMutability = transitiveMutability(of: property)
+                return innerMutability.rawValue > max.rawValue ? innerMutability : max
             }
         default:
             return .immutable
         }
-    }
-
-    /// Returns `true` if the given `SwiftStruct.Property` contains a mutable property (`var`) or any of its nested types does.
-    private func transitiveMutability(property: SwiftStruct.Property) -> SwiftStruct.Property.Mutability {
-        let transitiveMutability = transitiveMutableProperty(type: property.type)
-        if property.mutability.rawValue > transitiveMutability.rawValue {
-            return property.mutability
-        }
-        return transitiveMutability
     }
 }
