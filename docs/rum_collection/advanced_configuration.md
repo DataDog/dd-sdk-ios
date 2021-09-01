@@ -54,7 +54,7 @@ Once the timing is sent, the timing will be accessible as `@view.custom_timings.
 
 ### Custom Actions
 
-In addition to [tracking actions automatically][6], you can also track specific custom user actions (taps, clicks, scrolls, etc.) with `addUserAction(type:name:)` API. To manually register instantaneous RUM actions (e.g: `.tap`), on `Global.rum` use:
+In addition to [tracking actions automatically][7], you can also track specific custom user actions (taps, clicks, scrolls, etc.) with `addUserAction(type:name:)` API. To manually register instantaneous RUM actions (e.g: `.tap`), on `Global.rum` use:
 - `.addUserAction(type:name:)`
 
 or for continuous RUM actions (e.g: `.scroll`), use:
@@ -402,7 +402,6 @@ This means that even if users open your application while offline, no data is lo
 [3]: /real_user_monitoring/ios/data_collected
 [4]: #automatically-track-views
 [5]: https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures
-[6]: #automatically-track-actions
 [7]: #automatically-track-network-requests
 [8]: /real_user_monitoring/ios/data_collected/?tab=error#error-attributes
 [9]: #modify-or-drop-rum-events
