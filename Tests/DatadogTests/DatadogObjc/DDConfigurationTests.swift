@@ -180,6 +180,13 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(additionalConfiguration: ["foo": 42, "bar": "something"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["foo"] as? Int, 42)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["bar"] as? String, "something")
+
+        objcBuilder.set(proxyConfiguration: [kCFNetworkProxiesHTTPEnable as AnyHashable: true, kCFNetworkProxiesHTTPPort as AnyHashable: 123, kCFNetworkProxiesHTTPProxy as AnyHashable: "www.example.com", kCFProxyUsernameKey as AnyHashable: "proxyuser", kCFProxyPasswordKey as AnyHashable: "proxypass" ])
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable as AnyHashable] as? Bool, true)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPPort as AnyHashable] as? Int, 123)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy as AnyHashable] as? String, "www.example.com")
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyUsernameKey as AnyHashable] as? String, "proxyuser")
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey as AnyHashable] as? String, "proxypass")
     }
 
     func testScrubbingRUMEvents() {
