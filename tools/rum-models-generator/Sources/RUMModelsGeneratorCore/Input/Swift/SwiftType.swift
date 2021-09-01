@@ -54,6 +54,14 @@ internal struct SwiftEnum: SwiftType {
 
 internal struct SwiftStruct: SwiftType {
     struct Property: SwiftType {
+        /// Mutability levels of a property.
+        /// From the lowest `immutable` to the highest `mutable`.
+        enum Mutability: Int {
+            case immutable
+            case mutableInternally
+            case mutable
+        }
+
         enum CodingKey {
             /// Static coding key with fixed value.
             case `static`(value: String)
@@ -72,7 +80,7 @@ internal struct SwiftStruct: SwiftType {
         var comment: String?
         var type: SwiftType
         var isOptional: Bool
-        var isMutable: Bool
+        var mutability: Mutability
         var defaultValue: SwiftPropertyDefaultValue?
         var codingKey: CodingKey
     }

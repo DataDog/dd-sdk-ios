@@ -25,7 +25,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Bar's `property1`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
-                                isMutable: false,
+                                mutability: .immutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property1")
                             ),
@@ -34,7 +34,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Bar's `property2`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
-                                isMutable: true,
+                                mutability: .mutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property2")
                             )
@@ -42,7 +42,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 ),
@@ -61,7 +61,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "property1")
                 ),
@@ -82,7 +82,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         )
                     ),
                     isOptional: true,
-                    isMutable: true,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property2")
                 ),
@@ -91,7 +91,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                     comment: "Description of Foobar's `propertiesByNames`",
                     type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                     isOptional: true,
-                    isMutable: true,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertiesByNames")
                 )
@@ -118,7 +118,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                     comment: "Description of Bar's `property1`.",
                                     type: SwiftPrimitive<String>(),
                                     isOptional: true,
-                                    isMutable: false,
+                                    mutability: .immutable,
                                     defaultValue: nil,
                                     codingKey: .static(value: "property1")
                                 ),
@@ -127,7 +127,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                                     comment: "Description of Bar's `property2`.",
                                     type: SwiftPrimitive<String>(),
                                     isOptional: false,
-                                    isMutable: true,
+                                    mutability: .mutable,
                                     defaultValue: nil,
                                     codingKey: .static(value: "property2")
                                 )
@@ -135,7 +135,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                             conformance: [codableProtocol]
                         ),
                         isOptional: true,
-                        isMutable: false,
+                        mutability: .immutable,
                         defaultValue: nil,
                         codingKey: .static(value: "bar")
                     ),
@@ -154,7 +154,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                             conformance: [codableProtocol]
                         ),
                         isOptional: false,
-                        isMutable: false,
+                        mutability: .immutable,
                         defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                         codingKey: .static(value: "property1")
                     ),
@@ -175,7 +175,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                             )
                         ),
                         isOptional: true,
-                        isMutable: true,
+                        mutability: .mutable,
                         defaultValue: nil,
                         codingKey: .static(value: "property2")
                     ),
@@ -184,7 +184,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         comment: "Description of Foobar's `propertiesByNames`",
                         type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                         isOptional: true,
-                        isMutable: true,
+                        mutability: .mutable,
                         defaultValue: nil,
                         codingKey: .static(value: "propertiesByNames")
                     )
@@ -211,7 +211,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "connectivity")
                 ),
@@ -225,7 +225,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "usr")
                 ),
@@ -239,7 +239,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "method")
                 )
@@ -259,7 +259,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         comment: nil,
                         type: SwiftTypeReference(referencedTypeName: "RUMConnectivity"),
                         isOptional: true,
-                        isMutable: false,
+                        mutability: .immutable,
                         defaultValue: nil,
                         codingKey: .static(value: "connectivity")
                     ),
@@ -268,7 +268,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         comment: nil,
                         type: SwiftTypeReference(referencedTypeName: "RUMUser"),
                         isOptional: true,
-                        isMutable: false,
+                        mutability: .immutable,
                         defaultValue: nil,
                         codingKey: .static(value: "usr")
                     ),
@@ -277,7 +277,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
                         comment: nil,
                         type: SwiftTypeReference(referencedTypeName: "RUMMethod"),
                         isOptional: true,
-                        isMutable: false,
+                        mutability: .immutable,
                         defaultValue: nil,
                         codingKey: .static(value: "method")
                     )
