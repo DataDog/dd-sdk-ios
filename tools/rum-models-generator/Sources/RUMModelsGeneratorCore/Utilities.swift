@@ -26,7 +26,27 @@ internal struct Exception: Error, CustomStringConvertible {
     }
 
     static func moreContext(_ moreContext: String, for error: Error) -> Exception {
-        Exception("🛑 \"\(moreContext)\". Original error: \(error)")
+        if let decodingError = error as? DecodingError {
+            return Exception(
+                """
+                ⬇️
+                🛑 \(moreContext)
+
+                🔎 Pretty error: \(pretty(error: decodingError))
+
+                ⚙️ Original error: \(decodingError)
+                """
+            )
+        } else {
+            return Exception(
+                """
+                ⬇️
+                🛑 \(moreContext)
+
+                ⚙️ Original error: \(error)
+                """
+            )
+        }
     }
 }
 
@@ -84,4 +104,47 @@ internal func withErrorContext<T>(context: String, block: () throws -> T) throws
     } catch let error {
         throw Exception.moreContext(context, for: error)
     }
+}
+
+// MARK: - `Swift.DecodingError` pretty formatting
+
+/// Returns pretty descrpition of given `DecodingError`.
+private func pretty(error: DecodingError) -> String {
+    var description = "✋ description is unavailable"
+    var context: DecodingError.Context?
+
+    switch error {
+    case .typeMismatch(let type, let moreContext):
+        description = "Type \(type) could not be decoded because it did not match the type of what was found in the encoded payload."
+        context = moreContext
+    case .valueNotFound(let type, let moreContext):
+        description = "Non-optional value of type \(type) was expected, but a null value was found."
+        context = moreContext
+    case .keyNotFound(let key, let moreContext):
+        description = "A keyed decoding container was asked for an entry for key \(key), but did not contain one."
+        context = moreContext
+    case .dataCorrupted(let moreContext):
+        context = moreContext
+    @unknown default:
+        break
+    }
+
+    return "\n→ \(description)" + (context.flatMap { pretty(context: $0) } ?? "")
+}
+
+/// Returns pretty descrpition of given `DecodingError.Context`.
+private func pretty(context: DecodingError.Context) -> String {
+    let codingPath: [String] = context.codingPath.map { codingKey in
+        if let intValue = codingKey.intValue {
+            return String(intValue)
+        } else {
+            return codingKey.stringValue
+        }
+    }
+    return """
+
+    → In Context:
+        → coding path: \(codingPath.joined(separator: " → "))
+        → underlyingError: \(String(describing: context.underlyingError))
+    """
 }

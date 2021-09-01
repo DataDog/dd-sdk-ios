@@ -66,20 +66,22 @@ internal final class InternalMonitoringFeature {
         return FeatureUpload(
             featureName: InternalMonitoringFeature.featureName,
             storage: storage,
-            uploadHTTPHeaders: HTTPHeaders(
+            requestBuilder: RequestBuilder(
+                url: configuration.logsUploadURL,
+                queryItems: [
+                    .ddsource(source: configuration.common.source)
+                ],
                 headers: [
                     .contentTypeHeader(contentType: .applicationJSON),
                     .userAgentHeader(
                         appName: configuration.common.applicationName,
                         appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
-                    )
-                ]
-            ),
-            uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: configuration.logsUploadURLWithClientToken,
-                queryItemProviders: [
-                    .ddsource(source: configuration.common.source)
+                    ),
+                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginVersionHeader(),
+                    .ddRequestIDHeader(),
                 ]
             ),
             commonDependencies: commonDependencies,

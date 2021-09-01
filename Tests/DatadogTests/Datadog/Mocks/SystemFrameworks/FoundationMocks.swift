@@ -160,7 +160,7 @@ extension URL: AnyMockable, RandomMockable {
         return URL(string: "https://www.foo.com/")!
             .appendingPathComponent(
                 .mockRandom(
-                    among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                    among: .alphanumerics,
                     length: 32
                 )
             )
@@ -170,7 +170,7 @@ extension URL: AnyMockable, RandomMockable {
         let count: Int = .mockRandom(min: 2, max: 10)
         var components: [String] = (0..<count).map { _ in
             .mockRandom(
-                among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                among: .alphanumerics,
                 length: .mockRandom(min: 3, max: 10)
             )
         }
@@ -190,7 +190,7 @@ extension String: AnyMockable, RandomMockable {
 
     static func mockRandom(length: Int) -> String {
         return mockRandom(
-            among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
+            among: .alphanumerics + " ",
             length: length
         )
     }
@@ -203,6 +203,9 @@ extension String: AnyMockable, RandomMockable {
         let characters = (0..<times).map { _ in character }
         return String(characters)
     }
+
+    static let alphanumerics = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    static let decimalDigits = "0123456789"
 }
 
 extension Int: AnyMockable, RandomMockable {

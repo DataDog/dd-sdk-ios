@@ -292,12 +292,24 @@ public class SwiftPrinter: BasePrinter {
     private func printEnum(_ enumeration: SwiftEnum) throws {
         let implementedProtocols = enumeration.conformance.map { $0.name }
         let conformance = implementedProtocols.isEmpty ? "" : ", \(implementedProtocols.joined(separator: ", "))"
+        let rawValueType: String = try {
+            let firstCase = try enumeration.cases.first.unwrapOrThrow(.illegal("\(enumeration.name) enum has 0 cases"))
+            switch firstCase.rawValue {
+            case .string: return "String"
+            case .integer: return "Int"
+            }
+        }()
 
         printComment(enumeration.comment)
-        writeLine("public enum \(enumeration.name): String\(conformance) {")
+        writeLine("public enum \(enumeration.name): \(rawValueType)\(conformance) {")
         indentRight()
         enumeration.cases.forEach { `case` in
-            writeLine("case \(`case`.label) = \"\(`case`.rawValue)\"")
+            switch `case`.rawValue {
+            case .string(let value):
+                writeLine("case \(`case`.label) = \"\(value)\"")
+            case .integer(let value):
+                writeLine("case \(`case`.label) = \(value)")
+            }
         }
         indentLeft()
         writeLine("}")

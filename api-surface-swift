@@ -4,9 +4,51 @@ public enum TrackingConsent
  case granted
  case notGranted
  case pending
+public struct CarrierInfo: Equatable
+ public enum RadioAccessTechnology: String, Codable, CaseIterable
+  case GPRS
+  case Edge
+  case WCDMA
+  case HSDPA
+  case HSUPA
+  case CDMA1x
+  case CDMAEVDORev0
+  case CDMAEVDORevA
+  case CDMAEVDORevB
+  case eHRPD
+  case LTE
+  case unknown
+ public let carrierName: String?
+ public let carrierISOCountryCode: String?
+ public let carrierAllowsVOIP: Bool
+ public let radioAccessTechnology: RadioAccessTechnology
+public struct NetworkConnectionInfo: Equatable
+ public enum Reachability: String, Codable, CaseIterable
+  case yes
+  case maybe
+  case no
+ public enum Interface: String, Codable, CaseIterable
+  case wifi
+  case wiredEthernet
+  case cellular
+  case loopback
+  case other
+ public let reachability: Reachability
+ public let availableInterfaces: [Interface]?
+ public let supportsIPv4: Bool?
+ public let supportsIPv6: Bool?
+ public let isExpensive: Bool?
+ public let isConstrained: Bool?
 public class DDCrashReport: NSObject
- public init(date: Date?,type: String,message: String,stackTrace: String,context: Data?)
-public protocol DDCrashReportingPluginType: class
+ public struct Thread: Encodable
+  public init(name: String,stack: String,crashed: Bool,state: String?)
+ public struct BinaryImage: Encodable
+  public init(libraryName: String,uuid: String,architecture: String,isSystemLibrary: Bool,loadAddress: String,maxAddress: String)
+ public struct Meta: Encodable
+  public init(incidentIdentifier: String?,processName: String?,parentProcess: String?,path: String?,codeType: String?,exceptionType: String?,exceptionCodes: String?)
+ public var diagnosticInfo: [String: Encodable] = [:]
+ public init(date: Date?,type: String,message: String,stack: String,threads: [Thread],binaryImages: [BinaryImage],meta: Meta,wasTruncated: Bool,context: Data?)
+public protocol DDCrashReportingPluginType: AnyObject
  func readPendingCrashReport(completion: (DDCrashReport?) -> Bool)
  func inject(context: Data)
 public class DDRUMMonitor
@@ -38,9 +80,10 @@ public class Datadog
  public static func initialize(appContext: AppContext, configuration: Configuration)
  public static func initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
  public static var verbosityLevel: LogLevel? = nil
- public static var debugRUM: Bool = false
+ public static var debugRUM = false
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
  public static func set(trackingConsent: TrackingConsent)
+ public static func flushAndDeinitialize()
  public struct Configuration
   public enum BatchSize
    case small
@@ -51,20 +94,36 @@ public class Datadog
    case average
    case rare
   public enum DatadogEndpoint
-   case us
-   case eu
-   case gov
+   case us1
+   case us3
+   case eu1
+   case us1_fed
+   public static let us: DatadogEndpoint = .us1
+   public static let eu: DatadogEndpoint = .eu1
+   public static let gov: DatadogEndpoint = .us1_fed
   public enum LogsEndpoint
+   case us1
+   case us3
+   case eu1
+   case us1_fed
    case us
    case eu
    case gov
    case custom(url: String)
   public enum TracesEndpoint
+   case us1
+   case us3
+   case eu1
+   case us1_fed
    case us
    case eu
    case gov
    case custom(url: String)
   public enum RUMEndpoint
+   case us1
+   case us3
+   case eu1
+   case us1_fed
    case us
    case eu
    case gov
@@ -83,20 +142,25 @@ public class Datadog
    public func set(tracedHosts: Set<String>) -> Builder
    public func track(firstPartyHosts: Set<String>) -> Builder
    public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder
+   public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder
    public func enableRUM(_ enabled: Bool) -> Builder
    public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(rumSessionsSamplingRate: Float) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
+   public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder
    public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder
    public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder
    public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder
    public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder
+   public func setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?) -> Builder
+   public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder
    public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder
    public func enableInternalMonitoring(clientToken: String) -> Builder
    public func set(serviceName: String) -> Builder
    public func set(batchSize: BatchSize) -> Builder
    public func set(uploadFrequency: UploadFrequency) -> Builder
+   public func set(additionalConfiguration: [String: Any]) -> Builder
    public func build() -> Configuration
 public typealias DDGlobal = Global
 public struct Global
@@ -207,6 +271,15 @@ public protocol OTTracer
 public extension OTTracer
  func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
  func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+public struct RUMAction
+ public var name: String
+ public var attributes: [AttributeKey: AttributeValue]
+ public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
+public protocol UIKitRUMUserActionsPredicate
+ func rumAction(targetView: UIView) -> RUMAction?
+public struct DefaultUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate
+ public init ()
+ public func rumAction(targetView: UIView) -> RUMAction?
 public struct RUMView
  public var name: String
  public var path: String?
@@ -222,6 +295,7 @@ public struct RUMViewEvent: RUMDataModel
  public let dd: DD
  public let application: Application
  public let connectivity: RUMConnectivity?
+ public let context: RUMEventAttributes?
  public let date: Int64
  public let service: String?
  public let session: Session
@@ -242,6 +316,8 @@ public struct RUMViewEvent: RUMDataModel
    case synthetics = "synthetics"
  public struct View: Codable
   public let action: Action
+  public let cpuTicksCount: Double?
+  public let cpuTicksPerSecond: Double?
   public let crash: Crash?
   public let cumulativeLayoutShift: Double?
   public let customTimings: [String: Int64]?
@@ -253,14 +329,19 @@ public struct RUMViewEvent: RUMDataModel
   public let firstInputDelay: Int64?
   public let firstInputTime: Int64?
   public let id: String
+  public let inForegroundPeriods: [InForegroundPeriods]?
   public let isActive: Bool?
   public let largestContentfulPaint: Int64?
   public let loadEvent: Int64?
   public let loadingTime: Int64?
   public let loadingType: LoadingType?
   public let longTask: LongTask?
+  public let memoryAverage: Double?
+  public let memoryMax: Double?
   public var name: String?
   public var referrer: String?
+  public let refreshRateAverage: Double?
+  public let refreshRateMin: Double?
   public let resource: Resource
   public let timeSpent: Int64
   public var url: String
@@ -270,6 +351,9 @@ public struct RUMViewEvent: RUMDataModel
    public let count: Int64
   public struct Error: Codable
    public let count: Int64
+  public struct InForegroundPeriods: Codable
+   public let duration: Int64
+   public let start: Int64
   public enum LoadingType: String, Codable
    case initialLoad = "initial_load"
    case routeChange = "route_change"
@@ -288,6 +372,7 @@ public struct RUMResourceEvent: RUMDataModel
  public let action: Action?
  public let application: Application
  public let connectivity: RUMConnectivity?
+ public let context: RUMEventAttributes?
  public let date: Int64
  public var resource: Resource
  public let service: String?
@@ -383,6 +468,7 @@ public struct RUMActionEvent: RUMDataModel
  public var action: Action
  public let application: Application
  public let connectivity: RUMConnectivity?
+ public let context: RUMEventAttributes?
  public let date: Int64
  public let service: String?
  public let session: Session
@@ -429,6 +515,7 @@ public struct RUMActionEvent: RUMDataModel
    case synthetics = "synthetics"
  public struct View: Codable
   public let id: String
+  public let inForeground: Bool?
   public var name: String?
   public var referrer: String?
   public var url: String
@@ -437,6 +524,7 @@ public struct RUMErrorEvent: RUMDataModel
  public let action: Action?
  public let application: Application
  public let connectivity: RUMConnectivity?
+ public let context: RUMEventAttributes?
  public let date: Int64
  public var error: Error
  public let service: String?
@@ -451,6 +539,7 @@ public struct RUMErrorEvent: RUMDataModel
  public struct Application: Codable
   public let id: String
  public struct Error: Codable
+  public let id: String?
   public let isCrash: Bool?
   public var message: String
   public var resource: Resource?
@@ -498,6 +587,7 @@ public struct RUMErrorEvent: RUMDataModel
    case synthetics = "synthetics"
  public struct View: Codable
   public let id: String
+  public let inForeground: Bool?
   public var name: String?
   public var referrer: String?
   public var url: String
@@ -522,10 +612,17 @@ public struct RUMConnectivity: Codable
   case connected = "connected"
   case notConnected = "not_connected"
   case maybe = "maybe"
+public struct RUMEventAttributes: Codable
+ public let contextInfo: [String: Codable]
+ public func encode(to encoder: Encoder) throws
+ public init(from decoder: Decoder) throws
 public struct RUMUser: Codable
  public let email: String?
  public let id: String?
  public let name: String?
+ public let usrInfo: [String: Codable]
+ public func encode(to encoder: Encoder) throws
+ public init(from decoder: Decoder) throws
 public enum RUMMethod: String, Codable
  case post = "POST"
  case get = "GET"
@@ -543,6 +640,7 @@ public enum RUMErrorSource
  case source
  case network
  case webview
+ case console
  case custom
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  public static func initialize() -> DDRUMMonitor
@@ -568,6 +666,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
  override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
  override public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
  override public func removeAttribute(forKey key: AttributeKey)
+ public func flush()
 public struct DDTags
  public static let resource = "resource.name"
 public typealias DDTracer = Tracer
@@ -588,11 +687,35 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter
  public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
  public func inject(spanContext: OTSpanContext)
+public struct SpanEvent: Encodable
+ public var operationName: String
+ public let serviceName: String
+ public var resource: String
+ public let startTime: Date
+ public let duration: TimeInterval
+ public let isError: Bool
+ public let tracerVersion: String
+ public let applicationVersion: String
+ public let networkConnectionInfo: NetworkConnectionInfo?
+ public let mobileCarrierInfo: CarrierInfo?
+ public struct UserInfo
+  public let id: String?
+  public let name: String?
+  public let email: String?
+  public var extraInfo: [String: String]
+ public var userInfo: UserInfo
+ public var tags: [String: String]
+ public func encode(to encoder: Encoder) throws
+public protocol __URLSessionDelegateProviding: URLSessionDelegate
+ var ddURLSessionDelegate: DDURLSessionDelegate
+ public var ddURLSessionDelegate: DDURLSessionDelegate
  override public init()
  public init(additionalFirstPartyHosts: Set<String>)
+ public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data)
 public class URLSessionInterceptor: URLSessionInterceptorType
  public static var shared: URLSessionInterceptor?
  public func modify(request: URLRequest, session: URLSession? = nil) -> URLRequest
  public func taskCreated(task: URLSessionTask, session: URLSession? = nil)
  public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
+ public func taskReceivedData(task: URLSessionTask, data: Data)
  public func taskCompleted(task: URLSessionTask, error: Error?)

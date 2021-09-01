@@ -102,6 +102,11 @@ public class Datadog {
         }
     }
 
+    /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
+    public static var isInitialized: Bool {
+        return instance != nil
+    }
+
     /// Sets current user information.
     /// Those will be added to logs, traces and RUM events automatically.
     /// - Parameters:

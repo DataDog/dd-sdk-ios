@@ -18,7 +18,7 @@ class DatadogTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
     }
@@ -26,7 +26,7 @@ class DatadogTests: XCTestCase {
     override func tearDown() {
         consolePrint = { print($0) }
         printFunction = nil
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         super.tearDown()
     }
 
@@ -38,7 +38,7 @@ class DatadogTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: defaultBuilder.build()
         )
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         Datadog.flushAndDeinitialize()
     }
 
@@ -48,7 +48,7 @@ class DatadogTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: rumBuilder.build()
         )
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         Datadog.flushAndDeinitialize()
     }
 
@@ -67,7 +67,7 @@ class DatadogTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
         )
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
     }
 
     func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() {
@@ -207,26 +207,26 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
 
-        verify(configuration: rumBuilder.trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()) {
+        verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
         verify(
-            configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock()).build()
+            configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
         }
 
-        verify(configuration: rumBuilder.trackUIKitActions(true).build()) {
+        verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
             XCTAssertNotNil(RUMAutoInstrumentation.instance?.userActions)
         }
         verify(
-            configuration: rumBuilder.enableRUM(false).trackUIKitActions(true).build()
+            configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertNil(RUMAutoInstrumentation.instance?.views)
@@ -402,12 +402,6 @@ class DatadogTests: XCTestCase {
     }
 }
 
-/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
-private protocol DatadogDeprecatedAPIs {
-    static func initialize(appContext: AppContext, configuration: Datadog.Configuration)
-}
-extension Datadog: DatadogDeprecatedAPIs {}
-
 class AppContextTests: XCTestCase {
     func testBundleType() {
         let iOSAppBundle: Bundle = .mockWith(bundlePath: "mock.app")
@@ -446,3 +440,11 @@ class AppContextTests: XCTestCase {
         )
     }
 }
+
+// MARK: - Deprecation Helpers
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol DatadogDeprecatedAPIs {
+    static func initialize(appContext: AppContext, configuration: Datadog.Configuration)
+}
+extension Datadog: DatadogDeprecatedAPIs {}

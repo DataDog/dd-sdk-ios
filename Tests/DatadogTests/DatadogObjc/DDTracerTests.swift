@@ -235,6 +235,8 @@ class DDTracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "x-datadog-trace-id": "1",
             "x-datadog-parent-id": "2",
+            "x-datadog-sampling-priority": "1",
+            "x-datadog-sampled": "1",
         ]
         XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }

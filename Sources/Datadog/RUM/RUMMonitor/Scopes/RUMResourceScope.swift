@@ -130,6 +130,7 @@ internal class RUMResourceScope: RUMScope {
 
         let eventData = RUMResourceEvent(
             dd: .init(
+                session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId
             ),
@@ -208,7 +209,9 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMErrorEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
@@ -217,6 +220,8 @@ internal class RUMResourceScope: RUMScope {
             context: nil,
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                handling: nil,
+                handlingStack: nil,
                 id: nil,
                 isCrash: false,
                 message: command.errorMessage,

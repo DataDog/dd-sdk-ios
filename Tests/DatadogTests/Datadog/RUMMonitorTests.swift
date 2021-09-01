@@ -1187,7 +1187,7 @@ class RUMMonitorTests: XCTestCase {
                 .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
                 .trackURLSession(firstPartyHosts: [.mockAny()])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(name: .mockAny())))
-                .trackUIKitActions(true)
+                .trackUIKitRUMActions()
                 .build()
         )
 

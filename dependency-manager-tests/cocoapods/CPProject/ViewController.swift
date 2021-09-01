@@ -7,6 +7,7 @@
 import UIKit
 import Datadog
 import DatadogAlamofireExtension
+import DatadogCrashReporting
 import Alamofire
 
 internal class ViewController: UIViewController {
@@ -20,6 +21,7 @@ internal class ViewController: UIViewController {
             trackingConsent: .pending,
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: "abc", environment: "tests")
+                .enableCrashReporting(using: DDCrashReportingPlugin())
                 .build()
         )
 

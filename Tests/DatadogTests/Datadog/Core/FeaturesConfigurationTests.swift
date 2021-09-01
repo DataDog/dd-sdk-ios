@@ -121,15 +121,23 @@ class FeaturesConfigurationTests: XCTestCase {
             }
     }
 
+    func testClientToken() throws {
+        let clientToken: String = .mockRandom(among: "abcdefgh")
+        let configuration = try createConfiguration(clientToken: clientToken)
+
+        XCTAssertEqual(configuration.logging?.clientToken, clientToken)
+        XCTAssertEqual(configuration.tracing?.clientToken, clientToken)
+        XCTAssertEqual(configuration.rum?.clientToken, clientToken)
+        XCTAssertNotEqual(configuration.internalMonitoring?.clientToken, clientToken)
+    }
+
     func testEndpoint() throws {
-        let clientToken: String = .mockRandom(among: "abcdef")
         let randomLogsEndpoint: Datadog.Configuration.LogsEndpoint = .mockRandom()
         let randomTracesEndpoint: Datadog.Configuration.TracesEndpoint = .mockRandom()
         let randomRUMEndpoint: Datadog.Configuration.RUMEndpoint = .mockRandom()
 
         func configuration(datadogEndpoint: Datadog.Configuration.DatadogEndpoint?) throws -> FeaturesConfiguration {
             try createConfiguration(
-                clientToken: clientToken,
                 datadogEndpoint: datadogEndpoint,
                 logsEndpoint: randomLogsEndpoint,
                 tracesEndpoint: randomTracesEndpoint,
@@ -137,106 +145,108 @@ class FeaturesConfigurationTests: XCTestCase {
             )
         }
 
+        typealias DeprecatedEndpoints = Deprecated<Datadog.Configuration.DatadogEndpoint>
+
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1).logging?.uploadURLWithClientToken.absoluteString,
-            "https://logs.browser-intake-datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .us1).logging?.uploadURL.absoluteString,
+            "https://logs.browser-intake-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us3).logging?.uploadURLWithClientToken.absoluteString,
-            "https://logs.browser-intake-us3-datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .us3).logging?.uploadURL.absoluteString,
+            "https://logs.browser-intake-us3-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu1).logging?.uploadURLWithClientToken.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .eu1).logging?.uploadURL.absoluteString,
+            "https://mobile-http-intake.logs.datadoghq.eu/api/v2/logs"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1_fed).logging?.uploadURLWithClientToken.absoluteString,
-            "https://logs.browser-intake-ddog-gov.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .us1_fed).logging?.uploadURL.absoluteString,
+            "https://logs.browser-intake-ddog-gov.com/api/v2/logs"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us).logging?.uploadURLWithClientToken.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.us).logging?.uploadURL.absoluteString,
+            "https://logs.browser-intake-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu).logging?.uploadURLWithClientToken.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).logging?.uploadURL.absoluteString,
+            "https://mobile-http-intake.logs.datadoghq.eu/api/v2/logs"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .gov).logging?.uploadURLWithClientToken.absoluteString,
-            "https://logs.browser-intake-ddog-gov.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).logging?.uploadURL.absoluteString,
+            "https://logs.browser-intake-ddog-gov.com/api/v2/logs"
         )
 
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://trace.browser-intake-datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .us1).tracing?.uploadURL.absoluteString,
+            "https://trace.browser-intake-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us3).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://trace.browser-intake-us3-datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .us3).tracing?.uploadURL.absoluteString,
+            "https://trace.browser-intake-us3-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu1).tracing?.uploadURLWithClientToken.absoluteString,
-            "https:/public-trace-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .eu1).tracing?.uploadURL.absoluteString,
+            "https:/public-trace-http-intake.logs.datadoghq.eu/api/v2/spans"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1_fed).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: .us1_fed).tracing?.uploadURL.absoluteString,
+            "https://trace.browser-intake-ddog-gov.com/api/v2/spans"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .us).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://public-trace-http-intake.logs.datadoghq.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.us).tracing?.uploadURL.absoluteString,
+            "https://trace.browser-intake-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).tracing?.uploadURL.absoluteString,
+            "https:/public-trace-http-intake.logs.datadoghq.eu/api/v2/spans"
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: .gov).tracing?.uploadURLWithClientToken.absoluteString,
-            "https://trace.browser-intake-ddog-gov.com/v1/input/" + clientToken
-        )
-
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum.browser-intake-datadoghq.com/v1/input/" + clientToken
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us3).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum.browser-intake-us3-datadoghq.com/v1/input/" + clientToken
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu1).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1_fed).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum.browser-intake-ddog-gov.com/v1/input/" + clientToken
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum-http-intake.logs.datadoghq.com/v1/input/" + clientToken
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum-http-intake.logs.datadoghq.eu/v1/input/" + clientToken
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .gov).rum?.uploadURLWithClientToken.absoluteString,
-            "https://rum.browser-intake-ddog-gov.com/v1/input/" + clientToken
+            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).tracing?.uploadURL.absoluteString,
+            "https://trace.browser-intake-ddog-gov.com/api/v2/spans"
         )
 
         XCTAssertEqual(
-            try configuration(datadogEndpoint: nil).logging?.uploadURLWithClientToken.absoluteString,
-            randomLogsEndpoint.url + clientToken,
+            try configuration(datadogEndpoint: .us1).rum?.uploadURL.absoluteString,
+            "https://rum.browser-intake-datadoghq.com/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us3).rum?.uploadURL.absoluteString,
+            "https://rum.browser-intake-us3-datadoghq.com/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .eu1).rum?.uploadURL.absoluteString,
+            "https://rum-http-intake.logs.datadoghq.eu/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us1_fed).rum?.uploadURL.absoluteString,
+            "https://rum.browser-intake-ddog-gov.com/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: DeprecatedEndpoints.us).rum?.uploadURL.absoluteString,
+            "https://rum.browser-intake-datadoghq.com/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).rum?.uploadURL.absoluteString,
+            "https://rum-http-intake.logs.datadoghq.eu/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).rum?.uploadURL.absoluteString,
+            "https://rum.browser-intake-ddog-gov.com/api/v2/rum"
+        )
+
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: nil).logging?.uploadURL.absoluteString,
+            randomLogsEndpoint.url,
             "When `DatadogEndpoint` is not set, it should default to `LogsEndpoint` value."
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: nil).tracing?.uploadURLWithClientToken.absoluteString,
-            randomTracesEndpoint.url + clientToken,
+            try configuration(datadogEndpoint: nil).tracing?.uploadURL.absoluteString,
+            randomTracesEndpoint.url,
             "When `DatadogEndpoint` is not set, it should default to `TracesEndpoint` value."
         )
         XCTAssertEqual(
-            try configuration(datadogEndpoint: nil).rum?.uploadURLWithClientToken.absoluteString,
-            randomRUMEndpoint.url + clientToken,
+            try configuration(datadogEndpoint: nil).rum?.uploadURL.absoluteString,
+            randomRUMEndpoint.url,
             "When `DatadogEndpoint` is not set, it should default to `RUMEndpoint` value."
         )
     }
@@ -251,19 +261,17 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomLogsEndpoint() throws {
-        let clientToken: String = .mockRandom(among: "abcdef")
         let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
-            clientToken: clientToken,
             datadogEndpoint: randomDatadogEndpoint,
             customLogsEndpoint: randomCustomEndpoint
         )
 
         XCTAssertEqual(
-            configuration.logging?.uploadURLWithClientToken,
-            randomCustomEndpoint.appendingPathComponent(clientToken),
+            configuration.logging?.uploadURL,
+            randomCustomEndpoint,
             "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
@@ -278,19 +286,17 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomTracesEndpoint() throws {
-        let clientToken: String = .mockRandom(among: "abcdef")
         let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
-            clientToken: clientToken,
             datadogEndpoint: randomDatadogEndpoint,
             customTracesEndpoint: randomCustomEndpoint
         )
 
         XCTAssertEqual(
-            configuration.tracing?.uploadURLWithClientToken,
-            randomCustomEndpoint.appendingPathComponent(clientToken),
+            configuration.tracing?.uploadURL,
+            randomCustomEndpoint,
             "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
@@ -305,19 +311,17 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomRUMEndpoint() throws {
-        let clientToken: String = .mockRandom(among: "abcdef")
         let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
-            clientToken: clientToken,
             datadogEndpoint: randomDatadogEndpoint,
             customRUMEndpoint: randomCustomEndpoint
         )
 
         XCTAssertEqual(
-            configuration.rum?.uploadURLWithClientToken,
-            randomCustomEndpoint.appendingPathComponent(clientToken),
+            configuration.rum?.uploadURL,
+            randomCustomEndpoint,
             "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
@@ -576,13 +580,16 @@ class FeaturesConfigurationTests: XCTestCase {
     func testWhenInternalMonitoringClientTokenIsSet_thenInternalMonitoringConfigurationIsEnabled() throws {
         // When
         let internalMonitoringClientToken: String = .mockRandom(among: "abcdef")
+        let featuresClientToken: String = .mockRandom(among: "ghijkl")
         let featuresConfiguration = try FeaturesConfiguration(
-            configuration: .mockWith(internalMonitoringClientToken: internalMonitoringClientToken),
-            appContext: .mockWith(
-                bundleIdentifier: "com.bundle.identifier",
-                bundleVersion: "1.2.3",
-                bundleName: "AppName"
-            )
+            configuration: .mockWith(
+                clientToken: featuresClientToken,
+                loggingEnabled: true,
+                tracingEnabled: true,
+                rumEnabled: true,
+                internalMonitoringClientToken: internalMonitoringClientToken
+            ),
+            appContext: .mockAny()
         )
 
         // Then
@@ -591,9 +598,13 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.sdkServiceName, "dd-sdk-ios", "Internal monitoring data should be available under \"service:dd-sdk-ios\"")
         XCTAssertEqual(configuration.sdkEnvironment, "prod", "Internal monitoring data should be available under \"env:prod\"")
         XCTAssertEqual(
-            configuration.logsUploadURLWithClientToken.absoluteString,
-            "https://logs.browser-intake-datadoghq.com/v1/input/" + internalMonitoringClientToken
+            configuration.logsUploadURL.absoluteString,
+            "https://logs.browser-intake-datadoghq.com/api/v2/logs"
         )
+        XCTAssertEqual(configuration.clientToken, internalMonitoringClientToken, "Internal Monitoring must use monitoring token")
+        XCTAssertEqual(featuresConfiguration.logging!.clientToken, featuresClientToken, "Logging must use feature token")
+        XCTAssertEqual(featuresConfiguration.tracing!.clientToken, featuresClientToken, "Tracing must use feature token")
+        XCTAssertEqual(featuresConfiguration.rum!.clientToken, featuresClientToken, "RUM must use feature token")
     }
 
     // MARK: - Invalid Configurations
@@ -760,4 +771,21 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
     }
+}
+
+// MARK: - Deprecation Helpers
+
+/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
+private protocol DeprecatedDatadogEndpoints {
+    static var us: Self { get }
+    static var eu: Self { get }
+    static var gov: Self { get }
+}
+extension Datadog.Configuration.DatadogEndpoint: DeprecatedDatadogEndpoints {}
+
+/// An assistant shim to access `Datadog.Configuration.DatadogEndpoint` deprecated APIs with no warning.
+private struct Deprecated<T: DeprecatedDatadogEndpoints> {
+    static var us: T { T.us }
+    static var eu: T { T.eu }
+    static var gov: T { T.gov }
 }

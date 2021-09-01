@@ -1,4 +1,6 @@
-public class DDNSURLSessionDelegate: DDURLSessionDelegate
+ public var ddURLSessionDelegate: DDURLSessionDelegate
+ override public init()
+ public init(additionalFirstPartyHosts: Set<String>)
 public class DDTrackingConsent: NSObject
  public static func granted() -> DDTrackingConsent
  public static func notGranted() -> DDTrackingConsent
@@ -14,15 +16,27 @@ public class DDDatadog: NSObject
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
  public static func setTrackingConsent(consent: DDTrackingConsent)
 public class DDEndpoint: NSObject
+ public static func us1() -> DDEndpoint
+ public static func us3() -> DDEndpoint
+ public static func eu1() -> DDEndpoint
+ public static func us1_fed() -> DDEndpoint
  public static func eu() -> DDEndpoint
  public static func us() -> DDEndpoint
  public static func gov() -> DDEndpoint
 public class DDLogsEndpoint: NSObject
+ public static func us1() -> DDLogsEndpoint
+ public static func us3() -> DDLogsEndpoint
+ public static func eu1() -> DDLogsEndpoint
+ public static func us1_fed() -> DDLogsEndpoint
  public static func eu() -> DDLogsEndpoint
  public static func us() -> DDLogsEndpoint
  public static func gov() -> DDLogsEndpoint
  public static func custom(url: String) -> DDLogsEndpoint
 public class DDTracesEndpoint: NSObject
+ public static func us1() -> DDTracesEndpoint
+ public static func us3() -> DDTracesEndpoint
+ public static func eu1() -> DDTracesEndpoint
+ public static func us1_fed() -> DDTracesEndpoint
  public static func eu() -> DDTracesEndpoint
  public static func us() -> DDTracesEndpoint
  public static func gov() -> DDTracesEndpoint
@@ -57,12 +71,15 @@ public class DDConfigurationBuilder: NSObject
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()
+ public func trackUIKitRUMActions()
+ public func trackUIKitRUMActions(using predicate: DDUIKitRUMUserActionsPredicate)
  public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent)
  public func setRUMResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?)
  public func setRUMActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?)
  public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?)
  public func set(batchSize: DDBatchSize)
  public func set(uploadFrequency: DDUploadFrequency)
+ public func set(additionalConfiguration: [String: Any])
  public func build() -> DDConfiguration
 public class DDGlobal: NSObject
  @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
@@ -140,6 +157,7 @@ public class DDRUMViewEvent: NSObject
  @objc public var dd: DDRUMViewEventDD
  @objc public var application: DDRUMViewEventApplication
  @objc public var connectivity: DDRUMViewEventRUMConnectivity?
+ @objc public var context: DDRUMViewEventRUMEventAttributes?
  @objc public var date: NSNumber
  @objc public var service: String?
  @objc public var session: DDRUMViewEventSession
@@ -172,6 +190,8 @@ public enum DDRUMViewEventRUMConnectivityStatus: Int
  case connected
  case notConnected
  case maybe
+public class DDRUMViewEventRUMEventAttributes: NSObject
+ @objc public var contextInfo: [String: Any]
 public class DDRUMViewEventSession: NSObject
  @objc public var hasReplay: NSNumber?
  @objc public var id: String
@@ -183,8 +203,11 @@ public class DDRUMViewEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
  @objc public var name: String?
+ @objc public var usrInfo: [String: Any]
 public class DDRUMViewEventView: NSObject
  @objc public var action: DDRUMViewEventViewAction
+ @objc public var cpuTicksCount: NSNumber?
+ @objc public var cpuTicksPerSecond: NSNumber?
  @objc public var crash: DDRUMViewEventViewCrash?
  @objc public var cumulativeLayoutShift: NSNumber?
  @objc public var customTimings: [String: NSNumber]?
@@ -196,14 +219,19 @@ public class DDRUMViewEventView: NSObject
  @objc public var firstInputDelay: NSNumber?
  @objc public var firstInputTime: NSNumber?
  @objc public var id: String
+ @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]?
  @objc public var isActive: NSNumber?
  @objc public var largestContentfulPaint: NSNumber?
  @objc public var loadEvent: NSNumber?
  @objc public var loadingTime: NSNumber?
  @objc public var loadingType: DDRUMViewEventViewLoadingType
  @objc public var longTask: DDRUMViewEventViewLongTask?
+ @objc public var memoryAverage: NSNumber?
+ @objc public var memoryMax: NSNumber?
  @objc public var name: String?
  @objc public var referrer: String?
+ @objc public var refreshRateAverage: NSNumber?
+ @objc public var refreshRateMin: NSNumber?
  @objc public var resource: DDRUMViewEventViewResource
  @objc public var timeSpent: NSNumber
  @objc public var url: String
@@ -213,6 +241,9 @@ public class DDRUMViewEventViewCrash: NSObject
  @objc public var count: NSNumber
 public class DDRUMViewEventViewError: NSObject
  @objc public var count: NSNumber
+public class DDRUMViewEventViewInForegroundPeriods: NSObject
+ @objc public var duration: NSNumber
+ @objc public var start: NSNumber
 public enum DDRUMViewEventViewLoadingType: Int
  case none
  case initialLoad
@@ -232,6 +263,7 @@ public class DDRUMResourceEvent: NSObject
  @objc public var action: DDRUMResourceEventAction?
  @objc public var application: DDRUMResourceEventApplication
  @objc public var connectivity: DDRUMResourceEventRUMConnectivity?
+ @objc public var context: DDRUMResourceEventRUMEventAttributes?
  @objc public var date: NSNumber
  @objc public var resource: DDRUMResourceEventResource
  @objc public var service: String?
@@ -268,6 +300,8 @@ public enum DDRUMResourceEventRUMConnectivityStatus: Int
  case connected
  case notConnected
  case maybe
+public class DDRUMResourceEventRUMEventAttributes: NSObject
+ @objc public var contextInfo: [String: Any]
 public class DDRUMResourceEventResource: NSObject
  @objc public var connect: DDRUMResourceEventResourceConnect?
  @objc public var dns: DDRUMResourceEventResourceDNS?
@@ -351,6 +385,7 @@ public class DDRUMResourceEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
  @objc public var name: String?
+ @objc public var usrInfo: [String: Any]
 public class DDRUMResourceEventView: NSObject
  @objc public var id: String
  @objc public var name: String?
@@ -361,6 +396,7 @@ public class DDRUMActionEvent: NSObject
  @objc public var action: DDRUMActionEventAction
  @objc public var application: DDRUMActionEventApplication
  @objc public var connectivity: DDRUMActionEventRUMConnectivity?
+ @objc public var context: DDRUMActionEventRUMEventAttributes?
  @objc public var date: NSNumber
  @objc public var service: String?
  @objc public var session: DDRUMActionEventSession
@@ -419,6 +455,8 @@ public enum DDRUMActionEventRUMConnectivityStatus: Int
  case connected
  case notConnected
  case maybe
+public class DDRUMActionEventRUMEventAttributes: NSObject
+ @objc public var contextInfo: [String: Any]
 public class DDRUMActionEventSession: NSObject
  @objc public var hasReplay: NSNumber?
  @objc public var id: String
@@ -430,8 +468,10 @@ public class DDRUMActionEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
  @objc public var name: String?
+ @objc public var usrInfo: [String: Any]
 public class DDRUMActionEventView: NSObject
  @objc public var id: String
+ @objc public var inForeground: NSNumber?
  @objc public var name: String?
  @objc public var referrer: String?
  @objc public var url: String
@@ -440,6 +480,7 @@ public class DDRUMErrorEvent: NSObject
  @objc public var action: DDRUMErrorEventAction?
  @objc public var application: DDRUMErrorEventApplication
  @objc public var connectivity: DDRUMErrorEventRUMConnectivity?
+ @objc public var context: DDRUMErrorEventRUMEventAttributes?
  @objc public var date: NSNumber
  @objc public var error: DDRUMErrorEventError
  @objc public var service: String?
@@ -474,7 +515,10 @@ public enum DDRUMErrorEventRUMConnectivityStatus: Int
  case connected
  case notConnected
  case maybe
+public class DDRUMErrorEventRUMEventAttributes: NSObject
+ @objc public var contextInfo: [String: Any]
 public class DDRUMErrorEventError: NSObject
+ @objc public var id: String?
  @objc public var isCrash: NSNumber?
  @objc public var message: String
  @objc public var resource: DDRUMErrorEventErrorResource?
@@ -532,8 +576,10 @@ public class DDRUMErrorEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
  @objc public var name: String?
+ @objc public var usrInfo: [String: Any]
 public class DDRUMErrorEventView: NSObject
  @objc public var id: String
+ @objc public var inForeground: NSNumber?
  @objc public var name: String?
  @objc public var referrer: String?
  @objc public var url: String
@@ -543,10 +589,17 @@ public class DDRUMView: NSObject
  public init(name: String, attributes: [String: Any])
 public protocol DDUIKitRUMViewsPredicate: AnyObject
  func rumView(for viewController: UIViewController) -> DDRUMView?
+public class DDRUMAction: NSObject
+ @objc public var name: String
+ @objc public var attributes: [String: Any]
+ public init(name: String, attributes: [String: Any])
+public protocol DDUIKitRUMUserActionsPredicate: AnyObject
+ func rumAction(targetView: UIView) -> DDRUMAction?
 public enum DDRUMErrorSource: Int
  case source
  case network
  case webview
+ case console
  case custom
 public enum DDRUMUserActionType: Int
  case tap

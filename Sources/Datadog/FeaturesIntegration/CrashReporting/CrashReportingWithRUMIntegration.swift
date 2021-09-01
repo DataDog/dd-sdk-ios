@@ -95,13 +95,17 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         errorEventAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
         let rumError = RUMErrorEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                handling: nil,
+                handlingStack: nil,
                 id: nil,
                 isCrash: true,
                 message: errorMessage,
@@ -136,7 +140,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
-            dd: .init(documentVersion: original.dd.documentVersion + 1),
+            dd: .init(
+                documentVersion: original.dd.documentVersion + 1,
+                session: .init(plan: .plan1)
+            ),
             application: original.application,
             connectivity: original.connectivity,
             context: original.context,

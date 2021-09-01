@@ -73,7 +73,7 @@ Example:
 }
 ```
 
-**Note**: When using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same. This is necessary for the SDK to match a action start with its completion. 
+**Note**: When using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same. This is necessary for the SDK to match an action start with its completion. 
 
 Find more details and available options in `DDRUMMonitor` class.
 
@@ -169,19 +169,19 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 : Enables tracking user interactions (taps) as RUM actions.
 
 `trackURLSession(firstPartyHosts: Set<String>)`
-: Enables tracking `URLSession` tasks (network requests) as RUM resources. The `firstPartyHosts` parameter defines hosts that will be categorized as `first-party` resources (if RUM feature is enabled) and will have tracing information injected (if tracing feature is enabled).
+: Enables tracking `URLSession` tasks (network requests) as RUM resources. The `firstPartyHosts` parameter defines hosts that are categorized as `first-party` resources (if RUM is enabled) and have tracing information injected (if tracing feature is enabled).
 
 `setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent)`
-: Sets the data scrubbing callback for views. This can be used to modify view events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for views. This can be used to modify view events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?)`
-: Sets the data scrubbing callback for resources. This can be used to modify or drop resource events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for resources. This can be used to modify or drop resource events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?)`
-: Sets the data scrubbing callback for actions. This can be used to modify or drop action events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for actions. This can be used to modify or drop action events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?)`
-: Sets the data scrubbing callback for errors. This can be used to modify or drop error events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for errors. This can be used to modify or drop error events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?)`
 : Sets a closure to provide custom attributes for intercepted resources. The `provider` closure is called for each resource collected by the SDK. This closure is called with task information and may return custom resource attributes or `nil` if no attributes should be attached.
@@ -197,11 +197,11 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 : Enables or disables the Tracing feature.
 
 `setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent)`
-: Sets the data scrubbing callback for spans. This can be used to modify or drop span events before they are send to Datadog.
+: Sets the data scrubbing callback for spans. This can be used to modify or drop span events before they are sent to Datadog.
  
 ### Automatically track views
 
-To automatically track views (`UIViewControllers`), use the `.trackUIKitRUMViews()` option when configuring the SDK. By default views will be named with the view controller's class name. To customize it use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
+To automatically track views (`UIViewControllers`), use the `.trackUIKitRUMViews()` option when configuring the SDK. By default, views are named with the view controller's class name. To customize it, use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
 
 ```swift
 public protocol UIKitRUMViewsPredicate {
@@ -272,9 +272,9 @@ let session = URLSession(
     delegateQueue: nil
 )
 ```
-This will track all requests sent with the instrumented `session`. Requests matching `example.com` domain will be marked as "first party" and tracing information will be send to your backend to [connect the RUM resource with its Trace][10].
+This tracks all requests sent with the instrumented `session`. Requests matching the `example.com` domain are marked as "first party" and tracing information is sent to your backend to [connect the RUM resource with its Trace][10].
 
-To add custom attributes to resources, use the `.setRUMResourceAttributesProvider(_ :)` option when configuring SDK. By setting attributes provider closure you can return additional attributes to be attached to tracked resource. 
+To add custom attributes to resources, use the `.setRUMResourceAttributesProvider(_ :)` option when configuring SDK. By setting attributes provider closure, you can return additional attributes to be attached to tracked resource. 
 
 For instance, you may want to add HTTP request and response headers to the RUM resource:
 ```swift

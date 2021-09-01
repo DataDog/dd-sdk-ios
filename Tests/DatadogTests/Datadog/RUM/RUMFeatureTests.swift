@@ -25,39 +25,65 @@ class RUMFeatureTests: XCTestCase {
     // MARK: - HTTP Message
 
     func testItUsesExpectedHTTPMessage() throws {
+        let randomApplicationName: String = .mockRandom()
+        let randomApplicationVersion: String = .mockRandom(among: .decimalDigits)
+        let randomServiceName: String = .mockRandom(among: .alphanumerics)
+        let randomEnvironmentName: String = .mockRandom(among: .alphanumerics)
+        let randomSource: String = .mockRandom(among: .alphanumerics)
+        let randomUploadURL: URL = .mockRandom()
+        let randomClientToken: String = .mockRandom()
+        let randomDeviceModel: String = .mockRandom()
+        let randomDeviceOSName: String = .mockRandom()
+        let randomDeviceOSVersion: String = .mockRandom()
+
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+
+        // Given
         RUMFeature.instance = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
-                    applicationName: "FoobarApp",
-                    applicationVersion: "2.1.0",
-                    serviceName: "service-name",
-                    environment: "environment-name",
-                    source: "abc"
-                )
+                    applicationName: randomApplicationName,
+                    applicationVersion: randomApplicationVersion,
+                    serviceName: randomServiceName,
+                    environment: randomEnvironmentName,
+                    source: randomSource
+                ),
+                uploadURL: randomUploadURL,
+                clientToken: randomClientToken
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(model: "iPhone", osName: "iOS", osVersion: "13.3.1")
+                mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
         defer { RUMFeature.instance?.deinitialize() }
 
+        // When
         let monitor = RUMMonitor.initialize()
+        monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
 
-        // Starting first view sends `application_start` action event
-        monitor.startView(viewController: mockView)
-
+        // Then
         let request = server.waitAndReturnRequests(count: 1)[0]
+        let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(requestURL.absoluteString.starts(with: randomUploadURL.absoluteString + "?"))
         XCTAssertEqual(
-            request.url?.query,
+            requestURL.query,
             """
-            ddsource=abc&ddtags=service:service-name,version:2.1.0,sdk_version:\(sdkVersion),env:environment-name
+            ddsource=\(randomSource)&ddtags=service:\(randomServiceName),version:\(randomApplicationVersion),sdk_version:\(sdkVersion),env:\(randomEnvironmentName)
             """
         )
-        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/2.1.0 CFNetwork (iPhone; iOS/13.3.1)")
+        XCTAssertEqual(
+            request.allHTTPHeaderFields?["User-Agent"],
+            """
+            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceModel); \(randomDeviceOSName)/\(randomDeviceOSVersion))
+            """
+        )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
     // MARK: - HTTP Payload

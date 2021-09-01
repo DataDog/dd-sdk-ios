@@ -67,7 +67,7 @@ internal final class VitalInfoSampler {
         // NOTE: RUMM-1280 based on my running Example app
         // non-main run loops don't fire the timer.
         // Although i can't catch this in unit tests
-        RunLoop.main.add(timer, forMode: .default)
+        RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }
 

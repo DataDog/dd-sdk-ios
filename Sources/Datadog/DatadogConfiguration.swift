@@ -51,15 +51,15 @@ extension Datadog {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
             @available(*, deprecated, message: "Renamed to us1")
-            case us
+            public static let us: DatadogEndpoint = .us1
             /// Europe based servers.
             /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
             @available(*, deprecated, message: "Renamed to eu1")
-            case eu
+            public static let eu: DatadogEndpoint = .eu1
             /// Gov servers.
             /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
             @available(*, deprecated, message: "Renamed to us1_fed")
-            case gov
+            public static let gov: DatadogEndpoint = .us1_fed
 
             internal var logsEndpoint: LogsEndpoint {
                 switch self {
@@ -67,9 +67,6 @@ extension Datadog {
                 case .us3: return .us3
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
-                case .us: return .us
-                case .eu: return .eu
-                case .gov: return .gov
                 }
             }
 
@@ -79,9 +76,6 @@ extension Datadog {
                 case .us3: return .us3
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
-                case .us: return .us
-                case .eu: return .eu
-                case .gov: return .gov
                 }
             }
 
@@ -91,9 +85,6 @@ extension Datadog {
                 case .us3: return .us3
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
-                case .us: return .us
-                case .eu: return .eu
-                case .gov: return .gov
                 }
             }
         }
@@ -125,14 +116,12 @@ extension Datadog {
             case custom(url: String)
 
             internal var url: String {
+                let endpoint = "api/v2/logs"
                 switch self {
-                case .us1: return "https://logs.browser-intake-datadoghq.com/v1/input/"
-                case .us3: return "https://logs.browser-intake-us3-datadoghq.com/v1/input/"
-                case .eu1: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
-                case .us1_fed: return "https://logs.browser-intake-ddog-gov.com/v1/input/"
-                case .us: return "https://mobile-http-intake.logs.datadoghq.com/v1/input/"
-                case .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
-                case .gov: return "https://logs.browser-intake-ddog-gov.com/v1/input/"
+                case .us1, .us: return "https://logs.browser-intake-datadoghq.com/" + endpoint
+                case .us3: return "https://logs.browser-intake-us3-datadoghq.com/" + endpoint
+                case .eu1, .eu: return "https://mobile-http-intake.logs.datadoghq.eu/" + endpoint
+                case .us1_fed, .gov: return "https://logs.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
                 }
             }
@@ -165,14 +154,12 @@ extension Datadog {
             case custom(url: String)
 
             internal var url: String {
+                let endpoint = "api/v2/spans"
                 switch self {
-                case .us1: return "https://trace.browser-intake-datadoghq.com/v1/input/"
-                case .us3: return "https://trace.browser-intake-us3-datadoghq.com/v1/input/"
-                case .eu1: return "https:/public-trace-http-intake.logs.datadoghq.eu/v1/input/"
-                case .us1_fed: return "https://trace.browser-intake-ddog-gov.com/v1/input/"
-                case .us: return "https://public-trace-http-intake.logs.datadoghq.com/v1/input/"
-                case .eu: return "https://public-trace-http-intake.logs.datadoghq.eu/v1/input/"
-                case .gov: return "https://trace.browser-intake-ddog-gov.com/v1/input/"
+                case .us1, .us: return "https://trace.browser-intake-datadoghq.com/" + endpoint
+                case .us3: return "https://trace.browser-intake-us3-datadoghq.com/" + endpoint
+                case .eu1, .eu: return "https:/public-trace-http-intake.logs.datadoghq.eu/" + endpoint
+                case .us1_fed, .gov: return "https://trace.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
                 }
             }
@@ -205,14 +192,12 @@ extension Datadog {
             case custom(url: String)
 
             internal var url: String {
+                let endpoint = "api/v2/rum"
                 switch self {
-                case .us1: return "https://rum.browser-intake-datadoghq.com/v1/input/"
-                case .us3: return "https://rum.browser-intake-us3-datadoghq.com/v1/input/"
-                case .eu1: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
-                case .us1_fed: return "https://rum.browser-intake-ddog-gov.com/v1/input/"
-                case .us: return "https://rum-http-intake.logs.datadoghq.com/v1/input/"
-                case .eu: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
-                case .gov: return "https://rum.browser-intake-ddog-gov.com/v1/input/"
+                case .us1, .us: return "https://rum.browser-intake-datadoghq.com/" + endpoint
+                case .us3: return "https://rum.browser-intake-us3-datadoghq.com/" + endpoint
+                case .eu1, .eu: return "https://rum-http-intake.logs.datadoghq.eu/" + endpoint
+                case .us1_fed, .gov: return "https://rum.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
                 }
             }
@@ -570,6 +555,7 @@ extension Datadog {
             /// Until this option is enabled, automatic tracking of `UIEvents` is disabled and no swizzling is installed on the `UIApplication` class.
             ///
             /// - Parameter predicate: predicate deciding if a given action should be recorded and which allows to give custom name and to add custom attributes to the RUM Action.
+            /// Defaults to `DefaultUIKitRUMUserActionsPredicate` instance.
             public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder {
                 configuration.rumUIKitUserActionsPredicate = predicate
                 return self

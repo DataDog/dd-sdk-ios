@@ -80,6 +80,7 @@ class DDRUMErrorSourceTests: XCTestCase {
         XCTAssertEqual(DDRUMErrorSource.source.swiftType, .source)
         XCTAssertEqual(DDRUMErrorSource.network.swiftType, .network)
         XCTAssertEqual(DDRUMErrorSource.webview.swiftType, .webview)
+        XCTAssertEqual(DDRUMErrorSource.console.swiftType, .console)
         XCTAssertEqual(DDRUMErrorSource.custom.swiftType, .custom)
     }
 }

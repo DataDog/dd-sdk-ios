@@ -25,8 +25,6 @@ import Foundation
 ///
 ///
 public class HTTPHeadersWriter: OTHTTPHeadersWriter {
-    public init() {}
-
     /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
     /// to the backend instrumented with Datadog APM.
     ///
@@ -38,14 +36,23 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     ///
     public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
 
+    /// Pre-computed headers with constant values.
+    private let constantHTTPHeaders: [String: String]
+
+    public init() {
+        constantHTTPHeaders = [
+            TracingHTTPHeaders.ddSamplingPriority.field: TracingHTTPHeaders.ddSamplingPriority.value,
+            TracingHTTPHeaders.ddSampled.field: TracingHTTPHeaders.ddSampled.value,
+        ]
+    }
+
     public func inject(spanContext: OTSpanContext) {
         guard let spanContext = spanContext.dd else {
             return
         }
 
-        tracePropagationHTTPHeaders = [
-            TracingHTTPHeaders.traceIDField: String(spanContext.traceID.rawValue),
-            TracingHTTPHeaders.parentSpanIDField: String(spanContext.spanID.rawValue)
-        ]
+        tracePropagationHTTPHeaders = constantHTTPHeaders
+        tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = String(spanContext.traceID.rawValue)
+        tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = String(spanContext.spanID.rawValue)
     }
 }

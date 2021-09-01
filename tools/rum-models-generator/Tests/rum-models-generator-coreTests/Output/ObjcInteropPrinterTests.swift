@@ -447,9 +447,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 name: name,
                 comment: nil,
                 cases: [
-                    SwiftEnum.Case(label: "case1", rawValue: "case1"),
-                    SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                    SwiftEnum.Case(label: "case3", rawValue: "case3"),
+                    SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                    SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                    SwiftEnum.Case(label: "case3", rawValue: .string(value: "case3")),
                 ],
                 conformance: []
             )
@@ -833,9 +833,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 name: name,
                 comment: nil,
                 cases: [
-                    SwiftEnum.Case(label: "option1", rawValue: "option1"),
-                    SwiftEnum.Case(label: "option2", rawValue: "option2"),
-                    SwiftEnum.Case(label: "option3", rawValue: "option3"),
+                    SwiftEnum.Case(label: "option1", rawValue: .string(value: "option1")),
+                    SwiftEnum.Case(label: "option2", rawValue: .string(value: "option2")),
+                    SwiftEnum.Case(label: "option3", rawValue: .string(value: "option3")),
                 ],
                 conformance: []
             )
@@ -1535,9 +1535,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
                                     name: "Enumeration",
                                     comment: nil,
                                     cases: [
-                                        SwiftEnum.Case(label: "case1", rawValue: "case1"),
-                                        SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                                        SwiftEnum.Case(label: "case3", rawValue: "case3"),
+                                        SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                                        SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                                        SwiftEnum.Case(label: "case3", rawValue: .string(value: "case3")),
                                     ],
                                     conformance: []
                                 ),
@@ -1711,9 +1711,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
             name: "SharedEnum",
             comment: nil,
             cases: [
-                SwiftEnum.Case(label: "case1", rawValue: "case1"),
-                SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                SwiftEnum.Case(label: "case3", rawValue: "case3"),
+                SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                SwiftEnum.Case(label: "case3", rawValue: .string(value: "case3")),
             ],
             conformance: []
         )

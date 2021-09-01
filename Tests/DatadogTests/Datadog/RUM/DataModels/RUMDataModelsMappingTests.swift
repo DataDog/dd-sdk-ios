@@ -50,6 +50,7 @@ class RUMDataModelsMappingTests: XCTestCase {
             case .source: XCTAssertEqual(rumSource, .source)
             case .network: XCTAssertEqual(rumSource, .network)
             case .webview: XCTAssertEqual(rumSource, .webview)
+            case .console: XCTAssertEqual(rumSource, .console)
             case .logger: XCTAssertEqual(rumSource, .logger)
             }
         }
@@ -57,6 +58,7 @@ class RUMDataModelsMappingTests: XCTestCase {
         verifyInternalSource(.source)
         verifyInternalSource(.network)
         verifyInternalSource(.webview)
+        verifyInternalSource(.console)
         verifyInternalSource(.logger)
     }
 
@@ -87,6 +89,7 @@ class RUMInternalDataModelsMappingTests: XCTestCase {
             case .network: XCTAssertEqual(internalSource, .network)
             case .source: XCTAssertEqual(internalSource, .source)
             case .webview: XCTAssertEqual(internalSource, .webview)
+            case .console: XCTAssertEqual(internalSource, .console)
             }
         }
         // verify all known cases
@@ -94,5 +97,6 @@ class RUMInternalDataModelsMappingTests: XCTestCase {
         verifyErrorSource(.network)
         verifyErrorSource(.source)
         verifyErrorSource(.webview)
+        verifyErrorSource(.console)
     }
 }

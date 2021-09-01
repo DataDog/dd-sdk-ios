@@ -95,6 +95,8 @@ public enum DDRUMErrorSource: Int {
     case network
     /// Error originated in a webview.
     case webview
+    /// Error originated in a web console (used by bridges).
+    case console
     /// Custom error source.
     case custom
 
@@ -104,6 +106,7 @@ public enum DDRUMErrorSource: Int {
         case .network: return .network
         case .webview: return .webview
         case .custom: return .custom
+        case .console: return .console
         default: return .custom
         }
     }

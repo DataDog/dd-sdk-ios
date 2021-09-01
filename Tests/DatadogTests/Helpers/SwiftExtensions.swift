@@ -46,6 +46,12 @@ extension String {
     func randomcased() -> String {
         return Bool.random() ? self.lowercased() : self.uppercased()
     }
+
+    static let uuidRegex = "^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"
+
+    func matches(regex: String) -> Bool {
+        range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
+    }
 }
 
 extension Data {

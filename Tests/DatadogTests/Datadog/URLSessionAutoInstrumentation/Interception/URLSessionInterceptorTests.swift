@@ -90,7 +90,7 @@ class URLSessionInterceptorTests: XCTestCase {
         )
         XCTAssertEqual(
             interceptor.additionalHeadersForFirstPartyRequests,
-            [TracingHTTPHeaders.originField: TracingHTTPHeaders.rumOriginValue],
+            [TracingHTTPHeaders.ddOrigin.field: TracingHTTPHeaders.ddOrigin.value],
             "Additional `x-datadog-origin: rum` header should be injected when both Tracing and RUM instrumentations are enabled."
         )
     }
@@ -133,26 +133,30 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField], TracingHTTPHeaders.rumOriginValue)
+        XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.ddOrigin.field], TracingHTTPHeaders.ddOrigin.value)
         assertRequestsEqual(
             interceptedFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
-                .removing(httpHeaderField: TracingHTTPHeaders.originField),
+                .removing(httpHeaderField: TracingHTTPHeaders.ddSamplingPriority.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.ddSampled.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.ddOrigin.field),
             firstPartyRequest,
-            "The only modification of the original requests should be the addition of 3 tracing headers."
+            "The only modification of the original requests should be the addition of 5 tracing headers."
         )
 
         XCTAssertNotNil(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertEqual(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField], TracingHTTPHeaders.rumOriginValue)
+        XCTAssertEqual(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.ddOrigin.field], TracingHTTPHeaders.ddOrigin.value)
         assertRequestsEqual(
             interceptedCustomFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
-                .removing(httpHeaderField: TracingHTTPHeaders.originField),
+                .removing(httpHeaderField: TracingHTTPHeaders.ddSamplingPriority.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.ddSampled.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.ddOrigin.field),
             alternativeFirstPartyRequest,
-            "The only modification of the original requests should be the addition of 3 tracing headers."
+            "The only modification of the original requests should be the addition of 5 tracing headers."
         )
 
         assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
@@ -176,13 +180,15 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
-        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.originField], "Origin header should not be added if RUM is disabled.")
+        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.ddOrigin.field], "Origin header should not be added if RUM is disabled.")
         assertRequestsEqual(
             interceptedFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
-                .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField),
+                .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
+                .removing(httpHeaderField: TracingHTTPHeaders.ddSamplingPriority.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.ddSampled.field),
             firstPartyRequest,
-            "The only modification of the original requests should be the addition of 2 tracing headers."
+            "The only modification of the original requests should be the addition of 4 tracing headers."
         )
         assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
         assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
