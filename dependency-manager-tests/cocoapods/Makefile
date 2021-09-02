@@ -11,4 +11,4 @@ test:
 		@sed "s|REMOTE_GIT_REFERENCE|${GIT_REFERENCE}|g" Podfile.src > Podfile
 		@rm -rf Pods/
 		pod update
-		@echo "OK 👌"
+		@echo "👌 'pod update' OK"

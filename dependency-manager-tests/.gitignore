@@ -15,6 +15,6 @@ xcuserdata
 
 # Cocoapods test
 # - ignore `Podfile.lock` and `Podfile` as they will be re-created for every test run
-/cocoapods/Pods
-/cocoapods/Podfile.lock
-/cocoapods/Podfile
+/cocoapods/**/Pods
+/cocoapods/**/Podfile.lock
+/cocoapods/**/Podfile
