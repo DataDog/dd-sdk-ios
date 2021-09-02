@@ -614,7 +614,11 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
-        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [:])
+        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
+            "str": CodableValue("value"),
+            "int": CodableValue(11_235),
+            "bool": CodableValue(true)
+        ])
         try rumEventMatchers.forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.int"), 11_235)
@@ -998,8 +1002,8 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Integration with Crash Reporting
 
     func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
-        let randomUserInfoAttributes: [String: String] = .mockRandom()
-        let randomViewEventAttributes: [String: String] = .mockRandom()
+        let randomUserInfoAttributes = mockRandomAttributes()
+        let randomViewEventAttributes = mockRandomAttributes()
 
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
@@ -1032,18 +1036,9 @@ class RUMMonitorTests: XCTestCase {
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
         let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
-        XCTAssertEqual(
-            currentCrashContext.lastRUMViewEvent?.model,
-            lastRUMViewEventSent
-        )
-        XCTAssertEqual(
-            currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
-            randomViewEventAttributes
-        )
-        XCTAssertEqual(
-            currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
-            randomUserInfoAttributes
-        )
+        let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent?.model)
+
+        try AssertEncodedRepresentationsEqual(value1: currentLastRUMViewEventSent, value2: lastRUMViewEventSent)
     }
 
     // MARK: - Thread safety

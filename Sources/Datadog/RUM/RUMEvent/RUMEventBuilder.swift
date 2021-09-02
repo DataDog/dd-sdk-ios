@@ -22,11 +22,17 @@ internal class RUMEventBuilder {
         with model: DM,
         attributes: [String: Encodable]
     ) -> RUMEvent<DM>? {
-        let event = RUMEvent(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoProvider.value.extraInfo
-        )
+        var model = model
+
+        if !attributes.isEmpty {
+            model.context = RUMEventAttributes(contextInfo: attributes)
+        }
+
+        if !userInfoProvider.value.extraInfo.isEmpty {
+            model.usr = RUMUser(email: model.usr?.email, id: model.usr?.id, name: model.usr?.name, usrInfo: userInfoProvider.value.extraInfo)
+        }
+
+        let event = RUMEvent(model: model)
         let mappedEvent = eventsMapper.map(event: event)
         return mappedEvent
     }

@@ -150,47 +150,35 @@ private struct CodableUserInfo: Codable {
 
 private struct CodableRUMViewEvent: Codable {
     private let model: RUMViewEvent
-    private let attributes: [String: Encodable]
-    private let userInfoAttributes: [String: Encodable]
+    private let errorAttributes: [AttributeKey: AttributeValue]?
 
     init(from managedValue: RUMEvent<RUMViewEvent>) {
         self.model = managedValue.model
-        self.attributes = managedValue.attributes
-        self.userInfoAttributes = managedValue.userInfoAttributes
+        self.errorAttributes = managedValue.errorAttributes
     }
 
     var managedValue: RUMEvent<RUMViewEvent> {
-        return .init(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoAttributes
-        )
+        return .init(model: model, errorAttributes: errorAttributes)
     }
 
     // MARK: - Codable
 
     enum CodingKeys: String, CodingKey {
         case model = "mdl"
-        case attributes = "att"
-        case userInfoAttributes = "uia"
+        case errorAttributes = "ea"
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
         self.model = try container.decode(RUMViewEvent.self, forKey: .model)
-        self.attributes = try container.decode([String: CodableValue].self, forKey: .attributes)
-        self.userInfoAttributes = try container.decode([String: CodableValue].self, forKey: .userInfoAttributes)
+        self.errorAttributes = try container.decodeIfPresent([String: CodableValue].self, forKey: .errorAttributes)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        let encodedAttributes = attributes.mapValues { CodableValue($0) }
-        let encodedUserInfoAttributes = userInfoAttributes.mapValues { CodableValue($0) }
-
         try container.encode(model, forKey: .model)
-        try container.encode(encodedAttributes, forKey: .attributes)
-        try container.encode(encodedUserInfoAttributes, forKey: .userInfoAttributes)
+        let error = errorAttributes?.mapValues { CodableValue($0) }
+        try container.encode(error, forKey: .errorAttributes)
     }
 }
 

@@ -129,7 +129,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
@@ -167,7 +167,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
     }
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
@@ -217,7 +217,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 2)
-        XCTAssertTrue(event.attributes.isEmpty)
+        XCTAssertNil(event.model.context)
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
@@ -582,7 +582,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.error.isCrash)
         XCTAssertNil(error.model.error.resource)
         XCTAssertNil(error.model.action)
-        XCTAssertEqual(error.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(error.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(error.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)

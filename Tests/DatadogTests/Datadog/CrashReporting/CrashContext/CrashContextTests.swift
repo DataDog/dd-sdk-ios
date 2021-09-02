@@ -28,9 +28,7 @@ class CrashContextTests: XCTestCase {
 
     func testGivenContextWithLastRUMViewEventSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
         let randomRUMViewEvent = RUMEvent(
-            model: RUMViewEvent.mockRandom(),
-            attributes: mockRandomAttributes(),
-            userInfoAttributes: mockRandomAttributes()
+            model: RUMViewEvent.mockRandom()
         )
 
         // Given

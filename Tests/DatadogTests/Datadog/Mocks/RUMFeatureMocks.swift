@@ -88,31 +88,21 @@ extension RUMResourceType {
 
 // MARK: - RUMDataModel Mocks
 
-struct RUMDataModelMock: RUMDataModel, Equatable {
+struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
     let attribute: String
+    var usr: RUMUser?
+    var context: RUMEventAttributes?
 }
 
 // MARK: - Component Mocks
 
 extension RUMEvent: AnyMockable where DM == RUMViewEvent {
     static func mockAny() -> RUMEvent<RUMViewEvent> {
-        return .mockWith(model: RUMViewEvent.mockRandom())
+        return RUMEvent(model: RUMViewEvent.mockRandom())
     }
 }
 
 extension RUMEvent {
-    static func mockWith<DM: RUMDataModel>(
-        model: DM,
-        attributes: [String: Encodable] = [:],
-        userInfoAttributes: [String: Encodable] = [:]
-    ) -> RUMEvent<DM> {
-        return RUMEvent<DM>(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoAttributes
-        )
-    }
-
     static func mockRandomWith<DM: RUMDataModel>(model: DM) -> RUMEvent<DM> {
         func randomAttributes(prefixed prefix: String) -> [String: Encodable] {
             var attributes: [String: String] = [:]
@@ -120,11 +110,16 @@ extension RUMEvent {
             return attributes
         }
 
-        return RUMEvent<DM>(
-            model: model,
-            attributes: randomAttributes(prefixed: "event-attribute"),
-            userInfoAttributes: randomAttributes(prefixed: "user-attribute")
+        var model = model
+        model.context = RUMEventAttributes(contextInfo: randomAttributes(prefixed: "event-attribute"))
+        model.usr = RUMUser(
+            email: model.usr?.email,
+            id: model.usr?.id,
+            name: model.usr?.name,
+            usrInfo: randomAttributes(prefixed: "user-attribute")
         )
+
+        return RUMEvent<DM>(model: model)
     }
 }
 

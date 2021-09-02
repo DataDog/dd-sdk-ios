@@ -18,8 +18,8 @@ class RUMEventBuilderTests: XCTestCase {
         )
 
         XCTAssertEqual(event.model.attribute, "foo")
-        XCTAssertEqual((event.attributes as? [String: String])?["foo"], "bar")
-        XCTAssertEqual((event.attributes as? [String: String])?["fizz"], "buzz")
+        XCTAssertEqual((event.model.context?.contextInfo as? [String: String])?["foo"], "bar")
+        XCTAssertEqual((event.model.context?.contextInfo as? [String: String])?["fizz"], "buzz")
     }
 
     func testGivenEventBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
