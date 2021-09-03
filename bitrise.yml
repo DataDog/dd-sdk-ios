@@ -214,7 +214,7 @@ workflows:
             set -e
             make test-spm ci=${CI}
     - xcodebuild:
-        title: Build SPMProject for tests - Catalyst
+        title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
         inputs:
         - scheme: SPMProject
         - destination: platform=macOS,variant=Mac Catalyst
@@ -230,7 +230,6 @@ workflows:
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
     - script:
-        # Carthage doesn't support Catalyst, so we don't test CTProject for `variant=Mac Catalyst`
         title: Test Carthage compatibility
         inputs:
         - content: |-
@@ -253,22 +252,24 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-cocoapods ci=${CI}
-    - xcodebuild:
-        title: Build CPProject for tests - Catalyst
-        inputs:
-        - scheme: CPProject
-        - destination: platform=macOS,variant=Mac Catalyst
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-catalyst-sanity-check.html"
     - xcode-test:
-        title: Run CPProject tests
+        title: Run CPProject tests with 'use_frameworks!'
         inputs:
-        - scheme: CPProject
+        - scheme: CPProjectUseFrameworks
         - simulator_device: iPhone 11
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-use_frameworks-tests.html"
+    - xcode-test:
+        title: Run CPProject tests with no 'use_frameworks!'
+        inputs:
+        - scheme: CPProjectNoUseFrameworks
+        - simulator_device: iPhone 11
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-no_use_frameworks-tests.html"
 
   create_dogfooding_pr:
     description: |-

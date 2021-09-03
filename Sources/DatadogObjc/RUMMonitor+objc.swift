@@ -36,6 +36,7 @@ public class DDRUMView: NSObject {
     /// - Parameters:
     ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM View.
+    @objc
     public init(name: String, attributes: [String: Any]) {
         swiftView = RUMView(
             name: name,
@@ -71,6 +72,7 @@ public class DDRUMAction: NSObject {
     /// - Parameters:
     ///   - name: the RUM Action name, appearing as `ACTION NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM Action.
+    @objc
     public init(name: String, attributes: [String: Any]) {
         swiftAction = RUMAction(
             name: name,
