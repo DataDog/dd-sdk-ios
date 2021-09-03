@@ -253,19 +253,19 @@ class FeaturesConfigurationTests: XCTestCase {
 
     func testCustomProxy() throws {
         let proxyConfiguration: [AnyHashable: Any] = [
-            kCFNetworkProxiesHTTPEnable as AnyHashable: true,
-            kCFNetworkProxiesHTTPPort as AnyHashable: 123,
-            kCFNetworkProxiesHTTPProxy as AnyHashable: "www.example.com",
-            kCFProxyUsernameKey as AnyHashable: "proxyuser",
-            kCFProxyPasswordKey as AnyHashable: "proxypass",
+            kCFNetworkProxiesHTTPEnable: true,
+            kCFNetworkProxiesHTTPPort: 123,
+            kCFNetworkProxiesHTTPProxy: "www.example.com",
+            kCFProxyUsernameKey: "proxyuser",
+            kCFProxyPasswordKey: "proxypass",
         ]
         let configuration = try createConfiguration(proxyConfiguration: proxyConfiguration)
 
-        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPEnable as AnyHashable] as? Bool, true)
-        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPPort as AnyHashable] as? Int, 123)
-        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPProxy as AnyHashable] as? String, "www.example.com")
-        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyUsernameKey as AnyHashable] as? String, "proxyuser")
-        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyPasswordKey as AnyHashable] as? String, "proxypass")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
     }
 
     // MARK: - Logging Configuration Tests
