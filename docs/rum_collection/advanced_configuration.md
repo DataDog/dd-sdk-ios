@@ -198,7 +198,7 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 
 `setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent)`
 : Sets the data scrubbing callback for spans. This can be used to modify or drop span events before they are sent to Datadog.
- 
+
 ### Automatically track views
 
 To automatically track views (`UIViewControllers`), use the `.trackUIKitRUMViews()` option when configuring the SDK. By default, views are named with the view controller's class name. To customize it, use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
@@ -391,6 +391,27 @@ This means that even if users open your application while offline, no data is lo
 
 **Note**: The data on the disk is automatically discarded if it gets too old to ensure the SDK doesn't use too much disk space.
 
+## Configuring a custom Proxy for Datadog data upload
+
+If your app is running on devices behind a custom proxy, you can let the SDK's data uploader know about it to ensure all tracked data are uploaded with the relevant configuration. You can specify your proxy configuration (as described in the [URLSessionConfiguration.connectionProxyDictionary][12] documentation) when initializing the SDK.
+
+```swift
+Datadog.initialize(
+    // ...
+    configuration: Datadog.Configuration
+        .builderUsing(/* ... */)
+        .set(proxyConfiguration: [
+            kCFNetworkProxiesHTTPEnable: true, 
+            kCFNetworkProxiesHTTPPort: 123, 
+            kCFNetworkProxiesHTTPProxy: "www.example.com", 
+            kCFProxyUsernameKey: "proxyuser", 
+            kCFProxyPasswordKey: "proxypass" 
+        ])
+        // ...
+        .build()
+)
+```
+
 
 ## Further Reading
 
@@ -408,3 +429,4 @@ This means that even if users open your application while offline, no data is lo
 [9]: #modify-or-drop-rum-events
 [10]: https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces?tab=browserrum
 [11]: /real_user_monitoring/ios/data_collected?tab=session#default-attributes
+[12]: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary
