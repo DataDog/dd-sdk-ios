@@ -1245,13 +1245,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
             properties: [
                 .mock(
                     propertyName: "immutableCodables",
-                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    type: SwiftDictionary(value: SwiftCodable()),
                     isOptional: false,
                     mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableCodables",
-                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    type: SwiftDictionary(value: SwiftCodable()),
                     isOptional: true,
                     mutability: .immutable
                 ),

@@ -248,7 +248,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "propertyWithAdditionalAnyPropertiesInfo",
                                 comment: nil,
                                 type: SwiftDictionary(
-                                    value: SwiftPrimitive<SwiftCodable>()
+                                    value: SwiftEncodable()
                                 ),
                                 isOptional: false,
                                 mutability: .mutableInternally,
@@ -331,7 +331,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "barInfo",
                                 comment: "Additional properties of `bar`.",
                                 type: SwiftDictionary(
-                                    value: SwiftPrimitive<SwiftCodable>()
+                                    value: SwiftEncodable()
                                 ),
                                 isOptional: false,
                                 mutability: .mutableInternally,

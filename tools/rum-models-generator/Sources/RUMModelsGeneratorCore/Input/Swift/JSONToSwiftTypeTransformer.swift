@@ -87,7 +87,7 @@ internal class JSONToSwiftTypeTransformer {
                         name: additionalPropertyName,
                         comment: additionalProperties.comment,
                         type: SwiftDictionary(
-                            value: SwiftPrimitive<SwiftCodable>()
+                            value: SwiftEncodable()
                         ),
                         isOptional: false,
                         mutability: mutability,
