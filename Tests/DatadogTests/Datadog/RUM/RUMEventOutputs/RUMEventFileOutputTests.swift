@@ -37,8 +37,8 @@ class RUMEventFileOutputTests: XCTestCase {
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))
         let dataModel2 = RUMDataModelMock(attribute: "bar")
-        let event1 = try XCTUnwrap(builder.createRUMEvent(with: dataModel1, attributes: ["custom.attribute": "value"]))
-        let event2 = try XCTUnwrap(builder.createRUMEvent(with: dataModel2, attributes: [:]))
+        let event1 = try XCTUnwrap(builder.createRUMEvent(with: dataModel1))
+        let event2 = try XCTUnwrap(builder.createRUMEvent(with: dataModel2))
 
         output.write(rumEvent: event1)
 

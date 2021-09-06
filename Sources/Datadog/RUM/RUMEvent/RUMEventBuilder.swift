@@ -13,18 +13,8 @@ internal class RUMEventBuilder {
         self.eventsMapper = eventsMapper
     }
 
-    func createRUMEvent<DM: RUMDataModel>(
-        with model: DM,
-        attributes: [String: Encodable]
-    ) -> RUMEvent<DM>? {
-        var model = model
-
-        if !attributes.isEmpty {
-            model.context = RUMEventAttributes(contextInfo: attributes)
-        }
-
+    func createRUMEvent<DM: RUMDataModel>(with model: DM) -> RUMEvent<DM>? {
         let event = RUMEvent(model: model)
-        let mappedEvent = eventsMapper.map(event: event)
-        return mappedEvent
+        return eventsMapper.map(event: event)
     }
 }

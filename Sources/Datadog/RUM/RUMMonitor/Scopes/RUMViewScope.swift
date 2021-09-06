@@ -302,7 +302,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
-            context: nil,
+            context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
@@ -316,7 +316,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: command.attributes) {
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
             return true
         }
@@ -340,7 +340,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
-            context: nil,
+            context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
@@ -381,7 +381,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
             crashContextIntegration?.update(lastRUMViewEvent: event)
         } else {
@@ -401,7 +401,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
-            context: nil,
+            context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
                 handling: nil,
@@ -426,7 +426,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
             return true
         }

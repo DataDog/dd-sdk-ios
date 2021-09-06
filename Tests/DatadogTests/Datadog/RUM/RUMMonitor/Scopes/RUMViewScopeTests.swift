@@ -178,7 +178,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
+            attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime
         )
@@ -217,7 +217,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 2)
-        XCTAssertNil(event.model.context)
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
