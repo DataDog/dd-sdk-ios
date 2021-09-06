@@ -1241,7 +1241,7 @@ public struct RUMConnectivity: Codable {
 
 /// User provided context
 public struct RUMEventAttributes: Codable {
-    public internal(set) var contextInfo: [String: Codable]
+    public internal(set) var contextInfo: [String: Encodable]
 
     struct DynamicCodingKey: CodingKey {
         var stringValue: String
@@ -1287,7 +1287,7 @@ public struct RUMUser: Codable {
     /// Name of the user
     public let name: String?
 
-    public internal(set) var usrInfo: [String: Codable]
+    public internal(set) var usrInfo: [String: Encodable]
 
     enum StaticCodingKeys: String, CodingKey {
         case email = "email"

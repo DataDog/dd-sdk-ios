@@ -264,7 +264,7 @@ final class SwiftPrinterTests: XCTestCase {
                     name: "context",
                     comment: nil,
                     type: SwiftDictionary(
-                        value: SwiftPrimitive<SwiftCodable>()
+                        value: SwiftCodable()
                     ),
                     isOptional: false,
                     mutability: .immutable,
@@ -339,7 +339,7 @@ final class SwiftPrinterTests: XCTestCase {
                     name: "context",
                     comment: nil,
                     type: SwiftDictionary(
-                        value: SwiftPrimitive<SwiftCodable>()
+                        value: SwiftEncodable()
                     ),
                     isOptional: false,
                     mutability: .mutableInternally,
@@ -367,7 +367,7 @@ final class SwiftPrinterTests: XCTestCase {
         public struct Foo: Codable {
             public let property1: Int
 
-            public internal(set) var context: [String: Codable]
+            public internal(set) var context: [String: Encodable]
 
             public var property2: Bool?
 

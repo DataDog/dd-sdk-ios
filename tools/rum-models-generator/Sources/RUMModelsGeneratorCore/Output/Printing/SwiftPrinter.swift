@@ -324,18 +324,20 @@ public class SwiftPrinter: BasePrinter {
 
     private func typeDeclaration(_ type: SwiftType) throws -> String {
         switch type {
-        case _ as SwiftPrimitive<Bool>:
+        case is SwiftPrimitive<Bool>:
             return "Bool"
-        case _ as SwiftPrimitive<Double>:
+        case is SwiftPrimitive<Double>:
             return "Double"
-        case _ as SwiftPrimitive<Int>:
+        case is SwiftPrimitive<Int>:
             return "Int"
-        case _ as SwiftPrimitive<Int64>:
+        case is SwiftPrimitive<Int64>:
             return "Int64"
-        case _ as SwiftPrimitive<String>:
+        case is SwiftPrimitive<String>:
             return "String"
-        case _ as SwiftPrimitive<SwiftCodable>:
+        case is SwiftCodable:
             return "Codable"
+        case is SwiftEncodable:
+            return "Encodable"
         case let swiftArray as SwiftArray:
             return "[\(try typeDeclaration(swiftArray.element))]"
         case let swiftDictionary as SwiftDictionary:
