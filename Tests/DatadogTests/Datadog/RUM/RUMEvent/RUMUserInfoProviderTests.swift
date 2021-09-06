@@ -31,7 +31,6 @@ class RUMUserInfoProviderTests: XCTestCase {
 
         let extraInfo: [String: Encodable] = mockRandomAttributes()
         userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: "foo@bar.com", extraInfo: extraInfo)
-        // TODO: RUMM-1420 Encode user `extraInfo` info as RUMUser `usrInfo`
         XCTAssertEqual(rumUserInfoProvider.current, RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: extraInfo))
     }
 }
