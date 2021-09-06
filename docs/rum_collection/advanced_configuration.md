@@ -391,7 +391,7 @@ This means that even if users open your application while offline, no data is lo
 
 **Note**: The data on the disk is automatically discarded if it gets too old to ensure the SDK doesn't use too much disk space.
 
-## Configuring a custom Proxy for Datadog data upload
+## Configuring a custom proxy for Datadog data upload
 
 If your app is running on devices behind a custom proxy, you can let the SDK's data uploader know about it to ensure all tracked data are uploaded with the relevant configuration. You can specify your proxy configuration (as described in the [URLSessionConfiguration.connectionProxyDictionary][12] documentation) when initializing the SDK.
 
