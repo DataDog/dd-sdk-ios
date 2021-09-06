@@ -8,13 +8,13 @@ import Foundation
 
 /// `Encodable` representation of RUM event.
 /// Mutable properties are subject of sanitization or data scrubbing.
-/// /// TODO: RUMM-1463 Remove `errorAttributes` property once new error format is managed through `RUMDataModels`
 /// TODO: RUMM-1584 - Remove `RUMEvent` container.
 internal struct RUMEvent<DM>: Encodable where DM: RUMDataModel, DM: RUMSanitizableEvent {
     /// The actual RUM event model created by `RUMMonitor`
     var model: DM
 
-    /// Error attributes.
+    /// Error attributes. Only set when `DM == RUMErrorEvent` and error describes a crash.
+    /// Can be entirely removed when RUMM-1463 is resolved and error values are part of the `RUMErrorEvent`.
     let errorAttributes: [String: Encodable]?
 
     /// Creates a RUM Event object object based on the given sanitizable model.
