@@ -91,6 +91,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
                 .set(additionalConfiguration: ["foo": 42, "bar": "something"])
+                .set(proxyConfiguration: [
+                    kCFNetworkProxiesHTTPEnable: true,
+                    kCFNetworkProxiesHTTPPort: 123,
+                    kCFNetworkProxiesHTTPProxy: "www.example.com",
+                    kCFProxyUsernameKey: "proxyuser",
+                    kCFProxyPasswordKey: "proxypass",
+                ])
 
             return builder
         }
@@ -139,6 +146,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
             XCTAssertEqual(configuration.additionalConfiguration["bar"] as? String, "something")
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
+            XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

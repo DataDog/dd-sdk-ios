@@ -332,6 +332,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(proxyConfiguration: [AnyHashable: Any]) {
+        _ = sdkBuilder.set(proxyConfiguration: proxyConfiguration)
+    }
+
+    @objc
     public func build() -> DDConfiguration {
         return DDConfiguration(sdkConfiguration: sdkBuilder.build())
     }

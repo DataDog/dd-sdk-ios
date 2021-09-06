@@ -57,6 +57,7 @@ extension Datadog.Configuration {
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
+        proxyConfiguration: [AnyHashable: Any]? = nil,
         internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
@@ -84,6 +85,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
+            proxyConfiguration: proxyConfiguration,
             internalMonitoringClientToken: internalMonitoringClientToken
         )
     }
@@ -171,7 +173,8 @@ extension FeaturesConfiguration.Common {
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
-        source: String = .mockAny()
+        source: String = .mockAny(),
+        proxyConfiguration: [AnyHashable: Any]? = nil
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -180,7 +183,8 @@ extension FeaturesConfiguration.Common {
             serviceName: serviceName,
             environment: environment,
             performance: performance,
-            source: source
+            source: source,
+            proxyConfiguration: proxyConfiguration
         )
     }
 }

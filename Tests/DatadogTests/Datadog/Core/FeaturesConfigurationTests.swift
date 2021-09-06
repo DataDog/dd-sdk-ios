@@ -251,6 +251,23 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    func testCustomProxy() throws {
+        let proxyConfiguration: [AnyHashable: Any] = [
+            kCFNetworkProxiesHTTPEnable: true,
+            kCFNetworkProxiesHTTPPort: 123,
+            kCFNetworkProxiesHTTPProxy: "www.example.com",
+            kCFProxyUsernameKey: "proxyuser",
+            kCFProxyPasswordKey: "proxypass",
+        ]
+        let configuration = try createConfiguration(proxyConfiguration: proxyConfiguration)
+
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
+    }
+
     // MARK: - Logging Configuration Tests
 
     func testWhenLoggingIsDisabled() throws {
@@ -752,7 +769,8 @@ class FeaturesConfigurationTests: XCTestCase {
         customRUMEndpoint: URL? = nil,
         logsEndpoint: Datadog.Configuration.LogsEndpoint = .us1,
         tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us1,
-        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1
+        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1,
+        proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
             configuration: .mockWith(
@@ -766,7 +784,8 @@ class FeaturesConfigurationTests: XCTestCase {
                 customRUMEndpoint: customRUMEndpoint,
                 logsEndpoint: logsEndpoint,
                 tracesEndpoint: tracesEndpoint,
-                rumEndpoint: rumEndpoint
+                rumEndpoint: rumEndpoint,
+                proxyConfiguration: proxyConfiguration
             ),
             appContext: .mockAny()
         )
