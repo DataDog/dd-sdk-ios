@@ -113,8 +113,8 @@ class RUMEventSanitizerTests: XCTestCase {
             remaining -= expectedSanitizedAttrs
 
             XCTAssertGreaterThanOrEqual(remaining, 0)
-            XCTAssertEqual(sanitized.usr?.usrInfo.count, expectedSanitizedUserInfo, "If number of attributes needs to be limited, `userInfoAttributes` are removed second")
-            XCTAssertEqual(sanitized.context?.contextInfo.count, expectedSanitizedAttrs, "If number of attributes needs to be limited, `attributes` are removed first.")
+            XCTAssertEqual(sanitized.usr?.usrInfo.count, expectedSanitizedUserInfo, "If number of attributes needs to be limited, `usrInfo` are removed second")
+            XCTAssertEqual(sanitized.context?.contextInfo.count, expectedSanitizedAttrs, "If number of attributes needs to be limited, `contextInfo` are removed first.")
         }
 
         test(event: viewEvent)
