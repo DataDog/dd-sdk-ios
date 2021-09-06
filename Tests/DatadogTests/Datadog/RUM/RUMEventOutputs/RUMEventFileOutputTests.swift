@@ -20,7 +20,7 @@ class RUMEventFileOutputTests: XCTestCase {
 
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
-        let builder = RUMEventBuilder(userInfoProvider: .mockAny(), eventsMapper: .mockNoOp())
+        let builder = RUMEventBuilder(eventsMapper: .mockNoOp())
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
                 dataFormat: RUMFeature.dataFormat,

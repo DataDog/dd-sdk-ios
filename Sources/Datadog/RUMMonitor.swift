@@ -180,7 +180,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         carrierInfoProvider: rumFeature.carrierInfoProvider
                     ),
                     eventBuilder: RUMEventBuilder(
-                        userInfoProvider: rumFeature.userInfoProvider,
                         eventsMapper: rumFeature.eventsMapper
                     ),
                     eventOutput: RUMEventFileOutput(

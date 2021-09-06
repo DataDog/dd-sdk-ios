@@ -110,7 +110,7 @@ extension RUMEvent: RandomMockable where DM: RandomMockable {
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
-        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp())
+        return RUMEventBuilder(eventsMapper: .mockNoOp())
     }
 }
 
@@ -393,7 +393,7 @@ extension RUMScopeDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
-        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp()),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock()

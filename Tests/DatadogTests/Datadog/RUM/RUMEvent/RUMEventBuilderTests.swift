@@ -9,12 +9,7 @@ import XCTest
 
 class RUMEventBuilderTests: XCTestCase {
     func testItBuildsRUMEvent() throws {
-        let builder = RUMEventBuilder(
-            userInfoProvider: .mockWith(
-                userInfo: .init(id: nil, name: nil, email: nil, extraInfo: ["bazz": "buzz"])
-            ),
-            eventsMapper: .mockNoOp()
-        )
+        let builder = RUMEventBuilder(eventsMapper: .mockNoOp())
 
         let event = try XCTUnwrap(
             builder.createRUMEvent(
@@ -26,12 +21,10 @@ class RUMEventBuilderTests: XCTestCase {
         XCTAssertEqual(event.model.attribute, "foo")
         XCTAssertEqual((event.model.context?.contextInfo as? [String: String])?["foo"], "bar")
         XCTAssertEqual((event.model.context?.contextInfo as? [String: String])?["fizz"], "buzz")
-        XCTAssertEqual((event.model.usr?.usrInfo as? [String: String])?["bazz"], "buzz")
     }
 
     func testGivenEventBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
         let builder = RUMEventBuilder(
-            userInfoProvider: .mockAny(),
             eventsMapper: .mockWith(
                 viewEventMapper: { viewEvent in
                     return RUMViewEvent.mockRandom()
@@ -50,7 +43,6 @@ class RUMEventBuilderTests: XCTestCase {
 
     func testGivenEventBuilderWithEventMapper_whenEventIsDropped_itBuildsNoEvent() {
         let builder = RUMEventBuilder(
-            userInfoProvider: .mockAny(),
             eventsMapper: .mockWith(
                 resourceEventMapper: { event in
                     return nil
@@ -66,7 +58,6 @@ class RUMEventBuilderTests: XCTestCase {
 
     func testGivenEventBuilderWithNoEventMapper_whenBuildingAnEvent_itBuildsEventWithOriginalModel() throws {
         let builder = RUMEventBuilder(
-            userInfoProvider: .mockAny(),
             eventsMapper: .mockWith(
                 resourceEventMapper: { event in
                     return event

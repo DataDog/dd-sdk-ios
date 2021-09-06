@@ -593,7 +593,6 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
             eventsMapper: RUMEventsMapper.mockWith(
                 errorEventMapper: { event in
                     nil

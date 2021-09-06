@@ -848,8 +848,7 @@ class RUMViewScopeTests: XCTestCase {
         // - discards `RUMErrorEvent` for `RUMAddCurrentViewErrorCommand`
         // - discards `RUMResourceEvent` from `RUMStartResourceCommand` /resource/1
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
-            eventsMapper: RUMEventsMapper.mockWith(
+            eventsMapper: .mockWith(
                 errorEventMapper: { event in
                     nil
                 },
@@ -935,8 +934,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenNoEventIsSent() throws {
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
-            eventsMapper: RUMEventsMapper.mockWith(
+            eventsMapper: .mockWith(
                 actionEventMapper: { event in
                     nil
                 }

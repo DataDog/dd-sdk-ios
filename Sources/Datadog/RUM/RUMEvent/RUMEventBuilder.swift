@@ -7,14 +7,9 @@
 import Foundation
 
 internal class RUMEventBuilder {
-    let userInfoProvider: UserInfoProvider
     let eventsMapper: RUMEventsMapper
 
-    init(
-        userInfoProvider: UserInfoProvider,
-        eventsMapper: RUMEventsMapper
-    ) {
-        self.userInfoProvider = userInfoProvider
+    init(eventsMapper: RUMEventsMapper) {
         self.eventsMapper = eventsMapper
     }
 
@@ -26,10 +21,6 @@ internal class RUMEventBuilder {
 
         if !attributes.isEmpty {
             model.context = RUMEventAttributes(contextInfo: attributes)
-        }
-
-        if !userInfoProvider.value.extraInfo.isEmpty {
-            model.usr = RUMUser(email: model.usr?.email, id: model.usr?.id, name: model.usr?.name, usrInfo: userInfoProvider.value.extraInfo)
         }
 
         let event = RUMEvent(model: model)

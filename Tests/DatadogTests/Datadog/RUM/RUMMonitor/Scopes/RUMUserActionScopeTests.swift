@@ -396,8 +396,7 @@ class RUMUserActionScopeTests: XCTestCase {
     func testGivenUserActionScopeWithEventSentCallback_whenBypassingSendingEvent_thenCallbackIsNotCalled() {
         // swiftlint:disable trailing_closure
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
-            eventsMapper: RUMEventsMapper.mockWith(
+            eventsMapper: .mockWith(
                 actionEventMapper: { event in
                     nil
                 }
