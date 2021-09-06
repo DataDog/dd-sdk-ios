@@ -88,49 +88,29 @@ extension RUMResourceType {
 
 // MARK: - RUMDataModel Mocks
 
-struct RUMDataModelMock: RUMDataModel, Equatable {
+struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
     let attribute: String
+    var usr: RUMUser?
+    var context: RUMEventAttributes?
 }
 
 // MARK: - Component Mocks
 
-extension RUMEvent: AnyMockable where DM == RUMViewEvent {
-    static func mockAny() -> RUMEvent<RUMViewEvent> {
-        return .mockWith(model: RUMViewEvent.mockRandom())
+extension RUMEvent: AnyMockable where DM: AnyMockable {
+    static func mockAny() -> RUMEvent<DM> {
+        return RUMEvent(model: .mockAny())
     }
 }
 
-extension RUMEvent {
-    static func mockWith<DM: RUMDataModel>(
-        model: DM,
-        attributes: [String: Encodable] = [:],
-        userInfoAttributes: [String: Encodable] = [:]
-    ) -> RUMEvent<DM> {
-        return RUMEvent<DM>(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoAttributes
-        )
-    }
-
-    static func mockRandomWith<DM: RUMDataModel>(model: DM) -> RUMEvent<DM> {
-        func randomAttributes(prefixed prefix: String) -> [String: Encodable] {
-            var attributes: [String: String] = [:]
-            (0..<10).forEach { index in attributes["\(prefix)\(index)"] = "value\(index)" }
-            return attributes
-        }
-
-        return RUMEvent<DM>(
-            model: model,
-            attributes: randomAttributes(prefixed: "event-attribute"),
-            userInfoAttributes: randomAttributes(prefixed: "user-attribute")
-        )
+extension RUMEvent: RandomMockable where DM: RandomMockable {
+    static func mockRandom() -> RUMEvent<DM> {
+        return RUMEvent(model: .mockRandom())
     }
 }
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
-        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp())
+        return RUMEventBuilder(eventsMapper: .mockNoOp())
     }
 }
 
@@ -413,7 +393,7 @@ extension RUMScopeDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
-        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp()),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock()

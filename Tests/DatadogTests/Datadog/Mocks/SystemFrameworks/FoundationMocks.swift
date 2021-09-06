@@ -65,6 +65,12 @@ extension Optional: AnyMockable where Wrapped: AnyMockable {
     }
 }
 
+extension Optional: RandomMockable where Wrapped: RandomMockable {
+    static func mockRandom() -> Self {
+        return .some(.mockRandom())
+    }
+}
+
 extension Array where Element == Data {
     /// Returns chunks of mocked data. Accumulative size of all chunks equals `totalSize`.
     static func mockChunksOf(totalSize: UInt64, maxChunkSize: UInt64) -> [Data] {

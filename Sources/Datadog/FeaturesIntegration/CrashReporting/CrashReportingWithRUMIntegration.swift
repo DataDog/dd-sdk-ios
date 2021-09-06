@@ -88,11 +88,11 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let errorMessage = crashReport.message
         let errorStackTrace = crashReport.stack
 
-        var errorEventAttributes = lastRUMViewEvent.attributes
-        errorEventAttributes[DDError.threads] = crashReport.threads
-        errorEventAttributes[DDError.binaryImages] = crashReport.binaryImages
-        errorEventAttributes[DDError.meta] = crashReport.meta
-        errorEventAttributes[DDError.wasTruncated] = crashReport.wasTruncated
+        var errorAttributes = lastRUMViewEvent.errorAttributes ?? [:]
+        errorAttributes[DDError.threads] = crashReport.threads
+        errorAttributes[DDError.binaryImages] = crashReport.binaryImages
+        errorAttributes[DDError.meta] = crashReport.meta
+        errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
         let rumError = RUMErrorEvent(
             dd: .init(
@@ -131,8 +131,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         return RUMEvent(
             model: rumError,
-            attributes: errorEventAttributes,
-            userInfoAttributes: lastRUMViewEvent.userInfoAttributes
+            errorAttributes: errorAttributes
         )
     }
 
@@ -185,10 +184,6 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             )
         )
 
-        return RUMEvent(
-            model: rumView,
-            attributes: rumViewEvent.attributes,
-            userInfoAttributes: rumViewEvent.userInfoAttributes
-        )
+        return RUMEvent(model: rumView)
     }
 }

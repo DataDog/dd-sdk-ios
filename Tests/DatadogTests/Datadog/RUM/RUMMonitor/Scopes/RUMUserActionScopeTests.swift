@@ -101,7 +101,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.loadingTime, 1_000_000_000)
         XCTAssertEqual(event.model.action.resource?.count, 0)
         XCTAssertEqual(event.model.action.error?.count, 0)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
     }
 
     func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {
@@ -396,8 +396,7 @@ class RUMUserActionScopeTests: XCTestCase {
     func testGivenUserActionScopeWithEventSentCallback_whenBypassingSendingEvent_thenCallbackIsNotCalled() {
         // swiftlint:disable trailing_closure
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
-            eventsMapper: RUMEventsMapper.mockWith(
+            eventsMapper: .mockWith(
                 actionEventMapper: { event in
                     nil
                 }

@@ -20,7 +20,7 @@ class RUMEventFileOutputTests: XCTestCase {
 
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
-        let builder = RUMEventBuilder(userInfoProvider: .mockAny(), eventsMapper: .mockNoOp())
+        let builder = RUMEventBuilder(eventsMapper: .mockNoOp())
         let output = RUMEventFileOutput(
             fileWriter: FileWriter(
                 dataFormat: RUMFeature.dataFormat,
@@ -35,10 +35,10 @@ class RUMEventFileOutputTests: XCTestCase {
             )
         )
 
-        let dataModel1 = RUMDataModelMock(attribute: "foo")
+        let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))
         let dataModel2 = RUMDataModelMock(attribute: "bar")
-        let event1 = try XCTUnwrap(builder.createRUMEvent(with: dataModel1, attributes: ["custom.attribute": "value"]))
-        let event2 = try XCTUnwrap(builder.createRUMEvent(with: dataModel2, attributes: [:]))
+        let event1 = try XCTUnwrap(builder.createRUMEvent(with: dataModel1))
+        let event2 = try XCTUnwrap(builder.createRUMEvent(with: dataModel2))
 
         output.write(rumEvent: event1)
 
@@ -49,7 +49,9 @@ class RUMEventFileOutputTests: XCTestCase {
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let event1Data = try temporaryDirectory.file(named: event1FileName).read()
         let event1Matcher = try RUMEventMatcher.fromJSONObjectData(event1Data)
-        XCTAssertEqual(try event1Matcher.model(), dataModel1)
+
+        let expectedDatamodel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": CodableValue("value")]))
+        XCTAssertEqual(try event1Matcher.model(), expectedDatamodel1)
 
         let event2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
         let event2Data = try temporaryDirectory.file(named: event2FileName).read()
@@ -62,7 +64,9 @@ class RUMEventFileOutputTests: XCTestCase {
             jsonString: """
             {
                 "attribute": "foo",
-                "context.custom.attribute": "value"
+                "context": {
+                    "custom.attribute": "value"
+                }
             }
             """
         )
