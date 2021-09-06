@@ -9,7 +9,13 @@ import XCTest
 
 class RUMEventBuilderTests: XCTestCase {
     func testItBuildsRUMEvent() throws {
-        let builder = RUMEventBuilder(userInfoProvider: .mockAny(), eventsMapper: .mockNoOp())
+        let builder = RUMEventBuilder(
+            userInfoProvider: .mockWith(
+                userInfo: .init(id: nil, name: nil, email: nil, extraInfo: ["bazz": "buzz"])
+            ),
+            eventsMapper: .mockNoOp()
+        )
+
         let event = try XCTUnwrap(
             builder.createRUMEvent(
                 with: RUMDataModelMock(attribute: "foo"),
@@ -20,6 +26,7 @@ class RUMEventBuilderTests: XCTestCase {
         XCTAssertEqual(event.model.attribute, "foo")
         XCTAssertEqual((event.model.context?.contextInfo as? [String: String])?["foo"], "bar")
         XCTAssertEqual((event.model.context?.contextInfo as? [String: String])?["fizz"], "buzz")
+        XCTAssertEqual((event.model.usr?.usrInfo as? [String: String])?["bazz"], "buzz")
     }
 
     func testGivenEventBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
