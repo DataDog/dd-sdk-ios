@@ -401,6 +401,10 @@ extension RUMContext {
 
 // MARK: - RUMScope Mocks
 
+func mockNoOpSessionListerner() -> RUMSessionListener {
+    return { _, _ in }
+}
+
 extension RUMScopeDependencies {
     static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -416,7 +420,8 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock()
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
@@ -428,7 +433,8 @@ extension RUMScopeDependencies {
             dateCorrector: dateCorrector,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: onSessionStart
         )
     }
 
@@ -440,7 +446,8 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
-        dateCorrector: DateCorrectorType? = nil
+        dateCorrector: DateCorrectorType? = nil,
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
@@ -452,7 +459,8 @@ extension RUMScopeDependencies {
             dateCorrector: dateCorrector ?? self.dateCorrector,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: onSessionStart
         )
     }
 }

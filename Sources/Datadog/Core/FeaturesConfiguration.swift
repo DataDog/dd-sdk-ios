@@ -53,6 +53,7 @@ internal struct FeaturesConfiguration {
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
         let backgroundEventTrackingEnabled: Bool
+        let onSessionStart: RUMSessionListener?
     }
 
     struct URLSessionAutoInstrumentation {
@@ -200,7 +201,8 @@ extension FeaturesConfiguration {
                     actionEventMapper: configuration.rumActionEventMapper,
                     errorEventMapper: configuration.rumErrorEventMapper,
                     autoInstrumentation: autoInstrumentation,
-                    backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled
+                    backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
+                    onSessionStart: configuration.rumSessionsListener
                 )
             } else {
                 let error = ProgrammerError(

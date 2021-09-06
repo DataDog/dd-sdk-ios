@@ -41,6 +41,8 @@ internal final class RUMFeature {
     let vitalMemoryReader: SamplingBasedVitalReader // VitalMemoryReader
     let vitalRefreshRateReader: ContinuousVitalReader // VitalRefreshRateReader
 
+    let onSessionStart: RUMSessionListener?
+
     // MARK: - Components
 
     static let featureName = "rum"
@@ -143,7 +145,8 @@ internal final class RUMFeature {
             commonDependencies: commonDependencies,
             vitalCPUReader: VitalCPUReader(),
             vitalMemoryReader: VitalMemoryReader(),
-            vitalRefreshRateReader: VitalRefreshRateReader()
+            vitalRefreshRateReader: VitalRefreshRateReader(),
+            onSessionStart: configuration.onSessionStart
         )
     }
 
@@ -155,7 +158,8 @@ internal final class RUMFeature {
         commonDependencies: FeaturesCommonDependencies,
         vitalCPUReader: SamplingBasedVitalReader,
         vitalMemoryReader: SamplingBasedVitalReader,
-        vitalRefreshRateReader: ContinuousVitalReader
+        vitalRefreshRateReader: ContinuousVitalReader,
+        onSessionStart: RUMSessionListener? = nil
     ) {
         // Configuration
         self.configuration = configuration
@@ -176,6 +180,8 @@ internal final class RUMFeature {
         self.vitalCPUReader = vitalCPUReader
         self.vitalMemoryReader = vitalMemoryReader
         self.vitalRefreshRateReader = vitalRefreshRateReader
+
+        self.onSessionStart = onSessionStart
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

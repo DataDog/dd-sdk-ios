@@ -30,10 +30,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
+    /// Tells if events from this Session should be sampled-out (not send).
+    let shouldBeSampledOut: Bool
     /// RUM Session sampling rate.
     private let samplingRate: Float
-    /// Tells if events from this Session should be sampled-out (not send).
-    private let shouldBeSampledOut: Bool
     /// The start time of this Session.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.

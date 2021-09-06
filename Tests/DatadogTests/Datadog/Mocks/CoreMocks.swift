@@ -233,7 +233,8 @@ extension FeaturesConfiguration.RUM {
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
-        backgroundEventTrackingEnabled: Bool = false
+        backgroundEventTrackingEnabled: Bool = false,
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> Self {
         return .init(
             common: common,
@@ -246,7 +247,8 @@ extension FeaturesConfiguration.RUM {
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
             autoInstrumentation: autoInstrumentation,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            onSessionStart: onSessionStart
         )
     }
 }
