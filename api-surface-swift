@@ -81,6 +81,7 @@ public class Datadog
  public static func initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
  public static var verbosityLevel: LogLevel? = nil
  public static var debugRUM = false
+ public static var isInitialized: Bool
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
  public static func set(trackingConsent: TrackingConsent)
  public static func flushAndDeinitialize()
@@ -146,6 +147,7 @@ public class Datadog
    public func enableRUM(_ enabled: Bool) -> Builder
    public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(rumSessionsSamplingRate: Float) -> Builder
+   public func onSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
    public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder
@@ -160,6 +162,7 @@ public class Datadog
    public func set(serviceName: String) -> Builder
    public func set(batchSize: BatchSize) -> Builder
    public func set(uploadFrequency: UploadFrequency) -> Builder
+   public func set(proxyConfiguration: [AnyHashable: Any]?) -> Builder
    public func set(additionalConfiguration: [String: Any]) -> Builder
    public func build() -> Configuration
 public typealias DDGlobal = Global
@@ -295,16 +298,22 @@ public struct RUMViewEvent: RUMDataModel
  public let dd: DD
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public let service: String?
  public let session: Session
  public let type: String = "view"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let documentVersion: Int64
   public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Application: Codable
   public let id: String
  public struct Session: Codable
@@ -372,18 +381,24 @@ public struct RUMResourceEvent: RUMDataModel
  public let action: Action?
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public var resource: Resource
  public let service: String?
  public let session: Session
  public let type: String = "resource"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let formatVersion: Int64 = 2
+  public let session: Session?
   public let spanId: String?
   public let traceId: String?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Action: Codable
   public let id: String
  public struct Application: Codable
@@ -468,15 +483,21 @@ public struct RUMActionEvent: RUMDataModel
  public var action: Action
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public let service: String?
  public let session: Session
  public let type: String = "action"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Action: Codable
   public let crash: Crash?
   public let error: Error?
@@ -524,21 +545,29 @@ public struct RUMErrorEvent: RUMDataModel
  public let action: Action?
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public var error: Error
  public let service: String?
  public let session: Session
  public let type: String = "error"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Action: Codable
   public let id: String
  public struct Application: Codable
   public let id: String
  public struct Error: Codable
+  public let handling: Handling?
+  public let handlingStack: String?
   public let id: String?
   public let isCrash: Bool?
   public var message: String
@@ -546,6 +575,9 @@ public struct RUMErrorEvent: RUMDataModel
   public let source: Source
   public var stack: String?
   public let type: String?
+  public enum Handling: String, Codable
+   case handled = "handled"
+   case unhandled = "unhandled"
   public struct Resource: Codable
    public let method: RUMMethod
    public let provider: Provider?
@@ -613,14 +645,14 @@ public struct RUMConnectivity: Codable
   case notConnected = "not_connected"
   case maybe = "maybe"
 public struct RUMEventAttributes: Codable
- public let contextInfo: [String: Codable]
+ public internal(set) var contextInfo: [String: Encodable]
  public func encode(to encoder: Encoder) throws
  public init(from decoder: Decoder) throws
 public struct RUMUser: Codable
  public let email: String?
  public let id: String?
  public let name: String?
- public let usrInfo: [String: Codable]
+ public internal(set) var usrInfo: [String: Encodable]
  public func encode(to encoder: Encoder) throws
  public init(from decoder: Decoder) throws
 public enum RUMMethod: String, Codable
@@ -684,8 +716,8 @@ public class Tracer: OTTracer
   public var bundleWithRUM: Bool
   public init(serviceName: String? = nil,sendNetworkInfo: Bool = false,bundleWithRUM: Bool = true,globalTags: [String: Encodable]? = nil)
 public class HTTPHeadersWriter: OTHTTPHeadersWriter
- public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
+ public init()
  public func inject(spanContext: OTSpanContext)
 public struct SpanEvent: Encodable
  public var operationName: String

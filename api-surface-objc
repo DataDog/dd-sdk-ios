@@ -15,6 +15,7 @@ public class DDDatadog: NSObject
  public static func verbosityLevel() -> DDSDKVerbosityLevel
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
  public static func setTrackingConsent(consent: DDTrackingConsent)
+ public static func flushAndDeinitialize()
 public class DDEndpoint: NSObject
  public static func us1() -> DDEndpoint
  public static func us3() -> DDEndpoint
@@ -68,6 +69,7 @@ public class DDConfigurationBuilder: NSObject
  public func trackURLSession(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
  public func set(rumSessionsSamplingRate: Float)
+ public func set(onSessionStart handler: @escaping (String, Bool) -> Void)
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()
@@ -80,6 +82,7 @@ public class DDConfigurationBuilder: NSObject
  public func set(batchSize: DDBatchSize)
  public func set(uploadFrequency: DDUploadFrequency)
  public func set(additionalConfiguration: [String: Any])
+ public func set(proxyConfiguration: [AnyHashable: Any])
  public func build() -> DDConfiguration
 public class DDGlobal: NSObject
  @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
@@ -167,6 +170,12 @@ public class DDRUMViewEvent: NSObject
 public class DDRUMViewEventDD: NSObject
  @objc public var documentVersion: NSNumber
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMViewEventDDSession?
+public class DDRUMViewEventDDSession: NSObject
+ @objc public var plan: DDRUMViewEventDDSessionPlan
+public enum DDRUMViewEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMViewEventApplication: NSObject
  @objc public var id: String
 public class DDRUMViewEventRUMConnectivity: NSObject
@@ -273,8 +282,14 @@ public class DDRUMResourceEvent: NSObject
  @objc public var view: DDRUMResourceEventView
 public class DDRUMResourceEventDD: NSObject
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMResourceEventDDSession?
  @objc public var spanId: String?
  @objc public var traceId: String?
+public class DDRUMResourceEventDDSession: NSObject
+ @objc public var plan: DDRUMResourceEventDDSessionPlan
+public enum DDRUMResourceEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMResourceEventAction: NSObject
  @objc public var id: String
 public class DDRUMResourceEventApplication: NSObject
@@ -405,6 +420,12 @@ public class DDRUMActionEvent: NSObject
  @objc public var view: DDRUMActionEventView
 public class DDRUMActionEventDD: NSObject
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMActionEventDDSession?
+public class DDRUMActionEventDDSession: NSObject
+ @objc public var plan: DDRUMActionEventDDSessionPlan
+public enum DDRUMActionEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMActionEventAction: NSObject
  @objc public var crash: DDRUMActionEventActionCrash?
  @objc public var error: DDRUMActionEventActionError?
@@ -490,6 +511,12 @@ public class DDRUMErrorEvent: NSObject
  @objc public var view: DDRUMErrorEventView
 public class DDRUMErrorEventDD: NSObject
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMErrorEventDDSession?
+public class DDRUMErrorEventDDSession: NSObject
+ @objc public var plan: DDRUMErrorEventDDSessionPlan
+public enum DDRUMErrorEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMErrorEventAction: NSObject
  @objc public var id: String
 public class DDRUMErrorEventApplication: NSObject
@@ -518,6 +545,8 @@ public enum DDRUMErrorEventRUMConnectivityStatus: Int
 public class DDRUMErrorEventRUMEventAttributes: NSObject
  @objc public var contextInfo: [String: Any]
 public class DDRUMErrorEventError: NSObject
+ @objc public var handling: DDRUMErrorEventErrorHandling
+ @objc public var handlingStack: String?
  @objc public var id: String?
  @objc public var isCrash: NSNumber?
  @objc public var message: String
@@ -525,6 +554,10 @@ public class DDRUMErrorEventError: NSObject
  @objc public var source: DDRUMErrorEventErrorSource
  @objc public var stack: String?
  @objc public var type: String?
+public enum DDRUMErrorEventErrorHandling: Int
+ case none
+ case handled
+ case unhandled
 public class DDRUMErrorEventErrorResource: NSObject
  @objc public var method: DDRUMErrorEventErrorResourceRUMMethod
  @objc public var provider: DDRUMErrorEventErrorResourceProvider?
