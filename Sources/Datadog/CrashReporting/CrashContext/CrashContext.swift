@@ -150,35 +150,29 @@ private struct CodableUserInfo: Codable {
 
 private struct CodableRUMViewEvent: Codable {
     private let model: RUMViewEvent
-    private let errorAttributes: [AttributeKey: AttributeValue]?
 
     init(from managedValue: RUMEvent<RUMViewEvent>) {
         self.model = managedValue.model
-        self.errorAttributes = managedValue.errorAttributes
     }
 
     var managedValue: RUMEvent<RUMViewEvent> {
-        return .init(model: model, errorAttributes: errorAttributes)
+        return .init(model: model)
     }
 
     // MARK: - Codable
 
     enum CodingKeys: String, CodingKey {
         case model = "mdl"
-        case errorAttributes = "ea"
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.model = try container.decode(RUMViewEvent.self, forKey: .model)
-        self.errorAttributes = try container.decodeIfPresent([String: CodableValue].self, forKey: .errorAttributes)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(model, forKey: .model)
-        let error = errorAttributes?.mapValues { CodableValue($0) }
-        try container.encode(error, forKey: .errorAttributes)
     }
 }
 
