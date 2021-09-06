@@ -297,6 +297,7 @@
 		61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61993667265BBEDC009D7EA8 /* E2ETests.swift */; };
 		61993673265BC371009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
 		61993674265BC371009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
 		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
@@ -1226,6 +1227,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */,
+				619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
