@@ -957,9 +957,15 @@ extension CodableValue {
     }
 }
 
-extension ValuePublisher where Value: AnyMockable {
-    static func mockAny() -> ValuePublisher {
+extension ValuePublisher: AnyMockable where Value: AnyMockable {
+    static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
+    }
+}
+
+extension ValuePublisher: RandomMockable where Value: RandomMockable {
+    static func mockRandom() -> Self {
+        return .init(initialValue: .mockRandom())
     }
 }
 

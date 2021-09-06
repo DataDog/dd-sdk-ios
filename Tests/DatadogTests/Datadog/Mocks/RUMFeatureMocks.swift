@@ -96,30 +96,15 @@ struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
 
 // MARK: - Component Mocks
 
-extension RUMEvent: AnyMockable where DM == RUMViewEvent {
-    static func mockAny() -> RUMEvent<RUMViewEvent> {
-        return RUMEvent(model: RUMViewEvent.mockRandom())
+extension RUMEvent: AnyMockable where DM: AnyMockable {
+    static func mockAny() -> RUMEvent<DM> {
+        return RUMEvent(model: .mockAny())
     }
 }
 
-extension RUMEvent {
-    static func mockRandomWith<DM: RUMDataModel>(model: DM) -> RUMEvent<DM> {
-        func randomAttributes(prefixed prefix: String) -> [String: Encodable] {
-            var attributes: [String: String] = [:]
-            (0..<10).forEach { index in attributes["\(prefix)\(index)"] = "value\(index)" }
-            return attributes
-        }
-
-        var model = model
-        model.context = RUMEventAttributes(contextInfo: randomAttributes(prefixed: "event-attribute"))
-        model.usr = RUMUser(
-            email: model.usr?.email,
-            id: model.usr?.id,
-            name: model.usr?.name,
-            usrInfo: randomAttributes(prefixed: "user-attribute")
-        )
-
-        return RUMEvent<DM>(model: model)
+extension RUMEvent: RandomMockable where DM: RandomMockable {
+    static func mockRandom() -> RUMEvent<DM> {
+        return RUMEvent(model: .mockRandom())
     }
 }
 

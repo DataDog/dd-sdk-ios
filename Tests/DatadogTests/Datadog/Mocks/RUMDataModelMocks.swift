@@ -38,7 +38,7 @@ extension RUMConnectivity {
     }
 }
 
-extension RUMMethod {
+extension RUMMethod: RandomMockable {
     static func mockRandom() -> RUMMethod {
         return [.post, .get, .head, .put, .delete, .patch].randomElement()!
     }
@@ -50,7 +50,7 @@ extension RUMEventAttributes: RandomMockable {
     }
 }
 
-extension RUMViewEvent {
+extension RUMViewEvent: RandomMockable {
     static func mockRandom() -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -109,7 +109,7 @@ extension RUMViewEvent {
     }
 }
 
-extension RUMResourceEvent {
+extension RUMResourceEvent: RandomMockable {
     static func mockRandom() -> RUMResourceEvent {
         return RUMResourceEvent(
             dd: .init(
@@ -158,7 +158,7 @@ extension RUMResourceEvent {
     }
 }
 
-extension RUMActionEvent {
+extension RUMActionEvent: RandomMockable {
     static func mockRandom() -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
@@ -195,7 +195,7 @@ extension RUMActionEvent {
     }
 }
 
-extension RUMErrorEvent {
+extension RUMErrorEvent: RandomMockable {
     static func mockRandom() -> RUMErrorEvent {
         return RUMErrorEvent(
             dd: .init(

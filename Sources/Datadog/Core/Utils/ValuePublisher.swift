@@ -48,7 +48,7 @@ internal class ValuePublisher<Value> {
         }
     }
 
-    init(initialValue: Value) {
+    required init(initialValue: Value) {
         self.unsafeValue = initialValue
         self.unsafeObservers = []
     }

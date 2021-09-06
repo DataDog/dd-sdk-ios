@@ -71,7 +71,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         )
         let crashContext: CrashContext = .mockWith(
             lastUserInfo: Bool.random() ? .mockRandom() : .empty,
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom()),
+            lastRUMViewEvent: .mockRandom(),
             lastNetworkConnectionInfo: .mockRandom(),
             lastCarrierInfo: .mockRandom()
         )
