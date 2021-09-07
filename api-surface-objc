@@ -69,7 +69,7 @@ public class DDConfigurationBuilder: NSObject
  public func trackURLSession(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
  public func set(rumSessionsSamplingRate: Float)
- public func set(onSessionStart handler: @escaping (String, Bool) -> Void)
+ public func set(onRUMSessionStart handler: @escaping (String, Bool) -> Void)
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()

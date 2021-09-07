@@ -147,7 +147,7 @@ public class Datadog
    public func enableRUM(_ enabled: Bool) -> Builder
    public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(rumSessionsSamplingRate: Float) -> Builder
-   public func onSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder
+   public func onRUMSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
    public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder
