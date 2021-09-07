@@ -255,8 +255,8 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func set(onSessionStart handler: @escaping (String, Bool) -> Void) {
-        _ = sdkBuilder.onSessionStart(handler)
+    public func set(onRUMSessionStart handler: @escaping (String, Bool) -> Void) {
+        _ = sdkBuilder.onRUMSessionStart(handler)
     }
 
     @objc

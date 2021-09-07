@@ -82,6 +82,7 @@
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
     [builder setWithServiceName:@""];
     [builder setWithRumSessionsSamplingRate:50];
+    [builder setOnRUMSessionStart:^(NSString * _Nonnull sessionId, BOOL isDiscarded) {}];
     [builder trackUIKitRUMViews];
     [builder trackUIKitRUMViewsUsing:[CustomDDUIKitRUMViewsPredicate new]];
     [builder trackUIKitRUMActions];

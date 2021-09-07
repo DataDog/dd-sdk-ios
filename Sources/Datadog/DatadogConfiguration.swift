@@ -507,13 +507,13 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the Session start callback.
+            /// Sets the RUM Session start callback.
             ///
             /// The callback takes 2 arguments: the newly started Session ID and a boolean indicating whether or not the session is discarded by the sampling rate
             /// (when `true` it means no event in this session will be kept).
             ///
             /// - Parameter handler: the callback handler to notify whenever a new Session starts.
-            public func onSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder {
+            public func onRUMSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder {
                 configuration.rumSessionsListener = handler
                 return self
             }

@@ -45,6 +45,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertNil(configuration.spanEventMapper)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
+            XCTAssertNil(configuration.rumSessionsListener)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
             XCTAssertNil(configuration.rumViewEventMapper)
@@ -78,6 +79,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .set(rumSessionsSamplingRate: 42.5)
+                .onRUMSessionStart { _, _ in }
                 .setSpanEventMapper { _ in mockSpanEvent }
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
@@ -133,6 +135,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
+            XCTAssertNotNil(configuration.rumSessionsListener)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
