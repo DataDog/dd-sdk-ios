@@ -24,7 +24,7 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testWhenFirstViewIsStarted_itStartsNewSession() {
-        let expectation = expectation(description: "onSessionStart is called")
+        let expectation = self.expectation(description: "onSessionStart is called")
         let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
             XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
             XCTAssertTrue(isDiscarded)
@@ -48,7 +48,7 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
-        let expectation = expectation(description: "onSessionStart is called twice")
+        let expectation = self.expectation(description: "onSessionStart is called twice")
         expectation.expectedFulfillmentCount = 2
 
         let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in

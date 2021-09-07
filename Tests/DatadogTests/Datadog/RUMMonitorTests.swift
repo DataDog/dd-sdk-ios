@@ -790,7 +790,7 @@ class RUMMonitorTests: XCTestCase {
     func testStartingViewCreatesNewSession() {
         let keepAllSessions: Bool = .random()
 
-        let expectation = expectation(description: "onSessionStart is called")
+        let expectation = self.expectation(description: "onSessionStart is called")
         let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
             XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
             XCTAssertEqual(isDiscarded, !keepAllSessions)
