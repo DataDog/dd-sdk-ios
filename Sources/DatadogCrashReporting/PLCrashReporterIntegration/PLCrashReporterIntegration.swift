@@ -7,20 +7,25 @@
 import CrashReporter
 import Datadog
 
+internal extension PLCrashReporterConfig {
+    /// `PLCR` configuration used for `DatadogCrashReporting`
+    static func ddConfiguration() -> PLCrashReporterConfig {
+        return PLCrashReporterConfig(
+            // The choice of `.BSD` over `.mach` is well discussed here:
+            // https://github.com/ChatSecure/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
+            signalHandlerType: .BSD,
+            // We don't symbolicate on device. All symbolication will happen backend-side.
+            symbolicationStrategy: []
+        )
+    }
+}
+
 internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let crashReporter: PLCrashReporter
     private let builder = DDCrashReportBuilder()
 
     init() throws {
-        self.crashReporter = PLCrashReporter(
-            configuration: PLCrashReporterConfig(
-                // The choice of `.BSD` over `.mach` is well discussed here:
-                // https://github.com/ChatSecure/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
-                signalHandlerType: .BSD,
-                // We don't symbolicate on device. All symbolication will happen backend-side.
-                symbolicationStrategy: []
-            )
-        )
+        self.crashReporter = PLCrashReporter(configuration: .ddConfiguration())
         try crashReporter.enableAndReturnError()
     }
 
