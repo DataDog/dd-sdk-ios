@@ -788,14 +788,20 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - RUM New Session
 
     func testStartingViewCreatesNewSession() {
+        let keepAllSessions: Bool = .random()
+
+        let expectation = expectation(description: "onSessionStart is called")
+        let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
+            XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+            XCTAssertEqual(isDiscarded, !keepAllSessions)
+            expectation.fulfill()
+        }
+
         RUMFeature.instance = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
-                sessionSamplingRate: 100,
-                onSessionStart: { sessionId, isDiscarded in
-                    XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
-                    XCTAssertFalse(isDiscarded)
-                }
+                sessionSamplingRate: keepAllSessions ? 100 : 0,
+                onSessionStart: onSessionStart
             )
         )
 
@@ -803,6 +809,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize()
         monitor.startView(viewController: mockView)
+        waitForExpectations(timeout: 0.5)
     }
 
     // MARK: - RUM Events Dates Correction
