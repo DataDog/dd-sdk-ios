@@ -255,6 +255,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(onRUMSessionStart handler: @escaping (String, Bool) -> Void) {
+        _ = sdkBuilder.onRUMSessionStart(handler)
+    }
+
+    @objc
     public func trackUIKitRUMViews() {
         let defaultPredicate = DefaultUIKitRUMViewsPredicate()
         _ = sdkBuilder.trackUIKitRUMViews(using: defaultPredicate)

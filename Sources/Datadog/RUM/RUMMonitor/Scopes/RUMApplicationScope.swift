@@ -6,6 +6,8 @@
 
 import Foundation
 
+internal typealias RUMSessionListener = (String, Bool) -> Void
+
 /// Injection container for common dependencies used by all `RUMScopes`.
 internal struct RUMScopeDependencies {
     let userInfoProvider: RUMUserInfoProvider
@@ -20,6 +22,8 @@ internal struct RUMScopeDependencies {
     let vitalCPUReader: SamplingBasedVitalReader
     let vitalMemoryReader: SamplingBasedVitalReader
     let vitalRefreshRateReader: ContinuousVitalReader
+
+    let onSessionStart: RUMSessionListener?
 }
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
@@ -28,6 +32,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Session scope. It gets created with the first `.startView` event.
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
+
     /// RUM Sessions sampling rate.
     internal let samplingRate: Float
 
@@ -87,6 +92,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand) {
         let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time)
         sessionScope = refreshedSession
+        sessionScopeDidUpdate(refreshedSession)
         _ = refreshedSession.process(command: command)
     }
 
@@ -103,6 +109,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         )
 
         sessionScope = initialSession
+        sessionScopeDidUpdate(initialSession)
         _ = initialSession.process(command: startInitialViewCommand)
+    }
+
+    private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
+        let sessionID = sessionScope.sessionUUID.rawValue.uuidString
+        dependencies.onSessionStart?(sessionID, sessionScope.shouldBeSampledOut)
     }
 }

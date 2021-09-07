@@ -789,6 +789,33 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing3_.@$-______"), 3_000_000_000)
     }
 
+    // MARK: - RUM New Session
+
+    func testStartingViewCreatesNewSession() {
+        let keepAllSessions: Bool = .random()
+
+        let expectation = self.expectation(description: "onSessionStart is called")
+        let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
+            XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+            XCTAssertEqual(isDiscarded, !keepAllSessions)
+            expectation.fulfill()
+        }
+
+        RUMFeature.instance = .mockWith(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                sessionSamplingRate: keepAllSessions ? 100 : 0,
+                onSessionStart: onSessionStart
+            )
+        )
+
+        defer { RUMFeature.instance?.deinitialize() }
+
+        let monitor = RUMMonitor.initialize()
+        monitor.startView(viewController: mockView)
+        waitForExpectations(timeout: 0.5)
+    }
+
     // MARK: - RUM Events Dates Correction
 
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingRUMEvents_thenEventsDateUseServerTime() throws {

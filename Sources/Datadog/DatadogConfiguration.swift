@@ -233,6 +233,7 @@ extension Datadog {
         private(set) var firstPartyHosts: Set<String>?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
+        private(set) var rumSessionsListener: RUMSessionListener?
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate?
         private(set) var rumViewEventMapper: RUMViewEventMapper?
@@ -306,6 +307,7 @@ extension Datadog {
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
                     rumSessionsSamplingRate: 100.0,
+                    rumSessionsListener: nil,
                     rumUIKitViewsPredicate: nil,
                     rumUIKitUserActionsPredicate: nil,
                     rumViewEventMapper: nil,
@@ -502,6 +504,17 @@ extension Datadog {
             /// means no RUM events will be sent, `100.0` means all sessions will be kept (default value is `100.0`).
             public func set(rumSessionsSamplingRate: Float) -> Builder {
                 configuration.rumSessionsSamplingRate = rumSessionsSamplingRate
+                return self
+            }
+
+            /// Sets the RUM Session start callback.
+            ///
+            /// The callback takes 2 arguments: the newly started Session ID and a boolean indicating whether or not the session is discarded by the sampling rate
+            /// (when `true` it means no event in this session will be kept).
+            ///
+            /// - Parameter handler: the callback handler to notify whenever a new Session starts.
+            public func onRUMSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder {
+                configuration.rumSessionsListener = handler
                 return self
             }
 
