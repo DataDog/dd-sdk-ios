@@ -239,6 +239,10 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
 
 **Note**: The SDK calls `rumView(for:)` many times while your app is running. It is recommended to keep its implementation fast and single-threaded.
 
+### Automatically track user actions
+
+To automatically track user tap actions, use the `.trackUIKitActions()` option when configuring the SDK.
+
 ### Automatically track network requests
 
 To automatically track resources (network requests) and get their timing information such as time to first byte or DNS resolution, use the `.trackURLSession()` option when configuring the SDK and set `DDURLSessionDelegate` for the `URLSession` that you want to monitor:
@@ -287,7 +291,7 @@ For instance, you may want to add HTTP request and response headers to the RUM r
 
 ```
 
-### Automatically track RUM errors
+### Automatically track errors
 
 All "error" and "critical" logs sent with `Logger` are automatically reported as RUM errors and linked to the current RUM view:
 ```swift
@@ -423,7 +427,7 @@ Datadog.initialize(
 [3]: /real_user_monitoring/ios/data_collected
 [4]: #automatically-track-views
 [5]: https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures
-[6]: #automatically-track-actions
+[6]: #automatically-track-user-actions
 [7]: #automatically-track-network-requests
 [8]: /real_user_monitoring/ios/data_collected/?tab=error#error-attributes
 [9]: #modify-or-drop-rum-events
