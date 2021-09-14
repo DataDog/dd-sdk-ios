@@ -50,7 +50,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
                     && CrashReportingFeature.instance == nil
                     && InternalMonitoringFeature.instance == nil
             },
-            problem: "All features not be initialized.",
+            problem: "All features must not be initialized.",
             solution: """
             Make sure `{Feature}.instance?.deinitialize()` is called before the end of test that uses `{Feature}.instance` mock.
             """
@@ -59,7 +59,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             assert: {
                 RUMAutoInstrumentation.instance == nil && URLSessionAutoInstrumentation.instance == nil
             },
-            problem: "All auto-instrumentation features not be initialized.",
+            problem: "All auto-instrumentation features must not be initialized.",
             solution: """
             Make sure `{AutoInstrumentationFeature}.instance?.deinitialize()` is called before the end of test that
             uses `{AutoInstrumentationFeature}.instance` mock.

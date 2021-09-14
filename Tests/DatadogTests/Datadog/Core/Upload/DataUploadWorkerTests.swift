@@ -101,9 +101,7 @@ class DataUploadWorkerTests: XCTestCase {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
         var mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
-        mockDataUploader.onUpload = {
-            startUploadExpectation.fulfill()
-        }
+        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         // Given
         writer.write(value: ["key": "value"])
