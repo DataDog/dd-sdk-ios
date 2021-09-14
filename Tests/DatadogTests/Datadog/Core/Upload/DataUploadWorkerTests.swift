@@ -86,7 +86,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
         )
 
@@ -101,7 +101,9 @@ class DataUploadWorkerTests: XCTestCase {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
         var mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = {
+            startUploadExpectation.fulfill()
+        }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -113,7 +115,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
         )
 

@@ -10,7 +10,6 @@ import XCTest
 class DataUploadDelayTests: XCTestCase {
     private let mockPerformance = UploadPerformanceMock(
         initialUploadDelay: 3,
-        defaultUploadDelay: 5,
         minUploadDelay: 1,
         maxUploadDelay: 20,
         uploadDelayChangeRate: 0.1
