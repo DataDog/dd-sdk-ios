@@ -436,6 +436,9 @@ class RUMViewScopeTests: XCTestCase {
             startTime: Date()
         )
 
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
 
@@ -492,6 +495,9 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime
         )
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
@@ -731,6 +737,9 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         XCTAssertTrue(scope.isActiveView)
         XCTAssertEqual(scope.customTimings.count, 0)
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)

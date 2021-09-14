@@ -74,12 +74,12 @@ class RUMIntegrationsTests: XCTestCase {
 class RUMErrorsIntegrationTests: XCTestCase {
     private let integration = RUMErrorsIntegration()
 
-    override class func setUp() {
+    override func setUp() {
         super.setUp()
         temporaryFeatureDirectories.create()
     }
 
-    override class func tearDown() {
+    override func tearDown() {
         super.tearDown()
         temporaryFeatureDirectories.delete()
     }
