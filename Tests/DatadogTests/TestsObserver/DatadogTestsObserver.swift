@@ -123,7 +123,9 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     ]
 
     func testCaseDidFinish(_ testCase: XCTestCase) {
-        performIntegrityChecks(after: testCase)
+        if testCase.testRun?.hasSucceeded == true {
+            performIntegrityChecks(after: testCase)
+        }
     }
 
     private func performIntegrityChecks(after testCase: XCTestCase) {
