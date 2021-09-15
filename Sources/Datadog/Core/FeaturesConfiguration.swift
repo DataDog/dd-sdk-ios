@@ -49,6 +49,7 @@ internal struct FeaturesConfiguration {
         let clientToken: String
         let applicationID: String
         let sessionSamplingRate: Float
+        let uuidGenerator: RUMUUIDGenerator
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
         let actionEventMapper: RUMActionEventMapper?
@@ -206,6 +207,7 @@ extension FeaturesConfiguration {
                     clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
+                    uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,

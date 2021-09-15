@@ -13,6 +13,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionTimeoutDuration: TimeInterval = 15 * 60 // 15 minutes
         /// Maximum duration of a session. If it gets exceeded, a new session is started.
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
+
+        static let backgroundViewURL = "com/datadog/background/view"
+        static let backgroundViewName = "Background"
     }
 
     // MARK: - Child Scopes
@@ -157,9 +160,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 RUMViewScope(
                     parent: self,
                     dependencies: dependencies,
-                    identity: RUMViewScope.Constants.backgroundViewURL,
-                    path: RUMViewScope.Constants.backgroundViewURL,
-                    name: RUMViewScope.Constants.backgroundViewName,
+                    identity: Constants.backgroundViewURL,
+                    path: Constants.backgroundViewURL,
+                    name: Constants.backgroundViewName,
                     attributes: command.attributes,
                     customTimings: [:],
                     startTime: command.time

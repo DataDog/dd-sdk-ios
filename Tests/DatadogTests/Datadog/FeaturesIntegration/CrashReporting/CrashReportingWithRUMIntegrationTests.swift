@@ -27,6 +27,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockAny(),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: currentDate),
             dateCorrector: DateCorrectorMock(correctionOffset: 0)
@@ -54,6 +55,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockAny(),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: currentDate),
             dateCorrector: DateCorrectorMock(correctionOffset: 0)
@@ -75,6 +77,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockAny(),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             dateCorrector: DateCorrectorMock()
@@ -95,6 +98,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockAny(),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             dateCorrector: DateCorrectorMock()
@@ -121,6 +125,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom()
         let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockAny(),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: crashDate),
             dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
@@ -204,6 +209,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom()
         let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockAny(),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: crashDate),
             dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)

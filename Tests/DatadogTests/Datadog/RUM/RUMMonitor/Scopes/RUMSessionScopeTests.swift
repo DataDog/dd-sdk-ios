@@ -96,8 +96,8 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 1)
         XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
-        XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
-        XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
+        XCTAssertEqual(scope.viewScopes[0].viewName, RUMSessionScope.Constants.backgroundViewName)
+        XCTAssertEqual(scope.viewScopes[0].viewPath, RUMSessionScope.Constants.backgroundViewURL)
     }
 
     func testWhenNoViewScope_andReceivedStartActionCommand_itCreatesNewViewScope() {
@@ -117,8 +117,8 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 1)
         XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
-        XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
-        XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
+        XCTAssertEqual(scope.viewScopes[0].viewName, RUMSessionScope.Constants.backgroundViewName)
+        XCTAssertEqual(scope.viewScopes[0].viewPath, RUMSessionScope.Constants.backgroundViewURL)
     }
 
     func testWhenNoViewScope_andReceivedAddUserActionCommand_itCreatesNewViewScope() {
@@ -138,8 +138,8 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 1)
         XCTAssertNil(logOutput.recordedLog?.message)
         XCTAssertEqual(scope.viewScopes[0].viewStartTime, currentTime)
-        XCTAssertEqual(scope.viewScopes[0].viewName, RUMViewScope.Constants.backgroundViewName)
-        XCTAssertEqual(scope.viewScopes[0].viewPath, RUMViewScope.Constants.backgroundViewURL)
+        XCTAssertEqual(scope.viewScopes[0].viewName, RUMSessionScope.Constants.backgroundViewName)
+        XCTAssertEqual(scope.viewScopes[0].viewPath, RUMSessionScope.Constants.backgroundViewURL)
     }
 
     func testWhenNoViewScope_andReceivedStartResourceCommand_andBackgroundDisabled_itDoesNotCreateNewViewScope() {

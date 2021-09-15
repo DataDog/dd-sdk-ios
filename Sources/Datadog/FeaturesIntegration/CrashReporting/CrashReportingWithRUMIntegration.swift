@@ -18,6 +18,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
     }
 
+    private let rumFeatureConfiguration: FeaturesConfiguration.RUM
     /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the RUM feature.
     private let rumEventOutput: RUMEventOutput
@@ -28,6 +29,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     init(rumFeature: RUMFeature) {
         self.init(
+            rumFeatureConfiguration: rumFeature.configuration,
             rumEventOutput: RUMEventFileOutput(
                 fileWriter: rumFeature.storage.arbitraryAuthorizedWriter
             ),
@@ -37,10 +39,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     }
 
     init(
+        rumFeatureConfiguration: FeaturesConfiguration.RUM,
         rumEventOutput: RUMEventOutput,
         dateProvider: DateProvider,
         dateCorrector: DateCorrectorType
     ) {
+        self.rumFeatureConfiguration = rumFeatureConfiguration
         self.rumEventOutput = rumEventOutput
         self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
@@ -53,16 +57,25 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             return // Only authorized crash reports can be send
         }
 
-        guard let lastRUMViewEvent = crashContext.lastRUMViewEvent else {
-            InternalMonitoringFeature.instance?.monitor.sdkLogger.error("Attempt to send crash report through RUM integration, but last `RUMViewEvent` is missing")
-            return // This integration requires crash report with associated `RUMViewEvent`
-        }
-
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
-        // to the server time before processing. Following use of the current correction is not ideal, but this is the best
-        // approximation we can get.
+        // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
+        // from the moment of crash), but this is the best approximation we can get.
         let currentTimeCorrection = dateCorrector.currentCorrection
 
+        if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
+            sendCrashReportToPreviousSession(crashReport, rumViewEventFromPreviousSession: lastRUMViewEvent, using: currentTimeCorrection)
+        } else {
+            sendCrashReportToNewDummySession(crashReport, using: currentTimeCorrection)
+        }
+    }
+
+    /// If the crash occured in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID.
+    /// The error event can be preceded with a view update based on `Constants.viewEventAvailabilityThreshold` condition.
+    private func sendCrashReportToPreviousSession(
+        _ crashReport: DDCrashReport,
+        rumViewEventFromPreviousSession lastRUMViewEvent: RUMEvent<RUMViewEvent>,
+        using currentTimeCorrection: DateCorrection
+    ) {
         let crashDate = crashReport.date ?? dateProvider.currentDate()
         let realCrashDate = currentTimeCorrection.applying(to: crashDate)
         let realDateNow = currentTimeCorrection.applying(to: dateProvider.currentDate())
@@ -76,6 +89,22 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: realCrashDate)
             rumEventOutput.write(rumEvent: rumError)
         }
+    }
+
+    /// If the crash occurred before starting RUM session (after initializing SDK, but before starting the first view) we don't have any session UUID to associate the error with.
+    /// In that situation, we create a dummy view to associate the error with. In result, a dummy RUM session will be started and it will contain one view and one error (crash).
+    private func sendCrashReportToNewDummySession(
+        _ crashReport: DDCrashReport,
+        using currentTimeCorrection: DateCorrection
+    ) {
+        let crashDate = crashReport.date ?? dateProvider.currentDate()
+        let realCrashDate = currentTimeCorrection.applying(to: crashDate)
+
+        // TODO: RUMM-1599 Use sampling
+        let dummyRUMView = createDummyRUMViewEvent(for: crashReport, crashDate: realCrashDate)
+        let rumError = createRUMError(from: crashReport, and: dummyRUMView, crashDate: realCrashDate)
+        rumEventOutput.write(rumEvent: rumError)
+        rumEventOutput.write(rumEvent: dummyRUMView)
     }
 
     // MARK: - Building RUM events
@@ -137,7 +166,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         )
     }
 
-    /// Creates RUM View event which updates given `lastRUMViewEvent` with crash information.
+    /// Creates RUM View event which updates given `RUMViewEvent` with crash information.
     private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
@@ -186,6 +215,73 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 resource: original.view.resource,
                 timeSpent: original.view.timeSpent,
                 url: original.view.url
+            )
+        )
+
+        return RUMEvent(model: rumView)
+    }
+
+    /// Creates new, dummy RUM View event.
+    /// This is to handle crashes which happened before the first RUM view was started in crashing process (so when we don't have the real `RUMViewEvent` to update).
+    private func createDummyRUMViewEvent(for crashReport: DDCrashReport, crashDate: Date) -> RUMEvent<RUMViewEvent> {
+        let newSessionUUID = rumFeatureConfiguration.uuidGenerator.generateUnique()
+        let viewUUID = rumFeatureConfiguration.uuidGenerator.generateUnique()
+
+        // We need to mock view's name and url:
+        let dummyViewName = "ApplictionLaunch"
+        let dummyViewURL = "com/datadog/application-launch/view"
+
+        // We need to mock view's start date and duration as we don't know it from crashed process:
+        let dummyViewDuration = 0.000_000_001 // an arbitrary value of 1ns
+        let dummyViewStartDate = crashDate.addingTimeInterval(-dummyViewDuration)
+
+        let rumView = RUMViewEvent(
+            dd: .init(documentVersion: 1, session: .init(plan: .plan1)),
+            application: .init(id: rumFeatureConfiguration.applicationID),
+            connectivity: nil,
+            context: nil,
+            date: dummyViewStartDate.timeIntervalSince1970.toInt64Milliseconds,
+            service: nil,
+            session: .init(
+                hasReplay: nil,
+                id: newSessionUUID.toRUMDataFormat,
+                type: .user
+            ),
+            synthetics: nil,
+            usr: nil,
+            view: .init(
+                action: .init(count: 0),
+                cpuTicksCount: nil,
+                cpuTicksPerSecond: nil,
+                crash: .init(count: 1), // we know there was a crash
+                cumulativeLayoutShift: nil,
+                customTimings: nil,
+                domComplete: nil,
+                domContentLoaded: nil,
+                domInteractive: nil,
+                error: .init(count: 0),
+                firstContentfulPaint: nil,
+                firstInputDelay: nil,
+                firstInputTime: nil,
+                frozenFrame: nil,
+                id: viewUUID.toRUMDataFormat,
+                inForegroundPeriods: nil,
+                isActive: false, // we know it won't receive updates
+                isSlowRendered: nil,
+                largestContentfulPaint: nil,
+                loadEvent: nil,
+                loadingTime: nil,
+                loadingType: nil,
+                longTask: nil,
+                memoryAverage: nil,
+                memoryMax: nil,
+                name: dummyViewName,
+                referrer: nil,
+                refreshRateAverage: nil,
+                refreshRateMin: nil,
+                resource: .init(count: 0),
+                timeSpent: dummyViewDuration.toInt64Nanoseconds,
+                url: dummyViewURL
             )
         )
 

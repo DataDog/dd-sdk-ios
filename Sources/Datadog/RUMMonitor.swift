@@ -190,7 +190,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),
-                    rumUUIDGenerator: DefaultRUMUUIDGenerator(),
+                    rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
