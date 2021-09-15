@@ -6,6 +6,11 @@
 
 import XCTest
 @testable import Datadog
+import OpenTelemetrySdk
+import URLSessionInstrumentation
+import StdoutExporter
+
+internal var networkInstrumentation: URLSessionInstrumentation! // swiftlint:disable:this implicitly_unwrapped_optional
 
 /// Observes unit tests execution and performs integrity checks after each test to ensure that the global state is unaltered.
 internal class DatadogTestsObserver: NSObject, XCTestObservation {
@@ -13,6 +18,11 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     static func startObserving() {
         let observer = DatadogTestsObserver()
         XCTestObservationCenter.shared.addTestObserver(observer)
+
+        let spanProcessor = SimpleSpanProcessor(spanExporter: StdoutExporter(isDebug: true))
+        OpenTelemetrySDK.instance.tracerProvider.addSpanProcessor(spanProcessor)
+
+        networkInstrumentation = URLSessionInstrumentation(configuration: URLSessionInstrumentationConfiguration())
     }
 
     // MARK: - Checking Tests Integrity

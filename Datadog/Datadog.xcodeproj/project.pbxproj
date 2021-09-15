@@ -268,6 +268,9 @@
 		6182374325D3DFD5006A375B /* CrashReportingWithRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6182374225D3DFD5006A375B /* CrashReportingWithRUMIntegrationTests.swift */; };
 		6184751526EFCF1300C7C9C5 /* DatadogTestsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6184751426EFCF1300C7C9C5 /* DatadogTestsObserver.swift */; };
 		6184751826EFD03400C7C9C5 /* DatadogTestsObserverLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 6184751726EFD03400C7C9C5 /* DatadogTestsObserverLoader.m */; };
+		6184751B26F1EB9000C7C9C5 /* OpenTelemetrySdk in Frameworks */ = {isa = PBXBuildFile; productRef = 6184751A26F1EB9000C7C9C5 /* OpenTelemetrySdk */; };
+		6184751D26F1EB9000C7C9C5 /* StdoutExporter in Frameworks */ = {isa = PBXBuildFile; productRef = 6184751C26F1EB9000C7C9C5 /* StdoutExporter */; };
+		6184751F26F1EB9000C7C9C5 /* URLSessionInstrumentation in Frameworks */ = {isa = PBXBuildFile; productRef = 6184751E26F1EB9000C7C9C5 /* URLSessionInstrumentation */; };
 		618715F724DC0CDE00FC0F69 /* RUMCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */; };
 		618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
 		618715FC24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */; };
@@ -1152,7 +1155,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6184751B26F1EB9000C7C9C5 /* OpenTelemetrySdk in Frameworks */,
 				61133B8C242393DE00786299 /* Datadog.framework in Frameworks */,
+				6184751D26F1EB9000C7C9C5 /* StdoutExporter in Frameworks */,
+				6184751F26F1EB9000C7C9C5 /* URLSessionInstrumentation in Frameworks */,
 				61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3256,6 +3262,11 @@
 				61441C5A24619A08003D8BB8 /* PBXTargetDependency */,
 			);
 			name = DatadogTests;
+			packageProductDependencies = (
+				6184751A26F1EB9000C7C9C5 /* OpenTelemetrySdk */,
+				6184751C26F1EB9000C7C9C5 /* StdoutExporter */,
+				6184751E26F1EB9000C7C9C5 /* URLSessionInstrumentation */,
+			);
 			productName = DatadogTests;
 			productReference = 61133B8B242393DE00786299 /* DatadogTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -3505,6 +3516,9 @@
 				Base,
 			);
 			mainGroup = 61133B78242393DE00786299;
+			packageReferences = (
+				6184751926F1EB9000C7C9C5 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */,
+			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -5418,6 +5432,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		6184751926F1EB9000C7C9C5 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nachoBonafonte/opentelemetry-swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		61441C43246174CE003D8BB8 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -5426,6 +5451,21 @@
 		6152C83D24BE1C91006A1679 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;
+		};
+		6184751A26F1EB9000C7C9C5 /* OpenTelemetrySdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6184751926F1EB9000C7C9C5 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = OpenTelemetrySdk;
+		};
+		6184751C26F1EB9000C7C9C5 /* StdoutExporter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6184751926F1EB9000C7C9C5 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = StdoutExporter;
+		};
+		6184751E26F1EB9000C7C9C5 /* URLSessionInstrumentation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6184751926F1EB9000C7C9C5 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = URLSessionInstrumentation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
