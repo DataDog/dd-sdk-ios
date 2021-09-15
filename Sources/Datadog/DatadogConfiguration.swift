@@ -42,6 +42,9 @@ extension Datadog {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends data to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -65,6 +68,7 @@ extension Datadog {
                 switch self {
                 case .us1: return .us1
                 case .us3: return .us3
+                case .us5: return .us5
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
                 }
@@ -74,6 +78,7 @@ extension Datadog {
                 switch self {
                 case .us1: return .us1
                 case .us3: return .us3
+                case .us5: return .us5
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
                 }
@@ -83,6 +88,7 @@ extension Datadog {
                 switch self {
                 case .us1: return .us1
                 case .us3: return .us3
+                case .us5: return .us5
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
                 }
@@ -97,6 +103,9 @@ extension Datadog {
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends logs to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -120,6 +129,7 @@ extension Datadog {
                 switch self {
                 case .us1, .us: return "https://logs.browser-intake-datadoghq.com/" + endpoint
                 case .us3: return "https://logs.browser-intake-us3-datadoghq.com/" + endpoint
+                case .us5: return "https://logs.browser-intake-us5-datadoghq.com/" + endpoint
                 case .eu1, .eu: return "https://mobile-http-intake.logs.datadoghq.eu/" + endpoint
                 case .us1_fed, .gov: return "https://logs.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
@@ -135,6 +145,9 @@ extension Datadog {
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends traces to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -158,6 +171,7 @@ extension Datadog {
                 switch self {
                 case .us1, .us: return "https://trace.browser-intake-datadoghq.com/" + endpoint
                 case .us3: return "https://trace.browser-intake-us3-datadoghq.com/" + endpoint
+                case .us5: return "https://trace.browser-intake-us5-datadoghq.com/" + endpoint
                 case .eu1, .eu: return "https:/public-trace-http-intake.logs.datadoghq.eu/" + endpoint
                 case .us1_fed, .gov: return "https://trace.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
@@ -173,6 +187,9 @@ extension Datadog {
             /// US based servers.
             /// Sends RUM events to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends RUM events to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -196,6 +213,7 @@ extension Datadog {
                 switch self {
                 case .us1, .us: return "https://rum.browser-intake-datadoghq.com/" + endpoint
                 case .us3: return "https://rum.browser-intake-us3-datadoghq.com/" + endpoint
+                case .us5: return "https://rum.browser-intake-us5-datadoghq.com/" + endpoint
                 case .eu1, .eu: return "https://rum-http-intake.logs.datadoghq.eu/" + endpoint
                 case .us1_fed, .gov: return "https://rum.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url

@@ -24,6 +24,9 @@ public class DDEndpoint: NSObject {
     public static func us3() -> DDEndpoint { .init(sdkEndpoint: .us3) }
 
     @objc
+    public static func us5() -> DDEndpoint { .init(sdkEndpoint: .us5) }
+
+    @objc
     public static func eu1() -> DDEndpoint { .init(sdkEndpoint: .eu1) }
 
     @objc
