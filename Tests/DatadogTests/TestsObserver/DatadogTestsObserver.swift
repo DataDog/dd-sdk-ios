@@ -8,6 +8,7 @@ import XCTest
 @testable import Datadog
 
 /// Observes unit tests execution and performs integrity checks after each test to ensure that the global state is unaltered.
+@objc
 internal class DatadogTestsObserver: NSObject, XCTestObservation {
     @objc
     static func startObserving() {
