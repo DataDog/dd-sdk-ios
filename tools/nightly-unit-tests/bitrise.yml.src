@@ -29,6 +29,14 @@ workflows:
             set -e
             make dependencies ci=${CI}
 
+            # Patch for `dd-sdk-swift-testing` to disable network instrumentation which
+            # is causing some URLSession-related tests failures on iOS 11.x and 12.x.
+            #
+            # This issue is already reported to otel-swift:
+            # https://github.com/open-telemetry/opentelemetry-swift/issues/229
+            # and this patch can be removed after the fix is available in `dd-sdk-swift-testing`.
+            echo "DD_DISABLE_NETWORK_INSTRUMENTATION=1" >> xcconfigs/DatadogSDKTesting.local.xcconfig
+
   _run_unit_tests:
     steps:
     - script@1.1.6:

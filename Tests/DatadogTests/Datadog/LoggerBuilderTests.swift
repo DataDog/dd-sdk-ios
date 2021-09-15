@@ -13,6 +13,8 @@ class LoggerBuilderTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        temporaryFeatureDirectories.create()
+
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
@@ -32,6 +34,7 @@ class LoggerBuilderTests: XCTestCase {
 
     override func tearDown() {
         LoggingFeature.instance?.deinitialize()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 

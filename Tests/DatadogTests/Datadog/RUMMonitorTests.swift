@@ -801,6 +801,7 @@ class RUMMonitorTests: XCTestCase {
             expectation.fulfill()
         }
 
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         RUMFeature.instance = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
@@ -808,12 +809,14 @@ class RUMMonitorTests: XCTestCase {
                 onSessionStart: onSessionStart
             )
         )
-
         defer { RUMFeature.instance?.deinitialize() }
 
         let monitor = RUMMonitor.initialize()
         monitor.startView(viewController: mockView)
+
         waitForExpectations(timeout: 0.5)
+
+        _ = server.waitAndReturnRequests(count: keepAllSessions ? 1 : 0)
     }
 
     // MARK: - RUM Events Dates Correction

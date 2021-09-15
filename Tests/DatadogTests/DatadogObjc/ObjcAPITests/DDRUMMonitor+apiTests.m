@@ -56,14 +56,16 @@
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
     [monitor addErrorWithMessage:@"" source:DDRUMErrorSourceCustom stack:nil attributes:@{}];
-    [monitor addErrorWithError:[NSError new] source:DDRUMErrorSourceNetwork attributes:@{}];
+    [monitor addErrorWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
+                        source:DDRUMErrorSourceNetwork attributes:@{}];
     [monitor startResourceLoadingWithResourceKey:@"" request:[NSURLRequest new] attributes:@{}];
     [monitor startResourceLoadingWithResourceKey:@"" url:[NSURL new] attributes:@{}];
     [monitor startResourceLoadingWithResourceKey:@"" httpMethod:DDRUMMethodGet urlString:@"" attributes:@{}];
     [monitor addResourceMetricsWithResourceKey:@"" metrics:[NSURLSessionTaskMetrics new] attributes:@{}];
     [monitor stopResourceLoadingWithResourceKey:@"" response:[NSURLResponse new] size:nil attributes:@{}];
     [monitor stopResourceLoadingWithResourceKey:@"" statusCode:nil kind:DDRUMResourceTypeOther size:nil attributes:@{}];
-    [monitor stopResourceLoadingWithErrorWithResourceKey:@"" error:[NSError new] response:nil attributes:@{}];
+    [monitor stopResourceLoadingWithErrorWithResourceKey:@""
+                                                   error:[NSError errorWithDomain:NSURLErrorDomain code:-99 userInfo:nil] response:nil attributes:@{}];
     [monitor stopResourceLoadingWithErrorWithResourceKey:@"" errorMessage:@"" response:nil attributes:@{}];
     [monitor startUserActionWithType:DDRUMUserActionTypeSwipe name:@"" attributes:@{}];
     [monitor stopUserActionWithType:DDRUMUserActionTypeSwipe name:nil attributes:@{}];
