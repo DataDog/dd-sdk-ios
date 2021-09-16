@@ -68,7 +68,8 @@ workflows:
     - slack:
         run_if: '{{(getenv "DD_SKIP_SLACK") | eq ""}}'
         inputs:
-        - channel: '#dd-sdk-ios'
+        - channel: '#mobile-ci-ios'
+        - channel_on_error: '#dd-sdk-ios'
         - fields: |-
             macOS|## <MACOS VERSION> ##
             Commit|${GIT_CLONE_COMMIT_HASH}
