@@ -172,7 +172,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         )
     }
 
-    /// Creates RUM View event which updates given `RUMViewEvent` with crash information.
+    /// Updates given `RUMViewEvent` with crash information.
     private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
@@ -227,8 +227,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         return RUMEvent(model: rumView)
     }
 
-    /// Creates new, dummy RUM View event.
-    /// This is to handle crashes which happened before the first RUM view was started in crashing process (so when we don't have the real `RUMViewEvent` to update).
+    /// Creates new, dummy RUM view event.
     private func createDummyRUMViewEvent(for crashReport: DDCrashReport, crashDate: Date) -> RUMEvent<RUMViewEvent> {
         let newSessionUUID = rumFeatureConfiguration.uuidGenerator.generateUnique()
         let viewUUID = rumFeatureConfiguration.uuidGenerator.generateUnique()

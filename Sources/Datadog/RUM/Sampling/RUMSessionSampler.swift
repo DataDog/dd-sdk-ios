@@ -8,7 +8,7 @@ import Foundation
 
 /// Decides if RUM session should be "sampled", i.e. if it will be sent to Datadog.
 internal struct RUMSessionSampler {
-    /// Value between `0.0` and `100.0`, where `0.0` means NO events will be sent and `100.0` means ALL will be send.
+    /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
     let samplingRate: Float
 
     init(samplingRate: Float) {
