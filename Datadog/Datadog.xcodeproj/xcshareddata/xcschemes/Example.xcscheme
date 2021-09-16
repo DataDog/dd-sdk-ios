@@ -58,6 +58,11 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMMobileVitalsScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "TracingManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>

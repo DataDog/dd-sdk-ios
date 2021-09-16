@@ -39,6 +39,7 @@ internal struct FeaturesConfiguration {
         struct AutoInstrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
             let uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate?
+            let longTaskThreshold: TimeInterval?
         }
 
         let common: Common
@@ -50,6 +51,7 @@ internal struct FeaturesConfiguration {
         let resourceEventMapper: RUMResourceEventMapper?
         let actionEventMapper: RUMActionEventMapper?
         let errorEventMapper: RUMErrorEventMapper?
+        let longTaskEventMapper: RUMLongTaskEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
         let backgroundEventTrackingEnabled: Bool
@@ -182,10 +184,13 @@ extension FeaturesConfiguration {
         if configuration.rumEnabled {
             var autoInstrumentation: RUM.AutoInstrumentation?
 
-            if configuration.rumUIKitViewsPredicate != nil || configuration.rumUIKitUserActionsPredicate != nil {
+            if configuration.rumUIKitViewsPredicate != nil ||
+                configuration.rumUIKitUserActionsPredicate != nil ||
+                configuration.rumLongTaskDurationThreshold != nil {
                 autoInstrumentation = RUM.AutoInstrumentation(
                     uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
-                    uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate
+                    uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate,
+                    longTaskThreshold: configuration.rumLongTaskDurationThreshold
                 )
             }
 
@@ -200,6 +205,7 @@ extension FeaturesConfiguration {
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,
                     errorEventMapper: configuration.rumErrorEventMapper,
+                    longTaskEventMapper: configuration.rumLongTaskEventMapper,
                     autoInstrumentation: autoInstrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener

@@ -42,6 +42,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private var resourcesCount: UInt = 0
     /// Number of Errors occured during this User Action's lifespan.
     private var errorsCount: UInt = 0
+    /// Number of Long Tasks occured during this User Action's lifespan.
+    private var longTasksCount: Int64 = 0
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
 
@@ -114,6 +116,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             errorsCount += 1
         case is RUMAddCurrentViewErrorCommand:
             errorsCount += 1
+        case is RUMAddLongTaskCommand:
+            // TODO: RUMM-1616 this command is ignored if arrived after 100ms
+            longTasksCount += 1
         default:
             break
         }
@@ -136,7 +141,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 error: .init(count: errorsCount.toInt64),
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
-                longTask: nil,
+                longTask: .init(count: longTasksCount),
                 resource: .init(count: resourcesCount.toInt64),
                 target: .init(name: name),
                 type: actionType.toRUMDataFormat
@@ -147,6 +152,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,

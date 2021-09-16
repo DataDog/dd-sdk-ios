@@ -48,10 +48,12 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.rumSessionsListener)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
+            XCTAssertNil(configuration.rumLongTaskDurationThreshold)
             XCTAssertNil(configuration.rumViewEventMapper)
             XCTAssertNil(configuration.rumResourceEventMapper)
             XCTAssertNil(configuration.rumActionEventMapper)
             XCTAssertNil(configuration.rumErrorEventMapper)
+            XCTAssertNil(configuration.rumLongTaskEventMapper)
             XCTAssertNil(configuration.rumResourceAttributesProvider)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
@@ -65,6 +67,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
         let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
         let mockRUMActionEvent: RUMActionEvent = .mockRandom()
+        let mockRUMLongTaskEvent: RUMLongTaskEvent = .mockRandom()
         let mockCrashReportingPlugin = CrashReportingPluginMock()
 
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
@@ -84,11 +87,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
+                .trackLongTasks(threshold: 100.0)
                 .trackBackgroundEvents(false)
                 .setRUMViewEventMapper { _ in mockRUMViewEvent }
                 .setRUMErrorEventMapper { _ in mockRUMErrorEvent }
                 .setRUMResourceEventMapper { _ in mockRUMResourceEvent }
                 .setRUMActionEventMapper { _ in mockRUMActionEvent }
+                .setRUMLongTaskEventMapper { _ in mockRUMLongTaskEvent }
                 .setRUMResourceAttributesProvider { _, _, _, _ in ["foo": "bar"] }
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
@@ -138,11 +143,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNotNil(configuration.rumSessionsListener)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
+            XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
             XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
             XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
             XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
             XCTAssertEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
             XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
+            XCTAssertEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
             XCTAssertEqual(configuration.batchSize, .small)

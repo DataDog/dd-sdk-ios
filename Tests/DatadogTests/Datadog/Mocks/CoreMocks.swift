@@ -232,6 +232,7 @@ extension FeaturesConfiguration.RUM {
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
@@ -246,6 +247,7 @@ extension FeaturesConfiguration.RUM {
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
             autoInstrumentation: autoInstrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             onSessionStart: onSessionStart
