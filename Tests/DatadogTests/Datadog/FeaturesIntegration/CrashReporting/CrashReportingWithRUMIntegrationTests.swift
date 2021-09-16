@@ -27,7 +27,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
-            rumFeatureConfiguration: .mockAny(),
+            rumFeatureConfiguration: .mockWith(sessionSampler: .mockRandom()), // sampling should be ignored as we have an event from previous session
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: currentDate),
             dateCorrector: DateCorrectorMock(correctionOffset: 0)
@@ -55,7 +55,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
-            rumFeatureConfiguration: .mockAny(),
+            rumFeatureConfiguration: .mockWith(sessionSampler: .mockRandom()), // sampling should be ignored as we have an event from previous session
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: currentDate),
             dateCorrector: DateCorrectorMock(correctionOffset: 0)
@@ -77,7 +77,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
-            rumFeatureConfiguration: .mockAny(),
+            rumFeatureConfiguration: .mockWith(sessionSampler: .mockRandom()),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             dateCorrector: DateCorrectorMock()
@@ -88,7 +88,10 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(rumEventOutput.recordedEvents.count, 0)
     }
 
-    func testWhenCrashReportHasNoAssociatedLastRUMViewEvent_itIsNotSent() throws {
+    func testGivenCrashReportWithNoAssociatedLastRUMViewEvent_whenSendingItInANewDummyRUMSession_thenItRespectsSampling() throws {
+        let shouldSample: Bool = .mockRandom()
+        let rumSessionSampler: RUMSessionSampler = shouldSample ? .mockKeepAll() : .mockRejectAll()
+
         // Given
         let crashReport: DDCrashReport = .mockWith(date: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
@@ -98,7 +101,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithRUMIntegration(
-            rumFeatureConfiguration: .mockAny(),
+            rumFeatureConfiguration: .mockWith(sessionSampler: rumSessionSampler),
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             dateCorrector: DateCorrectorMock()
@@ -106,12 +109,16 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 0)
+        let expectedViewEventsCount = shouldSample ? 1 : 0
+        let expectedErrorEventsCount = shouldSample ? 1 : 0
+        XCTAssertEqual(rumEventOutput.recordedEvents.count, expectedViewEventsCount + expectedErrorEventsCount)
+        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count, expectedViewEventsCount)
+        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).count, expectedErrorEventsCount)
     }
 
     // MARK: - Testing Uploaded Data
 
-    func testWhenSendingRUMViewEvent_itIncludesErrorInformation() throws {
+    func testGivenCrashReportWithAssociatedLastRUMEvent_whenSendingViewUpdate_itIncludesErrorInformation() throws {
         let lastRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // Given
@@ -125,7 +132,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom()
         let integration = CrashReportingWithRUMIntegration(
-            rumFeatureConfiguration: .mockAny(),
+            rumFeatureConfiguration: .mockWith(sessionSampler: .mockRandom()), // sampling should be ignored as we have an event from previous session
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: crashDate),
             dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
@@ -167,7 +174,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(sendRUMViewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
-    func testWhenSendingRUMErrorEvent_itIncludesCrashInformation() throws {
+    func testGivenCrashReportWithAssociatedLastRUMEvent_whenSendingRUMErrorEvent_itIncludesCrashInformation() throws {
         let lastRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // Given
@@ -209,7 +216,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom()
         let integration = CrashReportingWithRUMIntegration(
-            rumFeatureConfiguration: .mockAny(),
+            rumFeatureConfiguration: .mockWith(sessionSampler: .mockRandom()), // sampling should be ignored as we have an event from previous session
             rumEventOutput: rumEventOutput,
             dateProvider: RelativeDateProvider(using: crashDate),
             dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
@@ -255,5 +262,95 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
         XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
         XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
+    }
+
+    func testGivenCrashReportWithNoAssociatedLastRUMEvent_whenSendingRUMViewEventForDummySession_itIncludesErrorInformation() throws {
+        let randomApplicationID: String = .mockRandom()
+
+        // Given
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            lastTrackingConsent: .granted,
+            lastRUMViewEvent: nil
+        )
+
+        // When
+        let dateCorrectionOffset: TimeInterval = .mockRandom()
+        let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockWith(
+                applicationID: randomApplicationID,
+                sessionSampler: .mockKeepAll()
+            ),
+            rumEventOutput: rumEventOutput,
+            dateProvider: RelativeDateProvider(using: crashDate),
+            dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+        )
+        integration.send(crashReport: crashReport, with: crashContext)
+
+        // Then
+        let sentRUMView = try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self)[0].model
+
+        XCTAssertEqual(sentRUMView.application.id, randomApplicationID)
+        XCTAssertNotNil(UUID(uuidString: sentRUMView.session.id), "Must use valid session ID")
+        XCTAssertNotNil(UUID(uuidString: sentRUMView.view.id), "Must use valid view ID")
+        XCTAssertEqual(sentRUMView.dd.documentVersion, 1, "Must be the only view update")
+        XCTAssertTrue(sentRUMView.view.isActive == false, "Must complete the session")
+        XCTAssertEqual(sentRUMView.view.name, CrashReportingWithRUMIntegration.Constants.dummyViewName)
+        XCTAssertEqual(sentRUMView.view.url, CrashReportingWithRUMIntegration.Constants.dummyViewURL)
+        XCTAssertEqual(sentRUMView.view.error.count, 0)
+        XCTAssertEqual(sentRUMView.view.resource.count, 0)
+        XCTAssertEqual(sentRUMView.view.action.count, 0)
+        XCTAssertNil(sentRUMView.view.longTask)
+        XCTAssertEqual(sentRUMView.view.crash?.count, 1, "Must count the crash")
+        XCTAssertEqual(
+            sentRUMView.date,
+            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+            "Must include crash date corrected by current correction offset"
+        )
+        XCTAssertEqual(sentRUMView.view.timeSpent, 1, "Must be 1ns long")
+    }
+
+    func testGivenCrashReportWithNoAssociatedLastRUMEvent_whenSendingRUMErrorEvent_itIsLinkedToDummySession() throws {
+        // Given
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            lastTrackingConsent: .granted,
+            lastRUMViewEvent: nil
+        )
+
+        // When
+        let dateCorrectionOffset: TimeInterval = .mockRandom()
+        let integration = CrashReportingWithRUMIntegration(
+            rumFeatureConfiguration: .mockWith(sessionSampler: .mockKeepAll()),
+            rumEventOutput: rumEventOutput,
+            dateProvider: RelativeDateProvider(using: crashDate),
+            dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+        )
+        integration.send(crashReport: crashReport, with: crashContext)
+
+        // Then
+        let sentRUMErrorEvent = try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self)[0]
+        let sentRUMError = sentRUMErrorEvent.model
+        let sentRUMView = try rumEventOutput.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self)[0].model
+
+        XCTAssertTrue(
+            sentRUMError.application.id == sentRUMView.application.id
+            && sentRUMError.session.id == sentRUMView.session.id
+            && sentRUMError.view.id == sentRUMView.view.id,
+            "The `RUMErrorEvent` must be linked to the same RUM Session as dummy `RUMViewEvent`"
+        )
+        XCTAssertTrue(sentRUMError.error.isCrash == true, "Must indicate crash")
+        XCTAssertEqual(
+            sentRUMError.date,
+            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+            "Must include crash date corrected by current correction offset"
+        )
+        XCTAssertTrue(sentRUMError.error.type != nil && sentRUMError.error.stack != nil, "Must send crash information")
+        XCTAssertEqual(sentRUMErrorEvent.errorAttributes?[DDError.threads] as? [DDCrashReport.Thread], crashReport.threads)
+        XCTAssertEqual(sentRUMErrorEvent.errorAttributes?[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
+        XCTAssertEqual(sentRUMErrorEvent.errorAttributes?[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
+        XCTAssertEqual(sentRUMErrorEvent.errorAttributes?[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
     }
 }

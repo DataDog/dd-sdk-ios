@@ -16,6 +16,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         /// This condition originates from RUM backend constraints on processing `RUMViewEvents` in stale sessions. If the session does not
         /// receive any updates for a long time, then sending some significantly later may lead to inconsistency.
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
+        /// The name of a view sent in dummy RUM session created when crash occurred before starting a real session.
+        static let dummyViewName = "ApplictionLaunch"
+        /// The url of a view sent in dummy RUM session created when crash occurred before starting a real session.
+        static let dummyViewURL = "com/datadog/application-launch/view"
     }
 
     private let rumFeatureConfiguration: FeaturesConfiguration.RUM
@@ -65,7 +69,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
             sendCrashReportToPreviousSession(crashReport, rumViewEventFromPreviousSession: lastRUMViewEvent, using: currentTimeCorrection)
         } else {
-            sendCrashReportToNewDummySession(crashReport, using: currentTimeCorrection)
+            // As this will create a new RUM session, we must respect the user sampling configuration
+            if rumFeatureConfiguration.sessionSampler.isSampled() {
+                sendCrashReportToNewDummySession(crashReport, using: currentTimeCorrection)
+            }
         }
     }
 
@@ -100,7 +107,6 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let crashDate = crashReport.date ?? dateProvider.currentDate()
         let realCrashDate = currentTimeCorrection.applying(to: crashDate)
 
-        // TODO: RUMM-1599 Use sampling
         let dummyRUMView = createDummyRUMViewEvent(for: crashReport, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: dummyRUMView, crashDate: realCrashDate)
         rumEventOutput.write(rumEvent: rumError)
@@ -227,10 +233,6 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let newSessionUUID = rumFeatureConfiguration.uuidGenerator.generateUnique()
         let viewUUID = rumFeatureConfiguration.uuidGenerator.generateUnique()
 
-        // We need to mock view's name and url:
-        let dummyViewName = "ApplictionLaunch"
-        let dummyViewURL = "com/datadog/application-launch/view"
-
         // We need to mock view's start date and duration as we don't know it from crashed process:
         let dummyViewDuration = 0.000_000_001 // an arbitrary value of 1ns
         let dummyViewStartDate = crashDate.addingTimeInterval(-dummyViewDuration)
@@ -275,13 +277,13 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 longTask: nil,
                 memoryAverage: nil,
                 memoryMax: nil,
-                name: dummyViewName,
+                name: Constants.dummyViewName,
                 referrer: nil,
                 refreshRateAverage: nil,
                 refreshRateMin: nil,
                 resource: .init(count: 0),
                 timeSpent: dummyViewDuration.toInt64Nanoseconds,
-                url: dummyViewURL
+                url: Constants.dummyViewURL
             )
         )
 
