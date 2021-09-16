@@ -16,7 +16,7 @@ class RUMDebuggingTests: XCTestCase {
         let applicationScope = RUMApplicationScope(
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
-            samplingRate: 100,
+            sessionSampler: .mockKeepAll(),
             backgroundEventTrackingEnabled: .mockAny()
         )
         _ = applicationScope.process(
@@ -48,7 +48,7 @@ class RUMDebuggingTests: XCTestCase {
         let applicationScope = RUMApplicationScope(
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
-            samplingRate: 100,
+            sessionSampler: .mockKeepAll(),
             backgroundEventTrackingEnabled: .mockAny()
         )
         _ = applicationScope.process(

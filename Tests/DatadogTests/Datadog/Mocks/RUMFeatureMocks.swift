@@ -150,6 +150,24 @@ extension RUMEventsMapper {
     }
 }
 
+extension RUMSessionSampler {
+    static func mockAny() -> RUMSessionSampler {
+        return .init(samplingRate: 50)
+    }
+
+    static func mockRandom() -> RUMSessionSampler {
+        return .init(samplingRate: .random(in: (0.0...100.0)))
+    }
+
+    static func mockKeepAll() -> RUMSessionSampler {
+        return .init(samplingRate: 100)
+    }
+
+    static func mockRejectAll() -> RUMSessionSampler {
+        return .init(samplingRate: 0)
+    }
+}
+
 // MARK: - RUMCommand Mocks
 
 struct RUMCommandMock: RUMCommand {
@@ -455,13 +473,13 @@ extension RUMApplicationScope {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100,
+        sessionSampler: RUMSessionSampler = .init(samplingRate: 100),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
-            samplingRate: samplingRate,
+            sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
@@ -475,14 +493,14 @@ extension RUMSessionScope {
     static func mockWith(
         parent: RUMApplicationScope = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100,
+        sessionSampler: RUMSessionSampler = .init(samplingRate: 100),
         startTime: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             parent: parent,
             dependencies: dependencies,
-            samplingRate: samplingRate,
+            sessionSampler: sessionSampler,
             startTime: startTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )

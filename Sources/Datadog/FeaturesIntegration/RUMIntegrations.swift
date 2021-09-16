@@ -24,7 +24,7 @@ internal struct RUMContextIntegration {
             return nil
         }
 
-        if rumContext.sessionID == .nullUUID { // if Session was sampled or not yet started
+        if rumContext.sessionID == .nullUUID { // if session was rejected or not yet started
             return [:]
         }
 

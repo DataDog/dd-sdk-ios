@@ -24,7 +24,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
                     environment: "tests"
                 ),
                 applicationID: "rum-123",
-                sessionSamplingRate: 42.5
+                sessionSampler: RUMSessionSampler(samplingRate: 42.5)
             ),
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
@@ -41,7 +41,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
         XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
-        XCTAssertEqual(monitor.applicationScope.samplingRate, 42.5)
+        XCTAssertEqual(monitor.applicationScope.sessionSampler.samplingRate, 42.5)
         XCTAssertEqual(monitor.applicationScope.context.rumApplicationID, "rum-123")
     }
 }

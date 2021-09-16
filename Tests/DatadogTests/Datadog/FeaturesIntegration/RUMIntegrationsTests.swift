@@ -33,12 +33,12 @@ class RUMIntegrationsTests: XCTestCase {
         XCTAssertValidRumUUID(attributes["user_action.id"] as? String)
     }
 
-    func testGivenRUMMonitorRegistered_whenSessionIsSampled_itProvidesEmptyRUMContextAttributes() throws {
+    func testGivenRUMMonitorRegistered_whenSessionRejectedBySampler_itProvidesEmptyRUMContextAttributes() throws {
         RUMFeature.instance = RUMFeature(
             eventsMapper: .mockNoOp(),
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockWith(sessionSamplingRate: 0.0),
+            configuration: .mockWith(sessionSampler: .mockRejectAll()),
             commonDependencies: .mockAny(),
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),

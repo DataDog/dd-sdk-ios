@@ -32,9 +32,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Session scope. It gets created with the first `.startView` event.
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
-
-    /// RUM Sessions sampling rate.
-    internal let samplingRate: Float
+    /// RUM Session sampler.
+    internal let sessionSampler: RUMSessionSampler
 
     /// Automatically detect background events
     internal let backgroundEventTrackingEnabled: Bool
@@ -46,11 +45,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     init(
         rumApplicationID: String,
         dependencies: RUMScopeDependencies,
-        samplingRate: Float,
+        sessionSampler: RUMSessionSampler,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.dependencies = dependencies
-        self.samplingRate = samplingRate
+        self.sessionSampler = sessionSampler
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
@@ -103,7 +102,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let initialSession = RUMSessionScope(
             parent: self,
             dependencies: dependencies,
-            samplingRate: samplingRate,
+            sessionSampler: sessionSampler,
             startTime: command.time,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
@@ -115,6 +114,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
         let sessionID = sessionScope.sessionUUID.rawValue.uuidString
-        dependencies.onSessionStart?(sessionID, sessionScope.shouldBeSampledOut)
+        dependencies.onSessionStart?(sessionID, !sessionScope.isSampled)
     }
 }

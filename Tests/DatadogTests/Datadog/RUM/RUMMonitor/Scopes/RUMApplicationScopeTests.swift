@@ -12,7 +12,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
-            samplingRate: .mockAny(),
+            sessionSampler: .mockAny(),
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -36,7 +36,7 @@ class RUMApplicationScopeTests: XCTestCase {
             dependencies: .mockWith(
                 onSessionStart: onSessionStart
             ),
-            samplingRate: 0,
+            sessionSampler: .mockRejectAll(),
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -62,7 +62,7 @@ class RUMApplicationScopeTests: XCTestCase {
             dependencies: .mockWith(
                 onSessionStart: onSessionStart
             ),
-            samplingRate: 100,
+            sessionSampler: .mockKeepAll(),
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -88,7 +88,12 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: .mockAny(),
+            sessionSampler: .mockKeepAll(),
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
         XCTAssertTrue(scope.process(command: RUMStopViewCommand.mockAny()))
         XCTAssertTrue(scope.process(command: RUMAddUserActionCommand.mockAny()))
@@ -102,7 +107,12 @@ class RUMApplicationScopeTests: XCTestCase {
         let output = RUMEventOutputMock()
         let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: dependencies,
+            sessionSampler: .init(samplingRate: 100),
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
@@ -114,7 +124,12 @@ class RUMApplicationScopeTests: XCTestCase {
         let output = RUMEventOutputMock()
         let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 0, backgroundEventTrackingEnabled: .mockAny())
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: dependencies,
+            sessionSampler: .init(samplingRate: 0),
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
@@ -126,7 +141,12 @@ class RUMApplicationScopeTests: XCTestCase {
         let output = RUMEventOutputMock()
         let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 50, backgroundEventTrackingEnabled: .mockAny())
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: dependencies,
+            sessionSampler: .init(samplingRate: 50),
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
         var currentTime = Date()
         let simulatedSessionsCount = 200

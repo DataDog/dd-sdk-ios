@@ -197,7 +197,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
                     onSessionStart: rumFeature.onSessionStart
                 ),
-                samplingRate: rumFeature.configuration.sessionSamplingRate,
+                sessionSampler: rumFeature.configuration.sessionSampler,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider

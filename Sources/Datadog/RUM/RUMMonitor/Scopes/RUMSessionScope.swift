@@ -33,10 +33,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
-    /// Tells if events from this Session should be sampled-out (not send).
-    let shouldBeSampledOut: Bool
-    /// RUM Session sampling rate.
-    private let samplingRate: Float
+    /// RUM Session sampler.
+    internal let sessionSampler: RUMSessionSampler
+    /// Tells if events from this Session should be sampled (sent to Datadog).
+    internal let isSampled: Bool
     /// The start time of this Session.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
@@ -45,15 +45,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     init(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
-        samplingRate: Float,
+        sessionSampler: RUMSessionSampler,
         startTime: Date,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.samplingRate = samplingRate
-        self.shouldBeSampledOut = RUMSessionScope.randomizeSampling(using: samplingRate)
-        self.sessionUUID = shouldBeSampledOut ? .nullUUID : dependencies.rumUUIDGenerator.generateUnique()
+        self.sessionSampler = sessionSampler
+        self.isSampled = sessionSampler.isSampled()
+        self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
@@ -67,7 +67,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.init(
             parent: expiredSession.parent,
             dependencies: expiredSession.dependencies,
-            samplingRate: expiredSession.samplingRate,
+            sessionSampler: expiredSession.sessionSampler,
             startTime: startTime,
             backgroundEventTrackingEnabled: expiredSession.backgroundEventTrackingEnabled
         )
@@ -106,8 +106,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
         lastInteractionTime = command.time
 
-        if shouldBeSampledOut {
-            return true
+        if !isSampled {
+            return true // if not sampled, do not propagate `command` any further
         }
 
         // Apply side effects
@@ -179,10 +179,5 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         let expired = sessionDuration >= Constants.sessionMaxDuration
 
         return timedOut || expired
-    }
-
-    private static func randomizeSampling(using samplingRate: Float) -> Bool {
-        let sendSessionEvents = Float.random(in: 0.0..<100.0) < samplingRate
-        return !sendSessionEvents
     }
 }
