@@ -26,7 +26,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = sdk_set_tracking_consent_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - sdk_set_tracking_consent: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):avg:trace.sdk_set_tracking_consent{env:instrumentation,resource_name:sdk_set_tracking_consent,service:com.datadog.ios.nightly} > 0.016"
+    /// $monitor_query = "avg(last_1d):avg:trace.perf_measure{env:instrumentation,resource_name:sdk_set_tracking_consent,service:com.datadog.ios.nightly} > 0.016"
     /// $monitor_threshold = 0.016
     /// ```
 
@@ -42,10 +42,10 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_granted\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_config_consent_GRANTED() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
         logger.sendRandomLog(with: DD.logAttributes())
@@ -63,10 +63,10 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_NOT_GRANTED() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
         logger.sendRandomLog(with: DD.logAttributes())
@@ -84,10 +84,10 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_PENDING() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
         logger.sendRandomLog(with: DD.logAttributes())
@@ -106,13 +106,13 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_GRANTED_to_NOT_GRANTED() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
-        measure(spanName: DD.PerfSpanName.setTrackingConsent) {
+        measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .notGranted)
         }
 
@@ -130,13 +130,13 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_GRANTED_to_PENDING() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .granted)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
-        measure(spanName: DD.PerfSpanName.setTrackingConsent) {
+        measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .pending)
         }
 
@@ -152,13 +152,13 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_not_granted_to_granted\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_config_consent_NOT_GRANTED_to_GRANTED() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
-        measure(spanName: DD.PerfSpanName.setTrackingConsent) {
+        measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .granted)
         }
 
@@ -176,13 +176,13 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_NOT_GRANTED_to_PENDING() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .notGranted)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
-        measure(spanName: DD.PerfSpanName.setTrackingConsent) {
+        measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .pending)
         }
 
@@ -198,16 +198,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_consent_pending_to_granted\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_config_consent_PENDING_to_GRANTED() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
 
-        measure(spanName: DD.PerfSpanName.setTrackingConsent) {
+        measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .granted)
         }
     }
@@ -223,16 +223,16 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_consent_PENDING_to_NOT_GRANTED() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(trackingConsent: .pending)
         }
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
 
-        measure(spanName: DD.PerfSpanName.setTrackingConsent) {
+        measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .notGranted)
         }
     }

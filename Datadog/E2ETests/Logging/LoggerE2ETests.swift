@@ -35,10 +35,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_debug_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_debug_log: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_debug_log{env:instrumentation,resource_name:logs_logger_debug_log,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_debug_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_DEBUG_log() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.debug(.mockRandom(), attributes: DD.logAttributes())
         }
     }
@@ -57,10 +57,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_debug_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_debug_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_debug_log_with_error{env:instrumentation,resource_name:logs_logger_debug_log_with_error*,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_debug_log_with_error*,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_DEBUG_log_with_error() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.debug(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
@@ -79,10 +79,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_info_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_info_log: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_info_log{env:instrumentation,resource_name:logs_logger_info_log,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_info_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_INFO_log() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.info(.mockRandom(), attributes: DD.logAttributes())
         }
     }
@@ -101,10 +101,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_info_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_info_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_info_log_with_error{env:instrumentation,resource_name:logs_logger_info_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_info_log_with_error,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_INFO_log_with_error() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.info(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
@@ -123,10 +123,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_notice_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_notice_log: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_notice_log{env:instrumentation,resource_name:logs_logger_notice_log,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_notice_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_NOTICE_log() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.notice(.mockRandom(), attributes: DD.logAttributes())
         }
     }
@@ -145,10 +145,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_notice_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_notice_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_notice_log_with_error{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_NOTICE_log_with_error() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.notice(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
@@ -167,10 +167,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_warn_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_warn_log: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_warn_log{env:instrumentation,resource_name:logs_logger_warn_log,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_warn_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_WARN_log() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.warn(.mockRandom(), attributes: DD.logAttributes())
         }
     }
@@ -189,10 +189,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_warn_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_warn_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_warn_log_with_error{env:instrumentation,resource_name:logs_logger_warn_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_warn_log_with_error,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_WARN_log_with_error() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.warn(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
@@ -211,10 +211,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_error_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_error_log: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_error_log{env:instrumentation,resource_name:logs_logger_error_log,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_error_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_ERROR_log() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.error(.mockRandom(), attributes: DD.logAttributes())
         }
     }
@@ -233,10 +233,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_error_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_error_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_error_log_with_error{env:instrumentation,resource_name:logs_logger_error_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_error_log_with_error,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_ERROR_log_with_error() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.error(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
@@ -255,10 +255,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_critical_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_critical_log: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_critical_log{env:instrumentation,resource_name:logs_logger_critical_log,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_critical_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_CRITICAL_log() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.critical(.mockRandom(), attributes: DD.logAttributes())
         }
     }
@@ -277,10 +277,10 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_critical_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_critical_log_with_error: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_critical_log_with_error{env:instrumentation,resource_name:logs_logger_critical_log_with_error,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_critical_log_with_error,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_CRITICAL_log_with_error() {
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.critical(.mockRandom(), error: ErrorMock(.mockRandom()), attributes: DD.logAttributes())
         }
     }
@@ -301,12 +301,12 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_add_string_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_string_attribute: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_string_attribute{env:instrumentation,resource_name:logs_logger_add_string_attribute,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_add_string_attribute,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_STRING_attribute() {
         let attribute = DD.specialStringAttribute()
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.addAttribute(forKey: attribute.key, value: attribute.value)
         }
 
@@ -327,12 +327,12 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_add_int_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_int_attribute: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_int_attribute{env:instrumentation,resource_name:logs_logger_add_int_attribute,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_add_int_attribute,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_INT_attribute() {
         let attribute = DD.specialIntAttribute()
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.addAttribute(forKey: attribute.key, value: attribute.value)
         }
 
@@ -353,12 +353,12 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_add_double_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_double_attribute: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_double_attribute{env:instrumentation,resource_name:logs_logger_add_double_attribute,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_add_double_attribute,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_DOUBLE_attribute() {
         let attribute = DD.specialDoubleAttribute()
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.addAttribute(forKey: attribute.key, value: attribute.value)
         }
 
@@ -379,12 +379,12 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_add_bool_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_bool_attribute: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_bool_attribute{env:instrumentation,resource_name:logs_logger_add_bool_attribute,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_add_bool_attribute,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_BOOL_attribute() {
         let attribute = DD.specialBoolAttribute()
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.addAttribute(forKey: attribute.key, value: attribute.value)
         }
 
@@ -407,7 +407,7 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_remove_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_remove_attribute: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_attribute{env:instrumentation,resource_name:logs_logger_remove_attribute,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_remove_attribute,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_remove_attribute() {
         let possibleAttributes = [
@@ -420,7 +420,7 @@ class LoggerE2ETests: E2ETests {
 
         logger.addAttribute(forKey: randomAttribute.key, value: randomAttribute.value)
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.removeAttribute(forKey: randomAttribute.key)
         }
 
@@ -443,12 +443,12 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_add_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_tag: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_tag{env:instrumentation,resource_name:logs_logger_add_tag,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_add_tag,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_tag() {
         let tag = DD.specialTag()
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.addTag(withKey: tag.key, value: tag.value)
         }
 
@@ -469,12 +469,12 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_add_already_formatted_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_already_formatted_tag: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_already_formatted_tag{env:instrumentation,resource_name:logs_logger_add_already_formatted_tag,service:com.datadog.ios.nightly} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:logs_logger_add_already_formatted_tag,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_logs_logger_add_already_formatted_tag() {
         let tag = DD.specialTag()
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.add(tag: "\(tag.key):\(tag.value)")
         }
 
@@ -497,13 +497,13 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_remove_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_remove_tag: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_tag{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_tag} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_tag} > 0.024"
     /// ```
     func test_logs_logger_remove_tag() {
         let tag = DD.specialTag()
         logger.addTag(withKey: tag.key, value: tag.value)
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.removeTag(withKey: tag.key)
         }
 
@@ -524,13 +524,13 @@ class LoggerE2ETests: E2ETests {
     /// $feature = logs
     /// $monitor_id = logs_logger_remove_already_formatted_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_remove_already_formatted_tag: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_already_formatted_tag{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_already_formatted_tag} > 0.024"
+    /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_already_formatted_tag} > 0.024"
     /// ```
     func test_logs_logger_remove_already_formatted_tag() {
         let tag = DD.specialTag()
         logger.add(tag: "\(tag.key):\(tag.value)")
 
-        measure(spanName: DD.PerfSpanName.fromCurrentMethodName()) {
+        measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             logger.remove(tag: "\(tag.key):\(tag.value)")
         }
 
