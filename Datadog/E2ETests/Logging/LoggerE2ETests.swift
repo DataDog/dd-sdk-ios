@@ -32,6 +32,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_debug_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_debug_log: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_debug_log{env:instrumentation,resource_name:logs_logger_debug_log,service:com.datadog.ios.nightly} > 0.024"
@@ -53,6 +54,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_debug_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_debug_log_with_error: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_debug_log_with_error{env:instrumentation,resource_name:logs_logger_debug_log_with_error*,service:com.datadog.ios.nightly} > 0.024"
@@ -74,6 +76,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_info_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_info_log: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_info_log{env:instrumentation,resource_name:logs_logger_info_log,service:com.datadog.ios.nightly} > 0.024"
@@ -95,6 +98,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_info_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_info_log_with_error: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_info_log_with_error{env:instrumentation,resource_name:logs_logger_info_log_with_error,service:com.datadog.ios.nightly} > 0.024"
@@ -116,6 +120,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_notice_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_notice_log: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_notice_log{env:instrumentation,resource_name:logs_logger_notice_log,service:com.datadog.ios.nightly} > 0.024"
@@ -137,6 +142,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_notice_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_notice_log_with_error: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_notice_log_with_error{env:instrumentation,resource_name:logs_logger_notice_log_with_error,service:com.datadog.ios.nightly} > 0.024"
@@ -158,6 +164,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_warn_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_warn_log: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_warn_log{env:instrumentation,resource_name:logs_logger_warn_log,service:com.datadog.ios.nightly} > 0.024"
@@ -179,6 +186,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_warn_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_warn_log_with_error: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_warn_log_with_error{env:instrumentation,resource_name:logs_logger_warn_log_with_error,service:com.datadog.ios.nightly} > 0.024"
@@ -200,6 +208,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_error_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_error_log: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_error_log{env:instrumentation,resource_name:logs_logger_error_log,service:com.datadog.ios.nightly} > 0.024"
@@ -221,6 +230,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_error_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_error_log_with_error: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_error_log_with_error{env:instrumentation,resource_name:logs_logger_error_log_with_error,service:com.datadog.ios.nightly} > 0.024"
@@ -242,6 +252,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_critical_log_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_critical_log: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_critical_log{env:instrumentation,resource_name:logs_logger_critical_log,service:com.datadog.ios.nightly} > 0.024"
@@ -263,6 +274,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_critical_log_with_error_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_critical_log_with_error: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_critical_log_with_error{env:instrumentation,resource_name:logs_logger_critical_log_with_error,service:com.datadog.ios.nightly} > 0.024"
@@ -286,6 +298,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_add_string_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_string_attribute: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_string_attribute{env:instrumentation,resource_name:logs_logger_add_string_attribute,service:com.datadog.ios.nightly} > 0.024"
@@ -311,6 +324,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_add_int_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_int_attribute: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_int_attribute{env:instrumentation,resource_name:logs_logger_add_int_attribute,service:com.datadog.ios.nightly} > 0.024"
@@ -336,6 +350,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_add_double_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_double_attribute: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_double_attribute{env:instrumentation,resource_name:logs_logger_add_double_attribute,service:com.datadog.ios.nightly} > 0.024"
@@ -361,6 +376,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_add_bool_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_bool_attribute: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_bool_attribute{env:instrumentation,resource_name:logs_logger_add_bool_attribute,service:com.datadog.ios.nightly} > 0.024"
@@ -388,6 +404,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_remove_attribute_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_remove_attribute: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_attribute{env:instrumentation,resource_name:logs_logger_remove_attribute,service:com.datadog.ios.nightly} > 0.024"
@@ -423,6 +440,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_add_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_tag: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_tag{env:instrumentation,resource_name:logs_logger_add_tag,service:com.datadog.ios.nightly} > 0.024"
@@ -448,6 +466,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_add_already_formatted_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_add_already_formatted_tag: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_add_already_formatted_tag{env:instrumentation,resource_name:logs_logger_add_already_formatted_tag,service:com.datadog.ios.nightly} > 0.024"
@@ -475,6 +494,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_remove_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_remove_tag: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_tag{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_tag} > 0.024"
@@ -501,6 +521,7 @@ class LoggerE2ETests: E2ETests {
     ///
     /// - performance monitor:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_remove_already_formatted_tag_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_remove_already_formatted_tag: has a high average execution time"
     /// $monitor_query = "avg(last_1d):p50:trace.logs_logger_remove_already_formatted_tag{env:instrumentation,service:com.datadog.ios.nightly,resource_name:logs_logger_remove_already_formatted_tag} > 0.024"

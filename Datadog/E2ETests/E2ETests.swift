@@ -31,6 +31,7 @@ class E2ETests: XCTestCase {
 
     /// - common performance monitor - measures `Datadog.initialize(...)` performance:
     /// ```apm
+    /// $feature = core
     /// $monitor_id = sdk_initialize_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - sdk_initialize: has a high average execution time"
     /// $monitor_query = "avg(last_1d):avg:trace.sdk_initialize{env:instrumentation,resource_name:sdk_initialize,service:com.datadog.ios.nightly} > 0.016"
