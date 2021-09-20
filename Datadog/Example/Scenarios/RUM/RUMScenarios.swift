@@ -129,7 +129,7 @@ final class RUMMobileVitalsScenario: TestScenario {
         _ = builder
             .trackUIKitRUMViews()
             .trackUIKitRUMActions()
-            .trackLongTasks()
+            .trackLongTasks(threshold: 2.5)
             .enableLogging(false)
             .enableTracing(false)
     }

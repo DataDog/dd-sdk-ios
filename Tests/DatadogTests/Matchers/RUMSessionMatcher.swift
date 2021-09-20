@@ -78,6 +78,7 @@ internal class RUMSessionMatcher {
     let actionEventMatchers: [RUMEventMatcher]
     let resourceEventMatchers: [RUMEventMatcher]
     let errorEventMatchers: [RUMEventMatcher]
+    let longTaskEventMatchers: [RUMEventMatcher]
 
     private init(sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -97,6 +98,7 @@ internal class RUMSessionMatcher {
         self.actionEventMatchers = eventsMatchersByType["action"] ?? []
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
         self.errorEventMatchers = eventsMatchersByType["error"] ?? []
+        self.longTaskEventMatchers = eventsMatchersByType["long_task"] ?? []
 
         let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
@@ -109,11 +111,15 @@ internal class RUMSessionMatcher {
         let errorEvents: [RUMErrorEvent] = try errorEventMatchers
             .map { matcher in try matcher.model() }
 
+        let longTaskEvents: [RUMLongTaskEvent] = try longTaskEventMatchers
+            .map { matcher in try matcher.model() }
+
         // Validate each group of events individually
         try validate(rumViewEvents: viewEvents)
         try validate(rumActionEvents: actionEvents)
         try validate(rumResourceEvents: resourceEvents)
         try validate(rumErrorEvents: errorEvents)
+        try validate(rumLongTaskEvents: longTaskEvents)
 
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
@@ -265,6 +271,17 @@ private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
         if errorEvent.dd.session?.plan != .plan1 {
             throw RUMSessionConsistencyException(
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad error event: \(errorEvent)"
+            )
+        }
+    }
+}
+
+private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
+    // All error events must use `session.plan` "lite"
+    try rumLongTaskEvents.forEach { longTaskEvent in
+        if longTaskEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad long task event: \(longTaskEvent)"
             )
         }
     }
