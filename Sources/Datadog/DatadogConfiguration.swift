@@ -599,7 +599,7 @@ extension Datadog {
             /// Enable long operations on the main thread to be tracked automatically.
             /// Any long running operation on the main thread will appear as Long Tasks in Datadog RUM Explorer.
             /// - Parameter threshold: the threshold in seconds above which a task running on the Main thread is considered as a long task (default 0.1 second)
-            public func trackLongTasks(threshold: TimeInterval = 0.1) -> Builder {
+            public func trackRUMLongTasks(threshold: TimeInterval = 0.1) -> Builder {
                 configuration.rumLongTaskDurationThreshold = threshold
                 return self
             }

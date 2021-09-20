@@ -68,6 +68,9 @@ internal class RUMSessionMatcher {
 
         /// `RUMError` events tracked during this visit.
         fileprivate(set) var errorEvents: [RUMErrorEvent] = []
+
+        /// `RUMLongTask` events tracked during this visit.
+        fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
     }
 
     /// An array of view visits tracked during this RUM Session.
@@ -177,6 +180,16 @@ internal class RUMSessionMatcher {
         try errorEvents.forEach { rumEvent in
             if let visit = visitsByViewID[rumEvent.view.id] {
                 visit.errorEvents.append(rumEvent)
+            } else {
+                throw RUMSessionConsistencyException(
+                    description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id`."
+                )
+            }
+        }
+
+        try longTaskEvents.forEach { rumEvent in
+            if let visit = visitsByViewID[rumEvent.view.id] {
+                visit.longTaskEvents.append(rumEvent)
             } else {
                 throw RUMSessionConsistencyException(
                     description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id`."

@@ -31,9 +31,9 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
 
         // NOTE: RUMM-1086 even tapNoOpButton() can take up to 0.25sec in my local,
-        // therefore i used `threshold: 1.0` for long tasks in this scenario
+        // therefore i used `threshold: 2.5` for long tasks in this scenario
         app.tapNoOpButton()
-        app.tapBlockMainThreadButton()
+        app.tapBlockMainThreadButton() // block main thread for 3 seconds
         app.tapNoOpButton()
         app.tapBlockMainThreadButton()
         app.tapNoOpButton()
@@ -48,33 +48,33 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
-        for event in session.viewVisits[0].viewEvents {
-            let longTask = try XCTUnwrap(event.view.longTask)
-            print(longTask.count)
-        }
-
         XCTAssertEqual(session.viewVisits[0].viewEvents.count, 5)
-        let event1 = session.viewVisits[0].viewEvents[0].view
-        let event2 = session.viewVisits[0].viewEvents[1].view
-        let event3 = session.viewVisits[0].viewEvents[2].view
-        let event4 = session.viewVisits[0].viewEvents[3].view
-        let event5 = session.viewVisits[0].viewEvents[4].view
 
-        let longTask1 = try XCTUnwrap(event1.longTask) // start view
-        let longTask2 = try XCTUnwrap(event2.longTask) // no-op action
-        let longTask3 = try XCTUnwrap(event3.longTask) // block main thread
-        let longTask4 = try XCTUnwrap(event4.longTask) // no-op action
-        let longTask5 = try XCTUnwrap(event5.longTask) // block main thread
+        let viewLongTask1 = try XCTUnwrap(session.viewVisits[0].viewEvents[0].view.longTask) // start view
+        let viewLongTask2 = try XCTUnwrap(session.viewVisits[0].viewEvents[1].view.longTask) // no-op action
+        let viewLongTask3 = try XCTUnwrap(session.viewVisits[0].viewEvents[2].view.longTask) // block main thread
+        let viewLongTask4 = try XCTUnwrap(session.viewVisits[0].viewEvents[3].view.longTask) // no-op action
+        let viewLongTask5 = try XCTUnwrap(session.viewVisits[0].viewEvents[4].view.longTask) // block main thread
 
-        XCTAssertEqual(longTask1.count, longTask2.count)
-        XCTAssertEqual(longTask2.count + 1, longTask3.count)
-        XCTAssertEqual(longTask3.count, longTask4.count)
-        XCTAssertEqual(longTask4.count + 1, longTask5.count)
+        XCTAssertEqual(viewLongTask1.count, viewLongTask2.count, "Add action event should NOT increment long task count")
+        XCTAssertEqual(viewLongTask2.count + 1, viewLongTask3.count, "Block main thread button should increment long task count")
+        XCTAssertEqual(viewLongTask3.count, viewLongTask4.count, "Add action event should NOT increment long task count")
+        XCTAssertEqual(viewLongTask4.count + 1, viewLongTask5.count, "Block main thread button should increment long task count")
 
-        let cpuTicksPerSec2 = try XCTUnwrap(event2.cpuTicksPerSecond)
+        let viewEvent = session.viewVisits[0].viewEvents[2].view
+
+        let cpuTicksPerSec2 = try XCTUnwrap(viewEvent.cpuTicksPerSecond)
         XCTAssertGreaterThan(cpuTicksPerSec2, 0.0)
 
-        let fps2 = try XCTUnwrap(event2.refreshRateAverage)
+        let fps2 = try XCTUnwrap(viewEvent.refreshRateAverage)
         XCTAssertGreaterThan(fps2, 0.0)
+
+        let longTaskEvents = session.viewVisits[0].longTaskEvents
+        XCTAssertEqual(longTaskEvents.count, 2)
+
+        let longTask1 = longTaskEvents[0]
+        XCTAssertGreaterThan(longTask1.longTask.duration, 3_000_000_000)
+        let longTask2 = longTaskEvents[1]
+        XCTAssertGreaterThan(longTask2.longTask.duration, 3_000_000_000)
     }
 }

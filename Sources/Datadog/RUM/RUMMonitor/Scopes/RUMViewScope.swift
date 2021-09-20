@@ -184,16 +184,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
 
         case let command as RUMAddLongTaskCommand where isActiveView:
-            longTasksCount += 1
-            if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
-                frozenFramesCount += 1
-            }
-
             if sendLongTaskEvent(on: command) {
+                longTasksCount += 1
+                if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
+                    frozenFramesCount += 1
+                }
+
                 needsViewUpdate = true
-            } else {
-                longTasksCount -= 1
-                frozenFramesCount -= 1
             }
 
         default:

@@ -87,7 +87,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
-                .trackLongTasks(threshold: 100.0)
+                .trackRUMLongTasks(threshold: 100.0)
                 .trackBackgroundEvents(false)
                 .setRUMViewEventMapper { _ in mockRUMViewEvent }
                 .setRUMErrorEventMapper { _ in mockRUMErrorEvent }

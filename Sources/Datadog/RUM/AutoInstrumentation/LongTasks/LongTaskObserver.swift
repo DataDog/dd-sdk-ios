@@ -7,8 +7,8 @@
 import Foundation
 
 internal class LongTaskObserver {
-    let longTaskDurationThreshold: TimeInterval
-    let dateProvider: DateProvider
+    private let longTaskDurationThreshold: TimeInterval
+    private let dateProvider: DateProvider
 
     private var observer_begin: CFRunLoopObserver?
     private var observer_end: CFRunLoopObserver?
