@@ -293,6 +293,16 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func trackRUMLongTasks() {
+        _ = sdkBuilder.trackRUMLongTasks()
+    }
+
+    @objc
+    public func trackRUMLongTasks(threshold: TimeInterval) {
+        _ = sdkBuilder.trackRUMLongTasks(threshold: threshold)
+    }
+
+    @objc
     public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent) {
         _ = sdkBuilder.setRUMViewEventMapper { swiftEvent in
             let objcEvent = DDRUMViewEvent(swiftModel: swiftEvent)
@@ -320,6 +330,14 @@ public class DDConfigurationBuilder: NSObject {
     public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?) {
         _ = sdkBuilder.setRUMErrorEventMapper { swiftEvent in
             let objcEvent = DDRUMErrorEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setRUMLongTaskEventMapper(_ mapper: @escaping (DDRUMLongTaskEvent) -> DDRUMLongTaskEvent?) {
+        _ = sdkBuilder.setRUMLongTaskEventMapper { swiftEvent in
+            let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
     }

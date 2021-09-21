@@ -10,6 +10,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
         static let backgroundViewURL = "com/datadog/background/view"
         static let backgroundViewName = "Background"
+
+        static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
+        static let slowRenderingThresholdFPS = 55.0
     }
 
     // MARK: - Child Scopes
@@ -55,6 +58,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var resourcesCount: UInt = 0
     /// Number of Errors tracked by this View.
     private var errorsCount: UInt = 0
+    /// Number of Long Tasks tracked by this View.
+    private var longTasksCount: Int64 = 0
+    /// Number of Frozen Frames tracked by this View.
+    private var frozenFramesCount: Int64 = 0
 
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
@@ -174,6 +181,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 needsViewUpdate = true
             } else {
                 errorsCount -= 1
+            }
+
+        case let command as RUMAddLongTaskCommand where isActiveView:
+            if sendLongTaskEvent(on: command) {
+                longTasksCount += 1
+                if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
+                    frozenFramesCount += 1
+                }
+
+                needsViewUpdate = true
             }
 
         default:
@@ -306,6 +323,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
@@ -332,6 +350,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let cpuInfo = vitalInfoSampler.cpu
         let memoryInfo = vitalInfoSampler.memory
         let refreshRateInfo = vitalInfoSampler.refreshRate
+        let isSlowRendered = refreshRateInfo.meanValue.flatMap { $0 < Constants.slowRenderingThresholdFPS }
 
         let eventData = RUMViewEvent(
             dd: .init(
@@ -344,6 +363,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
@@ -361,14 +381,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
+                frozenFrame: .init(count: frozenFramesCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActiveView,
+                isSlowRendered: isSlowRendered,
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
                 loadingType: nil,
-                longTask: nil,
+                longTask: .init(count: longTasksCount),
                 memoryAverage: memoryInfo.meanValue,
                 memoryMax: memoryInfo.maxValue,
                 name: viewName,
@@ -416,10 +438,44 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
+                name: context.activeViewName,
+                referrer: nil,
+                url: context.activeViewPath ?? ""
+            )
+        )
+
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
+            dependencies.eventOutput.write(rumEvent: event)
+            return true
+        }
+        return false
+    }
+
+    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand) -> Bool {
+        attributes.merge(rumCommandAttributes: command.attributes)
+
+        let taskDurationInNs = command.duration.toInt64Nanoseconds
+        let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
+
+        let eventData = RUMLongTaskEvent(
+            dd: .init(session: .init(plan: .plan1)),
+            action: context.activeUserActionID.flatMap { RUMLongTaskEvent.Action(id: $0.toRUMDataFormat) },
+            application: .init(id: context.rumApplicationID),
+            connectivity: dependencies.connectivityInfoProvider.current,
+            context: .init(contextInfo: attributes),
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
+            service: nil,
+            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
+            usr: dependencies.userInfoProvider.current,
+            view: .init(
+                id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,
                 referrer: nil,
                 url: context.activeViewPath ?? ""

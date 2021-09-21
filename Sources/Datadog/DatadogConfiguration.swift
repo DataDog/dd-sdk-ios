@@ -254,10 +254,12 @@ extension Datadog {
         private(set) var rumSessionsListener: RUMSessionListener?
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate?
+        private(set) var rumLongTaskDurationThreshold: TimeInterval?
         private(set) var rumViewEventMapper: RUMViewEventMapper?
         private(set) var rumResourceEventMapper: RUMResourceEventMapper?
         private(set) var rumActionEventMapper: RUMActionEventMapper?
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
+        private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var batchSize: BatchSize
@@ -594,6 +596,14 @@ extension Datadog {
                 return self
             }
 
+            /// Enable long operations on the main thread to be tracked automatically.
+            /// Any long running operation on the main thread will appear as Long Tasks in Datadog RUM Explorer.
+            /// - Parameter threshold: the threshold in seconds above which a task running on the Main thread is considered as a long task (default 0.1 second)
+            public func trackRUMLongTasks(threshold: TimeInterval = 0.1) -> Builder {
+                configuration.rumLongTaskDurationThreshold = threshold
+                return self
+            }
+
             /// Sets the custom mapper for `RUMViewEvent`. This can be used to modify RUM View events before they are send to Datadog.
             /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` as output.
             /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return it.
@@ -630,6 +640,15 @@ extension Datadog {
             /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
             public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
                 configuration.rumErrorEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMLongTaskEvent`. This can be used to modify RUM Long Task events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMLongTaskEvent` as input and expecting `RUMLongTaskEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMLongTaskEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Long Task event entirely, so it won't be send to Datadog.
+            public func setRUMLongTaskEventMapper(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) -> Builder {
+                configuration.rumLongTaskEventMapper = mapper
                 return self
             }
 

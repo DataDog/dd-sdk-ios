@@ -10,6 +10,7 @@ internal typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
 internal typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
 internal typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
 internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
+internal typealias RUMLongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
 
 /// The `EventMapper` for RUM events.
 internal struct RUMEventsMapper {
@@ -17,6 +18,7 @@ internal struct RUMEventsMapper {
     let errorEventMapper: RUMErrorEventMapper?
     let resourceEventMapper: RUMResourceEventMapper?
     let actionEventMapper: RUMActionEventMapper?
+    let longTaskEventMapper: RUMLongTaskEventMapper?
     var internalMonitor: InternalMonitor? = nil
 
     // MARK: - EventMapper
@@ -33,6 +35,8 @@ internal struct RUMEventsMapper {
             return map(rumEvent: resourceEvent, using: resourceEventMapper) as? T
         case let actionEvent as RUMEvent<RUMActionEvent>:
             return map(rumEvent: actionEvent, using: actionEventMapper) as? T
+        case let longTaskEvent as RUMEvent<RUMLongTaskEvent>:
+            return map(rumEvent: longTaskEvent, using: longTaskEventMapper) as? T
         default:
             internalMonitor?.sdkLogger.critical("No `RUMEventMapper` is registered for \(type(of: event))")
             return event

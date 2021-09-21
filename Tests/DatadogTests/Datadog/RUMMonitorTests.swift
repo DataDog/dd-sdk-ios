@@ -958,6 +958,11 @@ class RUMMonitorTests: XCTestCase {
                     var errorEvent = errorEvent
                     errorEvent.error.message = "Modified error message"
                     return errorEvent
+                },
+                longTaskEventMapper: { longTaskEvent in
+                    var mutableLongTaskEvent = longTaskEvent
+                    mutableLongTaskEvent.view.name = "ModifiedLongTaskViewName"
+                    return mutableLongTaskEvent
                 }
             ),
             dependencies: .mockWith(
@@ -973,6 +978,9 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
+
+        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
+        cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 5)
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -990,6 +998,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.target?.name, "Modified tap action name")
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
+        XCTAssertEqual(session.viewVisits[0].longTaskEvents[0].view.name, "ModifiedLongTaskViewName")
     }
 
     func testDroppingEventsBeforeTheyGetSent() throws {
@@ -1000,7 +1009,8 @@ class RUMMonitorTests: XCTestCase {
                 actionEventMapper: { event in
                     return event.action.type == .applicationStart ? event : nil
                 },
-                errorEventMapper: { _ in nil }
+                errorEventMapper: { _ in nil },
+                longTaskEventMapper: { _ in nil }
             )
         )
         defer { RUMFeature.instance?.deinitialize() }
@@ -1012,6 +1022,9 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: .mockAny())
         monitor.addError(message: .mockAny())
+
+        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
+        cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -1027,6 +1040,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
         XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
+        XCTAssertEqual(session.viewVisits[0].longTaskEvents.count, 0)
     }
 
     // MARK: - Integration with Crash Reporting

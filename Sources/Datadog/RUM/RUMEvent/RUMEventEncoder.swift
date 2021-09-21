@@ -69,3 +69,5 @@ extension RUMActionEvent: RUMSanitizableEvent {}
 extension RUMResourceEvent: RUMSanitizableEvent {}
 
 extension RUMErrorEvent: RUMSanitizableEvent {}
+
+extension RUMLongTaskEvent: RUMSanitizableEvent {}

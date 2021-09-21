@@ -359,6 +359,40 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.error?.count, 1)
     }
 
+    // MARK: - Long task actions
+
+    func testWhileDiscreteUserActionIsActive_itCountsLongTasks() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: dependencies,
+            name: .mockAny(),
+            actionType: .scroll,
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(0.05)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: currentTime, attributes: [:], duration: 1.0)
+            )
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+
+        XCTAssertFalse(
+            scope.process(command: RUMCommandMock(time: currentTime)),
+            "Discrete User Action should complete as it reached the timeout duration"
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
+        XCTAssertEqual(event.model.action.longTask?.count, 1)
+    }
+
     // MARK: - Events sending callbacks
 
     func testGivenUserActionScopeWithEventSentCallback_whenSuccessfullySendingEvent_thenCallbackIsCalled() throws {

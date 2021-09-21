@@ -92,6 +92,8 @@
         viewEvent.view.url = @"";
         return viewEvent;
     }];
+    [builder trackRUMLongTasks];
+    [builder trackRUMLongTasksWithThreshold:10.0];
     [builder setRUMResourceEventMapper:^DDRUMResourceEvent * _Nullable(DDRUMResourceEvent * _Nonnull resourceEvent) {
         resourceEvent.resource.url = @"";
         return resourceEvent;
@@ -100,6 +102,9 @@
         return nil;
     }];
     [builder setRUMErrorEventMapper:^DDRUMErrorEvent * _Nullable(DDRUMErrorEvent * _Nonnull errorEvent) {
+        return nil;
+    }];
+    [builder setRUMLongTaskEventMapper:^DDRUMLongTaskEvent * _Nullable(DDRUMLongTaskEvent * _Nonnull longTaskEvent) {
         return nil;
     }];
     [builder setWithBatchSize:DDBatchSizeMedium];
