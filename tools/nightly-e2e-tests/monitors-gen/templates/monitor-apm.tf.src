@@ -5,6 +5,12 @@ resource "datadog_monitor" ${{monitor_id}} {
   message            = <<EOT
 @maciek.grzybowski@datadoghq.com
 @mert.buran@datadoghq.com
+@maxime.epain@datadoghq.com
+
+## E2E test code:
+```
+## MONITOR_CODE ##
+```
 EOT
   escalation_message = <<EOT
 <nil>
