@@ -73,6 +73,7 @@ class MonitorTemplate:
         result = ''
         result += self.template_content
         result = MonitorTemplate.render_template_variables(template=result, monitor=monitor)
+        result = MonitorTemplate.render_monitor_code(template=result, monitor=monitor)
         return result
 
     @staticmethod
@@ -131,3 +132,10 @@ class MonitorTemplate:
                     )
 
         return '\n'.join(rendered_lines)
+
+    @staticmethod
+    def render_monitor_code(template: str, monitor: MonitorConfiguration) -> str:
+        """
+        Replaces '## MONITOR_CODE ##' anchor in the template with the code associated to this monitor.
+        """
+        return template.replace("## MONITOR_CODE ##", monitor.code)

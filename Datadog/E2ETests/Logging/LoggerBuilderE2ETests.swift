@@ -18,9 +18,10 @@ class LoggerBuilderE2ETests: E2ETests {
 
     /// - common performance monitor - measures `Logger.builder.build()` performance:
     /// ```apm
+    /// $feature = logs
     /// $monitor_id = logs_logger_initialize_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - logs_logger_initialize: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):avg:trace.logs_logger_initialize{env:instrumentation,resource_name:logs_logger_initialize,service:com.datadog.ios.nightly} > 0.016"
+    /// $monitor_query = "avg(last_1d):avg:trace.perf_measure{env:instrumentation,resource_name:logs_logger_initialize,service:com.datadog.ios.nightly} > 0.016"
     /// $monitor_threshold = 0.016
     /// ```
 
@@ -35,7 +36,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly.custom @test_method_name:logs_logger_builder_set_service_name\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_set_SERVICE_NAME() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.set(serviceName: "com.datadog.ios.nightly.custom").build()
         }
 
@@ -51,7 +52,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_set_logger_name @logger.name:custom_logger_name\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_set_LOGGER_NAME() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.set(loggerName: "custom_logger_name").build()
         }
 
@@ -67,7 +68,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_network_info_enabled @network.client.reachability:*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_SEND_NETWORK_INFO_enabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendNetworkInfo(true).build()
         }
 
@@ -85,7 +86,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_logger_builder_SEND_NETWORK_INFO_disabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendNetworkInfo(false).build()
         }
 
@@ -103,7 +104,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_send_logs_to_datadog_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_enabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendLogsToDatadog(true).build()
         }
 
@@ -121,7 +122,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_disabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.sendLogsToDatadog(false).build()
         }
 
@@ -137,7 +138,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_print_logs_to_console_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_enabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.printLogsToConsole(true, usingFormat: .random()).build()
         }
 
@@ -153,7 +154,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_print_logs_to_console_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_disabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.printLogsToConsole(false, usingFormat: .random()).build()
         }
 
@@ -171,7 +172,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_rum_enabled @application_id:* @session_id:*\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_RUM_enabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithRUM(true).build()
         }
 
@@ -193,7 +194,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_RUM_disabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithRUM(false).build()
         }
 
@@ -215,7 +216,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_trace_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_TRACE_enabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithTrace(true).build()
         }
 
@@ -235,7 +236,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_logger_builder_bundle_with_trace_disabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_TRACE_disabled() {
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.bundleWithTrace(false).build()
         }
 

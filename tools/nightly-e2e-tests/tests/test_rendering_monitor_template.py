@@ -110,9 +110,41 @@ class MonitorTemplateTestCase(unittest.TestCase):
             message='Variable $argument_with_no_default is required, but not defined for this monitor.'
         )
 
+    def test_it_renders_monitor_code(self):
+        template = MonitorTemplate(
+            '''
+            some text before
+            ## MONITOR_CODE ##
+            some text after
+            '''
+        )
+
+        monitor_code = random_multiline_string(length=256)
+
+        monitor = MonitorConfiguration(
+            type='',
+            variables=[],
+            code_reference=any_code_reference(),
+            code=monitor_code
+        )
+
+        rendered_template = template.render(monitor=monitor)
+        expected_template = f'''
+            some text before
+            {monitor_code}
+            some text after
+            '''
+
+        self.assertEqual(expected_template, rendered_template)
+
 
 def random_string(length: int = 32):
     characters_set = string.ascii_letters + string.digits + string.punctuation + ' \t'
+    return ''.join((random.choice(characters_set) for i in range(length)))
+
+
+def random_multiline_string(length: int = 32):
+    characters_set = string.ascii_letters + string.digits + string.punctuation + ' \t' + '\n'
     return ''.join((random.choice(characters_set) for i in range(length)))
 
 
