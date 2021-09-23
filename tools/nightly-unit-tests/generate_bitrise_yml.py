@@ -53,7 +53,6 @@ def dump_environment(simulators: Simulators, runtimes: Runtimes, devices: Device
     print_devices(devices=devices.all)
 
 
-
 def generate_bitrise_yml(test_plan: TestPlan, dry_run: bool):
     """
     Generates `bitrise.yml` file for given Test Plan.
